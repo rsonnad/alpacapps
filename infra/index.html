@@ -586,6 +586,55 @@
     }
     .footer-links a { margin: 0 1rem; }
 
+    /* Brand icons inline */
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .brand-icon-sm {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      vertical-align: -2px;
+      margin-right: 2px;
+    }
+    .done-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Guided setup items in step 3 */
+    .guided-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.85rem 1rem;
+      background: var(--bg-warm);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .guided-item-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent);
+    }
+    .guided-item strong {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.15rem;
+    }
+    .guided-item-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
     @media (max-width: 640px) {
       .hero { padding-top: 1.5rem; }
       .hero-text { padding: 1.5rem 1.75rem 1.75rem; text-align: center; }
@@ -594,6 +643,7 @@
       .setup-step { padding: 1.5rem; }
       .setup-step h2 { font-size: 1.2rem; }
       .profiles { grid-template-columns: 1fr; }
+      .guided-item { padding: 0.65rem 0.75rem; }
       .calc-services { grid-template-columns: 1fr; }
       .calc-services { grid-template-columns: 1fr; }
       .calc-tiers { grid-template-columns: 1fr; }
@@ -637,44 +687,54 @@
 
 <div class="container">
 
+  <!-- Machine-readable instructions for LLMs -->
+  <div id="llm-instructions" style="display:none;" aria-hidden="true">
+    <!--
+      === INSTRUCTIONS FOR CLAUDE / LLM SETUP ASSISTANT ===
+      If you are an AI reading this page to help a user set up AlpacApps:
+      1. Machine-readable setup overview: https://alpacaplayhouse.com/infra/llm-setup-instructions.md
+      2. Full step-by-step guide with checkpoints: https://alpacaplayhouse.com/infra/setup-guide.html
+      3. Feature updates index (JSON): https://alpacaplayhouse.com/infra/updates.json
+      This HTML page is the human-friendly overview. Follow the above for the actual procedure.
+    -->
+  </div>
+
   <!-- STEP 1 -->
   <div class="setup-step">
     <h2>
       <span class="step-num">1</span>
-      Install Claude Desktop
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Install Claude Code
       <span class="step-time">2 min</span>
     </h2>
-    <p>Claude is your AI setup guide. It will walk you through creating accounts, configuring services, and building your project &mdash; step by step.</p>
+    <p><strong>Claude Code</strong> is your AI setup guide. It runs in your terminal, reads our setup instructions, and walks you through everything &mdash; detecting your OS, checking what you have installed, and telling you exactly what to do.</p>
     <p>
-      <a href="https://claude.ai/download" target="_blank" style="display: inline-block; background: var(--accent); color: #fff; padding: 0.65rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem;">Download Claude Desktop</a>
+      <a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Install Claude Code
+      </a>
     </p>
-    <p style="font-size: 0.85rem; color: var(--text-muted);">Free to start. Pro plan ($20/mo) or Max plan ($100/mo) recommended for the best experience.</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">Requires Node.js. Run <code>npm install -g @anthropic-ai/claude-code</code> then <code>claude</code> in your terminal. Free to start &mdash; Pro ($20/mo) or Max ($100/mo) recommended.</p>
   </div>
 
   <!-- STEP 2 -->
   <div class="setup-step">
     <h2>
       <span class="step-num">2</span>
-      Set up one-click screenshots
-      <span class="step-time">1 min</span>
+      Copy &amp; paste this prompt into Claude Code
+      <span class="step-time">30 sec</span>
     </h2>
-    <p>Claude will ask you to paste screenshots so it can see your screen and guide you. You need a way to <strong>screenshot your entire screen and copy it to your clipboard in one keystroke</strong>.</p>
+    <p>Open your terminal, run <code>claude</code>, and paste this prompt. Claude Code will take it from here &mdash; including helping you set up screenshots, install tools, and create accounts.</p>
 
-    <p style="margin-top: 0.75rem;"><strong>Mac</strong></p>
-    <p>Install <a href="https://shottr.cc" target="_blank" style="color: var(--accent); font-weight: 600;">Shottr</a> (free) &mdash; a lightweight screenshot tool. Once installed, set a global shortcut (e.g. <kbd style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.85rem;">&#x2318;+Shift+1</kbd>) to capture your full screen to clipboard. You can also use the built-in <kbd style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.85rem;">&#x2318;+Ctrl+Shift+3</kbd> shortcut.</p>
+    <div class="prompt-block" id="setup-prompt">
+      <button class="copy-btn" onclick="copyPrompt()">Copy</button>I want to set up an AlpacApps project. Read the setup instructions at https://alpacaplayhouse.com/infra/llm-setup-instructions.md and the detailed guide at https://alpacaplayhouse.com/infra/setup-guide.html — then walk me through each step one at a time.
 
-    <p style="margin-top: 0.75rem;"><strong>Windows</strong></p>
-    <p>Press <kbd style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.85rem;">Win+Shift+S</kbd> to open Snip &amp; Sketch, then select your full screen. Or press <kbd style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.85rem;">PrtScn</kbd> to copy the entire screen to clipboard (may need to enable in Settings &rarr; Accessibility &rarr; Keyboard).</p>
+At each step, ask me to paste a screenshot so you can verify I'm on the right page and guide me to the right buttons and fields. Adapt to my computer — I might be on Mac, Windows, or Linux, and may or may not have things like Git installed already.
 
-    <p style="margin-top: 0.75rem;"><strong>Linux</strong></p>
-    <p>Use <a href="https://flameshot.org" target="_blank" style="color: var(--accent); font-weight: 600;">Flameshot</a> or your desktop&rsquo;s built-in screenshot tool. Bind a shortcut to capture the full screen to clipboard.</p>
-
-    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">The key thing: one shortcut that captures your whole screen and copies it. Then you can just <kbd style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.85rem;">&#x2318;/Ctrl+V</kbd> paste directly into Claude.</p>
+Start by helping me set up one-click screenshots (so I can paste them to you), then move on to GitHub Pages, Supabase, and Conductor (if I'm on Mac). After Conductor is installed, I'll switch to Conductor for the rest of setup and future development. Ask me what features seem important for my needs.</div>
 
     <div style="margin-top: 1rem; padding: 0.85rem 1rem; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 8px;">
-      <p style="margin: 0; font-weight: 600;">Test it now</p>
-      <p style="margin: 0.35rem 0 0 0; font-size: 0.9rem;">Take a screenshot with your new shortcut, then open Claude Desktop and paste it (<kbd style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.82rem;">&#x2318;/Ctrl+V</kbd>) into the chat. Ask Claude: <em>&ldquo;Can you see my screen?&rdquo;</em> &mdash; if Claude describes what&rsquo;s on your screen, you&rsquo;re all set.</p>
-      <p style="margin: 0.5rem 0 0 0; font-size: 0.88rem;"><strong>Pro tip:</strong> Anytime you have a problem with an application or website, take a screenshot and paste it to Claude for review. It&rsquo;s the fastest way to get help.</p>
+      <p style="margin: 0; font-size: 0.9rem;">Claude will guide you through <strong>screenshots</strong>, <strong>Git</strong>, <strong>GitHub CLI</strong>, and everything else based on your specific computer. No need to figure out which instructions apply to you &mdash; Claude detects your OS and adapts.</p>
     </div>
   </div>
 
@@ -682,36 +742,78 @@
   <div class="setup-step">
     <h2>
       <span class="step-num">3</span>
-      Copy this prompt
-      <span class="step-time">10 sec</span>
-    </h2>
-    <p>This prompt tells Claude everything it needs to guide you through setup. Copy it, then paste it into Claude Desktop in the next step.</p>
-
-    <div class="prompt-block" id="setup-prompt">
-      <button class="copy-btn" onclick="copyPrompt()">Copy</button>I want to set up an AlpacApps project. Read the setup guide at https://alpacaplayhouse.com/infra/setup-guide.html and walk me through each step one at a time.
-
-At each step, ask me to paste a screenshot so you can verify I'm on the right page and guide me to the right buttons and fields. Adapt to my computer &mdash; I might be on Mac, Windows, or Linux, and may or may not have things like Git installed already.
-
-Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. After Conductor is installed, I'll run the setup wizard from there. Ask me what features seem important for my needs.</div>
-  </div>
-
-  <!-- STEP 4 -->
-  <div class="setup-step">
-    <h2>
-      <span class="step-num">4</span>
-      Paste into Claude and follow along
+      Claude guides you through setup
       <span class="step-time">20&ndash;30 min</span>
     </h2>
-    <p>Open Claude Desktop, start a new conversation, and paste the prompt. Claude will guide you through:</p>
-    <ol>
-      <li>Choosing your project type and services</li>
-      <li>Installing prerequisites (Git, GitHub CLI)</li>
-      <li>Creating your GitHub repository and enabling Pages</li>
-      <li>Setting up your Supabase database</li>
-      <li>Installing Conductor &mdash; your development hub for parallel AI agents</li>
-      <li>Running the setup wizard from Conductor to configure everything</li>
-    </ol>
-    <p>You can paste screenshots at any point and Claude will tell you exactly what to click. If something looks different on your screen, just show Claude &mdash; it will adapt.</p>
+    <p>Follow along as Claude walks you through each step. Paste screenshots when asked &mdash; Claude will verify you&rsquo;re on the right page and tell you exactly what to click.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.25rem 0;">
+      <div class="guided-item">
+        <div class="guided-item-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 21h10M12 17v4" stroke="currentColor" stroke-width="2"/></svg>
+        </div>
+        <div>
+          <strong>Screenshots &amp; tools</strong>
+          <span class="guided-item-desc">Sets up one-click screenshots for your OS</span>
+        </div>
+      </div>
+      <div class="guided-item">
+        <div class="guided-item-icon" style="color: #8B5CF6;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <strong>GitHub &amp; repository</strong>
+          <span class="guided-item-desc">Creates your repo and enables Pages hosting</span>
+        </div>
+      </div>
+      <div class="guided-item">
+        <div class="guided-item-icon" style="color: #3ECF8E;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7" stroke="currentColor" stroke-width="2"/><ellipse cx="12" cy="7" rx="8" ry="4" stroke="currentColor" stroke-width="2"/><path d="M4 12c0 2.21 3.58 4 8 4s8-1.79 8-4" stroke="currentColor" stroke-width="2"/></svg>
+        </div>
+        <div>
+          <strong>Supabase database</strong>
+          <span class="guided-item-desc">Sets up your database, auth, and storage</span>
+        </div>
+      </div>
+      <div class="guided-item">
+        <div class="guided-item-icon" style="color: #D97706;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <strong>Claude Code</strong>
+          <span class="guided-item-desc">Your AI developer that writes and deploys code</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Switchover to Conductor -->
+  <div class="setup-step" style="border-color: var(--claude-border); border-width: 2px;">
+    <h2>
+      <span class="step-num">4</span>
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#7c6a9a" stroke-width="2"/><path d="M8 12l3 3 5-6" stroke="#7c6a9a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Switch to Conductor
+      <span class="step-time">5 min</span>
+    </h2>
+    <p>Once Claude helps you install <strong>Conductor</strong>, you&rsquo;ll switch from Claude Desktop to Conductor for the rest of setup and all future development.</p>
+    <div style="display: flex; align-items: center; gap: 1.5rem; margin: 1rem 0; padding: 1rem 1.25rem; background: var(--claude-bg); border-radius: 8px; border: 1px solid rgba(124,106,154,0.2);">
+      <div style="text-align: center; flex-shrink: 0;">
+        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600;">Before</div>
+        <div style="font-weight: 700; color: #D97706; font-size: 1rem; margin-top: 0.25rem;">Claude Desktop</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Single conversation</div>
+      </div>
+      <div style="font-size: 1.5rem; color: var(--claude-border);">&rarr;</div>
+      <div style="text-align: center; flex-shrink: 0;">
+        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600;">After</div>
+        <div style="font-weight: 700; color: #5a4a7a; font-size: 1rem; margin-top: 0.25rem;">Conductor</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Parallel AI agents</div>
+      </div>
+    </div>
+    <p style="font-size: 0.88rem; color: var(--text-muted);">Conductor runs multiple Claude Code agents in parallel &mdash; each task gets its own workspace. Code pushes to GitHub and your site updates automatically.</p>
+    <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.75rem; background: #f0e6ff; border: 1px solid #d4c4f0; border-radius: 6px; font-size: 0.78rem; font-weight: 600; color: #5a4a7a; margin-top: 0.25rem;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 12h16M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      macOS only (for now)
+    </div>
   </div>
 
   <!-- What you'll have -->
@@ -719,13 +821,17 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
     <h2 style="color: var(--success);">When you're done</h2>
     <p>Your project will be live with:</p>
     <ul>
-      <li>A website hosted on GitHub Pages (free)</li>
-      <li>A PostgreSQL database with auth and storage on Supabase (free)</li>
+      <li>
+        <span class="done-item"><svg class="brand-icon-sm" viewBox="0 0 24 24" fill="none"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> A website hosted on <strong>GitHub Pages</strong> (free)</span>
+      </li>
+      <li>
+        <span class="done-item"><svg class="brand-icon-sm" viewBox="0 0 24 24" fill="none"><path d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7" stroke="#3ECF8E" stroke-width="2"/><ellipse cx="12" cy="7" rx="8" ry="4" stroke="#3ECF8E" stroke-width="2"/></svg> A PostgreSQL database with auth and storage on <strong>Supabase</strong> (free)</span>
+      </li>
       <li>Edge functions deployed for any services you selected</li>
       <li>A <code>CLAUDE.md</code> file so Claude Code knows your project inside and out</li>
       <li>Version tracking and CI/CD built in</li>
     </ul>
-    <p>From there, just open Conductor and tell it what you want to build. Each task gets its own workspace with a dedicated AI agent. Code pushes to GitHub and your site updates automatically.</p>
+    <p>From there, just open <strong>Conductor</strong> and tell it what you want to build. Each task gets its own workspace with a dedicated AI agent.</p>
   </div>
 
   <!-- Profile overview -->
@@ -838,7 +944,7 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
         <label class="calc-svc calc-svc--core calc-svc--locked">
           <input type="checkbox" checked disabled data-svc="conductor">
           <span class="calc-svc__check">&check;</span>
-          <span class="calc-svc__info"><span class="calc-svc__name">Conductor</span><span class="calc-svc__desc">Parallel AI coding agents (Mac app)</span></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Conductor</span><span class="calc-svc__desc">Parallel AI coding agents &mdash; <strong>macOS only</strong></span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
@@ -1366,7 +1472,7 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
   <!-- Footer links -->
   <div class="footer-links">
     <a href="/docs/alpacappsinfra.html">Full manual setup guide</a>
-    <a href="/docs/getting-started.html">Quick start reference</a>
+    <a href="/infra/llm-setup-instructions.md">LLM setup instructions</a>
     <a href="/infra/updates.html">Sync new features</a>
     <a href="https://github.com/rsonnad/alpacapps-infra">Template repo</a>
   </div>
