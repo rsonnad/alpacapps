@@ -1,12 +1,12 @@
 {
-  "version": "v260317.21 7:56a",
-  "release": 835,
-  "sha": "191fdc4c9",
-  "fullSha": "191fdc4c9fcb49ebb176601b41de561ae6e05eab",
+  "version": "v260317.24 8:10a",
+  "release": 838,
+  "sha": "8a1de25fc",
+  "fullSha": "8a1de25fcefcceff43df09154c4a220d5c74b1c3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 12:56:03+00",
-  "commits": [{"sha":"191fdc4c9","message":"Fix project task modal dismissing and losing unsaved content","author":"Rahul"}]
+  "pushedAt": "2026-03-17 13:10:52+00",
+  "commits": [{"sha":"8a1de25fc","message":"Add architecture diagram and enrich service descriptions on infra landing page","author":"Rahul"}]
 }
