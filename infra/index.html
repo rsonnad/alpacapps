@@ -454,6 +454,8 @@
       border-color: var(--success);
     }
     .calc-svc__info { display: flex; flex-direction: column; min-width: 0; }
+    .svc-icon { width: 20px; height: 20px; flex-shrink: 0; margin-right: 0.5rem; display: flex; align-items: center; justify-content: center; }
+    .svc-icon img, .svc-icon svg { width: 20px; height: 20px; }
     .calc-svc__name { font-weight: 600; font-size: 0.88rem; }
     .calc-svc__desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
     .svc-row { display: flex; flex-direction: column; }
@@ -913,6 +915,7 @@
         <label class="calc-svc calc-svc--core calc-svc--locked">
           <input type="checkbox" checked disabled data-svc="github">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/github/181717" alt="GitHub"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">GitHub Pages</span><span class="calc-svc__desc">Static site hosting</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -930,6 +933,7 @@
         <label class="calc-svc calc-svc--core calc-svc--locked">
           <input type="checkbox" checked disabled data-svc="supabase">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/supabase/3FCF8E" alt="Supabase"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Supabase</span><span class="calc-svc__desc">Database, storage, auth, edge functions</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -949,6 +953,7 @@
         <label class="calc-svc calc-svc--core calc-svc--locked">
           <input type="checkbox" checked disabled data-svc="conductor">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://conductor.build/favicon.ico" alt="Conductor" style="border-radius:4px;"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Conductor</span><span class="calc-svc__desc">Parallel AI coding agents &mdash; <strong>macOS only</strong></span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -967,6 +972,7 @@
         <label class="calc-svc calc-svc--core calc-svc--locked">
           <input type="checkbox" checked disabled data-svc="claude">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/anthropic/181717" alt="Claude"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Claude Code</span><span class="calc-svc__desc">AI developer &mdash; builds &amp; manages everything</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$0&ndash;$200/mo</span>
         </label>
@@ -984,6 +990,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="google-auth" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/google/4285F4" alt="Google"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Google Sign-In</span><span class="calc-svc__desc">OAuth user login</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -1001,6 +1008,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="resend" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/resend/000000" alt="Resend"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Resend</span><span class="calc-svc__desc">Transactional email (3,000/mo free)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -1018,6 +1026,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="telnyx" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/telnyx/00C08B" alt="Telnyx"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Telnyx</span><span class="calc-svc__desc">SMS notifications</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">~$0.004/SMS</span>
         </label>
@@ -1035,6 +1044,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="square" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/square/006AFF" alt="Square"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Square</span><span class="calc-svc__desc">Payment processing</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">2.9% + 30&cent;</span>
         </label>
@@ -1052,6 +1062,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="stripe" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/stripe/635BFF" alt="Stripe"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Stripe</span><span class="calc-svc__desc">ACH &amp; card payments, Connect payouts</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">0.8%&ndash;2.9%</span>
         </label>
@@ -1070,6 +1081,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="signwell" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#4A90D9" width="20" height="20"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg></span>
           <span class="calc-svc__info"><span class="calc-svc__name">SignWell</span><span class="calc-svc__desc">E-signatures (3&ndash;25 docs/mo free)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -1087,6 +1099,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="gemini" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/googlegemini/8E75B2" alt="Gemini"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Google Gemini</span><span class="calc-svc__desc">AI-powered features</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -1104,6 +1117,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="cloudflare-r2" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/cloudflare/F38020" alt="Cloudflare"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare R2</span><span class="calc-svc__desc">Object storage (10 GB free, zero egress)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -1121,6 +1135,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="cloudflare-d1" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/cloudflare/F38020" alt="Cloudflare"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare D1</span><span class="calc-svc__desc">Session archive (Claude Code transcripts)</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -1138,6 +1153,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="gstack" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#6366F1" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><text x="12" y="16.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="system-ui">g</text></svg></span>
           <span class="calc-svc__info"><span class="calc-svc__name">gstack</span><span class="calc-svc__desc">Open-source Claude Code skills &amp; headless browser for QA</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
@@ -1156,6 +1172,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="workers" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#0080FF" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Background Workers</span><span class="calc-svc__desc">Automated bug fixes, pollers, AI image gen on a cloud VM</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$12&ndash;32/mo</span>
         </label>
@@ -1173,6 +1190,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="domain" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#6B7280" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Custom Domain</span><span class="calc-svc__desc">Your own branded URL</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">~$10/yr</span>
         </label>
@@ -1190,6 +1208,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="iphone" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/apple/000000" alt="Apple"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">iPhone App</span><span class="calc-svc__desc">iOS via Capacitor + App Store</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr</span>
         </label>
@@ -1207,6 +1226,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="android" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/android/34A853" alt="Android"></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Android App</span><span class="calc-svc__desc">Android via Capacitor + Play Store</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$25 one-time</span>
         </label>
@@ -1224,6 +1244,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="homeserver" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#6B7280" width="20" height="20"><path d="M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Home Server</span><span class="calc-svc__desc">Local Mac for smart home, cameras, media</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">~$150 one-time</span>
         </label>
