@@ -397,17 +397,31 @@
         <div class="task-info">
           <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
           ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
-          ${renderDocLinks(t.task_code)}
+          ${renderDocLinks(t.task_code, t.storage_paths)}
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
       </div>`;
     }
 
-    function renderDocLinks(taskCode) {
+    function renderDocLinks(taskCode, storagePaths) {
       let links = [];
 
+      // Render any storage_paths from database first
+      if (storagePaths && storagePaths.length) {
+        storagePaths.forEach(p => {
+          const name = p.split('/').pop().replace(/\.pdf$/i,'').replace(/[-_]/g,' ');
+          links.push({ url: `${STORAGE_URL}/${p}`, label: name.length > 40 ? name.slice(0,37) + '...' : name, bold: true });
+        });
+      }
+
       // Phase A: Pre-Application & Design
+      if (taskCode === 'A4') {
+        // Existing architectural plans (Outdoor Bathroom & Roof Terrace, "For Review" 02/04/2025)
+        links.push({ url: `${STORAGE_URL}/building-plans/A1-Bathroom-Floor-Plan-Detailed.pdf`, label: 'A-1 Floor Plan (Detailed)', bold: true });
+        links.push({ url: `${STORAGE_URL}/building-plans/A2-Floor-Plans-Ceiling-Plans.pdf`, label: 'A-2 Floor & Ceiling Plans', bold: true });
+        links.push({ url: `${STORAGE_URL}/building-plans/A3-Elevations-All-Sides.pdf`, label: 'A-3 Elevations (All Sides)', bold: true });
+      }
       if (taskCode === 'A3') {
         links.push({ url: `${STORAGE_URL}/ossf-septic/on-site-system-design-aerobic-wastewater.pdf`, label: 'Existing Soil/Septic Data', bold: true });
         links.push({ url: `${STORAGE_URL}/property-docs/2000-18725 Septic Info.pdf`, label: 'Original Septic Info' });
