@@ -1,12 +1,12 @@
 {
-  "version": "v260317.01 12:24a",
-  "release": 815,
-  "sha": "fe6399c7f",
-  "fullSha": "fe6399c7fb917c5797a2a840f57149f6fc82b99b",
+  "version": "v260317.02 12:37a",
+  "release": 816,
+  "sha": "8df0967fb",
+  "fullSha": "8df0967fbc15486d0336a6dff1c2ad24c99a376d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 05:24:39+00",
-  "commits": [{"sha":"fe6399c7f","message":"Add 8 missing pronunciation clusters to Polish lesson guide (#43)","author":"Rahul"}]
+  "pushedAt": "2026-03-17 05:37:20+00",
+  "commits": [{"sha":"8df0967fb","message":"Fix Polish lesson: spelling, examples, phonetics, tutor visibility (#44)","author":"Rahul"}]
 }
