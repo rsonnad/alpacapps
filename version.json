@@ -1,12 +1,12 @@
 {
-  "version": "v260316.09 11:18p",
-  "release": 811,
-  "sha": "737a0fbac",
-  "fullSha": "737a0fbac3ef79fd7a5d30166ebcd634b54ffbae",
+  "version": "v260316.10 11:28p",
+  "release": 812,
+  "sha": "429173683",
+  "fullSha": "4291736839ffa47f620752d3d09a8ac944af9486",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 04:18:14+00",
-  "commits": [{"sha":"737a0fbac","message":"Add email notifications for laundry cycle completion + QR code","author":"Rahul"}]
+  "pushedAt": "2026-03-17 04:28:30+00",
+  "commits": [{"sha":"429173683","message":"Increase garage greeting cooldown to 15 minutes","author":"Rahul"}]
 }
