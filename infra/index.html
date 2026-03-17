@@ -243,21 +243,6 @@
     }
 
     /* Service grid */
-    .svc-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .svc-card {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      padding: 0.65rem 0.85rem;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-    }
-    .svc-card.core { border-left: 3px solid var(--success); }
     .svc-info { display: flex; flex-direction: column; min-width: 0; }
     .svc-name { font-weight: 600; font-size: 0.88rem; }
     .svc-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
@@ -471,6 +456,27 @@
     .calc-svc__info { display: flex; flex-direction: column; min-width: 0; }
     .calc-svc__name { font-weight: 600; font-size: 0.88rem; }
     .calc-svc__desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
+    .svc-row { display: flex; flex-direction: column; }
+    .svc-expand { margin: -0.25rem 0 0.25rem 0; }
+    .svc-expand summary {
+      font-size: 0.72rem;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 0.15rem 0.85rem 0.35rem;
+      list-style: none;
+      user-select: none;
+    }
+    .svc-expand summary::-webkit-details-marker { display: none; }
+    .svc-expand summary::before { content: '\25B8 '; }
+    .svc-expand[open] summary::before { content: '\25BE '; }
+    .svc-expand p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      padding: 0.25rem 0.85rem 0.65rem;
+      margin: 0;
+    }
+    .svc-expand a { color: var(--accent); }
 
     .calc-tiers {
       display: grid;
@@ -579,7 +585,7 @@
       .setup-step { padding: 1.5rem; }
       .setup-step h2 { font-size: 1.2rem; }
       .profiles { grid-template-columns: 1fr; }
-      .svc-grid { grid-template-columns: 1fr; }
+      .calc-services { grid-template-columns: 1fr; }
       .calc-services { grid-template-columns: 1fr; }
       .calc-tiers { grid-template-columns: 1fr; }
       .calc-result__scope ul { columns: 1; }
@@ -776,196 +782,203 @@ Start by getting Claude Code, GitHub Pages, Supabase, and Conductor set up. Afte
     </div>
   </div>
 
-  <!-- Available services overview -->
-  <div class="section-header">Available services</div>
-  <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Core services are always included. Claude will walk you through setting up any optional services you choose.</p>
-
-  <div class="svc-grid">
-    <div class="svc-card core">
-      <div class="svc-info"><span class="svc-name">GitHub Pages</span><span class="svc-desc">Static site hosting</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card core">
-      <div class="svc-info"><span class="svc-name">Supabase</span><span class="svc-desc">Database, storage, auth, edge functions</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card core">
-      <div class="svc-info"><span class="svc-name">Conductor</span><span class="svc-desc">Parallel AI coding agents (Mac app)</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card core">
-      <div class="svc-info"><span class="svc-name">Claude Code</span><span class="svc-desc">AI developer &mdash; builds &amp; manages everything</span></div>
-      <span class="cost-badge cost-payg">$0&ndash;$200/mo</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Google Sign-In</span><span class="svc-desc">OAuth user login</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Resend</span><span class="svc-desc">Transactional email (3,000/mo free)</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Telnyx</span><span class="svc-desc">SMS notifications</span></div>
-      <span class="cost-badge cost-payg">~$0.004/SMS</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Square</span><span class="svc-desc">Payment processing</span></div>
-      <span class="cost-badge cost-payg">2.9% + 30&cent;</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Stripe</span><span class="svc-desc">ACH &amp; card payments, Connect payouts</span></div>
-      <span class="cost-badge cost-payg">0.8%&ndash;2.9%</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">SignWell</span><span class="svc-desc">E-signatures (3&ndash;25 docs/mo free)</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Google Gemini</span><span class="svc-desc">AI-powered features</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Cloudflare R2</span><span class="svc-desc">Object storage (10 GB free, zero egress)</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Cloudflare D1</span><span class="svc-desc">Session archive (Claude Code transcripts)</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">gstack</span><span class="svc-desc">Open-source Claude Code skills &amp; headless browser for QA</span></div>
-      <span class="cost-badge cost-free">Free</span>
-    </div>
-    <div class="svc-card">
-      <div class="svc-info"><span class="svc-name">Custom Domain</span><span class="svc-desc">Your own branded URL</span></div>
-      <span class="cost-badge cost-payg">~$10/yr</span>
-    </div>
-  </div>
-
-  <!-- Cost calculator -->
+  <!-- Component Services (unified list with expandable details + cost checkboxes) -->
   <div class="calc-section" id="architecture">
-    <h2>Cost Calculator</h2>
-    <p style="font-size: 0.92rem; color: var(--text-muted);">Toggle services and pick your complexity tier to see estimated annual costs.</p>
-
-    <h3>Select what you need</h3>
-    <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">Core services are pre-selected. Toggle optional ones on or off.</p>
+    <h2>AlpacApps Component Services</h2>
+    <p style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 1.25rem;">Click checkboxes for cost estimate</p>
 
     <div class="calc-services" id="calc-services">
-      <label class="calc-svc calc-svc--core calc-svc--locked">
-        <input type="checkbox" checked disabled data-svc="github">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">GitHub Pages</span><span class="calc-svc__desc">Static site hosting</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc calc-svc--core calc-svc--locked">
-        <input type="checkbox" checked disabled data-svc="supabase">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Supabase</span><span class="calc-svc__desc">Database, storage, auth, edge functions</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc calc-svc--core calc-svc--locked">
-        <input type="checkbox" checked disabled data-svc="conductor">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Conductor</span><span class="calc-svc__desc">Parallel AI coding agents (Mac app)</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc calc-svc--core calc-svc--locked">
-        <input type="checkbox" checked disabled data-svc="claude">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Claude Code</span><span class="calc-svc__desc">AI developer &mdash; builds &amp; manages everything</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">$0&ndash;$200/mo</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="google-auth" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Google Sign-In</span><span class="calc-svc__desc">OAuth user login</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="resend" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Resend</span><span class="calc-svc__desc">Transactional email (3,000/mo free)</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="telnyx" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Telnyx</span><span class="calc-svc__desc">SMS notifications</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">~$0.004/SMS</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="square" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Square</span><span class="calc-svc__desc">Payment processing</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">2.9% + 30&cent;</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="stripe" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Stripe</span><span class="calc-svc__desc">ACH &amp; card payments, Connect payouts</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">0.8%&ndash;2.9%</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="signwell" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">SignWell</span><span class="calc-svc__desc">E-signatures (3&ndash;25 docs/mo free)</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="gemini" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Google Gemini</span><span class="calc-svc__desc">AI-powered features</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="cloudflare-r2" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare R2</span><span class="calc-svc__desc">Object storage (10 GB free, zero egress)</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="cloudflare-d1" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare D1</span><span class="calc-svc__desc">Session archive (Claude Code transcripts)</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="gstack" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">gstack</span><span class="calc-svc__desc">Open-source Claude Code skills &amp; headless browser for QA</span></span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="workers" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Background Workers</span><span class="calc-svc__desc">Automated bug fixes, pollers, AI image gen on a cloud VM</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">$12&ndash;32/mo</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="domain" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Custom Domain</span><span class="calc-svc__desc">Your own branded URL</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">~$10/yr</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="iphone" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">iPhone App</span><span class="calc-svc__desc">iOS via Capacitor + App Store</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="android" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Android App</span><span class="calc-svc__desc">Android via Capacitor + Play Store</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">$25 one-time</span>
-      </label>
-      <label class="calc-svc">
-        <input type="checkbox" data-svc="homeserver" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info"><span class="calc-svc__name">Home Server</span><span class="calc-svc__desc">Local Mac for smart home, cameras, media</span></span>
-        <span class="cost-badge cost-payg" style="margin-left:auto;">~$150 one-time</span>
-      </label>
+
+      <div class="svc-row">
+        <label class="calc-svc calc-svc--core calc-svc--locked">
+          <input type="checkbox" checked disabled data-svc="github">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">GitHub Pages</span><span class="calc-svc__desc">Static site hosting</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Free static site hosting from GitHub. Your HTML, CSS, and JavaScript are served directly from your repository. Every push to main deploys automatically. Supports custom domains.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc calc-svc--core calc-svc--locked">
+          <input type="checkbox" checked disabled data-svc="supabase">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Supabase</span><span class="calc-svc__desc">Database, storage, auth, edge functions</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Open-source Firebase alternative. PostgreSQL database, user authentication, file storage, and serverless edge functions. Free tier: 500 MB database, 1 GB storage, 50,000 monthly active users.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc calc-svc--core calc-svc--locked">
+          <input type="checkbox" checked disabled data-svc="conductor">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Conductor</span><span class="calc-svc__desc">Parallel AI coding agents (Mac app)</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Mac app for running multiple Claude Code agents in parallel. Each task gets its own workspace with a dedicated agent and git branch. Build features, fix bugs, and run tests simultaneously. <a href="https://conductor.build" target="_blank">conductor.build</a></p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc calc-svc--core calc-svc--locked">
+          <input type="checkbox" checked disabled data-svc="claude">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Claude Code</span><span class="calc-svc__desc">AI developer &mdash; builds &amp; manages everything</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">$0&ndash;$200/mo</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>AI developer that writes, tests, and deploys your code. Understands your project through CLAUDE.md and handles everything from database setup to UI changes. Runs inside Conductor. Free tier available; Pro ($20/mo) recommended for setup.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="google-auth" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Google Sign-In</span><span class="calc-svc__desc">OAuth user login</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>&ldquo;Sign in with Google&rdquo; via Supabase Auth. Users authenticate with their Google account &mdash; no passwords to manage. Requires a Google Cloud project with OAuth credentials.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="resend" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Resend</span><span class="calc-svc__desc">Transactional email (3,000/mo free)</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Transactional email API. Send welcome emails, notifications, and receipts. 3,000 emails/month free. Integrates via a Supabase edge function with webhook support for inbound email.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="telnyx" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Telnyx</span><span class="calc-svc__desc">SMS notifications</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">~$0.004/SMS</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>SMS messaging API. Send text notifications to users. ~$0.004/message plus ~$1/month for a phone number. Includes inbound webhook support for two-way messaging.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="square" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Square</span><span class="calc-svc__desc">Payment processing</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">2.9% + 30&cent;</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Payment processing with in-person and online support. 2.9% + 30&cent; per online transaction. Sandbox available for testing. Good for businesses that also have a physical location.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="stripe" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Stripe</span><span class="calc-svc__desc">ACH &amp; card payments, Connect payouts</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">0.8%&ndash;2.9%</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Payments with ACH bank transfers (0.8% capped at $5) and card processing (2.9% + 30&cent;). Supports Stripe Connect for marketplace-style payouts to multiple parties.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="signwell" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">SignWell</span><span class="calc-svc__desc">E-signatures (3&ndash;25 docs/mo free)</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Electronic signatures API. Send documents for signing, track status, and receive webhooks on completion. 3&ndash;25 documents/month free depending on plan.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="gemini" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Google Gemini</span><span class="calc-svc__desc">AI-powered features</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>AI features powered by Google&rsquo;s Gemini API. Free tier: 1,000 requests/day. Used for chat, content generation, image analysis, and smart matching. Runs in Supabase edge functions.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="cloudflare-r2" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare R2</span><span class="calc-svc__desc">Object storage (10 GB free, zero egress)</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s row-level security.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="cloudflare-d1" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare D1</span><span class="calc-svc__desc">Session archive (Claude Code transcripts)</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Serverless SQL database for archiving Claude Code session transcripts. Auto-saves your development history so you can search and reference past conversations.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="gstack" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">gstack</span><span class="calc-svc__desc">Open-source Claude Code skills &amp; headless browser for QA</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Open-source headless browser and Claude Code skills pack. Adds QA testing, code review, shipping workflows, and site dogfooding capabilities. Install once, use across all projects.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="workers" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Background Workers</span><span class="calc-svc__desc">Automated bug fixes, pollers, AI image gen on a cloud VM</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">$12&ndash;32/mo</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Cloud VM running automated tasks: bug fixer, device pollers, AI image generation. Runs on DigitalOcean ($12&ndash;32/mo) or Oracle Cloud (free ARM tier). Needed for smart home devices and always-on background processes.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="domain" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Custom Domain</span><span class="calc-svc__desc">Your own branded URL</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">~$10/yr</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Your own branded URL (e.g., yoursite.com) instead of username.github.io. ~$10/year from any domain registrar, pointed at GitHub Pages with free HTTPS.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="iphone" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">iPhone App</span><span class="calc-svc__desc">iOS via Capacitor + App Store</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Native iOS app using Capacitor 8. Same codebase as your web app wrapped in a native shell with push notifications, camera access, and App Store distribution. Requires Apple Developer Program ($99/yr).</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="android" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Android App</span><span class="calc-svc__desc">Android via Capacitor + Play Store</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">$25 one-time</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Native Android app using Capacitor 8. Same codebase as your web app with native features and Play Store distribution. Google Play Console is a $25 one-time fee.</p></details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="homeserver" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Home Server</span><span class="calc-svc__desc">Local Mac for smart home, cameras, media</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">~$150 one-time</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary><p>Dedicated Mac (used Mac Mini ~$150) for smart home control, camera streams via go2rtc, Sonos HTTP API, and device pollers. Stays on your local network and talks to Supabase.</p></details>
+      </div>
+
     </div>
 
     <h3>How much will you build?</h3>
