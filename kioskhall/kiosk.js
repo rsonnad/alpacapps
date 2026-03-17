@@ -583,6 +583,95 @@ async function checkVersion() {
 }
 
 // =============================================
+// ART SCREENSAVER (cycles artwork, then shows GUI)
+// =============================================
+const ART_DISPLAY_SECONDS = 30;   // each image shown for 30s
+const GUI_DISPLAY_SECONDS = 60;   // normal GUI shown for 60s
+let artImages = [];
+let artTimer = null;
+let artIndex = 0;
+let artMode = false;
+
+async function loadArtImages() {
+  try {
+    const { data } = await supabase
+      .from('image_gen_jobs')
+      .select('result_url, metadata')
+      .eq('batch_label', 'Alpaca Mac Screensaver')
+      .eq('status', 'completed')
+      .order('created_at');
+    if (data && data.length > 0) {
+      artImages = data.map(d => ({
+        url: d.result_url,
+        title: d.metadata?.title || '',
+      }));
+    }
+  } catch (_) { /* no art available */ }
+}
+
+function showArtScreensaver() {
+  if (artImages.length === 0) return;
+  artMode = true;
+  artIndex = 0;
+  showArtImage();
+}
+
+function showArtImage() {
+  if (!artMode || artIndex >= artImages.length) {
+    hideArtScreensaver();
+    return;
+  }
+
+  const overlay = document.getElementById('artScreensaver');
+  const img = document.getElementById('artImage');
+  const caption = document.getElementById('artCaption');
+
+  overlay.style.display = '';
+
+  // Fade out current
+  img.classList.remove('visible');
+  caption.classList.remove('visible');
+
+  setTimeout(() => {
+    img.src = artImages[artIndex].url;
+    caption.textContent = artImages[artIndex].title;
+    img.onload = () => {
+      img.classList.add('visible');
+      setTimeout(() => caption.classList.add('visible'), 600);
+    };
+    // If image was cached and onload already fired
+    if (img.complete) {
+      img.classList.add('visible');
+      setTimeout(() => caption.classList.add('visible'), 600);
+    }
+    artIndex++;
+    artTimer = setTimeout(showArtImage, ART_DISPLAY_SECONDS * 1000);
+  }, 300);
+}
+
+function hideArtScreensaver() {
+  artMode = false;
+  const overlay = document.getElementById('artScreensaver');
+  const img = document.getElementById('artImage');
+  const caption = document.getElementById('artCaption');
+
+  img.classList.remove('visible');
+  caption.classList.remove('visible');
+
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    // After GUI_DISPLAY_SECONDS, show art again
+    artTimer = setTimeout(showArtScreensaver, GUI_DISPLAY_SECONDS * 1000);
+  }, 800);
+}
+
+// Tap overlay to dismiss early and return to GUI
+function onArtTap() {
+  if (artTimer) clearTimeout(artTimer);
+  hideArtScreensaver();
+}
+
+// =============================================
 // REFRESH & INIT
 // =============================================
 async function refreshAll() {
@@ -632,9 +721,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('recorderStartStop')?.addEventListener('click', toggleRecording);
   document.getElementById('recorderCancel')?.addEventListener('click', hideRecorder);
 
+  // Art screensaver: tap to dismiss
+  document.getElementById('artScreensaver')?.addEventListener('click', onArtTap);
+
   // Load dynamic data
   await refreshAll();
   startPolling();
+
+  // Load art images and start screensaver cycle
+  await loadArtImages();
+  if (artImages.length > 0) {
+    // Start first art cycle after 60s of GUI
+    artTimer = setTimeout(showArtScreensaver, GUI_DISPLAY_SECONDS * 1000);
+  }
 
   // Visibility-based polling pause
   document.addEventListener('visibilitychange', () => {
