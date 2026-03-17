@@ -1,12 +1,12 @@
 {
-  "version": "v260317.12 4:52a",
-  "release": 826,
-  "sha": "c935529e5",
-  "fullSha": "c935529e509e5a9c1b0f78b1d79ed385a03d296e",
+  "version": "v260317.13 4:55a",
+  "release": 827,
+  "sha": "95d9fbb76",
+  "fullSha": "95d9fbb7663c6b432f94861c74503c415821c5d9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 09:52:23+00",
-  "commits": [{"sha":"38a213d40","message":"Add 90-day token history chart + daily snapshot recording to DevControl context tab","author":"Rahul"},{"sha":"c935529e5","message":"Merge branch 'great-lehmann'","author":"Rahul"}]
+  "pushedAt": "2026-03-17 09:55:32+00",
+  "commits": [{"sha":"95d9fbb76","message":"Add DevControl feature to infra updates page for template adopters","author":"Rahul"}]
 }
