@@ -450,6 +450,99 @@
     <div class="section-divider"></div>
 
     <!-- ═══════════════════════════════════════
+         FEEDBACK LOOP
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">Feedback Loop</div>
+      <h2>How We Know It's Working</h2>
+      <p>
+        The AI can only improve if it knows what's producing value. Three feedback layers &mdash; immediate, weekly, and longitudinal &mdash; give it the signal it needs.
+      </p>
+
+      <h3>1. Post-Event Pulse (Immediate)</h3>
+      <p>Within 30 minutes of each event, every attendee gets a 60-second check-in on their phone:</p>
+      <div class="card">
+        <div class="card-title">Post-Event Pulse</div>
+        <ul style="list-style: none; margin: 0; padding: 0; color: var(--text-soft); font-size: 0.88rem;">
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+            <strong style="color: var(--text);">Overall:</strong> &ldquo;How was today?&rdquo; &mdash; 1&ndash;5 scale, one tap
+          </li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+            <strong style="color: var(--text);">Connections:</strong> &ldquo;Did you meet someone valuable today?&rdquo; &mdash; Yes / Not yet / No
+          </li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+            <strong style="color: var(--text);">Highlight:</strong> &ldquo;Best part?&rdquo; &mdash; tap one: Table Round / Spotlight / Breakout / Tools / Open Social
+          </li>
+          <li style="padding: 0.5rem 0;">
+            <strong style="color: var(--text);">Connect:</strong> Tap to request contact info from anyone at your tables &mdash; double opt-in
+          </li>
+        </ul>
+      </div>
+      <p>Takes under a minute. High completion rate because it's immediate and effortless. This is the primary training signal for the matching AI.</p>
+
+      <h3>2. Mid-Week Follow-Up (3 Days Later)</h3>
+      <p>A single-question check-in, delivered Tuesday or Wednesday:</p>
+      <div class="card">
+        <div class="card-title">Mid-Week Check-In</div>
+        <ul style="list-style: none; margin: 0; padding: 0; color: var(--text-soft); font-size: 0.88rem;">
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+            <strong style="color: var(--text);">Follow-up:</strong> &ldquo;Did anything come from Saturday's connections?&rdquo; &mdash; Yes (tell us) / Not yet / Didn't follow up
+          </li>
+          <li style="padding: 0.5rem 0;">
+            <strong style="color: var(--text);">Outcome type:</strong> If yes: Coffee/meeting / Collaboration / Referral / Friendship / Business deal / Other
+          </li>
+        </ul>
+      </div>
+      <p>This is where the AI learns which connections actually produced value &mdash; the difference between a pleasant conversation and a relationship that matters.</p>
+
+      <h3>3. Monthly Value Check (Longitudinal)</h3>
+      <p>Once a month, a slightly deeper reflection. 3&ndash;5 minutes:</p>
+      <div class="card">
+        <div class="card-title">Monthly Value Assessment</div>
+        <ul style="list-style: none; margin: 0; padding: 0; color: var(--text-soft); font-size: 0.88rem;">
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+            <strong style="color: var(--text);">Net value:</strong> &ldquo;Is Three Pillars worth more to you now than when you joined?&rdquo; &mdash; Much more / Somewhat more / About the same / Less
+          </li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+            <strong style="color: var(--text);">Pillar check:</strong> Rate your progress this month in: Connections made / Skills learned / Things built &mdash; 1&ndash;5 each
+          </li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+            <strong style="color: var(--text);">Tools usage:</strong> Which tools did you use? (3D printers / Sign maker / Photo studio / Video rooms / None)
+          </li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+            <strong style="color: var(--text);">Referral signal:</strong> &ldquo;Would you invite a friend to join?&rdquo; &mdash; Already have / Yes / Maybe / No
+          </li>
+          <li style="padding: 0.5rem 0;">
+            <strong style="color: var(--text);">Open:</strong> &ldquo;What would make this more valuable to you?&rdquo; &mdash; free text, optional
+          </li>
+        </ul>
+      </div>
+
+      <h3>What the AI Does with Feedback</h3>
+      <table class="styled-table">
+        <thead>
+          <tr><th>Signal</th><th>AI Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>High pulse + follow-up</td><td>Reinforce that pairing pattern. Seat similar combinations at future events.</td></tr>
+          <tr><td>Low pulse scores</td><td>Adjust table composition. Try different mixing strategies. Flag to hosts.</td></tr>
+          <tr><td>Connection requests</td><td>Weight those pairings as high-value. Use as positive training signal.</td></tr>
+          <tr><td>No follow-through</td><td>Reduce urgency of similar future pairings. The connection was pleasant but not actionable.</td></tr>
+          <tr><td>Declining monthly value</td><td>Trigger host outreach. Adjust that member's matching strategy. Introduce them to new people.</td></tr>
+          <tr><td>Low tool usage</td><td>Surface relevant tool capabilities. Offer intro sessions. Pair with active makers.</td></tr>
+          <tr><td>High referral signal</td><td>Invite referrals. These members are getting real value &mdash; their network is the best recruiting channel.</td></tr>
+          <tr><td>Churn risk (declining scores + fewer visits)</td><td>Proactive host conversation before the member quietly leaves.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="pull-quote">
+        The AI doesn't guess whether it's working. It asks, measures, and adapts &mdash; every week.
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
          DESIGN PRINCIPLES
          ═══════════════════════════════════════ -->
     <section class="section">
