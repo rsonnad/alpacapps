@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Permitting Plan - 160 Still Forest Dr</title>
+  <title>Commercial Building Permit — 160 Still Forest Dr</title>
   <link rel="icon" type="image/png" href="../../../favicon.png">
   <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,7 +13,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #f6f5f0; --bg-card: #fff; --border: #e5e0d8; --radius: 8px;
-      --text: #1c1618; --text-muted: #8c8279; --accent: #d4883a;
+      --text: #1c1618; --text-muted: #8c8279; --accent: #0d9488;
       --available: #22c55e; --occupied: #ef4444;
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -54,10 +54,11 @@
     .permit-stat .value.pending { color: var(--accent); }
     .permit-stat .value.blocked { color: var(--occupied); }
 
-    .permit-warning { background: #fef3c7; border: 1px solid #f59e0b; border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.5rem; align-items: flex-start; }
-    .permit-warning svg { flex-shrink: 0; color: #b45309; margin-top: 0.1rem; }
-    .permit-warning .warn-text { font-size: 0.85rem; color: #78350f; }
-    .permit-warning .warn-text strong { font-weight: 700; }
+    .prerequisite-banner { background: #ecfdf5; border: 1px solid #059669; border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1.25rem; display: flex; gap: 0.5rem; align-items: flex-start; }
+    .prerequisite-banner svg { flex-shrink: 0; color: #059669; margin-top: 0.1rem; }
+    .prerequisite-banner .banner-text { font-size: 0.85rem; color: #064e3b; }
+    .prerequisite-banner .banner-text strong { font-weight: 700; }
+    .prerequisite-banner .banner-text a { color: #059669; font-weight: 600; text-decoration: underline; }
 
     .phase-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.25rem; overflow: hidden; }
     .phase-header { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; background: var(--bg); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
@@ -132,7 +133,7 @@
   <!-- Auth overlay -->
   <div id="authOverlay" class="auth-overlay">
     <div class="auth-form">
-      <h2>Permitting Plan</h2>
+      <h2>Building Permit Plan</h2>
       <p>160 Still Forest Dr — Restricted Access</p>
       <div id="authError" class="auth-error"></div>
       <input type="email" id="authEmail" placeholder="Email address" autocomplete="email">
@@ -145,7 +146,7 @@
   <!-- Page content (hidden until auth) -->
   <div id="appContent" style="display:none">
     <div class="page-header">
-      <h1>Permitting Plan — 160 Still Forest Dr</h1>
+      <h1>Commercial Building Permit — 160 Still Forest Dr</h1>
       <div>
         <span class="user-info" id="userDisplay"></span>
         <button class="logout-btn" onclick="doLogout()">Sign Out</button>
@@ -153,135 +154,105 @@
     </div>
 
     <div class="page-content">
-      <div class="permit-warning">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        <div class="warn-text">
-          <strong>Construction already started.</strong> The bathroom building (1st floor with 2 toilets + shower) is under construction without an approved IDP. Per county rules this is a Class B misdemeanor. Disclose proactively at the pre-development meeting.
+      <!-- Prerequisite banner -->
+      <div class="prerequisite-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <div class="banner-text">
+          <strong>Prerequisite:</strong> The commercial use/development permit must be approved before this building permit can be submitted.
+          <a href="index.html">View Development Permit Plan</a>
         </div>
       </div>
 
-      <!-- Property Intelligence Panel (extracted from scanned documents) -->
-      <div id="propertyIntel" style="margin-bottom:1.25rem;">
-        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
-          <div style="display:flex; align-items:center; gap:0.6rem; padding:0.75rem 1rem; background:var(--bg); border-bottom:1px solid var(--border); cursor:pointer; user-select:none;" onclick="document.getElementById('intelBody').style.display=document.getElementById('intelBody').style.display==='none'?'block':'none'; this.querySelector('.intel-chev').style.transform=document.getElementById('intelBody').style.display==='none'?'rotate(-90deg)':'rotate(0)'">
-            <svg class="intel-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>
-            <h3 style="font-size:0.95rem; font-weight:700; margin:0; flex:1;">Property Intelligence <span style="font-size:0.7rem; font-weight:500; color:var(--text-muted); margin-left:0.5rem;">(from scanned documents)</span></h3>
-          </div>
-          <div id="intelBody" style="padding:1rem; display:block;">
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
-
-              <!-- Ownership -->
-              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
-                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Ownership Chain</div>
-                <div style="font-size:0.82rem; line-height:1.5;">
-                  <strong>Current:</strong> Revocable Trust of Subhash Sonnad<br>
-                  <span style="color:var(--text-muted);">Deed: Feb 2021, $470,400 (Correction Warranty w/ Vendor's Lien)</span><br>
-                  <strong>Previous:</strong> Nicole Shook / Nicole D. Reeves &amp; Shelton W. Reeves<br>
-                  <strong>Original builder:</strong> Patrick Jaehne (built house + septic ~2002)
-                </div>
-              </div>
-
-              <!-- Existing Septic System -->
-              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
-                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Existing Septic (OSSF #18725)</div>
-                <div style="font-size:0.82rem; line-height:1.5;">
-                  <strong>System:</strong> Jet J-500 aerobic, 300 GPD, spray irrigation<br>
-                  <strong>Tanks:</strong> J-500 treatment + 750 gal pump tank<br>
-                  <strong>Spray area:</strong> 5,024 sq ft, K-Rain propulsion sprinklers<br>
-                  <strong>Final inspection:</strong> Passed 6/20/2004, LTO issued<br>
-                  <span style="color:#991b1b; font-weight:600;">Maintenance contract expired Dec 2004</span>
-                </div>
-              </div>
-
-              <!-- Soil Profile -->
-              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
-                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Soil Profile</div>
-                <div style="font-size:0.82rem; line-height:1.5;">
-                  <strong>0-6":</strong> Class II — Sandy loam (unstructured)<br>
-                  <strong>6-20":</strong> Class I-a — Sandy gravel, 40% gravel<br>
-                  <strong>20-28":</strong> Class IV — Gravelly clay, 20% gravel<br>
-                  <strong>28"+:</strong> Class IV — Clay (mottled)<br>
-                  <span style="color:#991b1b; font-weight:600;">NOT suitable for conventional drainfield</span><br>
-                  <span style="color:var(--text-muted);">Axtell-Tabor complex, 1-8% slopes. Percs slowly.</span>
-                </div>
-              </div>
-
-              <!-- Appraisal History -->
-              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
-                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Appraisal History</div>
-                <div style="font-size:0.82rem; line-height:1.5;">
-                  <strong>2022 Market:</strong> $488,828 (Land: $100,625 + Improvements: $388,203)<br>
-                  <strong>2006 Assessed:</strong> $273,207 (Land: $17,500 + Improvements: $255,707)<br>
-                  <strong>PID:</strong> 44401 &nbsp; <strong>Lot:</strong> 14-B, Block 6, Bluebonnet Acres<br>
-                  <strong>Acreage:</strong> 1.7500 (1.725 per survey)
-                </div>
-              </div>
-
-              <!-- Key Contacts (from documents) -->
-              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
-                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Key Contacts (from original permits)</div>
-                <div style="font-size:0.82rem; line-height:1.5;">
-                  <strong>Septic designer:</strong> Edgar Bolch, RS #2552 (Bryan, TX)<br>
-                  <strong>Installer:</strong> Everard Droemer, #4222 (Giddings, TX)<br>
-                  <strong>Maintenance:</strong> Lee County Ace Hardware (Giddings)<br>
-                  <strong>Inspector (final):</strong> Philip Murie #058696<br>
-                  <strong>Water:</strong> Aqua Water (public rural system)
-                </div>
-              </div>
-
-              <!-- Architectural Plans -->
-              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
-                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Existing Architectural Plans</div>
-                <div style="font-size:0.82rem; line-height:1.5;">
-                  <strong>Project:</strong> Outdoor Bathroom &amp; Roof Terrace<br>
-                  <strong>Sheets:</strong> A-1 (Floor Plan), A-2 (Bath/Terrace), A-3 (Elevations)<br>
-                  <strong>Rooms:</strong> 2 toilets, shower, changing room, covered porch, storage, roof terrace<br>
-                  <strong>Status:</strong> "For Review" (02/04/2025)<br>
-                  <span style="color:var(--text-muted);">Construction photos show wood frame in progress</span>
-                </div>
-              </div>
-            </div>
-
-            <div style="margin-top:0.75rem; font-size:0.7rem; color:var(--text-muted); text-align:right;">
-              26 documents uploaded to Supabase storage — click any task to view linked documents
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- Navigation -->
       <div style="margin-bottom:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
-        <a href="siteplan.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#d4883a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+        <a href="index.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#d4883a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Development Permit Plan
+        </a>
+        <a href="siteplan.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#0d9488; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
           View Site Plan
         </a>
-        <a href="siteplan-24x36.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#d4883a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="7" x2="22" y2="7"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          Site Plan #2
-        </a>
-        <!-- REMOVED: Development Description, PDF, County Application buttons — these docs are accessible from their task cards in the checklist below. Do NOT re-add these buttons. -->
-        <a href="document-review.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#16a34a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-          Review Documents
-        </a>
-        <a href="priority-list.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#7c3aed; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-          Priority List
-        </a>
       </div>
+
+      <!-- Property Intelligence Panel -->
+      <div id="propertyIntel" style="margin-bottom:1.25rem;">
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:0.6rem; padding:0.75rem 1rem; background:var(--bg); border-bottom:1px solid var(--border); cursor:pointer; user-select:none;" onclick="document.getElementById('intelBody').style.display=document.getElementById('intelBody').style.display==='none'?'block':'none'; this.querySelector('.intel-chev').style.transform=document.getElementById('intelBody').style.display==='none'?'rotate(-90deg)':'rotate(0)'">
+            <svg class="intel-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform 0.2s; transform:rotate(-90deg)"><polyline points="6 9 12 15 18 9"/></svg>
+            <h3 style="font-size:0.95rem; font-weight:700; margin:0; flex:1;">Property & Code Intelligence</h3>
+          </div>
+          <div id="intelBody" style="padding:1rem; display:none;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+
+              <!-- Property Status -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Property Status</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>Owner:</strong> Revocable Trust of Subhash Sonnad<br>
+                  <strong>Address:</strong> 160 Still Forest Dr, Cedar Creek, TX 78612<br>
+                  <strong>Acreage:</strong> 1.7348 acres (Lot 14-B, Block 6, Bluebonnet Acres)<br>
+                  <strong>Jurisdiction:</strong> Bastrop County (unincorporated)<br>
+                  <strong>Development Permit:</strong> <a href="index.html" style="color:var(--accent)">In progress</a>
+                </div>
+              </div>
+
+              <!-- Building Type -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Building Type</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>Use:</strong> Commercial lodging / hospitality<br>
+                  <strong>Classification:</strong> Commercial (not residential IRC)<br>
+                  <strong>County Category:</strong> Lodging / RV Park development<br>
+                  <strong>Requirement:</strong> All plans must meet IBC commercial standards
+                </div>
+              </div>
+
+              <!-- Applicable Codes -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Applicable Codes</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>IBC</strong> — International Building Code<br>
+                  <strong>IFC</strong> — International Fire Code<br>
+                  <strong>IMC</strong> — International Mechanical Code<br>
+                  <strong>IPC</strong> — International Plumbing Code<br>
+                  <strong>IECC</strong> — International Energy Conservation Code<br>
+                  <strong>NEC</strong> — National Electrical Code<br>
+                  <strong>ADA/TAS</strong> — Americans with Disabilities Act / Texas Accessibility Standards
+                </div>
+              </div>
+
+              <!-- Key Contacts -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Key Contacts</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>Bastrop Co. Dev Services:</strong> 512-581-7176<br>
+                  211 Jackson St, Bastrop, TX 78602<br>
+                  <strong>TDLR (Accessibility):</strong> 512-463-6599<br>
+                  <a href="https://www.tdlr.texas.gov" target="_blank" style="color:var(--accent)">tdlr.texas.gov</a><br>
+                  <strong>County Website:</strong> <a href="https://www.co.bastrop.tx.us/page/ds.home" target="_blank" style="color:var(--accent)">Development Services</a>
+                </div>
+              </div>
+
+              <!-- Existing Infrastructure -->
+              <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem;">
+                <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem;">Existing Infrastructure</div>
+                <div style="font-size:0.82rem; line-height:1.5;">
+                  <strong>Septic:</strong> OSSF #18725, Jet J-500 aerobic, 300 GPD<br>
+                  <strong>Water:</strong> Aqua Water (public rural system)<br>
+                  <strong>Soil:</strong> Classes I-IV, Axtell-Tabor complex<br>
+                  <span style="color:#991b1b; font-weight:600;">Not suitable for conventional drainfield</span><br>
+                  <strong>Dimensions:</strong> 187.86' W x 399.83' D
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="permit-summary" id="summaryStats"></div>
       <div id="phasesContainer"></div>
-      <!-- Next Phase: Building Permit -->
-      <a href="building-permit.html" style="display:flex; align-items:center; gap:0.75rem; padding:1rem 1.25rem; background:#fff; border:2px solid #0d9488; border-radius:var(--radius); text-decoration:none; margin-top:1.25rem; transition:background 0.15s;" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='#fff'">
-        <div style="width:40px; height:40px; background:#0d9488; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </div>
-        <div style="flex:1;">
-          <div style="font-size:0.95rem; font-weight:700; color:#0d9488;">Commercial Building Permit Plan</div>
-          <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.15rem;">Next phase: Apply for the building permit after commercial use approval</div>
-        </div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
-
       <div id="costSummary" class="phase-section" style="margin-top:1rem;"></div>
     </div>
   </div>
@@ -305,7 +276,12 @@
       'dpmoden8888@gmail.com',
     ];
 
-    const PHASE_LABELS = { A: 'Phase A: Research & Site Visits', B: 'Phase B: IDP Submission Documents', C: 'Phase C: Build & Final Inspection' };
+    const PHASE_LABELS = {
+      A: 'Phase A: Pre-Application & Design',
+      B: 'Phase B: Code Compliance & Specialized Plans',
+      C: 'Phase C: Application Submission',
+      D: 'Phase D: Review, Inspections & Certificate'
+    };
     const STATUS_LABELS = { pending: 'Pending', in_progress: 'In Progress', blocked: 'Blocked', completed: 'Done', skipped: 'Skipped', not_needed: 'N/A' };
     const STORAGE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/permitting-documents';
 
@@ -365,13 +341,12 @@
       renderCostSummary();
     }
 
-    // Allow Enter key to submit login
     document.getElementById('authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
     document.getElementById('authEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
 
     // ── Data ──
     async function loadTasks() {
-      const { data, error } = await supabase.from('permit_tasks').select('*').order('sort_order', { ascending: true });
+      const { data, error } = await supabase.from('building_permit_tasks').select('*').order('sort_order', { ascending: true });
       if (error) { showToast('Failed to load: ' + error.message, 'error'); return; }
       tasks = data || [];
     }
@@ -401,7 +376,7 @@
       el.innerHTML = phases.map(phase => {
         const pt = tasks.filter(t => t.phase === phase);
         const done = pt.filter(t => t.status === 'completed').length;
-        const collapsed = localStorage.getItem(`permit-phase-${phase}`) === 'collapsed';
+        const collapsed = localStorage.getItem(`bldg-phase-${phase}`) === 'collapsed';
         return `<div class="phase-section${collapsed ? ' collapsed' : ''}" data-phase="${phase}">
           <div class="phase-header" onclick="togglePhase('${phase}')">
             <svg class="phase-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
@@ -422,149 +397,84 @@
         <div class="task-info">
           <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
           ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
-          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A2','A3','A5','A6','A7','A8','A9','B1','B4','B5','B10','B11','B14','B16','B22','B23','B24','B25','B26','B27','C1','C2','C3','C6','C7'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
+          ${renderDocLinks(t.task_code)}
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
       </div>`;
     }
 
-    function renderDocLinks(paths, taskCode) {
-      const count = paths.length;
-      let html = count > 3
-        ? `<span style="font-size:0.7rem;color:var(--accent);font-weight:600;margin-right:0.5rem;">${count} docs</span>` + paths.slice(0,2).map(p => {
-            const name = prettyDocName(p);
-            return `<a href="${STORAGE_URL}/${p}" target="_blank" onclick="event.stopPropagation()">${name}</a>`;
-          }).join('') + `<span style="font-size:0.7rem;color:var(--text-muted);">+${count-2} more</span>`
-        : paths.map(p => {
-            const name = prettyDocName(p);
-            return `<a href="${STORAGE_URL}/${p}" target="_blank" onclick="event.stopPropagation()">${name}</a>`;
-          }).join('');
-      // A6: add direct links to local development description files
-      if (taskCode === 'A6') {
-        html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
-        html += `<a href="development-description.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
+    function renderDocLinks(taskCode) {
+      let links = [];
+
+      // Phase A: Pre-Application & Design
+      if (taskCode === 'A3') {
+        links.push({ url: `${STORAGE_URL}/ossf-septic/on-site-system-design-aerobic-wastewater.pdf`, label: 'Existing Soil/Septic Data', bold: true });
+        links.push({ url: `${STORAGE_URL}/property-docs/2000-18725 Septic Info.pdf`, label: 'Original Septic Info' });
       }
-      // A2 & A3: link to Bastrop County GIS Viewer
-      if (taskCode === 'A2' || taskCode === 'A3') {
-        html += `<a href="https://maps.co.bastrop.tx.us/Public_GIS_Viewer/" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">🗺️ Bastrop County GIS Viewer</a>`;
-      }
-      // A8 & A9: link to priority list (engineer & septic site visit prep)
-      if (taskCode === 'A8' || taskCode === 'A9') {
-        html += `<a href="priority-list.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Priority List</a>`;
-      }
-      // B1: add direct link to filled application PDF
-      if (taskCode === 'B1') {
-        html += `<a href="bastrop-county-application-filled.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download Application PDF</a>`;
-      }
-      // B16: add direct links to local operator information files
-      if (taskCode === 'B16') {
-        html += `<a href="operator-information.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
-        html += `<a href="operator-information.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
-      }
-      // A7: Pre-dev meeting email — meeting guide + prior permit + attachments to prepare
-      if (taskCode === 'A7') {
-        html += `<a href="${STORAGE_URL}/county-forms/Pre-Development Meeting Guide.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Pre-Dev Meeting Guide</a>`;
-        html += `<a href="${STORAGE_URL}/permitting-activity/french-drain/French Drain County Development Permit.pdf" target="_blank" onclick="event.stopPropagation()">Prior Permit (French Drain)</a>`;
-        html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()">📄 Dev Description</a>`;
-        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
-      }
-      // A5: Attend pre-dev meeting — guide + lodging reqs + priority list
-      if (taskCode === 'A5') {
-        html += `<a href="${STORAGE_URL}/county-forms/Pre-Development Meeting Guide.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Pre-Dev Meeting Guide</a>`;
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
-        html += `<a href="priority-list.html" target="_blank" onclick="event.stopPropagation()">📋 Priority List</a>`;
-      }
-      // A8: Engineer site visit — add site plan + lodging reqs (Priority List already linked above)
       if (taskCode === 'A8') {
-        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        links.push({ url: `${STORAGE_URL}/ossf-septic/jet-j500-system-specifications.pdf`, label: 'Jet J-500 Specs' });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/ossf-site-plan-spray-areas-gravel-drive.pdf`, label: 'OSSF Site Plan' });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/on-site-system-design-aerobic-wastewater.pdf`, label: 'System Design' });
       }
-      // A9: Septic specialist visit — add existing OSSF docs (Priority List already linked above)
-      if (taskCode === 'A9') {
-        html += `<a href="${STORAGE_URL}/ossf-septic/jet-j500-system-specifications.pdf" target="_blank" onclick="event.stopPropagation()">Jet J-500 Specs</a>`;
-        html += `<a href="${STORAGE_URL}/ossf-septic/ossf-site-plan-spray-areas-gravel-drive.pdf" target="_blank" onclick="event.stopPropagation()">OSSF Site Plan</a>`;
-        html += `<a href="${STORAGE_URL}/ossf-septic/on-site-system-design-aerobic-wastewater.pdf" target="_blank" onclick="event.stopPropagation()">System Design</a>`;
-        html += `<a href="${STORAGE_URL}/property-docs/2000-18725 Septic Info.pdf" target="_blank" onclick="event.stopPropagation()">Original Septic Info</a>`;
-      }
-      // B1: Fill Development Application — supplemental page, online guide, platting exemption, appraisal
+
+      // Phase B: Code Compliance
       if (taskCode === 'B1') {
-        html += `<a href="${STORAGE_URL}/county-forms/Development Application Supplemental Page.pdf" target="_blank" onclick="event.stopPropagation()">Supplemental Page</a>`;
-        html += `<a href="${STORAGE_URL}/county-forms/MyGovernmentOnline Step-by-Step Guide.pdf" target="_blank" onclick="event.stopPropagation()">Online Submission Guide</a>`;
-        html += `<a href="${STORAGE_URL}/property-docs/Platting Exemption Status - 160 Still Forest Dr - PID 44401.pdf" target="_blank" onclick="event.stopPropagation()">Platting Exemption</a>`;
-        html += `<a href="${STORAGE_URL}/appraisal/bastrop-cad-appraisal-2022-pid44401.pdf" target="_blank" onclick="event.stopPropagation()">Appraisal (for fee calc)</a>`;
+        links.push({ url: `${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf`, label: 'Lodging/RV Park Requirements', bold: true });
+        links.push({ url: `${STORAGE_URL}/property-docs/2020.08.24 Court Appd Lodging-RV Park Requirements.pdf`, label: 'Court Approved Requirements' });
       }
-      // B4: PE-signed Site Plan
-      if (taskCode === 'B4') {
-        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">🗺️ Draft Site Plan</a>`;
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      if (taskCode === 'B2' || taskCode === 'B3') {
+        links.push({ url: 'https://www.tdlr.texas.gov', label: 'TDLR Website', bold: true, external: true });
       }
-      // B5: Drainage Study
       if (taskCode === 'B5') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        links.push({ url: `${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf`, label: 'Lodging/RV Park Requirements' });
       }
-      // B10: Fire Suppression Plan
+      if (taskCode === 'B7') {
+        links.push({ url: 'siteplan.html', label: 'Draft Site Plan', bold: true });
+        links.push({ url: 'siteplan-24x36.html', label: 'Site Plan #2' });
+        links.push({ url: `${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf`, label: 'Lodging/RV Park Requirements' });
+      }
+      if (taskCode === 'B8') {
+        links.push({ url: `${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf`, label: 'Lodging/RV Park Requirements' });
+      }
+      if (taskCode === 'B9') {
+        links.push({ url: `${STORAGE_URL}/ossf-septic/jet-j500-system-specifications.pdf`, label: 'Jet J-500 Specs', bold: true });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/ossf-site-plan-spray-areas-gravel-drive.pdf`, label: 'OSSF Site Plan' });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/on-site-system-design-aerobic-wastewater.pdf`, label: 'System Design' });
+        links.push({ url: `${STORAGE_URL}/property-docs/2000-18725 Septic Info.pdf`, label: 'Original Septic Info' });
+      }
       if (taskCode === 'B10') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📜 Lodging/RV Park Requirements</a>`;
-        html += `<a href="${STORAGE_URL}/property-docs/2020.08.24 Court Appd Lodging-RV Park Requirements.pdf" target="_blank" onclick="event.stopPropagation()">Court Approved Requirements</a>`;
+        links.push({ url: 'https://maps.co.bastrop.tx.us/Public_GIS_Viewer/', label: 'Bastrop County GIS Viewer', bold: true, external: true });
       }
-      // B11: OSSF Permit Application — add aerobic affidavit
-      if (taskCode === 'B11') {
-        html += `<a href="${STORAGE_URL}/county-forms/Affidavit for Aerobic OSSF Systems.pdf" target="_blank" onclick="event.stopPropagation()">Aerobic OSSF Affidavit</a>`;
-        html += `<a href="${STORAGE_URL}/county-forms/OSSF Application.pdf" target="_blank" onclick="event.stopPropagation()">OSSF Application Form</a>`;
-      }
-      // B14: Internal Roads Plan
-      if (taskCode === 'B14') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
-      }
-      // B22: Parking Plan
-      if (taskCode === 'B22') {
-        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
-      }
-      // B23: Development Signage Plan
-      if (taskCode === 'B23') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
-      }
-      // B24: Trash & Waste Collection Plan
-      if (taskCode === 'B24') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
-      }
-      // B25: Application Fee Payment — fee schedule + cost breakdown
-      if (taskCode === 'B25') {
-        html += `<a href="${STORAGE_URL}/county-forms/Fee Schedule (June 2025).pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">💰 Fee Schedule (June 2025)</a>`;
-        html += `<a href="cost-estimate-breakdown.pdf" target="_blank" onclick="event.stopPropagation()">📊 Cost Estimate Breakdown</a>`;
-      }
-      // B26: Bathroom Building Compliance — add prior sauna/hottub permit application
-      if (taskCode === 'B26') {
-        html += `<a href="${STORAGE_URL}/permitting-activity/outdoor-bathroom-sauna-hottub/Permit Application for Sauna, Hot Tub, and Concrete Pads.jpg" target="_blank" onclick="event.stopPropagation()">Prior Permit App (Sauna/HotTub)</a>`;
-      }
-      // B27: Survey Update — survey update request letter + site plan
-      if (taskCode === 'B27') {
-        html += `<a href="survey-update-request.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 Survey Update Request Letter</a>`;
-        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
-      }
-      // C1: Relocate structures — priority list + site plan
+
+      // Phase C: Application Submission
       if (taskCode === 'C1') {
-        html += `<a href="priority-list.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Priority List</a>`;
-        html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
+        links.push({ url: 'https://www.bastropcounty.gov/upload/shared/DevServices/BASTROP%20COUNTY%20DEVELOPMENT%20APPLICATION%202025-2026.pdf', label: 'County Application (2025-2026)', bold: true, external: true });
+        links.push({ url: 'bastrop-county-application-filled.pdf', label: 'Filled Application (reference)' });
+        links.push({ url: `${STORAGE_URL}/county-forms/Development Application Supplemental Page.pdf`, label: 'Supplemental Page' });
       }
-      // C2: Road improvements
       if (taskCode === 'C2') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        links.push({ url: `${STORAGE_URL}/property-docs/Deed - Correction Warranty w Vendors Lien.pdf`, label: 'Property Deed', bold: true });
+        links.push({ url: `${STORAGE_URL}/trust-docs/Sonnad Trust Certificate.pdf`, label: 'Trust Certificate' });
       }
-      // C3: Fire tank installation
       if (taskCode === 'C3') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        links.push({ url: 'survey-update-request.pdf', label: 'Survey Update Request', bold: true });
+        links.push({ url: 'siteplan.html', label: 'Site Plan' });
       }
-      // C6: Final inspection
-      if (taskCode === 'C6') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
-      }
-      // C7: Certificate of Compliance
       if (taskCode === 'C7') {
-        html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        links.push({ url: `${STORAGE_URL}/county-forms/Fee Schedule (June 2025).pdf`, label: 'Fee Schedule (June 2025)', bold: true });
+        links.push({ url: 'cost-estimate-breakdown.pdf', label: 'Cost Estimate Breakdown' });
       }
+      if (taskCode === 'C8') {
+        links.push({ url: 'https://maps.co.bastrop.tx.us/Public_GIS_Viewer/', label: 'Bastrop County GIS Viewer', bold: true, external: true });
+        links.push({ url: `${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf`, label: 'Lodging/RV Park Requirements' });
+      }
+
+      if (links.length === 0) return '';
+      const html = links.map(l => {
+        const style = l.bold ? ' style="font-weight:600"' : '';
+        return `<a href="${l.url}" target="_blank" onclick="event.stopPropagation()"${style}>${l.label}</a>`;
+      }).join('');
       return `<div class="doc-links">${html}</div>`;
     }
 
@@ -583,7 +493,7 @@
       const s = document.querySelector(`.phase-section[data-phase="${phase}"]`);
       if (!s) return;
       s.classList.toggle('collapsed');
-      localStorage.setItem(`permit-phase-${phase}`, s.classList.contains('collapsed') ? 'collapsed' : 'open');
+      localStorage.setItem(`bldg-phase-${phase}`, s.classList.contains('collapsed') ? 'collapsed' : 'open');
     };
 
     window.toggleTask = async function(taskId) {
@@ -593,7 +503,7 @@
       const updates = { status: newStatus, updated_at: new Date().toISOString() };
       if (newStatus === 'completed') updates.completed_at = new Date().toISOString();
       else updates.completed_at = null;
-      const { error } = await supabase.from('permit_tasks').update(updates).eq('id', taskId);
+      const { error } = await supabase.from('building_permit_tasks').update(updates).eq('id', taskId);
       if (error) { showToast('Failed: ' + error.message, 'error'); return; }
       t.status = newStatus; t.completed_at = updates.completed_at;
       renderSummary(); renderPhases(); renderCostSummary();
@@ -614,13 +524,12 @@
               <div class="field"><label>Status</label>
                 <select id="modalStatus">${Object.entries(STATUS_LABELS).map(([k,v]) => `<option value="${k}" ${t.status===k?'selected':''}>${v}</option>`).join('')}</select>
               </div>
-              <div class="field"><label>Assignee</label><input id="modalAssignee" value="${esc(t.assignee||'')}" placeholder="us, engineer, septic designer..."></div>
+              <div class="field"><label>Assignee</label><input id="modalAssignee" value="${esc(t.assignee||'')}" placeholder="us, architect, engineer..."></div>
               <div class="field"><label>Estimated Cost ($)</label><input id="modalCostEstimate" type="number" step="0.01" value="${t.cost_estimate||''}"></div>
               <div class="field"><label>Actual Cost ($)</label><input id="modalActualCost" type="number" step="0.01" value="${t.actual_cost||''}"></div>
               <div class="field"><label>Due Date</label><input id="modalDueDate" type="date" value="${t.due_date||''}"></div>
               <div class="field"><label>Notes</label><textarea id="modalNotes" rows="3">${esc(t.notes||'')}</textarea></div>
               <div class="field"><label>Description</label><textarea id="modalDescription" rows="3">${esc(t.description||'')}</textarea></div>
-              ${t.storage_paths?.length || ['A6','B1','B16'].includes(t.task_code) ? `<div class="field"><label>Documents</label><div class="doc-links">${(t.storage_paths||[]).map(p => `<a href="${STORAGE_URL}/${p}" target="_blank">${p.split('/').pop()}</a>`).join('')}${t.task_code === 'A6' ? '<a href="development-description.html" target="_blank" style="font-weight:600">📄 View HTML</a><a href="development-description.pdf" target="_blank" style="font-weight:600">📥 Download PDF</a>' : ''}${t.task_code === 'B1' ? '<a href="bastrop-county-application-filled.pdf" target="_blank" style="font-weight:600">📥 Application PDF</a>' : ''}${t.task_code === 'B16' ? '<a href="operator-information.html" target="_blank" style="font-weight:600">📄 View HTML</a><a href="operator-information.pdf" target="_blank" style="font-weight:600">📥 Download PDF</a>' : ''}</div></div>` : ''}
             </div>
             <div class="task-modal-footer">
               <button class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
@@ -648,7 +557,7 @@
       };
       if (newStatus === 'completed' && t.status !== 'completed') updates.completed_at = new Date().toISOString();
       else if (newStatus !== 'completed') updates.completed_at = null;
-      const { error } = await supabase.from('permit_tasks').update(updates).eq('id', taskId);
+      const { error } = await supabase.from('building_permit_tasks').update(updates).eq('id', taskId);
       if (error) { showToast('Failed: ' + error.message, 'error'); return; }
       Object.assign(t, updates);
       closeTaskModal(); renderSummary(); renderPhases(); renderCostSummary();
@@ -656,11 +565,6 @@
     };
 
     // ── Helpers ──
-    function prettyDocName(path) {
-      let name = path.split('/').pop().replace(/\.pdf$/i,'').replace(/[-_]/g,' ');
-      if (name.length > 35) name = name.slice(0, 32) + '...';
-      return name;
-    }
     function esc(str) { return str ? str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
     function showToast(msg, type = 'success') {
       const el = document.createElement('div');
