@@ -583,14 +583,15 @@ async function checkVersion() {
 }
 
 // =============================================
-// ART SCREENSAVER (cycles artwork, then shows GUI)
+// ART SCREENSAVER (alternates: 15s art, 15s GUI, repeat)
+// Tap to dismiss → 2 min GUI pause before resuming
 // =============================================
-const ART_DISPLAY_SECONDS = 30;   // each image shown for 30s
-const GUI_DISPLAY_SECONDS = 60;   // normal GUI shown for 60s
+const ART_DISPLAY_SECONDS = 15;       // show one image for 15s
+const GUI_PAUSE_SECONDS = 15;         // show GUI for 15s between images
+const TAP_DISMISS_SECONDS = 120;      // 2 min GUI after user taps
 let artImages = [];
 let artTimer = null;
 let artIndex = 0;
-let artMode = false;
 
 async function loadArtImages() {
   try {
@@ -609,66 +610,54 @@ async function loadArtImages() {
   } catch (_) { /* no art available */ }
 }
 
-function showArtScreensaver() {
+function showNextArt() {
   if (artImages.length === 0) return;
-  artMode = true;
-  artIndex = 0;
-  showArtImage();
-}
-
-function showArtImage() {
-  if (!artMode || artIndex >= artImages.length) {
-    hideArtScreensaver();
-    return;
-  }
 
   const overlay = document.getElementById('artScreensaver');
   const img = document.getElementById('artImage');
   const caption = document.getElementById('artCaption');
 
-  overlay.style.display = '';
+  // Pick next image (wraps around)
+  const art = artImages[artIndex % artImages.length];
+  artIndex++;
 
-  // Fade out current
+  // Fade out, swap, fade in
   img.classList.remove('visible');
   caption.classList.remove('visible');
 
   setTimeout(() => {
-    img.src = artImages[artIndex].url;
-    caption.textContent = artImages[artIndex].title;
-    img.onload = () => {
+    overlay.style.display = '';
+    img.src = art.url;
+    caption.textContent = art.title;
+    const reveal = () => {
       img.classList.add('visible');
       setTimeout(() => caption.classList.add('visible'), 600);
     };
-    // If image was cached and onload already fired
-    if (img.complete) {
-      img.classList.add('visible');
-      setTimeout(() => caption.classList.add('visible'), 600);
-    }
-    artIndex++;
-    artTimer = setTimeout(showArtImage, ART_DISPLAY_SECONDS * 1000);
+    img.onload = reveal;
+    if (img.complete) reveal();
+
+    // After 15s, hide art and show GUI for 15s, then show next art
+    artTimer = setTimeout(() => {
+      hideArt();
+      artTimer = setTimeout(showNextArt, GUI_PAUSE_SECONDS * 1000);
+    }, ART_DISPLAY_SECONDS * 1000);
   }, 300);
 }
 
-function hideArtScreensaver() {
-  artMode = false;
+function hideArt() {
   const overlay = document.getElementById('artScreensaver');
   const img = document.getElementById('artImage');
   const caption = document.getElementById('artCaption');
-
   img.classList.remove('visible');
   caption.classList.remove('visible');
-
-  setTimeout(() => {
-    overlay.style.display = 'none';
-    // After GUI_DISPLAY_SECONDS, show art again
-    artTimer = setTimeout(showArtScreensaver, GUI_DISPLAY_SECONDS * 1000);
-  }, 800);
+  setTimeout(() => { overlay.style.display = 'none'; }, 800);
 }
 
-// Tap overlay to dismiss early and return to GUI
+// Tap to dismiss → 2 min GUI before resuming art cycle
 function onArtTap() {
   if (artTimer) clearTimeout(artTimer);
-  hideArtScreensaver();
+  hideArt();
+  artTimer = setTimeout(showNextArt, TAP_DISMISS_SECONDS * 1000);
 }
 
 // =============================================
@@ -731,8 +720,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load art images and start screensaver cycle
   await loadArtImages();
   if (artImages.length > 0) {
-    // Start first art cycle after 60s of GUI
-    artTimer = setTimeout(showArtScreensaver, GUI_DISPLAY_SECONDS * 1000);
+    // Start first art after 15s of GUI
+    artTimer = setTimeout(showNextArt, GUI_PAUSE_SECONDS * 1000);
   }
 
   // Visibility-based polling pause
