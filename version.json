@@ -1,12 +1,12 @@
 {
-  "version": "v260317.10 4:29a",
-  "release": 824,
-  "sha": "2cfd93f4b",
-  "fullSha": "2cfd93f4bba6cbe45e04bfe958e95fb945630c0e",
+  "version": "v260317.11 4:45a",
+  "release": 825,
+  "sha": "87b049a13",
+  "fullSha": "87b049a13a36d35ee4b9659557526f1b8885c4e1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 09:29:39+00",
-  "commits": [{"sha":"f55861a63","message":"Polish Music Now panel cards: proper CSS, icon buttons, better spacing","author":"Rahul"},{"sha":"2cfd93f4b","message":"Merge branch 'musing-mccarthy'","author":"Rahul"}]
+  "pushedAt": "2026-03-17 09:45:13+00",
+  "commits": [{"sha":"b1fe6952d","message":"Add DevControl tab to admin: sessions, tokens, releases, context, backups","author":"Rahul"},{"sha":"87b049a13","message":"Merge branch 'great-lehmann'","author":"Rahul"}]
 }
