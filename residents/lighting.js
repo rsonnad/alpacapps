@@ -74,6 +74,7 @@ let lightingSections = []; // { name, sectionId, groups[] } — grouped by area
 let unifiedGroups = []; // Logical room groups (HA primary + fallback targets)
 let unifiedGroupStates = {}; // { groupKey: { on, brightness, disconnected } }
 let groupStates = {}; // { groupId: { on, brightness, color, disconnected } }
+let lastContactTimes = {}; // { groupId|groupKey: Date } — last successful state fetch
 let deviceStates = {}; // { deviceId: { on, brightness, color, disconnected } }
 let poll = null;
 let lastPollTime = null;
@@ -310,7 +311,7 @@ function renderUnifiedLightingGroups() {
               <span class="status-dot ${getStatusDotClass(state)}" title="${getStatusDotTitle(state)}"></span>
               <span class="lighting-group-card__name">${group.name}</span>
             </div>
-            <span class="lighting-group-card__devices">${group.area || 'Room'} · ${(group.lighting_group_targets || []).length} target${(group.lighting_group_targets || []).length !== 1 ? 's' : ''}</span>
+            <span class="lighting-group-card__devices">${group.area || 'Room'} · ${(group.lighting_group_targets || []).length} target${(group.lighting_group_targets || []).length !== 1 ? 's' : ''}${lastContactTimes[group.key] ? ` · ${formatLastContact(group.key)}` : ''}</span>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" data-action="unified-toggle" data-group-key="${group.key}" ${state.on ? 'checked' : ''}>
@@ -350,6 +351,7 @@ async function refreshUnifiedStates() {
       brightness: typeof result?.state?.brightness === 'number' ? result.state.brightness : undefined,
       disconnected: false,
     };
+    lastContactTimes[group.key] = new Date();
   }));
   renderUnifiedLightingGroups();
 }
@@ -984,6 +986,7 @@ async function refreshGroupState(groupId) {
       }
 
       groupStates[groupId] = { ...groupStates[groupId], ...state };
+      lastContactTimes[groupId] = new Date();
       updateGroupUI(groupId);
     }
   } catch (err) {
@@ -1010,6 +1013,19 @@ function updatePollStatus() {
     second: '2-digit',
   });
   el.textContent = `Last updated: ${timeStr} (auto-refreshes every 30s)`;
+}
+
+// =============================================
+// LAST CONTACT HELPERS
+// =============================================
+function formatLastContact(key) {
+  const t = lastContactTimes[key];
+  if (!t) return '';
+  const diff = Date.now() - t.getTime();
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return `${Math.round(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.round(diff / 3600000)}h ago`;
+  return t.toLocaleDateString();
 }
 
 // =============================================
@@ -1128,7 +1144,7 @@ function renderGroupCard(group) {
             <span class="status-dot status-dot--gray" data-group-dot="${group.groupId}" title="Loading..."></span>
             <span class="lighting-group-card__name">${group.name}</span>
           </div>
-          ${group.deviceCount ? `<span class="lighting-group-card__devices">${group.deviceCount} ${group.deviceCount === 1 ? 'device' : 'devices'} · ${group.models}</span>` : ''}
+          ${group.deviceCount ? `<span class="lighting-group-card__devices">${group.deviceCount} ${group.deviceCount === 1 ? 'device' : 'devices'} · ${group.models}${lastContactTimes[group.groupId] ? ` · ${formatLastContact(group.groupId)}` : ''}</span>` : ''}
         </div>
         <label class="toggle-switch">
           <input type="checkbox" data-action="toggle" data-group="${group.groupId}">
@@ -1460,8 +1476,10 @@ function updateGroupStatus(groupId) {
   const state = groupStates[groupId] || {};
 
   // Disconnected state
+  const contactStr = lastContactTimes[groupId] ? ` · ${formatLastContact(groupId)}` : '';
+
   if (state.disconnected) {
-    statusEl.innerHTML = '<span>Disconnected</span>';
+    statusEl.innerHTML = `<span>Disconnected${contactStr}</span>`;
     statusEl.className = 'group-status disconnected';
     return;
   }
