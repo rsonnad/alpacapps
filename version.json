@@ -1,12 +1,12 @@
 {
-  "version": "v260317.13 4:55a",
-  "release": 827,
-  "sha": "95d9fbb76",
-  "fullSha": "95d9fbb7663c6b432f94861c74503c415821c5d9",
+  "version": "v260317.14 7:19a",
+  "release": 828,
+  "sha": "16fac78e5",
+  "fullSha": "16fac78e5e7051d73f02c8bbf615a7c73d5309dd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 09:55:32+00",
-  "commits": [{"sha":"95d9fbb76","message":"Add DevControl feature to infra updates page for template adopters","author":"Rahul"}]
+  "pushedAt": "2026-03-17 12:19:16+00",
+  "commits": [{"sha":"16fac78e5","message":"Rename 'Project' to 'Project Task' in associates projects page","author":"Rahul"}]
 }
