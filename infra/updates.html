@@ -619,6 +619,85 @@ docs/CHANGELOG.md    (recent changes log)</code></pre>
 
 
   <!-- ════════════════════════════════════════════════════════════════
+       FEATURE: DevControl — AI Development Dashboard
+       ════════════════════════════════════════════════════════════════ -->
+  <div class="feature-card" data-feature="devcontrol">
+    <label class="feature-select"><input type="checkbox" data-feature-id="devcontrol"></label>
+    <h2>
+      <span class="badge badge-new">New</span>
+      DevControl &mdash; AI Development Dashboard
+    </h2>
+    <p><span class="badge badge-date">Added Mar 2026</span></p>
+    <p>A comprehensive admin dashboard for monitoring your AI-assisted development workflow. Six sub-tabs covering releases, sessions, token usage, context window analysis, and backup status &mdash; all in one place.</p>
+
+    <h3>What you get</h3>
+    <ul>
+      <li><strong>Overview</strong> &mdash; card grid linking to each sub-tab with quick descriptions</li>
+      <li><strong>Releases</strong> &mdash; GitHub PR changelog grouped by date, with version tags, line counts, and category badges</li>
+      <li><strong>Sessions</strong> &mdash; view Claude Code session history from D1 (single-project filtered), expandable transcripts, copy support</li>
+      <li><strong>Tokens &amp; Cost</strong> &mdash; token usage analytics, daily breakdown bar chart, per-model usage table</li>
+      <li><strong>Context Window</strong> &mdash; file-by-file token breakdown, stacked usage bar, 90-day history chart with daily snapshots to Supabase</li>
+      <li><strong>Backups</strong> &mdash; backup status cards (DB &rarr; R2, R2 &rarr; external drive) with activity log from Supabase</li>
+    </ul>
+
+    <h3>Prerequisites</h3>
+    <p>
+      <span class="prereq-tag">Supabase configured</span>
+      <span class="prereq-tag">GitHub repo (for Releases tab)</span>
+    </p>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Optional: D1 Session Logging (for Sessions tab), <code>backup_logs</code> table (for Backups tab)</p>
+
+    <h3>What Claude does</h3>
+    <ol>
+      <li>Pull the DevControl files from the template repo:
+        <pre><code>spaces/admin/devcontrol.html   (admin page shell)
+spaces/admin/devcontrol.js     (all 6 sub-tab logic)
+spaces/admin/devcontrol.css    (complete styling)</code></pre>
+      </li>
+      <li>Configure the project-specific values at the top of <code>devcontrol.js</code>:
+        <ul>
+          <li><code>GH_OWNER</code> / <code>GH_REPO</code> &mdash; for Releases and Context tabs (GitHub API)</li>
+          <li><code>SESSIONS_API</code> / <code>SESSIONS_TOKEN</code> / <code>PROJECT_FILTER</code> &mdash; for Sessions and Tokens tabs (D1 Worker)</li>
+        </ul>
+      </li>
+      <li>Add the DevControl tab to the admin navigation in <code>shared/admin-shell.js</code>:
+        <pre><code>{ id: 'devcontrol', label: 'DevControl', href: 'devcontrol.html',
+  permission: 'view_settings', section: 'admin' }</code></pre>
+      </li>
+      <li>Add the DevControl icon to <code>admin-shell.js</code> icon map</li>
+      <li>Create the <code>context_snapshots</code> Supabase table for 90-day history tracking:
+        <pre><code>CREATE TABLE context_snapshots (
+  snapshot_date DATE PRIMARY KEY,
+  always_loaded_tokens INTEGER NOT NULL,
+  total_tokens INTEGER NOT NULL,
+  breakdown JSONB DEFAULT '{}'
+);</code></pre>
+      </li>
+      <li>If the user already has a <code>backup_logs</code> table, the Backups tab will work immediately. Otherwise, create it:
+        <pre><code>CREATE TABLE backup_logs (
+  id SERIAL PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  source TEXT NOT NULL,
+  backup_type TEXT NOT NULL,
+  status TEXT NOT NULL,
+  duration_seconds INTEGER,
+  details JSONB,
+  r2_key TEXT
+);</code></pre>
+      </li>
+      <li>Update <code>docs/KEY-FILES.md</code>, <code>docs/CHANGELOG.md</code>, and <code>docs/PATTERNS.md</code></li>
+    </ol>
+
+    <div class="callout">
+      <strong>Files added/modified</strong>
+      <code>spaces/admin/devcontrol.html</code> &bull;
+      <code>spaces/admin/devcontrol.js</code> &bull;
+      <code>spaces/admin/devcontrol.css</code> &bull;
+      <code>shared/admin-shell.js</code> (nav entry + icon)
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
        PROMPT GENERATOR
        ════════════════════════════════════════════════════════════════ -->
   <div id="prompt-section" style="margin-top: 2rem;">
@@ -713,6 +792,18 @@ Follow the instructions on the AlpacApps updates page (infra/updates.html) for t
 - Check ~/.claude/settings.json for a SessionEnd hook and replace with Stop
 - Update ~/.claude/hooks/save-session.sh with the latest version (includes rate-limiting)
 - Verify the lock directory is created at ~/.claude/hooks/.session-locks/`
+    },
+    'devcontrol': {
+      name: 'DevControl — AI Development Dashboard',
+      prompt: `Set up the DevControl admin dashboard for monitoring AI development activity.
+
+Follow the instructions on the AlpacApps updates page (infra/updates.html) for the "DevControl" feature:
+- Pull spaces/admin/devcontrol.html, devcontrol.js, and devcontrol.css from the template repo (https://github.com/rsonnad/alpacapps-infra)
+- Configure GH_OWNER, GH_REPO, SESSIONS_API, SESSIONS_TOKEN, and PROJECT_FILTER in devcontrol.js for my project
+- Add the DevControl tab and icon to shared/admin-shell.js
+- Create the context_snapshots Supabase table for 90-day history tracking
+- Create backup_logs table if I don't already have one
+- Update docs/KEY-FILES.md, docs/CHANGELOG.md, and docs/PATTERNS.md`
     }
   };
 
