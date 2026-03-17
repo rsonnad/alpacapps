@@ -987,25 +987,6 @@
       </div>
 
       <div class="svc-row">
-        <label class="calc-svc calc-svc--core calc-svc--locked">
-          <input type="checkbox" checked disabled data-svc="gstack">
-          <span class="calc-svc__check">&check;</span>
-          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#6366F1" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><text x="12" y="16.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="system-ui">g</text></svg></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">gstack</span><span class="calc-svc__desc">Open-source Claude Code skills &amp; headless browser for QA</span></span>
-          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-        </label>
-        <details class="svc-expand"><summary>Learn more</summary>
-          <p>Open-source toolkit that supercharges Claude Code with a headless browser and pre-built skills for common workflows.</p>
-          <ul>
-            <li><strong>QA testing:</strong> <code>/qa</code> systematically tests your site, finds bugs, fixes them, and verifies the fixes &mdash; all automatically.</li>
-            <li><strong>Code review:</strong> <code>/review</code> analyzes your diff for SQL safety issues, trust boundary violations, and structural problems before you merge.</li>
-            <li><strong>Ship workflow:</strong> <code>/ship</code> runs tests, reviews the diff, bumps version, updates changelog, and creates a PR in one command.</li>
-            <li><strong>Headless browser:</strong> Navigate pages, click elements, take screenshots, verify deployments &mdash; ~100ms per command.</li>
-          </ul>
-        </details>
-      </div>
-
-      <div class="svc-row">
         <label class="calc-svc">
           <input type="checkbox" data-svc="google-auth" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
@@ -1037,6 +1018,25 @@
             <li><strong>Free tier:</strong> 3,000 emails/month with a verified domain (or use <code>onboarding@resend.dev</code> for testing).</li>
             <li><strong>How it integrates:</strong> A Supabase edge function (<code>send-email</code>) handles outbound mail. Your app calls the function with a template name and data.</li>
             <li><strong>Inbound email:</strong> Webhook support lets you receive and process incoming emails (e.g., reply-to-ticket workflows).</li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="gstack" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#6366F1" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><text x="12" y="16.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="system-ui">g</text></svg></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">gstack</span><span class="calc-svc__desc">Open-source Claude Code skills &amp; headless browser for QA</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Open-source toolkit that supercharges Claude Code with a headless browser and pre-built skills for common workflows.</p>
+          <ul>
+            <li><strong>QA testing:</strong> <code>/qa</code> systematically tests your site, finds bugs, fixes them, and verifies the fixes &mdash; all automatically.</li>
+            <li><strong>Code review:</strong> <code>/review</code> analyzes your diff for SQL safety issues, trust boundary violations, and structural problems before you merge.</li>
+            <li><strong>Ship workflow:</strong> <code>/ship</code> runs tests, reviews the diff, bumps version, updates changelog, and creates a PR in one command.</li>
+            <li><strong>Headless browser:</strong> Navigate pages, click elements, take screenshots, verify deployments &mdash; ~100ms per command.</li>
           </ul>
         </details>
       </div>
