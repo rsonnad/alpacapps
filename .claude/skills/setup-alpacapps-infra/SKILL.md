@@ -73,6 +73,7 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 **Always included (core):**
 - Website + Admin Dashboard (GitHub Pages) — Free
 - Database + Storage + Auth (Supabase) — Free
+- Parallel AI Agents (Conductor) — Free, [conductor.build](https://conductor.build)
 - Tailwind CSS v4 (utility-class styling) — Free
 - AI Developer (Claude Code) — you're already here
 
@@ -233,6 +234,16 @@ See `references/core-services.md` → "Supabase" for detailed steps.
 6. Pre-construct ALL webhook URLs for later steps
 7. Link CLI, create domain-specific tables with RLS, create storage buckets
 8. Validate everything: tables, RLS, secrets, edge functions
+
+### Step 3b: Conductor
+
+Set up Conductor for parallel AI coding agents.
+
+**Steps:**
+1. Tell the user to download Conductor from [conductor.build](https://conductor.build) if not already installed
+2. Explain that Conductor lets them run multiple Claude Code agents in parallel — each in its own workspace with its own branch
+3. Suggest creating separate workspaces for independent tasks (e.g., frontend, backend, tests)
+4. Note in `CLAUDE.md` that Conductor is available for parallel agent workflows
 
 ### Step 4: Google Sign-In (OAuth) — if selected
 
