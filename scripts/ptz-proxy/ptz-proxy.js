@@ -105,26 +105,51 @@ async function pollDoorSensor() {
   }
 }
 
-function triggerDoorGreeting() {
-  const text = encodeURIComponent(DOOR_GREETING_TEXT);
-  const sonosPath = `/${DOOR_GREETING_ROOM}/say/${text}/en-us/40`;
+const DOOR_GREETING_VOLUME = 25; // moderate volume for TTS
 
-  const sonosReq = http.request({
-    hostname: '127.0.0.1',
-    port: 5005,
-    path: sonosPath,
-    method: 'GET',
-  }, (r) => {
-    let d = '';
-    r.on('data', c => d += c);
-    r.on('end', () => {
-      console.log(`[DoorMon] Sonos response: ${r.statusCode} — ${d.substring(0, 100)}`);
+async function triggerDoorGreeting() {
+  try {
+    // Check if music is already playing on DJ — don't interrupt
+    const state = await new Promise((resolve, reject) => {
+      const req = http.request({
+        hostname: '127.0.0.1', port: 5005,
+        path: `/${DOOR_GREETING_ROOM}/state`, method: 'GET',
+      }, (r) => {
+        let d = '';
+        r.on('data', c => d += c);
+        r.on('end', () => {
+          try { resolve(JSON.parse(d)); } catch { resolve(null); }
+        });
+      });
+      req.on('error', reject);
+      req.end();
     });
-  });
-  sonosReq.on('error', (err) => {
-    console.error(`[DoorMon] Sonos error: ${err.message}`);
-  });
-  sonosReq.end();
+
+    if (state && state.playbackState === 'PLAYING') {
+      console.log(`[DoorMon] Music playing on ${DOOR_GREETING_ROOM} — skipping greeting`);
+      return;
+    }
+
+    const text = encodeURIComponent(DOOR_GREETING_TEXT);
+    const sonosPath = `/${DOOR_GREETING_ROOM}/say/${text}/en-us/${DOOR_GREETING_VOLUME}`;
+
+    const sonosReq = http.request({
+      hostname: '127.0.0.1', port: 5005,
+      path: sonosPath, method: 'GET',
+    }, (r) => {
+      let d = '';
+      r.on('data', c => d += c);
+      r.on('end', () => {
+        console.log(`[DoorMon] Sonos response: ${r.statusCode} — ${d.substring(0, 100)}`);
+      });
+    });
+    sonosReq.on('error', (err) => {
+      console.error(`[DoorMon] Sonos error: ${err.message}`);
+    });
+    sonosReq.end();
+  } catch (err) {
+    console.error(`[DoorMon] Greeting error: ${err.message}`);
+  }
 }
 
 // =============================================
