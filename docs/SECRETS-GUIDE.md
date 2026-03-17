@@ -1,15 +1,15 @@
 # Secrets Management Guide
 
-> Cross-project guide for managing secrets with 1Password as source of truth.
+> Cross-project guide for managing secrets with Bitwarden as source of truth.
 > Replicable across all projects (alpacapps, finleg, portsie, etc.)
 
 ## Architecture: 4-Tier Model
 
 ```
-1Password Vaults (source of truth)
-    ↓ op:// references
+Bitwarden Vaults (source of truth)
+    ↓ bw-read references
 Local Config Files (CREDENTIALS.md, .mcp.json, memory/)
-    ↓ op read / env injection
+    ↓ bw-read / env injection
 Supabase Env Vars (runtime secrets for edge functions)
     ↓ RLS / service role
 DB Row-Level Secrets (per-account tokens in config tables)
@@ -17,7 +17,7 @@ DB Row-Level Secrets (per-account tokens in config tables)
 
 **Rule:** Secrets flow DOWN only. Never copy a runtime secret back up.
 
-## Vault Naming Convention
+## Folder Naming Convention
 
 | Pattern | Example | Contents |
 |---------|---------|----------|
@@ -30,38 +30,48 @@ DB Row-Level Secrets (per-account tokens in config tables)
 
 ## Item Structure
 
-### API Credentials (`API Credential` category)
+### API Credentials (`Login` or `Secure Note` type)
 ```
 Title: {Service} — {Purpose}
-Tags: [service-name, category]
-Sections:
-  API Keys/    → token[password], key[password]
-  OAuth/       → Client ID, Client Secret[password], Refresh Token[password]
-  Config/      → Supabase Secret Name, Free Tier, API Base
-  Endpoints/   → Base URL, Auth URL, Webhook URL
+Folder: DevOps-{project}
+Fields:
+  token       → API key (hidden)
+  client_id   → OAuth Client ID
+  secret      → OAuth Client Secret (hidden)
+  refresh     → OAuth Refresh Token (hidden)
+  base_url    → API Base URL
+  webhook_url → Webhook URL
+Notes: Free tier info, Supabase secret name, etc.
 ```
 
-### Server Access (`Server` category)
+### Server Access (`Login` type)
 ```
 Title: {Provider} — {Role}
-Tags: [provider, ssh]
-Sections:
-  Account/     → Email, Dashboard Password[password]
-  SSH/         → IP, User, Password[password], Auth Method, Command
-  Server/      → OS, Specs, Domain, URL
-  Docker/      → Tokens, Compose Path, Container
+Folder: DevOps-{project}
+Username: SSH user
+Password: SSH password
+URI: ssh://ip-address
+Fields:
+  ip          → Server IP
+  auth_method → password / key
+  ssh_command → Full SSH command
+  os          → OS info
+  specs       → Server specs
+  domain      → Domain name
+Notes: Docker paths, container names, etc.
 ```
 
-### Login Accounts (`Login` category)
+### Login Accounts (`Login` type)
 ```
 Title: {Service} — {Context}
-Tags: [category-tag]
-Fields: username, password
-URL: service login page
-Sections:
-  Billing/     → Autopay Account, Due Date, Account Number
-  Policy/      → Policy Number, Coverage, Agent
-  Config/      → Webhook URL, Plan details
+Folder: appropriate folder
+Username: login username
+Password: login password
+URI: service login page
+Fields:
+  account_number → Account/policy number
+  due_date       → Billing due date
+Notes: Plan details, coverage info, etc.
 ```
 
 ## Reference Format in Config Files
@@ -69,28 +79,25 @@ Sections:
 In `CREDENTIALS.md` and memory files, replace plaintext secrets with:
 
 ```markdown
-- **API Key:** `op read "op://DevOps-alpacapps/Service Name/Section/Field"`
+- **API Key:** `bw-read "Service Name" "Field Name"`
 ```
 
 In shell commands:
 ```bash
-# Inline substitution
-curl -H "Authorization: Bearer $(op read 'op://DevOps-alpacapps/Supabase/API Keys/Management API Token')"
-
-# Password file generation
-op read "op://DevOps-alpacapps/Hostinger VPS/SSH/Password" > ~/.ssh/service.pass && chmod 600 ~/.ssh/service.pass
+# Inline substitution (item title only — returns password field)
+curl -H "Authorization: Bearer $(bw-read "Supabase — AlpacApps Project" "Management API Token")"
 
 # sshpass integration
-sshpass -p "$(op read 'op://DevOps-alpacapps/Hostinger VPS/SSH/Password')" ssh root@host
+sshpass -p "$(bw-read "Hostinger VPS — OpenClaw Server")" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@host
 ```
 
 ## Setting Up a New Project
 
-1. **Create vault:** `DevOps-{project}` in 1Password
+1. **Create folder:** `DevOps-{project}` in Bitwarden
 2. **Add items:** Follow the structure patterns above
-3. **Create CREDENTIALS.md:** Use `op://` references (never plaintext)
-4. **Supabase secrets:** `supabase secrets set KEY=$(op read 'op://...')`
-5. **MCP config:** Reference via env vars or `op://` in `.mcp.json`
+3. **Create CREDENTIALS.md:** Use `bw-read` references (never plaintext)
+4. **Supabase secrets:** `supabase secrets set KEY=$(bw-read "Item" "Field")`
+5. **MCP config:** Reference via env vars or `bw-read` in `.mcp.json`
 
 ## Tag Taxonomy
 
@@ -106,12 +113,12 @@ sshpass -p "$(op read 'op://DevOps-alpacapps/Hostinger VPS/SSH/Password')" ssh r
 | `utility` | Utilities (electric, water, internet) |
 | `austin` / `washington` / `california` | Geographic location |
 
-## Rotation Checklist (future)
+## Rotation Checklist
 
 When rotating secrets:
 1. Generate new secret in the service dashboard
-2. Update 1Password item (old value goes to password history automatically)
+2. Update Bitwarden item (old value can be noted before overwriting)
 3. Update Supabase env vars: `supabase secrets set KEY=new_value`
 4. Restart affected edge functions: `supabase functions deploy <name>`
 5. Verify with a test request
-6. No need to update CREDENTIALS.md — `op://` references stay the same
+6. No need to update CREDENTIALS.md — `bw-read` references stay the same
