@@ -1,12 +1,12 @@
 {
-  "version": "v260316.10 11:28p",
-  "release": 812,
-  "sha": "429173683",
-  "fullSha": "4291736839ffa47f620752d3d09a8ac944af9486",
+  "version": "v260316.12 11:42p",
+  "release": 814,
+  "sha": "cd3b86325",
+  "fullSha": "cd3b8632546133d2c67cc3e1be7e09c7d83f8a8f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 04:28:30+00",
-  "commits": [{"sha":"429173683","message":"Increase garage greeting cooldown to 15 minutes","author":"Rahul"}]
+  "pushedAt": "2026-03-17 04:42:51+00",
+  "commits": [{"sha":"0f875d385","message":"Skip garage greeting when music is playing, lower volume to 25","author":"Rahul"},{"sha":"cd3b86325","message":"Merge: skip greeting when music playing, lower volume","author":"Rahul"}]
 }
