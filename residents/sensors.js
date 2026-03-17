@@ -8,10 +8,14 @@ import { initResidentPage } from '../shared/resident-shell.js';
 import { supabase } from '../shared/supabase.js';
 
 const SENSORS_PROXY = 'https://cam.alpacaplayhouse.com/sensors';
+const SONOS_PROXY = 'https://cam.alpacaplayhouse.com/sonos';
 const POLL_INTERVAL = 30000;
+const GREETING_COOLDOWN = 5 * 60 * 1000; // 5 min between greetings
 
 let sensors = [];
 let lastPollTime = null;
+let prevDoorStates = {};      // sensorId → boolean (was open)
+let lastGreetingTime = 0;     // timestamp of last greeting
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
@@ -39,10 +43,12 @@ async function loadSensors() {
   if (error || !data?.length) { sensors = []; return; }
 
   const states = await fetchSensorStates();
-  sensors = data.map(meta => ({
-    meta,
-    state: states.find(s => s.id === meta.protect_sensor_id) || null,
-  }));
+  sensors = data.map(meta => {
+    const state = states.find(s => s.id === meta.protect_sensor_id) || null;
+    // Seed door state so first poll doesn't trigger a false greeting
+    if (state) prevDoorStates[meta.protect_sensor_id] = state.isOpened ?? false;
+    return { meta, state };
+  });
 }
 
 async function fetchSensorStates() {
@@ -62,7 +68,47 @@ async function refreshStates() {
   const states = await fetchSensorStates();
   for (const s of sensors) {
     const live = states.find(st => st.id === s.meta.protect_sensor_id);
-    if (live) s.state = live;
+    if (live) {
+      checkDoorTransition(s.meta, s.state, live);
+      s.state = live;
+    }
+  }
+}
+
+// Detect door closed→open and play Sonos greeting
+function checkDoorTransition(meta, oldState, newState) {
+  if (meta.mount_type !== 'door' && meta.mount_type !== 'window') return;
+  const id = meta.protect_sensor_id;
+  const wasOpen = prevDoorStates[id] ?? oldState?.isOpened ?? false;
+  const isOpen = newState.isOpened;
+  prevDoorStates[id] = isOpen;
+
+  // Trigger on closed→open transition only
+  if (!wasOpen && isOpen) {
+    const now = Date.now();
+    if (now - lastGreetingTime < GREETING_COOLDOWN) {
+      console.log('[Greeting] Cooldown active, skipping');
+      return;
+    }
+    lastGreetingTime = now;
+    playGarageGreeting(meta.location || meta.name);
+  }
+}
+
+async function playGarageGreeting(location) {
+  console.log(`[Greeting] Door opened at ${location} — playing announcement on DJ`);
+  try {
+    await fetch(`${SONOS_PROXY}/DJ/say`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: 'Welcome to the Garage Mahal',
+        lang: 'en-us',
+        volume: 40,
+      }),
+    });
+  } catch (err) {
+    console.warn('[Greeting] Failed:', err.message);
   }
 }
 

@@ -15,6 +15,8 @@
  *   GET  /protect/events               — proxy Protect events (motion, smart detect, etc.)
  *   GET  /protect/export               — stream video clip export (mp4)
  *   GET  /protect/thumbnail/{id}       — proxy event thumbnail image
+ *   GET  /sonos/{room}/{action}        — proxy to local Sonos HTTP API (port 5005)
+ *   POST /sonos/{room}/say             — body: { text, lang?, volume? } — TTS announcement
  *
  * Auth to UniFi Protect:
  *   Cookie-based with CSRF token from JWT. Caches session for reuse.
@@ -770,9 +772,78 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // ---- Route: Sonos HTTP API proxy ----
+    // Proxies to node-sonos-http-api running on localhost:5005
+    const SONOS_HOST = '127.0.0.1';
+    const SONOS_PORT = 5005;
+
+    if (req.url.startsWith('/sonos/') && (req.method === 'GET' || req.method === 'POST')) {
+      // POST /sonos/{room}/say — TTS announcement
+      const sayMatch = req.url.match(/^\/sonos\/([^/]+)\/say\/?$/i);
+      if (sayMatch && req.method === 'POST') {
+        let body = '';
+        for await (const chunk of req) body += chunk;
+        let payload;
+        try { payload = JSON.parse(body); } catch {
+          res.writeHead(400, { ...cors, 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON body' }));
+          return;
+        }
+
+        const room = sayMatch[1]; // already URL-encoded from the request path
+        const text = encodeURIComponent(payload.text || 'Hello');
+        const lang = payload.lang || 'en-us';
+        const volume = payload.volume != null ? `/${payload.volume}` : '';
+        const sonosPath = `/${room}/say/${text}/${lang}${volume}`;
+
+        console.log(`[Sonos] TTS: ${room} — "${payload.text}"`);
+
+        const sonosRes = await new Promise((resolve, reject) => {
+          const sonosReq = http.request({
+            hostname: SONOS_HOST, port: SONOS_PORT,
+            path: sonosPath, method: 'GET',
+          }, (r) => {
+            let d = '';
+            r.on('data', c => d += c);
+            r.on('end', () => resolve({ status: r.statusCode, body: d }));
+          });
+          sonosReq.on('error', reject);
+          sonosReq.end();
+        });
+
+        res.writeHead(sonosRes.status === 200 ? 200 : 502, { ...cors, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: sonosRes.status === 200, response: sonosRes.body }));
+        return;
+      }
+
+      // GET /sonos/{room}/{action}[/{params}] — generic Sonos proxy
+      const sonosPath = req.url.replace(/^\/sonos/, '');
+      console.log(`[Sonos] Proxy: ${sonosPath}`);
+
+      const sonosRes = await new Promise((resolve, reject) => {
+        const sonosReq = http.request({
+          hostname: SONOS_HOST, port: SONOS_PORT,
+          path: sonosPath, method: 'GET',
+        }, (r) => {
+          let d = '';
+          r.on('data', c => d += c);
+          r.on('end', () => resolve({ status: r.statusCode, body: d, headers: r.headers }));
+        });
+        sonosReq.on('error', (err) => {
+          resolve({ status: 502, body: JSON.stringify({ error: `Sonos API unreachable: ${err.message}` }), headers: {} });
+        });
+        sonosReq.end();
+      });
+
+      const ct = sonosRes.headers?.['content-type'] || 'application/json';
+      res.writeHead(sonosRes.status, { ...cors, 'Content-Type': ct });
+      res.end(sonosRes.body);
+      return;
+    }
+
     // ---- 404 ----
     res.writeHead(404, { ...cors, 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found. Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients, GET /protect/events, GET /protect/export, GET /protect/thumbnail/{id}' }));
+    res.end(JSON.stringify({ error: 'Not found. Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients, GET /protect/events, GET /protect/export, GET /protect/thumbnail/{id}, GET|POST /sonos/{room}/{action}' }));
 
   } catch (err) {
     console.error('[Proxy] Error:', err.message);
@@ -784,7 +855,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Camera Control Proxy listening on 127.0.0.1:${PORT}`);
   console.log(`UDM Host: ${UDM_HOST}`);
-  console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients, GET /protect/events, GET /protect/export, GET /protect/thumbnail/{id}`);
+  console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients, GET /protect/events, GET /protect/export, GET /protect/thumbnail/{id}, GET|POST /sonos/{room}/{action}`);
   // Pre-auth on startup
   authenticate().catch(err => console.error('[Auth] Startup auth failed:', err.message));
 });
