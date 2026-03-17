@@ -1,12 +1,12 @@
 {
-  "version": "v260317.08 3:54a",
-  "release": 822,
-  "sha": "2592df8c1",
-  "fullSha": "2592df8c1a1537dae35a68c96df2ad99ca485eca",
+  "version": "v260317.09 4:07a",
+  "release": 823,
+  "sha": "6bf6734e7",
+  "fullSha": "6bf6734e710bf030540828d0570952864826c5a0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 08:54:17+00",
-  "commits": [{"sha":"2592df8c1","message":"Seed thermostat last-contact from DB updated_at on initial load","author":"Rahul"}]
+  "pushedAt": "2026-03-17 09:07:38+00",
+  "commits": [{"sha":"6bf6734e7","message":"Fix Music page stuck on Loading: add API timeout + parallel init","author":"Rahul"}]
 }
