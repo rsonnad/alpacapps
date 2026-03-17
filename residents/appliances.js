@@ -632,6 +632,12 @@ function renderSections() {
       </summary>
       <div class="appliance-section__body">
         ${laundryCardsHtml}
+        ${appliances.some(a => a.device_type === 'washer') ? `
+        <div class="laundry-qr" style="text-align:center;padding:1.5rem 1rem 1rem;border-top:1px solid #e5e2dc;margin-top:1rem;">
+          <img src="washer-qr.svg" alt="Scan to get washer notifications" style="width:120px;height:120px;margin:0 auto;">
+          <p style="margin:0.5rem 0 0;font-size:0.8rem;color:var(--text-muted);">Scan to get notified when the washer is done</p>
+        </div>
+        ` : ''}
       </div>
     </details>
 

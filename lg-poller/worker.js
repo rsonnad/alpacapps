@@ -2,7 +2,7 @@
  * LG ThinQ Appliance Data Poller
  * Polls LG ThinQ Connect API for washer/dryer state every 30 seconds.
  * Stores results in lg_appliances.last_state (JSONB) via Supabase.
- * Detects cycle completion and sends FCM push notifications to watchers.
+ * Detects cycle completion and sends FCM push + email notifications to watchers.
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -17,6 +17,8 @@ const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '30000'); // 3
 const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '1000'); // 1s between API calls
 const FCM_PROJECT_ID = process.env.FCM_PROJECT_ID || '';
 const GOOGLE_APPLICATION_CREDENTIALS = process.env.GOOGLE_APPLICATION_CREDENTIALS || '';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const RESEND_FROM = process.env.RESEND_FROM || 'AlpacApps <noreply@alpacaplayhouse.com>';
 
 if (!SUPABASE_SERVICE_KEY) {
   console.error('SUPABASE_SERVICE_ROLE_KEY environment variable is required');
@@ -195,6 +197,48 @@ async function sendFcmPush(tokens, title, body) {
 }
 
 // ============================================
+// Email Notification via Resend
+// ============================================
+async function sendEmailNotification(emails, typeLabel) {
+  if (!RESEND_API_KEY || !emails.length) return;
+
+  const subject = `${typeLabel} is done!`;
+  const html = `
+    <div style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+      <h2 style="margin:0 0 12px;color:#1f1720;">${typeLabel} Cycle Complete</h2>
+      <p style="margin:0 0 16px;color:#444;font-size:15px;">
+        Your ${typeLabel.toLowerCase()} cycle has finished. Time to grab your laundry!
+      </p>
+      <a href="https://alpacaplayhouse.com/residents/appliances.html"
+         style="display:inline-block;background:#d97706;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;">
+        View Appliances
+      </a>
+      <p style="margin:16px 0 0;color:#999;font-size:12px;">Alpaca Playhouse</p>
+    </div>`;
+  const text = `${typeLabel} Cycle Complete\n\nYour ${typeLabel.toLowerCase()} cycle has finished. Time to grab your laundry!\n\nView: https://alpacaplayhouse.com/residents/appliances.html`;
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ from: RESEND_FROM, to: emails, subject, html, text }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      log('warn', 'Resend email failed', { status: response.status, error: err.substring(0, 200) });
+    } else {
+      log('info', `Email notification sent to ${emails.length} recipient(s)`, { to: emails });
+    }
+  } catch (err) {
+    log('error', 'Email send error', { error: err.message });
+  }
+}
+
+// ============================================
 // Notify watchers on cycle completion
 // ============================================
 async function notifyWatchers(applianceId, applianceName, deviceType) {
@@ -211,8 +255,10 @@ async function notifyWatchers(applianceId, applianceName, deviceType) {
 
   log('info', `Notifying ${watchers.length} watcher(s) for ${applianceName}`);
 
-  // Get push tokens for all watchers
+  const typeLabel = deviceType === 'dryer' ? 'Dryer' : 'Washer';
   const userIds = watchers.map(w => w.app_user_id);
+
+  // Get push tokens for all watchers
   const { data: tokens } = await supabase
     .from('push_tokens')
     .select('id, app_user_id, token, platform')
@@ -220,14 +266,26 @@ async function notifyWatchers(applianceId, applianceName, deviceType) {
     .eq('is_active', true);
 
   if (tokens?.length) {
-    const typeLabel = deviceType === 'dryer' ? 'Dryer' : 'Washer';
     await sendFcmPush(
       tokens,
       `${typeLabel} is done!`,
       `Your ${typeLabel.toLowerCase()} cycle has finished. Time to grab your laundry!`
     );
-  } else {
-    log('info', 'No active push tokens for watchers — no notifications sent');
+  }
+
+  // Send email notifications
+  const { data: users } = await supabase
+    .from('app_users')
+    .select('email')
+    .in('id', userIds);
+
+  const emails = (users || []).map(u => u.email).filter(Boolean);
+  if (emails.length) {
+    await sendEmailNotification(emails, typeLabel);
+  }
+
+  if (!tokens?.length && !emails.length) {
+    log('info', 'No push tokens or emails for watchers — no notifications sent');
   }
 
   // Auto-delete watchers (subscription expires after notification)
@@ -439,6 +497,7 @@ async function main() {
     pollInterval: `${POLL_INTERVAL_MS / 1000}s`,
     apiDelay: `${API_DELAY_MS}ms`,
     fcmConfigured: !!(FCM_PROJECT_ID && GOOGLE_APPLICATION_CREDENTIALS),
+    resendConfigured: !!RESEND_API_KEY,
   });
 
   // Verify connectivity
