@@ -1,12 +1,12 @@
 {
-  "version": "v260317.20 7:52a",
-  "release": 834,
-  "sha": "53d0e6f02",
-  "fullSha": "53d0e6f02871d6fea7aab416c825e24c9cc4285a",
+  "version": "v260317.21 7:56a",
+  "release": 835,
+  "sha": "191fdc4c9",
+  "fullSha": "191fdc4c9fcb49ebb176601b41de561ae6e05eab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 12:52:42+00",
-  "commits": [{"sha":"680c7ebdd","message":"Add Conductor to alpacapps-infra tech stack as core service","author":"Rahul"},{"sha":"53d0e6f02","message":"Reframe Conductor as primary dev hub, minimize direct Claude Code usage","author":"Rahul"}]
+  "pushedAt": "2026-03-17 12:56:03+00",
+  "commits": [{"sha":"191fdc4c9","message":"Fix project task modal dismissing and losing unsaved content","author":"Rahul"}]
 }
