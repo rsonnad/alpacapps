@@ -1,12 +1,12 @@
 {
-  "version": "v260317.45 6:50p",
-  "release": 859,
-  "sha": "06980e0e9",
-  "fullSha": "06980e0e96cfa5d1ba6b9d284fcbde1eca9f7662",
+  "version": "v260317.46 6:57p",
+  "release": 860,
+  "sha": "afd9fd99e",
+  "fullSha": "afd9fd99ee14285412b722b44464a13bcfa0c77a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 23:50:54+00",
-  "commits": [{"sha":"06980e0e9","message":"Fix email footer image tag to match existing pai-email-art tag","author":"Rahul"}]
+  "pushedAt": "2026-03-17 23:57:07+00",
+  "commits": [{"sha":"afd9fd99e","message":"Fix Open Brain description — was showing DevControl's text","author":"Rahul"}]
 }
