@@ -573,7 +573,7 @@
       const est = tasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
       const act = tasks.reduce((s, t) => s + (parseFloat(t.actual_cost) || 0), 0);
       el.innerHTML = `<div class="cost-summary">
-        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value">$${est.toLocaleString()}</span></div>
+        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value"><a href="cost-estimate-breakdown.pdf" target="_blank" style="color:inherit;text-decoration:underline;text-underline-offset:3px">$${est.toLocaleString()}</a></span></div>
         <div class="cost-item"><span class="cost-label">Actual Spent:</span><span class="cost-value">$${act.toLocaleString()}</span></div>
       </div>`;
     }
