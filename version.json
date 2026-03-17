@@ -1,12 +1,12 @@
 {
-  "version": "v260317.44 5:47p",
-  "release": 858,
-  "sha": "4b89a8e51",
-  "fullSha": "4b89a8e51c67db0a8ad6867551ab134bc094e96a",
+  "version": "v260317.45 6:50p",
+  "release": 859,
+  "sha": "06980e0e9",
+  "fullSha": "06980e0e96cfa5d1ba6b9d284fcbde1eca9f7662",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 22:47:13+00",
-  "commits": [{"sha":"4b89a8e51","message":"Add 'Go to [service]' links at bottom of every Learn More expansion","author":"Rahul"}]
+  "pushedAt": "2026-03-17 23:50:54+00",
+  "commits": [{"sha":"06980e0e9","message":"Fix email footer image tag to match existing pai-email-art tag","author":"Rahul"}]
 }
