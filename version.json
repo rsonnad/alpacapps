@@ -1,12 +1,12 @@
 {
-  "version": "v260317.32 10:16a",
-  "release": 846,
-  "sha": "a8e5caa65",
-  "fullSha": "a8e5caa6548646e976570390ccff922746bb116f",
+  "version": "v260317.34 11:06a",
+  "release": 848,
+  "sha": "a1ab35362",
+  "fullSha": "a1ab35362431e1cf8116681a80bfb6865ccea768",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 15:16:08+00",
-  "commits": [{"sha":"a8e5caa65","message":"Add missing A2 scan PDF link to outhouse plans under task A4","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-17 16:06:39+00",
+  "commits": [{"sha":"a1ab35362","message":"Update building permit tracker: mark completed tasks, add septic/OSSF refs, fix doc links","author":"Jacqueline Giroux"}]
 }
