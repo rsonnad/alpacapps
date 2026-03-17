@@ -1,12 +1,12 @@
 {
-  "version": "v260317.37 4:13p",
-  "release": 851,
-  "sha": "d88b344f8",
-  "fullSha": "d88b344f8a3d0e53bd2a5830dcec90ad7a905ec9",
+  "version": "v260317.38 4:27p",
+  "release": 852,
+  "sha": "b567e5837",
+  "fullSha": "b567e58379c2f860bbb20589fe018d7e6d2af47b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 21:13:50+00",
-  "commits": [{"sha":"d88b344f8","message":"Shorten setup prompt to one line — detail lives in llm-setup-instructions.md","author":"Rahul"}]
+  "pushedAt": "2026-03-17 21:27:03+00",
+  "commits": [{"sha":"e629c4b8a","message":"Add email template compliance system with 7 centralized rules","author":"Rahul"},{"sha":"b567e5837","message":"Merge branch 'rahuliofam/email-template-system'","author":"Rahul"}]
 }
