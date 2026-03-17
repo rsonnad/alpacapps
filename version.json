@@ -1,12 +1,12 @@
 {
-  "version": "v260317.09 4:07a",
-  "release": 823,
-  "sha": "6bf6734e7",
-  "fullSha": "6bf6734e710bf030540828d0570952864826c5a0",
+  "version": "v260317.10 4:29a",
+  "release": 824,
+  "sha": "2cfd93f4b",
+  "fullSha": "2cfd93f4bba6cbe45e04bfe958e95fb945630c0e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 09:07:38+00",
-  "commits": [{"sha":"6bf6734e7","message":"Fix Music page stuck on Loading: add API timeout + parallel init","author":"Rahul"}]
+  "pushedAt": "2026-03-17 09:29:39+00",
+  "commits": [{"sha":"f55861a63","message":"Polish Music Now panel cards: proper CSS, icon buttons, better spacing","author":"Rahul"},{"sha":"2cfd93f4b","message":"Merge branch 'musing-mccarthy'","author":"Rahul"}]
 }
