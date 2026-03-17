@@ -334,6 +334,21 @@ function bindEvents() {
   document.getElementById('simpleLightbox').addEventListener('click', () => {
     document.getElementById('simpleLightbox').classList.add('hidden');
   });
+
+  // Escape key closes modal (with dirty check)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const lightbox = document.getElementById('simpleLightbox');
+      if (!lightbox.classList.contains('hidden')) {
+        lightbox.classList.add('hidden');
+        return;
+      }
+      const modal = document.getElementById('addProjectModal');
+      if (!modal.classList.contains('hidden')) {
+        closeModal();
+      }
+    }
+  });
 }
 
 // ---- Modal ----
@@ -430,7 +445,21 @@ async function openEditModal(task) {
   modal.classList.remove('hidden');
 }
 
-function closeModal() {
+function isModalDirty() {
+  const title = document.getElementById('newTitle').value.trim();
+  const notes = document.getElementById('newNotes').value.trim();
+  const description = document.getElementById('newDescription').value.trim();
+  const priority = document.getElementById('newPriority').value;
+  const assignee = document.getElementById('newAssignee').value;
+  const space = document.getElementById('newSpace').value;
+  const locationLabel = document.getElementById('newLocationLabel').value.trim();
+  return !!(title || notes || description || priority || assignee || space || locationLabel);
+}
+
+function closeModal(force = false) {
+  if (!force && !editingTaskId && isModalDirty()) {
+    if (!confirm('You have unsaved content. Discard this project task?')) return;
+  }
   document.getElementById('addProjectModal').classList.add('hidden');
   editingTaskId = null;
 }
@@ -481,7 +510,7 @@ async function handleSaveProject(e) {
       showToast('Project created', 'success');
     }
 
-    closeModal();
+    closeModal(true);
     await loadTasks();
     await loadAssignees();
   } catch (err) {
