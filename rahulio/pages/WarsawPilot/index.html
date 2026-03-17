@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Three Pillars — Warsaw Pilot</title>
-  <meta property="og:title" content="Three Pillars — AI-Powered Community for Professionals">
-  <meta property="og:description" content="A curated community of 60 professionals in Warsaw who meet weekly for afternoon tea. AI-powered connections across Health, Wealth, and Connection.">
+  <title>Three Pillars — AI-Operable Spaces</title>
+  <meta property="og:title" content="Three Pillars — AI-Operable Spaces">
+  <meta property="og:description" content="Physical spaces where AI has agency. It controls the lights, the sound, the climate, the flow — shaping the environment around the people inside.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     /* ========================================
-       CSS Variables — Three Pillars Palette
+       CSS Variables
        ======================================== */
     :root {
       /* Core */
@@ -33,20 +33,20 @@
       --border-light:  #F0EAE0;
 
       /* Pillar Colors */
-      --health:        #5B8C5A;
-      --health-light:  #7AAD79;
-      --health-bg:     rgba(91,140,90,0.08);
-      --health-border: rgba(91,140,90,0.2);
+      --space:         #5B6E8C;
+      --space-light:   #7A8FAF;
+      --space-bg:      rgba(91,110,140,0.08);
+      --space-border:  rgba(91,110,140,0.2);
 
-      --wealth:        #C4933F;
-      --wealth-light:  #D4A843;
-      --wealth-bg:     rgba(196,147,63,0.08);
-      --wealth-border: rgba(196,147,63,0.2);
+      --ai:            #8B6B4A;
+      --ai-light:      #A88560;
+      --ai-bg:         rgba(139,107,74,0.08);
+      --ai-border:     rgba(139,107,74,0.2);
 
-      --connection:    #5B7FA5;
-      --connection-light: #7A9BBF;
-      --connection-bg: rgba(91,127,165,0.08);
-      --connection-border: rgba(91,127,165,0.2);
+      --human:         #5B8C5A;
+      --human-light:   #7AAD79;
+      --human-bg:      rgba(91,140,90,0.08);
+      --human-border:  rgba(91,140,90,0.2);
 
       /* Accent */
       --accent:        #8B6B4A;
@@ -124,9 +124,9 @@
       text-transform: uppercase; padding: 0.35rem 0.9rem;
       border-radius: 100px; border: 1px solid;
     }
-    .hero-pill.health { color: var(--health); background: var(--health-bg); border-color: var(--health-border); }
-    .hero-pill.wealth { color: var(--wealth); background: var(--wealth-bg); border-color: var(--wealth-border); }
-    .hero-pill.connection { color: var(--connection); background: var(--connection-bg); border-color: var(--connection-border); }
+    .hero-pill.space { color: var(--space); background: var(--space-bg); border-color: var(--space-border); }
+    .hero-pill.ai { color: var(--ai); background: var(--ai-bg); border-color: var(--ai-border); }
+    .hero-pill.human { color: var(--human); background: var(--human-bg); border-color: var(--human-border); }
 
     .hero h1 {
       font-size: 3rem; font-weight: 400; letter-spacing: -0.02em;
@@ -163,7 +163,7 @@
       color: var(--text-soft); margin-bottom: 1rem;
       max-width: 720px;
     }
-    .section ul {
+    .section ul, .section ol {
       color: var(--text-soft); margin-left: 1.25rem; margin-bottom: 1rem;
     }
     .section li {
@@ -250,143 +250,105 @@
     .styled-table tr:last-child td { border-bottom: none; }
 
     /* ========================================
-       Pillar Badges
+       Layer Diagram
        ======================================== */
-    .pillar-badge {
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em;
-      padding: 0.25rem 0.65rem; border-radius: 100px;
-      border: 1px solid;
+    .layer-stack {
+      margin: 1.5rem 0;
     }
-    .pillar-badge.health { color: var(--health); background: var(--health-bg); border-color: var(--health-border); }
-    .pillar-badge.wealth { color: var(--wealth); background: var(--wealth-bg); border-color: var(--wealth-border); }
-    .pillar-badge.connection { color: var(--connection); background: var(--connection-bg); border-color: var(--connection-border); }
-    .pillar-badge .dot {
-      width: 6px; height: 6px; border-radius: 50%;
+    .layer {
+      display: flex; align-items: stretch;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
     }
-    .pillar-badge.health .dot { background: var(--health); }
-    .pillar-badge.wealth .dot { background: var(--wealth); }
-    .pillar-badge.connection .dot { background: var(--connection); }
+    .layer-label {
+      width: 140px; min-width: 140px;
+      padding: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: white; text-align: center;
+    }
+    .layer-label.physical { background: var(--space); }
+    .layer-label.intelligence { background: var(--ai); }
+    .layer-label.experience { background: var(--human); }
+    .layer-content {
+      padding: 1rem 1.25rem;
+      font-size: 0.85rem; color: var(--text-soft);
+      line-height: 1.55; flex: 1;
+    }
+    .layer-content strong { color: var(--text); }
 
     /* ========================================
-       Evening Card Mockup
+       Control Grid
        ======================================== */
-    .evening-card {
+    .control-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1rem; margin: 1.25rem 0;
+    }
+    .control-item {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .control-icon {
+      font-size: 1.8rem; margin-bottom: 0.5rem;
+    }
+    .control-name {
+      font-weight: 600; font-size: 0.88rem;
+      color: var(--dark); margin-bottom: 0.35rem;
+    }
+    .control-desc {
+      font-size: 0.78rem; color: var(--text-dim); line-height: 1.45;
+    }
+
+    /* ========================================
+       Scenario Card
+       ======================================== */
+    .scenario-card {
       background: var(--surface-warm);
       border: 2px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 2rem;
-      max-width: 380px;
-      margin: 1.5rem auto;
+      margin: 1.5rem 0;
       box-shadow: var(--shadow-lg);
+    }
+    .scenario-card .sc-header {
+      font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 0.5rem;
+    }
+    .scenario-card .sc-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.4rem; font-weight: 400;
+      color: var(--dark); margin-bottom: 1.25rem;
+    }
+    .scenario-step {
+      display: flex; gap: 0.75rem;
+      margin-bottom: 1rem;
       font-size: 0.85rem;
     }
-    .evening-card .ec-header {
-      font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--text-muted); margin-bottom: 1.25rem;
+    .scenario-step .sc-time {
+      min-width: 70px; font-weight: 600;
+      color: var(--accent); font-size: 0.78rem;
+      padding-top: 0.1rem;
     }
-    .evening-card .ec-welcome {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.5rem; font-weight: 400;
-      color: var(--dark); margin-bottom: 1rem;
+    .scenario-step .sc-action {
+      color: var(--text-soft); line-height: 1.5;
     }
-    .evening-card .ec-tables {
-      display: flex; gap: 1.5rem; margin-bottom: 1.25rem;
-    }
-    .evening-card .ec-table-item {
-      font-size: 0.8rem; color: var(--text-soft);
-    }
-    .evening-card .ec-table-item strong {
-      display: block; font-size: 1.1rem; color: var(--dark);
-    }
-    .evening-card .ec-prompt {
-      font-style: italic; color: var(--text-dim);
-      padding: 0.75rem; background: var(--cream-warm);
-      border-radius: 8px; line-height: 1.5;
-    }
-    .evening-card .ec-divider {
-      height: 1px; background: var(--border);
-      margin: 1.25rem 0;
-    }
-    .evening-card .ec-connection {
-      margin-bottom: 0.75rem;
-    }
-    .evening-card .ec-connection-name {
-      font-weight: 600; color: var(--dark);
-      display: flex; align-items: center; gap: 0.35rem;
-    }
-    .evening-card .ec-connection-name .arrow {
-      color: var(--accent); font-size: 0.9rem;
-    }
-    .evening-card .ec-connection-reason {
-      font-size: 0.78rem; color: var(--text-dim);
-      margin-left: 1rem; line-height: 1.45;
-    }
-
-    /* ========================================
-       Flow Timeline
-       ======================================== */
-    .flow-timeline {
-      position: relative;
-      padding-left: 2rem;
-      margin: 1.5rem 0;
-    }
-    .flow-timeline::before {
-      content: ''; position: absolute;
-      left: 0.45rem; top: 0.5rem; bottom: 0.5rem;
-      width: 2px; background: var(--border);
-    }
-    .flow-step {
-      position: relative; margin-bottom: 1.75rem;
-    }
-    .flow-step::before {
-      content: ''; position: absolute;
-      left: -1.55rem; top: 0.4rem;
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--surface); border: 2px solid var(--accent);
-    }
-    .flow-step.active::before {
-      background: var(--accent);
-    }
-    .flow-step-time {
-      font-size: 0.72rem; font-weight: 600;
-      color: var(--accent); letter-spacing: 0.04em;
-      margin-bottom: 0.2rem;
-    }
-    .flow-step-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.2rem; color: var(--dark);
-      margin-bottom: 0.35rem;
-    }
-    .flow-step-desc {
-      font-size: 0.85rem; color: var(--text-dim); line-height: 1.55;
-    }
-
-    /* ========================================
-       AI Evolution Table
-       ======================================== */
-    .evolution-grid {
-      display: grid; gap: 1rem; margin: 1.25rem 0;
-    }
-    .evolution-step {
-      display: grid; grid-template-columns: 100px 1fr 1fr;
-      gap: 0.75rem; padding: 1rem;
-      background: var(--surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius);
-    }
-    .evo-period {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.1rem; font-weight: 600;
-      color: var(--accent);
-    }
-    .evo-knows, .evo-does {
-      font-size: 0.82rem; color: var(--text-dim); line-height: 1.5;
-    }
-    .evo-label {
-      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--text-muted);
-      margin-bottom: 0.2rem;
+    .scenario-step .sc-action strong { color: var(--text); }
+    .scenario-step .sc-ai-tag {
+      display: inline-block;
+      font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--ai); background: var(--ai-bg);
+      border: 1px solid var(--ai-border);
+      padding: 0.15rem 0.5rem; border-radius: 100px;
+      margin-left: 0.35rem; vertical-align: middle;
     }
 
     /* ========================================
@@ -402,53 +364,6 @@
       border-top: 1px solid var(--border-light);
       border-bottom: 1px solid var(--border-light);
       line-height: 1.45;
-    }
-    .pull-quote .translation {
-      display: block; font-size: 0.95rem;
-      color: var(--text-dim); font-style: normal;
-      margin-top: 0.75rem;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    /* ========================================
-       Pricing Cards
-       ======================================== */
-    .pricing-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 1rem; margin: 1.25rem 0;
-    }
-    .pricing-card {
-      background: var(--surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-      text-align: center;
-    }
-    .pricing-card.featured {
-      border-color: var(--accent);
-      box-shadow: var(--shadow-md);
-    }
-    .pricing-card .tier-name {
-      font-size: 0.72rem; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--text-muted); margin-bottom: 0.5rem;
-    }
-    .pricing-card .tier-price {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 2rem; font-weight: 600;
-      color: var(--dark); margin-bottom: 0.15rem;
-    }
-    .pricing-card .tier-freq {
-      font-size: 0.78rem; color: var(--text-dim);
-      margin-bottom: 0.75rem;
-    }
-    .pricing-card .tier-features {
-      font-size: 0.8rem; color: var(--text-soft);
-      line-height: 1.6; text-align: left;
-      list-style: none;
-    }
-    .pricing-card .tier-features li::before {
-      content: '\2713\00a0'; color: var(--health);
     }
 
     /* ========================================
@@ -497,25 +412,42 @@
     .steps-list li strong { color: var(--text); }
 
     /* ========================================
-       Application Questions
+       Flow Timeline
        ======================================== */
-    .app-questions {
-      margin: 1rem 0;
+    .flow-timeline {
+      position: relative;
+      padding-left: 2rem;
+      margin: 1.5rem 0;
     }
-    .app-q {
-      padding: 0.85rem 1rem;
-      background: var(--cream-warm);
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-      font-size: 0.88rem;
-      font-style: italic;
-      color: var(--text-soft);
+    .flow-timeline::before {
+      content: ''; position: absolute;
+      left: 0.45rem; top: 0.5rem; bottom: 0.5rem;
+      width: 2px; background: var(--border);
     }
-    .app-q strong {
-      font-style: normal; font-weight: 600;
-      color: var(--text); display: block;
-      font-size: 0.72rem; letter-spacing: 0.06em;
-      text-transform: uppercase; margin-bottom: 0.2rem;
+    .flow-step {
+      position: relative; margin-bottom: 1.75rem;
+    }
+    .flow-step::before {
+      content: ''; position: absolute;
+      left: -1.55rem; top: 0.4rem;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--surface); border: 2px solid var(--accent);
+    }
+    .flow-step.active::before {
+      background: var(--accent);
+    }
+    .flow-step-time {
+      font-size: 0.72rem; font-weight: 600;
+      color: var(--accent); letter-spacing: 0.04em;
+      margin-bottom: 0.2rem;
+    }
+    .flow-step-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.2rem; color: var(--dark);
+      margin-bottom: 0.35rem;
+    }
+    .flow-step-desc {
+      font-size: 0.85rem; color: var(--text-dim); line-height: 1.55;
     }
 
     /* ========================================
@@ -525,14 +457,12 @@
       .hero h1 { font-size: 2.2rem; }
       .principles-grid { grid-template-columns: 1fr; }
       .principle.span-full { grid-column: 1; }
-      .pricing-grid { grid-template-columns: 1fr; }
-      .evolution-step {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-      }
-      .evening-card { max-width: 100%; padding: 1.5rem; }
+      .control-grid { grid-template-columns: 1fr; }
+      .layer { flex-direction: column; }
+      .layer-label { width: 100%; min-width: unset; padding: 0.6rem; }
       .pull-quote { padding: 1.5rem 1rem; font-size: 1.3rem; }
       .page-wrap { padding: 1.5rem 1rem 4rem; }
+      .scenario-card { padding: 1.5rem; }
     }
 
     /* Hidden version */
@@ -555,80 +485,202 @@
          ═══════════════════════════════════════ -->
     <section class="hero">
       <div class="hero-pillars">
-        <span class="hero-pill health"><span class="dot"></span> Health</span>
-        <span class="hero-pill wealth"><span class="dot"></span> Wealth</span>
-        <span class="hero-pill connection"><span class="dot"></span> Connection</span>
+        <span class="hero-pill space">Physical Space</span>
+        <span class="hero-pill ai">AI Agency</span>
+        <span class="hero-pill human">Human Experience</span>
       </div>
       <h1>Three Pillars</h1>
       <p class="tagline">
-        An AI-powered community for professionals serious about their health, career, and relationships.
+        Physical spaces where AI has agency. It controls the lights, the sound, the climate, the flow &mdash; shaping the environment around the people inside.
       </p>
-      <p class="subtitle">Warsaw Pilot &mdash; Product Brief</p>
+      <p class="subtitle">Warsaw Pilot &mdash; Business Plan</p>
     </section>
 
     <!-- ═══════════════════════════════════════
-         THE PROBLEM
+         THE IDEA
          ═══════════════════════════════════════ -->
     <section class="section">
-      <div class="section-label">The Problem</div>
-      <h2>Connected Everywhere, Belonging Nowhere</h2>
+      <div class="section-label">The Idea</div>
+      <h2>Spaces That Think</h2>
       <p>
-        Modern professionals &mdash; especially in fast-growing cities &mdash; face a paradox: surrounded by people but deeply disconnected. They have colleagues but not community. Social media but not real relationships. They want to improve their health, grow their careers, and find meaningful connection &mdash; but they're doing it alone.
+        Today's "smart" spaces are dumb. A smart home is a collection of apps &mdash; one for lights, one for thermostats, one for music. You're the orchestrator. You manually set scenes, write automations, and troubleshoot when things break. The intelligence is in your head, not in the room.
       </p>
-      <p>Existing solutions fall short:</p>
-      <ul>
-        <li><strong>Networking events</strong> are transactional. Business cards exchanged, never followed up.</li>
-        <li><strong>Dating apps</strong> reduce people to profiles. No context, no trust, no organic chemistry.</li>
-        <li><strong>Fitness classes</strong> build community around one axis but miss the others.</li>
-        <li><strong>Meetups</strong> are inconsistent, poorly curated, and have high churn.</li>
-        <li><strong>Mastermind groups</strong> are expensive, small, and career-only.</li>
-      </ul>
       <p>
-        None of these learn. None get better over time. None connect the dots across health, career, and relationships simultaneously.
+        <strong>Three Pillars</strong> builds physical spaces where the AI is the operator. Not an app you control &mdash; an intelligence that controls the environment. It sees who's in the room, understands what's happening, and shapes the space in real time: adjusting lighting, temperature, sound, scent, and access without anyone touching a switch.
+      </p>
+      <p>
+        The space becomes a living system. It responds to people the way a great host would &mdash; anticipating needs, creating atmosphere, and adapting moment to moment.
       </p>
     </section>
 
     <div class="section-divider"></div>
 
     <!-- ═══════════════════════════════════════
-         THE SOLUTION
+         THE ARCHITECTURE
          ═══════════════════════════════════════ -->
     <section class="section">
-      <div class="section-label">The Solution</div>
-      <h2>60 People. Weekly Tea. AI That Learns.</h2>
-      <p>
-        <strong>Three Pillars</strong> is a curated community of 60 professionals who meet weekly for afternoon tea. An AI engine learns each member's goals, personality, and interaction patterns &mdash; then orchestrates connections that compound in value over time.
-      </p>
-      <p>
-        It's not networking. Not therapy. Not a dating event. It's a recurring, AI-enhanced gathering where the right people keep meeting the right people &mdash; and the AI gets smarter every session.
-      </p>
+      <div class="section-label">Architecture</div>
+      <h2>Three Layers</h2>
+      <p>Every Three Pillars space is built on three layers that work together:</p>
 
-      <h3>Core Principles</h3>
+      <div class="layer-stack">
+        <div class="layer">
+          <div class="layer-label physical">Physical Layer</div>
+          <div class="layer-content">
+            <strong>The hardware.</strong> Smart lighting (tunable color temperature + intensity per zone), climate control (HVAC + radiant panels + air quality), directional speakers, motorized shading, electronic access control, scent diffusion, displays. Everything is addressable &mdash; the AI can reach every actuator in the space.
+          </div>
+        </div>
+        <div class="layer">
+          <div class="layer-label intelligence">Intelligence Layer</div>
+          <div class="layer-content">
+            <strong>The AI operator.</strong> Sensor fusion (occupancy, light levels, temperature, humidity, noise, CO2). Contextual awareness (time of day, calendar events, who's present, what's happening). Decision engine that translates context into physical actions. Learns from outcomes over time.
+          </div>
+        </div>
+        <div class="layer">
+          <div class="layer-label experience">Experience Layer</div>
+          <div class="layer-content">
+            <strong>What people feel.</strong> The AI doesn't expose its controls &mdash; it produces experiences. "Focused work" isn't a button; it's what happens when the AI dims the lights, cools the air 1&deg;, silences the speakers, and locks the door. The output is a feeling, not a setting.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         WHAT AI CONTROLS
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">AI Agency</div>
+      <h2>What the AI Controls</h2>
+      <p>The AI has direct control over every environmental system in the space. Not suggestions &mdash; actual control.</p>
+
+      <div class="control-grid">
+        <div class="control-item">
+          <div class="control-icon">💡</div>
+          <div class="control-name">Lighting</div>
+          <div class="control-desc">Per-zone color temperature, intensity, and rhythm. Circadian shifts. Accent lighting for mood. Follows natural daylight patterns.</div>
+        </div>
+        <div class="control-item">
+          <div class="control-icon">🌡</div>
+          <div class="control-name">Climate</div>
+          <div class="control-desc">Temperature, humidity, airflow, CO2 monitoring. Zone-by-zone control. Preheats and precools based on schedule and occupancy.</div>
+        </div>
+        <div class="control-item">
+          <div class="control-icon">🔊</div>
+          <div class="control-name">Sound</div>
+          <div class="control-desc">Directional speakers per zone. Background music, white noise, silence. Volume and genre shift with context. Announcement capability.</div>
+        </div>
+        <div class="control-item">
+          <div class="control-icon">🚪</div>
+          <div class="control-name">Access</div>
+          <div class="control-desc">Electronic locks, presence detection, guest access codes. AI grants and revokes access based on schedule, identity, and context.</div>
+        </div>
+        <div class="control-item">
+          <div class="control-icon">🪟</div>
+          <div class="control-name">Shading</div>
+          <div class="control-desc">Motorized blinds and curtains. Responds to sun position, glare, privacy needs, and time of day. Balances natural light with thermal load.</div>
+        </div>
+        <div class="control-item">
+          <div class="control-icon">🌿</div>
+          <div class="control-name">Atmosphere</div>
+          <div class="control-desc">Scent diffusion, air purification, plant irrigation. Subtle environmental cues that shape how a room feels without anyone noticing why.</div>
+        </div>
+      </div>
+
+      <h3>Sensing</h3>
+      <p>The AI's decisions are driven by what it senses:</p>
+      <ul>
+        <li><strong>Occupancy &amp; presence:</strong> Who is in which zone, how many people, movement patterns</li>
+        <li><strong>Environmental:</strong> Temperature, humidity, CO2, light levels, noise levels per zone</li>
+        <li><strong>Calendar &amp; schedule:</strong> What events are happening, who's expected, what's coming next</li>
+        <li><strong>Time &amp; season:</strong> Time of day, day of week, sunrise/sunset, season</li>
+        <li><strong>Behavioral patterns:</strong> How people use the space over time &mdash; when they arrive, where they sit, what they prefer</li>
+        <li><strong>External:</strong> Weather, outdoor temperature, air quality, pollen count</li>
+      </ul>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         SCENARIO
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">In Practice</div>
+      <h2>A Saturday at Three Pillars</h2>
+      <p>Here's what the AI does during a community gathering &mdash; no human touches a control.</p>
+
+      <div class="scenario-card">
+        <div class="sc-header">Scenario &bull; Community Gathering &bull; Saturday 3:00 PM</div>
+        <div class="sc-title">40 members arriving over 20 minutes for afternoon tea</div>
+
+        <div class="scenario-step">
+          <div class="sc-time">2:00 PM</div>
+          <div class="sc-action"><strong>Pre-arrival.</strong> AI starts the space. HVAC targets 21.5&deg;C. Lights shift to warm 2700K at 60%. Background music begins &mdash; ambient, low volume. Blinds adjust for afternoon sun angle. Front door unlocks. <span class="sc-ai-tag">autonomous</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">3:00 PM</div>
+          <div class="sc-action"><strong>Arrival wave.</strong> Presence sensors detect people entering. AI increases ventilation as CO2 begins to rise. Lights brighten slightly to match social energy. Music volume adjusts to stay just below conversation level. <span class="sc-ai-tag">reactive</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">3:20 PM</div>
+          <div class="sc-action"><strong>Full room.</strong> 38 people detected. Temperature drops 0.5&deg;C to compensate for body heat. AI routes audio to directional speakers &mdash; different ambient tracks for the main hall vs. breakout nooks. Scent system activates a light tea-adjacent aroma. <span class="sc-ai-tag">predictive</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">4:00 PM</div>
+          <div class="sc-action"><strong>Community moment.</strong> Calendar event triggers. Main hall lights brighten to 80%. Breakout nook lights dim to discourage side conversations. Speakers in main hall switch to voice-optimized EQ. Background music fades to silence. <span class="sc-ai-tag">event-driven</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">4:15 PM</div>
+          <div class="sc-action"><strong>Breakout pairs.</strong> Members disperse. AI detects occupancy shifting to nooks. Each occupied nook gets warm lighting, slight temperature bump, and its own audio zone. Unoccupied nooks stay dim. <span class="sc-ai-tag">zone-aware</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">5:15 PM</div>
+          <div class="sc-action"><strong>Wind-down.</strong> AI begins the departure sequence. Lights shift cooler. Music transitions to something signaling closure. Temperature edges down. As occupancy drops below 10, some zones go to standby. <span class="sc-ai-tag">autonomous</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">5:45 PM</div>
+          <div class="sc-action"><strong>Close.</strong> Last person exits. AI locks doors, sets overnight climate (16&deg;C), kills audio, drops lights to security-only. Logs the session. <span class="sc-ai-tag">autonomous</span></div>
+        </div>
+      </div>
+
+      <p>This is one scenario. The same space runs differently for focused coworking, a dinner party, a workshop, or an empty afternoon. The AI adapts the environment to whatever is happening.</p>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         DESIGN PRINCIPLES
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">Design Principles</div>
+      <h2>How We Build</h2>
+
       <div class="principles-grid">
         <div class="principle">
           <div class="principle-num">01</div>
-          <div class="principle-title">Three Pillars</div>
-          <div class="principle-desc">Health, Wealth, Connection. Members are actively growing in at least two.</div>
+          <div class="principle-title">AI Operates, Humans Override</div>
+          <div class="principle-desc">The AI runs the space by default. Humans can always override &mdash; but they rarely need to. The best compliment: "I didn't notice the technology."</div>
         </div>
         <div class="principle">
           <div class="principle-num">02</div>
-          <div class="principle-title">Contribution First</div>
-          <div class="principle-desc">Every member shows up ready to give, not just take. Generosity of spirit is the entry requirement.</div>
+          <div class="principle-title">Feelings, Not Settings</div>
+          <div class="principle-desc">Nobody says "set lights to 3200K at 70%." They say "this room feels calm." We design for feelings and let the AI translate to hardware.</div>
         </div>
         <div class="principle">
           <div class="principle-num">03</div>
-          <div class="principle-title">AI That Learns</div>
-          <div class="principle-desc">The matching engine improves with every session, every follow-up, every outcome reported.</div>
+          <div class="principle-title">Every Surface Wired</div>
+          <div class="principle-desc">If the AI can't reach it, it can't control it. Every light, vent, speaker, lock, and shade is on the network. No dead zones.</div>
         </div>
         <div class="principle">
           <div class="principle-num">04</div>
-          <div class="principle-title">Ambient, Not Intrusive</div>
-          <div class="principle-desc">AI works in the background. The experience feels like a brilliant host, not a tech product.</div>
+          <div class="principle-title">Learn From Every Session</div>
+          <div class="principle-desc">Every event is training data. The AI gets better at predicting what the space needs. Month 1 is good. Month 12 is invisible.</div>
         </div>
         <div class="principle span-full">
           <div class="principle-num">05</div>
-          <div class="principle-title">Compounding Returns</div>
-          <div class="principle-desc">Session 1 is good. Session 20 is transformative. Session 50 is life-changing. The more the AI knows, the better the connections.</div>
+          <div class="principle-title">Physical Materials Matter</div>
+          <div class="principle-desc">Technology disappears into the walls. The visible layer is warm, natural, and human &mdash; wood, ceramics, plants, textiles. The space should feel like a home run by a thoughtful person, not a tech demo.</div>
         </div>
       </div>
     </section>
@@ -636,319 +688,47 @@
     <div class="section-divider"></div>
 
     <!-- ═══════════════════════════════════════
-         WHO'S IN THE ROOM
-         ═══════════════════════════════════════ -->
-    <section class="section">
-      <div class="section-label">Who's in the Room</div>
-      <h2>The Binding Characteristics</h2>
-      <p>
-        The community is designed with enough similarity for instant rapport and enough diversity for complementary value.
-      </p>
-
-      <table class="styled-table">
-        <thead>
-          <tr><th>Criterion</th><th>Requirement</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Age</td><td>28&ndash;48</td></tr>
-          <tr><td>Location</td><td>Warsaw, Poland</td></tr>
-          <tr><td>Language</td><td>Polish + English. ~40% bilingual. Polish-only speakers grouped with Polish tables.</td></tr>
-          <tr><td>Pillars</td><td>Actively growing in at least 2 of 3: Health, Wealth, Connection</td></tr>
-          <tr><td>Contribution</td><td>Willing to help others achieve their dreams and goals &mdash; whether through a specific skill or simply showing up with generosity</td></tr>
-          <tr><td>Character</td><td>Demonstrates a pattern of giving, not just taking</td></tr>
-        </tbody>
-      </table>
-
-      <h3>The Application</h3>
-      <p>Prospective members answer five questions. Substantive, specific answers required for at least four.</p>
-
-      <div class="app-questions">
-        <div class="app-q">
-          <strong>Growth</strong>
-          &ldquo;What are you actively building or changing in your life right now?&rdquo;
-        </div>
-        <div class="app-q">
-          <strong>Health</strong>
-          &ldquo;What's one specific thing you're doing for your health?&rdquo;
-        </div>
-        <div class="app-q">
-          <strong>Wealth</strong>
-          &ldquo;What's your primary professional or financial goal for the next 12 months?&rdquo;
-        </div>
-        <div class="app-q">
-          <strong>Connection</strong>
-          &ldquo;What kind of relationship or connection is most missing from your life?&rdquo;
-        </div>
-        <div class="app-q">
-          <strong>Contribution</strong>
-          &ldquo;What can you offer this community? This could be a skill, knowledge, experience &mdash; or simply your willingness to show up for others and help them achieve their goals.&rdquo;
-        </div>
-      </div>
-
-      <h3>Group Composition</h3>
-      <ul>
-        <li><strong>60 members</strong> per cohort</li>
-        <li>~60% regulars (attend 3+ times/month), ~40% rotating</li>
-        <li>Gender balance: ~50/50</li>
-        <li>Professional diversity: minimum 8 industries represented</li>
-        <li>No more than 15% from any single profession</li>
-      </ul>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ═══════════════════════════════════════
-         THE EXPERIENCE
-         ═══════════════════════════════════════ -->
-    <section class="section">
-      <div class="section-label">The Experience</div>
-      <h2>Saturday Afternoon Tea</h2>
-
-      <h3>The Space</h3>
-      <p>A warm, well-designed venue in central Warsaw with:</p>
-      <ul>
-        <li>6 long communal tables seating 10 each, with a dedicated tea server per table</li>
-        <li>12&ndash;15 breakout nooks around the perimeter &mdash; small tables for 2, window seats, armchairs</li>
-        <li>A <strong>&ldquo;Give Wall&rdquo;</strong> near the entrance for member offers</li>
-        <li>Natural materials, warm lighting, plants, real ceramics</li>
-        <li>Background music curated for each phase of the afternoon</li>
-        <li>No screens, no projectors, no presentation slides</li>
-      </ul>
-
-      <h3>The Evening Card</h3>
-      <p>On arrival, each member receives a beautifully printed physical card:</p>
-
-      <div class="evening-card">
-        <div class="ec-header">Saturday Afternoon &bull; March 15</div>
-        <div class="ec-welcome">Welcome, Kasia</div>
-        <div class="ec-tables">
-          <div class="ec-table-item">Round 1 <strong>Table 3</strong></div>
-          <div class="ec-table-item">Round 2 <strong>Table 6</strong></div>
-        </div>
-        <div class="ec-prompt">
-          &ldquo;Ask someone what they'd do with an extra hour every day.&rdquo;
-        </div>
-        <div class="ec-divider"></div>
-        <div class="ec-connection">
-          <div class="ec-connection-name"><span class="arrow">&rarr;</span> Tomek W.</div>
-          <div class="ec-connection-reason">Just started a wellness brand. You both spent time in Berlin and care about sustainable living.</div>
-        </div>
-        <div class="ec-connection">
-          <div class="ec-connection-name"><span class="arrow">&rarr;</span> Dr. Ewa M.</div>
-          <div class="ec-connection-reason">She'll be at your Round 2 table. Functional medicine physician training for her first half-marathon.</div>
-        </div>
-        <div class="ec-connection">
-          <div class="ec-connection-name"><span class="arrow">&rarr;</span> Marek K.</div>
-          <div class="ec-connection-reason">Find him during breakouts. Real estate developer with a community garden project in Praga.</div>
-        </div>
-      </div>
-
-      <h3>The Flow (2.5 Hours)</h3>
-
-      <div class="flow-timeline">
-        <div class="flow-step active">
-          <div class="flow-step-time">15 min</div>
-          <div class="flow-step-title">Arrival + Check-in</div>
-          <div class="flow-step-desc">Members arrive, check in via app or at the door, receive their Evening Card. Hosts greet everyone by name with AI-fed context.</div>
-        </div>
-        <div class="flow-step active">
-          <div class="flow-step-time">35 min</div>
-          <div class="flow-step-title">Round 1 &mdash; Table of 10</div>
-          <div class="flow-step-desc">AI-curated seating. Each table has a volunteer tea server and a Table Card with a conversation prompt crafted for that specific group. Family-style tea and accompaniments.</div>
-        </div>
-        <div class="flow-step">
-          <div class="flow-step-time">15 min</div>
-          <div class="flow-step-title">Community Moment</div>
-          <div class="flow-step-desc">Everyone stands. A brief whole-room segment that rotates weekly: wellness practice, skill shares, personal stories, or open micro-lessons. Always led by a member.</div>
-        </div>
-        <div class="flow-step active">
-          <div class="flow-step-time">35 min</div>
-          <div class="flow-step-title">Round 2 &mdash; Table of 10</div>
-          <div class="flow-step-desc">New table, new group, deeper prompt. By Round 2, people are warmed up and conversations go deeper. After two rounds: 18 unique tablemates.</div>
-        </div>
-        <div class="flow-step active">
-          <div class="flow-step-time">30&ndash;40 min</div>
-          <div class="flow-step-title">Breakout Pairs</div>
-          <div class="flow-step-desc">The most important segment. Members move to the nooks for focused 1:1 conversations with AI-selected partners. 15 minutes with the right person, with the right context, produces more value than 2 hours of mingling.</div>
-        </div>
-        <div class="flow-step">
-          <div class="flow-step-time">15 min</div>
-          <div class="flow-step-title">Open Social + Departure</div>
-          <div class="flow-step-desc">Unstructured. Continue conversations, make new introductions, warm departures. The tea servers bring a final cup.</div>
-        </div>
-      </div>
-
-      <h3>The Host Role</h3>
-      <p>
-        Two hosts per event. Not MCs &mdash; they're the human embodiment of the AI. Warm, socially skilled people who greet everyone by name, circulate during rounds, and make specific introductions during open social. A subtle earpiece feeds them context from the AI.
-      </p>
-
-      <h3>Post-Event</h3>
-      <ul>
-        <li>Quick rating: how was tonight?</li>
-        <li>Tap to request connections with tablemates or breakout partners</li>
-        <li>Double opt-in &mdash; both people must tap for contact info to be shared</li>
-        <li>Real phone numbers, not in-app messaging. The AI gets out of the way.</li>
-      </ul>
-
-      <h3>Between Events</h3>
-      <p>The app is quiet &mdash; two touchpoints per week max:</p>
-      <ul>
-        <li><strong>Mid-week check-in:</strong> &ldquo;Did you follow up with anyone from Saturday?&rdquo;</li>
-        <li><strong>Pre-event preview:</strong> &ldquo;This Saturday's group has a nutritionist, two founders, and someone who just ran their first half-marathon. Coming?&rdquo;</li>
-      </ul>
-      <p>Outcome data (did the connection produce value?) is the training signal that makes the AI better every week.</p>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ═══════════════════════════════════════
-         THE AI ENGINE
-         ═══════════════════════════════════════ -->
-    <section class="section">
-      <div class="section-label">The AI Engine</div>
-      <h2>Intelligence That Compounds</h2>
-
-      <h3>What the AI Does</h3>
-      <table class="styled-table">
-        <thead>
-          <tr><th>Phase</th><th>AI's Role</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Application</td><td>Scores fit + complementarity. Flags if cohort is missing a profession or personality type.</td></tr>
-          <tr><td>Pre-session</td><td>Assigns seating for both rounds. Generates table prompts. Selects breakout pairings. Writes Evening Cards.</td></tr>
-          <tr><td>During</td><td>Feeds hosts contextual prompts via earpiece.</td></tr>
-          <tr><td>Post-session</td><td>Processes ratings, connection requests, follow-up reports. Updates member profiles.</td></tr>
-          <tr><td>Between</td><td>Sends check-ins. Tracks outcomes. Adjusts matching model. Curates community composition.</td></tr>
-        </tbody>
-      </table>
-
-      <h3>How Matching Evolves</h3>
-      <div class="evolution-grid">
-        <div class="evolution-step">
-          <div class="evo-period">Months 1&ndash;2</div>
-          <div class="evo-knows">
-            <div class="evo-label">AI Knows</div>
-            Stated goals, interests, profession, personality
-          </div>
-          <div class="evo-does">
-            <div class="evo-label">Matching Style</div>
-            Questionnaire-driven. Basic interest and goal overlap.
-          </div>
-        </div>
-        <div class="evolution-step">
-          <div class="evo-period">Months 3&ndash;6</div>
-          <div class="evo-knows">
-            <div class="evo-label">AI Knows</div>
-            Who you actually click with. Which topics energize you. Your follow-through rate.
-          </div>
-          <div class="evo-does">
-            <div class="evo-label">Matching Style</div>
-            Shifts from stated preferences to revealed behavior.
-          </div>
-        </div>
-        <div class="evolution-step">
-          <div class="evo-period">Months 6&ndash;12</div>
-          <div class="evo-knows">
-            <div class="evo-label">AI Knows</div>
-            Your growth trajectory. Whether you're making progress. Your stage in each pillar.
-          </div>
-          <div class="evo-does">
-            <div class="evo-label">Matching Style</div>
-            Mentorship pairings. Stage-aware matching. Proactive suggestions between events.
-          </div>
-        </div>
-        <div class="evolution-step">
-          <div class="evo-period">Year 2+</div>
-          <div class="evo-knows">
-            <div class="evo-label">AI Knows</div>
-            Full community graph. Relationship outcomes. Multi-axis compatibility patterns.
-          </div>
-          <div class="evo-does">
-            <div class="evo-label">Matching Style</div>
-            Orchestrates multi-axis value creation. Predicts which new members will thrive.
-          </div>
-        </div>
-      </div>
-
-      <h3>Contribution Tracking</h3>
-      <p>The AI measures and rewards contribution:</p>
-      <ul>
-        <li><strong>High contributors</strong> get the best matches. The most interesting new members and highest-value breakout pairings flow toward generous members.</li>
-        <li><strong>Low contributors</strong> get a gentle nudge from hosts.</li>
-        <li><strong>Persistent takers</strong> are counseled out via a quiet conversation. This protects the culture.</li>
-      </ul>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ═══════════════════════════════════════
-         WARSAW PILOT
+         WHY WARSAW
          ═══════════════════════════════════════ -->
     <section class="section">
       <div class="section-label">The Pilot</div>
       <h2>Why Warsaw</h2>
       <ul>
-        <li><strong>Demographic density:</strong> Enormous concentration of 28&ndash;48 year old professionals, many of whom moved to Warsaw from elsewhere in Poland</li>
-        <li><strong>Cultural homogeneity:</strong> Shared language, education, values, and economic context creates a strong natural binding</li>
-        <li><strong>The loneliness gap:</strong> Young professionals have colleagues but not community. Many left their social networks in their hometown.</li>
-        <li><strong>Caf&eacute; culture:</strong> Afternoon tea is culturally native. Sitting for hours over herbata in a kawiarnia is normal.</li>
-        <li><strong>Cost structure:</strong> Venue and tea service costs enable accessible pricing for the local professional class.</li>
-        <li><strong>Bilingual potential:</strong> Warsaw's international community allows for Polish + English events, with AI routing speakers to compatible tables.</li>
+        <li><strong>Construction costs:</strong> Fit-out and renovation costs are 40&ndash;60% lower than Western Europe or the US, while craftsmanship quality is exceptional</li>
+        <li><strong>Tech talent:</strong> Poland is a top-5 European tech hub. Finding engineers who can wire IoT, build AI pipelines, and integrate hardware is realistic</li>
+        <li><strong>Real estate:</strong> Commercial spaces in central Warsaw are available at prices that allow a pilot without raising $10M first</li>
+        <li><strong>Community hunger:</strong> Young professionals who moved to Warsaw from smaller cities are actively seeking belonging and third spaces</li>
+        <li><strong>Cultural fit:</strong> Polish kameralno (intimate gathering) culture values exactly the kind of warm, curated environment we're building</li>
       </ul>
 
       <div class="pull-quote">
-        Przyjechałeś do Warszawy, żeby coś zbudować.<br>Pomożemy Ci znaleźć swoich ludzi po drodze.
-        <span class="translation">You came to Warsaw to build something. We'll help you find your people along the way.</span>
+        The space is the product. The AI is the operator. The humans just show up and feel it.
       </div>
 
-      <h3>Pilot Parameters</h3>
-      <table class="styled-table">
-        <thead>
-          <tr><th>Parameter</th><th>Value</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Language</td><td>Polish + English (~40% bilingual)</td></tr>
-          <tr><td>Cohort size</td><td>60 members</td></tr>
-          <tr><td>Frequency</td><td>Weekly, Saturday afternoon</td></tr>
-          <tr><td>Duration</td><td>2.5 hours</td></tr>
-          <tr><td>Venue</td><td>Central Warsaw (Śródmieście, Mokotów, or Praga)</td></tr>
-        </tbody>
-      </table>
+      <h3>Pilot Space</h3>
+      <p>The first Three Pillars space is a single venue in central Warsaw &mdash; approximately 200&ndash;300 m&sup2;:</p>
+      <ul>
+        <li><strong>Main hall:</strong> 80&ndash;100 m&sup2;. 6 communal tables, open plan, high ceilings. This is where group events happen.</li>
+        <li><strong>Nooks:</strong> 8&ndash;12 small breakout areas around the perimeter. 2&ndash;4 person seating. Semi-private.</li>
+        <li><strong>Kitchen/service:</strong> Tea and light food preparation. Not a restaurant &mdash; curated beverages and snacks.</li>
+        <li><strong>Tech room:</strong> Server rack, network infrastructure, AI compute. The brain of the space, hidden from view.</li>
+      </ul>
 
-      <h3>Membership Pricing</h3>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <div class="tier-name">Explorer</div>
-          <div class="tier-price">300 PLN</div>
-          <div class="tier-freq">per month &middot; 2x/month</div>
-          <ul class="tier-features">
-            <li>Afternoon tea service</li>
-            <li>AI-curated seating</li>
-            <li>Evening Card + breakouts</li>
-          </ul>
-        </div>
-        <div class="pricing-card featured">
-          <div class="tier-name">Regular</div>
-          <div class="tier-price">500 PLN</div>
-          <div class="tier-freq">per month &middot; weekly</div>
-          <ul class="tier-features">
-            <li>Everything in Explorer</li>
-            <li>Between-session AI suggestions</li>
-            <li>Priority breakout matching</li>
-          </ul>
-        </div>
-        <div class="pricing-card">
-          <div class="tier-name">Inner Circle</div>
-          <div class="tier-price">750 PLN</div>
-          <div class="tier-freq">per month &middot; weekly</div>
-          <ul class="tier-features">
-            <li>Everything in Regular</li>
-            <li>Monthly AI growth insights</li>
-            <li>Community shaping input</li>
-          </ul>
-        </div>
+      <h3>Hardware Budget</h3>
+      <div class="card">
+        <div class="card-title">Fit-Out Cost Estimate (250 m&sup2;)</div>
+        <div class="econ-row"><span class="econ-label">Renovation &amp; interior build-out</span><span class="econ-value">250,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Smart lighting (Philips Hue / DALI)</span><span class="econ-value">45,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Climate (zone HVAC + sensors)</span><span class="econ-value">80,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Audio (directional speakers, zones)</span><span class="econ-value">35,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Access control &amp; occupancy sensors</span><span class="econ-value">25,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Motorized shading</span><span class="econ-value">20,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Network infrastructure &amp; compute</span><span class="econ-value">30,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Scent, air quality, misc sensors</span><span class="econ-value">15,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Furniture &amp; finishes</span><span class="econ-value">100,000 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Total fit-out</span><span class="econ-value">600,000 PLN</span></div>
       </div>
+      <p>Approximately $150,000 USD. This is the cost to take a raw commercial shell and turn it into a fully AI-operable space.</p>
     </section>
 
     <div class="section-divider"></div>
@@ -958,30 +738,42 @@
          ═══════════════════════════════════════ -->
     <section class="section">
       <div class="section-label">Business Model</div>
-      <h2>Unit Economics</h2>
-      <p>Per session, assuming 60-member cohort with ~48 average attendance:</p>
+      <h2>How It Makes Money</h2>
+
+      <h3>Phase 1: The Venue</h3>
+      <p>The first space operates as a membership-based community venue. Revenue comes from people using the space.</p>
 
       <div class="card">
-        <div class="card-title">Cost per Session</div>
-        <div class="econ-row"><span class="econ-label">Venue rental (3 hours)</span><span class="econ-value">1,500 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Tea + accompaniments (60 people)</span><span class="econ-value">1,200 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">2 hosts (stipend)</span><span class="econ-value">600 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">Printed cards / materials</span><span class="econ-value">200 PLN</span></div>
-        <div class="econ-row"><span class="econ-label">AI platform / ops</span><span class="econ-value">500 PLN</span></div>
-        <div class="econ-row total"><span class="econ-label">Total per session</span><span class="econ-value">4,000 PLN</span></div>
+        <div class="card-title">Monthly Revenue (60 Members)</div>
+        <div class="econ-row"><span class="econ-label">40 Regular members &times; 500 PLN</span><span class="econ-value">20,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">15 Premium members &times; 800 PLN</span><span class="econ-value">12,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">5 Day passes &times; 150 PLN &times; 4 weeks</span><span class="econ-value">3,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Private event rentals (2/month)</span><span class="econ-value">6,000 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Monthly revenue</span><span class="econ-value">41,000 PLN</span></div>
       </div>
 
-      <p><strong>Revenue per session:</strong> 6,000&ndash;8,000 PLN (mix of tiers)</p>
-      <p><strong>Monthly margin:</strong> 8,000&ndash;16,000 PLN per cohort</p>
+      <div class="card">
+        <div class="card-title">Monthly Costs</div>
+        <div class="econ-row"><span class="econ-label">Rent (central Warsaw, 250 m&sup2;)</span><span class="econ-value">12,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Utilities &amp; internet</span><span class="econ-value">3,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Staff (2 part-time hosts)</span><span class="econ-value">6,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Tea, beverages, supplies</span><span class="econ-value">4,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">AI platform &amp; cloud compute</span><span class="econ-value">2,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Maintenance &amp; misc</span><span class="econ-value">2,000 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Monthly costs</span><span class="econ-value">29,000 PLN</span></div>
+      </div>
 
-      <h3>Scaling</h3>
-      <p>One cohort = 60 members in one city. Scale by:</p>
-      <ol>
-        <li><strong>Adding cohorts in Warsaw</strong> &mdash; different neighborhoods, age bands, or days</li>
-        <li><strong>Other Polish cities</strong> &mdash; Krak&oacute;w, Wrocław, Gdańsk (same cultural binding)</li>
-        <li><strong>International expansion</strong> &mdash; each city gets its own cultural adaptation</li>
-      </ol>
-      <p>The AI is the scalable asset. The local execution (venue, hosts, tea) is the moat.</p>
+      <p><strong>Monthly margin: ~12,000 PLN ($3,000 USD).</strong> Modest but positive from month 3&ndash;4 as membership fills.</p>
+
+      <h3>Phase 2: The Platform</h3>
+      <p>Once the AI operator is proven in one space, the real business is licensing it to other venues:</p>
+      <ul>
+        <li><strong>Co-working spaces</strong> that want AI-managed environments without building the tech themselves</li>
+        <li><strong>Hospitality</strong> &mdash; hotels, restaurants, and wellness centers that want rooms that adapt to guests</li>
+        <li><strong>Corporate offices</strong> that want meeting rooms, lounges, and workspaces that self-optimize</li>
+        <li><strong>Residential</strong> &mdash; high-end apartments and homes where the AI runs the house</li>
+      </ul>
+      <p>The Warsaw space is both a business and a showroom. Every visitor experiences what the AI can do.</p>
     </section>
 
     <div class="section-divider"></div>
@@ -991,14 +783,14 @@
          ═══════════════════════════════════════ -->
     <section class="section">
       <div class="section-label">Next Steps</div>
-      <h2>Path to Session 1</h2>
+      <h2>Path to Opening</h2>
       <ol class="steps-list">
-        <li><strong>Build the MVP app</strong> &mdash; onboarding questionnaire, session check-in, post-event connection flow, between-session check-ins</li>
-        <li><strong>Design the AI matching engine</strong> &mdash; data model, matching algorithm, Evening Card generation</li>
-        <li><strong>Find the Warsaw venue</strong> &mdash; scout 3&ndash;5 locations in Śródmieście, Mokotów, or Praga</li>
-        <li><strong>Recruit hosts</strong> &mdash; 2&ndash;4 socially skilled, warm people who embody the culture</li>
-        <li><strong>Find the first 60</strong> &mdash; referral-based outreach through Warsaw professional networks</li>
-        <li><strong>Run Session 1</strong> &mdash; over-invest in facilitation while the AI is still learning</li>
+        <li><strong>Find the space</strong> &mdash; scout 5&ndash;8 commercial venues in Śr&oacute;dmieście, Mokot&oacute;w, or Praga. 200&ndash;300 m&sup2;, high ceilings, good bones.</li>
+        <li><strong>Design the fit-out</strong> &mdash; architect + IoT engineer collaborate on a plan where every surface is wired and every zone is independently controllable.</li>
+        <li><strong>Build the AI operator</strong> &mdash; sensor integration, decision engine, hardware control APIs. Start simple: lighting + climate + audio. Add capabilities over time.</li>
+        <li><strong>Renovate &amp; install</strong> &mdash; 8&ndash;12 week build-out. Physical construction and hardware installation happen in parallel with software development.</li>
+        <li><strong>Recruit founding members</strong> &mdash; 30 people for the soft launch. Referral-based. People who will give real feedback.</li>
+        <li><strong>Open &amp; iterate</strong> &mdash; run weekly events. Let the AI learn. Fix what breaks. The first month is about data collection. By month 3, the space should feel alive.</li>
       </ol>
     </section>
 
