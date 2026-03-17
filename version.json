@@ -1,12 +1,12 @@
 {
-  "version": "v260317.26 9:31a",
-  "release": 840,
-  "sha": "dd2781470",
-  "fullSha": "dd2781470f993e9e24972f0d072a9a7b506815b5",
+  "version": "v260317.27 9:38a",
+  "release": 841,
+  "sha": "a05165478",
+  "fullSha": "a05165478f9b27cac397620641acd1323d594934",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 14:31:08+00",
-  "commits": [{"sha":"dd2781470","message":"Make Est. Cost number a clickable link to cost-estimate-breakdown.pdf","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-17 14:38:03+00",
+  "commits": [{"sha":"cd05b24b7","message":"Link existing building plans (A-1, A-2, A-3) to task A4","author":"Jacqueline Giroux"},{"sha":"a05165478","message":"Merge remote-tracking branch 'origin/claude/mystifying-cohen'","author":"Jacqueline Giroux"}]
 }
