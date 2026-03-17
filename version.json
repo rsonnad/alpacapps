@@ -1,12 +1,12 @@
 {
-  "version": "v260317.11 4:45a",
-  "release": 825,
-  "sha": "87b049a13",
-  "fullSha": "87b049a13a36d35ee4b9659557526f1b8885c4e1",
+  "version": "v260317.12 4:52a",
+  "release": 826,
+  "sha": "c935529e5",
+  "fullSha": "c935529e509e5a9c1b0f78b1d79ed385a03d296e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 09:45:13+00",
-  "commits": [{"sha":"b1fe6952d","message":"Add DevControl tab to admin: sessions, tokens, releases, context, backups","author":"Rahul"},{"sha":"87b049a13","message":"Merge branch 'great-lehmann'","author":"Rahul"}]
+  "pushedAt": "2026-03-17 09:52:23+00",
+  "commits": [{"sha":"38a213d40","message":"Add 90-day token history chart + daily snapshot recording to DevControl context tab","author":"Rahul"},{"sha":"c935529e5","message":"Merge branch 'great-lehmann'","author":"Rahul"}]
 }
