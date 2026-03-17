@@ -51,6 +51,83 @@ let bootstrapCacheExpiry = 0;
 const BOOTSTRAP_CACHE_TTL = 10000;
 
 // =============================================
+// Door Monitor — server-side greeting trigger
+// Polls sensor every 10s, plays TTS on door open
+// =============================================
+const DOOR_POLL_INTERVAL = 10000; // 10 seconds
+const DOOR_GREETING_COOLDOWN = 15 * 60 * 1000; // 15 minutes
+const DOOR_SENSOR_ID = '69b34c7201a91603e4002278'; // Garage UP-Sense
+const DOOR_GREETING_ROOM = 'DJ';
+const DOOR_GREETING_TEXT = 'Welcome to the Garage Mahal';
+
+let doorLastOpenStatus = null; // null = unknown (first poll)
+let doorLastGreetingTime = 0;
+
+async function pollDoorSensor() {
+  try {
+    await ensureAuth();
+    const res = await httpsRequest({
+      hostname: UDM_HOST,
+      port: 443,
+      path: `/proxy/protect/api/sensors/${DOOR_SENSOR_ID}`,
+      method: 'GET',
+      headers: {
+        'Cookie': sessionCookie,
+        'X-CSRF-Token': csrfToken,
+      },
+    });
+
+    if (res.status !== 200) {
+      console.log(`[DoorMon] Sensor fetch failed: ${res.status}`);
+      return;
+    }
+
+    const sensor = JSON.parse(res.body);
+    const isOpen = sensor.isOpened;
+
+    // Detect closed→open transition
+    if (doorLastOpenStatus === false && isOpen === true) {
+      const now = Date.now();
+      console.log(`[DoorMon] Door OPENED! Checking cooldown...`);
+      if (now - doorLastGreetingTime >= DOOR_GREETING_COOLDOWN) {
+        doorLastGreetingTime = now;
+        console.log(`[DoorMon] Playing greeting on ${DOOR_GREETING_ROOM}`);
+        triggerDoorGreeting();
+      } else {
+        const remaining = Math.round((DOOR_GREETING_COOLDOWN - (now - doorLastGreetingTime)) / 1000);
+        console.log(`[DoorMon] Cooldown active, ${remaining}s remaining`);
+      }
+    }
+
+    doorLastOpenStatus = isOpen;
+  } catch (err) {
+    console.error(`[DoorMon] Error: ${err.message}`);
+  }
+}
+
+function triggerDoorGreeting() {
+  const text = encodeURIComponent(DOOR_GREETING_TEXT);
+  const sonosPath = `/${DOOR_GREETING_ROOM}/say/${text}/en-us/40`;
+
+  const sonosReq = http.request({
+    hostname: '127.0.0.1',
+    port: 5005,
+    path: sonosPath,
+    method: 'GET',
+  }, (r) => {
+    let d = '';
+    r.on('data', c => d += c);
+    r.on('end', () => {
+      console.log(`[DoorMon] Sonos response: ${r.statusCode} — ${d.substring(0, 100)}`);
+    });
+  });
+  sonosReq.on('error', (err) => {
+    console.error(`[DoorMon] Sonos error: ${err.message}`);
+  });
+  sonosReq.end();
+}
+
+// =============================================
 // HTTPS helpers (ignores self-signed cert)
 // =============================================
 function httpsRequest(options, body) {
@@ -857,5 +934,11 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`UDM Host: ${UDM_HOST}`);
   console.log(`Routes: POST /ptz/{id}, GET /camera/{id}/snapshot, GET|PATCH /camera/{id}/settings, GET /sensors, GET /sensor/{id}, GET /clients, GET /protect/events, GET /protect/export, GET /protect/thumbnail/{id}, GET|POST /sonos/{room}/{action}`);
   // Pre-auth on startup
-  authenticate().catch(err => console.error('[Auth] Startup auth failed:', err.message));
+  authenticate().then(() => {
+    // Start door monitor after auth succeeds
+    console.log(`[DoorMon] Starting garage door monitor (poll every ${DOOR_POLL_INTERVAL/1000}s, cooldown ${DOOR_GREETING_COOLDOWN/60000}min)`);
+    setInterval(pollDoorSensor, DOOR_POLL_INTERVAL);
+    // First poll immediately
+    pollDoorSensor();
+  }).catch(err => console.error('[Auth] Startup auth failed:', err.message));
 });
