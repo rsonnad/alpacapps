@@ -81,7 +81,7 @@ const ALL_ADMIN_TABS = [
   { id: 'testdev', label: 'Test Dev', href: 'testdev.html', permission: 'view_settings', section: 'admin' },
   { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin', feature: 'pai' },
   { id: 'openclaw', label: 'AlpaClaw', href: 'alpaclaw.html', permission: 'view_openclaw', section: 'admin', feature: 'pai' },
-  { id: 'devcontrol', label: 'DevControl', href: 'devcontrol.html', permission: 'view_settings', section: 'admin' },
+  // DevControl is a top-level nav item (in context switcher), not an admin sub-tab
 ];
 
 // =============================================
@@ -239,6 +239,7 @@ async function renderContextSwitcher(userRole, activeSection = 'staff') {
   }
   if (hasStaffPerms) tabs.push({ id: 'staff', label: 'Staff', href: staffHref });
   if (hasAdminPerms) tabs.push({ id: 'admin', label: 'Admin', href: adminHref });
+  if (hasAdminPerms) tabs.push({ id: 'devcontrol', label: 'DevControl', href: '/spaces/admin/devcontrol.html' });
 
   // Hide if only one tab (nothing to switch between)
   if (tabs.length <= 1) {
@@ -246,7 +247,7 @@ async function renderContextSwitcher(userRole, activeSection = 'staff') {
     return;
   }
 
-  const safeSection = hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff';
+  const safeSection = activeSection === 'devcontrol' ? 'devcontrol' : (hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff');
   switcher.innerHTML = tabs.map(tab => {
     const isActive = tab.id === safeSection || (tab.id === 'resident' && safeSection === 'resident');
     const activeClass = isActive ? ' active' : '';
@@ -535,7 +536,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
 
       const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
       const isDemo = state.appUser.role === 'demo';
-      const resolvedSection = section === 'admin' && userIsAdmin ? 'admin' : 'staff';
+      const resolvedSection = section === 'devcontrol' && userIsAdmin ? 'devcontrol' : (section === 'admin' && userIsAdmin ? 'admin' : 'staff');
 
       await renderTabNav(activeTab, state, resolvedSection);
       await renderContextSwitcher(state.appUser?.role, resolvedSection);

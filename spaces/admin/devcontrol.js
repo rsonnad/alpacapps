@@ -55,8 +55,8 @@ function initSubtabs() {
   const hash = location.hash.replace('#', '');
   if (hash && document.getElementById(`dc-panel-${hash}`)) activeSubtab = hash;
 
-  document.querySelectorAll('.dc-subtab').forEach((btn) => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  document.querySelectorAll('.dc-manage-tab').forEach((btn) => {
+    btn.addEventListener('click', (e) => { e.preventDefault(); switchTab(btn.dataset.tab); });
   });
   switchTab(activeSubtab);
 }
@@ -65,7 +65,7 @@ function switchTab(tab) {
   activeSubtab = tab;
   location.hash = tab === 'overview' ? '' : tab;
 
-  document.querySelectorAll('.dc-subtab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.dc-manage-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.dc-panel').forEach((p) => { p.style.display = p.id === `dc-panel-${tab}` ? '' : 'none'; });
 
   if (!loadedTabs.has(tab)) {
@@ -759,7 +759,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initAdminPage({
     activeTab: 'devcontrol',
     requiredRole: 'admin',
-    section: 'admin',
-    onReady: () => { initSubtabs(); },
+    section: 'devcontrol',
+    onReady: () => { renderDevControlTabs(); initSubtabs(); },
   });
 });
+
+function renderDevControlTabs() {
+  const tabsContainer = document.querySelector('.manage-tabs');
+  if (!tabsContainer) return;
+  const subtabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'releases', label: 'Releases' },
+    { id: 'sessions', label: 'Sessions' },
+    { id: 'tokens', label: 'Tokens' },
+    { id: 'context', label: 'Context' },
+    { id: 'backups', label: 'Backups' },
+  ];
+  tabsContainer.innerHTML = subtabs.map(tab =>
+    `<a href="#${tab.id === 'overview' ? '' : tab.id}" class="manage-tab dc-manage-tab" data-tab="${tab.id}">${tab.label}</a>`
+  ).join('');
+}
