@@ -367,7 +367,7 @@
         <div class="permit-stat"><div class="label">Pending</div><div class="value pending">${pending}</div></div>
         <div class="permit-stat"><div class="label">In Progress</div><div class="value" style="color:#b45309">${inProg}</div></div>
         <div class="permit-stat"><div class="label">Blocked</div><div class="value blocked">${blocked}</div></div>
-        <div class="permit-stat"><div class="label">Est. Cost</div><div class="value"><a href="cost-estimate-breakdown.pdf" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></div></div>`;
+        <div class="permit-stat"><div class="label">Est. Cost</div><div class="value"><a href="building-permit-cost-breakdown.pdf" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></div></div>`;
     }
 
     function renderPhases() {
@@ -477,7 +477,7 @@
       }
       if (taskCode === 'C7') {
         links.push({ url: `${STORAGE_URL}/county-forms/Fee Schedule (June 2025).pdf`, label: 'Fee Schedule (June 2025)', bold: true });
-        links.push({ url: 'cost-estimate-breakdown.pdf', label: 'Cost Estimate Breakdown' });
+        links.push({ url: 'building-permit-cost-breakdown.pdf', label: 'Cost Estimate Breakdown' });
       }
       if (taskCode === 'C8') {
         links.push({ url: 'https://maps.co.bastrop.tx.us/Public_GIS_Viewer/', label: 'Bastrop County GIS Viewer', bold: true, external: true });
@@ -497,7 +497,7 @@
       const est = tasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
       const act = tasks.reduce((s, t) => s + (parseFloat(t.actual_cost) || 0), 0);
       el.innerHTML = `<div class="cost-summary">
-        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value"><a href="cost-estimate-breakdown.pdf" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></span></div>
+        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value"><a href="building-permit-cost-breakdown.pdf" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></span></div>
         <div class="cost-item"><span class="cost-label">Actual Spent:</span><span class="cost-value">$${act.toLocaleString()}</span></div>
       </div>`;
     }
