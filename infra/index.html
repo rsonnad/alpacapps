@@ -1151,6 +1151,24 @@
 
       <div class="svc-row">
         <label class="calc-svc">
+          <input type="checkbox" data-svc="open-brain" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#F59E0B" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="5" fill="#F59E0B"/><path d="M12 7v5l3 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Open Brain</span><span class="calc-svc__desc">Session transparency dashboard &mdash; see what AI built</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>A public-facing dashboard that shows every Claude Code session &mdash; what was asked, what was built, and what changed. Full transparency into your AI-assisted development.</p>
+          <ul>
+            <li><strong>What it shows:</strong> Session stats, searchable transcripts, filters by date/model/cost, and a full conversation viewer.</li>
+            <li><strong>Why it matters:</strong> Gives stakeholders, clients, or the public full visibility into how AI is building your project. Builds trust through transparency.</li>
+            <li><strong>Requires:</strong> Cloudflare D1 for session storage. If you haven&rsquo;t selected D1, add it too.</li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
           <input type="checkbox" data-svc="gstack" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#6366F1" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><text x="12" y="16.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="system-ui">g</text></svg></span>
@@ -1549,6 +1567,7 @@ function recalcCost() {
     'gemini':      { basic: 0, complicated: 120, hyper: 600 },
     'cloudflare-r2': { basic: 0, complicated: 0, hyper: 0 },
     'cloudflare-d1': { basic: 0, complicated: 0, hyper: 0 },
+    'open-brain':  { basic: 0, complicated: 0, hyper: 0 },
     'gstack':      { basic: 0, complicated: 0, hyper: 0 },
     'workers':     { basic: 0, complicated: 144, hyper: 384 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
@@ -1562,6 +1581,7 @@ function recalcCost() {
     'google-auth': 'Google Sign-In', 'resend': 'Resend (email)', 'telnyx': 'Telnyx (SMS)',
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
+    'open-brain': 'Open Brain (session dashboard)',
     'gstack': 'gstack (QA & skills)', 'workers': 'Background Workers (cloud VM)', 'domain': 'Custom domain',
     'iphone': 'iPhone App (Apple Developer)', 'android': 'Android App (Google Play)',
     'homeserver': 'Home Server (used Mac)'
