@@ -260,6 +260,15 @@
       <li><strong>Linux:</strong> See <a href="https://github.com/cli/cli/blob/trunk/docs/install_linux.md">github.com/cli/cli install docs</a></li>
     </ul>
     <p>Then authenticate: <code>gh auth login</code> (follow prompts, choose HTTPS, authenticate via browser).</p>
+
+    <h3>Claude Code (required for Conductor)</h3>
+    <p>Claude Code is the AI developer engine that powers Conductor. Check if the Claude desktop app is installed:</p>
+    <ol>
+      <li>If not installed, sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank">claude.ai</a> (Pro $20/mo recommended &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank">free week here</a>)</li>
+      <li>Download the <a href="https://claude.ai/download" target="_blank">Claude desktop app</a></li>
+      <li>Open the app and verify Claude Code is accessible (click the <strong>Code</strong> tab)</li>
+    </ol>
+    <p>They won&rsquo;t use Claude Code directly &mdash; Conductor manages it for them. They just need it installed.</p>
   </div>
 
   <!-- Step 3 -->
@@ -336,8 +345,8 @@ cd REPO-NAME</code></pre>
 
     <div class="validate">Ask the user to share their project ref (the random string) and confirm they have their database password saved. You'll need both for the next step.</div>
 
-    <h3>What you'll need for Claude Code</h3>
-    <p>Record these two values &mdash; you'll paste them into Claude Code in the next step:</p>
+    <h3>What you'll need for the next step</h3>
+    <p>Record these two values &mdash; you'll paste them into Conductor in the next step:</p>
     <ul>
       <li><strong>Project ref:</strong> the random string from the URL (e.g., <code>abcdefghijklm</code>)</li>
       <li><strong>Database password:</strong> the password you set during project creation</li>
@@ -346,21 +355,23 @@ cd REPO-NAME</code></pre>
 
   <!-- Step 5 -->
   <div class="guide-step">
-    <h2><span class="step-num">5</span> Open Claude Code and run the setup wizard</h2>
+    <h2><span class="step-num">5</span> Install Conductor and run the setup wizard</h2>
 
-    <p>This is where the automated setup begins. Claude Code will handle everything from here: CLI installation, database setup, edge function deployment, and configuration of any optional services you selected.</p>
+    <p>Conductor is a Mac app that runs Claude Code agents in parallel. Instead of working in Claude Code directly, you&rsquo;ll manage everything from Conductor &mdash; each task gets its own workspace with a dedicated agent.</p>
 
-    <h3>Open Claude Code</h3>
+    <h3>Install Conductor</h3>
     <ol>
-      <li>Open the <strong>Claude Desktop</strong> app</li>
-      <li>Click the <strong>"Claude Code"</strong> tab (terminal icon) at the top</li>
-      <li>Navigate to your project folder:
-        <pre><code>cd ~/path/to/your-project-name</code></pre>
-      </li>
+      <li>Download from <a href="https://conductor.build">conductor.build</a></li>
+      <li>Open Conductor and point it at the project folder you cloned in Step 3</li>
+      <li>Create a new workspace (name it &ldquo;setup&rdquo;)</li>
     </ol>
 
+    <div class="callout" style="border-color: var(--text-muted); background: #f5f5f5;">
+      <strong>Prerequisites:</strong> Conductor requires Claude Code to be installed (Step 2). If you haven&rsquo;t installed it yet, do that first.
+    </div>
+
     <h3>Run the setup wizard</h3>
-    <p>If on the <strong>Max plan</strong> ($100/mo), type:</p>
+    <p>In the Conductor workspace, if on the <strong>Max plan</strong> ($100/mo), type:</p>
     <pre><code>/setup-alpacapps-infra</code></pre>
 
     <p>If on the <strong>Pro plan</strong> ($20/mo) or lower (slash commands require Max), paste this prompt instead:</p>
@@ -381,7 +392,7 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     </ul>
 
     <h3>What the wizard does</h3>
-    <p>Claude Code will automatically:</p>
+    <p>The agent in your Conductor workspace will automatically:</p>
     <ol>
       <li>Install and configure the Supabase CLI</li>
       <li>Link your Supabase project and fetch API keys</li>
@@ -393,16 +404,25 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
       <li>Commit and push everything to GitHub</li>
     </ol>
 
+    <h3>Going forward</h3>
+    <p>After setup, Conductor is how you build everything. Create a new workspace for each task:</p>
+    <ul>
+      <li><strong>&ldquo;Add payments page&rdquo;</strong> &mdash; one workspace</li>
+      <li><strong>&ldquo;Fix login bug&rdquo;</strong> &mdash; another workspace, runs in parallel</li>
+      <li><strong>&ldquo;Write tests&rdquo;</strong> &mdash; a third workspace, all at the same time</li>
+    </ul>
+    <p>Each workspace gets its own git branch so agents never conflict.</p>
+
     <div class="callout success">
       <strong>You're done!</strong>
-      Once Claude Code finishes, your site is live on GitHub Pages with a fully configured Supabase backend. Start building by telling Claude Code what you want &mdash; it handles the code.
+      Once the setup wizard finishes, your site is live on GitHub Pages with a fully configured Supabase backend. Start building by creating new Conductor workspaces and telling them what you want &mdash; the agents handle the code.
     </div>
   </div>
 
   <!-- Optional services reference -->
   <div class="guide-step">
     <h2><span class="step-num">?</span> Optional services reference</h2>
-    <p>When Claude Code asks for credentials for optional services, direct the user to these vendor pages. For each service, the user needs to create an account and get an API key.</p>
+    <p>When the agent asks for credentials for optional services, direct the user to these vendor pages. For each service, the user needs to create an account and get an API key.</p>
 
     <h3>Google Sign-In (OAuth)</h3>
     <ul>

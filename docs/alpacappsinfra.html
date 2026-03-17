@@ -1503,7 +1503,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
   <details class="section" id="claude-code">
       <summary><h2><img src="https://cdn.simpleicons.org/claude" alt="Claude" class="service-icon">2. Install Claude Code &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">Get a free week</a></h2></summary>
     <div class="section-body">
-    <p>Claude Code is your AI developer. Once it's set up, you won't need to use the terminal again &mdash; but if Claude asks you to do something in the terminal or bash something, just ask it to do it by itself. Claude can handle everything from here, but sometimes forgets.</p>
+    <p>Claude Code is the AI developer that powers everything. You need it installed before setting up Conductor (Step 4), which is where you&rsquo;ll do all your actual work.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
       <strong><a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent);">Click here for a free week of Claude Pro</a></strong> &mdash; no credit card required to start. This referral link gives you a full week of Pro-level usage to get your project set up.
@@ -1518,51 +1518,15 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
     <ol>
       <li>Sign up for <a href="https://claude.ai/referral/fzGCallNug" target="_blank">Claude Pro</a> ($20/month recommended &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">free week here</a>)</li>
       <li>Download the <a href="https://claude.ai/download" target="_blank">Claude desktop app</a> &mdash; Claude Code is built in</li>
-      <li>Open the app and click the <strong>Code</strong> tab in the top right to open Claude Code</li>
-      <li>Point it at the project folder you cloned in Step 1</li>
+      <li>Open the app and verify Claude Code is accessible (click the <strong>Code</strong> tab in the top right)</li>
     </ol>
-
-    <div class="callout" style="border-color: #d4883a; background: #fef9f0;">
-      <strong>Stuck on any step?</strong> Take a screenshot, paste it into the Claude desktop app, and ask: <em>&ldquo;What do I do?&rdquo;</em> &mdash; Claude can read screenshots and will walk you through it.
-    </div>
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
       <strong>Already comfortable with the terminal?</strong>
-      You can also install Claude Code as a standalone CLI: <code>npm install -g @anthropic-ai/claude-code</code>, then run <code>claude</code> from your project directory. Same features, same skills &mdash; these instructions just assume the desktop app.
+      You can also install Claude Code as a standalone CLI: <code>npm install -g @anthropic-ai/claude-code</code>. Same features, same skills.
     </div>
 
-    <h3>Run the setup wizard</h3>
-    <p>Once Claude Code is open in your project folder, type:</p>
-    <pre data-lang="claude code"><code>/setup-alpacapps-infra</code></pre>
-
-    <div style="background: rgba(217,119,6,0.06); border: 2px solid rgba(217,119,6,0.3); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1rem 0;">
-      <p style="font-weight: 600; font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">The wizard configures your project based on the profile you picked above.</p>
-      <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">It prunes unused modules, configures <code>.claudeignore</code>, creates your database tables, and pushes everything. If you picked <strong>Personal / Business</strong>, only the services you selected will be set up.</p>
-    </div>
-
-    <div class="callout warning" style="font-size: 0.85rem; border-color: #EF4444;">
-      <strong>Don&rsquo;t skip this step.</strong> If you don&rsquo;t run the setup wizard, your project will have all the property management modules cluttering your codebase even if you don&rsquo;t need them. You don&rsquo;t need to read the rest of this guide unless you want to understand what&rsquo;s happening under the hood.
-    </div>
-
-    <div class="callout warning" style="font-size: 0.85rem;">
-      <strong>Slash command not working?</strong>
-      The <code>/setup-alpacapps-infra</code> skill requires the <strong>Max plan ($100/month)</strong> or higher. If you're on the Pro plan, type this instead:
-      <pre data-lang="claude code" style="margin: 0.75rem 0 0.25rem 0;"><code>Read .claude/skills/setup-alpacapps-infra/SKILL.md and follow those instructions to set up my project</code></pre>
-      This does the exact same thing &mdash; Claude reads the setup guide and walks you through it step by step.
-    </div>
-
-    <h3>What the rest of this guide is for</h3>
-    <p>The sections below explain each service in detail. For each one, you:</p>
-    <ol>
-      <li><strong>You</strong> create the account and copy credentials (in your browser)</li>
-      <li><strong>You</strong> give Claude the credentials (just paste them into the chat)</li>
-      <li><strong>Claude</strong> handles everything else &mdash; updates your config files, installs CLIs, creates tables, writes edge functions, deploys, and pushes code</li>
-    </ol>
-    <p>You never need to edit files yourself. Just tell Claude what you want in plain English.</p>
-    <div class="conversation">
-      <div class="you">"Set up Supabase. Here are my credentials: project ref is abc123, anon key is eyJ..."</div>
-      <div class="ai">installs Supabase CLI, links project, updates docs/CREDENTIALS.md + docs/SCHEMA.md, creates tables with RLS, creates storage buckets, commits and pushes</div>
-    </div>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">That&rsquo;s it for now &mdash; you&rsquo;ll use Claude Code through <strong>Conductor</strong> (Step 4), which gives you a much better workflow with parallel agents and workspace management.</p>
   </div>
   </details>
 
@@ -1628,23 +1592,75 @@ Don't ask me for permission at each step — just do the work end to end and sho
 
   <!-- 4. Conductor -->
   <details class="section" id="conductor">
-      <summary><h2>4. Conductor <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2>4. Conductor &mdash; Your Development Hub <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
-    <p>Run multiple Claude Code agents in parallel from a single Mac app. Conductor lets you split work across independent workspaces &mdash; each with its own branch, context, and agent &mdash; so you can tackle complex projects faster.</p>
+    <p>Conductor is where you&rsquo;ll do all your work. It&rsquo;s a Mac app that runs multiple Claude Code agents in parallel &mdash; each in its own workspace with its own branch. Instead of working in a single Claude Code session, you manage everything from Conductor.</p>
 
-    <h3><span class="step-label step-you">You do (on your Mac)</span></h3>
+    <div class="callout" style="border-color: var(--success); background: var(--success-light);">
+      <strong>This is your main tool from here on.</strong> After this step, you&rsquo;ll use Conductor for all development &mdash; building features, fixing bugs, setting up services, running tests. Each task gets its own workspace with a dedicated Claude Code agent.
+    </div>
+
+    <h3><span class="step-label step-you">1. Install Conductor</span></h3>
     <ol>
-      <li>Download Conductor from <a href="https://conductor.build" target="_blank">conductor.build</a></li>
-      <li>Open Conductor and point it at your project directory</li>
-      <li>Create workspaces for parallel tasks (e.g. one for frontend, one for backend, one for tests)</li>
+      <li>Download from <a href="https://conductor.build" target="_blank" style="color: var(--accent); font-weight: 600;">conductor.build</a></li>
+      <li>Open Conductor and point it at the project folder you cloned in Step 1</li>
     </ol>
 
-    <h3><span class="step-label step-paste">Tell Claude Code</span></h3>
-    <pre data-lang="paste into Claude Code"><code>I've installed Conductor for parallel agent management. Note in CLAUDE.md that Conductor is available for running multiple Claude Code agents in parallel on this project.</code></pre>
+    <h3><span class="step-label step-you">2. Create your first workspace and run the setup wizard</span></h3>
+    <ol>
+      <li>Create a new workspace in Conductor (name it something like &ldquo;setup&rdquo;)</li>
+      <li>In that workspace, type:
+        <pre data-lang="type in Conductor workspace"><code>/setup-alpacapps-infra</code></pre>
+      </li>
+      <li>The wizard will configure your project based on the profile you picked above &mdash; pruning unused modules, creating database tables, and pushing everything</li>
+    </ol>
 
-    <div class="callout">
-      <strong>Why Conductor?</strong> When you have multiple independent tasks (setting up services, writing tests, building UI), Conductor runs them simultaneously instead of sequentially. This can cut setup time significantly. Each workspace gets its own git branch so agents never conflict.
+    <div style="background: rgba(217,119,6,0.06); border: 2px solid rgba(217,119,6,0.3); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1rem 0;">
+      <p style="font-weight: 600; font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">The wizard configures your project based on the profile you picked above.</p>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">It prunes unused modules, configures <code>.claudeignore</code>, creates your database tables, and pushes everything. If you picked <strong>Personal / Business</strong>, only the services you selected will be set up.</p>
     </div>
+
+    <div class="callout warning" style="font-size: 0.85rem; border-color: #EF4444;">
+      <strong>Don&rsquo;t skip the setup wizard.</strong> If you don&rsquo;t run it, your project will have all the property management modules cluttering your codebase even if you don&rsquo;t need them.
+    </div>
+
+    <div class="callout warning" style="font-size: 0.85rem;">
+      <strong>Slash command not working?</strong>
+      The <code>/setup-alpacapps-infra</code> skill requires the <strong>Max plan ($100/month)</strong> or higher. If you're on the Pro plan, type this instead:
+      <pre data-lang="type in Conductor workspace" style="margin: 0.75rem 0 0.25rem 0;"><code>Read .claude/skills/setup-alpacapps-infra/SKILL.md and follow those instructions to set up my project</code></pre>
+      This does the exact same thing &mdash; Claude reads the setup guide and walks you through it step by step.
+    </div>
+
+    <h3><span class="step-label step-you">3. How to work with Conductor going forward</span></h3>
+    <p>After the setup wizard finishes, this is how you build with Conductor:</p>
+    <ol>
+      <li><strong>One task per workspace.</strong> Want to add a payments page and fix a bug? Create two workspaces and run them in parallel.</li>
+      <li><strong>Each workspace gets its own git branch</strong> so agents never conflict with each other.</li>
+      <li><strong>Just tell it what you want in plain English.</strong> Paste credentials, describe features, ask questions &mdash; the agent handles the code.</li>
+    </ol>
+
+    <div class="conversation">
+      <div class="you">"Set up Supabase. Here are my credentials: project ref is abc123, password is ..."</div>
+      <div class="ai">installs Supabase CLI, links project, creates tables with RLS, creates storage buckets, commits and pushes</div>
+    </div>
+
+    <div class="conversation" style="margin-top: 0.5rem;">
+      <div class="you">"Build a tenant portal with a login page, profile editor, and payment history"</div>
+      <div class="ai">creates pages, writes auth guards, adds Supabase queries, commits and pushes &mdash; site updates automatically</div>
+    </div>
+
+    <div class="callout" style="border-color: #d4883a; background: #fef9f0;">
+      <strong>Stuck on any step?</strong> Take a screenshot, paste it into any Conductor workspace, and ask: <em>&ldquo;What do I do?&rdquo;</em> &mdash; Claude can read screenshots and will walk you through it.
+    </div>
+
+    <h3>What the rest of this guide is for</h3>
+    <p>The sections below explain each service in detail. For each one, you:</p>
+    <ol>
+      <li><strong>You</strong> create the account and copy credentials (in your browser)</li>
+      <li><strong>You</strong> paste the credentials into a Conductor workspace</li>
+      <li><strong>Claude</strong> handles everything else &mdash; updates config files, installs CLIs, creates tables, writes edge functions, deploys, and pushes code</li>
+    </ol>
+    <p>You never need to edit files yourself. Just tell Claude what you want.</p>
   </div>
   </details>
 
