@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three Pillars — AI-Infused Spaces for Human Growth</title>
+  <meta property="og:title" content="Three Pillars — AI-Infused Spaces for Human Growth">
+  <meta property="og:description" content="We build AI-operated spaces — with socializing tables, saunas, cold plunges, hot tubs, dance and fitness studios, and crowdsourced food — where people gather, grow, and give.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream:         #FBF8F1;
+      --cream-warm:    #F5EFE2;
+      --surface:       #FFFFFF;
+      --surface-warm:  #FFFDF9;
+      --dark:          #1C1A17;
+      --dark-soft:     #2E2A24;
+      --text:          #2A251F;
+      --text-soft:     #5C4F42;
+      --text-dim:      #8A7C6E;
+      --text-muted:    #B0A494;
+      --border:        #E8DFD0;
+      --border-light:  #F0EAE0;
+
+      --body:          #6B8C5B;
+      --body-bg:       rgba(107,140,91,0.08);
+      --body-border:   rgba(107,140,91,0.2);
+
+      --mind:          #5B6E8C;
+      --mind-bg:       rgba(91,110,140,0.08);
+      --mind-border:   rgba(91,110,140,0.2);
+
+      --soul:          #8C6B5B;
+      --soul-bg:       rgba(140,107,91,0.08);
+      --soul-border:   rgba(140,107,91,0.2);
+
+      --community:     #8B7B4A;
+      --community-bg:  rgba(139,123,74,0.08);
+      --community-border: rgba(139,123,74,0.2);
+
+      --accent:        #8B6B4A;
+      --accent-light:  #A88560;
+
+      --radius:        12px;
+      --radius-lg:     20px;
+      --shadow-sm:     0 1px 3px rgba(28,20,16,0.06), 0 1px 2px rgba(28,20,16,0.04);
+      --shadow-md:     0 4px 12px rgba(28,20,16,0.08), 0 2px 4px rgba(28,20,16,0.04);
+      --shadow-lg:     0 12px 40px rgba(28,20,16,0.12), 0 4px 12px rgba(28,20,16,0.06);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cream); color: var(--text);
+      line-height: 1.65; font-size: 16px;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 500; line-height: 1.2; color: var(--dark);
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-light); }
+
+    .page-wrap { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+      margin-bottom: 2rem; transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--text-soft); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    /* Hero */
+    .hero {
+      text-align: center; padding: 3rem 0 2.5rem;
+      border-bottom: 1px solid var(--border-light); margin-bottom: 3rem;
+    }
+    .hero-pills { display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .hero-pill {
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 0.35rem 0.9rem;
+      border-radius: 100px; border: 1px solid;
+    }
+    .hero-pill.body { color: var(--body); background: var(--body-bg); border-color: var(--body-border); }
+    .hero-pill.mind { color: var(--mind); background: var(--mind-bg); border-color: var(--mind-border); }
+    .hero-pill.soul { color: var(--soul); background: var(--soul-bg); border-color: var(--soul-border); }
+    .hero-pill.community { color: var(--community); background: var(--community-bg); border-color: var(--community-border); }
+
+    .hero h1 { font-size: 2.8rem; font-weight: 400; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .hero .headline {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.5rem; font-weight: 400; font-style: italic;
+      color: var(--dark-soft); margin-bottom: 1.25rem;
+    }
+    .hero .tagline { font-size: 1.05rem; color: var(--text-soft); max-width: 620px; margin: 0 auto 1.5rem; line-height: 1.6; }
+    .hero .subtitle { font-size: 0.85rem; color: var(--text-dim); font-style: italic; }
+
+    /* Section */
+    .section { margin-bottom: 3.5rem; }
+    .section-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .section h2 { font-size: 2rem; margin-bottom: 1rem; }
+    .section h3 { font-size: 1.4rem; margin-bottom: 0.75rem; margin-top: 2rem; }
+    .section p { color: var(--text-soft); margin-bottom: 1rem; max-width: 720px; }
+    .section ul, .section ol { color: var(--text-soft); margin-left: 1.25rem; margin-bottom: 1rem; }
+    .section li { margin-bottom: 0.4rem; }
+    .section li strong { color: var(--text); }
+
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 3.5rem 0; }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: var(--shadow-sm); margin-bottom: 1.25rem; }
+    .card-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.15rem; font-weight: 600; color: var(--dark); margin-bottom: 0.75rem; }
+
+    /* Grids */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.25rem 0; }
+
+    .grid-item {
+      background: var(--surface); border: 1px solid var(--border-light);
+      border-radius: var(--radius); padding: 1.25rem; text-align: center;
+    }
+    .grid-item-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .grid-item-name { font-weight: 600; font-size: 0.88rem; color: var(--dark); margin-bottom: 0.35rem; }
+    .grid-item-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.45; }
+
+    /* Facility cards */
+    .facility-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0; }
+    .facility {
+      background: var(--surface); border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg); padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .facility-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.75rem; }
+    .facility-icon { font-size: 1.5rem; }
+    .facility-name { font-weight: 600; font-size: 1rem; color: var(--dark); }
+    .facility-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.55; }
+    .facility-ai {
+      margin-top: 0.75rem; padding-top: 0.75rem;
+      border-top: 1px solid var(--border-light);
+      font-size: 0.78rem; color: var(--accent); font-weight: 500;
+    }
+
+    /* Principles */
+    .principle {
+      background: var(--surface); border: 1px solid var(--border-light);
+      border-radius: var(--radius); padding: 1.25rem;
+    }
+    .principle-num { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5rem; font-weight: 300; color: var(--text-muted); margin-bottom: 0.25rem; }
+    .principle-title { font-weight: 600; font-size: 0.92rem; color: var(--dark); margin-bottom: 0.35rem; }
+    .principle-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+    .principle.span-full { grid-column: 1 / -1; }
+
+    /* Scenario */
+    .scenario-card {
+      background: var(--surface-warm); border: 2px solid var(--border);
+      border-radius: var(--radius-lg); padding: 2rem; margin: 1.5rem 0;
+      box-shadow: var(--shadow-lg);
+    }
+    .scenario-card .sc-header { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .scenario-card .sc-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.4rem; font-weight: 400; color: var(--dark); margin-bottom: 1.25rem; }
+    .scenario-step { display: flex; gap: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; }
+    .scenario-step .sc-time { min-width: 80px; font-weight: 600; color: var(--accent); font-size: 0.78rem; padding-top: 0.1rem; }
+    .scenario-step .sc-action { color: var(--text-soft); line-height: 1.5; }
+    .scenario-step .sc-action strong { color: var(--text); }
+    .sc-ai-tag {
+      display: inline-block; font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--accent); background: rgba(139,107,74,0.08);
+      border: 1px solid rgba(139,107,74,0.2);
+      padding: 0.15rem 0.5rem; border-radius: 100px;
+      margin-left: 0.35rem; vertical-align: middle;
+    }
+
+    /* Pull Quote */
+    .pull-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.5rem; font-weight: 400; font-style: italic;
+      color: var(--dark-soft); text-align: center;
+      padding: 2rem 2.5rem; margin: 2rem 0;
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+      line-height: 1.45;
+    }
+
+    /* Table */
+    .styled-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+    .styled-table th { text-align: left; font-weight: 600; color: var(--text-dim); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.6rem 1rem; border-bottom: 2px solid var(--border); background: var(--cream-warm); }
+    .styled-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border-light); color: var(--text-soft); }
+    .styled-table td:first-child { font-weight: 600; color: var(--text); }
+    .styled-table tr:last-child td { border-bottom: none; }
+
+    /* Econ */
+    .econ-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light); font-size: 0.88rem; }
+    .econ-row:last-child { border-bottom: none; }
+    .econ-row .econ-label { color: var(--text-soft); }
+    .econ-row .econ-value { font-weight: 600; color: var(--dark); }
+    .econ-row.total { border-top: 2px solid var(--border); border-bottom: none; padding-top: 0.75rem; margin-top: 0.25rem; }
+    .econ-row.total .econ-label, .econ-row.total .econ-value { font-weight: 700; }
+
+    /* Steps */
+    .steps-list { counter-reset: step; list-style: none; margin: 1rem 0; }
+    .steps-list li { counter-increment: step; position: relative; padding-left: 2.5rem; margin-bottom: 1rem; color: var(--text-soft); }
+    .steps-list li::before {
+      content: counter(step); position: absolute; left: 0; top: -0.05rem;
+      width: 1.75rem; height: 1.75rem; background: var(--accent);
+      color: white; font-weight: 600; font-size: 0.8rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .steps-list li strong { color: var(--text); }
+
+    /* Layer Stack */
+    .layer-stack { margin: 1.5rem 0; }
+    .layer {
+      display: flex; align-items: stretch;
+      border: 1px solid var(--border-light); border-radius: var(--radius);
+      overflow: hidden; margin-bottom: 0.75rem;
+      background: var(--surface); box-shadow: var(--shadow-sm);
+    }
+    .layer-label {
+      width: 140px; min-width: 140px; padding: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: white; text-align: center;
+    }
+    .layer-label.l-physical { background: var(--body); }
+    .layer-label.l-ai { background: var(--accent); }
+    .layer-label.l-human { background: var(--mind); }
+    .layer-content { padding: 1rem 1.25rem; font-size: 0.85rem; color: var(--text-soft); line-height: 1.55; flex: 1; }
+    .layer-content strong { color: var(--text); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero .headline { font-size: 1.25rem; }
+      .grid-2, .facility-grid { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+      .principle.span-full { grid-column: 1; }
+      .pull-quote { padding: 1.5rem 1rem; font-size: 1.3rem; }
+      .page-wrap { padding: 1.5rem 1rem 4rem; }
+      .scenario-card { padding: 1.5rem; }
+      .layer { flex-direction: column; }
+      .layer-label { width: 100%; min-width: unset; padding: 0.6rem; }
+    }
+
+    [data-site-version] { display: none; }
+
+    /* Version Switcher */
+    .version-switcher {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-bottom: 2rem; padding: 0.6rem 0.9rem;
+      background: var(--surface); border: 1px solid var(--border-light);
+      border-radius: var(--radius); box-shadow: var(--shadow-sm);
+      font-size: 0.78rem; color: var(--text-dim); flex-wrap: wrap;
+    }
+    .version-switcher span { font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; }
+    .version-switcher a {
+      padding: 0.25rem 0.65rem; border-radius: 100px;
+      text-decoration: none; font-weight: 500; font-size: 0.78rem;
+      border: 1px solid var(--border-light); color: var(--text-soft);
+      transition: all 0.15s;
+    }
+    .version-switcher a:hover { background: var(--cream-warm); border-color: var(--border); color: var(--text); }
+    .version-switcher a.active {
+      background: var(--accent); color: white; border-color: var(--accent);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="siteHeader"></div>
+  <div class="page-wrap">
+
+    <a href="/rahulio/pages/" class="back-link">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12 6 8l4-4"/></svg>
+      All Pages
+    </a>
+
+    <div class="version-switcher">
+      <span>Version:</span>
+      <a href="v1.html">v1 &mdash; Tea Networking</a>
+      <a href="v2.html" class="active">v2 &mdash; AI Wellness Space</a>
+      <a href="index.html">v3 &mdash; IRL Social Network</a>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         HERO
+         ═══════════════════════════════════════ -->
+    <section class="hero">
+      <div class="hero-pills">
+        <span class="hero-pill body">Health</span>
+        <span class="hero-pill mind">Education</span>
+        <span class="hero-pill soul">Spiritual</span>
+        <span class="hero-pill community">Social</span>
+      </div>
+      <h1>Three Pillars</h1>
+      <p class="headline">We build AI-infused spaces where people gather, grow, and thrive.</p>
+      <p class="tagline">
+        Real places &mdash; with socializing tables, saunas, cold plunges, hot tubs, dance and fitness studios, and crowdsourced food &mdash; where AI operates the environment and helps people reach their health, education, social, and spiritual goals.
+      </p>
+      <p class="subtitle">Warsaw Pilot &mdash; Founding Document</p>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         WHAT WE DO
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">What We Do</div>
+      <h2>Physical Spaces, Infused with AI</h2>
+      <p>
+        Three Pillars is a technology company that builds and operates physical spaces designed for human growth. Each space is a real venue &mdash; socializing tables, saunas, cold plunges, hot tubs, studios, and a crowdsourced food market &mdash; where an AI layer operates the environment, connects people, and helps members reach their goals.
+      </p>
+      <p>
+        Think of it as a country club for your soul, run by AI.
+      </p>
+      <p>
+        The AI doesn't live on a screen. It lives in the space. It controls the sauna temperature, manages the cold plunge cycles, runs the lighting and music in the studios, schedules the vendor kitchen, assigns seating at the weekly gathering of 64 members, and learns over time what each person needs to grow. The technology is invisible. The experience is a place that takes care of you.
+      </p>
+
+      <h3>The Technology Thesis</h3>
+      <p>
+        Most AI companies are building software. We're building the real-world interface &mdash; physical spaces where AI has agency over the environment and can directly impact human wellbeing. The insight is that AI's most transformative application isn't chatbots or image generation. It's operating the physical world around people in ways that make them healthier, wiser, more connected, and more grounded.
+      </p>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         THE STACK
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">The Stack</div>
+      <h2>Three Layers</h2>
+      <p>Every Three Pillars space runs on the same architecture:</p>
+
+      <div class="layer-stack">
+        <div class="layer">
+          <div class="layer-label l-physical">Physical Layer</div>
+          <div class="layer-content">
+            <strong>The venue.</strong> Socializing tables, saunas, cold plunges, hot tubs, dance studio, fitness studio, yoga studio, crowdsourced kitchen. Plus the hardware: smart lighting, climate controls, directional audio, displays, sensors (occupancy, temperature, humidity, CO2, water quality), electronic access, POS systems. Everything addressable by the AI.
+          </div>
+        </div>
+        <div class="layer">
+          <div class="layer-label l-ai">AI Layer</div>
+          <div class="layer-content">
+            <strong>The operator.</strong> Sensor fusion, contextual awareness, decision engine. The AI sees who's present, what's scheduled, what each member's goals are, and what happened last week. It translates all of this into physical actions: adjusting the sauna, managing vendor rotation, assigning tables, cueing the hosts, shifting the lights. It learns from outcomes and gets better every week.
+          </div>
+        </div>
+        <div class="layer">
+          <div class="layer-label l-human">Experience Layer</div>
+          <div class="layer-content">
+            <strong>What people feel.</strong> Members don't interact with the AI &mdash; they interact with the space, and the space is the AI. The sauna is at your preferred temperature. The studio class you love is on the schedule. The person seated across from you at Saturday's gathering has exactly the skill you need. Nobody touches a control. It just works.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         THE SPACE
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">The Space</div>
+      <h2>The Core Components</h2>
+      <p>Every Three Pillars location is built from the same set of core components &mdash; each one AI-operated, designed for social connection and physical wellbeing.</p>
+
+      <div class="facility-grid">
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🍽</span>
+            <span class="facility-name">Socializing Tables</span>
+          </div>
+          <div class="facility-desc">The heart of the space. Long communal tables where 64 people gather weekly in AI-assigned groups of 8. Table displays show conversation prompts and member context. The tables are where giving happens &mdash; knowledge, introductions, support, laughter.</div>
+          <div class="facility-ai">AI controls: Seating assignments, table prompts, displays, transition cues, lighting per table zone</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🧖</span>
+            <span class="facility-name">Saunas</span>
+          </div>
+          <div class="facility-desc">Finnish sauna and infrared rooms. Multiple temperature zones. Social by design &mdash; conversation flows naturally when people are relaxed and unplugged. Some of the best connections happen here, not at the tables.</div>
+          <div class="facility-ai">AI controls: Temperature cycles, session timing, ventilation, lighting mood, occupancy limits</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">❄️</span>
+            <span class="facility-name">Cold Plunges</span>
+          </div>
+          <div class="facility-desc">Cold water immersion pools for contrast therapy and mental resilience. The shared intensity of cold plunge creates instant bonding &mdash; you cheer each other through it. A powerful social equalizer.</div>
+          <div class="facility-ai">AI controls: Water temperature, filtration cycles, session timing, usage tracking</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">♨️</span>
+            <span class="facility-name">Hot Tubs</span>
+          </div>
+          <div class="facility-desc">Warm water soaking for recovery and conversation. The most naturally social facility in the space &mdash; people talk for hours here. Small groups, intimate setting, no agenda.</div>
+          <div class="facility-ai">AI controls: Water temperature, jets, lighting, ambient audio, scheduling</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">💃</span>
+            <span class="facility-name">Dance Studio</span>
+          </div>
+          <div class="facility-desc">Sprung floor, mirrors, sound system. For dance classes, movement workshops, group fitness, ecstatic dance nights. Movement is medicine, and doing it together builds bonds faster than any conversation.</div>
+          <div class="facility-ai">AI controls: Audio system, lighting (shifts with music energy), class scheduling, instructor coordination</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">💪</span>
+            <span class="facility-name">Fitness Studio</span>
+          </div>
+          <div class="facility-desc">Functional fitness equipment, free weights, resistance training. Not a globo gym &mdash; curated for the community. Group workouts and personal training sessions. Sweating together builds trust.</div>
+          <div class="facility-ai">AI controls: Lighting/music intensity, class coordination, equipment booking, workout suggestions</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🧘</span>
+            <span class="facility-name">Yoga Studio</span>
+          </div>
+          <div class="facility-desc">Warm, quiet space for yoga, breathwork, meditation, and stillness practices. Natural materials, soft light, no shoes. The counterbalance to the sauna's intensity and the tables' social energy.</div>
+          <div class="facility-ai">AI controls: Ambient lighting, temperature (warm for yoga, cool for breathwork), sound, do-not-disturb</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🍜</span>
+            <span class="facility-name">Food &amp; Drink</span>
+          </div>
+          <div class="facility-desc">Crowdsourced food and drink vending with shared infrastructure. Members and local vendors can sell their food, drinks, baked goods, and specialties using the space's kitchen, prep areas, and point-of-sale system. The AI manages scheduling, inventory, and vendor rotation. Not a restaurant &mdash; a food marketplace run by the community.</div>
+          <div class="facility-ai">AI controls: Vendor scheduling, kitchen booking, inventory tracking, menu displays, payment processing</div>
+        </div>
+      </div>
+
+      <h3>The Crowdsourced Kitchen</h3>
+      <p>
+        The food and drink model deserves emphasis. Three Pillars doesn't operate a restaurant. It provides the infrastructure &mdash; commercial kitchen, prep stations, serving areas, refrigeration, point-of-sale &mdash; and members or local vendors bring the food. A member who bakes sourdough can sell it on Saturdays. A local pierogi maker can set up a station during gatherings. Someone who roasts their own coffee can pour for the community.
+      </p>
+      <p>
+        The AI manages the logistics: who's vending when, what's available, kitchen scheduling, health compliance tracking, and payments. The result is a constantly rotating, community-driven food scene where the best thing you can give is something you made with your hands.
+      </p>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         HOW AI OPERATES THE SPACE
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">AI in the Real World</div>
+      <h2>How AI Operates the Space</h2>
+      <p>
+        The AI has no screen. No chatbot. No app to open. It acts through the physical environment via five channels:
+      </p>
+
+      <div class="grid-3">
+        <div class="grid-item">
+          <div class="grid-item-icon">🖥</div>
+          <div class="grid-item-name">Displays</div>
+          <div class="grid-item-desc">Table screens, entry boards, workshop schedules. The AI's voice in the room &mdash; who's here, what's happening, who you should meet.</div>
+        </div>
+        <div class="grid-item">
+          <div class="grid-item-icon">🎧</div>
+          <div class="grid-item-name">Host Earpieces</div>
+          <div class="grid-item-desc">Two humans are the AI's hands. It whispers context and introductions. The host delivers warmth. The AI delivers intelligence.</div>
+        </div>
+        <div class="grid-item">
+          <div class="grid-item-icon">📱</div>
+          <div class="grid-item-name">Member Phones</div>
+          <div class="grid-item-desc">Private channel. During events: "The person across from you teaches salsa." Between visits: "There's a breathwork class Thursday you'd love."</div>
+        </div>
+        <div class="grid-item">
+          <div class="grid-item-icon">⚙️</div>
+          <div class="grid-item-name">Facilities</div>
+          <div class="grid-item-desc">The sauna knows your temp. The plunge is ready. Your favorite studio class is on the schedule. The facilities anticipate because the AI knows your patterns.</div>
+        </div>
+        <div class="grid-item">
+          <div class="grid-item-icon">🌤</div>
+          <div class="grid-item-name">Environment</div>
+          <div class="grid-item-desc">Lighting, music, temperature shift with context. The space nudges behavior without words. Energizing when needed, calming when not.</div>
+        </div>
+        <div class="grid-item">
+          <div class="grid-item-icon">🍜</div>
+          <div class="grid-item-name">The Kitchen</div>
+          <div class="grid-item-desc">Vendor scheduling, kitchen booking, inventory, menu displays. The AI runs the crowdsourced food market so members and vendors can focus on making great food.</div>
+        </div>
+      </div>
+
+      <div class="pull-quote">
+        The venue is the AI's body. Every sensor, speaker, light, valve, and display is a limb.
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         MEMBER GOALS
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">What Members Achieve</div>
+      <h2>Four Dimensions of Growth</h2>
+      <p>Every member declares goals across four areas. The AI tracks progress and optimizes the entire space to serve them.</p>
+
+      <div class="grid-2">
+        <div class="card" style="border-left: 3px solid var(--body);">
+          <div class="card-title" style="color: var(--body);">Health</div>
+          <p style="color: var(--text-soft); font-size: 0.88rem; margin: 0;">Sauna and cold plunge protocols, hot tub recovery, dance and fitness classes, yoga. The AI tracks what you do and prescribes what's next. "You haven't done cold plunge in 2 weeks. Tuesday at 7 AM?"</p>
+        </div>
+        <div class="card" style="border-left: 3px solid var(--mind);">
+          <div class="card-title" style="color: var(--mind);">Education</div>
+          <p style="color: var(--text-soft); font-size: 0.88rem; margin: 0;">Workshops, skill-sharing, mentorship. The AI pairs you with people who know what you want to learn. It suggests sessions based on your goals and tracks whether you're growing.</p>
+        </div>
+        <div class="card" style="border-left: 3px solid var(--community);">
+          <div class="card-title" style="color: var(--community);">Social</div>
+          <p style="color: var(--text-soft); font-size: 0.88rem; margin: 0;">Weekly gatherings of 64. AI-matched seating. Shared meals from the crowdsourced kitchen. Sweating together in the sauna. Dancing together in the studio. Relationships grounded in real shared experience, not networking small talk.</p>
+        </div>
+        <div class="card" style="border-left: 3px solid var(--soul);">
+          <div class="card-title" style="color: var(--soul);">Spiritual</div>
+          <p style="color: var(--text-soft); font-size: 0.88rem; margin: 0;">Yoga and breathwork in the studio. Stillness after the sauna. The meditative flow of dance. The AI protects your inner work &mdash; dim lights, quiet rooms, silence. It creates the conditions for going inward.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         THE CULTURE OF GIVING
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">The Culture</div>
+      <h2>A Place That Runs on Giving</h2>
+      <p>
+        Here's the insight: when a space provides genuine abundance &mdash; a body heated by the sauna, cooled by the plunge, moved by dance, fed by the community kitchen, surrounded by real relationships &mdash; scarcity dissolves. And when you're not in scarcity, the single greatest dopamine hit is giving something amazing to someone else. Watching their eyes light up. Knowing you made their day.
+      </p>
+      <p>
+        Three Pillars is built on this premise. The space takes care of your needs so thoroughly that your natural impulse shifts from "What can I get?" to "What can I give?" The AI doesn't force generosity. It creates the conditions where generosity is the most rewarding thing you can do &mdash; and then it makes giving effortless.
+      </p>
+
+      <h3>How the Space Encourages Giving</h3>
+      <div class="facility-grid">
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🍜</span>
+            <span class="facility-name">The Kitchen Is Community-Fed</span>
+          </div>
+          <div class="facility-desc">The food comes from members and local vendors, not a hired chef. When you bring your grandmother's pierogi recipe and serve it on Saturday, that's a gift. The crowdsourced kitchen makes giving as simple as cooking something you love.</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🎓</span>
+            <span class="facility-name">Members Teach Members</span>
+          </div>
+          <div class="facility-desc">The dance classes, fitness sessions, yoga, and workshops are taught by members sharing what they know. The AI identifies who has skills others need: "6 members want to learn salsa. You've been dancing for years. Would you lead a class?"</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🧖</span>
+            <span class="facility-name">Shared Rituals</span>
+          </div>
+          <div class="facility-desc">Leading a sauna session. Guiding a breathwork circle. Hosting a cold plunge challenge. The facilities become vehicles for giving when experienced members welcome newcomers and share what they've learned about their own practice.</div>
+        </div>
+
+        <div class="facility">
+          <div class="facility-header">
+            <span class="facility-icon">🤝</span>
+            <span class="facility-name">AI Rewards Givers</span>
+          </div>
+          <div class="facility-desc">The AI tracks contribution &mdash; who teaches, who feeds the community, who mentors, who shows up for others. High contributors get the best matches at Saturday gatherings. The most interesting new members flow toward generous people. Giving is rewarded with connection.</div>
+        </div>
+      </div>
+
+      <h3>The Contribution Score</h3>
+      <p>
+        The AI maintains an invisible contribution score for every member. It's never displayed as a number &mdash; no leaderboards, no gamification. But it shapes the experience:
+      </p>
+      <ul>
+        <li><strong>High contributors</strong> get priority breakout pairings, first access to new members, and are chosen for workshop teaching opportunities</li>
+        <li><strong>Steady contributors</strong> get the full experience &mdash; this is most members</li>
+        <li><strong>Low contributors</strong> get gentle nudges from the AI: "Marta is leading a beginner yoga class Wednesday. Want to help her set up?" It offers specific, low-friction ways to give.</li>
+        <li><strong>Persistent takers</strong> get a quiet conversation from a host. Not a punishment &mdash; an invitation to shift. If it doesn't change, they're counseled out to protect the culture.</li>
+      </ul>
+
+      <h3>Built Into the Gathering</h3>
+      <p>The Saturday event itself is structured around giving:</p>
+      <ul>
+        <li><strong>Table prompts are outward-focused:</strong> "What's something you could help someone at this table with?" not "What do you need?"</li>
+        <li><strong>The Give Wall:</strong> A physical board near the entrance where members post offers &mdash; "I can teach you to make sourdough," "I can help with your business plan," "Free headshots this week"</li>
+        <li><strong>Connection requests are about helping:</strong> When the AI suggests someone to meet, it frames it as mutual: "You can help her with X. She can help you with Y."</li>
+        <li><strong>The communal meal:</strong> Eating food that members and vendors made with their own hands is the most primal form of giving. Every Saturday, generosity is on the table &mdash; literally.</li>
+      </ul>
+
+      <div class="pull-quote">
+        In a world of sustainable abundance, your greatest high is giving something incredible to someone else. The space creates the abundance. The AI makes the giving effortless.
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         THE WEEKLY GATHERING
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">The Core Event</div>
+      <h2>64 People, Every Saturday</h2>
+      <p>The heartbeat of each location. Every week the full membership gathers for an AI-orchestrated afternoon.</p>
+
+      <div class="scenario-card">
+        <div class="sc-header">A Saturday at Three Pillars</div>
+        <div class="sc-title">64 members &bull; full-day access &bull; AI-orchestrated gathering</div>
+
+        <div class="scenario-step">
+          <div class="sc-time">Morning</div>
+          <div class="sc-action"><strong>The space wakes up.</strong> Members arrive at their own pace. Some hit the gym or a morning yoga class. Others go straight to the sauna and cold plunge. A few vendors set up in the kitchen &mdash; the AI posted today's food lineup. The space is alive but unhurried. <span class="sc-ai-tag">open access</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">1:00 PM</div>
+          <div class="sc-action"><strong>Hall prep.</strong> AI sets up the gathering hall. Lights to warm 2700K. Community kitchen vendors are serving &mdash; pierogi, fresh bread, someone's homemade kombucha. Displays show today's seating and featured member stories. <span class="sc-ai-tag">autonomous</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">2:00 PM</div>
+          <div class="sc-action"><strong>Communal meal.</strong> Everyone eats together before the structured portion. Food from the community kitchen. The AI adjusts climate as 64 bodies fill the hall. Hosts greet by name with AI-fed context. <span class="sc-ai-tag">reactive</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">2:30 PM</div>
+          <div class="sc-action"><strong>Round 1 &mdash; Tables of 8.</strong> AI-assigned seating based on each member's goals, skills, and history. Table displays show a prompt crafted for that mix: "Three of you are building something physical. What's the hardest part?" <span class="sc-ai-tag">orchestrated</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">3:15 PM</div>
+          <div class="sc-action"><strong>Round 2 &mdash; New tables.</strong> Complete reshuffle. Deeper prompt. After two rounds: 14 unique conversations. The AI notes which pairings generated energy and follow-up requests. <span class="sc-ai-tag">learning</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">4:00 PM</div>
+          <div class="sc-action"><strong>Workshop.</strong> A member teaches something hands-on: fermentation, breathwork, beekeeping, financial planning. The AI selected them based on what the community wants to learn. 30 minutes. <span class="sc-ai-tag">curated</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">4:30 PM</div>
+          <div class="sc-action"><strong>Open space.</strong> Structure dissolves. Sauna and plunge sessions. Hot tub conversations. Someone leads an impromptu dance session in the studio. The AI suggests 3 people to meet via each member's phone. Some drift to yoga. <span class="sc-ai-tag">suggestive</span></div>
+        </div>
+        <div class="scenario-step">
+          <div class="sc-time">Evening</div>
+          <div class="sc-action"><strong>Wind-down.</strong> People leave at their own pace. AI dims zones as they empty. Sends the post-visit pulse. The space settles. Last person out &mdash; AI locks up and logs the session. <span class="sc-ai-tag">autonomous</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         FEEDBACK
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">Feedback Loop</div>
+      <h2>The Real Metric: Did Your Giving Land?</h2>
+      <p>
+        Most communities measure what members receive. We measure what members <strong>give</strong> &mdash; and whether the people on the receiving end valued it. That's the evaluation function. Not "did you get value?" but "are people loving what you're giving them?"
+      </p>
+      <p>
+        This flips the entire incentive structure. When you know the AI is tracking how your contributions land &mdash; and rewarding you with better connections, richer experiences, and deeper belonging when they do &mdash; your natural impulse is to give better, not take more.
+      </p>
+
+      <h3>After Every Visit</h3>
+      <p>The questions center on what you gave and what others gave you:</p>
+      <ul>
+        <li><strong>Who helped you today?</strong> &mdash; tap names. "Marta showed me a breathing technique that changed everything." This is how givers get recognized.</li>
+        <li><strong>Did you give something?</strong> &mdash; Taught a class / Fed people / Helped someone / Shared knowledge / Led a session / Listened / Other</li>
+        <li><strong>Best moment:</strong> "What's one thing someone did for you that made your day?" &mdash; free text, optional but powerful</li>
+        <li><strong>Connection:</strong> Tap to request contact from someone (double opt-in)</li>
+      </ul>
+
+      <h3>The Giving Score</h3>
+      <p>The AI builds a picture of each member's giving impact over time:</p>
+      <ul>
+        <li><strong>How often are you named by others?</strong> When people say "Tomek helped me today," Tomek's giving score rises. This is the primary signal &mdash; it comes from the recipients, not the giver.</li>
+        <li><strong>What kind of giving?</strong> Teaching, mentoring, physical labor, emotional support, sharing skills. The AI learns your giving style.</li>
+        <li><strong>Is it landing?</strong> If you teach a workshop and people rate it highly, that's a strong signal. If you share advice at the table and three people request your contact, that's a strong signal. The AI measures impact, not intention.</li>
+        <li><strong>Reciprocity balance:</strong> The AI watches whether you're mostly giving, mostly receiving, or in a healthy exchange. All three can be fine &mdash; new members receive more, experienced members give more. But persistent imbalance gets attention.</li>
+      </ul>
+
+      <h3>Monthly Reflection</h3>
+      <p>Once a month, a deeper check-in &mdash; but notice the framing:</p>
+      <ul>
+        <li><strong>"What's the best thing you gave this month?"</strong> &mdash; free text. Forces reflection on contribution.</li>
+        <li><strong>"Who at Three Pillars has made the biggest difference for you?"</strong> &mdash; name someone. This person gets a quiet recognition from the AI.</li>
+        <li><strong>"What do you want to give next month?"</strong> &mdash; teach a class / cook for the community / lead a sauna ritual / mentor someone / other. The AI matches this with community needs.</li>
+        <li><strong>Growth check:</strong> Health / Education / Social / Spiritual &mdash; 1&ndash;5 each. Still tracked, but secondary to the giving metrics.</li>
+        <li><strong>Referral:</strong> "Would you invite someone you love?" &mdash; the ultimate signal that the giving culture is working.</li>
+      </ul>
+
+      <h3>How the AI Uses This</h3>
+      <table class="styled-table">
+        <thead>
+          <tr><th>Signal</th><th>AI Response</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Frequently named by others</td><td>This person is a high-impact giver. Best table assignments, first access to new members, workshop invitations.</td></tr>
+          <tr><td>Gives but isn't named</td><td>The giving isn't landing. AI adjusts: pair them with people who need exactly what they offer. Change the context.</td></tr>
+          <tr><td>Receives a lot, gives little</td><td>Gentle nudge: "Tomek could use help setting up the kitchen Thursday." Specific, low-friction giving opportunities. Not shame &mdash; an invitation.</td></tr>
+          <tr><td>Gives and receives well</td><td>Healthy exchange. This is the target state. The AI reinforces these patterns.</td></tr>
+          <tr><td>Workshop taught + high ratings</td><td>Strong signal. Invite them to teach again. Connect them with members who'd benefit most.</td></tr>
+          <tr><td>"Best moment" mentions someone</td><td>That person gets a quiet recognition. The AI knows who creates joy &mdash; and routes more people their way.</td></tr>
+          <tr><td>Declining giving + fewer visits</td><td>Churn risk. But the intervention is: "We miss what you bring." Not "you're missing out."</td></tr>
+        </tbody>
+      </table>
+
+      <div class="pull-quote">
+        The question isn't "Are you getting value?" It's "Are people loving what you give?" When the answer is yes, everything else follows.
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         THE BUSINESS
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">The Business</div>
+      <h2>How It Works as a Company</h2>
+
+      <h3>What We're Building</h3>
+      <p>Three Pillars is a vertically integrated AI + real estate company. We build the spaces, develop the AI platform, and operate the locations. The defensible assets are:</p>
+      <ul>
+        <li><strong>The AI operator</strong> &mdash; the software that runs a physical space, learns from members, and improves over time</li>
+        <li><strong>The playbook</strong> &mdash; how to design, build, and launch an AI-infused space (site selection, hardware spec, community seeding)</li>
+        <li><strong>The data</strong> &mdash; what actually makes people healthier, more connected, and more grounded in physical spaces. No one has this dataset.</li>
+        <li><strong>The brand</strong> &mdash; trust. Members invite people they love. The referral loop is the growth engine.</li>
+      </ul>
+
+      <h3>Warsaw Pilot — Unit Economics</h3>
+      <div class="card">
+        <div class="card-title">Monthly Revenue (64 Members)</div>
+        <div class="econ-row"><span class="econ-label">40 Standard members &times; 800 PLN</span><span class="econ-value">32,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">20 Premium members &times; 1,400 PLN</span><span class="econ-value">28,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Guest passes &amp; events</span><span class="econ-value">7,200 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Monthly revenue</span><span class="econ-value">67,200 PLN</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Monthly Costs</div>
+        <div class="econ-row"><span class="econ-label">Property (mortgage + taxes)</span><span class="econ-value">8,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Utilities</span><span class="econ-value">6,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Staff (2 hosts + 1 groundskeeper)</span><span class="econ-value">15,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Kitchen infrastructure &amp; supplies</span><span class="econ-value">4,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">AI platform &amp; infrastructure</span><span class="econ-value">3,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Maintenance &amp; misc</span><span class="econ-value">4,000 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Monthly costs</span><span class="econ-value">40,000 PLN</span></div>
+      </div>
+
+      <p><strong>Monthly margin: ~27,200 PLN ($6,900 USD) per location.</strong> Only 3 staff because the AI operates the space. The crowdsourced kitchen model means food vendors cover their own costs. Margins improve as the AI matures.</p>
+
+      <h3>Scale Path</h3>
+      <ol>
+        <li><strong>Location 1:</strong> Warsaw outskirts. Prove the model with 64 members. Iterate the AI.</li>
+        <li><strong>Location 2:</strong> Second Polish city (Krak&oacute;w, Wrocław) or second Warsaw property. Same AI platform, new site.</li>
+        <li><strong>Franchise / license:</strong> Other operators use the Three Pillars AI platform + playbook to build their own locations.</li>
+        <li><strong>International:</strong> Each country gets cultural adaptation. The AI and playbook are the scalable assets. The venue is local.</li>
+      </ol>
+
+      <h3>Capital Requirements</h3>
+      <div class="card">
+        <div class="card-title">Warsaw Pilot — Total Investment</div>
+        <div class="econ-row"><span class="econ-label">Venue lease deposit + build-out (500 m&sup2;)</span><span class="econ-value">600,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Sauna complex (Finnish + infrared + plunge)</span><span class="econ-value">250,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Hot tubs (2&ndash;3 units, plumbing, filtration)</span><span class="econ-value">120,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Gathering hall + socializing tables + displays</span><span class="econ-value">200,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Dance / fitness / yoga studios</span><span class="econ-value">180,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Commercial kitchen (crowdsourced infrastructure)</span><span class="econ-value">150,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">AI infrastructure (sensors, compute, network, audio, lighting)</span><span class="econ-value">200,000 PLN</span></div>
+        <div class="econ-row"><span class="econ-label">Furniture, finishes, equipment</span><span class="econ-value">150,000 PLN</span></div>
+        <div class="econ-row total"><span class="econ-label">Total</span><span class="econ-value">1,850,000 PLN</span></div>
+      </div>
+      <p><strong>~$470,000 USD.</strong> Poland's cost structure makes this possible. The same build in the US would cost $1.5&ndash;2M.</p>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         WHY NOW / WHY POLAND
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">Why Now</div>
+      <h2>The Moment</h2>
+      <p>Three things are converging:</p>
+      <ul>
+        <li><strong>AI is ready for the physical world.</strong> Sensor costs are down 90% in a decade. LLMs can reason about context. Edge compute can run decision engines locally. The technology to operate a physical space autonomously exists today.</li>
+        <li><strong>People are starving for real places.</strong> Post-pandemic, the hunger for physical community, nature, and embodied experience is at an all-time high. Digital everything has left people disconnected from their bodies, from the land, and from each other.</li>
+        <li><strong>Poland is the right launchpad.</strong> Exceptional construction quality at 40&ndash;60% of Western costs. Top-5 European tech talent. Strong sauna culture, vibrant dance and fitness scene, serious food culture, and deep community hunger among young professionals.</li>
+      </ul>
+
+      <div class="pull-quote">
+        Every AI company is building for screens. We're building for sweat, movement, food, and the people who gather around them.
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════
+         NEXT STEPS
+         ═══════════════════════════════════════ -->
+    <section class="section">
+      <div class="section-label">Next Steps</div>
+      <h2>Path to Location 1</h2>
+      <ol class="steps-list">
+        <li><strong>Find the venue</strong> &mdash; 500&ndash;1,000 m² commercial space in Warsaw. Existing plumbing &amp; ventilation preferred. Mixed-use or wellness zoning.</li>
+        <li><strong>Design the layout</strong> &mdash; architect + interior designer + IoT engineer working together from day one. Wet zones, dry zones, studio zones, social zones.</li>
+        <li><strong>Build sauna &amp; plunge first</strong> &mdash; the anchor amenity. People will come for this alone while the rest develops.</li>
+        <li><strong>Fit out the studios</strong> &mdash; dance, fitness, and yoga studios with mirrors, sound, and AI-controlled lighting. Modular walls for flexible use.</li>
+        <li><strong>Launch the kitchen</strong> &mdash; crowdsourced food &amp; drink with common infrastructure. Members cook and share. The AI tracks what people love.</li>
+        <li><strong>Build the AI operator</strong> &mdash; start simple: sauna controls, lighting, scheduling. Add matching, feedback loops, and giving analytics over time.</li>
+        <li><strong>Recruit 30 founding members</strong> &mdash; referral-based. People who want to sweat, move, learn, and connect.</li>
+        <li><strong>Launch Saturday gatherings</strong> &mdash; first month is data collection. By month 3, the AI knows the members. By month 6, the giving culture is self-sustaining. By year 1, it feels like it's been there forever.</li>
+      </ol>
+    </section>
+
+    <span data-site-version>v260317.13 4:55a</span>
+  </div>
+
+  <script type="module">
+    import { initPublicPage } from '/shared/public-shell.js';
+    initPublicPage({ transparent: true, light: true });
+  </script>
+</body>
+</html>
