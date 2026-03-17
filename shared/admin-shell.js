@@ -134,6 +134,12 @@ export async function renderTabNav(activeTab, authState, section = 'staff') {
     }
   }
 
+  // DevControl manages its own sub-tabs via renderDevControlTabs() — skip here
+  if (section === 'devcontrol') {
+    if (switcher) initNavTabList(switcher, '.context-switcher-btn');
+    return;
+  }
+
   // Filter tabs by section, permission, AND enabled features
   const enabledFeatures = await getEnabledFeatures();
   const tabs = ALL_ADMIN_TABS
