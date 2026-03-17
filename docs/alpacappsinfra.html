@@ -1015,7 +1015,7 @@
   <!-- Service picker (shown after Personal/Business is selected) -->
   <div id="service-picker" style="display: none; background: var(--bg); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; box-shadow: var(--shadow);">
     <p style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">Which services do you want to set up now?</p>
-    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">GitHub Pages, Supabase, and Claude Code are always included. Pick what else you need &mdash; you can add more later.</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">GitHub Pages, Supabase, Conductor, and Claude Code are always included. Pick what else you need &mdash; you can add more later.</p>
 
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
 
@@ -1084,7 +1084,7 @@
 
     <!-- Picked summary + scroll cue -->
     <div id="picked-summary" style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.9rem;">
-      <strong>Your setup path:</strong> <span id="picked-list">GitHub Pages &rarr; Claude Code &rarr; Supabase &rarr; Resend</span>
+      <strong>Your setup path:</strong> <span id="picked-list">GitHub Pages &rarr; Claude Code &rarr; Supabase &rarr; Conductor &rarr; Resend</span>
       <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.35rem 0 0;">Follow the steps below in order. Only the sections you picked will be highlighted.</p>
     </div>
   </div>
@@ -1145,7 +1145,7 @@
             <span>Website + Hosting</span>
             <span>Tailwind CSS v4</span>
           </div>
-          <div class="layer-services">Supabase &bull; GitHub Pages &bull; Tailwind &bull; Free</div>
+          <div class="layer-services">Supabase &bull; GitHub Pages &bull; Conductor &bull; Tailwind &bull; Free</div>
         </div>
 
       </div>
@@ -1165,18 +1165,19 @@
       <a href="#github"><span class="num">1</span> GitHub + Starter Template</a>
       <a href="#claude-code"><span class="num">2</span> Install Claude Code &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">Free week here</a></a>
       <a href="#supabase"><span class="num">3</span> Supabase</a>
-      <a href="#google-auth"><span class="num">4</span> Google Sign-In</a>
-      <a href="#gemini"><span class="num">5</span> Google Gemini (AI)</a>
-      <a href="#resend"><span class="num">6</span> Resend (Email)</a>
-      <a href="#telnyx"><span class="num">7</span> Telnyx (SMS)</a>
-      <a href="#square"><span class="num">8</span> Square (Payments)</a>
-      <a href="#stripe"><span class="num">9</span> Stripe (Payments)</a>
-      <a href="#signwell"><span class="num">10</span> SignWell (E-Signatures)</a>
-      <a href="#workers"><span class="num">11</span> Background Workers</a>
-      <a href="#domain"><span class="num">12</span> Custom Domain</a>
-      <a href="#template"><span class="num">13</span> Context System</a>
-      <a href="#checklist"><span class="num">14</span> Day-One Checklist</a>
-      <a href="#mobile"><span class="num">15</span> Mobile App (iOS &amp; Android)</a>
+      <a href="#conductor"><span class="num">4</span> Conductor</a>
+      <a href="#google-auth"><span class="num">5</span> Google Sign-In</a>
+      <a href="#gemini"><span class="num">6</span> Google Gemini (AI)</a>
+      <a href="#resend"><span class="num">7</span> Resend (Email)</a>
+      <a href="#telnyx"><span class="num">8</span> Telnyx (SMS)</a>
+      <a href="#square"><span class="num">9</span> Square (Payments)</a>
+      <a href="#stripe"><span class="num">10</span> Stripe (Payments)</a>
+      <a href="#signwell"><span class="num">11</span> SignWell (E-Signatures)</a>
+      <a href="#workers"><span class="num">12</span> Background Workers</a>
+      <a href="#domain"><span class="num">13</span> Custom Domain</a>
+      <a href="#template"><span class="num">14</span> Context System</a>
+      <a href="#checklist"><span class="num">15</span> Day-One Checklist</a>
+      <a href="#mobile"><span class="num">16</span> Mobile App (iOS &amp; Android)</a>
     </div>
   </nav>
 
@@ -1210,6 +1211,15 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="calc-svc__info">
           <span class="calc-svc__name">Supabase</span>
           <span class="calc-svc__desc">Database, storage, auth, edge functions</span>
+        </span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc calc-svc--core calc-svc--locked">
+        <input type="checkbox" checked disabled data-svc="conductor">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info">
+          <span class="calc-svc__name">Conductor</span>
+          <span class="calc-svc__desc">Parallel AI coding agents (Mac app)</span>
         </span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
@@ -1616,14 +1626,36 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 4. Google Auth -->
+  <!-- 4. Conductor -->
+  <details class="section" id="conductor">
+      <summary><h2>4. Conductor <span class="cost-badge cost-free">Free</span></h2></summary>
+    <div class="section-body">
+    <p>Run multiple Claude Code agents in parallel from a single Mac app. Conductor lets you split work across independent workspaces &mdash; each with its own branch, context, and agent &mdash; so you can tackle complex projects faster.</p>
+
+    <h3><span class="step-label step-you">You do (on your Mac)</span></h3>
+    <ol>
+      <li>Download Conductor from <a href="https://conductor.build" target="_blank">conductor.build</a></li>
+      <li>Open Conductor and point it at your project directory</li>
+      <li>Create workspaces for parallel tasks (e.g. one for frontend, one for backend, one for tests)</li>
+    </ol>
+
+    <h3><span class="step-label step-paste">Tell Claude Code</span></h3>
+    <pre data-lang="paste into Claude Code"><code>I've installed Conductor for parallel agent management. Note in CLAUDE.md that Conductor is available for running multiple Claude Code agents in parallel on this project.</code></pre>
+
+    <div class="callout">
+      <strong>Why Conductor?</strong> When you have multiple independent tasks (setting up services, writing tests, building UI), Conductor runs them simultaneously instead of sequentially. This can cut setup time significantly. Each workspace gets its own git branch so agents never conflict.
+    </div>
+  </div>
+  </details>
+
+  <!-- 5. Google Auth -->
   <details class="section" id="google-auth">
-      <summary><h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">4. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">5. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
     <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 5 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
+      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 6 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
     </div>
 
     <h3><span class="step-label step-you">1. Create a Google Cloud project</span></h3>
@@ -1688,9 +1720,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 5. Gemini -->
+  <!-- 6. Gemini -->
   <details class="section" id="gemini">
-      <summary><h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">5. Google Gemini (AI) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">6. Google Gemini (AI) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
     <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
 
@@ -1716,9 +1748,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 6. Resend -->
+  <!-- 7. Resend -->
   <details class="section" id="resend">
-      <summary><h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">6. Resend (Email) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">7. Resend (Email) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1742,9 +1774,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 7. Telnyx -->
+  <!-- 8. Telnyx -->
   <details class="section" id="telnyx">
-      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">7. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">8. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1785,9 +1817,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 8. Square -->
+  <!-- 9. Square -->
   <details class="section" id="square">
-      <summary><h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">8. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">9. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1823,9 +1855,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 9. Stripe -->
+  <!-- 10. Stripe -->
   <details class="section" id="stripe">
-      <summary><h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">9. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">10. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
     <p>Stripe handles ACH bank transfers (0.8% capped at $5), card payments (2.9% + 30&cent;), and outbound payouts to associates via Stripe Connect ($0.25/payout).</p>
 
@@ -1867,9 +1899,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 10. SignWell -->
+  <!-- 11. SignWell -->
   <details class="section" id="signwell">
-      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">10. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">11. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1899,9 +1931,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 11. Cloudflare R2 -->
+  <!-- 12. Cloudflare R2 -->
   <details class="section" id="cloudflare-r2-setup">
-      <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">12. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
     <p>Optional. S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
 
@@ -2017,9 +2049,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 12. Background Workers -->
+  <!-- 13. Background Workers -->
   <details class="section" id="workers">
-      <summary><h2>12. Background Workers (Optional)</h2></summary>
+      <summary><h2>13. Background Workers (Optional)</h2></summary>
     <div class="section-body">
 
     <p>Some features need always-on processes that can&rsquo;t run in the browser or in Supabase Edge Functions. These run on a cloud VM (any provider: DigitalOcean, Google Cloud, Hetzner, etc.).</p>
@@ -2071,9 +2103,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 13. Custom Domain -->
+  <!-- 14. Custom Domain -->
   <details class="section" id="domain">
-      <summary><h2>13. Custom Domain (Optional)</h2></summary>
+      <summary><h2>14. Custom Domain (Optional)</h2></summary>
     <div class="section-body">
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
@@ -2148,9 +2180,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 14. CLAUDE.md Templates -->
+  <!-- 15. CLAUDE.md Templates -->
   <details class="section" id="template">
-      <summary><h2>14. On-Demand Context System</h2></summary>
+      <summary><h2>15. On-Demand Context System</h2></summary>
     <div class="section-body">
     <p>Claude Code reads <code>CLAUDE.md</code> at the start of every conversation. To keep this fast and efficient, we use an <strong>on-demand context loading</strong> pattern: CLAUDE.md stays slim (~30 lines) and indexes separate <code>docs/*.md</code> files that Claude only loads when the task requires them.</p>
 
@@ -2198,9 +2230,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 15. Day-One Checklist -->
+  <!-- 16. Day-One Checklist -->
   <details class="section" id="checklist">
-      <summary><h2>15. Day-One Checklist</h2></summary>
+      <summary><h2>16. Day-One Checklist</h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -2211,6 +2243,7 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
       <li>Enable GitHub Pages on the repo</li>
       <li>Create Supabase account and project</li>
       <li>Copy: project ref, anon key, DB password, and session pooler connection string</li>
+      <li>Download and install Conductor from <a href="https://conductor.build" target="_blank">conductor.build</a></li>
     </ul>
 
     <p><strong>User Login &mdash; Free (Google OAuth):</strong></p>
@@ -2290,9 +2323,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 16. Mobile App -->
+  <!-- 17. Mobile App -->
   <details class="section" id="mobile">
-      <summary><h2>16. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2></summary>
+      <summary><h2>17. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2></summary>
     <div class="section-body">
     <p>The mobile app wraps the same web codebase in a native shell using <strong>Capacitor 8</strong>. Residents get a native app experience (home screen icon, push notifications, no browser chrome) while you maintain a single codebase.</p>
 
@@ -2569,6 +2602,7 @@ function recalcCost() {
   var svcCosts = {
     'github':      { basic: 0, complicated: 0, hyper: 0 },
     'supabase':    { basic: 0, complicated: 0, hyper: 300 },
+    'conductor':   { basic: 0, complicated: 0, hyper: 0 },
     'claude':      { basic: 0, complicated: 320, hyper: 2400 },
     'google-auth': { basic: 0, complicated: 0, hyper: 0 },
     'resend':      { basic: 0, complicated: 0, hyper: 0 },
@@ -2588,6 +2622,7 @@ function recalcCost() {
   var svcLabels = {
     'github':      'GitHub Pages',
     'supabase':    'Supabase',
+    'conductor':   'Conductor',
     'claude':      'Claude Code',
     'google-auth': 'Google Sign-In',
     'gemini':      'Google Gemini (AI)',
@@ -2619,7 +2654,7 @@ function recalcCost() {
   };
 
   // Gather selected services. Core always included.
-  var selected = ['github', 'supabase', 'claude'];
+  var selected = ['github', 'supabase', 'conductor', 'claude'];
   document.querySelectorAll('#calc-services input[data-svc]:not(:disabled)').forEach(function(cb) {
     if (cb.checked) selected.push(cb.dataset.svc);
   });
@@ -2846,7 +2881,7 @@ function downloadClaudeMd() {
     '- `openLightbox(url)` for images\n' +
     '- Tailwind: use design tokens from `@theme` block (see `docs/PATTERNS.md`). Run `npm run css:build` after new classes.\n\n' +
     '## Quick Refs\n\n' +
-    '- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages\n' +
+    '- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | Conductor | GitHub Pages\n' +
     '- **Live:** https://USERNAME.github.io/REPO/\n' +
     '- **Architecture:** Browser \u2192 GitHub Pages \u2192 Supabase (no server-side code)\n';
 
@@ -2960,13 +2995,13 @@ function updatePickedServices() {
     if (cb.checked) picks.push(cb.dataset.pick);
   });
 
-  var parts = ['GitHub Pages', 'Claude Code', 'Supabase'];
+  var parts = ['GitHub Pages', 'Claude Code', 'Supabase', 'Conductor'];
   picks.forEach(function(p) { parts.push(pickLabels[p] || p); });
   document.getElementById('picked-list').textContent = parts.join(' \u2192 ');
 
   // Highlight/dim sections based on picks
   // Always-visible sections: github, claude-code, supabase, architecture, checklist, template
-  var alwaysShow = ['github', 'claude-code', 'supabase', 'architecture', 'checklist', 'template'];
+  var alwaysShow = ['github', 'claude-code', 'supabase', 'conductor', 'architecture', 'checklist', 'template'];
   var pickedSections = picks.map(function(p) { return pickToSection[p]; }).filter(Boolean);
   var allVisible = alwaysShow.concat(pickedSections);
 

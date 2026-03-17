@@ -693,6 +693,7 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
       <li>Installing prerequisites (Git, GitHub CLI)</li>
       <li>Creating your GitHub repository and enabling Pages</li>
       <li>Setting up your Supabase database</li>
+      <li>Installing Conductor for parallel AI coding agents</li>
       <li>Opening Claude Code to run the automated setup wizard</li>
     </ol>
     <p>You can paste screenshots at any point and Claude will tell you exactly what to click. If something looks different on your screen, just show Claude &mdash; it will adapt.</p>
@@ -765,7 +766,7 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
           <span>Website + Hosting</span>
           <span>Tailwind CSS v4</span>
         </div>
-        <div class="layer-services">Supabase &bull; GitHub Pages &bull; Tailwind &bull; Free</div>
+        <div class="layer-services">Supabase &bull; GitHub Pages &bull; Conductor &bull; Tailwind &bull; Free</div>
       </div>
     </div>
     <div class="stack-sidebar">
@@ -786,6 +787,10 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
     </div>
     <div class="svc-card core">
       <div class="svc-info"><span class="svc-name">Supabase</span><span class="svc-desc">Database, storage, auth, edge functions</span></div>
+      <span class="cost-badge cost-free">Free</span>
+    </div>
+    <div class="svc-card core">
+      <div class="svc-info"><span class="svc-name">Conductor</span><span class="svc-desc">Parallel AI coding agents (Mac app)</span></div>
       <span class="cost-badge cost-free">Free</span>
     </div>
     <div class="svc-card core">
@@ -857,6 +862,12 @@ Start by getting Claude Code, GitHub Pages, and Supabase set up. After that, ask
         <input type="checkbox" checked disabled data-svc="supabase">
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info"><span class="calc-svc__name">Supabase</span><span class="calc-svc__desc">Database, storage, auth, edge functions</span></span>
+        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+      </label>
+      <label class="calc-svc calc-svc--core calc-svc--locked">
+        <input type="checkbox" checked disabled data-svc="conductor">
+        <span class="calc-svc__check">&check;</span>
+        <span class="calc-svc__info"><span class="calc-svc__name">Conductor</span><span class="calc-svc__desc">Parallel AI coding agents (Mac app)</span></span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
       <label class="calc-svc calc-svc--core calc-svc--locked">
@@ -1040,6 +1051,7 @@ function recalcCost() {
   var svcCosts = {
     'github':      { basic: 0, complicated: 0, hyper: 0 },
     'supabase':    { basic: 0, complicated: 0, hyper: 300 },
+    'conductor':   { basic: 0, complicated: 0, hyper: 0 },
     'claude':      { basic: 0, complicated: 320, hyper: 2400 },
     'google-auth': { basic: 0, complicated: 0, hyper: 0 },
     'resend':      { basic: 0, complicated: 0, hyper: 0 },
@@ -1059,7 +1071,7 @@ function recalcCost() {
   };
 
   var svcLabels = {
-    'github': 'GitHub Pages', 'supabase': 'Supabase', 'claude': 'Claude Code',
+    'github': 'GitHub Pages', 'supabase': 'Supabase', 'conductor': 'Conductor', 'claude': 'Claude Code',
     'google-auth': 'Google Sign-In', 'resend': 'Resend (email)', 'telnyx': 'Telnyx (SMS)',
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
@@ -1083,7 +1095,7 @@ function recalcCost() {
     'workers': { complicated: '$12/mo VM for bug fixer, pollers, image gen', hyper: '$32/mo VM for heavy workers + Claude Code automation' }
   };
 
-  var selected = ['github', 'supabase', 'claude'];
+  var selected = ['github', 'supabase', 'conductor', 'claude'];
   document.querySelectorAll('#calc-services input[data-svc]:not(:disabled)').forEach(function(cb) {
     if (cb.checked) selected.push(cb.dataset.svc);
   });

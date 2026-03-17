@@ -229,6 +229,27 @@ Store these for later steps.
 
 ---
 
+## Conductor
+
+Conductor is a Mac app that runs multiple Claude Code agents in parallel, each in its own workspace with an isolated git branch.
+
+### Setup Steps
+
+1. Check if user is on macOS (Conductor is Mac-only)
+2. Direct them to download from [conductor.build](https://conductor.build)
+3. Have them open Conductor and point it at the project directory
+4. Suggest workspace layout: split independent tasks (frontend, backend, tests) into separate workspaces
+5. Note in `CLAUDE.md` under Quick Refs that Conductor is available
+
+### Key Points
+
+- Each workspace gets its own git branch — agents never conflict
+- Best used for independent parallel tasks during setup (e.g., configuring services simultaneously)
+- Free to use
+- Mac-only (skip this step on Windows/Linux)
+
+---
+
 ## Google Sign-In (Google OAuth via Supabase)
 
 **Note:** If user also selected Gemini, mention they can use the same Google Cloud project.
