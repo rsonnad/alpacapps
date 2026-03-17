@@ -41,9 +41,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Check for OAuth callback code in URL params
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      if (code && hasPermission('admin_climate_settings')) {
-        await handleOAuthCallback(code);
+      if (code) {
+        // Always clean the URL to avoid reuse
         window.history.replaceState({}, '', window.location.pathname);
+        if (hasPermission('admin_climate_settings')) {
+          await handleOAuthCallback(code);
+        } else {
+          console.warn('OAuth code present but user lacks admin_climate_settings permission');
+        }
       }
 
       // Load weather and thermostats in parallel
@@ -488,11 +493,10 @@ async function loadNestSettings() {
     const badge = document.getElementById('nestModeBadge');
     if (badge) badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
 
-    // Show OAuth setup if not authorized or token expired
+    // Show OAuth setup only if no refresh token (access token auto-refreshes)
     const oauthSection = document.getElementById('oauthSetupSection');
     const deviceSection = document.getElementById('deviceManagementSection');
-    const tokenExpired = config.token_expires_at && new Date(config.token_expires_at) < new Date();
-    const needsAuth = !config.refresh_token || tokenExpired;
+    const needsAuth = !config.refresh_token;
     if (needsAuth) {
       oauthSection?.classList.remove('hidden');
       deviceSection?.classList.add('hidden');
@@ -529,12 +533,8 @@ async function startOAuthFlow() {
       `&response_type=code` +
       `&scope=${encodeURIComponent('https://www.googleapis.com/auth/sdm.service')}`;
 
-    // Open OAuth in a new tab so climate settings page stays open.
-    const oauthWindow = window.open(authUrl, '_blank', 'noopener,noreferrer');
-    if (!oauthWindow) {
-      // Popup blocked: degrade gracefully to same-tab redirect.
-      window.location.href = authUrl;
-    }
+    // Same-tab redirect so the callback code is captured reliably
+    window.location.href = authUrl;
   } catch (err) {
     showToast(`OAuth setup failed: ${err.message}`, 'error');
   }
