@@ -10,7 +10,7 @@ import { supabase } from '../shared/supabase.js';
 const SENSORS_PROXY = 'https://cam.alpacaplayhouse.com/sensors';
 const SONOS_PROXY = 'https://cam.alpacaplayhouse.com/sonos';
 const POLL_INTERVAL = 30000;
-const GREETING_COOLDOWN = 5 * 60 * 1000; // 5 min between greetings
+const GREETING_COOLDOWN = 15 * 60 * 1000; // 15 min between greetings
 
 let sensors = [];
 let lastPollTime = null;
