@@ -453,10 +453,16 @@
         links.push({ url: `${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf`, label: 'Lodging/RV Park Requirements' });
       }
       if (taskCode === 'B9') {
-        links.push({ url: `${STORAGE_URL}/ossf-septic/jet-j500-system-specifications.pdf`, label: 'Jet J-500 Specs', bold: true });
-        links.push({ url: `${STORAGE_URL}/ossf-septic/ossf-site-plan-spray-areas-gravel-drive.pdf`, label: 'OSSF Site Plan' });
-        links.push({ url: `${STORAGE_URL}/ossf-septic/on-site-system-design-aerobic-wastewater.pdf`, label: 'System Design' });
-        links.push({ url: `${STORAGE_URL}/property-docs/2000-18725 Septic Info.pdf`, label: 'Original Septic Info' });
+        // New additional septic system needed for outhouse — reference existing OSSF docs
+        links.push({ url: `${STORAGE_URL}/ossf-septic/ossf-application-form-a-18725.pdf`, label: 'OSSF Application (reference)', bold: true });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/form-b-soil-site-evaluation-report.pdf`, label: 'Soil Evaluation Report (reference)' });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/on-site-system-design-aerobic-wastewater.pdf`, label: 'Existing System Design (reference)' });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/jet-j500-system-specifications.pdf`, label: 'Jet J-500 Specs (reference)' });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/designer-certification-edgar-bolch-rs2552.pdf`, label: 'Designer Certification (reference)' });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/permit-to-construct-notice-18725.pdf`, label: 'Existing Permit to Construct (reference)' });
+        links.push({ url: `${STORAGE_URL}/ossf-septic/ossf-site-plan-spray-areas-gravel-drive.pdf`, label: 'OSSF Site Plan (reference)' });
+        links.push({ url: `${STORAGE_URL}/county-forms/OSSF Application.pdf`, label: 'Blank OSSF Application Form', bold: true });
+        links.push({ url: `${STORAGE_URL}/county-forms/Affidavit for Aerobic OSSF Systems.pdf`, label: 'Aerobic OSSF Affidavit Form' });
       }
       if (taskCode === 'B10') {
         links.push({ url: 'https://maps.co.bastrop.tx.us/Public_GIS_Viewer/', label: 'Bastrop County GIS Viewer', bold: true, external: true });
@@ -469,12 +475,16 @@
         links.push({ url: `${STORAGE_URL}/county-forms/Development Application Supplemental Page.pdf`, label: 'Supplemental Page' });
       }
       if (taskCode === 'C2') {
-        links.push({ url: `${STORAGE_URL}/property-docs/Deed - Correction Warranty w Vendors Lien.pdf`, label: 'Property Deed', bold: true });
-        links.push({ url: `${STORAGE_URL}/trust-docs/Sonnad Trust Certificate.pdf`, label: 'Trust Certificate' });
+        links.push({ url: `${STORAGE_URL}/property-docs/Correction Deed.pdf`, label: 'Correction Deed', bold: true });
+        links.push({ url: `${STORAGE_URL}/property-docs/Still Forest House Transfer on Death Deed Subhash Sonnad Notarized.pdf`, label: 'Transfer on Death Deed' });
+        links.push({ url: `${STORAGE_URL}/trust-docs/amended-restated-revocable-trust-subhash-sonnad-notarized-hawaii-2020.pdf`, label: 'Revocable Trust (Notarized)' });
+        links.push({ url: `${STORAGE_URL}/property-docs/Revocable-Trust-of-Subhash-Sonnad-2026.pdf`, label: 'Trust 2026 Update' });
       }
       if (taskCode === 'C3') {
-        links.push({ url: 'survey-update-request.pdf', label: 'Survey Update Request', bold: true });
+        links.push({ url: `${STORAGE_URL}/property-docs/New Survey 2 (2021 - Most Recent).pdf`, label: 'Most Recent Survey (2021)', bold: true });
+        links.push({ url: `${STORAGE_URL}/property-docs/New Survey.pdf`, label: 'Previous Survey' });
         links.push({ url: 'siteplan.html', label: 'Site Plan' });
+        links.push({ url: `${STORAGE_URL}/property-docs/Platting Exemption Status - 160 Still Forest Dr - PID 44401.pdf`, label: 'Platting Exemption Status' });
       }
       if (taskCode === 'C7') {
         links.push({ url: `${STORAGE_URL}/county-forms/Fee Schedule (June 2025).pdf`, label: 'Fee Schedule (June 2025)', bold: true });
