@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Septic Professionals — 160 Still Forest Dr</title>
+  <link rel="icon" type="image/png" href="../../../favicon.png">
+  <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f5f0; --bg-card: #fff; --border: #e5e0d8; --radius: 8px;
+      --text: #1c1618; --text-muted: #8c8279; --accent: #d4883a;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .page-wrap { max-width: 960px; margin: 0 auto; padding: 1rem; padding-bottom: 3rem; }
+    .back-link { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--text-muted); text-decoration: none; font-weight: 500; }
+    .back-link:hover { color: var(--accent); }
+
+    h1 { font-size: 1.4rem; font-weight: 700; margin: 1rem 0 0.25rem; }
+    .subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
+
+    /* Context card */
+    .context-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+    .context-card h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .context-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+    .context-card strong { color: var(--text); }
+
+    /* Comparison table */
+    .comparison-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 2rem; }
+    .comparison-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 700px; }
+    .comparison-table th { background: #f0ece6; text-align: left; padding: 0.6rem 0.75rem; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); border-bottom: 2px solid var(--border); white-space: nowrap; }
+    .comparison-table td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table tbody tr:hover { background: #fdfcfa; }
+
+    .company-name { font-weight: 700; font-size: 0.88rem; color: var(--text); }
+    .star { color: #f59e0b; }
+    .rating-num { font-weight: 600; margin-left: 0.2rem; }
+
+    .tag { display: inline-block; font-size: 0.68rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; margin: 0.15rem 0.15rem 0.15rem 0; }
+    .tag-green { background: #dcfce7; color: #166534; }
+    .tag-blue { background: #dbeafe; color: #1e40af; }
+    .tag-amber { background: #fef3c7; color: #92400e; }
+
+    /* Cards (for mobile / detail view) */
+    .pro-cards { display: flex; flex-direction: column; gap: 1rem; }
+    .pro-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+    .pro-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .pro-card-name { font-weight: 700; font-size: 1.05rem; }
+    .pro-card-rating { display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; }
+    .pro-card-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem; }
+    .pro-card-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1rem; }
+    .pro-card-desc ul { margin: 0.5rem 0 0 1.2rem; }
+    .pro-card-desc li { margin-bottom: 0.35rem; }
+    .pro-card-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    .btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.85rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+    /* Responsive: hide table on mobile, show cards */
+    @media (max-width: 768px) {
+      .comparison-wrap { display: none; }
+      h1 { font-size: 1.2rem; }
+    }
+    @media (min-width: 769px) {
+      .pro-cards { display: none; }
+    }
+
+    /* Print */
+    @media print {
+      body { background: #fff; }
+      .back-link, .btn { display: none; }
+      .pro-cards { display: flex !important; }
+      .comparison-wrap { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <a href="priority-list.html" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Priority List
+    </a>
+
+    <h1>Septic System Professionals</h1>
+    <p class="subtitle">Licensed OSSF installers experienced with system expansions and unpermitted plumbing inspections in Bastrop County. These specialists can provide the professional "stamp" needed to bring existing work up to code.</p>
+
+    <div class="context-card">
+      <h2>What You Need</h2>
+      <p>For expanding an existing septic system and securing a professional inspection for unpermitted plumbing work in Bastrop County, you need a specialist who is both a <strong>licensed Installer (OSSF)</strong> and familiar with <strong>local permitting requirements</strong>. These professionals can assess your current system capacity, design expansions for additional bathrooms, and provide the documentation required by the county.</p>
+    </div>
+
+    <!-- Desktop: Comparison Table -->
+    <div class="comparison-wrap">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Rating</th>
+            <th>Experience</th>
+            <th>Specialties</th>
+            <th>Pricing</th>
+            <th>Hours</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="company-name">Simpson Septic Incorporated</span></td>
+            <td><span class="star">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span class="rating-num">5.0</span></td>
+            <td>System modifications, regulatory compliance</td>
+            <td>
+              <span class="tag tag-green">Expansions</span>
+              <span class="tag tag-blue">Inspections</span>
+              <span class="tag tag-amber">Permitting</span>
+            </td>
+            <td>"One price does it all" model — budget certainty</td>
+            <td>Closes 7 PM</td>
+            <td><a href="mailto:?subject=Septic%20System%20Inspection%20%E2%80%94%20160%20Still%20Forest%20Dr&body=Hello%20Simpson%20Septic%2C%0A%0AI%20need%20a%20licensed%20OSSF%20professional%20to%20evaluate%20my%20existing%20septic%20system%20and%20inspect%20unpermitted%20plumbing%20at%20160%20Still%20Forest%20Dr%2C%20Cedar%20Creek%2C%20TX%2078612.%0A%0ACould%20you%20provide%20a%20quote%20for%3A%0A1.%20Existing%20system%20assessment%20(Jet%20J-500%20aerobic)%0A2.%20Capacity%20evaluation%20for%20additional%20bathroom%0A3.%20Inspection%20and%20sign-off%20on%20existing%20plumbing%0A%0AThank%20you!" class="btn btn-primary">Request Quote</a></td>
+          </tr>
+          <tr>
+            <td><span class="company-name">Double JP Septic, LLC</span></td>
+            <td><span class="star">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span class="rating-num">4.8</span></td>
+            <td>Thorough assessments, customer education</td>
+            <td>
+              <span class="tag tag-green">Expansions</span>
+              <span class="tag tag-blue">Assessments</span>
+              <span class="tag tag-amber">Compliance</span>
+            </td>
+            <td>Competitive on larger projects</td>
+            <td>Closes 5 PM</td>
+            <td><a href="mailto:?subject=Septic%20System%20Inspection%20%E2%80%94%20160%20Still%20Forest%20Dr&body=Hello%20Double%20JP%20Septic%2C%0A%0AI%20need%20a%20licensed%20OSSF%20professional%20to%20evaluate%20my%20existing%20septic%20system%20and%20inspect%20unpermitted%20plumbing%20at%20160%20Still%20Forest%20Dr%2C%20Cedar%20Creek%2C%20TX%2078612.%0A%0ACould%20you%20provide%20a%20quote%20for%3A%0A1.%20Existing%20system%20assessment%20(Jet%20J-500%20aerobic)%0A2.%20Capacity%20evaluation%20for%20additional%20bathroom%0A3.%20Inspection%20and%20sign-off%20on%20existing%20plumbing%0A%0AThank%20you!" class="btn btn-primary">Request Quote</a></td>
+          </tr>
+          <tr>
+            <td><span class="company-name">Larry's Septic Tank Service</span></td>
+            <td><span class="star">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span class="rating-num">4.9</span></td>
+            <td>37+ years in Bastrop County</td>
+            <td>
+              <span class="tag tag-green">Local Expert</span>
+              <span class="tag tag-blue">Inspections</span>
+              <span class="tag tag-amber">Repairs</span>
+            </td>
+            <td>Great value — no unnecessary upselling</td>
+            <td>Closes 5 PM</td>
+            <td><a href="mailto:?subject=Septic%20System%20Inspection%20%E2%80%94%20160%20Still%20Forest%20Dr&body=Hello%20Larry's%20Septic%2C%0A%0AI%20need%20a%20licensed%20OSSF%20professional%20to%20evaluate%20my%20existing%20septic%20system%20and%20inspect%20unpermitted%20plumbing%20at%20160%20Still%20Forest%20Dr%2C%20Cedar%20Creek%2C%20TX%2078612.%0A%0ACould%20you%20provide%20a%20quote%20for%3A%0A1.%20Existing%20system%20assessment%20(Jet%20J-500%20aerobic)%0A2.%20Capacity%20evaluation%20for%20additional%20bathroom%0A3.%20Inspection%20and%20sign-off%20on%20existing%20plumbing%0A%0AThank%20you!" class="btn btn-primary">Request Quote</a></td>
+          </tr>
+          <tr>
+            <td><span class="company-name">C &amp; L Septic Services</span></td>
+            <td><span class="star">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span class="rating-num">5.0</span></td>
+            <td>Local Bastrop provider, OSSF specialist</td>
+            <td>
+              <span class="tag tag-green">OSSF Systems</span>
+              <span class="tag tag-blue">Maintenance</span>
+              <span class="tag tag-amber">Design</span>
+            </td>
+            <td>Lower mobilization costs (local)</td>
+            <td>Closes 6 PM</td>
+            <td><a href="mailto:?subject=Septic%20System%20Inspection%20%E2%80%94%20160%20Still%20Forest%20Dr&body=Hello%20C%20%26%20L%20Septic%2C%0A%0AI%20need%20a%20licensed%20OSSF%20professional%20to%20evaluate%20my%20existing%20septic%20system%20and%20inspect%20unpermitted%20plumbing%20at%20160%20Still%20Forest%20Dr%2C%20Cedar%20Creek%2C%20TX%2078612.%0A%0ACould%20you%20provide%20a%20quote%20for%3A%0A1.%20Existing%20system%20assessment%20(Jet%20J-500%20aerobic)%0A2.%20Capacity%20evaluation%20for%20additional%20bathroom%0A3.%20Inspection%20and%20sign-off%20on%20existing%20plumbing%0A%0AThank%20you!" class="btn btn-primary">Request Quote</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile: Card view -->
+    <div class="pro-cards">
+
+      <div class="pro-card">
+        <div class="pro-card-header">
+          <span class="pro-card-name">Simpson Septic Incorporated</span>
+          <div class="pro-card-rating"><span class="star">&#9733;</span> 5.0</div>
+        </div>
+        <div class="pro-card-meta">
+          <span class="tag tag-green">Expansions</span>
+          <span class="tag tag-blue">Inspections</span>
+          <span class="tag tag-amber">Permitting</span>
+        </div>
+        <div class="pro-card-desc">
+          <strong>Hours:</strong> Open · Closes 7:00 PM<br>
+          <strong>Pricing:</strong> "One price does it all" model
+          <ul>
+            <li>Specializes in system modifications and navigating the permitting process for drain field or tank capacity expansions</li>
+            <li>"One price does it all" model provides budget certainty for inspecting existing plumbing</li>
+            <li>Well-versed in local codes — can perform inspections to ensure new bathroom plumbing meets standards for system sign-off</li>
+          </ul>
+        </div>
+        <div class="pro-card-actions">
+          <a href="mailto:?subject=Septic%20System%20Inspection%20%E2%80%94%20160%20Still%20Forest%20Dr&body=Hello%20Simpson%20Septic%2C%0A%0AI%20need%20a%20licensed%20OSSF%20professional%20to%20evaluate%20my%20existing%20septic%20system%20and%20inspect%20unpermitted%20plumbing%20at%20160%20Still%20Forest%20Dr%2C%20Cedar%20Creek%2C%20TX%2078612.%0A%0ACould%20you%20provide%20a%20quote%20for%3A%0A1.%20Existing%20system%20assessment%20(Jet%20J-500%20aerobic)%0A2.%20Capacity%20evaluation%20for%20additional%20bathroom%0A3.%20Inspection%20and%20sign-off%20on%20existing%20plumbing%0A%0AThank%20you!" class="btn btn-primary">Request Quote</a>
+        </div>
+      </div>
+
+      <div class="pro-card">
+        <div class="pro-card-header">
+          <span class="pro-card-name">Double JP Septic, LLC</span>
+          <div class="pro-card-rating"><span class="star">&#9733;</span> 4.8</div>
+        </div>
+        <div class="pro-card-meta">
+          <span class="tag tag-green">Expansions</span>
+          <span class="tag tag-blue">Assessments</span>
+          <span class="tag tag-amber">Compliance</span>
+        </div>
+        <div class="pro-card-desc">
+          <strong>Hours:</strong> Open · Closes 5:00 PM<br>
+          <strong>Pricing:</strong> Competitive on larger projects
+          <ul>
+            <li>Reputation for thorough assessments of existing setups — critical for determining if your system can handle an additional bathroom</li>
+            <li>Professional and detail-oriented — essential for getting the "stamp of approval" for unpermitted work</li>
+            <li>Competitive pricing on system expansions, known for leaving the property in good condition after excavation</li>
+          </ul>
+        </div>
+        <div class="pro-card-actions">
+          <a href="mailto:?subject=Septic%20System%20Inspection%20%E2%80%94%20160%20Still%20Forest%20Dr&body=Hello%20Double%20JP%20Septic%2C%0A%0AI%20need%20a%20licensed%20OSSF%20professional%20to%20evaluate%20my%20existing%20septic%20system%20and%20inspect%20unpermitted%20plumbing%20at%20160%20Still%20Forest%20Dr%2C%20Cedar%20Creek%2C%20TX%2078612.%0A%0ACould%20you%20provide%20a%20quote%20for%3A%0A1.%20Existing%20system%20assessment%20(Jet%20J-500%20aerobic)%0A2.%20Capacity%20evaluation%20for%20additional%20bathroom%0A3.%20Inspection%20and%20sign-off%20on%20existing%20plumbing%0A%0AThank%20you!" class="btn btn-primary">Request Quote</a>
+        </div>
+      </div>
+
+      <div class="pro-card">
+        <div class="pro-card-header">
+          <span class="pro-card-name">Larry's Septic Tank Service</span>
+          <div class="pro-card-rating"><span class="star">&#9733;</span> 4.9</div>
+        </div>
+        <div class="pro-card-meta">
+          <span class="tag tag-green">Local Expert</span>
+          <span class="tag tag-blue">Inspections</span>
+          <span class="tag tag-amber">Repairs</span>
+        </div>
+        <div class="pro-card-desc">
+          <strong>Hours:</strong> Open · Closes 5:00 PM<br>
+          <strong>Pricing:</strong> Great value — no upselling
+          <ul>
+            <li>37+ years of local experience with Bastrop County soil types and regulations</li>
+            <li>Solves the specific issue without unnecessary upselling — great price for inspection-heavy tasks</li>
+            <li>Can provide professional documentation and repairs to bring DIY plumbing up to certifiable standard</li>
+          </ul>
+        </div>
+        <div class="pro-card-actions">
+          <a href="mailto:?subject=Septic%20System%20Inspection%20%E2%80%94%20160%20Still%20Forest%20Dr&body=Hello%20Larry's%20Septic%2C%0A%0AI%20need%20a%20licensed%20OSSF%20professional%20to%20evaluate%20my%20existing%20septic%20system%20and%20inspect%20unpermitted%20plumbing%20at%20160%20Still%20Forest%20Dr%2C%20Cedar%20Creek%2C%20TX%2078612.%0A%0ACould%20you%20provide%20a%20quote%20for%3A%0A1.%20Existing%20system%20assessment%20(Jet%20J-500%20aerobic)%0A2.%20Capacity%20evaluation%20for%20additional%20bathroom%0A3.%20Inspection%20and%20sign-off%20on%20existing%20plumbing%0A%0AThank%20you!" class="btn btn-primary">Request Quote</a>
+        </div>
+      </div>
+
+      <div class="pro-card">
+        <div class="pro-card-header">
+          <span class="pro-card-name">C &amp; L Septic Services</span>
+          <div class="pro-card-rating"><span class="star">&#9733;</span> 5.0</div>
+        </div>
+        <div class="pro-card-meta">
+          <span class="tag tag-green">OSSF Systems</span>
+          <span class="tag tag-blue">Maintenance</span>
+          <span class="tag tag-amber">Design</span>
+        </div>
+        <div class="pro-card-desc">
+          <strong>Hours:</strong> Open · Closes 6:00 PM<br>
+          <strong>Pricing:</strong> Lower mobilization costs (local)
+          <ul>
+            <li>Local Bastrop provider — responsive and helpful with OSSF technical requirements</li>
+            <li>Can evaluate new bathroom plumbing to ensure it won't negatively impact system performance</li>
+            <li>Local proximity means lower mobilization costs for site visits and inspections</li>
+          </ul>
+        </div>
+        <div class="pro-card-actions">
+          <a href="mailto:?subject=Septic%20System%20Inspection%20%E2%80%94%20160%20Still%20Forest%20Dr&body=Hello%20C%20%26%20L%20Septic%2C%0A%0AI%20need%20a%20licensed%20OSSF%20professional%20to%20evaluate%20my%20existing%20septic%20system%20and%20inspect%20unpermitted%20plumbing%20at%20160%20Still%20Forest%20Dr%2C%20Cedar%20Creek%2C%20TX%2078612.%0A%0ACould%20you%20provide%20a%20quote%20for%3A%0A1.%20Existing%20system%20assessment%20(Jet%20J-500%20aerobic)%0A2.%20Capacity%20evaluation%20for%20additional%20bathroom%0A3.%20Inspection%20and%20sign-off%20on%20existing%20plumbing%0A%0AThank%20you!" class="btn btn-primary">Request Quote</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Recommendation -->
+    <div class="context-card" style="border-left: 3px solid var(--accent);">
+      <h2>Recommendation</h2>
+      <p><strong>Simpson Septic Incorporated</strong> is the top pick for complex additions and regulatory compliance — their "one price does it all" model removes budget uncertainty. <strong>Larry's Septic Tank Service</strong> is the best value option with 37+ years of Bastrop County experience and no-nonsense pricing. Contact 2-3 providers for quotes to compare.</p>
+    </div>
+  </div>
+
+  <span data-site-version style="display:none">v260317.32 10:16a</span>
+</body>
+</html>
