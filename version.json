@@ -1,12 +1,12 @@
 {
-  "version": "v260316.07 10:02p",
-  "release": 809,
-  "sha": "94b3509c6",
-  "fullSha": "94b3509c61046df90c813aef372f08c27587deee",
+  "version": "v260316.08 11:14p",
+  "release": 810,
+  "sha": "1ef6140dc",
+  "fullSha": "1ef6140dc0c5a70a861435c003e3346b04ec18a8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 03:02:17+00",
-  "commits": [{"sha":"94b3509c6","message":"Fix sensor dashboard: show data when BLE disconnected, desktop-friendly layout","author":"Rahul"}]
+  "pushedAt": "2026-03-17 04:14:37+00",
+  "commits": [{"sha":"1ef6140dc","message":"Add \"Welcome to the Garage Mahal\" Sonos greeting on door open","author":"Rahul"}]
 }
