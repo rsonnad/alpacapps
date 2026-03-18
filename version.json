@@ -1,12 +1,12 @@
 {
-  "version": "v260318.13 12:33p",
-  "release": 878,
-  "sha": "776179d96",
-  "fullSha": "776179d96d980e3dd4003812d94d1182896d659e",
+  "version": "v260318.14 12:43p",
+  "release": 879,
+  "sha": "4297d48f5",
+  "fullSha": "4297d48f5742bea13984f4fa729ef17aac7afef0",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 17:33:42+00",
-  "commits": [{"sha":"776179d96","message":"Replace raster survey with SVG vector site plan drawing","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-18 17:43:05+00",
+  "commits": [{"sha":"4297d48f5","message":"Remove Building Plans card section — keep doc links under tasks A4/A5 only","author":"Jacqueline Giroux"}]
 }
