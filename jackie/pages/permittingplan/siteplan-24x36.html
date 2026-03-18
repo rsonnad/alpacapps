@@ -12,20 +12,24 @@
   :root {
     --sheet-w: 36in;
     --sheet-h: 24in;
-    --m: 0.5in;         /* border margin */
-    --line: #1a1a1a;
-    --line-lt: #888;
+    --m: 0.5in;
+    --line: #111;
+    --line-lt: #555;
     --text: #111;
     --bg: #fff;
-    /* Two-column layout: info panels left, survey image right */
-    --left-col: 8in;     /* info panels column width */
-    --right-col: 27in;   /* survey image column: 35in - 8in */
-    --inner-h: 23in;     /* usable height: 24in - 2×0.5in */
+    --left-col: 8.5in;
+    --right-col: 26.5in;
+    --inner-h: 23in;
+    /* Professional palette */
+    --accent-red: #b91c1c;
+    --accent-green: #15803d;
+    --subtle-bg: #f8f8f8;
+    --rule: #bbb;
   }
 
   body {
     font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-    background: #444;
+    background: #3a3a3a;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -38,12 +42,12 @@
     display: flex; gap: 8px;
   }
   .screen-controls button {
-    padding: 8px 16px; background: #222; color: #fff; border: none;
+    padding: 10px 18px; background: #1a1a1a; color: #fff; border: none;
     border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
   }
-  .screen-controls button:hover { background: #444; }
+  .screen-controls button:hover { background: #333; }
   .screen-controls .draft-badge {
-    padding: 8px 16px; background: #cc2222; color: #fff; border-radius: 6px;
+    padding: 10px 18px; background: var(--accent-red); color: #fff; border-radius: 6px;
     font-size: 13px; font-weight: 700; letter-spacing: 0.05em;
   }
 
@@ -55,24 +59,61 @@
     overflow: hidden; transform-origin: top center;
   }
 
+  /* ═══ ANSI DOUBLE DRAWING BORDER ═══ */
+  .drawing-border-outer {
+    position: absolute;
+    left: calc(var(--m) - 3pt); top: calc(var(--m) - 3pt);
+    right: calc(var(--m) - 3pt); bottom: calc(var(--m) - 3pt);
+    border: 1pt solid var(--line);
+  }
   .drawing-border {
     position: absolute;
     left: var(--m); top: var(--m); right: var(--m); bottom: var(--m);
-    border: 2.5pt solid var(--line);
+    border: 3pt solid var(--line);
   }
 
-  /* ═══ LEFT COLUMN: INFO PANELS (8in wide, full height) ═══ */
+  /* Corner tick marks */
+  .corner-mark {
+    position: absolute; width: 0.25in; height: 0.25in;
+    z-index: 5;
+  }
+  .corner-mark::before, .corner-mark::after {
+    content: ''; position: absolute; background: #000;
+  }
+  .corner-mark.tl { top: 0.15in; left: 0.15in; }
+  .corner-mark.tl::before { top: 0; left: 0; width: 0.25in; height: 1pt; }
+  .corner-mark.tl::after { top: 0; left: 0; width: 1pt; height: 0.25in; }
+  .corner-mark.tr { top: 0.15in; right: 0.15in; }
+  .corner-mark.tr::before { top: 0; right: 0; width: 0.25in; height: 1pt; }
+  .corner-mark.tr::after { top: 0; right: 0; width: 1pt; height: 0.25in; }
+  .corner-mark.bl { bottom: 0.15in; left: 0.15in; }
+  .corner-mark.bl::before { bottom: 0; left: 0; width: 0.25in; height: 1pt; }
+  .corner-mark.bl::after { bottom: 0; left: 0; width: 1pt; height: 0.25in; }
+  .corner-mark.br { bottom: 0.15in; right: 0.15in; }
+  .corner-mark.br::before { bottom: 0; right: 0; width: 0.25in; height: 1pt; }
+  .corner-mark.br::after { bottom: 0; right: 0; width: 1pt; height: 0.25in; }
+
+  /* Fold marks (center of each edge) */
+  .fold-mark {
+    position: absolute; background: #000; z-index: 5;
+  }
+  .fold-mark.top { top: 0.15in; left: 50%; width: 1pt; height: 0.2in; transform: translateX(-50%); }
+  .fold-mark.bottom { bottom: 0.15in; left: 50%; width: 1pt; height: 0.2in; transform: translateX(-50%); }
+  .fold-mark.left { left: 0.15in; top: 50%; width: 0.2in; height: 1pt; transform: translateY(-50%); }
+  .fold-mark.right { right: 0.15in; top: 50%; width: 0.2in; height: 1pt; transform: translateY(-50%); }
+
+  /* ═══ LEFT COLUMN ═══ */
   .left-col {
     position: absolute;
     left: var(--m); top: var(--m);
     width: var(--left-col);
     height: var(--inner-h);
-    border-right: 1.5pt solid var(--line);
+    border-right: 2pt solid var(--line);
     display: flex;
     flex-direction: column;
   }
 
-  /* ═══ RIGHT COLUMN: SURVEY IMAGE (27in wide, full height) ═══ */
+  /* ═══ RIGHT COLUMN: SURVEY IMAGE ═══ */
   .right-col {
     position: absolute;
     left: calc(var(--m) + var(--left-col));
@@ -86,132 +127,167 @@
     width: 100%; height: 100%;
     object-fit: contain;
     object-position: center center;
+    /* Enhance the survey scan for legibility */
+    filter: contrast(1.4) brightness(1.05);
   }
 
-  /* ═══ LEFT COLUMN PANELS ═══ */
+  /* SVG filter for sharpening */
+  .svg-filters { position: absolute; width: 0; height: 0; }
 
-  /* --- VICINITY MAP --- */
+  /* ═══ PANEL SHARED STYLES ═══ */
+  .panel-header {
+    font-size: 10pt; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text);
+    padding-bottom: 0.04in; margin-bottom: 0.06in;
+    border-bottom: 1pt solid var(--rule);
+  }
+
+  /* ═══ VICINITY MAP ═══ */
   .vicinity-map {
     width: 100%;
     height: 4in;
-    border-bottom: 1pt solid var(--line-lt);
-    padding: 0.1in 0.12in;
+    border-bottom: 2pt solid var(--line-lt);
+    padding: 0.14in 0.16in;
     display: flex; flex-direction: column;
     flex-shrink: 0;
   }
   .vicinity-map h3 {
-    font-size: 8pt; font-weight: 800; text-align: center;
-    margin-bottom: 0.03in; letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 10pt; font-weight: 800; text-align: center;
+    margin-bottom: 0.06in; letter-spacing: 0.08em; text-transform: uppercase;
   }
   .vicinity-map .map-img-box {
-    flex: 1; border: 1pt solid #999; border-radius: 2pt;
-    overflow: hidden; background: #f9f9f7;
+    flex: 1; border: 1.5pt solid #666; border-radius: 2pt;
+    overflow: hidden; background: #fff;
   }
   .vicinity-map .map-img-box img {
     width: 100%; height: 100%; object-fit: contain;
   }
   .vicinity-note {
-    font-size: 4.5pt; color: #666; text-align: center; margin-top: 0.02in;
+    font-size: 6pt; color: #555; text-align: center; margin-top: 0.04in;
+    font-style: italic;
   }
 
-  /* --- NORTH ARROW + SCALE --- */
+  /* ═══ NORTH ARROW + SCALE ═══ */
   .north-scale {
     width: 100%;
-    height: 2in;
-    border-bottom: 1pt solid var(--line-lt);
+    height: 2.2in;
+    border-bottom: 2pt solid var(--line-lt);
     display: flex; align-items: center; justify-content: space-around;
-    padding: 0.08in;
+    padding: 0.14in;
     flex-shrink: 0;
   }
-  .north-arrow svg { width: 0.55in; height: 0.9in; }
-  .scale-info { display: flex; flex-direction: column; align-items: center; gap: 0.04in; }
-  .scale-info .scale-text { font-size: 9pt; font-weight: 700; }
+  .north-arrow svg { width: 0.65in; height: 1in; }
+  .scale-info { display: flex; flex-direction: column; align-items: center; gap: 0.06in; }
+  .scale-info .scale-text { font-size: 11pt; font-weight: 800; letter-spacing: 0.04em; }
+  .scale-bar-wrap { display: flex; flex-direction: column; align-items: center; }
   .scale-bar { display: flex; }
-  .scale-bar .seg { width: 0.45in; height: 0.08in; border: 1.5pt solid #000; }
+  .scale-bar .seg { width: 0.55in; height: 0.1in; border: 2pt solid #000; }
   .scale-bar .seg.filled { background: #000; }
   .scale-bar-labels {
-    display: flex; width: 1.8in; justify-content: space-between;
-    font-size: 5pt; font-weight: 600; margin-top: 0.02in;
+    display: flex; width: 2.2in; justify-content: space-between;
+    font-size: 6.5pt; font-weight: 700; margin-top: 0.03in;
   }
-
-  /* --- LEGEND --- */
-  .legend {
-    width: 100%;
-    height: 2.2in;
-    border-bottom: 1pt solid var(--line-lt);
-    padding: 0.06in 0.1in;
-    flex-shrink: 0;
-  }
-  .legend h3 {
-    font-size: 7.5pt; font-weight: 800; margin-bottom: 0.03in;
+  .scale-bar-unit {
+    font-size: 6.5pt; color: #444; margin-top: 0.03in; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em;
   }
+
+  /* ═══ LEGEND ═══ */
+  .legend {
+    width: 100%;
+    height: 2.4in;
+    border-bottom: 2pt solid var(--line-lt);
+    padding: 0.12in 0.16in;
+    flex-shrink: 0;
+  }
+  .legend h3 { font-size: 10pt; font-weight: 800; margin-bottom: 0.06in; text-transform: uppercase; letter-spacing: 0.08em; }
   .legend-grid {
     display: grid; grid-template-columns: 1fr;
-    gap: 0.02in; font-size: 5.5pt;
+    gap: 0.04in; font-size: 7pt; font-weight: 500;
   }
-  .legend-item { display: flex; align-items: center; gap: 0.06in; }
-  .legend-line { width: 0.35in; height: 0; flex-shrink: 0; }
-  .legend-line.solid-heavy { border-top: 3pt solid #000; }
-  .legend-line.solid-medium { border-top: 1.5pt solid #000; }
-  .legend-line.dotdash { border-top: 1.5pt dashed #555; }
-  .legend-line.double { border-top: 2pt double #000; }
-  .legend-symbol {
-    width: 0.35in; height: 0.14in; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 9pt;
+  .legend-item { display: flex; align-items: center; gap: 0.1in; }
+  .legend-line-box { width: 0.5in; height: 0.18in; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .legend-symbol-box {
+    width: 0.5in; height: 0.18in; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
   }
 
-  /* --- GENERAL NOTES --- */
+  /* ═══ GENERAL NOTES ═══ */
   .general-notes {
     width: 100%;
     flex: 1;
-    border-bottom: 1pt solid var(--line-lt);
-    padding: 0.06in 0.1in;
-    font-size: 5pt; line-height: 1.3;
-    overflow: hidden;
+    border-bottom: 2pt solid var(--line-lt);
+    padding: 0.12in 0.16in;
+    font-size: 6.5pt; line-height: 1.45;
+    overflow: visible;
   }
   .general-notes h3 {
-    font-size: 7.5pt; font-weight: 800; margin-bottom: 0.03in;
-    text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 10pt; font-weight: 800; margin-bottom: 0.06in;
+    text-transform: uppercase; letter-spacing: 0.08em;
   }
-  .general-notes ol { padding-left: 0.12in; }
-  .general-notes li { margin-bottom: 0.01in; }
+  .general-notes ol { padding-left: 0.18in; }
+  .general-notes li { margin-bottom: 0.02in; }
+  .general-notes li strong { font-weight: 700; }
   .general-notes .sub-heading {
-    font-weight: 700; font-size: 5.5pt; margin-top: 0.03in; margin-bottom: 0.01in;
-    text-transform: uppercase;
+    font-weight: 800; font-size: 7.5pt; margin-top: 0.06in; margin-bottom: 0.03in;
+    text-transform: uppercase; letter-spacing: 0.04em;
   }
 
-  /* --- SETBACK COMPLIANCE TABLE --- */
+  /* ═══ SETBACK COMPLIANCE TABLE ═══ */
   .compliance-table-area {
     width: 100%;
-    height: 4.5in;
-    border-bottom: 1pt solid var(--line-lt);
-    padding: 0.06in 0.08in;
+    height: 4.8in;
+    border-bottom: 2pt solid var(--line-lt);
+    padding: 0.1in 0.12in;
     overflow: hidden;
     flex-shrink: 0;
   }
   .compliance-table-area h3 {
-    font-size: 7pt; font-weight: 800; margin-bottom: 0.02in;
-    text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 9pt; font-weight: 800; margin-bottom: 0.04in;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .compliance-table-area .table-note {
+    font-size: 5.5pt; color: #666; margin-bottom: 0.04in; line-height: 1.3;
   }
   .compliance-table {
-    width: 100%; border-collapse: collapse; font-size: 4.5pt;
+    width: 100%; border-collapse: collapse; font-size: 6pt;
   }
   .compliance-table th {
-    background: #f0f0ee; font-weight: 700; text-align: left;
-    padding: 0.015in 0.02in; border: 0.75pt solid #999;
-    font-size: 4pt; text-transform: uppercase; letter-spacing: 0.03em;
+    background: #e8e8e8; font-weight: 700; text-align: left;
+    padding: 0.03in 0.04in; border: 1pt solid #888;
+    font-size: 5.5pt; text-transform: uppercase; letter-spacing: 0.04em;
   }
+  .compliance-table th.num { text-align: right; }
   .compliance-table td {
-    padding: 0.015in 0.02in; border: 0.5pt solid #bbb; vertical-align: top;
+    padding: 0.025in 0.04in; border: 0.75pt solid #bbb; vertical-align: middle;
   }
-  .compliance-table .violation { color: #cc2222; font-weight: 600; }
-  .compliance-table .ok { color: #1a7a3a; font-weight: 600; }
+  .compliance-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .compliance-table tbody tr:nth-child(even) { background: #f6f6f6; }
+  .compliance-table tbody tr:hover { background: #eef; }
 
-  /* --- TITLE BLOCK (anchored to bottom of left column) --- */
+  /* Status badges */
+  .badge {
+    display: inline-block; padding: 0.01in 0.04in; border-radius: 2pt;
+    font-size: 5pt; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; text-align: center; min-width: 0.35in;
+  }
+  .badge.crit { background: #fde8e8; color: var(--accent-red); border: 0.75pt solid var(--accent-red); }
+  .badge.viol { background: #fef3e8; color: #b45309; border: 0.75pt solid #b45309; }
+  .badge.nopmt { background: #fde8f0; color: #9d174d; border: 0.75pt solid #9d174d; }
+  .badge.ok { background: #e8f5e9; color: var(--accent-green); border: 0.75pt solid var(--accent-green); }
+
+  .deficit-val { color: var(--accent-red); font-weight: 700; }
+  .ok-val { color: var(--accent-green); font-weight: 700; }
+
+  .compliance-summary {
+    font-size: 5.5pt; color: #555; margin-top: 0.04in; line-height: 1.4;
+    border-top: 1pt solid var(--rule); padding-top: 0.03in;
+  }
+
+  /* ═══ TITLE BLOCK ═══ */
   .title-block {
     width: 100%;
-    height: 3.8in;
+    height: 3.6in;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -219,60 +295,112 @@
   }
 
   .tb-project {
-    background: #f5f5f2; text-align: center;
-    padding: 0.06in; border-bottom: 1.5pt solid #000;
+    background: #fff; text-align: center;
+    padding: 0.1in 0.12in; border-bottom: 3pt solid #000;
   }
   .tb-project .title {
-    font-size: 11pt; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
+    font-size: 16pt; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
   }
   .tb-project .subtitle {
-    font-size: 6.5pt; font-weight: 600; color: #444; margin-top: 0.02in;
+    font-size: 8pt; font-weight: 600; color: #333; margin-top: 0.03in;
+    letter-spacing: 0.02em;
   }
+
   .tb-owner {
-    display: grid; grid-template-columns: 0.55in 1fr;
-    gap: 0.01in 0.04in; font-size: 5.5pt; padding: 0.05in 0.1in;
+    display: grid; grid-template-columns: 0.65in 1fr;
+    gap: 0 0.06in; font-size: 6.5pt; padding: 0.06in 0.14in;
+    border-bottom: 1pt solid var(--rule);
+  }
+  .tb-owner .row {
+    display: contents;
+  }
+  .tb-owner .row + .row .label,
+  .tb-owner .row + .row .value {
+    border-top: 0.5pt solid #ddd;
+    padding-top: 0.02in;
   }
   .tb-owner .label {
-    font-size: 4.5pt; font-weight: 700; color: #888; text-transform: uppercase;
-    letter-spacing: 0.04em; text-align: right; padding-top: 0.01in;
+    font-size: 5.5pt; font-weight: 700; color: #666; text-transform: uppercase;
+    letter-spacing: 0.04em; text-align: right; padding: 0.015in 0;
   }
-  .tb-owner .value { font-weight: 600; }
+  .tb-owner .value { font-weight: 600; padding: 0.015in 0; }
 
   .tb-pe-box {
-    border-top: 1.5pt solid #000; border-bottom: 1pt solid #888;
+    border-bottom: 1.5pt solid #000;
     flex: 1;
-    padding: 0.06in;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; font-size: 6pt; color: #888;
+    padding: 0.08in;
+    display: flex; flex-direction: row; align-items: center; justify-content: center;
+    gap: 0.2in;
   }
-  .tb-pe-box .pe-label {
-    font-size: 6pt; font-weight: 700; color: #555; text-transform: uppercase;
-    letter-spacing: 0.05em; margin-bottom: 0.02in;
+  .pe-seal-circle {
+    width: 1.2in; height: 1.2in; border-radius: 50%;
+    border: 2pt dashed #aaa; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .pe-seal-circle span {
+    font-size: 5.5pt; color: #aaa; text-transform: uppercase; font-weight: 600;
+    text-align: center; letter-spacing: 0.04em; line-height: 1.3;
+  }
+  .pe-info {
+    font-size: 6pt; color: #666; text-align: left; line-height: 1.5;
+  }
+  .pe-info .pe-label {
+    font-size: 7pt; font-weight: 700; color: #444; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 0.03in;
+  }
+
+  /* Revision block */
+  .tb-revision {
+    border-bottom: 1pt solid var(--rule);
+    padding: 0.03in 0.1in;
+  }
+  .revision-table {
+    width: 100%; border-collapse: collapse; font-size: 5pt;
+  }
+  .revision-table th {
+    background: #eee; font-weight: 700; text-align: left;
+    padding: 0.015in 0.03in; border: 0.5pt solid #bbb;
+    font-size: 4.5pt; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .revision-table td {
+    padding: 0.015in 0.03in; border: 0.5pt solid #ccc; height: 0.14in;
   }
 
   .tb-survey-info {
-    padding: 0.03in 0.1in; font-size: 5pt; border-bottom: 1pt solid #888;
+    padding: 0.04in 0.14in; font-size: 6pt; border-bottom: 1pt solid var(--rule);
+    font-weight: 500;
   }
+  .tb-survey-info strong { font-weight: 700; }
 
   .tb-footer {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0.03in 0.1in; font-size: 5pt; background: #fafaf8;
+    padding: 0.04in 0.14in; font-size: 6pt; background: #fff;
   }
-  .tb-footer .sheet-no { font-weight: 700; font-size: 8pt; }
+  .tb-footer .footer-cell { text-align: center; }
+  .tb-footer .footer-cell:first-child { text-align: left; }
+  .tb-footer .footer-cell:last-child { text-align: right; }
+  .tb-footer .footer-label {
+    font-size: 5pt; font-weight: 700; color: #888; text-transform: uppercase;
+    letter-spacing: 0.04em; margin-bottom: 0.01in;
+  }
+  .tb-footer .footer-value { font-weight: 700; font-size: 6.5pt; }
+  .tb-footer .sheet-no { font-weight: 800; font-size: 10pt; }
 
   .tb-preliminary {
-    text-align: center; padding: 0.03in; background: #fff3f3;
-    font-size: 5.5pt; font-weight: 700; color: #cc2222;
-    letter-spacing: 0.1em; border-top: 1pt solid #cc2222;
+    text-align: center; padding: 0.04in; background: #fff;
+    font-size: 7pt; font-weight: 800; color: var(--accent-red);
+    letter-spacing: 0.12em; border-top: 2pt solid var(--accent-red);
+    text-transform: uppercase;
   }
 
   /* ═══ DRAFT WATERMARK ═══ */
   .watermark {
-    position: absolute; top: 40%; left: 50%;
+    position: absolute; top: 42%; left: 50%;
     transform: translate(-50%, -50%) rotate(-30deg);
     font-size: 140pt; font-weight: 900;
-    color: rgba(200, 30, 30, 0.06); letter-spacing: 0.1em;
+    color: rgba(180, 20, 20, 0.04); letter-spacing: 0.15em;
     pointer-events: none; z-index: 10; white-space: nowrap;
+    text-transform: uppercase;
   }
 
   /* ═══ PRINT ═══ */
@@ -282,6 +410,7 @@
     .screen-controls { display: none; }
     .sheet { box-shadow: none; transform: none !important; width: 36in; height: 24in; }
     .watermark { display: none; }
+    .compliance-table tbody tr:hover { background: inherit; }
   }
 
   /* Screen scaling */
@@ -297,16 +426,31 @@
 
 <div class="screen-controls">
   <span class="draft-badge">DRAFT — NOT FOR SUBMISSION</span>
-  <button onclick="window.print()">🖨 Print / Save PDF (24×36")</button>
-  <button onclick="document.querySelector('.sheet').style.transform = 'scale(' + (parseFloat(prompt('Scale (0.2–1.0):','0.35')) || 0.35) + ')'">🔍 Zoom</button>
+  <button onclick="window.print()">Print / Save PDF (24x36)</button>
+  <button onclick="document.querySelector('.sheet').style.transform = 'scale(' + (parseFloat(prompt('Scale (0.2-1.0):','0.35')) || 0.35) + ')'">Zoom</button>
 </div>
 
 <div class="sheet">
 
   <div class="watermark">PRELIMINARY</div>
+
+  <!-- Corner marks -->
+  <div class="corner-mark tl"></div>
+  <div class="corner-mark tr"></div>
+  <div class="corner-mark bl"></div>
+  <div class="corner-mark br"></div>
+
+  <!-- Fold marks -->
+  <div class="fold-mark top"></div>
+  <div class="fold-mark bottom"></div>
+  <div class="fold-mark left"></div>
+  <div class="fold-mark right"></div>
+
+  <!-- ANSI double border -->
+  <div class="drawing-border-outer"></div>
   <div class="drawing-border"></div>
 
-  <!-- ═══ LEFT COLUMN: INFO PANELS ═══ -->
+  <!-- ═══ LEFT COLUMN ═══ -->
   <div class="left-col">
 
     <!-- VICINITY MAP -->
@@ -321,15 +465,24 @@
     <!-- NORTH ARROW + SCALE -->
     <div class="north-scale">
       <div>
-        <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" style="width:0.55in;height:0.9in;">
-          <polygon points="30,5 15,80 30,65 45,80" fill="#000"/>
-          <polygon points="30,5 30,65 45,80" fill="#444"/>
-          <text x="30" y="98" font-size="18" font-weight="900" text-anchor="middle" fill="#000">N</text>
+        <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" style="width:0.65in;height:1in;">
+          <defs>
+            <linearGradient id="arrow-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#000"/>
+              <stop offset="100%" stop-color="#333"/>
+            </linearGradient>
+          </defs>
+          <!-- Arrow body -->
+          <polygon points="30,2 12,78 30,62 48,78" fill="#000" stroke="#000" stroke-width="1"/>
+          <polygon points="30,2 30,62 48,78" fill="#444"/>
+          <!-- Circle at base -->
+          <circle cx="30" cy="72" r="5" fill="none" stroke="#000" stroke-width="1.5"/>
+          <text x="30" y="97" font-size="16" font-weight="900" text-anchor="middle" fill="#000" font-family="Inter, sans-serif">N</text>
         </svg>
       </div>
       <div class="scale-info">
         <div class="scale-text">SCALE: 1" = 30'</div>
-        <div>
+        <div class="scale-bar-wrap">
           <div class="scale-bar">
             <div class="seg filled"></div><div class="seg"></div>
             <div class="seg filled"></div><div class="seg"></div>
@@ -338,7 +491,7 @@
             <span>0</span><span>30'</span><span>60'</span><span>90'</span><span>120'</span>
           </div>
         </div>
-        <div style="font-size: 5pt; color: #666; margin-top: 0.02in;">HORIZONTAL SCALE IN FEET</div>
+        <div class="scale-bar-unit">Horizontal Scale in Feet</div>
       </div>
     </div>
 
@@ -346,15 +499,77 @@
     <div class="legend">
       <h3>Legend</h3>
       <div class="legend-grid">
-        <div class="legend-item"><div class="legend-line solid-heavy"></div><span>Property Boundary</span></div>
-        <div class="legend-item"><div class="legend-line dotdash"></div><span>Easement (10' P.U.E. & B.L.)</span></div>
-        <div class="legend-item"><div class="legend-line double"></div><span>Right-of-Way Line (60' ROW)</span></div>
-        <div class="legend-item"><div class="legend-line solid-medium"></div><span>Existing Structure</span></div>
-        <div class="legend-item"><div class="legend-symbol">⬡</div><span>Septic System (Aerobic)</span></div>
-        <div class="legend-item"><div class="legend-symbol">◉</div><span>Water Meter</span></div>
-        <div class="legend-item"><div class="legend-symbol">⚡</div><span>Electric Meter / Pole</span></div>
-        <div class="legend-item"><div class="legend-symbol">◆</div><span>Iron Rod Found / Set</span></div>
-        <div class="legend-item"><div class="legend-symbol">△</div><span>Concrete Monument</span></div>
+        <div class="legend-item">
+          <div class="legend-line-box">
+            <svg width="0.5in" height="4" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="2" x2="36" y2="2" stroke="#000" stroke-width="3"/></svg>
+          </div>
+          <span>Property Boundary</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line-box">
+            <svg width="0.5in" height="4" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="2" x2="36" y2="2" stroke="#444" stroke-width="1.5" stroke-dasharray="6,2,2,2"/></svg>
+          </div>
+          <span>Easement (10' P.U.E. &amp; B.L.)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line-box">
+            <svg width="0.5in" height="6" xmlns="http://www.w3.org/2000/svg">
+              <line x1="0" y1="1" x2="36" y2="1" stroke="#000" stroke-width="1.5"/>
+              <line x1="0" y1="5" x2="36" y2="5" stroke="#000" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <span>Right-of-Way Line (60' ROW)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line-box">
+            <svg width="0.5in" height="4" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="2" x2="36" y2="2" stroke="#000" stroke-width="1.5"/></svg>
+          </div>
+          <span>Existing Structure</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol-box">
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="8,1 14.5,4.5 14.5,11.5 8,15 1.5,11.5 1.5,4.5" fill="none" stroke="#000" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <span>Septic System (Aerobic)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol-box">
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="6" fill="none" stroke="#000" stroke-width="1.5"/>
+              <circle cx="8" cy="8" r="2.5" fill="#000"/>
+            </svg>
+          </div>
+          <span>Water Meter</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol-box">
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+              <line x1="8" y1="2" x2="8" y2="14" stroke="#000" stroke-width="1.5"/>
+              <line x1="5" y1="5" x2="11" y2="5" stroke="#000" stroke-width="1.5"/>
+              <line x1="5" y1="11" x2="11" y2="11" stroke="#000" stroke-width="1.5"/>
+              <line x1="4" y1="8" x2="12" y2="8" stroke="#000" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <span>Electric Meter / Pole</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol-box">
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="10" height="10" fill="#000" transform="rotate(45 8 8)"/>
+            </svg>
+          </div>
+          <span>Iron Rod Found / Set</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol-box">
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="8,2 14,14 2,14" fill="none" stroke="#000" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <span>Concrete Monument</span>
+        </div>
       </div>
     </div>
 
@@ -380,12 +595,12 @@
       </ol>
 
       <div class="sub-heading">Boundary Bearings</div>
-      <div style="font-size: 5pt; display: grid; grid-template-columns: 1fr; gap: 0.01in;">
-        <div><strong>North:</strong> N26°20'31"E — 187.92'</div>
-        <div><strong>East:</strong> S63°58'38"E — 399.94' (10' P.U.E. & B.L.)</div>
-        <div><strong>SE Jog:</strong> N20°11'19"E — 60.00'</div>
-        <div><strong>South:</strong> S26°23'31"W — 187.86' along Still Forest Dr</div>
-        <div><strong>West:</strong> S20°17'19"W — 328.51' along Leisure Lane</div>
+      <div style="font-size: 6.5pt; display: grid; grid-template-columns: 1fr; gap: 0.02in;">
+        <div><strong>North:</strong> N26&deg;20'31"E — 187.92'</div>
+        <div><strong>East:</strong> S63&deg;58'38"E — 399.94' (10' P.U.E. &amp; B.L.)</div>
+        <div><strong>SE Jog:</strong> N20&deg;11'19"E — 60.00'</div>
+        <div><strong>South:</strong> S26&deg;23'31"W — 187.86' along Still Forest Dr</div>
+        <div><strong>West:</strong> S20&deg;17'19"W — 328.51' along Leisure Lane</div>
         <div><strong>SW Corner:</strong> 14' P.U.E. along Still Forest Dr</div>
       </div>
     </div>
@@ -393,82 +608,97 @@
     <!-- SETBACK COMPLIANCE TABLE -->
     <div class="compliance-table-area">
       <h3>Setback Compliance</h3>
-      <p style="font-size: 4.5pt; color: #888; margin-bottom: 0.02in;">All distances from survey plat by 4Ward Land Surveying (2/4/2021). Corner lot: both road sides require 25' setback from ROW.</p>
+      <p class="table-note">All distances from survey plat by 4Ward Land Surveying (2/4/2021). Corner lot: both road sides require 25' setback from ROW.</p>
       <table class="compliance-table">
         <thead>
           <tr>
             <th>Structure</th><th>Size</th><th>Boundary</th>
-            <th>Dist</th><th>Req</th><th>Deficit</th>
-            <th>Status</th><th>Action</th>
+            <th class="num">Dist.</th><th class="num">Req.</th><th class="num">Deficit</th>
+            <th style="text-align:center;">Status</th><th>Action Required</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>Big Trailer</td><td>10'×42'</td><td>W (Leisure)</td><td>1'</td><td>25'</td><td class="violation">24'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
-          <tr><td>Red Container</td><td>40'×8'</td><td>W (Leisure)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
-          <tr><td>Red Container (2)</td><td>40'×8'</td><td>W (Leisure)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
-          <tr><td>Container</td><td>40'×8'</td><td>W (Leisure)</td><td>5'</td><td>25'</td><td class="violation">20'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
-          <tr><td>Deck</td><td>—</td><td>W (Leisure)</td><td>13'5"</td><td>25'</td><td class="violation">11'7"</td><td class="violation">VIOL</td><td>Modify/relocate</td></tr>
-          <tr><td>Beige Container</td><td>40'×8'</td><td>S (Still For.)</td><td>6'</td><td>25'</td><td class="violation">19'</td><td class="violation">VIOL</td><td>Relocate/remove</td></tr>
-          <tr><td>Bathroom Bldg</td><td>Under const.</td><td>E (side)</td><td>~10'</td><td>15'</td><td class="violation">~5'</td><td class="violation">NO PMT</td><td>Permit; may relocate</td></tr>
-          <tr><td>Small Trailer</td><td>7'5"×20'5"</td><td>E (side)</td><td>~7'</td><td>15'</td><td class="violation">~8'</td><td class="violation">VIOL</td><td>Relocate</td></tr>
-          <tr><td>Sauna</td><td>—</td><td>W (Leisure)</td><td>30'</td><td>25'</td><td class="ok">—</td><td class="ok">OK +5'</td><td>None</td></tr>
-          <tr><td>1-Story Wood</td><td>—</td><td>N (rear)</td><td>~30'</td><td>15'</td><td class="ok">—</td><td class="ok">OK +15'</td><td>None</td></tr>
-          <tr><td>Main House</td><td>Stone/Frame</td><td>All</td><td>Well within</td><td>All</td><td class="ok">—</td><td class="ok">OK</td><td>None</td></tr>
+          <tr><td>Big Trailer</td><td>10'&times;42'</td><td>W (Leisure)</td><td class="num">1'</td><td class="num">25'</td><td class="num deficit-val">24'</td><td style="text-align:center;"><span class="badge crit">CRIT</span></td><td>Relocate / remove</td></tr>
+          <tr><td>Red Container</td><td>40'&times;8'</td><td>W (Leisure)</td><td class="num">~2'</td><td class="num">25'</td><td class="num deficit-val">~23'</td><td style="text-align:center;"><span class="badge crit">CRIT</span></td><td>Relocate / remove</td></tr>
+          <tr><td>Red Container (2)</td><td>40'&times;8'</td><td>W (Leisure)</td><td class="num">~2'</td><td class="num">25'</td><td class="num deficit-val">~23'</td><td style="text-align:center;"><span class="badge crit">CRIT</span></td><td>Relocate / remove</td></tr>
+          <tr><td>Container</td><td>40'&times;8'</td><td>W (Leisure)</td><td class="num">5'</td><td class="num">25'</td><td class="num deficit-val">20'</td><td style="text-align:center;"><span class="badge crit">CRIT</span></td><td>Relocate / remove</td></tr>
+          <tr><td>Deck</td><td>—</td><td>W (Leisure)</td><td class="num">13'5"</td><td class="num">25'</td><td class="num deficit-val">11'7"</td><td style="text-align:center;"><span class="badge viol">VIOL</span></td><td>Modify / relocate</td></tr>
+          <tr><td>Beige Container</td><td>40'&times;8'</td><td>S (Still For.)</td><td class="num">6'</td><td class="num">25'</td><td class="num deficit-val">19'</td><td style="text-align:center;"><span class="badge viol">VIOL</span></td><td>Relocate / remove</td></tr>
+          <tr><td>Bathroom Bldg</td><td>Under const.</td><td>E (side)</td><td class="num">~10'</td><td class="num">15'</td><td class="num deficit-val">~5'</td><td style="text-align:center;"><span class="badge nopmt">NO PMT</span></td><td>Permit; may relocate</td></tr>
+          <tr><td>Small Trailer</td><td>7'5"&times;20'5"</td><td>E (side)</td><td class="num">~7'</td><td class="num">15'</td><td class="num deficit-val">~8'</td><td style="text-align:center;"><span class="badge viol">VIOL</span></td><td>Relocate</td></tr>
+          <tr><td>Sauna</td><td>—</td><td>W (Leisure)</td><td class="num">30'</td><td class="num">25'</td><td class="num ok-val">—</td><td style="text-align:center;"><span class="badge ok">OK +5'</span></td><td>None</td></tr>
+          <tr><td>1-Story Wood</td><td>—</td><td>N (rear)</td><td class="num">~30'</td><td class="num">15'</td><td class="num ok-val">—</td><td style="text-align:center;"><span class="badge ok">OK +15'</span></td><td>None</td></tr>
+          <tr><td>Main House</td><td>Stone / Frame</td><td>All</td><td class="num">Well within</td><td class="num">All</td><td class="num ok-val">—</td><td style="text-align:center;"><span class="badge ok">OK</span></td><td>None</td></tr>
         </tbody>
       </table>
-      <p style="font-size: 4pt; color: #888; margin-top: 0.02in;">
-        <strong>Summary:</strong> 8 of 11 structures violate setback requirements. 7 encroach into the 25' road setback along Leisure Lane (W) or Still Forest Dr (S).
+      <p class="compliance-summary">
+        <strong>Summary:</strong> 8 of 11 structures violate setback requirements. 7 encroach into the 25' road setback along Leisure Lane (W) or Still Forest Drive (S). Structures marked CRIT require immediate action prior to permit approval.
       </p>
     </div>
 
-    <!-- TITLE BLOCK (anchored to bottom) -->
+    <!-- TITLE BLOCK -->
     <div class="title-block">
       <div class="tb-project">
         <div class="title">Site Plan</div>
         <div class="subtitle">160 Still Forest Drive, Cedar Creek, Texas 78612</div>
       </div>
       <div class="tb-owner">
-        <div class="label">Owner:</div><div class="value">Revocable Trust of Subhash Sonnad</div>
-        <div class="label">Address:</div><div class="value">160 Still Forest Dr, Cedar Creek, TX 78612</div>
-        <div class="label">Legal:</div><div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Sec. One</div>
-        <div class="label">County:</div><div class="value">Bastrop County, Texas (Unincorporated)</div>
-        <div class="label">Prop ID:</div><div class="value">44401</div>
-        <div class="label">Acreage:</div><div class="value">1.7348 Acres (75,133 SF)</div>
+        <div class="row"><div class="label">Owner:</div><div class="value">Revocable Trust of Subhash Sonnad</div></div>
+        <div class="row"><div class="label">Address:</div><div class="value">160 Still Forest Dr, Cedar Creek, TX 78612</div></div>
+        <div class="row"><div class="label">Legal:</div><div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corr. Plat Sec. One</div></div>
+        <div class="row"><div class="label">County:</div><div class="value">Bastrop County, Texas (Unincorporated)</div></div>
+        <div class="row"><div class="label">Prop ID:</div><div class="value">44401</div></div>
+        <div class="row"><div class="label">Acreage:</div><div class="value">1.7348 Acres (75,133 SF)</div></div>
       </div>
       <div class="tb-pe-box">
-        <div class="pe-label">Professional Engineer Seal</div>
-        <div>Reserved for PE stamp, signature, and date</div>
-        <div style="margin-top: 0.03in; font-size: 5pt;">Texas P.E. License No. ___________</div>
+        <div class="pe-seal-circle">
+          <span>P.E.<br>Seal</span>
+        </div>
+        <div class="pe-info">
+          <div class="pe-label">Professional Engineer Seal</div>
+          <div>Signature: _________________________</div>
+          <div>Date: ____________</div>
+          <div>Texas P.E. License No. ___________</div>
+        </div>
+      </div>
+      <div class="tb-revision">
+        <table class="revision-table">
+          <thead><tr><th style="width:0.4in;">Rev</th><th style="width:0.8in;">Date</th><th>Description</th><th style="width:0.5in;">By</th></tr></thead>
+          <tbody>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
       </div>
       <div class="tb-survey-info">
-        <div><strong>Survey:</strong> 4Ward Land Surveying — Jason Ward, R.P.L.S. #5811 — Feb 4, 2021</div>
+        <strong>Survey:</strong> 4Ward Land Surveying — Jason Ward, R.P.L.S. #5811 — Feb 4, 2021
       </div>
       <div class="tb-footer">
-        <div>
-          <div style="font-size: 4.5pt; color: #999;">PREPARED BY</div>
-          <div style="font-weight: 600; font-size: 5.5pt;">Rev. Trust of Subhash Sonnad</div>
+        <div class="footer-cell">
+          <div class="footer-label">Prepared By</div>
+          <div class="footer-value">Rev. Trust of Subhash Sonnad</div>
         </div>
-        <div style="text-align: center;">
-          <div style="font-size: 4.5pt; color: #999;">DATE</div>
-          <div style="font-weight: 600;">March 2026</div>
+        <div class="footer-cell">
+          <div class="footer-label">Date</div>
+          <div class="footer-value">March 2026</div>
         </div>
-        <div style="text-align: center;">
-          <div style="font-size: 4.5pt; color: #999;">SCALE</div>
-          <div style="font-weight: 600;">1" = 30'</div>
+        <div class="footer-cell">
+          <div class="footer-label">Scale</div>
+          <div class="footer-value">1" = 30'</div>
         </div>
-        <div style="text-align: right;">
-          <div style="font-size: 4.5pt; color: #999;">SHEET</div>
+        <div class="footer-cell">
+          <div class="footer-label">Sheet</div>
           <div class="sheet-no">1 OF 1</div>
         </div>
       </div>
       <div class="tb-preliminary">
-        PRELIMINARY — NOT FOR CONSTRUCTION — SUBJECT TO PE REVIEW
+        Preliminary — Not for Construction — Subject to PE Review
       </div>
     </div>
 
   </div><!-- end .left-col -->
 
-  <!-- ═══ RIGHT COLUMN: FULL-HEIGHT SURVEY IMAGE ═══ -->
+  <!-- ═══ RIGHT COLUMN: SURVEY IMAGE ═══ -->
   <div class="right-col">
     <img src="survey-ward-2025.png" alt="Land Title Survey — Lot 14-B, Block 6, Blue Bonnet Acres — 4Ward Land Surveying">
   </div>
