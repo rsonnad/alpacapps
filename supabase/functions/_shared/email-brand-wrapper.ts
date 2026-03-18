@@ -128,12 +128,13 @@ async function loadGalleryImages(): Promise<string[]> {
       }
     }
 
-    // Fallback: random mktg category images
+    // Fallback: AI-generated mktg images only (storage_path starts with ai-gen/)
     const { data, error } = await sb
       .from("media")
       .select("url")
       .eq("category", "mktg")
       .eq("is_archived", false)
+      .like("storage_path", "ai-gen/%")
       .limit(50);
 
     if (data && !error && data.length >= 2) {
