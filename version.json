@@ -1,12 +1,12 @@
 {
-  "version": "v260317.47 6:59p",
-  "release": 861,
-  "sha": "3c49cac2c",
-  "fullSha": "3c49cac2c5a64aa8ad8c445ee76a2e94931dae96",
+  "version": "v260317.48 7:07p",
+  "release": 862,
+  "sha": "cfdbfa9f3",
+  "fullSha": "cfdbfa9f35d2d321406c73483f55b0c696cb4723",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 23:59:41+00",
-  "commits": [{"sha":"3c49cac2c","message":"Fix DevControl sub-tabs being cleared by renderTabNav on auth refresh","author":"Rahul"}]
+  "pushedAt": "2026-03-18 00:07:50+00",
+  "commits": [{"sha":"e607744be","message":"Reduce footer top padding to cut vertical whitespace gap","author":"Rahul"},{"sha":"cfdbfa9f3","message":"Merge pull request #50 from rsonnad/rahuliofam/fix-footer-whitespace","author":"Rahul"}]
 }
