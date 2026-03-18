@@ -1,12 +1,12 @@
 {
-  "version": "v260317.51 10:30p",
-  "release": 865,
-  "sha": "a556f1bed",
-  "fullSha": "a556f1bed61bff2eb9a4eb5b4941c131e5f9636f",
+  "version": "v260318.01 12:10a",
+  "release": 866,
+  "sha": "b2c5a6b4d",
+  "fullSha": "b2c5a6b4d80b0053ef61f456be3978d6fe80073a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 03:30:37+00",
-  "commits": [{"sha":"20c73562c","message":"Add weekly backup system — Supabase, R2, D1, GitHub → RVAULT20","author":"Rahul"},{"sha":"a556f1bed","message":"Merge remote-tracking branch 'origin/rahuliofam/backup-system'","author":"Rahul"}]
+  "pushedAt": "2026-03-18 05:10:36+00",
+  "commits": [{"sha":"d07c5b0bf","message":"Fix backup script for bash 3.x compatibility (Alpaca Mac)","author":"Rahul"},{"sha":"b2c5a6b4d","message":"Merge remote-tracking branch 'origin/rahuliofam/backup-system'","author":"Rahul"}]
 }
