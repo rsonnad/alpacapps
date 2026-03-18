@@ -1,12 +1,12 @@
 {
-  "version": "v260318.34 5:50p",
-  "release": 899,
-  "sha": "309012744",
-  "fullSha": "309012744cbf176cef564cd323207d7d35bf1d5d",
+  "version": "v260318.35 6:05p",
+  "release": 900,
+  "sha": "819ade360",
+  "fullSha": "819ade360ba4de4a4a9009e7f10f04c35ddd0085",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 22:50:59+00",
-  "commits": [{"sha":"309012744","message":"Cache-bust visiting OG image with new filename (#63)","author":"Rahul"}]
+  "pushedAt": "2026-03-18 23:05:53+00",
+  "commits": [{"sha":"819ade360","message":"Update page title and add executive summary","author":"Rahul"}]
 }
