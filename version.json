@@ -1,12 +1,12 @@
 {
-  "version": "v260318.25 4:51p",
-  "release": 890,
-  "sha": "8e4b49200",
-  "fullSha": "8e4b49200b1f4ad5c187ecc4858b52874cf5b5cf",
+  "version": "v260318.26 4:55p",
+  "release": 891,
+  "sha": "56f0042a9",
+  "fullSha": "56f0042a9e6fd81442e17fd264deb392bb3c2114",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 21:51:38+00",
-  "commits": [{"sha":"8e4b49200","message":"Update visiting OG description text (#55)","author":"Rahul"}]
+  "pushedAt": "2026-03-18 21:55:52+00",
+  "commits": [{"sha":"56f0042a9","message":"Fix visiting OG image aspect ratio (#56)","author":"Rahul"}]
 }
