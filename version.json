@@ -1,12 +1,12 @@
 {
-  "version": "v260318.24 3:56p",
-  "release": 889,
-  "sha": "cdbc6f461",
-  "fullSha": "cdbc6f4617a7aa3f07859ff39be5f95b4bec8d6d",
+  "version": "v260318.25 4:51p",
+  "release": 890,
+  "sha": "8e4b49200",
+  "fullSha": "8e4b49200b1f4ad5c187ecc4858b52874cf5b5cf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 20:56:17+00",
-  "commits": [{"sha":"cdbc6f461","message":"Add Google OAuth + version display to all permitting pages (#54)","author":"Rahul"}]
+  "pushedAt": "2026-03-18 21:51:38+00",
+  "commits": [{"sha":"8e4b49200","message":"Update visiting OG description text (#55)","author":"Rahul"}]
 }
