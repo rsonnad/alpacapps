@@ -686,10 +686,9 @@ async function loadBackups() {
       .limit(50);
     if (error) throw error;
 
-    const lastDb = (logs || []).find((l) => l.backup_type === 'db-to-r2');
-    const lastRvault = (logs || []).find((l) => l.backup_type === 'r2-to-rvault');
-    const dbDays = lastDb ? daysSince(lastDb.created_at) : null;
-    const rvaultDays = lastRvault ? daysSince(lastRvault.created_at) : null;
+    const last = (logs || []).find((l) => l.backup_type === 'full-to-rvault');
+    const lastDays = last ? daysSince(last.created_at) : null;
+    const d = last?.details || {};
 
     function agoBadge(days) {
       if (days === null) return '';
@@ -697,29 +696,52 @@ async function loadBackups() {
       return `<span class="${days > 8 ? 'dc-stale-badge' : ''}" style="font-size:0.75rem;margin-left:0.5rem;">${text}</span>`;
     }
 
+    function svcBadge(svc) {
+      const s = d[svc];
+      if (!s) return '<span style="font-size:0.6875rem;color:var(--text-muted,#aaa);">no data</span>';
+      const color = s.status === 'success' ? '#2e7d32' : s.status === 'error' ? '#c62828' : '#e65100';
+      const bg = s.status === 'success' ? '#e8f5e9' : s.status === 'error' ? '#ffebee' : '#fff3e0';
+      return `<span style="font-size:0.6875rem;padding:1px 6px;border-radius:999px;color:${color};background:${bg}">${s.status}</span>`;
+    }
+
+    function svcDetail(svc) {
+      const s = d[svc];
+      if (!s?.detail) return '';
+      if (typeof s.detail === 'string') return `<span style="font-size:0.75rem;color:var(--text-muted,#aaa);">${esc(s.detail)}</span>`;
+      if (s.detail.files != null) return `<span style="font-size:0.75rem;color:var(--text-muted,#aaa);">${s.detail.files} files (${s.detail.size || '?'})</span>`;
+      if (s.detail.commits != null) return `<span style="font-size:0.75rem;color:var(--text-muted,#aaa);">${s.detail.commits} commits, ${s.detail.branches} branches</span>`;
+      return '';
+    }
+
+    const services = [
+      { key: 'supabase', icon: '🗄', label: 'Supabase DB', desc: 'pg_dump → gzip → RVAULT20' },
+      { key: 'r2',       icon: '☁', label: 'Cloudflare R2', desc: 'S3 sync alpacapps bucket' },
+      { key: 'd1',       icon: '📋', label: 'Cloudflare D1', desc: 'claude-sessions export' },
+      { key: 'github',   icon: '🔀', label: 'GitHub Repo', desc: 'Bare mirror of rsonnad/alpacapps' },
+    ];
+
     panel.innerHTML = `
       <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Backups</h2>
-      <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.25rem;">Weekly automated backups of Supabase database and Cloudflare R2 file storage.</p>
+      <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:0.5rem;">Weekly automated backups to RVAULT20 external drive — Mondays 1:00 AM.</p>
+      ${last ? `<p style="font-size:0.8125rem;margin-bottom:1.25rem;">Last run: <strong>${fmtDate(last.created_at)}</strong>${agoBadge(lastDays)} · ${fmtDuration(last.duration_seconds)}${d.total_size ? ` · ${d.total_size} total` : ''}</p>` : '<p style="font-size:0.8125rem;color:var(--text-muted,#aaa);margin-bottom:1.25rem;">No backups recorded yet.</p>'}
 
       <div class="dc-backup-grid">
-        <div class="dc-backup-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h3>Database &rarr; R2</h3>
-            <span style="font-size:0.75rem;color:var(--text-muted,#888);">Hostinger VPS</span>
+        ${services.map(svc => `
+          <div class="dc-backup-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h3>${svc.icon} ${svc.label}</h3>
+              ${last ? svcBadge(svc.key) : ''}
+            </div>
+            <p>${svc.desc}</p>
+            ${last ? `<div class="dc-backup-last">${svcDetail(svc.key)}</div>` : ''}
           </div>
-          <p>pg_dump &rarr; gzip &rarr; Cloudflare R2 (alpacapps-backups bucket)</p>
-          <p style="font-size:0.75rem;color:var(--text-muted,#aaa);">Schedule: Sundays 3:00 AM UTC</p>
-          ${lastDb ? `<div class="dc-backup-last">Last: <strong>${fmtDate(lastDb.created_at)}</strong>${agoBadge(dbDays)}${lastDb.details?.size ? `<br><span style="font-size:0.75rem;color:var(--text-muted,#aaa);">Size: ${lastDb.details.size}</span>` : ''}</div>` : ''}
-        </div>
-        <div class="dc-backup-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h3>R2 &rarr; RVAULT20</h3>
-            <span style="font-size:0.75rem;color:var(--text-muted,#888);">Alpaca Mac</span>
-          </div>
-          <p>Sync all R2 buckets + DB dump to external drive</p>
-          <p style="font-size:0.75rem;color:var(--text-muted,#aaa);">Schedule: Sundays 5:00 AM local</p>
-          ${lastRvault ? `<div class="dc-backup-last">Last: <strong>${fmtDate(lastRvault.created_at)}</strong>${agoBadge(rvaultDays)}</div>` : ''}
-        </div>
+        `).join('')}
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <p style="font-size:0.75rem;color:var(--text-muted,#aaa);">
+          <strong>Storage:</strong> /Volumes/RVAULT20/backups/alpacapps/ · <strong>Cron:</strong> Alpaca Mac · <strong>Retention:</strong> 12 DB dumps, 12 D1 exports, full R2 mirror, bare Git mirror
+        </p>
       </div>
 
       <h3 class="dc-section-header">Activity Log</h3>
@@ -729,27 +751,38 @@ async function loadBackups() {
             <thead><tr><th>Date</th><th>Type</th><th>Source</th><th>Status</th><th>Duration</th><th>Details</th></tr></thead>
             <tbody>
               ${logs.map((l) => {
-                const typeLbl = l.backup_type === 'db-to-r2' ? 'DB \u2192 R2' : l.backup_type === 'r2-to-rvault' ? 'R2 \u2192 RVAULT20' : l.backup_type;
-                const srcLbl = l.source === 'hostinger' ? 'Hostinger VPS' : l.source === 'alpaca-mac' ? 'Alpaca Mac' : l.source;
+                const typeLbl = l.backup_type === 'full-to-rvault' ? 'Full → RVAULT20' : l.backup_type === 'db-to-r2' ? 'DB → R2' : l.backup_type === 'r2-to-rvault' ? 'R2 → RVAULT20' : l.backup_type;
+                const srcLbl = l.source === 'alpaca-mac' ? 'Alpaca Mac' : l.source === 'hostinger' ? 'Hostinger VPS' : l.source;
                 const statusCls = l.status === 'success' ? 'color:#2e7d32;background:#e8f5e9' : l.status === 'error' ? 'color:#c62828;background:#ffebee' : '';
+                const det = l.details || {};
+                const detailParts = [];
+                if (det.total_size) detailParts.push(det.total_size);
+                ['supabase','r2','d1','github'].forEach(k => {
+                  if (det[k]?.status === 'error') detailParts.push(`${k}: ✗`);
+                  else if (det[k]?.status === 'skipped') detailParts.push(`${k}: skipped`);
+                });
+                if (l.r2_key) detailParts.push(l.r2_key);
                 return `<tr>
                   <td style="white-space:nowrap">${fmtDate(l.created_at)}</td>
                   <td><span class="mono" style="background:#f0ede8;padding:2px 6px;border-radius:4px;">${esc(typeLbl)}</span></td>
                   <td>${esc(srcLbl)}</td>
                   <td><span style="font-size:0.75rem;padding:2px 8px;border-radius:999px;${statusCls}">${esc(l.status)}</span></td>
                   <td>${fmtDuration(l.duration_seconds)}</td>
-                  <td style="font-size:0.75rem;">
-                    ${l.r2_key ? `<span class="mono">${esc(l.r2_key)}</span>` : ''}
-                    ${l.details?.size ? ` (${l.details.size})` : ''}
-                    ${l.details?.total_size ? `${l.details.total_size} synced` : ''}
-                  </td>
+                  <td style="font-size:0.75rem;">${detailParts.map(p => esc(p)).join(' · ')}</td>
                 </tr>`;
               }).join('')}
             </tbody>
           </table>
         </div>`}`;
   } catch (err) {
-    panel.innerHTML = `<div class="dc-empty">Failed to load backups: ${esc(err.message)}</div>`;
+    if (err.message?.includes('backup_logs')) {
+      panel.innerHTML = `
+        <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Backups</h2>
+        <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.25rem;">Weekly automated backups to RVAULT20 external drive — Mondays 1:00 AM.</p>
+        <div class="dc-empty">Backup system not set up yet. Run the <code>backup_logs</code> migration to enable.</div>`;
+    } else {
+      panel.innerHTML = `<div class="dc-empty">Failed to load backups: ${esc(err.message)}</div>`;
+    }
   }
 }
 
