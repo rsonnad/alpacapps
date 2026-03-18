@@ -134,12 +134,6 @@ export async function renderTabNav(activeTab, authState, section = 'staff') {
     }
   }
 
-  // DevControl manages its own sub-tabs via renderDevControlTabs() — skip here
-  if (section === 'devcontrol') {
-    if (switcher) initNavTabList(switcher, '.context-switcher-btn');
-    return;
-  }
-
   // Filter tabs by section, permission, AND enabled features
   const enabledFeatures = await getEnabledFeatures();
   const tabs = ALL_ADMIN_TABS
@@ -147,11 +141,14 @@ export async function renderTabNav(activeTab, authState, section = 'staff') {
     .filter(tab => !tab.feature || enabledFeatures[tab.feature])
     .filter(tab => authState.hasPermission?.(tab.permission));
 
-  tabsContainer.innerHTML = tabs.map(tab => {
-    const isActive = tab.id === activeTab;
-    const icon = TAB_ICONS[tab.id] || '';
-    return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${icon}${tab.label}</a>`;
-  }).join('');
+  // DevControl manages its own sub-tabs via renderDevControlTabs() — don't overwrite
+  if (section !== 'devcontrol') {
+    tabsContainer.innerHTML = tabs.map(tab => {
+      const isActive = tab.id === activeTab;
+      const icon = TAB_ICONS[tab.id] || '';
+      return `<a href="${tab.href}" class="manage-tab${isActive ? ' active' : ''}">${icon}${tab.label}</a>`;
+    }).join('');
+  }
 
   // ARIA + auto-scroll active tab into view on mobile
   initNavTabList(tabsContainer, '.manage-tab');
