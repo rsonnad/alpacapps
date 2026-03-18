@@ -1,12 +1,12 @@
 {
-  "version": "v260318.20 2:52p",
-  "release": 885,
-  "sha": "348990de6",
-  "fullSha": "348990de6c2a2f568be511be24dcaebb4428ba14",
-  "actor": "jackie61899280",
+  "version": "v260318.22 3:03p",
+  "release": 887,
+  "sha": "47fb1a186",
+  "fullSha": "47fb1a186f482fc7fe801bbb5c6d490575d67f8e",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 19:52:38+00",
-  "commits": [{"sha":"b4a236600","message":"Replace cost estimate PDF link with editable HTML breakdown page","author":"Jacqueline Giroux"},{"sha":"348990de6","message":"Merge branch 'claude/upbeat-curie'","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-18 20:03:37+00",
+  "commits": [{"sha":"47fb1a186","message":"Enforce work photo reminders — clock-out warning + immediate email + cron backup","author":"Rahul"}]
 }
