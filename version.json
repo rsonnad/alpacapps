@@ -1,12 +1,12 @@
 {
-  "version": "v260318.12 12:16p",
-  "release": 877,
-  "sha": "013f6df22",
-  "fullSha": "013f6df22265010046fb1ca8e93aa0e144e280ae",
+  "version": "v260318.13 12:33p",
+  "release": 878,
+  "sha": "776179d96",
+  "fullSha": "776179d96d980e3dd4003812d94d1182896d659e",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 17:16:04+00",
-  "commits": [{"sha":"013f6df22","message":"Add RS Changing Room plans and construction photos to building permit page","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-18 17:33:42+00",
+  "commits": [{"sha":"776179d96","message":"Replace raster survey with SVG vector site plan drawing","author":"Jacqueline Giroux"}]
 }
