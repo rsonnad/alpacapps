@@ -748,28 +748,26 @@ async function loadBackups() {
       ${!logs?.length ? '<div class="dc-empty">No backup logs yet.</div>' : `
         <div class="dc-table-wrap">
           <table class="dc-table">
-            <thead><tr><th>Date</th><th>Type</th><th>Source</th><th>Status</th><th>Duration</th><th>Details</th></tr></thead>
+            <thead><tr><th>Date</th><th>Status</th><th>Duration</th><th>Services</th><th>Size</th></tr></thead>
             <tbody>
               ${logs.map((l) => {
-                const typeLbl = l.backup_type === 'full-to-rvault' ? 'Full → RVAULT20' : l.backup_type === 'db-to-r2' ? 'DB → R2' : l.backup_type === 'r2-to-rvault' ? 'R2 → RVAULT20' : l.backup_type;
-                const srcLbl = l.source === 'alpaca-mac' ? 'Alpaca Mac' : l.source === 'hostinger' ? 'Hostinger VPS' : l.source;
-                const statusCls = l.status === 'success' ? 'color:#2e7d32;background:#e8f5e9' : l.status === 'error' ? 'color:#c62828;background:#ffebee' : '';
                 const det = l.details || {};
-                const detailParts = [];
-                if (det.total_size) detailParts.push(det.total_size);
-                ['supabase','r2','d1','github'].forEach(k => {
-                  if (det[k]?.status === 'error') detailParts.push(`${k}: ✗`);
-                  else if (det[k]?.status === 'skipped') detailParts.push(`${k}: skipped`);
-                });
-                if (l.r2_key) detailParts.push(l.r2_key);
+                const statusCls = l.status === 'success' ? 'color:#2e7d32;background:#e8f5e9' : l.status === 'error' ? 'color:#c62828;background:#ffebee' : '';
                 const shortDate = new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+                const svcNames = { supabase: 'DB', r2: 'R2', d1: 'D1', github: 'Git' };
+                const svcHtml = ['supabase','r2','d1','github'].map(k => {
+                  const s = det[k];
+                  if (!s) return `<span style="color:var(--text-muted,#ccc);">${svcNames[k]}</span>`;
+                  const c = s.status === 'success' ? '#2e7d32' : s.status === 'error' ? '#c62828' : '#e65100';
+                  const icon = s.status === 'success' ? '✓' : s.status === 'error' ? '✗' : '—';
+                  return `<span style="color:${c};">${icon} ${svcNames[k]}</span>`;
+                }).join('<span style="color:var(--border,#e2e0db);margin:0 0.25rem;">|</span>');
                 return `<tr>
                   <td style="white-space:nowrap">${esc(shortDate)}</td>
-                  <td><span class="mono" style="background:#f0ede8;padding:2px 6px;border-radius:4px;">${esc(typeLbl)}</span></td>
-                  <td>${esc(srcLbl)}</td>
                   <td><span style="font-size:0.75rem;padding:2px 8px;border-radius:999px;${statusCls}">${esc(l.status)}</span></td>
                   <td>${fmtDuration(l.duration_seconds)}</td>
-                  <td style="font-size:0.75rem;">${detailParts.map(p => esc(p)).join(' · ')}</td>
+                  <td style="font-size:0.75rem;">${svcHtml}</td>
+                  <td style="font-size:0.75rem;">${det.total_size || '—'}</td>
                 </tr>`;
               }).join('')}
             </tbody>
