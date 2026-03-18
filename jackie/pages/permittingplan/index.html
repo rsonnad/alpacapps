@@ -267,6 +267,10 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
           Priority List
         </a>
+        <a href="professionals.html" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#0d9488; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Professional Directory
+        </a>
       </div>
       <div class="permit-summary" id="summaryStats"></div>
       <div id="phasesContainer"></div>
@@ -423,7 +427,7 @@
         <div class="task-info">
           <div class="task-name"><span class="task-code">${t.task_code}</span>${esc(t.task_name)}</div>
           ${t.description ? `<div class="task-desc" title="${esc(t.description)}">${esc(t.description)}</div>` : ''}
-          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A2','A3','A5','A6','A7','A8','A9','B1','B4','B5','B10','B11','B14','B16','B22','B23','B24','B25','B26','B27','C1','C2','C3','C6','C7'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
+          ${t.storage_paths?.length ? renderDocLinks(t.storage_paths, t.task_code) : (['A2','A3','A5','A6','A7','A8','A9','B1','B4','B5','B6','B7','B9','B10','B11','B12','B13','B14','B16','B20','B21','B22','B23','B24','B25','B26','B27','C1','C2','C3','C6','C7','C8','C9','C10'].includes(t.task_code) ? renderDocLinks([], t.task_code) : '')}
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
@@ -499,10 +503,12 @@
       if (taskCode === 'B4') {
         html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">🗺️ Draft Site Plan</a>`;
         html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        html += `<a href="professionals.html#cat-engineer" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Engineers</a>`;
       }
       // B5: Drainage Study
       if (taskCode === 'B5') {
         html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        html += `<a href="professionals.html#cat-engineer" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Engineers</a>`;
       }
       // B10: Fire Suppression Plan
       if (taskCode === 'B10') {
@@ -513,10 +519,12 @@
       if (taskCode === 'B11') {
         html += `<a href="${STORAGE_URL}/county-forms/Affidavit for Aerobic OSSF Systems.pdf" target="_blank" onclick="event.stopPropagation()">Aerobic OSSF Affidavit</a>`;
         html += `<a href="${STORAGE_URL}/county-forms/OSSF Application.pdf" target="_blank" onclick="event.stopPropagation()">OSSF Application Form</a>`;
+        html += `<a href="professionals.html#cat-septic-design" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Septic Designers</a>`;
       }
       // B14: Internal Roads Plan
       if (taskCode === 'B14') {
         html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        html += `<a href="professionals.html#cat-engineer" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Engineers</a>`;
       }
       // B22: Parking Plan
       if (taskCode === 'B22') {
@@ -530,6 +538,7 @@
       // B24: Trash & Waste Collection Plan
       if (taskCode === 'B24') {
         html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+        html += `<a href="professionals.html#cat-waste" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Waste Services</a>`;
       }
       // B25: Application Fee Payment — fee schedule + cost breakdown
       if (taskCode === 'B25') {
@@ -543,6 +552,7 @@
       if (taskCode === 'B27') {
         html += `<a href="survey-update-request.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 Survey Update Request Letter</a>`;
         html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
+        html += `<a href="professionals.html#cat-surveyor" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Surveyors</a>`;
       }
       // C1: Relocate structures — priority list + site plan
       if (taskCode === 'C1') {
@@ -564,6 +574,46 @@
       // C7: Certificate of Compliance
       if (taskCode === 'C7') {
         html += `<a href="${STORAGE_URL}/county-forms/Lodging and RV Park Infrastructure Requirements.pdf" target="_blank" onclick="event.stopPropagation()">📜 Lodging/RV Park Requirements</a>`;
+      }
+      // B6: Water Availability Letter — groundwater district
+      if (taskCode === 'B6') {
+        html += `<a href="professionals.html#cat-groundwater" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Lost Pines GCD</a>`;
+      }
+      // B9: ESD Compliance Letter
+      if (taskCode === 'B9') {
+        html += `<a href="professionals.html#cat-esd" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Bastrop ESD #2</a>`;
+      }
+      // B12: Septic Plan/Specifications
+      if (taskCode === 'B12') {
+        html += `<a href="professionals.html#cat-septic-design" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Septic Designers</a>`;
+      }
+      // B13: Soil Evaluation Report
+      if (taskCode === 'B13') {
+        html += `<a href="professionals.html#cat-septic-design" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Septic Designers</a>`;
+      }
+      // B20: Groundwater District Certification
+      if (taskCode === 'B20') {
+        html += `<a href="professionals.html#cat-groundwater" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Lost Pines GCD</a>`;
+      }
+      // B21: Well Water Quality Testing
+      if (taskCode === 'B21') {
+        html += `<a href="professionals.html#cat-water-test" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Water Testing Lab</a>`;
+      }
+      // B7: Electric Availability Letter
+      if (taskCode === 'B7') {
+        html += `<a href="professionals.html#cat-utilities" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Bluebonnet Electric</a>`;
+      }
+      // C8: Water Tap/Connection Fees
+      if (taskCode === 'C8') {
+        html += `<a href="professionals.html#cat-utilities" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Aqua WSC</a>`;
+      }
+      // C9: Electric Service Extension
+      if (taskCode === 'C9') {
+        html += `<a href="professionals.html#cat-utilities" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Bluebonnet Electric</a>`;
+      }
+      // C10: Septic System Installation
+      if (taskCode === 'C10') {
+        html += `<a href="professionals.html#cat-septic-install" target="_blank" onclick="event.stopPropagation()" style="color:#0d9488;font-weight:600">👷 Find Septic Installers</a>`;
       }
       return `<div class="doc-links">${html}</div>`;
     }
