@@ -1,12 +1,12 @@
 {
-  "version": "v260318.22 3:03p",
-  "release": 887,
-  "sha": "47fb1a186",
-  "fullSha": "47fb1a186f482fc7fe801bbb5c6d490575d67f8e",
+  "version": "v260318.24 3:56p",
+  "release": 889,
+  "sha": "cdbc6f461",
+  "fullSha": "cdbc6f4617a7aa3f07859ff39be5f95b4bec8d6d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 20:03:37+00",
-  "commits": [{"sha":"47fb1a186","message":"Enforce work photo reminders — clock-out warning + immediate email + cron backup","author":"Rahul"}]
+  "pushedAt": "2026-03-18 20:56:17+00",
+  "commits": [{"sha":"cdbc6f461","message":"Add Google OAuth + version display to all permitting pages (#54)","author":"Rahul"}]
 }

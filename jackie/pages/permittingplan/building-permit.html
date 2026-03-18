@@ -27,6 +27,10 @@
     .auth-form input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; margin-bottom: 0.75rem; }
     .auth-form button { width: 100%; padding: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
     .auth-form button:hover { opacity: 0.9; }
+    .auth-form .google-btn { background: #fff; color: var(--text); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .auth-form .google-btn:hover { background: #f8f7f4; }
+    .auth-form .auth-divider { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; color: var(--text-muted); font-size: 0.75rem; }
+    .auth-form .auth-divider::before, .auth-form .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     .auth-error { color: var(--occupied); font-size: 0.8rem; margin-bottom: 0.5rem; display: none; }
 
     /* Page header */
@@ -137,11 +141,17 @@
       <h2>Building Permit Plan</h2>
       <p>160 Still Forest Dr — Restricted Access</p>
       <div id="authError" class="auth-error"></div>
+      <button class="google-btn" id="googleSignInBtn" onclick="doGoogleLogin()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Sign in with Google
+      </button>
+      <div class="auth-divider">or</div>
       <input type="email" id="authEmail" placeholder="Email address" autocomplete="email">
       <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
       <button id="authSubmit" onclick="doLogin()">Sign In</button>
     </div>
     <div id="authSpinner" class="spinner" style="display:none"></div>
+    <div style="margin-top:1rem; font-size:0.6rem; color:#b0a89e;"><span data-site-version-auth>v260318.24 3:56p</span></div>
   </div>
 
   <!-- Page content (hidden until auth) -->
@@ -260,7 +270,7 @@
 
   <div id="taskModalContainer"></div>
 
-  <span data-site-version style="display:none">v260318.22 3:03p</span>
+  <div style="text-align:center; padding:1rem 0 0.5rem; font-size:0.65rem; color:#b0a89e;"><span data-site-version>v260318.24 3:56p</span></div>
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -275,6 +285,7 @@
       'sheppardsustainable@gmail.com',
       'rahulioson@gmail.com',
       'dpmoden8888@gmail.com',
+      'justin.gilbertson1@gmail.com',
     ];
 
     const PHASE_LABELS = {
@@ -292,7 +303,7 @@
     // ── Auth ──
     async function checkSession() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session && ALLOWED_USERS.includes(session.user.email)) {
+      if (session && ALLOWED_USERS.includes(session.user.email.toLowerCase())) {
         currentUser = session.user;
         showApp();
         return;
@@ -300,6 +311,21 @@
       if (session) await supabase.auth.signOut();
       document.getElementById('authOverlay').classList.remove('hidden');
     }
+
+    window.doGoogleLogin = async function() {
+      const errEl = document.getElementById('authError');
+      errEl.style.display = 'none';
+      document.getElementById('googleSignInBtn').disabled = true;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.href.split('#')[0].split('?')[0],
+          queryParams: { prompt: 'select_account' },
+        },
+      });
+      document.getElementById('googleSignInBtn').disabled = false;
+      if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; }
+    };
 
     window.doLogin = async function() {
       const email = document.getElementById('authEmail').value.trim();
@@ -314,7 +340,7 @@
       document.getElementById('authSubmit').disabled = false;
 
       if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
-      if (!ALLOWED_USERS.includes(data.user.email)) {
+      if (!ALLOWED_USERS.includes(data.user.email.toLowerCase())) {
         errEl.textContent = 'You do not have access to this page.';
         errEl.style.display = 'block';
         await supabase.auth.signOut();
