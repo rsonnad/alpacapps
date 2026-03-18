@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Professional Directory - Permitting Plan</title>
+  <link rel="icon" type="image/png" href="../../../favicon.png">
+  <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f5f0; --bg-card: #fff; --border: #e5e0d8; --radius: 8px;
+      --text: #1c1618; --text-muted: #8c8279; --accent: #d4883a;
+      --available: #22c55e; --occupied: #ef4444;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .page-header { padding: 1.25rem 1.5rem; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+    .back-link { color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+    .back-link:hover { text-decoration: underline; }
+    .page-header h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
+
+    .page-content { max-width: 960px; margin: 0 auto; padding: 1.25rem; }
+
+    .intro-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+    .intro-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+    .intro-card p strong { color: var(--text); }
+
+    .category-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.25rem; overflow: hidden; }
+    .category-header { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; background: var(--bg); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .category-header:hover { background: #f0efea; }
+    .category-header h2 { font-size: 0.95rem; font-weight: 700; margin: 0; flex: 1; }
+    .category-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem; }
+    .category-tasks { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); background: #f3f4f6; padding: 0.15rem 0.5rem; border-radius: 10px; white-space: nowrap; }
+    .category-chevron { transition: transform 0.2s; }
+    .category-section.collapsed .category-chevron { transform: rotate(-90deg); }
+    .category-section.collapsed .category-body { display: none; }
+
+    .category-body { padding: 0; }
+    .tasks-covered { padding: 0.6rem 1rem; font-size: 0.78rem; color: var(--text-muted); border-bottom: 1px solid #f3f4f6; }
+    .tasks-covered strong { color: var(--text); }
+
+    .pro-card { padding: 0.75rem 1rem; border-bottom: 1px solid #f3f4f6; }
+    .pro-card:last-child { border-bottom: none; }
+    .pro-card:hover { background: #fafaf8; }
+    .pro-name { font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .pro-name .badge { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 0.1rem 0.4rem; border-radius: 8px; }
+    .badge-recommended { background: #d1fae5; color: #065f46; }
+    .badge-original { background: #e0e7ff; color: #3730a3; }
+    .pro-location { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; }
+    .pro-details { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.4rem; }
+    .pro-detail { font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem; }
+    .pro-detail a { color: var(--accent); text-decoration: none; }
+    .pro-detail a:hover { text-decoration: underline; }
+    .pro-why { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem; line-height: 1.5; font-style: italic; }
+    .pro-rating { font-size: 0.75rem; color: #f59e0b; }
+
+    .agency-card { padding: 0.75rem 1rem; border-bottom: 1px solid #f3f4f6; }
+    .agency-card:last-child { border-bottom: none; }
+    .agency-name { font-size: 0.9rem; font-weight: 700; }
+    .agency-address { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .agency-contact { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.4rem; font-size: 0.8rem; }
+    .agency-contact a { color: var(--accent); text-decoration: none; }
+    .agency-contact a:hover { text-decoration: underline; }
+    .agency-process { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem; line-height: 1.5; padding: 0.5rem 0.75rem; background: #f8f7f4; border-radius: 6px; }
+    .agency-process strong { color: var(--text); }
+
+    @media (max-width: 640px) {
+      .pro-details { flex-direction: column; gap: 0.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <a href="index.html" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Permitting Plan
+    </a>
+    <h1>Professional Directory — Bastrop County</h1>
+  </div>
+
+  <div class="page-content">
+    <div class="intro-card">
+      <p>
+        <strong>Local professionals and agencies</strong> for each permitting task that requires licensed or specialized help.
+        All firms are near Bastrop County and experienced with rural commercial developments.
+        <br><span style="font-size:0.75rem; color:var(--text-muted);">Property: 160 Still Forest Dr, Cedar Creek, TX 78612 — 1.7 acres, commercial lodging</span>
+      </p>
+    </div>
+
+    <!-- 1. CIVIL ENGINEER -->
+    <div class="category-section" id="cat-engineer">
+      <div class="category-header" onclick="toggleCat('cat-engineer')">
+        <div class="category-icon" style="background:#dbeafe;">&#128736;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Civil Engineer (PE-stamped)</h2>
+        <span class="category-tasks">B4 B5 B14</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>B4</strong> PE-signed Site Plan ($5,000) &bull;
+          <strong>B5</strong> Drainage Study ($1,500) &bull;
+          <strong>B14</strong> Internal Roads Plan ($1,000)
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Highland Development &amp; Engineering Co, LLC <span class="badge badge-recommended">Recommended</span></div>
+          <div class="pro-location">Bastrop, TX</div>
+          <div class="pro-rating">&#9733;&#9733;&#9733;&#9733;&#9733; 5.0</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5127446815">512-744-6815</a></span>
+            <span class="pro-detail">&#127760; <a href="https://highlanddevtx.com" target="_blank">highlanddevtx.com</a></span>
+          </div>
+          <div class="pro-why">Led by Rachel Hartzler, P.E. — specializes in Bastrop-specific commercial site plans and drainage studies.</div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Southwest Engineers</div>
+          <div class="pro-location">Bastrop, TX</div>
+          <div class="pro-rating">&#9733;&#9733;&#9733;&#9733;&#9733; 5.0</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5123124336">512-312-4336</a></span>
+            <span class="pro-detail">&#127760; <a href="https://southwestengineers.com" target="_blank">southwestengineers.com</a></span>
+          </div>
+          <div class="pro-why">Extensive history with Bastrop County Development Services for rural commercial infrastructure and road design.</div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Whitworth Engineering</div>
+          <div class="pro-location">Central Texas / Remote</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:8172366106">817-236-6106</a></span>
+            <span class="pro-detail">&#127760; <a href="https://whitworthengineering.com" target="_blank">whitworthengineering.com</a></span>
+          </div>
+          <div class="pro-why">Offers "Quick look" feasibility and PE-signed drainage plans specifically for small commercial developments.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SEPTIC DESIGNER -->
+    <div class="category-section" id="cat-septic-design">
+      <div class="category-header" onclick="toggleCat('cat-septic-design')">
+        <div class="category-icon" style="background:#fef3c7;">&#9881;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Licensed Septic Designer (OSSF)</h2>
+        <span class="category-tasks">B13 B12 B11</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>B13</strong> Soil Evaluation Report ($750) &bull;
+          <strong>B12</strong> Septic Plan/Specifications ($5,500) &bull;
+          <strong>B11</strong> OSSF Permit Application ($1,200)
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Aerobic Services of South Texas <span class="badge badge-recommended">Recommended</span></div>
+          <div class="pro-location">Bastrop / Canyon Lake, TX</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:8303556121">830-355-6121</a></span>
+            <span class="pro-detail">&#127760; <a href="https://aerobicservices.com" target="_blank">aerobicservices.com</a></span>
+          </div>
+          <div class="pro-why">Decades of experience designing and permitting commercial OSSF systems in Bastrop County.</div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Double JP Septic</div>
+          <div class="pro-location">Bastrop, TX</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5123089080">512-308-9080</a></span>
+            <span class="pro-detail">&#127760; <a href="https://doublejpseptic.com" target="_blank">doublejpseptic.com</a></span>
+          </div>
+          <div class="pro-why">TCEQ-certified designers who specialize in "ready for permitting" commercial packages for small businesses.</div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Pro-Tec Septic</div>
+          <div class="pro-location">Bastrop, TX</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5126144444">512-614-4444</a></span>
+            <span class="pro-detail">&#127760; <a href="https://protecseptic.com" target="_blank">protecseptic.com</a></span>
+          </div>
+          <div class="pro-why">Local licensed professionals who handle both soil evaluations and commercial-grade septic specs.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. SEPTIC INSTALLER -->
+    <div class="category-section" id="cat-septic-install">
+      <div class="category-header" onclick="toggleCat('cat-septic-install')">
+        <div class="category-icon" style="background:#fee2e2;">&#128679;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Septic System Installer</h2>
+        <span class="category-tasks">C10</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>C10</strong> Physical installation of commercial OSSF system for 5 units ($22,500)
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Double JP Septic <span class="badge badge-recommended">Recommended</span></div>
+          <div class="pro-location">Bastrop, TX</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5123089080">512-308-9080</a></span>
+            <span class="pro-detail">&#127760; <a href="https://doublejpseptic.com" target="_blank">doublejpseptic.com</a></span>
+          </div>
+          <div class="pro-why">Full-service TCEQ installers — can transition seamlessly from design phase to physical installation.</div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Aerobic Services of South Texas</div>
+          <div class="pro-location">Bastrop / Canyon Lake, TX</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:8303556121">830-355-6121</a></span>
+            <span class="pro-detail">&#127760; <a href="https://aerobicservices.com" target="_blank">aerobicservices.com</a></span>
+          </div>
+          <div class="pro-why">Licensed installers with specialized equipment for commercial tank and drainfield placement.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. SURVEYOR -->
+    <div class="category-section" id="cat-surveyor">
+      <div class="category-header" onclick="toggleCat('cat-surveyor')">
+        <div class="category-icon" style="background:#e0e7ff;">&#128208;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Registered Professional Land Surveyor (RPLS)</h2>
+        <span class="category-tasks">B27</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>B27</strong> Survey Update — pin 2 trailers + 3 containers on existing 2021 survey ($850)
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">4Ward Land Surveying — Jason Ward, RPLS #5811 <span class="badge badge-original">Original Surveyor</span></div>
+          <div class="pro-location">Austin / Bastrop, TX</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5125372384">512-537-2384</a></span>
+            <span class="pro-detail">&#127760; <a href="https://4wardlandsurvey.com" target="_blank">4wardlandsurvey.com</a></span>
+          </div>
+          <div class="pro-why">Original surveyor for your property — holds the 2021 data, making an update the most cost-effective option.</div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Steubing LLC — Robert Steubing, RPLS #5548</div>
+          <div class="pro-location">Bastrop, TX</div>
+          <div class="pro-rating">&#9733;&#9733;&#9733;&#9733;&#9734; 4.8</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5125679256">512-567-9256</a></span>
+            <span class="pro-detail">&#127760; <a href="https://steubingsurvey.com" target="_blank">steubingsurvey.com</a></span>
+          </div>
+          <div class="pro-why">Highly rated local RPLS with experience in commercial site pin-updates and drone-assisted surveying.</div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Olson Surveying</div>
+          <div class="pro-location">Bastrop, TX</div>
+          <div class="pro-rating">&#9733;&#9733;&#9733;&#9734;&#9734; 3.8</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5123215476">512-321-5476</a></span>
+            <span class="pro-detail">&#127760; <a href="https://olsonsurvey.com" target="_blank">olsonsurvey.com</a></span>
+          </div>
+          <div class="pro-why">Operating since 1975 — experts in Bastrop County boundary and improvement verification for commercial use.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. WELL WATER TESTING -->
+    <div class="category-section" id="cat-water-test">
+      <div class="category-header" onclick="toggleCat('cat-water-test')">
+        <div class="category-icon" style="background:#cffafe;">&#128167;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Well Water Testing Lab</h2>
+        <span class="category-tasks">B21</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>B21</strong> Certified lab testing of private well water — bacteria, nitrates, county-required parameters ($250)
+        </div>
+
+        <div class="agency-card">
+          <div class="agency-name">Aqua Water Supply Corporation Laboratory</div>
+          <div class="agency-address">Bastrop, TX</div>
+          <div class="agency-contact">
+            <span>&#128222; <a href="tel:5123033943">512-303-3943</a></span>
+            <span>&#127760; <a href="https://aquawsclab.com" target="_blank">aquawsclab.com</a></span>
+          </div>
+          <div class="agency-process">TCEQ-accredited lab located directly in Bastrop. Provides bacteriological testing for private well owners.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. GROUNDWATER DISTRICT -->
+    <div class="category-section" id="cat-groundwater">
+      <div class="category-header" onclick="toggleCat('cat-groundwater')">
+        <div class="category-icon" style="background:#d1fae5;">&#127754;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Groundwater Conservation District</h2>
+        <span class="category-tasks">B20 B6</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>B20</strong> Groundwater Availability Certification (REQUIRED — lack is grounds for denial) &bull;
+          <strong>B6</strong> Water Availability Letter ($150)
+        </div>
+
+        <div class="agency-card">
+          <div class="agency-name">Lost Pines Groundwater Conservation District</div>
+          <div class="agency-address">908 Loop 150 West, Bastrop, TX 78602</div>
+          <div class="agency-contact">
+            <span>&#128222; <a href="tel:5123217733">512-321-7733</a></span>
+            <span>&#127760; <a href="https://lostpineswater.org" target="_blank">lostpineswater.org</a></span>
+          </div>
+          <div class="agency-process">
+            <strong>Process:</strong> Submit <strong>Form 300</strong> (Well Registration). For a Water Availability Letter, submit a written request detailing projected daily water usage (based on 5 units + bathroom) to the General Manager for board review.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. ESD -->
+    <div class="category-section" id="cat-esd">
+      <div class="category-header" onclick="toggleCat('cat-esd')">
+        <div class="category-icon" style="background:#fee2e2;">&#128658;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Emergency Services District (ESD)</h2>
+        <span class="category-tasks">B9</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>B9</strong> ESD Compliance Letter — fire access and compliance confirmation
+        </div>
+
+        <div class="agency-card">
+          <div class="agency-name">Bastrop County ESD #2</div>
+          <div class="agency-address">1060 Highway 71 West, Bastrop, TX 78602</div>
+          <div class="agency-contact">
+            <span>&#128222; <a href="tel:5123035586">512-303-5586</a></span>
+            <span>&#127760; <a href="https://bastropesd2.org" target="_blank">bastropesd2.org</a></span>
+          </div>
+          <div class="agency-process">
+            <strong>Process:</strong> Submit your PE-stamped Site Plan to the Fire Marshal's office for an "Access and Water Supply Review." They verify that 10ft/20ft internal roads meet fire apparatus turnaround requirements before issuing a compliance letter.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. UTILITIES -->
+    <div class="category-section" id="cat-utilities">
+      <div class="category-header" onclick="toggleCat('cat-utilities')">
+        <div class="category-icon" style="background:#fef9c3;">&#9889;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Utility Providers</h2>
+        <span class="category-tasks">B7 C9 C8</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>B7</strong> Electric Availability Letter &bull;
+          <strong>C9</strong> Electric Service Extension ($2,000) &bull;
+          <strong>C8</strong> Water Tap/Connection Fees ($7,970)
+        </div>
+
+        <div class="agency-card">
+          <div class="agency-name">Bluebonnet Electric Cooperative</div>
+          <div class="agency-address">Electric provider for 160 Still Forest Dr</div>
+          <div class="agency-contact">
+            <span>&#128222; <a href="tel:8008427708">800-842-7708</a> (Commercial)</span>
+          </div>
+          <div class="agency-process">
+            <strong>Process:</strong> Apply for "Non-Residential Service." Pay ~$150 application fee to receive an "Ability to Serve" letter. For the 5-unit extension, a designer will meet you on-site to calculate the "Contribution-in-Aid-of-Construction" (CIAC) fee.
+          </div>
+        </div>
+
+        <div class="agency-card">
+          <div class="agency-name">Aqua Water Supply Corporation</div>
+          <div class="agency-address">Water provider for 160 Still Forest Dr</div>
+          <div class="agency-contact">
+            <span>&#128222; <a href="tel:5123033943">512-303-3943</a> (Commercial/Development)</span>
+          </div>
+          <div class="agency-process">
+            <strong>Process:</strong> Request a "Will Serve" letter. Standard 5/8" meter tap fee is $7,970 per connection. <strong>Important:</strong> Ask if they require a "Master Meter" or individual taps for 5 units — this drastically changes waste requirements.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. WASTE COLLECTION -->
+    <div class="category-section" id="cat-waste">
+      <div class="category-header" onclick="toggleCat('cat-waste')">
+        <div class="category-icon" style="background:#f3f4f6;">&#128465;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Waste Collection Service</h2>
+        <span class="category-tasks">B24</span>
+      </div>
+      <div class="category-body">
+        <div class="tasks-covered">
+          <strong>B24</strong> Weekly commercial waste collection (required by Section VI.2.c)
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Republic Services <span class="badge badge-recommended">Primary Provider</span></div>
+          <div class="pro-location">Cedar Creek, TX</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5122432833">512-243-2833</a></span>
+            <span class="pro-detail">&#127760; <a href="https://republicservices.com" target="_blank">republicservices.com</a></span>
+          </div>
+          <div class="pro-why">Primary local provider for Cedar Creek — offers scheduled 2-4 yard dumpster services for lodging.</div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-name">Dumpster Dogs</div>
+          <div class="pro-location">Bastrop, TX</div>
+          <div class="pro-details">
+            <span class="pro-detail">&#128222; <a href="tel:5129622586">512-962-2586</a></span>
+            <span class="pro-detail">&#127760; <a href="https://ddwaste.com" target="_blank">ddwaste.com</a></span>
+          </div>
+          <div class="pro-why">Local family-run business specializing in ongoing commercial waste management for smaller rental complexes.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="category-section" id="cat-summary">
+      <div class="category-header" onclick="toggleCat('cat-summary')">
+        <div class="category-icon" style="background:#f0fdf4;">&#128202;</div>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <h2>Summary — First Contact Recommendations</h2>
+      </div>
+      <div class="category-body" style="padding:1rem;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border); text-align:left;">
+              <th style="padding:0.4rem 0.5rem; font-weight:700;">Category</th>
+              <th style="padding:0.4rem 0.5rem; font-weight:700;">Tasks</th>
+              <th style="padding:0.4rem 0.5rem; font-weight:700;">Est. Cost</th>
+              <th style="padding:0.4rem 0.5rem; font-weight:700;">Call First</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Civil Engineer</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">B4, B5, B14</td>
+              <td style="padding:0.4rem 0.5rem;">$7,500</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:5127446815" style="color:var(--accent);">Highland Dev</a></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Septic Designer</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">B13, B12, B11</td>
+              <td style="padding:0.4rem 0.5rem;">$7,450</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:8303556121" style="color:var(--accent);">Aerobic Services</a></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Septic Installer</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">C10</td>
+              <td style="padding:0.4rem 0.5rem;">$22,500</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:5123089080" style="color:var(--accent);">Double JP</a></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Surveyor (RPLS)</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">B27</td>
+              <td style="padding:0.4rem 0.5rem;">$850</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:5125372384" style="color:var(--accent);">4Ward (original)</a></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Water Testing</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">B21</td>
+              <td style="padding:0.4rem 0.5rem;">$250</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:5123033943" style="color:var(--accent);">Aqua WSC Lab</a></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Groundwater Cert</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">B20, B6</td>
+              <td style="padding:0.4rem 0.5rem;">$150</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:5123217733" style="color:var(--accent);">Lost Pines GCD</a></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">ESD Compliance</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">B9</td>
+              <td style="padding:0.4rem 0.5rem;">$0</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:5123035586" style="color:var(--accent);">ESD #2</a></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Electric</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">B7, C9</td>
+              <td style="padding:0.4rem 0.5rem;">$2,000</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:8008427708" style="color:var(--accent);">Bluebonnet</a></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Water Tap</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">C8</td>
+              <td style="padding:0.4rem 0.5rem;">$7,970</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:5123033943" style="color:var(--accent);">Aqua WSC</a></td>
+            </tr>
+            <tr>
+              <td style="padding:0.4rem 0.5rem; font-weight:600;">Waste Collection</td>
+              <td style="padding:0.4rem 0.5rem; color:var(--text-muted);">B24</td>
+              <td style="padding:0.4rem 0.5rem;">ongoing</td>
+              <td style="padding:0.4rem 0.5rem;"><a href="tel:5122432833" style="color:var(--accent);">Republic Services</a></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style="border-top:2px solid var(--border);">
+              <td style="padding:0.5rem 0.5rem; font-weight:800;" colspan="2">Total Professional Costs</td>
+              <td style="padding:0.5rem 0.5rem; font-weight:800;">$48,670</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <span data-site-version style="display:none">v260318.05 9:22a</span>
+
+  <script>
+    function toggleCat(id) {
+      const s = document.getElementById(id);
+      if (s) s.classList.toggle('collapsed');
+    }
+  </script>
+</body>
+</html>
