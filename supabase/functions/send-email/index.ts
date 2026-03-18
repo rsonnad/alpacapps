@@ -2336,6 +2336,9 @@ serve(async (req) => {
       "payment_statement", // has its own full layout
     ];
 
+    // Email types that should not show the random gallery image in the footer
+    const SKIP_GALLERY: EmailType[] = ["work_checkout_summary"];
+
     // Wrap email content in the branded shell (header, footer, consistent styling)
     let finalHtml = rendered.html;
     if (!SKIP_BRAND_WRAP.includes(type)) {
@@ -2343,6 +2346,7 @@ serve(async (req) => {
         finalHtml = await wrapEmailHtml(rendered.html, {
           preheader: rendered.subject,
           extraImages: (rendered as any)._extraImages,
+          showGallery: !SKIP_GALLERY.includes(type),
         });
       } catch (wrapErr) {
         console.warn("Brand wrapper failed, sending unwrapped:", wrapErr);
