@@ -1949,8 +1949,9 @@ Alpaca Playhouse`
             <tr>
               <td>
                 <p style="margin:0 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">Clock-Out Location</p>
-                <a href="https://www.google.com/maps?q=${data.clock_out_lat},${data.clock_out_lng}" style="display:block;text-decoration:none;">
-                  <img src="https://staticmap.openstreetmap.de/staticmap.php?center=${data.clock_out_lat},${data.clock_out_lng}&zoom=15&size=560x200&markers=${data.clock_out_lat},${data.clock_out_lng},ol-marker" alt="Clock-out location map" width="560" style="display:block;width:100%;max-width:560px;height:auto;border-radius:8px;border:1px solid #e6e2d9;" />
+                <a href="https://www.google.com/maps?q=${data.clock_out_lat},${data.clock_out_lng}" style="display:block;text-decoration:none;background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;padding:16px 20px;">
+                  <span style="font-size:20px;">📍</span> <span style="color:#d4883a;font-weight:600;font-size:14px;">View on Google Maps</span><br>
+                  <span style="color:#7d6f74;font-size:12px;">${data.clock_out_lat}, ${data.clock_out_lng}</span>
                 </a>
               </td>
             </tr>
