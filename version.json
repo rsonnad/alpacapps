@@ -1,12 +1,12 @@
 {
-  "version": "v260318.23 3:45p",
-  "release": 888,
-  "sha": "801b876c9",
-  "fullSha": "801b876c960a4f109cc0662d9b47d425e924f2af",
+  "version": "v260318.24 3:56p",
+  "release": 889,
+  "sha": "cdbc6f461",
+  "fullSha": "cdbc6f4617a7aa3f07859ff39be5f95b4bec8d6d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 20:45:33+00",
-  "commits": [{"sha":"801b876c9","message":"Update visiting page OG image to PAI profile dark (#52)","author":"Rahul"}]
+  "pushedAt": "2026-03-18 20:56:17+00",
+  "commits": [{"sha":"cdbc6f461","message":"Add Google OAuth + version display to all permitting pages (#54)","author":"Rahul"}]
 }
