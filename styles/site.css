@@ -809,7 +809,7 @@ li {
 .aap-footer {
   background-color: var(--aap-bg-dark);
   color: var(--aap-text-light);
-  padding: var(--aap-space-3xl) var(--aap-space-md);
+  padding: var(--aap-space-xl) var(--aap-space-md) var(--aap-space-3xl);
   text-align: center;
 }
 
