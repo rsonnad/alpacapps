@@ -78,37 +78,20 @@ serve(async (_req) => {
     }
   }
 
-  // ─── Rule 4: Verify enough "pai-email-art" tagged images exist ───
-  const { data: tagRow } = await sb
-    .from("media_tags")
-    .select("id")
-    .ilike("name", "pai-email-art")
-    .limit(1)
-    .maybeSingle();
+  // ─── Rule 4: Verify enough PAI-generated images exist for footer ───
+  const { data: paiImages } = await sb
+    .from("image_gen_jobs")
+    .select("result_url")
+    .eq("status", "completed")
+    .not("result_url", "is", null)
+    .limit(2);
 
-  if (!tagRow?.id) {
+  if (!paiImages || paiImages.length < 2) {
     violations.push({
       rule: 4,
       ruleName: "Footer Images",
-      details: 'No "pai-email-art" tag exists in media_tags — footer images cannot be loaded.',
+      details: `Only ${paiImages?.length ?? 0} completed PAI-generated image(s) in image_gen_jobs — need at least 2 for two-image footer.`,
     });
-  } else {
-    const { data: taggedMedia } = await sb
-      .from("media_tag_assignments")
-      .select("media:media_id(url, is_archived)")
-      .eq("tag_id", tagRow.id);
-
-    const active = taggedMedia
-      ?.map((r: any) => r.media)
-      .filter((m: any) => m?.url && !m.is_archived) ?? [];
-
-    if (active.length < 2) {
-      violations.push({
-        rule: 4,
-        ruleName: "Footer Images",
-        details: `Only ${active.length} active image(s) tagged "pai-email-art" — need at least 2 for two-image footer.`,
-      });
-    }
   }
 
   // ─── Rule 5: Approval gate — check for unexpected auto-approvals ───
