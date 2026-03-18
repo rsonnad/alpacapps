@@ -569,8 +569,9 @@
         html += `<a href="operator-information.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
         html += `<a href="operator-information.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
       }
-      // A7: Pre-dev meeting email — meeting guide + prior permit + attachments to prepare
+      // A7: Pre-dev meeting email — draft email + meeting guide + prior permit + attachments to prepare
       if (taskCode === 'A7') {
+        html += `<a href="predev-meeting-email.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600;color:#0d9488">📧 Draft Email</a>`;
         html += `<a href="${STORAGE_URL}/county-forms/Pre-Development Meeting Guide.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Pre-Dev Meeting Guide</a>`;
         html += `<a href="${STORAGE_URL}/permitting-activity/french-drain/French Drain County Development Permit.pdf" target="_blank" onclick="event.stopPropagation()">Prior Permit (French Drain)</a>`;
         html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()">📄 Dev Description</a>`;
