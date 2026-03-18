@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Cost Estimate Breakdown - 160 Still Forest Dr</title>
+  <link rel="icon" type="image/png" href="../../../favicon.png">
+  <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f5f0; --bg-card: #fff; --border: #e5e0d8; --radius: 8px;
+      --text: #1c1618; --text-muted: #8c8279; --accent: #d4883a;
+      --available: #22c55e; --occupied: #ef4444;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Auth overlay */
+    .auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    .auth-overlay.hidden { display: none; }
+    .auth-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; max-width: 360px; width: 90%; text-align: center; }
+    .auth-form h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .auth-form p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+    .auth-form input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; margin-bottom: 0.75rem; }
+    .auth-form button { width: 100%; padding: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .auth-form button:hover { opacity: 0.9; }
+    .auth-error { color: var(--occupied); font-size: 0.8rem; margin-bottom: 0.5rem; display: none; }
+
+    /* Page header */
+    .page-header { padding: 1.25rem 1.5rem; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .page-header h1 { font-size: 1.1rem; font-weight: 700; }
+    .header-right { display: flex; align-items: center; gap: 0.75rem; }
+    .page-header .user-info { font-size: 0.75rem; color: var(--text-muted); }
+    .page-header .logout-btn { font-size: 0.75rem; color: var(--accent); cursor: pointer; border: none; background: none; font-family: inherit; }
+    .back-link { font-size: 0.8rem; color: var(--accent); text-decoration: none; font-weight: 500; }
+    .back-link:hover { text-decoration: underline; }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { padding: 0.6rem 1rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; animation: toastIn 0.2s ease-out; }
+    .toast.success { background: #d1fae5; color: #065f46; }
+    .toast.error { background: #fee2e2; color: #991b1b; }
+    @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Content */
+    .page-content { max-width: 960px; margin: 0 auto; padding: 1.25rem; }
+
+    /* Totals bar */
+    .totals-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+    .total-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; }
+    .total-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
+    .total-card .value { font-size: 1.3rem; font-weight: 700; }
+    .total-card .value.estimated { color: var(--accent); }
+    .total-card .value.actual { color: #059669; }
+    .total-card .value.diff-over { color: var(--occupied); }
+    .total-card .value.diff-under { color: var(--available); }
+
+    /* Phase sections */
+    .phase-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; }
+    .phase-header { padding: 0.75rem 1rem; background: #faf8f5; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+    .phase-header h3 { font-size: 0.9rem; font-weight: 600; }
+    .phase-subtotal { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+    .phase-body { padding: 0; }
+
+    /* Cost table */
+    .cost-table { width: 100%; border-collapse: collapse; }
+    .cost-table th { text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); font-weight: 600; }
+    .cost-table th:nth-child(3), .cost-table th:nth-child(4) { text-align: right; }
+    .cost-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #f0ede8; font-size: 0.85rem; vertical-align: middle; }
+    .cost-table tr:last-child td { border-bottom: none; }
+    .cost-table .task-code { font-weight: 600; color: var(--accent); width: 50px; }
+    .cost-table .task-name { color: var(--text); }
+    .cost-table .status-badge { display: inline-block; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.15rem 0.4rem; border-radius: 4px; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-in_progress { background: #dbeafe; color: #1e40af; }
+    .status-blocked { background: #fee2e2; color: #991b1b; }
+    .status-skipped, .status-not_needed { background: #f3f4f6; color: #6b7280; }
+
+    /* Editable cost cells */
+    .cost-cell { text-align: right; white-space: nowrap; min-width: 90px; }
+    .cost-value { display: inline-block; padding: 0.2rem 0.4rem; border-radius: 4px; cursor: pointer; min-width: 70px; text-align: right; transition: background 0.15s; }
+    .cost-value:hover { background: #f0ede8; }
+    .cost-value.empty { color: var(--text-muted); font-style: italic; }
+    .cost-input { width: 90px; padding: 0.2rem 0.4rem; border: 2px solid var(--accent); border-radius: 4px; font-size: 0.85rem; font-family: inherit; text-align: right; outline: none; }
+    .cost-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(212,136,58,0.2); }
+
+    /* Notes */
+    .notes-cell { max-width: 200px; }
+    .notes-value { display: inline-block; padding: 0.2rem 0.4rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; color: var(--text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: background 0.15s; }
+    .notes-value:hover { background: #f0ede8; }
+    .notes-value.empty { font-style: italic; }
+    .notes-input { width: 180px; padding: 0.2rem 0.4rem; border: 2px solid var(--accent); border-radius: 4px; font-size: 0.8rem; font-family: inherit; outline: none; }
+
+    /* Phase subtotal row */
+    .subtotal-row td { font-weight: 600; background: #faf8f5; border-top: 2px solid var(--border); }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .totals-bar { grid-template-columns: 1fr; }
+      .cost-table { font-size: 0.8rem; }
+      .cost-table th, .cost-table td { padding: 0.4rem 0.5rem; }
+      .page-header { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+      .notes-cell, .notes-value, .notes-input { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Auth -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-form">
+      <h2>Cost Breakdown</h2>
+      <p>Sign in to view and edit cost estimates</p>
+      <div class="auth-error" id="authError"></div>
+      <input type="email" id="authEmail" placeholder="Email" autocomplete="email">
+      <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
+      <button id="authSubmit" onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="appContent" style="display:none">
+    <div class="page-header">
+      <div>
+        <a href="index.html" class="back-link">&larr; Permitting Plan</a>
+        <h1>Cost Estimate Breakdown</h1>
+      </div>
+      <div class="header-right">
+        <span class="user-info" id="userDisplay"></span>
+        <button class="logout-btn" onclick="doLogout()">Sign out</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="totals-bar" id="totalsBar"></div>
+      <div id="phaseContainer"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const supabase = createClient(
+      'https://aphrrfprbixmhissnjfn.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk'
+    );
+
+    const ALLOWED_USERS = [
+      'jackie61899280@gmail.com',
+      'sheppardsustainable@gmail.com',
+      'rahulioson@gmail.com',
+      'dpmoden8888@gmail.com',
+    ];
+
+    const PHASE_LABELS = { A: 'Phase A: Research & Site Visits', B: 'Phase B: IDP Submission Documents', C: 'Phase C: Build & Final Inspection' };
+    const STATUS_LABELS = { pending: 'Pending', in_progress: 'In Progress', blocked: 'Blocked', completed: 'Done', skipped: 'Skipped', not_needed: 'N/A' };
+
+    let tasks = [];
+    let currentUser = null;
+
+    function showToast(msg, type = 'success') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    // ── Auth ──
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && ALLOWED_USERS.includes(session.user.email)) {
+        currentUser = session.user;
+        showApp();
+      } else {
+        if (session) await supabase.auth.signOut();
+        document.getElementById('authOverlay').classList.remove('hidden');
+      }
+    })();
+
+    window.doLogin = async function() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authError');
+      errEl.style.display = 'none';
+
+      if (!email || !password) { errEl.textContent = 'Enter email and password.'; errEl.style.display = 'block'; return; }
+
+      document.getElementById('authSubmit').disabled = true;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      document.getElementById('authSubmit').disabled = false;
+
+      if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+      if (!ALLOWED_USERS.includes(data.user.email)) {
+        errEl.textContent = 'You do not have access to this page.';
+        errEl.style.display = 'block';
+        await supabase.auth.signOut();
+        return;
+      }
+
+      currentUser = data.user;
+      showApp();
+    };
+
+    window.doLogout = async function() {
+      await supabase.auth.signOut();
+      document.getElementById('appContent').style.display = 'none';
+      document.getElementById('authOverlay').classList.remove('hidden');
+      document.getElementById('authPassword').value = '';
+    };
+
+    document.getElementById('authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
+    document.getElementById('authEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
+
+    async function showApp() {
+      document.getElementById('authOverlay').classList.add('hidden');
+      document.getElementById('appContent').style.display = 'block';
+      document.getElementById('userDisplay').textContent = currentUser.email;
+      await loadTasks();
+      render();
+    }
+
+    // ── Data ──
+    async function loadTasks() {
+      const { data, error } = await supabase.from('permit_tasks').select('*').order('sort_order', { ascending: true });
+      if (error) { showToast('Failed to load: ' + error.message, 'error'); return; }
+      tasks = data || [];
+    }
+
+    // ── Save ──
+    async function saveField(taskId, field, value) {
+      const numVal = value === '' ? null : parseFloat(value);
+      if (value !== '' && isNaN(numVal)) { showToast('Enter a valid number', 'error'); return false; }
+
+      const updates = { [field]: numVal, updated_at: new Date().toISOString() };
+      const { error } = await supabase.from('permit_tasks').update(updates).eq('id', taskId);
+      if (error) { showToast('Save failed: ' + error.message, 'error'); return false; }
+
+      const task = tasks.find(t => t.id === taskId);
+      if (task) task[field] = numVal;
+      return true;
+    }
+
+    async function saveNotes(taskId, value) {
+      const updates = { notes: value || null, updated_at: new Date().toISOString() };
+      const { error } = await supabase.from('permit_tasks').update(updates).eq('id', taskId);
+      if (error) { showToast('Save failed: ' + error.message, 'error'); return false; }
+
+      const task = tasks.find(t => t.id === taskId);
+      if (task) task.notes = value || null;
+      return true;
+    }
+
+    // ── Inline editing ──
+    window.editCost = function(taskId, field, el) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      const currentVal = task[field] != null ? task[field] : '';
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = '0.01';
+      input.className = 'cost-input';
+      input.value = currentVal;
+      el.replaceWith(input);
+      input.focus();
+      input.select();
+
+      const finish = async () => {
+        const newVal = input.value.trim();
+        const saved = await saveField(taskId, field, newVal);
+        if (saved) {
+          showToast('Saved', 'success');
+          render();
+        } else {
+          render();
+        }
+      };
+
+      input.addEventListener('blur', finish);
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { render(); }
+      });
+    };
+
+    window.editNotes = function(taskId, el) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'notes-input';
+      input.value = task.notes || '';
+      input.placeholder = 'Add note...';
+      el.replaceWith(input);
+      input.focus();
+
+      const finish = async () => {
+        const saved = await saveNotes(taskId, input.value.trim());
+        if (saved) {
+          showToast('Saved', 'success');
+          render();
+        } else {
+          render();
+        }
+      };
+
+      input.addEventListener('blur', finish);
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { render(); }
+      });
+    };
+
+    // ── Rendering ──
+    function fmt(n) {
+      if (n == null) return null;
+      return '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    function render() {
+      const estTotal = tasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
+      const actTotal = tasks.reduce((s, t) => s + (parseFloat(t.actual_cost) || 0), 0);
+      const diff = actTotal - estTotal;
+
+      // Totals bar
+      document.getElementById('totalsBar').innerHTML = `
+        <div class="total-card"><div class="label">Estimated Total</div><div class="value estimated">${fmt(estTotal)}</div></div>
+        <div class="total-card"><div class="label">Actual Spent</div><div class="value actual">${actTotal > 0 ? fmt(actTotal) : '$0'}</div></div>
+        <div class="total-card"><div class="label">Variance</div><div class="value ${diff > 0 ? 'diff-over' : 'diff-under'}">${diff > 0 ? '+' : ''}${fmt(Math.abs(diff))}${diff > 0 ? ' over' : diff < 0 ? ' under' : ''}</div></div>
+      `;
+
+      // Group by phase
+      const phases = {};
+      tasks.forEach(t => {
+        if (!phases[t.phase]) phases[t.phase] = [];
+        phases[t.phase].push(t);
+      });
+
+      let html = '';
+      for (const phase of Object.keys(phases).sort()) {
+        const phaseTasks = phases[phase];
+        const phaseEst = phaseTasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
+        const phaseAct = phaseTasks.reduce((s, t) => s + (parseFloat(t.actual_cost) || 0), 0);
+
+        html += `<div class="phase-section">
+          <div class="phase-header" onclick="togglePhase('${phase}')">
+            <h3>${PHASE_LABELS[phase] || 'Phase ' + phase}</h3>
+            <span class="phase-subtotal">Est: ${fmt(phaseEst)}${phaseAct > 0 ? ' | Actual: ' + fmt(phaseAct) : ''}</span>
+          </div>
+          <div class="phase-body" id="phaseBody-${phase}">
+            <table class="cost-table">
+              <thead><tr>
+                <th>Code</th>
+                <th>Task</th>
+                <th>Status</th>
+                <th class="cost-cell">Estimated</th>
+                <th class="cost-cell">Actual</th>
+                <th>Notes</th>
+              </tr></thead>
+              <tbody>`;
+
+        for (const t of phaseTasks) {
+          const estVal = t.cost_estimate != null ? fmt(t.cost_estimate) : '—';
+          const actVal = t.actual_cost != null ? fmt(t.actual_cost) : '—';
+          const statusClass = 'status-' + (t.status || 'pending');
+          html += `<tr>
+            <td class="task-code">${t.task_code}</td>
+            <td class="task-name">${t.task_name}</td>
+            <td><span class="status-badge ${statusClass}">${STATUS_LABELS[t.status] || t.status}</span></td>
+            <td class="cost-cell"><span class="cost-value ${t.cost_estimate == null ? 'empty' : ''}" onclick="editCost('${t.id}', 'cost_estimate', this)">${estVal}</span></td>
+            <td class="cost-cell"><span class="cost-value ${t.actual_cost == null ? 'empty' : ''}" onclick="editCost('${t.id}', 'actual_cost', this)">${actVal}</span></td>
+            <td class="notes-cell"><span class="notes-value ${!t.notes ? 'empty' : ''}" onclick="editNotes('${t.id}', this)">${t.notes || 'Add note...'}</span></td>
+          </tr>`;
+        }
+
+        // Subtotal row
+        html += `<tr class="subtotal-row">
+          <td colspan="3" style="text-align:right">Subtotal</td>
+          <td class="cost-cell">${fmt(phaseEst)}</td>
+          <td class="cost-cell">${phaseAct > 0 ? fmt(phaseAct) : '—'}</td>
+          <td></td>
+        </tr>`;
+
+        html += `</tbody></table></div></div>`;
+      }
+
+      document.getElementById('phaseContainer').innerHTML = html;
+    }
+
+    window.togglePhase = function(phase) {
+      const body = document.getElementById('phaseBody-' + phase);
+      if (!body) return;
+      body.style.display = body.style.display === 'none' ? '' : 'none';
+    };
+  </script>
+</body>
+</html>
