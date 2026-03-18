@@ -762,8 +762,9 @@ async function loadBackups() {
                   else if (det[k]?.status === 'skipped') detailParts.push(`${k}: skipped`);
                 });
                 if (l.r2_key) detailParts.push(l.r2_key);
+                const shortDate = new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
                 return `<tr>
-                  <td style="white-space:nowrap">${fmtDate(l.created_at)}</td>
+                  <td style="white-space:nowrap">${esc(shortDate)}</td>
                   <td><span class="mono" style="background:#f0ede8;padding:2px 6px;border-radius:4px;">${esc(typeLbl)}</span></td>
                   <td>${esc(srcLbl)}</td>
                   <td><span style="font-size:0.75rem;padding:2px 8px;border-radius:999px;${statusCls}">${esc(l.status)}</span></td>
