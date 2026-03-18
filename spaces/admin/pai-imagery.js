@@ -1,7 +1,8 @@
 import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast, setupLightbox, openLightbox } from '../../shared/admin-shell.js';
 
 let refreshTimer = null;
+let allImageUrls = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initAdminPage({
@@ -9,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     requiredRole: 'staff',
     section: 'staff',
     onReady: async () => {
+      setupLightbox();
       setupEvents();
       await loadImageryFeed();
       startAutoRefresh();
@@ -66,8 +68,11 @@ function renderFeed(rows) {
 
   if (rows.length === 0) {
     list.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">No generated images found.</p>';
+    allImageUrls = [];
     return;
   }
+
+  allImageUrls = rows.map(r => r.result_url);
 
   list.innerHTML = rows.map((row) => {
     const person = row.metadata?.app_user_name || row.metadata?.vehicle_name || row.metadata?.person_name || 'Unknown';
@@ -76,7 +81,7 @@ function renderFeed(rows) {
 
     return `
       <article style="display:grid;grid-template-columns:140px 1fr;gap:0.75rem;border:1px solid var(--border,#ddd);border-radius:10px;padding:0.6rem;margin-bottom:0.65rem;background:#fff;">
-        <a href="${row.result_url}" target="_blank" rel="noopener">
+        <a href="javascript:void(0)" onclick="window.__openPaiLightbox('${row.result_url.replace(/'/g, "\\'")}')" style="cursor:pointer;">
           <img src="${row.result_url}" alt="Generated imagery" loading="lazy" style="width:140px;height:140px;object-fit:cover;border-radius:8px;display:block;">
         </a>
         <div style="min-width:0;">
@@ -94,6 +99,10 @@ function renderFeed(rows) {
     `;
   }).join('');
 }
+
+window.__openPaiLightbox = function(url) {
+  openLightbox(url, allImageUrls);
+};
 
 function formatDate(value) {
   if (!value) return 'Unknown date';
