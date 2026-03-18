@@ -5,48 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Site Plan — 160 Still Forest Dr — 24×36 Drawing Sheet</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
     --sheet-w: 36in;
     --sheet-h: 24in;
-    --m: 0.5in;
-    --line: #111;
-    --line-lt: #555;
+    --m: 0.5in;         /* border margin */
+    --line: #1a1a1a;
+    --line-lt: #888;
     --text: #111;
     --bg: #fff;
-    --left-col: 8.5in;
-    --right-col: 26.5in;
-    --inner-h: 23in;
-    --accent-red: #b91c1c;
-    --accent-green: #15803d;
-    --subtle-bg: #f8f8f8;
-    --rule: #bbb;
+    /* Two-column layout: info panels left, survey image right */
+    --left-col: 8in;     /* info panels column width */
+    --right-col: 27in;   /* survey image column: 35in - 8in */
+    --inner-h: 23in;     /* usable height: 24in - 2×0.5in */
   }
 
   body {
     font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-    background: #3a3a3a;
-    display: flex; flex-direction: column; align-items: center;
+    background: #444;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 20px;
   }
 
+  /* Screen-only controls */
   .screen-controls {
     position: fixed; top: 12px; right: 12px; z-index: 100;
     display: flex; gap: 8px;
   }
   .screen-controls button {
-    padding: 10px 18px; background: #1a1a1a; color: #fff; border: none;
+    padding: 8px 16px; background: #222; color: #fff; border: none;
     border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
   }
-  .screen-controls button:hover { background: #333; }
+  .screen-controls button:hover { background: #444; }
   .screen-controls .draft-badge {
-    padding: 10px 18px; background: var(--accent-red); color: #fff; border-radius: 6px;
+    padding: 8px 16px; background: #cc2222; color: #fff; border-radius: 6px;
     font-size: 13px; font-weight: 700; letter-spacing: 0.05em;
   }
 
+  /* ═══ THE 24×36 SHEET ═══ */
   .sheet {
     width: var(--sheet-w); height: var(--sheet-h);
     background: var(--bg); position: relative;
@@ -54,164 +55,227 @@
     overflow: hidden; transform-origin: top center;
   }
 
-  /* ANSI double border */
-  .drawing-border-outer {
-    position: absolute;
-    left: calc(var(--m) - 3pt); top: calc(var(--m) - 3pt);
-    right: calc(var(--m) - 3pt); bottom: calc(var(--m) - 3pt);
-    border: 1pt solid var(--line);
-  }
   .drawing-border {
     position: absolute;
     left: var(--m); top: var(--m); right: var(--m); bottom: var(--m);
-    border: 3pt solid var(--line);
+    border: 2.5pt solid var(--line);
   }
 
-  /* Corner marks */
-  .corner-mark { position: absolute; width: 0.25in; height: 0.25in; z-index: 5; }
-  .corner-mark::before, .corner-mark::after { content: ''; position: absolute; background: #000; }
-  .corner-mark.tl { top: 0.15in; left: 0.15in; }
-  .corner-mark.tl::before { top: 0; left: 0; width: 0.25in; height: 1pt; }
-  .corner-mark.tl::after { top: 0; left: 0; width: 1pt; height: 0.25in; }
-  .corner-mark.tr { top: 0.15in; right: 0.15in; }
-  .corner-mark.tr::before { top: 0; right: 0; width: 0.25in; height: 1pt; }
-  .corner-mark.tr::after { top: 0; right: 0; width: 1pt; height: 0.25in; }
-  .corner-mark.bl { bottom: 0.15in; left: 0.15in; }
-  .corner-mark.bl::before { bottom: 0; left: 0; width: 0.25in; height: 1pt; }
-  .corner-mark.bl::after { bottom: 0; left: 0; width: 1pt; height: 0.25in; }
-  .corner-mark.br { bottom: 0.15in; right: 0.15in; }
-  .corner-mark.br::before { bottom: 0; right: 0; width: 0.25in; height: 1pt; }
-  .corner-mark.br::after { bottom: 0; right: 0; width: 1pt; height: 0.25in; }
-
-  .fold-mark { position: absolute; background: #000; z-index: 5; }
-  .fold-mark.top { top: 0.15in; left: 50%; width: 1pt; height: 0.2in; transform: translateX(-50%); }
-  .fold-mark.bottom { bottom: 0.15in; left: 50%; width: 1pt; height: 0.2in; transform: translateX(-50%); }
-  .fold-mark.left { left: 0.15in; top: 50%; width: 0.2in; height: 1pt; transform: translateY(-50%); }
-  .fold-mark.right { right: 0.15in; top: 50%; width: 0.2in; height: 1pt; transform: translateY(-50%); }
-
-  /* Left column */
+  /* ═══ LEFT COLUMN: INFO PANELS (8in wide, full height) ═══ */
   .left-col {
     position: absolute;
     left: var(--m); top: var(--m);
-    width: var(--left-col); height: var(--inner-h);
-    border-right: 2pt solid var(--line);
-    display: flex; flex-direction: column;
+    width: var(--left-col);
+    height: var(--inner-h);
+    border-right: 1.5pt solid var(--line);
+    display: flex;
+    flex-direction: column;
   }
 
-  /* Right column — SVG drawing */
+  /* ═══ RIGHT COLUMN: SURVEY IMAGE (27in wide, full height) ═══ */
   .right-col {
     position: absolute;
-    left: calc(var(--m) + var(--left-col)); top: var(--m);
-    width: var(--right-col); height: var(--inner-h);
-    overflow: hidden; background: #fff;
+    left: calc(var(--m) + var(--left-col));
+    top: var(--m);
+    width: var(--right-col);
+    height: var(--inner-h);
+    overflow: hidden;
+    background: #fff;
   }
-  .right-col svg {
+  .right-col img {
     width: 100%; height: 100%;
+    object-fit: contain;
+    object-position: center center;
   }
 
   /* ═══ LEFT COLUMN PANELS ═══ */
+
+  /* --- VICINITY MAP --- */
   .vicinity-map {
-    width: 100%; height: 4in;
-    border-bottom: 2pt solid var(--line-lt);
-    padding: 0.14in 0.16in;
-    display: flex; flex-direction: column; flex-shrink: 0;
+    width: 100%;
+    height: 4in;
+    border-bottom: 1pt solid var(--line-lt);
+    padding: 0.1in 0.12in;
+    display: flex; flex-direction: column;
+    flex-shrink: 0;
   }
-  .vicinity-map h3 { font-size: 10pt; font-weight: 800; text-align: center; margin-bottom: 0.06in; letter-spacing: 0.08em; text-transform: uppercase; }
-  .vicinity-map .map-img-box { flex: 1; border: 1.5pt solid #666; border-radius: 2pt; overflow: hidden; background: #fff; }
-  .vicinity-map .map-img-box img { width: 100%; height: 100%; object-fit: contain; }
-  .vicinity-note { font-size: 6pt; color: #555; text-align: center; margin-top: 0.04in; font-style: italic; }
+  .vicinity-map h3 {
+    font-size: 8pt; font-weight: 800; text-align: center;
+    margin-bottom: 0.03in; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .vicinity-map .map-img-box {
+    flex: 1; border: 1pt solid #999; border-radius: 2pt;
+    overflow: hidden; background: #f9f9f7;
+  }
+  .vicinity-map .map-img-box img {
+    width: 100%; height: 100%; object-fit: contain;
+  }
+  .vicinity-note {
+    font-size: 4.5pt; color: #666; text-align: center; margin-top: 0.02in;
+  }
 
+  /* --- NORTH ARROW + SCALE --- */
   .north-scale {
-    width: 100%; height: 2.2in;
-    border-bottom: 2pt solid var(--line-lt);
+    width: 100%;
+    height: 2in;
+    border-bottom: 1pt solid var(--line-lt);
     display: flex; align-items: center; justify-content: space-around;
-    padding: 0.14in; flex-shrink: 0;
+    padding: 0.08in;
+    flex-shrink: 0;
   }
-  .scale-info { display: flex; flex-direction: column; align-items: center; gap: 0.06in; }
-  .scale-info .scale-text { font-size: 11pt; font-weight: 800; letter-spacing: 0.04em; }
-  .scale-bar-wrap { display: flex; flex-direction: column; align-items: center; }
+  .north-arrow svg { width: 0.55in; height: 0.9in; }
+  .scale-info { display: flex; flex-direction: column; align-items: center; gap: 0.04in; }
+  .scale-info .scale-text { font-size: 9pt; font-weight: 700; }
   .scale-bar { display: flex; }
-  .scale-bar .seg { width: 0.55in; height: 0.1in; border: 2pt solid #000; }
+  .scale-bar .seg { width: 0.45in; height: 0.08in; border: 1.5pt solid #000; }
   .scale-bar .seg.filled { background: #000; }
-  .scale-bar-labels { display: flex; width: 2.2in; justify-content: space-between; font-size: 6.5pt; font-weight: 700; margin-top: 0.03in; }
-  .scale-bar-unit { font-size: 6.5pt; color: #444; margin-top: 0.03in; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .scale-bar-labels {
+    display: flex; width: 1.8in; justify-content: space-between;
+    font-size: 5pt; font-weight: 600; margin-top: 0.02in;
+  }
 
+  /* --- LEGEND --- */
   .legend {
-    width: 100%; height: 2.4in;
-    border-bottom: 2pt solid var(--line-lt);
-    padding: 0.12in 0.16in; flex-shrink: 0;
+    width: 100%;
+    height: 2.2in;
+    border-bottom: 1pt solid var(--line-lt);
+    padding: 0.06in 0.1in;
+    flex-shrink: 0;
   }
-  .legend h3 { font-size: 10pt; font-weight: 800; margin-bottom: 0.06in; text-transform: uppercase; letter-spacing: 0.08em; }
-  .legend-grid { display: grid; grid-template-columns: 1fr; gap: 0.04in; font-size: 7pt; font-weight: 500; }
-  .legend-item { display: flex; align-items: center; gap: 0.1in; }
-  .legend-line-box { width: 0.5in; height: 0.18in; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-  .legend-symbol-box { width: 0.5in; height: 0.18in; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .legend h3 {
+    font-size: 7.5pt; font-weight: 800; margin-bottom: 0.03in;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .legend-grid {
+    display: grid; grid-template-columns: 1fr;
+    gap: 0.02in; font-size: 5.5pt;
+  }
+  .legend-item { display: flex; align-items: center; gap: 0.06in; }
+  .legend-line { width: 0.35in; height: 0; flex-shrink: 0; }
+  .legend-line.solid-heavy { border-top: 3pt solid #000; }
+  .legend-line.solid-medium { border-top: 1.5pt solid #000; }
+  .legend-line.dotdash { border-top: 1.5pt dashed #555; }
+  .legend-line.double { border-top: 2pt double #000; }
+  .legend-symbol {
+    width: 0.35in; height: 0.14in; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 9pt;
+  }
 
+  /* --- GENERAL NOTES --- */
   .general-notes {
-    width: 100%; flex: 1;
-    border-bottom: 2pt solid var(--line-lt);
-    padding: 0.12in 0.16in;
-    font-size: 6.5pt; line-height: 1.45; overflow: visible;
+    width: 100%;
+    flex: 1;
+    border-bottom: 1pt solid var(--line-lt);
+    padding: 0.06in 0.1in;
+    font-size: 5pt; line-height: 1.3;
+    overflow: hidden;
   }
-  .general-notes h3 { font-size: 10pt; font-weight: 800; margin-bottom: 0.06in; text-transform: uppercase; letter-spacing: 0.08em; }
-  .general-notes ol { padding-left: 0.18in; }
-  .general-notes li { margin-bottom: 0.02in; }
-  .general-notes li strong { font-weight: 700; }
-  .general-notes .sub-heading { font-weight: 800; font-size: 7.5pt; margin-top: 0.06in; margin-bottom: 0.03in; text-transform: uppercase; letter-spacing: 0.04em; }
+  .general-notes h3 {
+    font-size: 7.5pt; font-weight: 800; margin-bottom: 0.03in;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .general-notes ol { padding-left: 0.12in; }
+  .general-notes li { margin-bottom: 0.01in; }
+  .general-notes .sub-heading {
+    font-weight: 700; font-size: 5.5pt; margin-top: 0.03in; margin-bottom: 0.01in;
+    text-transform: uppercase;
+  }
 
+  /* --- SETBACK COMPLIANCE TABLE --- */
   .compliance-table-area {
-    width: 100%; height: 4.8in;
-    border-bottom: 2pt solid var(--line-lt);
-    padding: 0.1in 0.12in; overflow: hidden; flex-shrink: 0;
+    width: 100%;
+    height: 4.5in;
+    border-bottom: 1pt solid var(--line-lt);
+    padding: 0.06in 0.08in;
+    overflow: hidden;
+    flex-shrink: 0;
   }
-  .compliance-table-area h3 { font-size: 9pt; font-weight: 800; margin-bottom: 0.04in; text-transform: uppercase; letter-spacing: 0.08em; }
-  .compliance-table-area .table-note { font-size: 5.5pt; color: #666; margin-bottom: 0.04in; line-height: 1.3; }
-  .compliance-table { width: 100%; border-collapse: collapse; font-size: 6pt; }
-  .compliance-table th { background: #e8e8e8; font-weight: 700; text-align: left; padding: 0.03in 0.04in; border: 1pt solid #888; font-size: 5.5pt; text-transform: uppercase; letter-spacing: 0.04em; }
-  .compliance-table th.num { text-align: right; }
-  .compliance-table td { padding: 0.025in 0.04in; border: 0.75pt solid #bbb; vertical-align: middle; }
-  .compliance-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .compliance-table tbody tr:nth-child(even) { background: #f6f6f6; }
-  .badge { display: inline-block; padding: 0.01in 0.04in; border-radius: 2pt; font-size: 5pt; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; min-width: 0.35in; }
-  .badge.crit { background: #fde8e8; color: var(--accent-red); border: 0.75pt solid var(--accent-red); }
-  .badge.viol { background: #fef3e8; color: #b45309; border: 0.75pt solid #b45309; }
-  .badge.nopmt { background: #fde8f0; color: #9d174d; border: 0.75pt solid #9d174d; }
-  .badge.ok { background: #e8f5e9; color: var(--accent-green); border: 0.75pt solid var(--accent-green); }
-  .deficit-val { color: var(--accent-red); font-weight: 700; }
-  .ok-val { color: var(--accent-green); font-weight: 700; }
-  .compliance-summary { font-size: 5.5pt; color: #555; margin-top: 0.04in; line-height: 1.4; border-top: 1pt solid var(--rule); padding-top: 0.03in; }
+  .compliance-table-area h3 {
+    font-size: 7pt; font-weight: 800; margin-bottom: 0.02in;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .compliance-table {
+    width: 100%; border-collapse: collapse; font-size: 4.5pt;
+  }
+  .compliance-table th {
+    background: #f0f0ee; font-weight: 700; text-align: left;
+    padding: 0.015in 0.02in; border: 0.75pt solid #999;
+    font-size: 4pt; text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .compliance-table td {
+    padding: 0.015in 0.02in; border: 0.5pt solid #bbb; vertical-align: top;
+  }
+  .compliance-table .violation { color: #cc2222; font-weight: 600; }
+  .compliance-table .ok { color: #1a7a3a; font-weight: 600; }
 
-  .title-block { width: 100%; height: 3.6in; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden; }
-  .tb-project { background: #fff; text-align: center; padding: 0.1in 0.12in; border-bottom: 3pt solid #000; }
-  .tb-project .title { font-size: 16pt; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
-  .tb-project .subtitle { font-size: 8pt; font-weight: 600; color: #333; margin-top: 0.03in; letter-spacing: 0.02em; }
-  .tb-owner { display: grid; grid-template-columns: 0.65in 1fr; gap: 0 0.06in; font-size: 6.5pt; padding: 0.06in 0.14in; border-bottom: 1pt solid var(--rule); }
-  .tb-owner .row { display: contents; }
-  .tb-owner .row + .row .label, .tb-owner .row + .row .value { border-top: 0.5pt solid #ddd; padding-top: 0.02in; }
-  .tb-owner .label { font-size: 5.5pt; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.04em; text-align: right; padding: 0.015in 0; }
-  .tb-owner .value { font-weight: 600; padding: 0.015in 0; }
-  .tb-pe-box { border-bottom: 1.5pt solid #000; flex: 1; padding: 0.08in; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.2in; }
-  .pe-seal-circle { width: 1.2in; height: 1.2in; border-radius: 50%; border: 2pt dashed #aaa; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .pe-seal-circle span { font-size: 5.5pt; color: #aaa; text-transform: uppercase; font-weight: 600; text-align: center; letter-spacing: 0.04em; line-height: 1.3; }
-  .pe-info { font-size: 6pt; color: #666; text-align: left; line-height: 1.5; }
-  .pe-info .pe-label { font-size: 7pt; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.03in; }
-  .tb-revision { border-bottom: 1pt solid var(--rule); padding: 0.03in 0.1in; }
-  .revision-table { width: 100%; border-collapse: collapse; font-size: 5pt; }
-  .revision-table th { background: #eee; font-weight: 700; text-align: left; padding: 0.015in 0.03in; border: 0.5pt solid #bbb; font-size: 4.5pt; text-transform: uppercase; letter-spacing: 0.04em; }
-  .revision-table td { padding: 0.015in 0.03in; border: 0.5pt solid #ccc; height: 0.14in; }
-  .tb-survey-info { padding: 0.04in 0.14in; font-size: 6pt; border-bottom: 1pt solid var(--rule); font-weight: 500; }
-  .tb-survey-info strong { font-weight: 700; }
-  .tb-footer { display: flex; justify-content: space-between; align-items: center; padding: 0.04in 0.14in; font-size: 6pt; background: #fff; }
-  .tb-footer .footer-cell { text-align: center; }
-  .tb-footer .footer-cell:first-child { text-align: left; }
-  .tb-footer .footer-cell:last-child { text-align: right; }
-  .tb-footer .footer-label { font-size: 5pt; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.01in; }
-  .tb-footer .footer-value { font-weight: 700; font-size: 6.5pt; }
-  .tb-footer .sheet-no { font-weight: 800; font-size: 10pt; }
-  .tb-preliminary { text-align: center; padding: 0.04in; background: #fff; font-size: 7pt; font-weight: 800; color: var(--accent-red); letter-spacing: 0.12em; border-top: 2pt solid var(--accent-red); text-transform: uppercase; }
+  /* --- TITLE BLOCK (anchored to bottom of left column) --- */
+  .title-block {
+    width: 100%;
+    height: 3.8in;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-  .watermark { position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 140pt; font-weight: 900; color: rgba(180, 20, 20, 0.04); letter-spacing: 0.15em; pointer-events: none; z-index: 10; white-space: nowrap; text-transform: uppercase; }
+  .tb-project {
+    background: #f5f5f2; text-align: center;
+    padding: 0.06in; border-bottom: 1.5pt solid #000;
+  }
+  .tb-project .title {
+    font-size: 11pt; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .tb-project .subtitle {
+    font-size: 6.5pt; font-weight: 600; color: #444; margin-top: 0.02in;
+  }
+  .tb-owner {
+    display: grid; grid-template-columns: 0.55in 1fr;
+    gap: 0.01in 0.04in; font-size: 5.5pt; padding: 0.05in 0.1in;
+  }
+  .tb-owner .label {
+    font-size: 4.5pt; font-weight: 700; color: #888; text-transform: uppercase;
+    letter-spacing: 0.04em; text-align: right; padding-top: 0.01in;
+  }
+  .tb-owner .value { font-weight: 600; }
 
+  .tb-pe-box {
+    border-top: 1.5pt solid #000; border-bottom: 1pt solid #888;
+    flex: 1;
+    padding: 0.06in;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; font-size: 6pt; color: #888;
+  }
+  .tb-pe-box .pe-label {
+    font-size: 6pt; font-weight: 700; color: #555; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 0.02in;
+  }
+
+  .tb-survey-info {
+    padding: 0.03in 0.1in; font-size: 5pt; border-bottom: 1pt solid #888;
+  }
+
+  .tb-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.03in 0.1in; font-size: 5pt; background: #fafaf8;
+  }
+  .tb-footer .sheet-no { font-weight: 700; font-size: 8pt; }
+
+  .tb-preliminary {
+    text-align: center; padding: 0.03in; background: #fff3f3;
+    font-size: 5.5pt; font-weight: 700; color: #cc2222;
+    letter-spacing: 0.1em; border-top: 1pt solid #cc2222;
+  }
+
+  /* ═══ DRAFT WATERMARK ═══ */
+  .watermark {
+    position: absolute; top: 40%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 140pt; font-weight: 900;
+    color: rgba(200, 30, 30, 0.06); letter-spacing: 0.1em;
+    pointer-events: none; z-index: 10; white-space: nowrap;
+  }
+
+  /* ═══ PRINT ═══ */
   @media print {
     @page { size: 36in 24in; margin: 0; }
     body { background: white; padding: 0; }
@@ -220,436 +284,196 @@
     .watermark { display: none; }
   }
 
-  @media screen and (max-width: 2600px) { .sheet { transform: scale(0.35); margin-bottom: -15in; } }
-  @media screen and (min-width: 2601px) { .sheet { transform: scale(0.5); margin-bottom: -12in; } }
+  /* Screen scaling */
+  @media screen and (max-width: 2600px) {
+    .sheet { transform: scale(0.35); margin-bottom: -15in; }
+  }
+  @media screen and (min-width: 2601px) {
+    .sheet { transform: scale(0.5); margin-bottom: -12in; }
+  }
 </style>
 </head>
 <body>
 
 <div class="screen-controls">
   <span class="draft-badge">DRAFT — NOT FOR SUBMISSION</span>
-  <button onclick="window.print()">Print / Save PDF (24x36)</button>
-  <button onclick="document.querySelector('.sheet').style.transform = 'scale(' + (parseFloat(prompt('Scale (0.2-1.0):','0.35')) || 0.35) + ')'">Zoom</button>
+  <button onclick="window.print()">🖨 Print / Save PDF (24×36")</button>
+  <button onclick="document.querySelector('.sheet').style.transform = 'scale(' + (parseFloat(prompt('Scale (0.2–1.0):','0.35')) || 0.35) + ')'">🔍 Zoom</button>
 </div>
 
 <div class="sheet">
+
   <div class="watermark">PRELIMINARY</div>
-  <div class="corner-mark tl"></div><div class="corner-mark tr"></div>
-  <div class="corner-mark bl"></div><div class="corner-mark br"></div>
-  <div class="fold-mark top"></div><div class="fold-mark bottom"></div>
-  <div class="fold-mark left"></div><div class="fold-mark right"></div>
-  <div class="drawing-border-outer"></div>
   <div class="drawing-border"></div>
 
-  <!-- ═══ LEFT COLUMN ═══ -->
+  <!-- ═══ LEFT COLUMN: INFO PANELS ═══ -->
   <div class="left-col">
 
+    <!-- VICINITY MAP -->
     <div class="vicinity-map">
       <h3>Vicinity Map</h3>
       <div class="map-img-box">
-        <img src="gis-aerial-44401.png" alt="Bastrop County Development Services Viewer — PID 44401">
+        <img src="gis-aerial-44401.png" alt="Bastrop County Development Services Viewer — PID 44401 — Aerial with parcel boundary">
       </div>
-      <p class="vicinity-note">Source: Bastrop County Development Services Viewer — PID 44401</p>
+      <p class="vicinity-note">Source: Bastrop County Development Services Viewer — PID 44401 — Esri Aerial Basemap</p>
     </div>
 
+    <!-- NORTH ARROW + SCALE -->
     <div class="north-scale">
       <div>
-        <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" style="width:0.65in;height:1in;">
-          <polygon points="30,2 12,78 30,62 48,78" fill="#000" stroke="#000" stroke-width="1"/>
-          <polygon points="30,2 30,62 48,78" fill="#444"/>
-          <circle cx="30" cy="72" r="5" fill="none" stroke="#000" stroke-width="1.5"/>
-          <text x="30" y="97" font-size="16" font-weight="900" text-anchor="middle" fill="#000" font-family="Inter, sans-serif">N</text>
+        <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" style="width:0.55in;height:0.9in;">
+          <polygon points="30,5 15,80 30,65 45,80" fill="#000"/>
+          <polygon points="30,5 30,65 45,80" fill="#444"/>
+          <text x="30" y="98" font-size="18" font-weight="900" text-anchor="middle" fill="#000">N</text>
         </svg>
       </div>
       <div class="scale-info">
         <div class="scale-text">SCALE: 1" = 30'</div>
-        <div class="scale-bar-wrap">
+        <div>
           <div class="scale-bar">
             <div class="seg filled"></div><div class="seg"></div>
             <div class="seg filled"></div><div class="seg"></div>
           </div>
-          <div class="scale-bar-labels"><span>0</span><span>30'</span><span>60'</span><span>90'</span><span>120'</span></div>
+          <div class="scale-bar-labels">
+            <span>0</span><span>30'</span><span>60'</span><span>90'</span><span>120'</span>
+          </div>
         </div>
-        <div class="scale-bar-unit">Horizontal Scale in Feet</div>
+        <div style="font-size: 5pt; color: #666; margin-top: 0.02in;">HORIZONTAL SCALE IN FEET</div>
       </div>
     </div>
 
+    <!-- LEGEND -->
     <div class="legend">
       <h3>Legend</h3>
       <div class="legend-grid">
-        <div class="legend-item"><div class="legend-line-box"><svg width="36" height="4"><line x1="0" y1="2" x2="36" y2="2" stroke="#000" stroke-width="3"/></svg></div><span>Property Boundary</span></div>
-        <div class="legend-item"><div class="legend-line-box"><svg width="36" height="4"><line x1="0" y1="2" x2="36" y2="2" stroke="#888" stroke-width="1.5" stroke-dasharray="6,3"/></svg></div><span>Setback Line</span></div>
-        <div class="legend-item"><div class="legend-line-box"><svg width="36" height="4"><line x1="0" y1="2" x2="36" y2="2" stroke="#4488bb" stroke-width="1.5" stroke-dasharray="4,2,1,2"/></svg></div><span>Easement (10' P.U.E. &amp; B.L.)</span></div>
-        <div class="legend-item"><div class="legend-line-box"><svg width="36" height="6"><line x1="0" y1="1" x2="36" y2="1" stroke="#000" stroke-width="1.5"/><line x1="0" y1="5" x2="36" y2="5" stroke="#000" stroke-width="1.5"/></svg></div><span>Right-of-Way Line (60' ROW)</span></div>
-        <div class="legend-item"><div class="legend-line-box"><svg width="36" height="4"><line x1="0" y1="2" x2="36" y2="2" stroke="#000" stroke-width="1.5"/></svg></div><span>Existing Structure (Compliant)</span></div>
-        <div class="legend-item"><div class="legend-line-box"><svg width="36" height="8"><rect x="0" y="0" width="36" height="8" fill="#ffe0e0" stroke="#b91c1c" stroke-width="1.5"/></svg></div><span>Structure — Setback Violation</span></div>
-        <div class="legend-item"><div class="legend-symbol-box"><svg width="16" height="16"><polygon points="8,1 14.5,4.5 14.5,11.5 8,15 1.5,11.5 1.5,4.5" fill="none" stroke="#000" stroke-width="1.5"/></svg></div><span>Septic System (Aerobic)</span></div>
-        <div class="legend-item"><div class="legend-symbol-box"><svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="none" stroke="#000" stroke-width="1.5"/><circle cx="8" cy="8" r="2.5" fill="#000"/></svg></div><span>Water Meter</span></div>
-        <div class="legend-item"><div class="legend-symbol-box"><svg width="16" height="16"><rect x="3" y="3" width="10" height="10" fill="#000" transform="rotate(45 8 8)"/></svg></div><span>Iron Rod Found / Set</span></div>
+        <div class="legend-item"><div class="legend-line solid-heavy"></div><span>Property Boundary</span></div>
+        <div class="legend-item"><div class="legend-line dotdash"></div><span>Easement (10' P.U.E. & B.L.)</span></div>
+        <div class="legend-item"><div class="legend-line double"></div><span>Right-of-Way Line (60' ROW)</span></div>
+        <div class="legend-item"><div class="legend-line solid-medium"></div><span>Existing Structure</span></div>
+        <div class="legend-item"><div class="legend-symbol">⬡</div><span>Septic System (Aerobic)</span></div>
+        <div class="legend-item"><div class="legend-symbol">◉</div><span>Water Meter</span></div>
+        <div class="legend-item"><div class="legend-symbol">⚡</div><span>Electric Meter / Pole</span></div>
+        <div class="legend-item"><div class="legend-symbol">◆</div><span>Iron Rod Found / Set</span></div>
+        <div class="legend-item"><div class="legend-symbol">△</div><span>Concrete Monument</span></div>
       </div>
     </div>
 
+    <!-- GENERAL NOTES -->
     <div class="general-notes">
       <h3>General Notes</h3>
       <ol>
         <li><strong>Legal Description:</strong> Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Section One, Bastrop County, Texas. Doc. No. 202005552, O.P.R.B.C.T. PID: 44401.</li>
         <li><strong>Owner:</strong> Revocable Trust of Subhash Sonnad.</li>
         <li><strong>Total Area:</strong> 1.7348 acres (75,133 square feet).</li>
-        <li><strong>Road Frontage:</strong> One road frontage — Still Forest Drive (CR 329) to the south, classified as Local Rural Road (60' ROW). West boundary adjoins neighboring property; Leisure Lane (CR 331) is further west but does not directly border this lot.</li>
-        <li><strong>Setbacks:</strong> 20' from road property line (Still Forest Dr — Local Rural Road per Bastrop County Subdivision Regs), 10' from property lines (west, east, north). East side also has 10' P.U.E. &amp; B.L. per survey. Containers (&gt;25 SF) are permanent structures requiring Development Permits.</li>
+        <li><strong>Corner Lot:</strong> Two road frontages — Still Forest Drive (CR 329) to the south and Leisure Lane (CR 331) to the west. Both are 60' right-of-way county roads.</li>
+        <li><strong>Setbacks:</strong> 25' from road right-of-way (both roads), 15' from side and rear property lines per Blue Bonnet Acres plat restrictions.</li>
         <li><strong>Flood Zone:</strong> Zone X (unshaded) — NOT in 100-year floodplain per FEMA FIRM panels.</li>
         <li><strong>Emergency Services District:</strong> BCESD #3.</li>
         <li><strong>Houston Toad Habitat:</strong> NOT within the Lost Pines Habitat Conservation Plan area.</li>
         <li><strong>Existing Septic:</strong> Aerobic system (JET INC), serviced by Larry's Septic (512-695-6570).</li>
         <li><strong>Water:</strong> Active water meter at front gate (Still Forest Dr).</li>
-        <li><strong>Electric:</strong> Digital electric meter with sub-panels. Power pole with transformer on west side.</li>
+        <li><strong>Electric:</strong> Digital electric meter with sub-panels. Power pole with transformer on west side (Leisure Ln).</li>
         <li><strong>Gas:</strong> No natural gas service observed.</li>
         <li><strong>Survey Basis:</strong> Land Title Survey by 4Ward Land Surveying, Jason Ward R.P.L.S. #5811, dated February 4, 2021.</li>
         <li><strong>Bearings:</strong> Based on the recorded plat of Blue Bonnet Acres, Corrected Plat Section One.</li>
         <li><strong>Jurisdiction:</strong> Unincorporated Bastrop County. No county zoning. Development permit required per Bastrop County Flood Damage Prevention Order (May 2023).</li>
       </ol>
+
       <div class="sub-heading">Boundary Bearings</div>
-      <div style="font-size: 6.5pt; display: grid; grid-template-columns: 1fr; gap: 0.02in;">
-        <div><strong>North:</strong> N26&deg;20'31"E — 187.92'</div>
-        <div><strong>East:</strong> S63&deg;58'38"E — 399.94' (10' P.U.E. &amp; B.L.)</div>
-        <div><strong>SE Jog:</strong> N20&deg;11'19"E — 60.00'</div>
-        <div><strong>South:</strong> S26&deg;23'31"W — 187.86' along Still Forest Dr</div>
-        <div><strong>West:</strong> S20&deg;17'19"W — 328.51'</div>
+      <div style="font-size: 5pt; display: grid; grid-template-columns: 1fr; gap: 0.01in;">
+        <div><strong>North:</strong> N26°20'31"E — 187.92'</div>
+        <div><strong>East:</strong> S63°58'38"E — 399.94' (10' P.U.E. & B.L.)</div>
+        <div><strong>SE Jog:</strong> N20°11'19"E — 60.00'</div>
+        <div><strong>South:</strong> S26°23'31"W — 187.86' along Still Forest Dr</div>
+        <div><strong>West:</strong> S20°17'19"W — 328.51' along Leisure Lane</div>
         <div><strong>SW Corner:</strong> 14' P.U.E. along Still Forest Dr</div>
       </div>
     </div>
 
+    <!-- SETBACK COMPLIANCE TABLE -->
     <div class="compliance-table-area">
       <h3>Setback Compliance</h3>
-      <p class="table-note">All distances from survey plat by 4Ward Land Surveying (2/4/2021). One road frontage (Still Forest Dr — Local Rural Road, 20' setback). West/east/north: 10' property line setback.</p>
+      <p style="font-size: 4.5pt; color: #888; margin-bottom: 0.02in;">All distances from survey plat by 4Ward Land Surveying (2/4/2021). Corner lot: both road sides require 25' setback from ROW.</p>
       <table class="compliance-table">
         <thead>
-          <tr><th>Structure</th><th>Size</th><th>Boundary</th><th class="num">Dist.</th><th class="num">Req.</th><th class="num">Deficit</th><th style="text-align:center;">Status</th><th>Action Required</th></tr>
+          <tr>
+            <th>Structure</th><th>Size</th><th>Boundary</th>
+            <th>Dist</th><th>Req</th><th>Deficit</th>
+            <th>Status</th><th>Action</th>
+          </tr>
         </thead>
         <tbody>
-          <tr><td>Big Trailer</td><td>10'&times;42'</td><td>W (prop. line)</td><td class="num">1'</td><td class="num">10'</td><td class="num deficit-val">9'</td><td style="text-align:center;"><span class="badge crit">CRIT</span></td><td>Relocate / remove</td></tr>
-          <tr><td>Red Container</td><td>40'&times;8'</td><td>W (prop. line)</td><td class="num">~2'</td><td class="num">10'</td><td class="num deficit-val">~8'</td><td style="text-align:center;"><span class="badge crit">CRIT</span></td><td>Relocate / remove</td></tr>
-          <tr><td>Red Container (2)</td><td>40'&times;8'</td><td>W (prop. line)</td><td class="num">~2'</td><td class="num">10'</td><td class="num deficit-val">~8'</td><td style="text-align:center;"><span class="badge crit">CRIT</span></td><td>Relocate / remove</td></tr>
-          <tr><td>Container</td><td>40'&times;8'</td><td>W (prop. line)</td><td class="num">5'</td><td class="num">10'</td><td class="num deficit-val">5'</td><td style="text-align:center;"><span class="badge viol">VIOL</span></td><td>Relocate / remove</td></tr>
-          <tr><td>Deck</td><td>—</td><td>W (prop. line)</td><td class="num">13'5"</td><td class="num">10'</td><td class="num ok-val">—</td><td style="text-align:center;"><span class="badge ok">OK +3'5"</span></td><td>None</td></tr>
-          <tr><td>Beige Container</td><td>40'&times;8'</td><td>S (Still For.)</td><td class="num">6'</td><td class="num">20'</td><td class="num deficit-val">14'</td><td style="text-align:center;"><span class="badge crit">CRIT</span></td><td>Relocate / remove</td></tr>
-          <tr><td>Bathroom Bldg</td><td>Under const.</td><td>E (prop. line)</td><td class="num">~10'</td><td class="num">10'</td><td class="num ok-val">—</td><td style="text-align:center;"><span class="badge nopmt">NO PMT</span></td><td>Obtain permit</td></tr>
-          <tr><td>Small Trailer</td><td>7'5"&times;20'5"</td><td>E (prop. line)</td><td class="num">~7'</td><td class="num">10'</td><td class="num deficit-val">~3'</td><td style="text-align:center;"><span class="badge viol">VIOL</span></td><td>Relocate</td></tr>
-          <tr><td>Sauna</td><td>—</td><td>W (prop. line)</td><td class="num">30'</td><td class="num">10'</td><td class="num ok-val">—</td><td style="text-align:center;"><span class="badge ok">OK +20'</span></td><td>None</td></tr>
-          <tr><td>1-Story Wood</td><td>—</td><td>N (prop. line)</td><td class="num">~30'</td><td class="num">10'</td><td class="num ok-val">—</td><td style="text-align:center;"><span class="badge ok">OK +20'</span></td><td>None</td></tr>
-          <tr><td>Main House</td><td>Stone / Frame</td><td>All</td><td class="num">Well within</td><td class="num">All</td><td class="num ok-val">—</td><td style="text-align:center;"><span class="badge ok">OK</span></td><td>None</td></tr>
+          <tr><td>Big Trailer</td><td>10'×42'</td><td>W (Leisure)</td><td>1'</td><td>25'</td><td class="violation">24'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
+          <tr><td>Red Container</td><td>40'×8'</td><td>W (Leisure)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
+          <tr><td>Red Container (2)</td><td>40'×8'</td><td>W (Leisure)</td><td>~2'</td><td>25'</td><td class="violation">~23'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
+          <tr><td>Container</td><td>40'×8'</td><td>W (Leisure)</td><td>5'</td><td>25'</td><td class="violation">20'</td><td class="violation">CRIT</td><td>Relocate/remove</td></tr>
+          <tr><td>Deck</td><td>—</td><td>W (Leisure)</td><td>13'5"</td><td>25'</td><td class="violation">11'7"</td><td class="violation">VIOL</td><td>Modify/relocate</td></tr>
+          <tr><td>Beige Container</td><td>40'×8'</td><td>S (Still For.)</td><td>6'</td><td>25'</td><td class="violation">19'</td><td class="violation">VIOL</td><td>Relocate/remove</td></tr>
+          <tr><td>Bathroom Bldg</td><td>Under const.</td><td>E (side)</td><td>~10'</td><td>15'</td><td class="violation">~5'</td><td class="violation">NO PMT</td><td>Permit; may relocate</td></tr>
+          <tr><td>Small Trailer</td><td>7'5"×20'5"</td><td>E (side)</td><td>~7'</td><td>15'</td><td class="violation">~8'</td><td class="violation">VIOL</td><td>Relocate</td></tr>
+          <tr><td>Sauna</td><td>—</td><td>W (Leisure)</td><td>30'</td><td>25'</td><td class="ok">—</td><td class="ok">OK +5'</td><td>None</td></tr>
+          <tr><td>1-Story Wood</td><td>—</td><td>N (rear)</td><td>~30'</td><td>15'</td><td class="ok">—</td><td class="ok">OK +15'</td><td>None</td></tr>
+          <tr><td>Main House</td><td>Stone/Frame</td><td>All</td><td>Well within</td><td>All</td><td class="ok">—</td><td class="ok">OK</td><td>None</td></tr>
         </tbody>
       </table>
-      <p class="compliance-summary">
-        <strong>Summary:</strong> 6 of 11 structures violate setback requirements + 1 lacks a permit. Containers (40'&times;8' = 320 SF each) exceed the 25 SF exemption and are classified as permanent structures requiring Development Permits.
+      <p style="font-size: 4pt; color: #888; margin-top: 0.02in;">
+        <strong>Summary:</strong> 8 of 11 structures violate setback requirements. 7 encroach into the 25' road setback along Leisure Lane (W) or Still Forest Dr (S).
       </p>
     </div>
 
+    <!-- TITLE BLOCK (anchored to bottom) -->
     <div class="title-block">
       <div class="tb-project">
         <div class="title">Site Plan</div>
         <div class="subtitle">160 Still Forest Drive, Cedar Creek, Texas 78612</div>
       </div>
       <div class="tb-owner">
-        <div class="row"><div class="label">Owner:</div><div class="value">Revocable Trust of Subhash Sonnad</div></div>
-        <div class="row"><div class="label">Address:</div><div class="value">160 Still Forest Dr, Cedar Creek, TX 78612</div></div>
-        <div class="row"><div class="label">Legal:</div><div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corr. Plat Sec. One</div></div>
-        <div class="row"><div class="label">County:</div><div class="value">Bastrop County, Texas (Unincorporated)</div></div>
-        <div class="row"><div class="label">Prop ID:</div><div class="value">44401</div></div>
-        <div class="row"><div class="label">Acreage:</div><div class="value">1.7348 Acres (75,133 SF)</div></div>
+        <div class="label">Owner:</div><div class="value">Revocable Trust of Subhash Sonnad</div>
+        <div class="label">Address:</div><div class="value">160 Still Forest Dr, Cedar Creek, TX 78612</div>
+        <div class="label">Legal:</div><div class="value">Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat Sec. One</div>
+        <div class="label">County:</div><div class="value">Bastrop County, Texas (Unincorporated)</div>
+        <div class="label">Prop ID:</div><div class="value">44401</div>
+        <div class="label">Acreage:</div><div class="value">1.7348 Acres (75,133 SF)</div>
       </div>
       <div class="tb-pe-box">
-        <div class="pe-seal-circle"><span>P.E.<br>Seal</span></div>
-        <div class="pe-info">
-          <div class="pe-label">Professional Engineer Seal</div>
-          <div>Signature: _________________________</div>
-          <div>Date: ____________</div>
-          <div>Texas P.E. License No. ___________</div>
+        <div class="pe-label">Professional Engineer Seal</div>
+        <div>Reserved for PE stamp, signature, and date</div>
+        <div style="margin-top: 0.03in; font-size: 5pt;">Texas P.E. License No. ___________</div>
+      </div>
+      <div class="tb-survey-info">
+        <div><strong>Survey:</strong> 4Ward Land Surveying — Jason Ward, R.P.L.S. #5811 — Feb 4, 2021</div>
+      </div>
+      <div class="tb-footer">
+        <div>
+          <div style="font-size: 4.5pt; color: #999;">PREPARED BY</div>
+          <div style="font-weight: 600; font-size: 5.5pt;">Rev. Trust of Subhash Sonnad</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 4.5pt; color: #999;">DATE</div>
+          <div style="font-weight: 600;">March 2026</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 4.5pt; color: #999;">SCALE</div>
+          <div style="font-weight: 600;">1" = 30'</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 4.5pt; color: #999;">SHEET</div>
+          <div class="sheet-no">1 OF 1</div>
         </div>
       </div>
-      <div class="tb-revision">
-        <table class="revision-table">
-          <thead><tr><th style="width:0.4in;">Rev</th><th style="width:0.8in;">Date</th><th>Description</th><th style="width:0.5in;">By</th></tr></thead>
-          <tbody><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr></tbody>
-        </table>
+      <div class="tb-preliminary">
+        PRELIMINARY — NOT FOR CONSTRUCTION — SUBJECT TO PE REVIEW
       </div>
-      <div class="tb-survey-info"><strong>Survey:</strong> 4Ward Land Surveying — Jason Ward, R.P.L.S. #5811 — Feb 4, 2021</div>
-      <div class="tb-footer">
-        <div class="footer-cell"><div class="footer-label">Prepared By</div><div class="footer-value">Rev. Trust of Subhash Sonnad</div></div>
-        <div class="footer-cell"><div class="footer-label">Date</div><div class="footer-value">March 2026</div></div>
-        <div class="footer-cell"><div class="footer-label">Scale</div><div class="footer-value">1" = 30'</div></div>
-        <div class="footer-cell"><div class="footer-label">Sheet</div><div class="sheet-no">1 OF 1</div></div>
-      </div>
-      <div class="tb-preliminary">Preliminary — Not for Construction — Subject to PE Review</div>
     </div>
-  </div>
 
-  <!-- ═══ RIGHT COLUMN: SVG SITE PLAN DRAWING ═══ -->
+  </div><!-- end .left-col -->
+
+  <!-- ═══ RIGHT COLUMN: FULL-HEIGHT SURVEY IMAGE ═══ -->
   <div class="right-col">
-    <svg viewBox="0 0 795 690" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Roboto Mono', 'Courier New', monospace;">
-      <defs>
-        <!-- Hatch pattern for main house -->
-        <pattern id="hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="6" stroke="#999" stroke-width="0.5"/>
-        </pattern>
-        <!-- Water pattern -->
-        <pattern id="water" patternUnits="userSpaceOnUse" width="12" height="8">
-          <path d="M0,4 Q3,2 6,4 Q9,6 12,4" fill="none" stroke="#a0c8e8" stroke-width="0.5"/>
-        </pattern>
-        <!-- Road fill -->
-        <pattern id="road-fill" patternUnits="userSpaceOnUse" width="4" height="4">
-          <rect width="4" height="4" fill="#f0ebe0"/>
-        </pattern>
-      </defs>
-
-      <!-- ═══ ROADS ═══ -->
-      <!-- Still Forest Dr — 60' ROW south of property -->
-      <g id="roads">
-        <!-- Road surface -->
-        <polygon points="60,530 560,530 580,600 40,600" fill="#f0ebe0" stroke="none"/>
-        <!-- ROW lines (double line) -->
-        <line x1="70" y1="518" x2="555" y2="518" stroke="#000" stroke-width="1.5"/>
-        <line x1="65" y1="524" x2="560" y2="524" stroke="#000" stroke-width="1.5"/>
-        <line x1="40" y1="600" x2="580" y2="600" stroke="#000" stroke-width="1"/>
-        <!-- Road name -->
-        <text x="310" y="565" text-anchor="middle" font-size="12" font-weight="700" fill="#333" letter-spacing="3">STILL FOREST DRIVE</text>
-        <text x="310" y="580" text-anchor="middle" font-size="8" font-weight="500" fill="#666">(AKA COUNTY ROAD 329 — 60' R.O.W.)</text>
-
-        <!-- Leisure Lane indication (west of property, doesn't directly border) -->
-        <line x1="50" y1="30" x2="85" y2="540" stroke="#000" stroke-width="1" stroke-dasharray="8,4"/>
-        <text x="30" y="300" text-anchor="middle" font-size="7" font-weight="500" fill="#888" transform="rotate(-85, 30, 300)">LEISURE LANE (CR 331)</text>
-        <text x="48" y="315" text-anchor="middle" font-size="5.5" font-weight="400" fill="#aaa" transform="rotate(-85, 48, 315)">Does not directly border lot</text>
-      </g>
-
-      <!-- ═══ PROPERTY BOUNDARY ═══ -->
-      <g id="boundary">
-        <polygon points="130,90 320,90 320,430 360,430 360,490 170,490"
-          fill="none" stroke="#000" stroke-width="3" stroke-linejoin="miter"/>
-      </g>
-
-      <!-- ═══ SETBACK LINES ═══ -->
-      <g id="setbacks" stroke-dasharray="8,4" fill="none">
-        <!-- North setback: 10' -->
-        <line x1="140" y1="100" x2="310" y2="100" stroke="#888" stroke-width="1.2"/>
-        <text x="225" y="97" text-anchor="middle" font-size="6" fill="#888" font-weight="600">10' SETBACK</text>
-
-        <!-- South setback: 20' from road property line -->
-        <line x1="180" y1="470" x2="350" y2="470" stroke="#888" stroke-width="1.2"/>
-        <text x="265" y="467" text-anchor="middle" font-size="6" fill="#888" font-weight="600">20' SETBACK (LOCAL RURAL ROAD)</text>
-
-        <!-- West setback: 10' -->
-        <line x1="140" y1="100" x2="180" y2="480" stroke="#888" stroke-width="1.2"/>
-        <text x="148" y="290" text-anchor="start" font-size="6" fill="#888" font-weight="600" transform="rotate(-78, 148, 290)">10' SETBACK</text>
-
-        <!-- East setback: 10' -->
-        <line x1="310" y1="100" x2="310" y2="420" stroke="#888" stroke-width="1.2"/>
-        <text x="305" y="260" text-anchor="end" font-size="6" fill="#888" font-weight="600" transform="rotate(-90, 305, 260)">10' SETBACK</text>
-
-        <!-- East (jog area) setback -->
-        <line x1="350" y1="440" x2="350" y2="480" stroke="#888" stroke-width="1.2"/>
-      </g>
-
-      <!-- ═══ P.U.E. EASEMENT (East side) ═══ -->
-      <g id="easement">
-        <line x1="310" y1="90" x2="310" y2="430" stroke="#4488bb" stroke-width="1.2" stroke-dasharray="4,2,1,2"/>
-        <line x1="350" y1="430" x2="350" y2="490" stroke="#4488bb" stroke-width="1.2" stroke-dasharray="4,2,1,2"/>
-        <text x="327" y="260" text-anchor="middle" font-size="5.5" fill="#4488bb" font-weight="600" transform="rotate(-90, 327, 260)">10' P.U.E. &amp; B.L.</text>
-      </g>
-
-      <!-- ═══ BEARING LABELS ═══ -->
-      <g id="bearings" font-size="7" font-weight="600" fill="#222">
-        <!-- North boundary -->
-        <text x="225" y="85" text-anchor="middle">N26°20'31"E — 187.92'</text>
-        <!-- South boundary -->
-        <text x="265" y="506" text-anchor="middle">S26°23'31"W — 187.86'</text>
-        <!-- West boundary -->
-        <text x="120" y="290" text-anchor="middle" transform="rotate(-78, 120, 290)">S20°17'19"W — 328.51'</text>
-        <!-- East boundary -->
-        <text x="335" y="260" text-anchor="middle" transform="rotate(-90, 335, 260)">S63°58'38"E — 399.94'</text>
-        <!-- SE Jog -->
-        <text x="345" y="462" text-anchor="start" font-size="5.5">N20°11'19"E</text>
-        <text x="345" y="470" text-anchor="start" font-size="5.5">60.00'</text>
-        <!-- Jog horizontal -->
-        <text x="340" y="425" text-anchor="middle" font-size="5.5">40'</text>
-      </g>
-
-      <!-- ═══ CORNER MONUMENTS ═══ -->
-      <g id="corners" fill="#000">
-        <!-- NW - Iron Rod -->
-        <rect x="126" y="86" width="8" height="8" transform="rotate(45, 130, 90)"/>
-        <text x="118" y="83" text-anchor="end" font-size="5" fill="#333">IRF</text>
-        <!-- NE - Iron Rod -->
-        <rect x="316" y="86" width="8" height="8" transform="rotate(45, 320, 90)"/>
-        <text x="332" y="83" text-anchor="start" font-size="5" fill="#333">IRF</text>
-        <!-- SW - Iron Rod -->
-        <rect x="166" y="486" width="8" height="8" transform="rotate(45, 170, 490)"/>
-        <text x="158" y="503" text-anchor="end" font-size="5" fill="#333">IRF</text>
-        <!-- SE (jog bottom) - Iron Rod -->
-        <rect x="356" y="486" width="8" height="8" transform="rotate(45, 360, 490)"/>
-        <text x="372" y="503" text-anchor="start" font-size="5" fill="#333">IRF</text>
-        <!-- Pre-jog corner -->
-        <rect x="316" y="426" width="8" height="8" transform="rotate(45, 320, 430)"/>
-        <!-- Jog corner -->
-        <rect x="356" y="426" width="8" height="8" transform="rotate(45, 360, 430)"/>
-      </g>
-
-      <!-- ═══ STRUCTURES — VIOLATIONS (red) ═══ -->
-      <g id="violations">
-        <!-- Big Trailer (10'x42') — 1' from W, near north -->
-        <rect x="133" y="140" width="10" height="42" fill="#ffe0e0" stroke="#b91c1c" stroke-width="1.5"/>
-        <text x="138" y="163" text-anchor="middle" font-size="4.5" fill="#b91c1c" font-weight="700" transform="rotate(-90, 138, 163)">BIG TRAILER</text>
-        <!-- Dimension: 1' to W -->
-        <line x1="131" y1="155" x2="131" y2="170" stroke="#b91c1c" stroke-width="0.5"/>
-        <line x1="130" y1="161" x2="133" y2="161" stroke="#b91c1c" stroke-width="0.75" marker-end="url(#arrow)"/>
-        <text x="123" y="163" text-anchor="end" font-size="5" fill="#b91c1c" font-weight="700">1'</text>
-
-        <!-- Red Container #1 (40'x8') — ~2' from W -->
-        <rect x="135" y="195" width="8" height="40" fill="#ffe0e0" stroke="#b91c1c" stroke-width="1.5"/>
-        <text x="139" y="217" text-anchor="middle" font-size="3.5" fill="#b91c1c" font-weight="600" transform="rotate(-90, 139, 217)">RED CONTAINER #1</text>
-        <text x="123" y="215" text-anchor="end" font-size="5" fill="#b91c1c" font-weight="700">~2'</text>
-
-        <!-- Red Container #2 (40'x8') — ~2' from W -->
-        <rect x="135" y="245" width="8" height="40" fill="#ffe0e0" stroke="#b91c1c" stroke-width="1.5"/>
-        <text x="139" y="267" text-anchor="middle" font-size="3.5" fill="#b91c1c" font-weight="600" transform="rotate(-90, 139, 267)">RED CONTAINER #2</text>
-        <text x="123" y="265" text-anchor="end" font-size="5" fill="#b91c1c" font-weight="700">~2'</text>
-
-        <!-- Container #3 (40'x8') — 5' from W -->
-        <rect x="142" y="295" width="8" height="40" fill="#ffe0e0" stroke="#b91c1c" stroke-width="1.5"/>
-        <text x="146" y="317" text-anchor="middle" font-size="3.5" fill="#b91c1c" font-weight="600" transform="rotate(-90, 146, 317)">CONTAINER #3</text>
-        <text x="123" y="315" text-anchor="end" font-size="5" fill="#b91c1c" font-weight="700">5'</text>
-
-        <!-- Beige Container (40'x8') — 6' from S -->
-        <rect x="210" y="476" width="40" height="8" fill="#ffe0e0" stroke="#b91c1c" stroke-width="1.5"/>
-        <text x="230" y="482" text-anchor="middle" font-size="3.5" fill="#b91c1c" font-weight="600">BEIGE CONTAINER</text>
-        <text x="230" y="500" text-anchor="middle" font-size="5" fill="#b91c1c" font-weight="700">6' to S</text>
-
-        <!-- Small Trailer (7.5'x20.5') — ~7' from E -->
-        <rect x="306" y="345" width="7" height="20" fill="#ffe0e0" stroke="#b91c1c" stroke-width="1.5"/>
-        <text x="310" y="357" text-anchor="middle" font-size="3" fill="#b91c1c" font-weight="600" transform="rotate(-90, 310, 357)">SM. TRAILER</text>
-        <text x="326" y="357" text-anchor="start" font-size="5" fill="#b91c1c" font-weight="700">~7'</text>
-      </g>
-
-      <!-- ═══ STRUCTURES — COMPLIANT (gray) ═══ -->
-      <g id="compliant">
-        <!-- Main House (Stone & Frame) — large, center -->
-        <rect x="195" y="240" width="65" height="55" fill="url(#hatch)" stroke="#000" stroke-width="2"/>
-        <rect x="195" y="240" width="65" height="55" fill="rgba(238,238,238,0.7)" stroke="#000" stroke-width="2"/>
-        <text x="228" y="263" text-anchor="middle" font-size="7" font-weight="700" fill="#000">STONE &amp; FRAME</text>
-        <text x="228" y="273" text-anchor="middle" font-size="7" font-weight="700" fill="#000">RESIDENCE</text>
-        <text x="228" y="285" text-anchor="middle" font-size="5" fill="#555">(Main House)</text>
-
-        <!-- 1-Story Wood Bldg — near north -->
-        <rect x="240" y="125" width="25" height="20" fill="#eee" stroke="#000" stroke-width="1.5"/>
-        <text x="253" y="137" text-anchor="middle" font-size="4.5" font-weight="600" fill="#333">1-STORY</text>
-        <text x="253" y="143" text-anchor="middle" font-size="4.5" font-weight="600" fill="#333">WOOD BLDG</text>
-        <text x="253" y="120" text-anchor="middle" font-size="5" fill="#15803d" font-weight="600">~30' to N</text>
-
-        <!-- Sauna — 30' from W -->
-        <rect x="172" y="265" width="12" height="10" fill="#eee" stroke="#000" stroke-width="1.5"/>
-        <text x="178" y="272" text-anchor="middle" font-size="4" font-weight="600" fill="#333">SAUNA</text>
-        <text x="178" y="282" text-anchor="middle" font-size="4.5" fill="#15803d" font-weight="600">30' to W</text>
-
-        <!-- Deck — 13'5" from W, attached to house -->
-        <rect x="183" y="255" width="12" height="18" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="3,2"/>
-        <text x="189" y="266" text-anchor="middle" font-size="3.5" font-weight="600" fill="#333" transform="rotate(-90, 189, 266)">DECK</text>
-        <text x="175" y="268" text-anchor="end" font-size="4.5" fill="#15803d" font-weight="600">13'5"</text>
-
-        <!-- Bathroom Bldg — ~10' from E, NO PERMIT -->
-        <rect x="298" y="280" width="15" height="15" fill="#f8e8f0" stroke="#9d174d" stroke-width="1.5"/>
-        <text x="305" y="289" text-anchor="middle" font-size="3.5" font-weight="600" fill="#9d174d">BATH</text>
-        <text x="305" y="295" text-anchor="middle" font-size="3.5" font-weight="600" fill="#9d174d">BLDG</text>
-        <text x="326" y="290" text-anchor="start" font-size="5" fill="#9d174d" font-weight="700">~10' (NO PMT)</text>
-      </g>
-
-      <!-- ═══ OTHER FEATURES ═══ -->
-      <g id="features">
-        <!-- Pond / Pool — center-south -->
-        <ellipse cx="240" cy="380" rx="35" ry="22" fill="#e0f0ff" stroke="#6699bb" stroke-width="1.5"/>
-        <ellipse cx="240" cy="380" rx="35" ry="22" fill="url(#water)"/>
-        <text x="240" y="383" text-anchor="middle" font-size="6" font-weight="600" fill="#4477aa">POND</text>
-
-        <!-- Driveway — from south gate to house area -->
-        <path d="M220,490 Q220,440 225,400 Q230,360 235,330 Q240,310 228,295"
-          fill="none" stroke="#999" stroke-width="8" stroke-linecap="round" opacity="0.4"/>
-        <path d="M220,490 Q220,440 225,400 Q230,360 235,330 Q240,310 228,295"
-          fill="none" stroke="#666" stroke-width="1" stroke-dasharray="4,4"/>
-        <text x="210" y="415" text-anchor="end" font-size="5" fill="#666" font-weight="500">DRIVEWAY</text>
-
-        <!-- Septic System — east of house -->
-        <polygon points="280,320 288,316 296,320 296,328 288,332 280,328" fill="none" stroke="#000" stroke-width="1.2"/>
-        <text x="288" y="326" text-anchor="middle" font-size="3.5" font-weight="600" fill="#333">SEPTIC</text>
-        <text x="288" y="342" text-anchor="middle" font-size="4" fill="#555">Aerobic (JET INC)</text>
-
-        <!-- Water Meter — at front gate -->
-        <circle cx="220" cy="512" r="4" fill="none" stroke="#000" stroke-width="1.5"/>
-        <circle cx="220" cy="512" r="1.5" fill="#000"/>
-        <text x="230" y="514" text-anchor="start" font-size="4.5" fill="#333" font-weight="600">WATER METER</text>
-
-        <!-- Electric — power pole west side -->
-        <line x1="128" y1="355" x2="128" y2="365" stroke="#000" stroke-width="2"/>
-        <line x1="122" y1="358" x2="134" y2="358" stroke="#000" stroke-width="1.5"/>
-        <line x1="122" y1="362" x2="134" y2="362" stroke="#000" stroke-width="1.5"/>
-        <text x="117" y="375" text-anchor="end" font-size="4" fill="#333" font-weight="600">ELEC.</text>
-        <text x="117" y="381" text-anchor="end" font-size="4" fill="#333">POLE</text>
-
-        <!-- Electric Meter at house -->
-        <line x1="262" y1="240" x2="262" y2="248" stroke="#000" stroke-width="1.5"/>
-        <line x1="258" y1="243" x2="266" y2="243" stroke="#000" stroke-width="1"/>
-        <text x="268" y="246" text-anchor="start" font-size="3.5" fill="#555">ELEC. MTR</text>
-
-        <!-- Gate at Still Forest Dr -->
-        <line x1="215" y1="488" x2="225" y2="488" stroke="#000" stroke-width="2"/>
-        <line x1="215" y1="492" x2="225" y2="492" stroke="#000" stroke-width="2"/>
-        <text x="220" y="486" text-anchor="middle" font-size="4" fill="#555">GATE</text>
-      </g>
-
-      <!-- ═══ PROPERTY INFO ═══ -->
-      <g id="property-info">
-        <text x="230" y="195" text-anchor="middle" font-size="8" font-weight="700" fill="#000">LOT 14-B, BLOCK 6</text>
-        <text x="230" y="207" text-anchor="middle" font-size="6" font-weight="600" fill="#333">BLUE BONNET ACRES</text>
-        <text x="230" y="217" text-anchor="middle" font-size="6" font-weight="500" fill="#555">1.7348 AC (75,133 SF)</text>
-        <text x="230" y="227" text-anchor="middle" font-size="5" font-weight="500" fill="#555">Doc. No. 202005552</text>
-      </g>
-
-      <!-- ═══ NORTH ARROW (in drawing area) ═══ -->
-      <g id="north-arrow-drawing" transform="translate(680, 80)">
-        <polygon points="0,-35 -10,10 0,0 10,10" fill="#000"/>
-        <polygon points="0,-35 0,0 10,10" fill="#555"/>
-        <circle cx="0" cy="5" r="4" fill="none" stroke="#000" stroke-width="1.2"/>
-        <text x="0" y="25" text-anchor="middle" font-size="12" font-weight="900" fill="#000" font-family="Inter, sans-serif">N</text>
-      </g>
-
-      <!-- ═══ SCALE BAR (in drawing area) ═══ -->
-      <g id="scale-bar-drawing" transform="translate(550, 640)">
-        <text x="80" y="-8" text-anchor="middle" font-size="7" font-weight="700" fill="#000">GRAPHIC SCALE</text>
-        <rect x="0" y="0" width="40" height="5" fill="#000" stroke="#000" stroke-width="0.5"/>
-        <rect x="40" y="0" width="40" height="5" fill="#fff" stroke="#000" stroke-width="0.5"/>
-        <rect x="80" y="0" width="40" height="5" fill="#000" stroke="#000" stroke-width="0.5"/>
-        <rect x="120" y="0" width="40" height="5" fill="#fff" stroke="#000" stroke-width="0.5"/>
-        <text x="0" y="14" text-anchor="middle" font-size="5.5" font-weight="600" fill="#000">0</text>
-        <text x="40" y="14" text-anchor="middle" font-size="5.5" font-weight="600" fill="#000">30'</text>
-        <text x="80" y="14" text-anchor="middle" font-size="5.5" font-weight="600" fill="#000">60'</text>
-        <text x="120" y="14" text-anchor="middle" font-size="5.5" font-weight="600" fill="#000">90'</text>
-        <text x="160" y="14" text-anchor="middle" font-size="5.5" font-weight="600" fill="#000">120'</text>
-        <text x="80" y="22" text-anchor="middle" font-size="5" font-weight="600" fill="#555">1" = 30' (HORIZONTAL)</text>
-      </g>
-
-      <!-- ═══ DRAWING TITLE ═══ -->
-      <g id="drawing-title">
-        <text x="400" y="670" text-anchor="middle" font-size="6" font-weight="600" fill="#888" font-family="Inter, sans-serif">SURVEY BASIS: 4WARD LAND SURVEYING — JASON WARD, R.P.L.S. #5811 — FEB 4, 2021</text>
-      </g>
-
-      <!-- ═══ NEIGHBORING PROPERTY NOTE ═══ -->
-      <g id="neighbor-notes">
-        <text x="75" y="75" text-anchor="start" font-size="5" fill="#888" font-style="italic">NEIGHBORING PROPERTY</text>
-        <text x="75" y="83" text-anchor="start" font-size="5" fill="#888" font-style="italic">(Leisure Lane beyond)</text>
-        <text x="370" y="260" text-anchor="start" font-size="5" fill="#888" font-style="italic">NEIGHBORING</text>
-        <text x="370" y="268" text-anchor="start" font-size="5" fill="#888" font-style="italic">PROPERTY</text>
-        <text x="225" y="70" text-anchor="middle" font-size="5" fill="#888" font-style="italic">NEIGHBORING PROPERTY (REAR)</text>
-      </g>
-    </svg>
+    <img src="survey-ward-2025.png" alt="Land Title Survey — Lot 14-B, Block 6, Blue Bonnet Acres — 4Ward Land Surveying">
   </div>
 
-</div>
+</div><!-- end .sheet -->
+
 </body>
 </html>
