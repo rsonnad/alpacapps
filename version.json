@@ -1,12 +1,12 @@
 {
-  "version": "v260318.32 5:36p",
-  "release": 897,
-  "sha": "abaf2a200",
-  "fullSha": "abaf2a2007fc4979db12a750cc133babee8a0b05",
+  "version": "v260318.34 5:50p",
+  "release": 899,
+  "sha": "309012744",
+  "fullSha": "309012744cbf176cef564cd323207d7d35bf1d5d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 22:36:52+00",
-  "commits": [{"sha":"af517969b","message":"Add dispute response section to Rachel Wen billing statement","author":"Rahul"},{"sha":"80ec36271","message":"Add Uber XL fee, actual recovery cost breakdown to Rachel Wen statement","author":"Rahul"},{"sha":"8352e2e7a","message":"Add cleaning photo evidence, dispute resolution charge to Rachel statement","author":"Rahul"},{"sha":"7b95376af","message":"Add recovery context: no notice, false claim about return, blocked access","author":"Rahul"},{"sha":"3a51fdd1a","message":"Add WhatsApp evidence: notice period amended from 2 weeks to 1 week","author":"Rahul"},{"sha":"fb07ae0ae","message":"Add WhatsApp evidence: Rachel confirmed airport return on March 2","author":"Rahul"},{"sha":"c1262480e","message":"Add WhatsApp evidence: Rachel confirmed in-person airport drop-off","author":"Rahul"},{"sha":"db6708a45","message":"Add WhatsApp evidence: Rachel admits car abandoned at ranch, key inside","author":"Rahul"},{"sha":"3cf42c13f","message":"Add contract violations analysis and summary evaluation","author":"Rahul"},{"sha":"abaf2a200","message":"Merge pull request #62 from rsonnad/rahuliofam/rachel-wen-dispute","author":"Rahul"}]
+  "pushedAt": "2026-03-18 22:50:59+00",
+  "commits": [{"sha":"309012744","message":"Cache-bust visiting OG image with new filename (#63)","author":"Rahul"}]
 }
