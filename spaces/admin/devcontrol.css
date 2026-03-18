@@ -216,7 +216,7 @@
 .dc-context-legend-dot { width: 0.625rem; height: 0.625rem; border-radius: 3px; }
 
 /* Backup status cards */
-.dc-backup-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 1.5rem; }
+.dc-backup-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem; }
 .dc-backup-card {
   border: 1px solid var(--border, #e2e0db);
   border-radius: 12px;
