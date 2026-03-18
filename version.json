@@ -1,12 +1,12 @@
 {
-  "version": "v260318.04 9:20a",
-  "release": 869,
-  "sha": "ce1144917",
-  "fullSha": "ce1144917e64f2db853d58ecfb15cc460202f5cf",
+  "version": "v260318.05 9:22a",
+  "release": 870,
+  "sha": "574e9c54a",
+  "fullSha": "574e9c54a8bd3a09a74cf5eda81d91bec0380bf5",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 14:20:33+00",
-  "commits": [{"sha":"ce1144917","message":"Remove Utility Coordinator from priority list page","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-18 14:22:19+00",
+  "commits": [{"sha":"574e9c54a","message":"Add Civil Engineers and Septic Designers pages linked from priority list","author":"Jacqueline Giroux"}]
 }
