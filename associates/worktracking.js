@@ -421,8 +421,12 @@ async function sendCheckoutSummaryEmail(entry, spaceId, taskId, rate, descriptio
       earnings: HoursService.formatCurrency(earnings),
       photos: photoData,
       cumulative,
-      clock_out_lat: entry.clock_out_lat || null,
-      clock_out_lng: entry.clock_out_lng || null,
+      _location_section: entry.clock_out_lat && entry.clock_out_lng
+        ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:20px 0 0;"><tr><td><p style="margin:0 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">Clock-Out Location</p><a href="https://www.google.com/maps?q=${entry.clock_out_lat},${entry.clock_out_lng}" style="display:block;text-decoration:none;"><img src="https://staticmap.openstreetmap.de/staticmap.php?center=${entry.clock_out_lat},${entry.clock_out_lng}&zoom=15&size=560x200&markers=${entry.clock_out_lat},${entry.clock_out_lng},ol-marker" alt="Clock-out location map" width="560" style="display:block;width:100%;max-width:560px;height:auto;border-radius:8px;border:1px solid #e6e2d9;" /></a></td></tr></table>`
+        : `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:20px 0 0;background:#f7f6f1;border:1px solid #e6e2d9;border-radius:8px;"><tr><td style="padding:16px 20px;text-align:center;"><p style="margin:0 0 6px;font-size:13px;color:#7d6f74;">Location was not available for this session.</p><a href="https://alpacaplayhouse.com/associates/worktracking.html" style="display:inline-block;font-size:13px;color:#d4883a;font-weight:600;text-decoration:underline;">Enable location permissions for future sessions &rarr;</a></td></tr></table>`,
+      _location_section_text: entry.clock_out_lat && entry.clock_out_lng
+        ? `Clock-Out Location: https://www.google.com/maps?q=${entry.clock_out_lat},${entry.clock_out_lng}`
+        : 'Location not available — enable permissions at https://alpacaplayhouse.com/associates/worktracking.html',
     };
 
     await emailService.sendWorkCheckoutSummary(emailData);
