@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Civil Engineers — 160 Still Forest Dr</title>
+  <link rel="icon" type="image/png" href="../../../favicon.png">
+  <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f5f0; --bg-card: #fff; --border: #e5e0d8; --radius: 8px;
+      --text: #1c1618; --text-muted: #8c8279; --accent: #d4883a;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .page-header { padding: 1.25rem 1.5rem; background: var(--bg-card); border-bottom: 1px solid var(--border); }
+    .page-header h1 { font-size: 1.1rem; font-weight: 700; }
+
+    .page-content { max-width: 960px; margin: 0 auto; padding: 1.25rem; }
+
+    .back-link { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--accent); text-decoration: none; font-weight: 600; margin-bottom: 1rem; }
+    .back-link:hover { text-decoration: underline; }
+
+    .section-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); }
+    .section-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem; line-height: 1.45; }
+
+    .firm-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+    .firm-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
+    .firm-name { font-size: 0.92rem; font-weight: 700; }
+    .firm-rating { font-size: 0.72rem; font-weight: 600; color: #b45309; background: #fef3c7; padding: 0.1rem 0.4rem; border-radius: 4px; white-space: nowrap; }
+    .firm-badge { font-size: 0.6rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 4px; text-transform: uppercase; }
+    .badge-open { background: #d1fae5; color: #065f46; }
+    .firm-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.5rem; }
+    .firm-highlights { list-style: none; padding: 0; }
+    .firm-highlights li { font-size: 0.78rem; color: var(--text); line-height: 1.5; padding: 0.2rem 0 0.2rem 1.2rem; position: relative; }
+    .firm-highlights li::before { content: '✓'; position: absolute; left: 0; color: #22c55e; font-weight: 700; }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    @media (max-width: 640px) {
+      .page-content { padding: 1rem; }
+      .firm-card { padding: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1>Civil Engineers & Surveyors</h1>
+  </div>
+
+  <div class="page-content">
+    <a href="priority-list.html" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Priority List
+    </a>
+
+    <!-- Integrated Engineering & Development Firms -->
+    <h2 class="section-title">Integrated Engineering & Development Firms</h2>
+    <p class="section-subtitle">These firms are "one-stop" options that can handle both the technical civil engineering design and the land development process.</p>
+
+    <div class="firm-card">
+      <div class="firm-header">
+        <span class="firm-name">Southwest Engineers</span>
+        <span class="firm-rating">★ 5.0</span>
+        <span class="firm-badge badge-open">Open · Closes 5 PM</span>
+      </div>
+      <p class="firm-desc">A long-standing firm with over 45 years of experience in Texas, specializing in taking projects from preliminary design through close-out.</p>
+      <ul class="firm-highlights">
+        <li>Full-service land development, including site civil plans for private commercial projects</li>
+        <li>Specializes in water and wastewater infrastructure — critical for commercial site preparation</li>
+        <li>Extensive experience working with city staff to navigate entitlements and regulatory challenges</li>
+      </ul>
+    </div>
+
+    <div class="firm-card">
+      <div class="firm-header">
+        <span class="firm-name">Highland Development & Engineering Co, LLC</span>
+        <span class="firm-rating">★ 5.0</span>
+      </div>
+      <p class="firm-desc">A local Bastrop-based firm that combines engineering with development expertise.</p>
+      <ul class="firm-highlights">
+        <li>Focuses on land development and engineering solutions tailored to the Bastrop area</li>
+        <li>Perfect rating from clients — detailed project portfolios available via direct consultation</li>
+      </ul>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Professional Land Surveyors -->
+    <h2 class="section-title">Professional Land Surveyors</h2>
+    <p class="section-subtitle">If you already have a design team and specifically need a commercial-grade survey (such as an ALTA/NSPS survey required for commercial transactions), these specialists are frequently recommended in the county.</p>
+
+    <div class="firm-card">
+      <div class="firm-header">
+        <span class="firm-name">Steubing LLC — Robert Steubing, RPLS 5548</span>
+        <span class="firm-rating">★ 4.8</span>
+        <span class="firm-badge badge-open">Open · Closes 4 PM</span>
+      </div>
+      <p class="firm-desc">A family-owned and operated business with over 30 years of experience, specifically catering to commercial building professionals and developers.</p>
+      <ul class="firm-highlights">
+        <li>Comprehensive commercial land surveys using drone technology for high-accuracy results</li>
+        <li>Experienced in "replatting" — a common requirement when preparing property for new commercial use</li>
+        <li>Reviewers highlight their honesty regarding timelines and responsiveness to complex questions</li>
+      </ul>
+    </div>
+
+    <div class="firm-card">
+      <div class="firm-header">
+        <span class="firm-name">Olson Surveying</span>
+        <span class="firm-rating">★ 3.8</span>
+        <span class="firm-badge badge-open">Open · Closes 2 PM</span>
+      </div>
+      <p class="firm-desc">Serving the area since 1975, known for deep knowledge of local land boundaries and regulations.</p>
+      <ul class="firm-highlights">
+        <li>Specialized commercial services including ALTA/NSPS land title surveys and topographic surveys</li>
+        <li>Construction staking and "as-built" surveys to ensure designs are implemented correctly</li>
+        <li>Clients praise their ability to step in and complete work promptly when other firms fall behind</li>
+      </ul>
+    </div>
+  </div>
+
+  <span data-site-version style="display:none"></span>
+</body>
+</html>
