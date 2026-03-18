@@ -370,7 +370,7 @@ export function balanceBox(
  * Configure in brand_config.email_image_templates or email_templates table.
  */
 export type ImageTemplateType =
-  | 'random_alpaca'     // Random alpaca photo from media library (default)
+  | 'random_alpaca'     // Random PAI-generated image from image_gen_jobs (default)
   | 'space_photo'       // Photo of the specific space being discussed
   | 'welcome_banner'    // Ghibli-style welcome banner
   | 'branded_minimal'   // Just the logo, no gallery image

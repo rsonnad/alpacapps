@@ -90,8 +90,8 @@ async function loadBrandConfig(): Promise<any> {
 }
 
 /**
- * Load 1 random alpaca image for email footer (no cache — pick fresh each call).
- * Prefers images tagged "email footer"; falls back to any mktg image.
+ * Load 2 random PAI-generated images for email footer.
+ * Sources from image_gen_jobs (the PAI imagery feed).
  */
 async function loadGalleryImages(): Promise<string[]> {
   try {
@@ -99,52 +99,23 @@ async function loadGalleryImages(): Promise<string[]> {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    // First: try images tagged "pai-email-art" (alpaca artwork for emails)
-    const { data: tagRow } = await sb
-      .from("media_tags")
-      .select("id")
-      .ilike("name", "pai-email-art")
-      .limit(1)
-      .single();
-
-    if (tagRow?.id) {
-      const { data: taggedMedia } = await sb
-        .from("media_tag_assignments")
-        .select("media:media_id(url, uploaded_at, is_archived)")
-        .eq("tag_id", tagRow.id)
-        .limit(50);
-
-      const candidates = taggedMedia
-        ?.map((r: any) => r.media)
-        .filter((m: any) => m?.url && !m.is_archived) ?? [];
-
-      if (candidates.length >= 2) {
-        // Pick 2 distinct random images
-        const shuffled = [...candidates].sort(() => Math.random() - 0.5);
-        return [shuffled[0].url, shuffled[1].url];
-      }
-      if (candidates.length === 1) {
-        return [candidates[0].url];
-      }
-    }
-
-    // Fallback: random mktg category images
+    // Pull completed PAI-generated images
     const { data, error } = await sb
-      .from("media")
-      .select("url")
-      .eq("category", "mktg")
-      .eq("is_archived", false)
+      .from("image_gen_jobs")
+      .select("result_url")
+      .eq("status", "completed")
+      .not("result_url", "is", null)
       .limit(50);
 
     if (data && !error && data.length >= 2) {
       const shuffled = [...data].sort(() => Math.random() - 0.5);
-      return [shuffled[0].url, shuffled[1].url];
+      return [shuffled[0].result_url, shuffled[1].result_url];
     }
     if (data && !error && data.length === 1) {
-      return [data[0].url];
+      return [data[0].result_url];
     }
   } catch (e) {
-    console.warn("Failed to load gallery images:", e);
+    console.warn("Failed to load PAI gallery images:", e);
   }
 
   return [];
