@@ -1,12 +1,12 @@
 {
-  "version": "v260318.14 12:43p",
-  "release": 879,
-  "sha": "4297d48f5",
-  "fullSha": "4297d48f5742bea13984f4fa729ef17aac7afef0",
+  "version": "v260318.15 1:15p",
+  "release": 880,
+  "sha": "96aaa0a54",
+  "fullSha": "96aaa0a54eaac5d7ef401a32dcf9ddc2e2db8598",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 17:43:05+00",
-  "commits": [{"sha":"4297d48f5","message":"Remove Building Plans card section — keep doc links under tasks A4/A5 only","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-18 18:15:22+00",
+  "commits": [{"sha":"96aaa0a54","message":"Revert Site Plan #2 to original pre-session version","author":"Jacqueline Giroux"}]
 }
