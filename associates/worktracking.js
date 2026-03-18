@@ -421,6 +421,8 @@ async function sendCheckoutSummaryEmail(entry, spaceId, taskId, rate, descriptio
       earnings: HoursService.formatCurrency(earnings),
       photos: photoData,
       cumulative,
+      clock_out_lat: entry.clock_out_lat || null,
+      clock_out_lng: entry.clock_out_lng || null,
     };
 
     await emailService.sendWorkCheckoutSummary(emailData);

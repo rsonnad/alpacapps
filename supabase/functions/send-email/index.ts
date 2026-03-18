@@ -1944,6 +1944,26 @@ Alpaca Playhouse`
             ${photoSection('After', afterPhotos)}
           </table>` : '<p style="color:#7d6f74;font-size:13px;font-style:italic;margin:0 0 16px;">No photos were uploaded for this session.</p>'}
 
+          ${data.clock_out_lat && data.clock_out_lng ? `
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:20px 0 0;">
+            <tr>
+              <td>
+                <p style="margin:0 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">Clock-Out Location</p>
+                <a href="https://www.google.com/maps?q=${data.clock_out_lat},${data.clock_out_lng}" style="display:block;text-decoration:none;">
+                  <img src="https://staticmap.openstreetmap.de/staticmap.php?center=${data.clock_out_lat},${data.clock_out_lng}&zoom=15&size=560x200&markers=${data.clock_out_lat},${data.clock_out_lng},ol-marker" alt="Clock-out location map" width="560" style="display:block;width:100%;max-width:560px;height:auto;border-radius:8px;border:1px solid #e6e2d9;" />
+                </a>
+              </td>
+            </tr>
+          </table>` : `
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:20px 0 0;background:#f7f6f1;border:1px solid #e6e2d9;border-radius:8px;">
+            <tr>
+              <td style="padding:16px 20px;text-align:center;">
+                <p style="margin:0 0 6px;font-size:13px;color:#7d6f74;">Location was not available for this session.</p>
+                <a href="https://alpacaplayhouse.com/associates/worktracking.html" style="display:inline-block;font-size:13px;color:#d4883a;font-weight:600;text-decoration:underline;">Enable location permissions for future sessions &rarr;</a>
+              </td>
+            </tr>
+          </table>`}
+
           <p style="margin:16px 0 0;color:#7d6f74;font-size:13px;">This is an automated summary from Alpaca Playhouse work tracking.</p>
         `,
         text: `Work Session Complete
@@ -1958,6 +1978,7 @@ ${data.space_name ? `Location: ${data.space_name}\n` : ''}${data.task_name ? `Ta
 ${data.cumulative ? `\nCumulative Totals:\n  This Week:  ${data.cumulative.week.hours}  |  ${data.cumulative.week.earnings}\n  This Month: ${data.cumulative.month.hours}  |  ${data.cumulative.month.earnings}\n  This Year:  ${data.cumulative.year.hours}  |  ${data.cumulative.year.earnings}` : ''}
 ${data.description ? `\nWork Description: ${data.description}` : ''}
 ${hasPhotos ? `\nPhotos: ${photos.length} photo(s) uploaded (view in HTML email)` : '\nNo photos uploaded for this session.'}
+${data.clock_out_lat && data.clock_out_lng ? `\nClock-Out Location: https://www.google.com/maps?q=${data.clock_out_lat},${data.clock_out_lng}` : '\nLocation not available — enable location permissions at https://alpacaplayhouse.com/associates/worktracking.html'}
 
 This is an automated summary from Alpaca Playhouse work tracking.`
       };
