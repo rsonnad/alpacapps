@@ -97,6 +97,30 @@
     .cost-summary .cost-label { color: var(--text-muted); }
     .cost-summary .cost-value { font-weight: 700; }
 
+    /* Permit Readiness Bar */
+    .readiness-bar { background: #2e2226; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; color: #faf9f6; }
+    .readiness-top { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+    .readiness-label { font-size: 0.85rem; font-weight: 600; color: #d4883a; white-space: nowrap; }
+    .readiness-track { flex: 1; min-width: 80px; height: 10px; background: #3a2a2e; border-radius: 5px; overflow: hidden; }
+    .readiness-fill { height: 100%; border-radius: 5px; transition: width 0.4s, background 0.4s; }
+    .readiness-pct { font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
+    .readiness-chevron { transition: transform 0.2s; color: #a09080; flex-shrink: 0; }
+    .readiness-bar.collapsed .readiness-detail { display: none; }
+    .readiness-bar.collapsed .readiness-chevron { transform: rotate(-90deg); }
+    .readiness-phases { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .readiness-phase-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 10px; white-space: nowrap; }
+    .readiness-next { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+    .readiness-next-item { font-size: 0.78rem; color: #d0c0b0; display: flex; align-items: center; gap: 6px; }
+    .readiness-tag { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; white-space: nowrap; }
+    .readiness-tag.blocked { background: #e53e3e33; color: #fc8181; }
+    .readiness-tag.in_progress { background: #3b82f633; color: #93c5fd; }
+    .readiness-tag.pending { background: #6b728033; color: #a09080; }
+    .readiness-ready { margin-top: 10px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    @media (max-width: 600px) {
+      .readiness-bar { padding: 0.75rem 1rem; }
+      .readiness-phases { gap: 6px; }
+    }
+
     .task-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
     .task-modal { background: #fff; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
     .task-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
@@ -272,6 +296,7 @@
           Professional Directory
         </a>
       </div>
+      <div id="readinessBar" class="readiness-bar" style="display:none;"></div>
       <div class="permit-summary" id="summaryStats"></div>
       <div id="phasesContainer"></div>
       <!-- Next Phase: Building Permit -->
@@ -364,6 +389,7 @@
       document.getElementById('appContent').style.display = 'block';
       document.getElementById('userDisplay').textContent = currentUser.email;
       await loadTasks();
+      renderReadinessBar();
       renderSummary();
       renderPhases();
       renderCostSummary();
@@ -399,6 +425,82 @@
         <!-- ⚠️ KEEP: Est. Cost must link to cost-estimate-breakdown.pdf — do NOT remove this link -->
         <div class="permit-stat"><div class="label">Est. Cost</div><div class="value"><a href="cost-estimate-breakdown.pdf" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></div></div>`;
     }
+
+    function renderReadinessBar() {
+      const bar = document.getElementById('readinessBar');
+      // Exclude skipped/not_needed from counts
+      const countable = tasks.filter(t => t.status !== 'skipped' && t.status !== 'not_needed');
+      const done = countable.filter(t => t.status === 'completed').length;
+      const total = countable.length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      // Color based on percentage
+      const color = pct >= 100 ? '#38a169' : pct >= 60 ? '#d4883a' : '#e53e3e';
+
+      // Phase breakdown
+      const phaseData = ['A', 'B', 'C'].map(phase => {
+        const pt = countable.filter(t => t.phase === phase);
+        const pd = pt.filter(t => t.status === 'completed').length;
+        const label = phase === 'A' ? 'Research' : phase === 'B' ? 'IDP Submission' : 'Build & Final';
+        const badgeColor = pt.length === 0 ? '#6b7280' : pd === pt.length ? '#38a169' : pd > 0 ? '#d4883a' : '#6b7280';
+        return { phase, label, done: pd, total: pt.length, color: badgeColor };
+      });
+
+      // Next up: blocked first, then in_progress, then pending — up to 3
+      const nextUp = [
+        ...countable.filter(t => t.status === 'blocked'),
+        ...countable.filter(t => t.status === 'in_progress'),
+        ...countable.filter(t => t.status === 'pending'),
+      ].slice(0, 3);
+
+      // Ready to apply: all A + B tasks done
+      const abTasks = countable.filter(t => t.phase === 'A' || t.phase === 'B');
+      const abRemaining = abTasks.filter(t => t.status !== 'completed').length;
+      const isReady = abRemaining === 0 && abTasks.length > 0;
+
+      const collapsed = localStorage.getItem('readiness-collapsed') === '1';
+
+      // Build next-up items
+      const nextUpHtml = nextUp.map(t => {
+        const tagClass = t.status === 'blocked' ? 'blocked' : t.status === 'in_progress' ? 'in_progress' : 'pending';
+        const tagLabel = t.status === 'blocked' ? 'Blocked' : t.status === 'in_progress' ? 'In Progress' : 'Pending';
+        const assigneeHtml = t.assignee ? ' <span style="color:#a09080;">(' + esc(t.assignee) + ')</span>' : '';
+        return '<div class="readiness-next-item"><span class="readiness-tag ' + tagClass + '">' + tagLabel + '</span><span>' + t.task_code + ' — ' + esc(t.task_name) + assigneeHtml + '</span></div>';
+      }).join('');
+
+      // Build phase badges
+      const phaseBadgesHtml = phaseData.map(p =>
+        '<span class="readiness-phase-badge" style="background:' + p.color + '22; color:' + p.color + '; border:1px solid ' + p.color + '44;">' + p.phase + ': ' + p.label + ' ' + p.done + '/' + p.total + '</span>'
+      ).join('');
+
+      // Build ready indicator
+      const checkSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38a169" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+      const warnSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4883a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      const readyHtml = isReady
+        ? checkSvg + ' Ready to apply for commercial permit'
+        : warnSvg + ' ' + abRemaining + ' task' + (abRemaining !== 1 ? 's' : '') + ' remaining before permit application';
+
+      bar.className = 'readiness-bar' + (collapsed ? ' collapsed' : '');
+      bar.style.display = 'block';
+      bar.innerHTML =
+        '<div class="readiness-top" onclick="toggleReadiness()">' +
+          '<div class="readiness-label">Permit Readiness:</div>' +
+          '<div class="readiness-track"><div class="readiness-fill" style="width:' + pct + '%; background:' + color + ';"></div></div>' +
+          '<div class="readiness-pct" style="color:' + color + ';">' + done + ' / ' + total + ' (' + pct + '%)</div>' +
+          '<svg class="readiness-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
+        '</div>' +
+        '<div class="readiness-detail">' +
+          '<div class="readiness-phases">' + phaseBadgesHtml + '</div>' +
+          (nextUp.length ? '<div class="readiness-next"><div style="font-size:0.72rem; font-weight:600; color:#a09080; text-transform:uppercase; letter-spacing:0.04em;">Next Up</div>' + nextUpHtml + '</div>' : '') +
+          '<div class="readiness-ready" style="color:' + (isReady ? '#38a169' : '#d4883a') + ';">' + readyHtml + '</div>' +
+        '</div>';
+    }
+
+    window.toggleReadiness = function() {
+      const bar = document.getElementById('readinessBar');
+      bar.classList.toggle('collapsed');
+      localStorage.setItem('readiness-collapsed', bar.classList.contains('collapsed') ? '1' : '0');
+    };
 
     function renderPhases() {
       const el = document.getElementById('phasesContainer');
@@ -649,7 +751,7 @@
       const { error } = await supabase.from('permit_tasks').update(updates).eq('id', taskId);
       if (error) { showToast('Failed: ' + error.message, 'error'); return; }
       t.status = newStatus; t.completed_at = updates.completed_at;
-      renderSummary(); renderPhases(); renderCostSummary();
+      renderReadinessBar(); renderSummary(); renderPhases(); renderCostSummary();
       showToast(`${t.task_code} marked ${STATUS_LABELS[newStatus].toLowerCase()}`, 'success');
     };
 
