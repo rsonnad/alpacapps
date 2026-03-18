@@ -540,7 +540,7 @@
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
-    <span data-site-version style="display:none">v260318.20 2:52p</span>
+    <span data-site-version style="display:none">v260318.02 12:24a</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
@@ -559,6 +559,12 @@
         <div class="rate-display" id="rateDisplay"></div>
 
         <div class="clockout-prompt" id="clockoutPrompt">
+          <div class="photo-warning" id="afterPhotoWarning" style="display:none;">
+            <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:0.75rem;margin-bottom:0.75rem;text-align:center;">
+              <strong style="color:#92400e;">📸 After Photos Needed</strong>
+              <p style="margin:0.25rem 0 0;font-size:0.85rem;color:#92400e;">Please upload after photos of your work before clocking out. Scroll down to the photo section.</p>
+            </div>
+          </div>
           <textarea id="clockoutDesc" placeholder="What did you work on? (optional)"></textarea>
           <div class="prompt-actions">
             <button class="btn-skip" id="btnClockoutSkip">Skip</button>
