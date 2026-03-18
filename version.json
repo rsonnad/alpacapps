@@ -1,12 +1,12 @@
 {
-  "version": "v260317.46 6:57p",
-  "release": 860,
-  "sha": "afd9fd99e",
-  "fullSha": "afd9fd99ee14285412b722b44464a13bcfa0c77a",
+  "version": "v260317.47 6:59p",
+  "release": 861,
+  "sha": "3c49cac2c",
+  "fullSha": "3c49cac2c5a64aa8ad8c445ee76a2e94931dae96",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-17 23:57:07+00",
-  "commits": [{"sha":"afd9fd99e","message":"Fix Open Brain description — was showing DevControl's text","author":"Rahul"}]
+  "pushedAt": "2026-03-17 23:59:41+00",
+  "commits": [{"sha":"3c49cac2c","message":"Fix DevControl sub-tabs being cleared by renderTabNav on auth refresh","author":"Rahul"}]
 }
