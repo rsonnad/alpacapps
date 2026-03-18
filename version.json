@@ -1,12 +1,12 @@
 {
-  "version": "v260318.06 10:05a",
-  "release": 871,
-  "sha": "d873a0039",
-  "fullSha": "d873a0039257fb39daa9e94cf1bcccbd459e93b6",
+  "version": "v260318.08 10:23a",
+  "release": 873,
+  "sha": "070ce19c5",
+  "fullSha": "070ce19c54a7980fe430f2a2110cff8669d2b3db",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 15:05:39+00",
-  "commits": [{"sha":"d873a0039","message":"Overhaul Site Plan #2 (24x36) for professional engineering drawing quality","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-03-18 15:23:14+00",
+  "commits": [{"sha":"070ce19c5","message":"Fix setback compliance data on Site Plan #2 to match corrected rules","author":"Jacqueline Giroux"}]
 }
