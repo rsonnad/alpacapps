@@ -421,12 +421,27 @@ async function sendCheckoutSummaryEmail(entry, spaceId, taskId, rate, descriptio
       earnings: HoursService.formatCurrency(earnings),
       photos: photoData,
       cumulative,
-      _location_section: entry.clock_out_lat && entry.clock_out_lng
-        ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:20px 0 0;"><tr><td><p style="margin:0 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">Clock-Out Location</p><a href="https://www.google.com/maps?q=${entry.clock_out_lat},${entry.clock_out_lng}" style="display:block;text-decoration:none;background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;padding:16px 20px;"><span style="font-size:20px;">📍</span> <span style="color:#d4883a;font-weight:600;font-size:14px;">View on Google Maps</span><br><span style="color:#7d6f74;font-size:12px;">${entry.clock_out_lat}, ${entry.clock_out_lng}</span></a></td></tr></table>`
-        : `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:20px 0 0;background:#f7f6f1;border:1px solid #e6e2d9;border-radius:8px;"><tr><td style="padding:16px 20px;text-align:center;"><p style="margin:0 0 6px;font-size:13px;color:#7d6f74;">Location was not available for this session.</p><a href="https://alpacaplayhouse.com/associates/worktracking.html" style="display:inline-block;font-size:13px;color:#d4883a;font-weight:600;text-decoration:underline;">Enable location permissions for future sessions &rarr;</a></td></tr></table>`,
-      _location_section_text: entry.clock_out_lat && entry.clock_out_lng
-        ? `Clock-Out Location: https://www.google.com/maps?q=${entry.clock_out_lat},${entry.clock_out_lng}`
-        : 'Location not available — enable permissions at https://alpacaplayhouse.com/associates/worktracking.html',
+      _location_section: (() => {
+        if (!entry.clock_out_lat || !entry.clock_out_lng) {
+          return '<p style="margin:12px 0 0;font-size:13px;color:#7d6f74;">📍 Location not available — <a href="https://alpacaplayhouse.com/associates/worktracking.html" style="color:#d4883a;">enable permissions</a></p>';
+        }
+        // ~0.5 mi radius check against 160 Still Forest Dr (30.13, -97.46)
+        const dLat = entry.clock_out_lat - 30.13;
+        const dLng = entry.clock_out_lng - (-97.46);
+        const dist = Math.sqrt(dLat * dLat + dLng * dLng) * 111000; // rough meters
+        if (dist < 800) {
+          return '<p style="margin:12px 0 0;font-size:13px;color:#7d6f74;">📍 Clocked out at <strong style="color:#2a1f23;">160 Still Forest Dr</strong></p>';
+        }
+        return `<p style="margin:12px 0 0;font-size:13px;color:#7d6f74;">📍 Clocked out off-site — <a href="https://www.google.com/maps?q=${entry.clock_out_lat},${entry.clock_out_lng}" style="color:#d4883a;">view location</a></p>`;
+      })(),
+      _location_section_text: (() => {
+        if (!entry.clock_out_lat || !entry.clock_out_lng) return 'Location not available';
+        const dLat = entry.clock_out_lat - 30.13;
+        const dLng = entry.clock_out_lng - (-97.46);
+        const dist = Math.sqrt(dLat * dLat + dLng * dLng) * 111000;
+        if (dist < 800) return 'Clocked out at 160 Still Forest Dr';
+        return `Clocked out off-site: https://www.google.com/maps?q=${entry.clock_out_lat},${entry.clock_out_lng}`;
+      })(),
     };
 
     await emailService.sendWorkCheckoutSummary(emailData);
