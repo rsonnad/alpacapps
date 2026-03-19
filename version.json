@@ -1,12 +1,12 @@
 {
-  "version": "v260319.22 3:42p",
-  "release": 936,
-  "sha": "e63d54768",
-  "fullSha": "e63d5476846d596dd583b0cb2c041612175c4467",
+  "version": "v260319.23 4:01p",
+  "release": 937,
+  "sha": "888b95c30",
+  "fullSha": "888b95c30e9fdb3dd1070608956e9464d30a93a6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 20:42:15+00",
-  "commits": [{"sha":"e63d54768","message":"fix: split FOR ALL into per-op RLS policies for PostgREST upsert compat","author":"Rahul"}]
+  "pushedAt": "2026-03-19 21:01:43+00",
+  "commits": [{"sha":"888b95c30","message":"fix: ensure live supabase session before page access write operations","author":"Rahul"}]
 }
