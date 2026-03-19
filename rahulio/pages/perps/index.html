@@ -411,6 +411,7 @@
   </style>
 </head>
 <body>
+  <div id="siteHeader"></div>
   <div class="page-wrap">
     <a href="/rahulio/pages/" class="back-link">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -876,5 +877,10 @@
     renderMatrix();
   })();
   </script>
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
+</script>
 </body>
 </html>

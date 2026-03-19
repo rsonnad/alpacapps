@@ -35,6 +35,7 @@
   </style>
 </head>
 <body>
+  <div id="siteHeader"></div>
   <div id="authGate" class="auth-gate">
     <p>Checking access...</p>
   </div>
@@ -202,5 +203,9 @@
 
     boot();
   </script>
+<script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
+</script>
 </body>
 </html>

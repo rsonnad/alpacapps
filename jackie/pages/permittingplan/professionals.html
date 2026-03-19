@@ -74,6 +74,7 @@
   </style>
 </head>
 <body>
+  <div id="siteHeader"></div>
   <div class="page-header">
     <a href="index.html" class="back-link">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -533,6 +534,11 @@
       const s = document.getElementById(id);
       if (s) s.classList.toggle('collapsed');
     }
+  </script>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
   </script>
 </body>
 </html>
