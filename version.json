@@ -1,12 +1,12 @@
 {
-  "version": "v260319.12 2:42a",
-  "release": 926,
-  "sha": "84182cd73",
-  "fullSha": "84182cd73ad16ddf5facd7f20adc611b26b2cfff",
+  "version": "v260319.13 2:45a",
+  "release": 927,
+  "sha": "ca9548f5c",
+  "fullSha": "ca9548f5c409da3ab58fd578fb0c2dc0386e6687",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 07:42:42+00",
-  "commits": [{"sha":"84182cd73","message":"feat: add prompt filter scrollbox to imagery feed","author":"Rahul"}]
+  "pushedAt": "2026-03-19 07:45:37+00",
+  "commits": [{"sha":"ca9548f5c","message":"fix: select batch_label column for prompt filter grouping","author":"Rahul"}]
 }
