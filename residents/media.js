@@ -1,4 +1,4 @@
-import { initResidentPage, showToast } from '../shared/resident-shell.js';
+import { initResidentPage, showToast, setupLightbox, openLightbox } from '../shared/resident-shell.js';
 import { supabase } from '../shared/supabase.js';
 import { getAuthState } from '../shared/auth.js';
 
@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     requiredPermission: 'view_profile',
     onReady: async (state) => {
       authState = state;
+      setupLightbox();
       setupEvents();
       await loadAll();
       await maybeQueueDailyArt();
@@ -237,14 +238,9 @@ function renderJobStatuses() {
   `).join('');
 }
 
-// Lightbox
+// Lightbox — expose globally for onclick handlers
 window.__openImageryLightbox = function(url) {
-  // Use shared lightbox if available
-  if (typeof window.__openLightbox === 'function') {
-    window.__openLightbox(url, allImageUrls);
-  } else {
-    window.open(url, '_blank');
-  }
+  openLightbox(url, allImageUrls);
 };
 
 // ---- Daily art generation ----
