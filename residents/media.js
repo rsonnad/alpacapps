@@ -68,6 +68,10 @@ let currentSort = 'newest';
 let allImageUrls = [];
 let checkedPrompts = new Set(); // prompt labels that are checked (shown)
 let allPromptLabels = [];       // unique prompt labels in order
+let promptSampleMap = new Map(); // label → sample prompt text
+let promptJobIdsMap = new Map(); // label → [job ids]
+let sessionGenerateCount = 0;
+const MAX_SESSION_GENERATES = 5;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
@@ -176,16 +180,21 @@ function buildPromptFilter() {
     ? myJobs.filter(j => j.status === 'completed' && j.result_url)
     : allImagery;
 
-  // Group by prompt label — track count and a sample prompt
+  // Group by prompt label — track count, sample prompt, and job IDs
   const counts = new Map();
   const samplePrompts = new Map();
+  const jobIds = new Map();
   for (const row of source) {
     const label = getPromptLabel(row);
     counts.set(label, (counts.get(label) || 0) + 1);
     if (!samplePrompts.has(label) && row.prompt) {
       samplePrompts.set(label, row.prompt.trim());
     }
+    if (!jobIds.has(label)) jobIds.set(label, []);
+    jobIds.get(label).push(row.id);
   }
+  promptSampleMap = samplePrompts;
+  promptJobIdsMap = jobIds;
 
   allPromptLabels = [...counts.keys()];
 
@@ -201,28 +210,31 @@ function buildPromptFilter() {
 
   list.innerHTML = allPromptLabels.map((label, i) => {
     const sample = samplePrompts.get(label) || '';
-    // Take first ~120 chars of prompt, skip if same as label
     const promptSnippet = sample && sample !== label
       ? ' — ' + escapeHtml(sample.slice(0, 120)) + (sample.length > 120 ? '…' : '')
       : '';
     return `
-    <label class="prompt-filter-item">
+    <div class="prompt-filter-item" data-idx="${i}">
       <input type="checkbox" checked data-idx="${i}">
       <span class="prompt-label"><strong>${escapeHtml(label)}</strong>${promptSnippet}</span>
+      <button class="prompt-edit-btn" data-idx="${i}" title="Edit prompt">&#9998;</button>
       <span class="prompt-count">${counts.get(label)}</span>
-    </label>`;
+    </div>`;
   }).join('');
 
-  // Bind checkboxes
-  list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+  // Bind checkboxes + clicking label toggles checkbox
+  list.querySelectorAll('.prompt-filter-item').forEach(item => {
+    const cb = item.querySelector('input[type="checkbox"]');
+    const labelSpan = item.querySelector('.prompt-label');
+    if (!cb) return;
     cb.addEventListener('change', () => {
       const label = allPromptLabels[parseInt(cb.dataset.idx)];
-      if (cb.checked) {
-        checkedPrompts.add(label);
-      } else {
-        checkedPrompts.delete(label);
-      }
+      if (cb.checked) checkedPrompts.add(label); else checkedPrompts.delete(label);
       renderGallery();
+    });
+    labelSpan?.addEventListener('click', () => {
+      cb.checked = !cb.checked;
+      cb.dispatchEvent(new Event('change'));
     });
   });
 
@@ -257,6 +269,131 @@ function buildPromptFilter() {
       newBtn.classList.toggle('expanded', isCollapsed);
     });
   }
+
+  // Edit prompt buttons
+  list.querySelectorAll('.prompt-edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      const label = allPromptLabels[idx];
+      const prompt = promptSampleMap.get(label) || '';
+      const ids = promptJobIdsMap.get(label) || [];
+      showPromptEditModal(label, prompt, ids);
+    });
+  });
+
+  // Generate from checked prompts
+  const genBtn = document.getElementById('promptGenerateBtn');
+  if (genBtn) {
+    const newGenBtn = genBtn.cloneNode(true);
+    genBtn.replaceWith(newGenBtn);
+    newGenBtn.addEventListener('click', () => generateFromCheckedPrompts());
+  }
+}
+
+function showPromptEditModal(label, prompt, jobIds) {
+  // Remove existing modal
+  document.getElementById('promptEditOverlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'promptEditOverlay';
+  overlay.className = 'prompt-edit-overlay';
+  overlay.innerHTML = `
+    <div class="prompt-edit-modal">
+      <h3>Edit Prompt — ${escapeHtml(label)}</h3>
+      <textarea id="promptEditText">${escapeHtml(prompt)}</textarea>
+      <div class="prompt-edit-actions">
+        <span class="text-muted" style="font-size:0.72rem;margin-right:auto;">${jobIds.length} image(s) use this prompt</span>
+        <button class="btn-small" id="promptEditCancel">Cancel</button>
+        <button class="btn-small btn-primary" id="promptEditSave">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+  document.getElementById('promptEditCancel').addEventListener('click', () => overlay.remove());
+  document.getElementById('promptEditSave').addEventListener('click', async () => {
+    const newPrompt = document.getElementById('promptEditText').value.trim();
+    if (!newPrompt || newPrompt === prompt) { overlay.remove(); return; }
+
+    // Update all jobs with this prompt in the DB
+    const { error } = await supabase
+      .from('image_gen_jobs')
+      .update({ prompt: newPrompt })
+      .in('id', jobIds);
+
+    if (error) {
+      console.error('Failed to update prompt:', error);
+      showToast('Could not update prompt', 'error');
+      return;
+    }
+
+    showToast(`Prompt updated for ${jobIds.length} image(s)`, 'success');
+    overlay.remove();
+    await loadAll();
+  });
+}
+
+async function generateFromCheckedPrompts() {
+  const remaining = MAX_SESSION_GENERATES - sessionGenerateCount;
+  if (remaining <= 0) {
+    showToast(`Maximum ${MAX_SESSION_GENERATES} generations per session reached`, 'warning');
+    return;
+  }
+
+  // Get checked labels that have prompts
+  const toGenerate = [];
+  for (const label of checkedPrompts) {
+    const prompt = promptSampleMap.get(label);
+    if (prompt) toGenerate.push({ label, prompt });
+  }
+
+  if (toGenerate.length === 0) {
+    showToast('No prompts selected to generate from', 'warning');
+    return;
+  }
+
+  const count = Math.min(toGenerate.length, remaining);
+  if (toGenerate.length > remaining) {
+    showToast(`Generating ${count} of ${toGenerate.length} — max ${MAX_SESSION_GENERATES} per session`, 'warning');
+  }
+
+  const user = authState?.appUser;
+  if (!user?.id) return;
+  const displayName = user.display_name || user.first_name || user.email || 'resident';
+
+  for (let i = 0; i < count; i++) {
+    const { label, prompt } = toGenerate[i];
+    const payload = {
+      prompt,
+      job_type: 'generate',
+      status: 'pending',
+      source_media_id: null,
+      metadata: {
+        purpose: 'pai_prompt_regenerate',
+        app_user_id: user.id,
+        app_user_name: displayName,
+        source_label: label,
+      },
+      batch_label: label,
+      priority: 50,
+      max_attempts: 3,
+    };
+    const { error } = await supabase.from('image_gen_jobs').insert(payload);
+    if (error) {
+      console.error('Failed to queue generation:', error);
+      showToast(`Failed to queue: ${label}`, 'error');
+      continue;
+    }
+    sessionGenerateCount++;
+  }
+
+  showToast(`Queued ${count} generation(s)`, 'success');
+  await loadAll();
 }
 
 function getFilteredRows() {

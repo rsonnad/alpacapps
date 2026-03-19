@@ -911,22 +911,22 @@
   background: none;
   border: 1px solid var(--border, #ddd);
   border-radius: 4px;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   cursor: pointer;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.35rem;
   color: var(--text-muted, #666);
   transition: transform 0.2s;
 }
 .prompt-expand-btn.expanded {
-  transform: rotate(180deg);
+  transform: rotate(90deg);
 }
 .prompt-filter-list {
   overflow-y: auto;
-  padding: 0.35rem 0;
+  padding: 0.25rem 0;
 }
 .prompt-filter-collapsed {
   max-height: 4.5rem; /* ~3 items */
-  overflow: hidden;
+  overflow-y: auto;
 }
 .prompt-filter-expanded {
   max-height: 22.5rem; /* ~15 items */
@@ -961,6 +961,65 @@
   color: var(--text-muted, #999);
   font-size: 0.75rem;
   flex-shrink: 0;
+}
+.prompt-edit-btn {
+  background: none;
+  border: none;
+  font-size: 0.7rem;
+  cursor: pointer;
+  color: var(--text-muted, #999);
+  padding: 0 0.2rem;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.prompt-filter-item:hover .prompt-edit-btn {
+  opacity: 1;
+}
+.prompt-edit-btn:hover {
+  color: var(--brand, #1f1720);
+}
+.prompt-edit-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.prompt-edit-modal {
+  background: #fff;
+  border-radius: 10px;
+  width: min(90vw, 600px);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.prompt-edit-modal h3 {
+  padding: 0.75rem 1rem;
+  margin: 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border, #ddd);
+}
+.prompt-edit-modal textarea {
+  flex: 1;
+  min-height: 200px;
+  margin: 0.75rem 1rem;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 6px;
+  resize: vertical;
+}
+.prompt-edit-modal .prompt-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border, #ddd);
 }
 
 /* ===== LIGHTING GROUPS ===== */
