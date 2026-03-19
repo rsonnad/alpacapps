@@ -1,6 +1,6 @@
 // User Management - Admin only
 import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast, ALL_ADMIN_TABS } from '../../shared/admin-shell.js';
 import { emailService } from '../../shared/email-service.js';
 import { formatDateAustin, getAustinToday } from '../../shared/timezone.js';
 import { hasPermission } from '../../shared/auth.js';
@@ -19,6 +19,63 @@ function withTimeout(promise, ms = DB_TIMEOUT_MS, errorMessage = 'Operation time
       setTimeout(() => reject(new Error(errorMessage)), ms)
     )
   ]);
+}
+
+/**
+ * Sync tab permissions to DB — ensures every tab's permission key exists
+ * in the permissions table. Also seeds role_permissions for staff+ roles.
+ * Runs once on admin users page load (non-blocking).
+ */
+async function syncTabPermissions() {
+  try {
+    // Collect all unique permission keys from tab definitions
+    const tabPermKeys = [...new Set(ALL_ADMIN_TABS.map(t => t.permission))];
+
+    // Also collect all keys referenced in PERM_GROUPS
+    const groupPermKeys = PERM_GROUPS.flatMap(g => [...g.keys, ...(g.adminKey ? [g.adminKey] : [])]);
+    const allNeededKeys = [...new Set([...tabPermKeys, ...groupPermKeys])];
+
+    // Fetch existing permissions
+    const { data: existing } = await supabase
+      .from('permissions')
+      .select('key')
+      .in('key', allNeededKeys);
+    const existingKeys = new Set((existing || []).map(p => p.key));
+
+    // Find missing permission keys
+    const missing = allNeededKeys.filter(k => !existingKeys.has(k));
+    if (missing.length === 0) return;
+
+    // Build rows to insert into permissions table
+    const permRows = missing.map(key => {
+      // Derive label from key: view_pai_imagery → View PAI Imagery
+      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      // Determine category from tab section or default
+      const tab = ALL_ADMIN_TABS.find(t => t.permission === key);
+      const category = tab ? tab.section : 'staff';
+      return { key, label, description: `Auto-synced from tab definition`, category, sort_order: 100 };
+    });
+
+    const { error: insertErr } = await supabase.from('permissions').insert(permRows);
+    if (insertErr) { console.warn('Permission sync insert error:', insertErr); return; }
+
+    // Seed role_permissions for staff, admin, oracle for view_* keys
+    const viewKeys = missing.filter(k => k.startsWith('view_'));
+    if (viewKeys.length > 0) {
+      const roleRows = [];
+      for (const role of ['staff', 'admin', 'oracle']) {
+        for (const key of viewKeys) {
+          roleRows.push({ role, permission_key: key });
+        }
+      }
+      const { error: roleErr } = await supabase.from('role_permissions').insert(roleRows);
+      if (roleErr) console.warn('Role permission sync error:', roleErr);
+    }
+
+    console.log(`Synced ${missing.length} new permission(s):`, missing);
+  } catch (err) {
+    console.warn('Permission sync failed:', err);
+  }
 }
 
 let authState = null;
@@ -46,7 +103,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       pendingCount = document.getElementById('pendingCount');
       usersCount = document.getElementById('usersCount');
 
-      // Load data
+      // Sync tab permissions to DB (non-blocking) and load data
+      syncTabPermissions(); // fire-and-forget
       await Promise.all([loadUsers(), loadInvitations(), loadPeople()]);
       render();
       setupEventListeners();
@@ -1170,6 +1228,10 @@ const PERM_GROUPS = [
     keys: ['view_events', 'manage_events'], adminKey: null },
   { id: 'media',    icon: '🖼️', label: 'Media',    bg: '#eef6fc', headerBg: '#d6ebf7', headerColor: '#1e5f8a',
     keys: ['view_media', 'manage_media'], adminKey: null },
+  { id: 'paiimagery', icon: '⚡', label: 'PAI Imagery', bg: '#fdf1e0', headerBg: '#f9dfb8', headerColor: '#92400e',
+    keys: ['view_pai_imagery', 'manage_pai_imagery'], adminKey: null },
+  { id: 'purchases', icon: '🛒', label: 'Purchases', bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
+    keys: ['view_purchases', 'manage_purchases'], adminKey: null },
   { id: 'sms',      icon: '💬', label: 'SMS',      bg: '#fef9ec', headerBg: '#fdf0cc', headerColor: '#92600e',
     keys: ['view_sms', 'send_sms'], adminKey: null },
   { id: 'hours',    icon: '⏱️', label: 'Workstuff',    bg: '#fef2f2', headerBg: '#fde2e2', headerColor: '#9b2c2c',
@@ -1203,7 +1265,7 @@ const PERM_GROUPS = [
 // Super-sections that group the above
 const PERM_SUPER_SECTIONS = [
   { label: 'Resident', groupIds: ['lighting','music','cameras','climate','laundry','cars','profile','pai'] },
-  { label: 'Staff',    groupIds: ['spaces','rentals','events','media','sms','hours','faq','voice','todo','appdev'] },
+  { label: 'Staff',    groupIds: ['spaces','rentals','events','media','paiimagery','purchases','sms','hours','faq','voice','todo','appdev'] },
   { label: 'Admin',    groupIds: ['users','passwords','settings','templates','accounting','testdev'] },
   { label: 'Associate',groupIds: ['associate'] },
 ];
