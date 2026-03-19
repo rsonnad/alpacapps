@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <link rel="preconnect" href="https://aphrrfprbixmhissnjfn.supabase.co">
-  <title>Media - AlpacAPPs Residents</title>
+  <title>Imagery - AlpacAPPs Residents</title>
   <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
@@ -43,10 +43,10 @@
     <div class="manage-tabs" id="tabNav"></div>
 
     <main class="manage-content resident-media-page">
+      <!-- Life of PAI controls -->
       <section class="section">
         <div class="section-header">
           <h2>Life of PAI</h2>
-          <button id="refreshMediaBtn" class="btn-small">Refresh</button>
         </div>
         <div class="section-body">
           <p class="devices-intro">
@@ -61,15 +61,30 @@
             <button id="generateNowBtn" class="btn-primary">Generate Today's Artwork</button>
           </div>
           <p id="dailyStatusText" class="text-muted" style="font-size:0.85rem;"></p>
+          <div id="jobStatusList" class="pai-job-status-list"></div>
         </div>
       </section>
 
+      <!-- Imagery feed with filters -->
       <section class="section">
         <div class="section-header">
-          <h2>Your Daily Gallery</h2>
+          <h2>PAI Imagery Feed</h2>
+          <span id="feedCount" class="text-muted" style="font-size:0.85rem;"></span>
+        </div>
+        <div class="imagery-filter-bar">
+          <div class="imagery-filter-tabs">
+            <button class="imagery-filter-tab active" data-filter="all">All Imagery</button>
+            <button class="imagery-filter-tab" data-filter="mine">My Art</button>
+          </div>
+          <div class="imagery-filter-controls">
+            <select id="sortSelect" class="imagery-sort-select">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+            <button id="refreshBtn" class="btn-small">Refresh</button>
+          </div>
         </div>
         <div class="section-body">
-          <div id="jobStatusList" class="pai-job-status-list"></div>
           <div id="galleryGrid" class="pai-gallery-grid"></div>
         </div>
       </section>

@@ -802,6 +802,57 @@
   background: rgba(192, 57, 43, 0.08);
 }
 
+/* ===== IMAGERY FILTER BAR ===== */
+.imagery-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+.imagery-filter-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.imagery-filter-tab {
+  padding: 0.4rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-muted, #666);
+  transition: background 0.15s, color 0.15s;
+}
+.imagery-filter-tab:not(:last-child) {
+  border-right: 1px solid var(--border, #ddd);
+}
+.imagery-filter-tab.active {
+  background: var(--brand, #1f1720);
+  color: #fff;
+}
+.imagery-filter-tab:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.04);
+}
+.imagery-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.imagery-sort-select {
+  font-size: 0.82rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
 /* ===== LIGHTING GROUPS ===== */
 .lighting-groups {
   display: flex;

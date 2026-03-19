@@ -1170,8 +1170,6 @@ const PERM_GROUPS = [
     keys: ['view_events', 'manage_events'], adminKey: null },
   { id: 'media',    icon: '🖼️', label: 'Media',    bg: '#eef6fc', headerBg: '#d6ebf7', headerColor: '#1e5f8a',
     keys: ['view_media', 'manage_media'], adminKey: null },
-  { id: 'paiimagery', icon: '⚡', label: 'PAI Imagery', bg: '#fdf1e0', headerBg: '#f9dfb8', headerColor: '#92400e',
-    keys: ['view_pai_imagery', 'manage_pai_imagery'], adminKey: null },
   { id: 'purchases', icon: '🛒', label: 'Purchases', bg: '#ecfdf5', headerBg: '#c8f5dd', headerColor: '#065f46',
     keys: ['view_purchases', 'manage_purchases'], adminKey: null },
   { id: 'sms',      icon: '💬', label: 'SMS',      bg: '#fef9ec', headerBg: '#fdf0cc', headerColor: '#92600e',
@@ -1207,7 +1205,7 @@ const PERM_GROUPS = [
 // Super-sections that group the above
 const PERM_SUPER_SECTIONS = [
   { label: 'Resident', groupIds: ['lighting','music','cameras','climate','laundry','cars','profile','pai'] },
-  { label: 'Staff',    groupIds: ['spaces','rentals','events','media','paiimagery','purchases','sms','hours','faq','voice','todo','appdev'] },
+  { label: 'Staff',    groupIds: ['spaces','rentals','events','media','purchases','sms','hours','faq','voice','todo','appdev'] },
   { label: 'Admin',    groupIds: ['users','passwords','settings','templates','accounting','testdev'] },
   { label: 'Associate',groupIds: ['associate'] },
 ];
