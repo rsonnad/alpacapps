@@ -469,6 +469,14 @@ function renderPanel() {
 
 // ── Header Injection ───────────────────────────────────────────────────
 function injectHeader(options = {}) {
+  // Ensure site.css is loaded (needed for header/avatar styling)
+  if (!document.querySelector('link[href*="site.css"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/styles/site.css';
+    document.head.appendChild(link);
+  }
+
   let headerTarget = document.getElementById('siteHeader');
   if (!headerTarget) {
     headerTarget = document.createElement('div');
