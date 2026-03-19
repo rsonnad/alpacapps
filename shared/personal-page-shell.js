@@ -133,6 +133,19 @@ function checkAccess(state, settings, grants) {
   return false;
 }
 
+// ── Session Guard ──────────────────────────────────────────────────────
+// The auth cache can show the toolbar even when the Supabase JWT is expired.
+// Before any write operation, ensure we have a live session.
+async function ensureSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) return; // already have a valid session
+  // Try refreshing — the refresh token may still be valid
+  const { error } = await supabase.auth.refreshSession();
+  if (error) {
+    throw new Error('Session expired — please sign in again');
+  }
+}
+
 // ── DB Operations ──────────────────────────────────────────────────────
 async function fetchPageSettings(path) {
   const { data } = await supabase
@@ -152,6 +165,7 @@ async function fetchPageGrants(path) {
 }
 
 async function upsertVisibility(path, visibility) {
+  await ensureSession();
   const { error } = await supabase
     .from('page_access_settings')
     .upsert({ page_path: path, visibility, updated_at: new Date().toISOString() }, { onConflict: 'page_path' });
@@ -159,6 +173,7 @@ async function upsertVisibility(path, visibility) {
 }
 
 async function addGrant(path, email, grantedBy) {
+  await ensureSession();
   const { error } = await supabase
     .from('page_access_grants')
     .upsert({ page_path: path, email: email.toLowerCase(), granted_by: grantedBy }, { onConflict: 'page_path,email' });
@@ -166,6 +181,7 @@ async function addGrant(path, email, grantedBy) {
 }
 
 async function removeGrant(path, email) {
+  await ensureSession();
   const { error } = await supabase
     .from('page_access_grants')
     .delete()
