@@ -1,12 +1,12 @@
 {
-  "version": "v260319.08 2:07a",
-  "release": 922,
-  "sha": "225013140",
-  "fullSha": "225013140faeb83dbcfeb24c2ed3850888d60745",
+  "version": "v260319.09 2:09a",
+  "release": 923,
+  "sha": "5eb1bc413",
+  "fullSha": "5eb1bc41389b6396c5513b1a86d1825d13d83c31",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 07:07:23+00",
-  "commits": [{"sha":"225013140","message":"fix: add lightbox HTML element to resident imagery page","author":"Rahul"}]
+  "pushedAt": "2026-03-19 07:09:50+00",
+  "commits": [{"sha":"5eb1bc413","message":"Color-coded privacy icons in personal page header (#75)","author":"Rahul"}]
 }
