@@ -1,12 +1,12 @@
 {
-  "version": "v260318.39 7:10p",
-  "release": 904,
-  "sha": "a71d7e162",
-  "fullSha": "a71d7e162d8680613c0c67290f4f2a09e5537e8a",
+  "version": "v260318.40 7:38p",
+  "release": 905,
+  "sha": "b5273e819",
+  "fullSha": "b5273e8195763907a33afd4736c5754f87bf059e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 00:10:22+00",
-  "commits": [{"sha":"4090cd794","message":"fix: add company names to bio industry firsts descriptions","author":"Rahul"},{"sha":"a71d7e162","message":"Merge pull request #65 from rsonnad/rahuliofam/rahulbio-seo-fix","author":"Rahul"}]
+  "pushedAt": "2026-03-19 00:38:18+00",
+  "commits": [{"sha":"1506c9f22","message":"feat: switch bio to light mode, bump font sizes +2pt, add UW 4.0 GPA","author":"Rahul"},{"sha":"b5273e819","message":"Merge pull request #66 from rsonnad/rahuliofam/rahulbio-seo-fix","author":"Rahul"}]
 }
