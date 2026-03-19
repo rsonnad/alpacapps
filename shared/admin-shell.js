@@ -17,7 +17,7 @@ import { getEnabledFeatures } from './feature-registry.js';
 // =============================================
 // Permission keys for staff/admin section detection
 const STAFF_PERMISSION_KEYS = [
-  'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
+  'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_pai_imagery', 'view_sms',
   'view_purchases', 'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev',
 ];
 const ADMIN_PERMISSION_KEYS = [
@@ -56,13 +56,13 @@ const TAB_ICONS = {
 // Tabs without a `feature` key are always shown (core admin tabs).
 // When property_config.features exists, tabs whose feature is disabled are hidden.
 // When property_config.features is NOT set, all tabs show (backward compatible).
-const ALL_ADMIN_TABS = [
+export const ALL_ADMIN_TABS = [
   // Staff section
   { id: 'spaces', label: 'Spaces', href: 'spaces.html', permission: 'view_spaces', section: 'staff' },
   { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff', feature: 'rentals' },
   { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff', feature: 'events' },
   { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
-  { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_media', section: 'staff', feature: 'pai' },
+  { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_pai_imagery', section: 'staff', feature: 'pai' },
   { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff', feature: 'sms' },
   { id: 'purchases', label: 'Purchases', href: 'purchases.html', permission: 'view_purchases', section: 'staff' },
   { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff', feature: 'associates' },
