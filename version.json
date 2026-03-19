@@ -1,12 +1,12 @@
 {
-  "version": "v260318.45 10:31p",
-  "release": 910,
-  "sha": "9f9ece27d",
-  "fullSha": "9f9ece27d7d7a493b75993be6d16f8a4af3f856f",
+  "version": "v260318.47 11:41p",
+  "release": 912,
+  "sha": "212b3a521",
+  "fullSha": "212b3a521e6fcffa81aa37270eba8b67e5ee5559",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 03:31:12+00",
-  "commits": [{"sha":"a0cf13688","message":"fix: remove 'Also known as Rahulio' from bio footer","author":"Rahul"},{"sha":"9f9ece27d","message":"Merge pull request #70 from rsonnad/rahuliofam/rahulbio-seo-fix","author":"Rahul"}]
+  "pushedAt": "2026-03-19 04:41:39+00",
+  "commits": [{"sha":"212b3a521","message":"Add next steps: pay or initiate arbitration per contract","author":"Rahul"}]
 }
