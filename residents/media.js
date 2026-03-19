@@ -227,6 +227,26 @@ function buildPromptFilter() {
     list.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     renderGallery();
   });
+
+  // Expand/collapse toggle
+  const expandBtn = document.getElementById('promptExpandToggle');
+  if (expandBtn) {
+    // Reset to collapsed
+    list.classList.add('prompt-filter-collapsed');
+    list.classList.remove('prompt-filter-expanded');
+    expandBtn.textContent = allPromptLabels.length > 3 ? 'Show more' : '';
+    expandBtn.style.display = allPromptLabels.length > 3 ? '' : 'none';
+
+    // Clone to remove old listeners
+    const newBtn = expandBtn.cloneNode(true);
+    expandBtn.replaceWith(newBtn);
+    newBtn.addEventListener('click', () => {
+      const isCollapsed = list.classList.contains('prompt-filter-collapsed');
+      list.classList.toggle('prompt-filter-collapsed', !isCollapsed);
+      list.classList.toggle('prompt-filter-expanded', isCollapsed);
+      newBtn.textContent = isCollapsed ? 'Show less' : 'Show more';
+    });
+  }
 }
 
 function getFilteredRows() {
@@ -310,11 +330,26 @@ function renderGallery() {
   });
 }
 
+const DISMISSED_KEY = 'pai-dismissed-job-ids';
+function getDismissedIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]')); } catch { return new Set(); }
+}
+
 function renderJobStatuses() {
   const list = document.getElementById('jobStatusList');
   if (!list) return;
 
-  const activeOrFailed = myJobs.filter((job) => job.status !== 'completed').slice(0, 8);
+  const dismissed = getDismissedIds();
+  const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+
+  const activeOrFailed = myJobs.filter((job) => {
+    if (job.status === 'completed') return false;
+    if (dismissed.has(String(job.id))) return false;
+    // Auto-hide failed jobs older than 24h
+    if (job.status === 'failed' && new Date(job.created_at).getTime() < oneDayAgo) return false;
+    return true;
+  }).slice(0, 4);
+
   if (activeOrFailed.length === 0) {
     list.innerHTML = '';
     return;
@@ -324,9 +359,19 @@ function renderJobStatuses() {
     <div class="pai-job-status ${job.status}">
       <strong>${humanizeStatus(job.status)}</strong>
       <span>${formatDate(job.created_at)}</span>
+      <button class="pai-job-dismiss" data-job-id="${job.id}" title="Dismiss">&times;</button>
       ${job.error_message ? `<small>${escapeHtml(job.error_message)}</small>` : ''}
     </div>
   `).join('');
+
+  list.querySelectorAll('.pai-job-dismiss').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ids = getDismissedIds();
+      ids.add(btn.dataset.jobId);
+      localStorage.setItem(DISMISSED_KEY, JSON.stringify([...ids]));
+      renderJobStatuses();
+    });
+  });
 }
 
 // ---- Daily art generation ----
