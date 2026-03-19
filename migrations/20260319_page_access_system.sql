@@ -32,13 +32,25 @@ CREATE POLICY "Anyone can read page settings"
   ON page_access_settings FOR SELECT
   USING (true);
 
--- Admin/oracle can manage all settings
-CREATE POLICY "Admins can manage page settings"
-  ON page_access_settings FOR ALL
+-- Admin/oracle can manage settings (split per-op for PostgREST upsert compat)
+CREATE POLICY "Admins can insert page settings"
+  ON page_access_settings FOR INSERT
+  WITH CHECK (
+    (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
+  );
+
+CREATE POLICY "Admins can update page settings"
+  ON page_access_settings FOR UPDATE
   USING (
     (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
   )
   WITH CHECK (
+    (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
+  );
+
+CREATE POLICY "Admins can delete page settings"
+  ON page_access_settings FOR DELETE
+  USING (
     (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
   );
 
@@ -58,13 +70,25 @@ CREATE POLICY "Admins can read all grants"
     (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
   );
 
--- Admin/oracle can insert/update/delete grants
-CREATE POLICY "Admins can manage grants"
-  ON page_access_grants FOR ALL
+-- Admin/oracle can manage grants (split per-op for PostgREST upsert compat)
+CREATE POLICY "Admins can insert grants"
+  ON page_access_grants FOR INSERT
+  WITH CHECK (
+    (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
+  );
+
+CREATE POLICY "Admins can update grants"
+  ON page_access_grants FOR UPDATE
   USING (
     (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
   )
   WITH CHECK (
+    (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
+  );
+
+CREATE POLICY "Admins can delete grants"
+  ON page_access_grants FOR DELETE
+  USING (
     (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
   );
 
