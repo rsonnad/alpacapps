@@ -120,6 +120,7 @@
 </style>
 </head>
 <body>
+<div id="siteHeader"></div>
 
 <a href="index.html" class="back-btn" title="Back to Permitting Checklist">&#8592;</a>
 
@@ -312,6 +313,11 @@
 
   render();
 })();
+</script>
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
 </script>
 </body>
 </html>

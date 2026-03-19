@@ -6,6 +6,8 @@
   <title>Permitting Plan - 160 Still Forest Dr</title>
   <link rel="icon" type="image/png" href="../../../favicon.png">
   <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,21 +19,6 @@
       --available: #22c55e; --occupied: #ef4444;
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
-    /* Auth overlay */
-    .auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-    .auth-overlay.hidden { display: none; }
-    .auth-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; max-width: 360px; width: 90%; text-align: center; }
-    .auth-form h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-    .auth-form p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem; }
-    .auth-form input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; margin-bottom: 0.75rem; }
-    .auth-form button { width: 100%; padding: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
-    .auth-form button:hover { opacity: 0.9; }
-    .auth-form .google-btn { background: #fff; color: var(--text); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.75rem; }
-    .auth-form .google-btn:hover { background: #f8f7f4; }
-    .auth-form .auth-divider { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; color: var(--text-muted); font-size: 0.75rem; }
-    .auth-form .auth-divider::before, .auth-form .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .auth-error { color: var(--occupied); font-size: 0.8rem; margin-bottom: 0.5rem; display: none; }
 
     /* Page header */
     .page-header { padding: 1.25rem 1.5rem; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
@@ -155,35 +142,13 @@
   </style>
 </head>
 <body>
+  <div id="siteHeader"></div>
+  <span data-site-version style="display:none;">v260318.36 6:12p</span>
   <div id="toastContainer" class="toast-container"></div>
 
-  <!-- Auth overlay -->
-  <div id="authOverlay" class="auth-overlay">
-    <div class="auth-form">
-      <h2>Permitting Plan</h2>
-      <p>160 Still Forest Dr — Restricted Access</p>
-      <div id="authError" class="auth-error"></div>
-      <button class="google-btn" id="googleSignInBtn" onclick="doGoogleLogin()">
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Sign in with Google
-      </button>
-      <div class="auth-divider">or</div>
-      <input type="email" id="authEmail" placeholder="Email address" autocomplete="email">
-      <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
-      <button id="authSubmit" onclick="doLogin()">Sign In</button>
-    </div>
-    <div id="authSpinner" class="spinner" style="display:none"></div>
-    <div style="margin-top:1rem; font-size:0.6rem; color:#b0a89e;"><span data-site-version-auth>v260318.36 6:12p</span></div>
-  </div>
-
-  <!-- Page content (hidden until auth) -->
-  <div id="appContent" style="display:none">
+  <div id="appContent">
     <div class="page-header">
       <h1>Permitting Plan — 160 Still Forest Dr</h1>
-      <div>
-        <span class="user-info" id="userDisplay"></span>
-        <button class="logout-btn" onclick="doLogout()">Sign Out</button>
-      </div>
     </div>
 
     <div class="page-content">
@@ -325,101 +290,24 @@
 
   <div style="text-align:center; padding:1rem 0 0.5rem; font-size:0.65rem; color:#b0a89e;"><span data-site-version>v260318.36 6:12p</span></div>
 
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
   <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-    const supabase = createClient(
-      'https://aphrrfprbixmhissnjfn.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk'
-    );
-
-    const ALLOWED_USERS = [
-      'jackie61899280@gmail.com',
-      'sheppardsustainable@gmail.com',
-      'rahulioson@gmail.com',
-      'dpmoden8888@gmail.com',
-      'justin.gilbertson1@gmail.com',
-    ];
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    import { supabase } from '/shared/supabase.js';
 
     const PHASE_LABELS = { A: 'Phase A: Research & Site Visits', B: 'Phase B: IDP Submission Documents', C: 'Phase C: Build & Final Inspection' };
     const STATUS_LABELS = { pending: 'Pending', in_progress: 'In Progress', blocked: 'Blocked', completed: 'Done', skipped: 'Skipped', not_needed: 'N/A' };
     const STORAGE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/permitting-documents';
 
     let tasks = [];
-    let currentUser = null;
-
-    // ── Auth ──
-    async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session && ALLOWED_USERS.includes(session.user.email.toLowerCase())) {
-        currentUser = session.user;
-        showApp();
-        return;
-      }
-      if (session) await supabase.auth.signOut();
-      document.getElementById('authOverlay').classList.remove('hidden');
-    }
-
-    window.doGoogleLogin = async function() {
-      const errEl = document.getElementById('authError');
-      errEl.style.display = 'none';
-      document.getElementById('googleSignInBtn').disabled = true;
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.href.split('#')[0].split('?')[0],
-          queryParams: { prompt: 'select_account' },
-        },
-      });
-      document.getElementById('googleSignInBtn').disabled = false;
-      if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; }
-    };
-
-    window.doLogin = async function() {
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
-      const errEl = document.getElementById('authError');
-      errEl.style.display = 'none';
-
-      if (!email || !password) { errEl.textContent = 'Enter email and password.'; errEl.style.display = 'block'; return; }
-
-      document.getElementById('authSubmit').disabled = true;
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      document.getElementById('authSubmit').disabled = false;
-
-      if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
-      if (!ALLOWED_USERS.includes(data.user.email.toLowerCase())) {
-        errEl.textContent = 'You do not have access to this page.';
-        errEl.style.display = 'block';
-        await supabase.auth.signOut();
-        return;
-      }
-
-      currentUser = data.user;
-      showApp();
-    };
-
-    window.doLogout = async function() {
-      await supabase.auth.signOut();
-      document.getElementById('appContent').style.display = 'none';
-      document.getElementById('authOverlay').classList.remove('hidden');
-      document.getElementById('authPassword').value = '';
-    };
 
     async function showApp() {
-      document.getElementById('authOverlay').classList.add('hidden');
-      document.getElementById('appContent').style.display = 'block';
-      document.getElementById('userDisplay').textContent = currentUser.email;
       await loadTasks();
       renderReadinessBar();
       renderSummary();
       renderPhases();
       renderCostSummary();
     }
-
-    // Allow Enter key to submit login
-    document.getElementById('authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') window.doLogin(); });
-    document.getElementById('authEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
 
     // ── Data ──
     async function loadTasks() {
@@ -850,7 +738,7 @@
     }
 
     // ── Boot ──
-    checkSession();
+    initPersonalPage({ onReady: () => showApp() });
   </script>
 </body>
 </html>

@@ -112,6 +112,7 @@
   </style>
 </head>
 <body>
+  <div id="siteHeader"></div>
   <!-- Header -->
   <header class="aap-header aap-header--transparent aap-header--light" id="aap-header">
     <div class="aap-header__inner">
@@ -386,5 +387,10 @@
   </footer>
 
   <script type="module" src="/shared/version-info.js"></script>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
+  </script>
 </body>
 </html>

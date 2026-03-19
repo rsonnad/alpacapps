@@ -524,6 +524,7 @@
   </style>
 </head>
 <body>
+  <div id="siteHeader"></div>
 
   <!-- ─── HEADER ─── -->
   <header>
@@ -736,5 +737,10 @@
     </div>
   </footer>
 
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
+</script>
 </body>
 </html>

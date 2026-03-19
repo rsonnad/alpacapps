@@ -108,6 +108,7 @@
 </style>
 </head>
 <body>
+<div id="siteHeader"></div>
 
 <h1>Development Description</h1>
 <p class="subtitle">Individualized Development Plan (IDP) — Lodging Development<br>
@@ -410,5 +411,10 @@ Submitted to Bastrop County Development Services</p>
 
 <button class="print-btn no-print" onclick="window.print()">Print / Save as PDF</button>
 
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
+</script>
 </body>
 </html>
