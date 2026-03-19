@@ -1,12 +1,12 @@
 {
-  "version": "v260319.15 2:53a",
-  "release": 929,
-  "sha": "72144b098",
-  "fullSha": "72144b09861b2d900da49b2b90f1138b7e69fc6d",
+  "version": "v260319.16 3:02a",
+  "release": 930,
+  "sha": "a1341e878",
+  "fullSha": "a1341e878d882cf0a26158551893e9ae47f0b894",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 07:53:44+00",
-  "commits": [{"sha":"72144b098","message":"fix: maximize image visibility by compressing all controls into one toolbar","author":"Rahul"}]
+  "pushedAt": "2026-03-19 08:02:04+00",
+  "commits": [{"sha":"a1341e878","message":"fix: bold prompt names with truncated prompt text, bigger filter title","author":"Rahul"}]
 }
