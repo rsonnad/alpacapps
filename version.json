@@ -1,12 +1,12 @@
 {
-  "version": "v260319.16 3:02a",
-  "release": 930,
-  "sha": "a1341e878",
-  "fullSha": "a1341e878d882cf0a26158551893e9ae47f0b894",
+  "version": "v260319.17 3:05a",
+  "release": 931,
+  "sha": "5481a5880",
+  "fullSha": "5481a5880dbb3fe9619e9302c70feac6c50fe08c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 08:02:04+00",
-  "commits": [{"sha":"a1341e878","message":"fix: bold prompt names with truncated prompt text, bigger filter title","author":"Rahul"}]
+  "pushedAt": "2026-03-19 08:05:56+00",
+  "commits": [{"sha":"5481a5880","message":"fix: move expand arrow to left side of prompt filter header","author":"Rahul"}]
 }
