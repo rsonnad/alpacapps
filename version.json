@@ -1,12 +1,12 @@
 {
-  "version": "v260319.09 2:09a",
-  "release": 923,
-  "sha": "5eb1bc413",
-  "fullSha": "5eb1bc41389b6396c5513b1a86d1825d13d83c31",
+  "version": "v260319.10 2:11a",
+  "release": 924,
+  "sha": "2fe06a4f4",
+  "fullSha": "2fe06a4f4fb163f63beb0a6894bfe71af25e95cc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 07:09:50+00",
-  "commits": [{"sha":"5eb1bc413","message":"Color-coded privacy icons in personal page header (#75)","author":"Rahul"}]
+  "pushedAt": "2026-03-19 07:11:00+00",
+  "commits": [{"sha":"2fe06a4f4","message":"fix: use addEventListener for lightbox instead of inline onclick","author":"Rahul"}]
 }
