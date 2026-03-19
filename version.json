@@ -1,12 +1,12 @@
 {
-  "version": "v260319.21 3:28p",
-  "release": 935,
-  "sha": "c14d3c56d",
-  "fullSha": "c14d3c56d09a5bf86f823c23efc7569f0f569ea1",
+  "version": "v260319.22 3:42p",
+  "release": 936,
+  "sha": "e63d54768",
+  "fullSha": "e63d5476846d596dd583b0cb2c041612175c4467",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 20:28:12+00",
-  "commits": [{"sha":"c14d3c56d","message":"fix: add WITH CHECK to page_access RLS policies for INSERT/upsert","author":"Rahul"}]
+  "pushedAt": "2026-03-19 20:42:15+00",
+  "commits": [{"sha":"e63d54768","message":"fix: split FOR ALL into per-op RLS policies for PostgREST upsert compat","author":"Rahul"}]
 }
