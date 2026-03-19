@@ -185,32 +185,37 @@ async function processGrantParam(state) {
   history.replaceState(null, '', cleanUrl);
 }
 
-// ── Owner Toolbar (FAB + Settings Panel) ───────────────────────────────
+// ── Owner Toolbar (Header Button + Dropdown Panel) ─────────────────────
 function injectOwnerToolbar() {
-  if (document.getElementById('ppSettingsFab')) return;
+  if (document.getElementById('ppSettingsBtn')) return;
 
   // Inject styles
   const style = document.createElement('style');
   style.textContent = `
     @keyframes ppToastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    #ppSettingsFab {
-      position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 9990;
-      width: 48px; height: 48px; border-radius: 50%;
-      background: #d4883a; color: #fff; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 12px rgba(212,136,58,0.4);
-      transition: transform 0.15s, box-shadow 0.15s;
+    .pp-settings-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
     }
-    #ppSettingsFab:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(212,136,58,0.5); }
+
+    #ppSettingsBtn {
+      background: none; border: none; cursor: pointer;
+      color: inherit; padding: 6px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0.7; transition: opacity 0.15s;
+    }
+    #ppSettingsBtn:hover { opacity: 1; }
 
     #ppSettingsPanel {
-      position: fixed; bottom: 5rem; right: 1.25rem; z-index: 9991;
+      position: absolute; top: 100%; right: 0; z-index: 9991;
       width: 340px; max-height: 70vh; overflow-y: auto;
       background: #fff; border: 1px solid #e5e0d8; border-radius: 12px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.15);
       font-family: 'DM Sans', -apple-system, sans-serif;
-      display: none;
+      display: none; margin-top: 8px;
+      color: #1c1618;
     }
     #ppSettingsPanel.open { display: block; }
 
@@ -278,24 +283,41 @@ function injectOwnerToolbar() {
     .pp-share-btn:hover { background: #f0efea; }
 
     @media (max-width: 420px) {
-      #ppSettingsPanel { right: 0.5rem; left: 0.5rem; width: auto; bottom: 4.5rem; }
+      #ppSettingsPanel { right: -1rem; width: calc(100vw - 1rem); border-radius: 0 0 12px 12px; }
     }
   `;
   document.head.appendChild(style);
 
-  // FAB button
-  const fab = document.createElement('button');
-  fab.id = 'ppSettingsFab';
-  fab.title = 'Page access settings';
-  fab.innerHTML = ICONS.settings;
-  document.body.appendChild(fab);
+  // Create wrapper with button + dropdown
+  const wrap = document.createElement('div');
+  wrap.className = 'pp-settings-wrap';
 
-  // Panel
+  const btn = document.createElement('button');
+  btn.id = 'ppSettingsBtn';
+  btn.title = 'Page access settings';
+  btn.innerHTML = ICONS.settings;
+  wrap.appendChild(btn);
+
   const panel = document.createElement('div');
   panel.id = 'ppSettingsPanel';
-  document.body.appendChild(panel);
+  wrap.appendChild(panel);
 
-  fab.addEventListener('click', () => {
+  // Insert into header: before #aapHeaderAuth or append to header inner
+  const headerAuth = document.getElementById('aapHeaderAuth');
+  if (headerAuth) {
+    headerAuth.parentNode.insertBefore(wrap, headerAuth);
+  } else {
+    const headerInner = document.querySelector('.aap-header__inner');
+    if (headerInner) {
+      headerInner.appendChild(wrap);
+    } else {
+      // Fallback: append to body
+      document.body.appendChild(wrap);
+    }
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
     const isOpen = panel.classList.contains('open');
     if (isOpen) {
       panel.classList.remove('open');
@@ -307,7 +329,7 @@ function injectOwnerToolbar() {
 
   // Close when clicking outside
   document.addEventListener('click', (e) => {
-    if (!panel.contains(e.target) && e.target !== fab && !fab.contains(e.target)) {
+    if (!wrap.contains(e.target)) {
       panel.classList.remove('open');
     }
   });
