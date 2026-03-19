@@ -147,6 +147,12 @@ async function loadAll() {
   allImagery = allResult.data || [];
   myJobs = myResult.data || [];
 
+  // Set OG image to the latest completed image
+  if (allImagery.length > 0 && allImagery[0].result_url) {
+    const ogMeta = document.getElementById('ogImage');
+    if (ogMeta) ogMeta.setAttribute('content', allImagery[0].result_url);
+  }
+
   renderGallery();
   renderJobStatuses();
   updateDailyStatusText();

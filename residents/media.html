@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <link rel="preconnect" href="https://aphrrfprbixmhissnjfn.supabase.co">
   <title>Imagery - AlpacAPPs Residents</title>
+  <meta property="og:title" content="Life of PAI — Alpaca Playhouse">
+  <meta property="og:description" content="Daily AI-generated alpaca artwork in random artistic styles with personal affirmations.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alpacaplayhouse.com/residents/media.html">
+  <meta property="og:image" id="ogImage" content="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png">
+  <meta property="og:image:width" content="1024">
+  <meta property="og:image:height" content="1024">
+  <script>
+    // Pre-render: fetch latest PAI image for OG tag (runs before page load)
+    fetch('https://aphrrfprbixmhissnjfn.supabase.co/rest/v1/image_gen_jobs?select=result_url&status=eq.completed&result_url=not.is.null&order=created_at.desc&limit=1', {
+      headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk' }
+    }).then(r => r.json()).then(d => {
+      if (d?.[0]?.result_url) document.getElementById('ogImage')?.setAttribute('content', d[0].result_url);
+    }).catch(() => {});
+  </script>
   <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
