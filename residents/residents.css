@@ -714,39 +714,40 @@
   color: var(--text-muted, #666);
 }
 
-/* ===== COMPACT PAI CONTROLS ===== */
-.pai-controls-compact {
-  padding: 0.5rem 0 0;
-}
-.pai-controls-compact .section-body,
-.pai-controls-compact .section-header {
-  display: none;
-}
-.pai-controls-row {
+/* ===== IMAGERY TIGHT LAYOUT ===== */
+.imagery-tight { padding-top: 0; }
+.imagery-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.4rem;
+  padding: 0.2rem 0;
   flex-wrap: wrap;
-  padding: 0 0.25rem;
 }
-.pai-controls-left {
+.imagery-toolbar-left,
+.imagery-toolbar-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 0.35rem;
 }
-.btn-sm {
-  font-size: 0.78rem;
-  padding: 0.3rem 0.75rem;
+.imagery-auto-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--text-muted, #666);
+  cursor: pointer;
+  white-space: nowrap;
 }
+.imagery-auto-toggle input { margin: 0; }
 
 .pai-job-status-list {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  margin-top: 0.4rem;
+  gap: 0.2rem;
+  margin-bottom: 0.2rem;
 }
+.pai-job-status-list:empty { display: none; }
 
 .pai-job-status {
   display: flex;
@@ -847,32 +848,22 @@
   background: rgba(192, 57, 43, 0.08);
 }
 
-/* ===== IMAGERY FILTER BAR ===== */
-.imagery-filter-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-}
+/* ===== IMAGERY FILTER TABS ===== */
 .imagery-filter-tabs {
   display: flex;
   gap: 0;
   border: 1px solid var(--border, #ddd);
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 }
 .imagery-filter-tab {
-  padding: 0.4rem 1rem;
-  font-size: 0.82rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
   font-weight: 500;
   border: none;
   background: transparent;
   cursor: pointer;
   color: var(--text-muted, #666);
-  transition: background 0.15s, color 0.15s;
 }
 .imagery-filter-tab:not(:last-child) {
   border-right: 1px solid var(--border, #ddd);
@@ -881,19 +872,11 @@
   background: var(--brand, #1f1720);
   color: #fff;
 }
-.imagery-filter-tab:hover:not(.active) {
-  background: rgba(0, 0, 0, 0.04);
-}
-.imagery-filter-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 .imagery-sort-select {
-  font-size: 0.82rem;
-  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.3rem;
   border: 1px solid var(--border, #ddd);
-  border-radius: 6px;
+  border-radius: 4px;
   background: #fff;
   cursor: pointer;
 }
@@ -901,19 +884,19 @@
 /* ===== PROMPT FILTER BOX ===== */
 .prompt-filter-box {
   border: 1px solid var(--border, #ddd);
-  border-radius: 8px;
+  border-radius: 6px;
   background: #fafaf8;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.3rem;
 }
 .prompt-filter-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   border-bottom: 1px solid var(--border, #ddd);
 }
 .prompt-filter-title {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted, #666);
   text-transform: uppercase;
@@ -928,7 +911,7 @@
   padding: 0.35rem 0;
 }
 .prompt-filter-collapsed {
-  max-height: 5.4rem; /* ~3 items */
+  max-height: 4.2rem; /* ~3 items */
   overflow: hidden;
 }
 .prompt-filter-expanded {
@@ -939,9 +922,9 @@
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.8rem;
-  line-height: 1.35;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
   cursor: pointer;
   transition: background 0.1s;
 }

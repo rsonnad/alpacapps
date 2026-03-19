@@ -42,56 +42,42 @@
 
     <div class="manage-tabs" id="tabNav"></div>
 
-    <main class="manage-content resident-media-page">
-      <!-- Life of PAI controls (compact) -->
-      <section class="section pai-controls-compact">
-        <div class="pai-controls-row">
-          <div class="pai-controls-left">
-            <label class="settings-toggle">
-              <input type="checkbox" id="autoDailyToggle">
-              <span class="settings-toggle-label">Auto-generate daily artwork</span>
-            </label>
-            <span id="dailyStatusText" class="text-muted" style="font-size:0.8rem;"></span>
-          </div>
-          <button id="generateNowBtn" class="btn-primary btn-sm">Generate Today's Artwork</button>
-        </div>
-        <div id="jobStatusList" class="pai-job-status-list"></div>
-      </section>
-
-      <!-- Imagery feed with filters -->
-      <section class="section">
-        <div class="section-header">
-          <h2>PAI Imagery Feed</h2>
-          <span id="feedCount" class="text-muted" style="font-size:0.85rem;"></span>
-        </div>
-        <div class="imagery-filter-bar">
+    <main class="manage-content resident-media-page imagery-tight">
+      <div id="jobStatusList" class="pai-job-status-list"></div>
+      <div class="imagery-toolbar">
+        <div class="imagery-toolbar-left">
           <div class="imagery-filter-tabs">
-            <button class="imagery-filter-tab active" data-filter="all">All Imagery</button>
-            <button class="imagery-filter-tab" data-filter="mine">My Art</button>
+            <button class="imagery-filter-tab active" data-filter="all">All</button>
+            <button class="imagery-filter-tab" data-filter="mine">Mine</button>
           </div>
-          <div class="imagery-filter-controls">
-            <select id="sortSelect" class="imagery-sort-select">
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-            </select>
-            <button id="refreshBtn" class="btn-small">Refresh</button>
+          <span id="feedCount" class="text-muted" style="font-size:0.78rem;"></span>
+          <select id="sortSelect" class="imagery-sort-select">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+          </select>
+        </div>
+        <div class="imagery-toolbar-right">
+          <label class="imagery-auto-toggle" title="Auto-generate daily artwork">
+            <input type="checkbox" id="autoDailyToggle">
+            <span>Auto-daily</span>
+          </label>
+          <span id="dailyStatusText" class="text-muted" style="font-size:0.72rem;display:none;"></span>
+          <button id="generateNowBtn" class="btn-small">Generate</button>
+          <button id="refreshBtn" class="btn-small">Refresh</button>
+        </div>
+      </div>
+      <div id="promptFilterBox" class="prompt-filter-box hidden">
+        <div class="prompt-filter-header">
+          <span class="prompt-filter-title">Prompts</span>
+          <div class="prompt-filter-actions">
+            <button id="promptSelectAll" class="btn-small">All</button>
+            <button id="promptDeselectAll" class="btn-small">None</button>
+            <button id="promptExpandToggle" class="btn-small">More</button>
           </div>
         </div>
-        <div id="promptFilterBox" class="prompt-filter-box hidden">
-          <div class="prompt-filter-header">
-            <span class="prompt-filter-title">Filter by prompt</span>
-            <div class="prompt-filter-actions">
-              <button id="promptSelectAll" class="btn-small">Select All</button>
-              <button id="promptDeselectAll" class="btn-small">Deselect All</button>
-              <button id="promptExpandToggle" class="btn-small">Show more</button>
-            </div>
-          </div>
-          <div id="promptFilterList" class="prompt-filter-list prompt-filter-collapsed"></div>
-        </div>
-        <div class="section-body">
-          <div id="galleryGrid" class="pai-gallery-grid"></div>
-        </div>
-      </section>
+        <div id="promptFilterList" class="prompt-filter-list prompt-filter-collapsed"></div>
+      </div>
+      <div id="galleryGrid" class="pai-gallery-grid"></div>
     </main>
   </div>
 
