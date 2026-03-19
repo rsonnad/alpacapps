@@ -41,26 +41,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Thin nav header ── */
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.6rem 1.25rem;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      text-decoration: none;
-      color: var(--text);
-    }
-    .nav-brand svg { width: 22px; height: 22px; }
-    .nav-brand span { font-weight: 600; font-size: 0.85rem; letter-spacing: -0.01em; }
-    .nav-title { font-size: 0.8rem; color: var(--text-dim); font-weight: 500; }
-
     /* ── Content ── */
     .container {
       max-width: 640px;
@@ -155,14 +135,6 @@
 </head>
 <body>
   <div id="siteHeader"></div>
-
-  <nav class="nav">
-    <a class="nav-brand" href="https://alpacaplayhouse.com/">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>Alpaca Playhouse</span>
-    </a>
-    <span class="nav-title">Sloop</span>
-  </nav>
 
   <div class="container">
 
