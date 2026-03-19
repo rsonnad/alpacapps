@@ -317,7 +317,9 @@ function injectOwnerToolbar() {
   const btn = document.createElement('button');
   btn.id = 'ppSettingsBtn';
   btn.title = 'Page access settings';
-  updateSettingsButtonIcon();
+  const vis = pageSettings?.visibility || 'registered';
+  btn.innerHTML = getVisibilityIcon(vis);
+  btn.style.color = VIS_COLORS[vis] || '#8c8279';
   wrap.appendChild(btn);
 
   const panel = document.createElement('div');
