@@ -489,7 +489,7 @@ function injectHeader(options = {}) {
 
   headerTarget.innerHTML = renderHeader({
     transparent: false,
-    light: true,
+    light: false,
     activePage: '',
     showMistiq: false,
     version,
