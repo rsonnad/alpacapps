@@ -1,12 +1,12 @@
 {
-  "version": "v260318.37 6:59p",
-  "release": 902,
-  "sha": "97231eeb6",
-  "fullSha": "97231eeb68621facc22cd381775d924dea6b5eea",
+  "version": "v260318.38 7:06p",
+  "release": 903,
+  "sha": "24ef69d88",
+  "fullSha": "24ef69d889bb3404d3f8dc0ee8d725c26b9d9a3f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-18 23:59:51+00",
-  "commits": [{"sha":"d7be2e059","message":"fix: improve rahulbio page SEO for search engine discoverability","author":"Rahul"},{"sha":"7b7be76c2","message":"fix: update bio about section with preroll ads and Sherpa firsts","author":"Rahul"},{"sha":"8740c07d5","message":"feat: add version display to rahulbio footer","author":"Rahul"},{"sha":"97231eeb6","message":"Merge pull request #61 from rsonnad/rahuliofam/rahulbio-seo-fix","author":"Rahul"}]
+  "pushedAt": "2026-03-19 00:06:15+00",
+  "commits": [{"sha":"c1ae9e123","message":"fix: update bio firsts text and move version to top-right corner","author":"Rahul"},{"sha":"24ef69d88","message":"Merge pull request #64 from rsonnad/rahuliofam/rahulbio-seo-fix","author":"Rahul"}]
 }
