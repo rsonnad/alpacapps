@@ -1,12 +1,12 @@
 {
-  "version": "v260319.10 2:11a",
-  "release": 924,
-  "sha": "2fe06a4f4",
-  "fullSha": "2fe06a4f4fb163f63beb0a6894bfe71af25e95cc",
+  "version": "v260319.11 2:31a",
+  "release": 925,
+  "sha": "8d7d9d22d",
+  "fullSha": "8d7d9d22d1e4f4a77b5c1b23536ea31f999209a5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 07:11:00+00",
-  "commits": [{"sha":"2fe06a4f4","message":"fix: use addEventListener for lightbox instead of inline onclick","author":"Rahul"}]
+  "pushedAt": "2026-03-19 07:31:17+00",
+  "commits": [{"sha":"8d7d9d22d","message":"Fix missing privacy icon in header (#76)","author":"Rahul"}]
 }
