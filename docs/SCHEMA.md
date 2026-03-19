@@ -325,6 +325,20 @@ Key columns on spaces:
   airbnb_blocked_dates - JSONB array of blocked date ranges
 ```
 
+### Amazon Order History
+```
+amazon_orders   - Imported Amazon order history (7,924 rows, 2000–2026)
+                  (asin, billing_address, carrier_tracking, currency,
+                   gift_message, gift_recipient, gift_sender, item_serial,
+                   order_date, order_id, order_status, quantity,
+                   payment_method, product_condition, product_name,
+                   purchase_order_number, ship_date, subtotal, subtotal_tax,
+                   shipment_status, shipping_address, shipping_charge,
+                   shipping_option, total_amount, total_discounts,
+                   unit_price, unit_price_tax, website)
+                  Unique: (order_id, asin, ship_date)
+```
+
 ### Legacy (Deprecated - don't use for new features)
 ```
 photos          - DEPRECATED: migrated to media (table retained for historical reference)
