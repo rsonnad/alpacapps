@@ -1,12 +1,12 @@
 {
-  "version": "v260319.03 12:22a",
-  "release": 917,
-  "sha": "695ea1e14",
-  "fullSha": "695ea1e14873f3515cd13e65e62b92a9bfc11ae3",
+  "version": "v260319.04 12:28a",
+  "release": 918,
+  "sha": "af252f681",
+  "fullSha": "af252f6817d8889a25d675c820e90cb38808989d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 05:22:51+00",
-  "commits": [{"sha":"695ea1e14","message":"fix: move tab permission sync to admin-shell so it runs on every page","author":"Rahul"}]
+  "pushedAt": "2026-03-19 05:28:07+00",
+  "commits": [{"sha":"af252f681","message":"feat: merge PAI Imagery into resident Imagery tab with filtering","author":"Rahul"}]
 }
