@@ -152,7 +152,6 @@ async function loadAll() {
 }
 
 function getFilteredRows() {
-  const userId = authState?.appUser?.id;
   let rows;
 
   if (currentFilter === 'mine') {
