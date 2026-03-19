@@ -37,6 +37,9 @@ CREATE POLICY "Admins can manage page settings"
   ON page_access_settings FOR ALL
   USING (
     (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
+  )
+  WITH CHECK (
+    (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
   );
 
 ALTER TABLE page_access_grants ENABLE ROW LEVEL SECURITY;
@@ -59,6 +62,9 @@ CREATE POLICY "Admins can read all grants"
 CREATE POLICY "Admins can manage grants"
   ON page_access_grants FOR ALL
   USING (
+    (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
+  )
+  WITH CHECK (
     (SELECT role FROM app_users WHERE auth_user_id = auth.uid()) IN ('admin','oracle')
   );
 
