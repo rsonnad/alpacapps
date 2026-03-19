@@ -66,6 +66,8 @@ let myJobs = [];           // current user's jobs (including pending)
 let currentFilter = 'all'; // 'all' | 'mine'
 let currentSort = 'newest';
 let allImageUrls = [];
+let checkedPrompts = new Set(); // prompt labels that are checked (shown)
+let allPromptLabels = [];       // unique prompt labels in order
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
@@ -102,6 +104,7 @@ function setupEvents() {
       document.querySelectorAll('.imagery-filter-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.filter;
+      buildPromptFilter();
       renderGallery();
     });
   });
@@ -147,9 +150,82 @@ async function loadAll() {
   allImagery = allResult.data || [];
   myJobs = myResult.data || [];
 
+  buildPromptFilter();
   renderGallery();
   renderJobStatuses();
   updateDailyStatusText();
+}
+
+function getPromptLabel(row) {
+  // Derive a short label from the prompt or metadata
+  const title = row.metadata?.title || row.metadata?.batch_label || '';
+  if (title) return title;
+  // Fall back to first 80 chars of prompt
+  const p = (row.prompt || '').trim();
+  return p.length > 80 ? p.slice(0, 80) + '…' : p || '(no prompt)';
+}
+
+function buildPromptFilter() {
+  const box = document.getElementById('promptFilterBox');
+  const list = document.getElementById('promptFilterList');
+  if (!box || !list) return;
+
+  // Get rows based on current All/Mine filter
+  const source = currentFilter === 'mine'
+    ? myJobs.filter(j => j.status === 'completed' && j.result_url)
+    : allImagery;
+
+  // Group by prompt label and count
+  const counts = new Map();
+  for (const row of source) {
+    const label = getPromptLabel(row);
+    counts.set(label, (counts.get(label) || 0) + 1);
+  }
+
+  allPromptLabels = [...counts.keys()];
+
+  // On first build or when filter changes, check all by default
+  checkedPrompts = new Set(allPromptLabels);
+
+  if (allPromptLabels.length <= 1) {
+    box.classList.add('hidden');
+    return;
+  }
+
+  box.classList.remove('hidden');
+
+  list.innerHTML = allPromptLabels.map((label, i) => `
+    <label class="prompt-filter-item">
+      <input type="checkbox" checked data-idx="${i}">
+      <span class="prompt-label">${escapeHtml(label)}</span>
+      <span class="prompt-count">${counts.get(label)}</span>
+    </label>
+  `).join('');
+
+  // Bind checkboxes
+  list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const label = allPromptLabels[parseInt(cb.dataset.idx)];
+      if (cb.checked) {
+        checkedPrompts.add(label);
+      } else {
+        checkedPrompts.delete(label);
+      }
+      renderGallery();
+    });
+  });
+
+  // Select/Deselect all buttons
+  document.getElementById('promptSelectAll')?.addEventListener('click', () => {
+    checkedPrompts = new Set(allPromptLabels);
+    list.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+    renderGallery();
+  });
+  document.getElementById('promptDeselectAll')?.addEventListener('click', () => {
+    checkedPrompts.clear();
+    list.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    renderGallery();
+  });
 }
 
 function getFilteredRows() {
@@ -159,6 +235,13 @@ function getFilteredRows() {
     rows = myJobs.filter(j => j.status === 'completed' && j.result_url);
   } else {
     rows = allImagery;
+  }
+
+  // Filter by checked prompts
+  if (checkedPrompts.size > 0 && checkedPrompts.size < allPromptLabels.length) {
+    rows = rows.filter(r => checkedPrompts.has(getPromptLabel(r)));
+  } else if (checkedPrompts.size === 0 && allPromptLabels.length > 0) {
+    rows = [];
   }
 
   // Sort
