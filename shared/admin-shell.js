@@ -118,6 +118,52 @@ export function showToast(message, type = 'info', duration = 4000) {
 }
 
 // =============================================
+// TAB PERMISSION SYNC
+// =============================================
+// Ensures every tab's permission key exists in the DB.
+// Returns true if new permissions were inserted (caller should refresh user perms).
+let _permSyncDone = false;
+async function syncTabPermissions() {
+  if (_permSyncDone) return false;
+  _permSyncDone = true;
+  try {
+    const tabPermKeys = [...new Set(ALL_ADMIN_TABS.map(t => t.permission))];
+    const { data: existing } = await supabase
+      .from('permissions')
+      .select('key')
+      .in('key', tabPermKeys);
+    const existingKeys = new Set((existing || []).map(p => p.key));
+    const missing = tabPermKeys.filter(k => !existingKeys.has(k));
+    if (missing.length === 0) return false;
+
+    const permRows = missing.map(key => {
+      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const tab = ALL_ADMIN_TABS.find(t => t.permission === key);
+      const category = tab ? tab.section : 'staff';
+      return { key, label, description: 'Auto-synced from tab definition', category, sort_order: 100 };
+    });
+    const { error: insertErr } = await supabase.from('permissions').insert(permRows);
+    if (insertErr) { console.warn('Permission sync insert error:', insertErr); return false; }
+
+    const viewKeys = missing.filter(k => k.startsWith('view_'));
+    if (viewKeys.length > 0) {
+      const roleRows = [];
+      for (const role of ['staff', 'admin', 'oracle']) {
+        for (const key of viewKeys) {
+          roleRows.push({ role, permission_key: key });
+        }
+      }
+      await supabase.from('role_permissions').insert(roleRows);
+    }
+    console.log(`Synced ${missing.length} new permission(s):`, missing);
+    return true;
+  } catch (err) {
+    console.warn('Permission sync failed:', err);
+    return false;
+  }
+}
+
+// =============================================
 // TAB NAVIGATION
 // =============================================
 export async function renderTabNav(activeTab, authState, section = 'staff') {
@@ -540,6 +586,17 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
       const isDemo = state.appUser.role === 'demo';
       const resolvedSection = section === 'devcontrol' && userIsAdmin ? 'devcontrol' : (section === 'admin' && userIsAdmin ? 'admin' : 'staff');
+
+      // Sync tab permissions to DB — if new perms were created, refresh user's permission set
+      const synced = await syncTabPermissions();
+      if (synced && state.appUser?.id) {
+        const { data: permData } = await supabase.rpc('get_effective_permissions', { p_app_user_id: state.appUser.id });
+        if (permData) {
+          state.permissions = new Set(permData);
+          state.hasPermission = (key) => state.permissions.has(key);
+          state.hasAnyPermission = (...keys) => keys.some(k => state.permissions.has(k));
+        }
+      }
 
       await renderTabNav(activeTab, state, resolvedSection);
       await renderContextSwitcher(state.appUser?.role, resolvedSection);

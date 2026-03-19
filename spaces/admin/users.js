@@ -1,6 +1,6 @@
 // User Management - Admin only
 import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast, ALL_ADMIN_TABS } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 import { emailService } from '../../shared/email-service.js';
 import { formatDateAustin, getAustinToday } from '../../shared/timezone.js';
 import { hasPermission } from '../../shared/auth.js';
@@ -19,63 +19,6 @@ function withTimeout(promise, ms = DB_TIMEOUT_MS, errorMessage = 'Operation time
       setTimeout(() => reject(new Error(errorMessage)), ms)
     )
   ]);
-}
-
-/**
- * Sync tab permissions to DB — ensures every tab's permission key exists
- * in the permissions table. Also seeds role_permissions for staff+ roles.
- * Runs once on admin users page load (non-blocking).
- */
-async function syncTabPermissions() {
-  try {
-    // Collect all unique permission keys from tab definitions
-    const tabPermKeys = [...new Set(ALL_ADMIN_TABS.map(t => t.permission))];
-
-    // Also collect all keys referenced in PERM_GROUPS
-    const groupPermKeys = PERM_GROUPS.flatMap(g => [...g.keys, ...(g.adminKey ? [g.adminKey] : [])]);
-    const allNeededKeys = [...new Set([...tabPermKeys, ...groupPermKeys])];
-
-    // Fetch existing permissions
-    const { data: existing } = await supabase
-      .from('permissions')
-      .select('key')
-      .in('key', allNeededKeys);
-    const existingKeys = new Set((existing || []).map(p => p.key));
-
-    // Find missing permission keys
-    const missing = allNeededKeys.filter(k => !existingKeys.has(k));
-    if (missing.length === 0) return;
-
-    // Build rows to insert into permissions table
-    const permRows = missing.map(key => {
-      // Derive label from key: view_pai_imagery → View PAI Imagery
-      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      // Determine category from tab section or default
-      const tab = ALL_ADMIN_TABS.find(t => t.permission === key);
-      const category = tab ? tab.section : 'staff';
-      return { key, label, description: `Auto-synced from tab definition`, category, sort_order: 100 };
-    });
-
-    const { error: insertErr } = await supabase.from('permissions').insert(permRows);
-    if (insertErr) { console.warn('Permission sync insert error:', insertErr); return; }
-
-    // Seed role_permissions for staff, admin, oracle for view_* keys
-    const viewKeys = missing.filter(k => k.startsWith('view_'));
-    if (viewKeys.length > 0) {
-      const roleRows = [];
-      for (const role of ['staff', 'admin', 'oracle']) {
-        for (const key of viewKeys) {
-          roleRows.push({ role, permission_key: key });
-        }
-      }
-      const { error: roleErr } = await supabase.from('role_permissions').insert(roleRows);
-      if (roleErr) console.warn('Role permission sync error:', roleErr);
-    }
-
-    console.log(`Synced ${missing.length} new permission(s):`, missing);
-  } catch (err) {
-    console.warn('Permission sync failed:', err);
-  }
 }
 
 let authState = null;
@@ -103,8 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       pendingCount = document.getElementById('pendingCount');
       usersCount = document.getElementById('usersCount');
 
-      // Sync tab permissions to DB (non-blocking) and load data
-      syncTabPermissions(); // fire-and-forget
+      // Load data
       await Promise.all([loadUsers(), loadInvitations(), loadPeople()]);
       render();
       setupEventListeners();
