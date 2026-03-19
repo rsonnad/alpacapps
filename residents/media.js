@@ -199,7 +199,7 @@ function renderGallery() {
 
     return `
     <article class="pai-gallery-card">
-      <a href="javascript:void(0)" onclick="window.__openImageryLightbox('${row.result_url.replace(/'/g, "\\'")}')" style="cursor:pointer;">
+      <a href="#" class="pai-gallery-img-link" data-url="${row.result_url.replace(/"/g, '&quot;')}">
         <img src="${row.result_url}" alt="PAI imagery" loading="lazy">
       </a>
       ${affirmation ? `<div class="pai-gallery-card__affirmation">${escapeHtml(affirmation)}</div>` : ''}
@@ -209,6 +209,13 @@ function renderGallery() {
       </div>
     </article>`;
   }).join('');
+
+  grid.querySelectorAll('.pai-gallery-img-link').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLightbox(link.dataset.url, allImageUrls);
+    });
+  });
 
   grid.querySelectorAll('.pai-gallery-delete').forEach((btn) => {
     btn.addEventListener('click', (e) => {
@@ -237,11 +244,6 @@ function renderJobStatuses() {
     </div>
   `).join('');
 }
-
-// Lightbox — expose globally for onclick handlers
-window.__openImageryLightbox = function(url) {
-  openLightbox(url, allImageUrls);
-};
 
 // ---- Daily art generation ----
 
