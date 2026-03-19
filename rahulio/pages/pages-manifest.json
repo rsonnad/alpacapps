@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-19T04:44:41.242Z",
+  "generatedAt": "2026-03-19T04:53:38.383Z",
   "sections": [
     "E-2 Visa",
     "Projects"
@@ -156,6 +156,12 @@
       "modifiedAt": "2026-03-19T01:13:44.000Z"
     },
     {
+      "path": "sloop/index.html",
+      "title": "Sloop — Alpaca Playhouse",
+      "section": "Projects",
+      "modifiedAt": "2026-03-19T04:52:59.000Z"
+    },
+    {
       "path": "bandb/index.html",
       "title": "The Animist Apothecary — Bodywork + Botanicals",
       "section": "Projects",
@@ -164,12 +170,6 @@
     {
       "path": "iaw/index.html",
       "title": "Welcome to the Alpachuasca Playhouse",
-      "section": "Projects",
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "sloop/index.html",
-      "title": "Sloop — Alpaca Playhouse",
       "section": "Projects",
       "modifiedAt": "2026-03-19T01:13:44.000Z"
     }

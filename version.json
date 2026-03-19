@@ -1,12 +1,12 @@
 {
-  "version": "v260318.47 11:41p",
-  "release": 912,
-  "sha": "212b3a521",
-  "fullSha": "212b3a521e6fcffa81aa37270eba8b67e5ee5559",
+  "version": "v260318.48 11:52p",
+  "release": 913,
+  "sha": "b9e63cfc9",
+  "fullSha": "b9e63cfc91fd9d9a902cbcb622896611d3e1fc69",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 04:41:39+00",
-  "commits": [{"sha":"212b3a521","message":"Add next steps: pay or initiate arbitration per contract","author":"Rahul"}]
+  "pushedAt": "2026-03-19 04:52:59+00",
+  "commits": [{"sha":"b9e63cfc9","message":"Remove duplicate nav headers from 3 pages (#72)","author":"Rahul"}]
 }
