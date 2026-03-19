@@ -1,4 +1,4 @@
-import { initResidentPage, showToast } from '../shared/resident-shell.js';
+import { initResidentPage, showToast, setupLightbox, openLightbox } from '../shared/resident-shell.js';
 import { supabase } from '../shared/supabase.js';
 import { getAuthState } from '../shared/auth.js';
 
@@ -61,7 +61,11 @@ Also return a short affirmation, proverb, or poetic phrase (1-3 sentences max) i
 Return the affirmation as plain text in the text portion of your response (alongside the generated image).`;
 
 let authState = null;
-let galleryJobs = [];
+let allImagery = [];       // all completed PAI imagery
+let myJobs = [];           // current user's jobs (including pending)
+let currentFilter = 'all'; // 'all' | 'mine'
+let currentSort = 'newest';
+let allImageUrls = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initResidentPage({
@@ -70,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     requiredPermission: 'view_profile',
     onReady: async (state) => {
       authState = state;
+      setupLightbox();
       setupEvents();
       await loadAll();
       await maybeQueueDailyArt();
@@ -78,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupEvents() {
-  document.getElementById('refreshMediaBtn')?.addEventListener('click', loadAll);
+  document.getElementById('refreshBtn')?.addEventListener('click', loadAll);
   document.getElementById('generateNowBtn')?.addEventListener('click', () => queueArtJob(false));
 
   const autoToggle = document.getElementById('autoDailyToggle');
@@ -90,57 +95,127 @@ function setupEvents() {
       updateDailyStatusText();
     });
   }
+
+  // Filter tabs
+  document.querySelectorAll('.imagery-filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.imagery-filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderGallery();
+    });
+  });
+
+  // Sort select
+  document.getElementById('sortSelect')?.addEventListener('change', (e) => {
+    currentSort = e.target.value;
+    renderGallery();
+  });
 }
 
 async function loadAll() {
-  await loadGalleryJobs();
+  const userId = authState?.appUser?.id;
+  if (!userId) return;
+
+  // Load both feeds in parallel
+  const [allResult, myResult] = await Promise.all([
+    // All completed PAI imagery (what staff Imagery tab showed)
+    supabase
+      .from('image_gen_jobs')
+      .select('id, prompt, status, created_at, completed_at, result_url, metadata')
+      .eq('status', 'completed')
+      .not('result_url', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(400),
+    // My jobs (including pending/processing for status display)
+    supabase
+      .from('image_gen_jobs')
+      .select('id, status, prompt, created_at, completed_at, result_url, error_message, metadata')
+      .contains('metadata', { app_user_id: userId, purpose: DAILY_PURPOSE })
+      .order('created_at', { ascending: false })
+      .limit(60),
+  ]);
+
+  if (allResult.error) {
+    console.error('Failed to load imagery feed:', allResult.error);
+    showToast('Could not load imagery feed', 'error');
+  }
+  if (myResult.error) {
+    console.error('Failed to load my jobs:', myResult.error);
+  }
+
+  allImagery = allResult.data || [];
+  myJobs = myResult.data || [];
+
   renderGallery();
   renderJobStatuses();
   updateDailyStatusText();
 }
 
-async function loadGalleryJobs() {
-  const userId = authState?.appUser?.id;
-  if (!userId) return;
+function getFilteredRows() {
+  let rows;
 
-  const { data, error } = await supabase
-    .from('image_gen_jobs')
-    .select('id, status, prompt, created_at, completed_at, result_url, error_message, metadata')
-    .contains('metadata', { app_user_id: userId, purpose: DAILY_PURPOSE })
-    .order('created_at', { ascending: false })
-    .limit(60);
-
-  if (error) {
-    console.error('Failed to load gallery jobs:', error);
-    showToast('Could not load gallery', 'error');
-    return;
+  if (currentFilter === 'mine') {
+    rows = myJobs.filter(j => j.status === 'completed' && j.result_url);
+  } else {
+    rows = allImagery;
   }
 
-  galleryJobs = data || [];
+  // Sort
+  rows = [...rows].sort((a, b) => {
+    const da = new Date(a.completed_at || a.created_at);
+    const db = new Date(b.completed_at || b.created_at);
+    return currentSort === 'newest' ? db - da : da - db;
+  });
+
+  return rows;
 }
 
 function renderGallery() {
   const grid = document.getElementById('galleryGrid');
+  const countEl = document.getElementById('feedCount');
   if (!grid) return;
 
-  const completed = galleryJobs.filter((job) => job.status === 'completed' && job.result_url);
-  if (completed.length === 0) {
-    grid.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">No artwork yet. Generate one to get started.</p>';
+  const rows = getFilteredRows();
+
+  if (countEl) countEl.textContent = `${rows.length} image${rows.length === 1 ? '' : 's'}`;
+
+  if (rows.length === 0) {
+    grid.innerHTML = currentFilter === 'mine'
+      ? '<p class="text-muted" style="font-size:0.85rem;">No artwork yet. Generate one to get started.</p>'
+      : '<p class="text-muted" style="font-size:0.85rem;">No generated images found.</p>';
+    allImageUrls = [];
     return;
   }
 
-  grid.innerHTML = completed.map((job) => {
-    const affirmation = job.metadata?.affirmation || '';
+  allImageUrls = rows.map(r => r.result_url);
+
+  grid.innerHTML = rows.map((row) => {
+    const person = row.metadata?.app_user_name || row.metadata?.vehicle_name || row.metadata?.person_name || '';
+    const purpose = row.metadata?.purpose || '';
+    const affirmation = row.metadata?.affirmation || '';
+    const isMine = row.metadata?.app_user_id === authState?.appUser?.id;
+    const dateStr = formatDate(row.completed_at || row.created_at);
+
     return `
     <article class="pai-gallery-card">
-      <img src="${job.result_url}" alt="Life of PAI alpaca art" loading="lazy">
+      <a href="#" class="pai-gallery-img-link" data-url="${row.result_url.replace(/"/g, '&quot;')}">
+        <img src="${row.result_url}" alt="PAI imagery" loading="lazy">
+      </a>
       ${affirmation ? `<div class="pai-gallery-card__affirmation">${escapeHtml(affirmation)}</div>` : ''}
       <div class="pai-gallery-card__meta">
-        <span>${formatDate(job.completed_at || job.created_at)}</span>
-        <button class="pai-gallery-delete" data-job-id="${job.id}" title="Delete">&times;</button>
+        <span>${person ? escapeHtml(person) + ' · ' : ''}${dateStr}${purpose ? ' · ' + escapeHtml(humanizePurpose(purpose)) : ''}</span>
+        ${isMine ? `<button class="pai-gallery-delete" data-job-id="${row.id}" title="Delete">&times;</button>` : ''}
       </div>
     </article>`;
   }).join('');
+
+  grid.querySelectorAll('.pai-gallery-img-link').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLightbox(link.dataset.url, allImageUrls);
+    });
+  });
 
   grid.querySelectorAll('.pai-gallery-delete').forEach((btn) => {
     btn.addEventListener('click', (e) => {
@@ -155,7 +230,7 @@ function renderJobStatuses() {
   const list = document.getElementById('jobStatusList');
   if (!list) return;
 
-  const activeOrFailed = galleryJobs.filter((job) => job.status !== 'completed').slice(0, 8);
+  const activeOrFailed = myJobs.filter((job) => job.status !== 'completed').slice(0, 8);
   if (activeOrFailed.length === 0) {
     list.innerHTML = '';
     return;
@@ -169,6 +244,8 @@ function renderJobStatuses() {
     </div>
   `).join('');
 }
+
+// ---- Daily art generation ----
 
 async function maybeQueueDailyArt() {
   const autoEnabled = getAutoDailyEnabled();
@@ -186,7 +263,6 @@ async function queueArtJob(isAutoDaily) {
   const todayStr = new Date().toISOString().slice(0, 10);
   const displayName = user.display_name || user.first_name || user.email || 'resident';
 
-  // Gather all available user context for the affirmation
   const userContext = [
     `Name: ${displayName}`,
     user.pronouns ? `Pronouns: ${user.pronouns}` : null,
@@ -238,16 +314,14 @@ Pick a fresh artistic style and scene. Make the affirmation feel personal to thi
 }
 
 async function deleteGalleryJob(jobId) {
-  const job = galleryJobs.find((j) => String(j.id) === String(jobId));
-  if (!job) {
-    console.warn('deleteGalleryJob: job not found for id', jobId);
-    return;
-  }
+  const job = myJobs.find((j) => String(j.id) === String(jobId))
+    || allImagery.find((j) => String(j.id) === String(jobId));
+  if (!job) return;
 
-  galleryJobs = galleryJobs.filter((j) => String(j.id) !== String(jobId));
+  // Optimistic removal
+  myJobs = myJobs.filter((j) => String(j.id) !== String(jobId));
+  allImagery = allImagery.filter((j) => String(j.id) !== String(jobId));
   renderGallery();
-  renderJobStatuses();
-  updateDailyStatusText();
 
   const { data, error } = await supabase
     .from('image_gen_jobs')
@@ -256,11 +330,9 @@ async function deleteGalleryJob(jobId) {
     .select('id');
 
   if (error || !data?.length) {
-    console.error('Failed to delete gallery job:', error || 'no rows deleted (RLS?)');
+    console.error('Failed to delete:', error || 'no rows deleted (RLS?)');
     showToast('Could not delete — check permissions', 'error');
-    galleryJobs.push(job);
-    galleryJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    renderGallery();
+    await loadAll(); // reload to restore
     return;
   }
 
@@ -269,7 +341,7 @@ async function deleteGalleryJob(jobId) {
 
 function hasTodayJob() {
   const today = new Date().toISOString().slice(0, 10);
-  return galleryJobs.some((job) => {
+  return myJobs.some((job) => {
     if (!job?.created_at) return false;
     const created = String(job.created_at).slice(0, 10);
     return created === today && ['pending', 'processing', 'completed'].includes(job.status);
@@ -298,9 +370,22 @@ function updateDailyStatusText() {
   el.textContent = 'No artwork for today yet. It will be generated automatically when this page is opened.';
 }
 
+// ---- Helpers ----
+
 function humanizeStatus(status) {
   const map = { pending: 'Pending', processing: 'Processing', failed: 'Failed', cancelled: 'Cancelled' };
   return map[status] || status;
+}
+
+function humanizePurpose(purpose) {
+  const labels = {
+    pai_resident_daily_art: 'Daily Art',
+    pai_work_photo_art: 'Work Art',
+    tesla_vehicle_photo: 'Vehicle',
+    co_reviewed: 'Co-Reviewed',
+    pai_email_art: 'Email Art',
+  };
+  return labels[purpose] || purpose.replace(/^pai_/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function formatDate(value) {

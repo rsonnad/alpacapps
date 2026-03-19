@@ -17,7 +17,7 @@ import { getEnabledFeatures } from './feature-registry.js';
 // =============================================
 // Permission keys for staff/admin section detection
 const STAFF_PERMISSION_KEYS = [
-  'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_pai_imagery', 'view_sms',
+  'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
   'view_purchases', 'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev',
 ];
 const ADMIN_PERMISSION_KEYS = [
@@ -31,7 +31,6 @@ const TAB_ICONS = {
   rentals:    _i('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'),
   events:     _i('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
   media:      _i('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'),
-  paiimagery: _i('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'),
   sms:        _i('<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>'),
   purchases:  _i('<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>'),
   hours:      _i('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
@@ -62,7 +61,6 @@ export const ALL_ADMIN_TABS = [
   { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff', feature: 'rentals' },
   { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff', feature: 'events' },
   { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
-  { id: 'paiimagery', label: 'Imagery', href: 'pai-imagery.html', permission: 'view_pai_imagery', section: 'staff', feature: 'pai' },
   { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff', feature: 'sms' },
   { id: 'purchases', label: 'Purchases', href: 'purchases.html', permission: 'view_purchases', section: 'staff' },
   { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff', feature: 'associates' },
@@ -114,6 +112,52 @@ export function showToast(message, type = 'info', duration = 4000) {
       toast.classList.add('toast-exit');
       setTimeout(() => toast.remove(), 200);
     }, duration);
+  }
+}
+
+// =============================================
+// TAB PERMISSION SYNC
+// =============================================
+// Ensures every tab's permission key exists in the DB.
+// Returns true if new permissions were inserted (caller should refresh user perms).
+let _permSyncDone = false;
+async function syncTabPermissions() {
+  if (_permSyncDone) return false;
+  _permSyncDone = true;
+  try {
+    const tabPermKeys = [...new Set(ALL_ADMIN_TABS.map(t => t.permission))];
+    const { data: existing } = await supabase
+      .from('permissions')
+      .select('key')
+      .in('key', tabPermKeys);
+    const existingKeys = new Set((existing || []).map(p => p.key));
+    const missing = tabPermKeys.filter(k => !existingKeys.has(k));
+    if (missing.length === 0) return false;
+
+    const permRows = missing.map(key => {
+      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const tab = ALL_ADMIN_TABS.find(t => t.permission === key);
+      const category = tab ? tab.section : 'staff';
+      return { key, label, description: 'Auto-synced from tab definition', category, sort_order: 100 };
+    });
+    const { error: insertErr } = await supabase.from('permissions').insert(permRows);
+    if (insertErr) { console.warn('Permission sync insert error:', insertErr); return false; }
+
+    const viewKeys = missing.filter(k => k.startsWith('view_'));
+    if (viewKeys.length > 0) {
+      const roleRows = [];
+      for (const role of ['staff', 'admin', 'oracle']) {
+        for (const key of viewKeys) {
+          roleRows.push({ role, permission_key: key });
+        }
+      }
+      await supabase.from('role_permissions').insert(roleRows);
+    }
+    console.log(`Synced ${missing.length} new permission(s):`, missing);
+    return true;
+  } catch (err) {
+    console.warn('Permission sync failed:', err);
+    return false;
   }
 }
 
@@ -540,6 +584,17 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
       const isDemo = state.appUser.role === 'demo';
       const resolvedSection = section === 'devcontrol' && userIsAdmin ? 'devcontrol' : (section === 'admin' && userIsAdmin ? 'admin' : 'staff');
+
+      // Sync tab permissions to DB — if new perms were created, refresh user's permission set
+      const synced = await syncTabPermissions();
+      if (synced && state.appUser?.id) {
+        const { data: permData } = await supabase.rpc('get_effective_permissions', { p_app_user_id: state.appUser.id });
+        if (permData) {
+          state.permissions = new Set(permData);
+          state.hasPermission = (key) => state.permissions.has(key);
+          state.hasAnyPermission = (...keys) => keys.some(k => state.permissions.has(k));
+        }
+      }
 
       await renderTabNav(activeTab, state, resolvedSection);
       await renderContextSwitcher(state.appUser?.role, resolvedSection);

@@ -1,12 +1,12 @@
 {
-  "version": "v260318.49 11:58p",
-  "release": 914,
-  "sha": "916de1cba",
-  "fullSha": "916de1cbaf1883ff68a1113d0e6a725f2682fe0f",
+  "version": "v260319.10 2:11a",
+  "release": 924,
+  "sha": "2fe06a4f4",
+  "fullSha": "2fe06a4f4fb163f63beb0a6894bfe71af25e95cc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 04:58:35+00",
-  "commits": [{"sha":"916de1cba","message":"Fix unstyled avatar on pages missing site.css (#73)","author":"Rahul"}]
+  "pushedAt": "2026-03-19 07:11:00+00",
+  "commits": [{"sha":"2fe06a4f4","message":"fix: use addEventListener for lightbox instead of inline onclick","author":"Rahul"}]
 }
