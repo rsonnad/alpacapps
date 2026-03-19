@@ -1,12 +1,12 @@
 {
-  "version": "v260318.42 10:19p",
-  "release": 907,
-  "sha": "8bf4b2437",
-  "fullSha": "8bf4b2437baebefa89f3d3cd4cacfee8b11722c9",
+  "version": "v260318.43 10:26p",
+  "release": 908,
+  "sha": "bd49afde7",
+  "fullSha": "bd49afde77b6c8e3c7f9f005cc0ab2560c0651d3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 03:19:12+00",
-  "commits": [{"sha":"8bf4b2437","message":"Fix rachelcarrental nav header (#69)","author":"Rahul"}]
+  "pushedAt": "2026-03-19 03:26:21+00",
+  "commits": [{"sha":"bd49afde7","message":"fix: use dark header text on rachelcarrental page","author":"Rahul"}]
 }
