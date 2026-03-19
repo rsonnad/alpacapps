@@ -135,12 +135,13 @@ serve(async (req) => {
 
     // If approve_all, disable approval for this type going forward
     if (action === "approve_all") {
-      await sb.from("email_type_approval_config").update({
+      await sb.from("email_type_approval_config").upsert({
+        email_type: approval.email_type,
         requires_approval: false,
         auto_approved_at: new Date().toISOString(),
         auto_approved_by: "admin_button",
         updated_at: new Date().toISOString(),
-      }).eq("email_type", approval.email_type);
+      }, { onConflict: "email_type" });
 
       autoType = approval.email_type.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
     }
