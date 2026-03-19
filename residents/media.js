@@ -216,8 +216,8 @@ function buildPromptFilter() {
     return `
     <div class="prompt-filter-item" data-idx="${i}">
       <input type="checkbox" checked data-idx="${i}">
-      <span class="prompt-label"><strong>${escapeHtml(label)}</strong>${promptSnippet}</span>
       <button class="prompt-edit-btn" data-idx="${i}" title="Edit prompt">&#9998;</button>
+      <span class="prompt-label"><strong>${escapeHtml(label)}</strong>${promptSnippet}</span>
       <span class="prompt-count">${counts.get(label)}</span>
     </div>`;
   }).join('');
