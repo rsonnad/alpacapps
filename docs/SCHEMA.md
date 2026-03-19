@@ -315,6 +315,13 @@ payment_methods     - Display methods on pay page (Zelle, Venmo, PayPal, ACH)
                        qr_code_media_id [FK→media], display_order, is_active, instructions)
 ```
 
+### Project Notes
+```
+project_notes   - Free-form notes tagged to spaces (measurements, plans, observations)
+                  (space_id [FK→spaces UUID], title, body, note_date,
+                   created_by [FK→app_users UUID], created_at, updated_at)
+```
+
 ### Airbnb iCal Sync
 ```
 (Uses existing spaces + assignments tables)
