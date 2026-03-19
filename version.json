@@ -1,12 +1,12 @@
 {
-  "version": "v260319.13 2:45a",
-  "release": 927,
-  "sha": "ca9548f5c",
-  "fullSha": "ca9548f5c409da3ab58fd578fb0c2dc0386e6687",
+  "version": "v260319.14 2:51a",
+  "release": 928,
+  "sha": "c278e6e45",
+  "fullSha": "c278e6e45b7ffe01b0b14e5211e0cf315ecab2de",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 07:45:37+00",
-  "commits": [{"sha":"ca9548f5c","message":"fix: select batch_label column for prompt filter grouping","author":"Rahul"}]
+  "pushedAt": "2026-03-19 07:51:53+00",
+  "commits": [{"sha":"c278e6e45","message":"fix: compress vertical space, dismissable errors, collapsible prompt filter","author":"Rahul"}]
 }
