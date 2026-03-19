@@ -1,12 +1,12 @@
 {
-  "version": "v260318.43 10:26p",
-  "release": 908,
-  "sha": "bd49afde7",
-  "fullSha": "bd49afde77b6c8e3c7f9f005cc0ab2560c0651d3",
+  "version": "v260318.44 10:29p",
+  "release": 909,
+  "sha": "29840797c",
+  "fullSha": "29840797c2912f3c7e8bc3610c9e8df8d908785e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 03:26:21+00",
-  "commits": [{"sha":"bd49afde7","message":"fix: use dark header text on rachelcarrental page","author":"Rahul"}]
+  "pushedAt": "2026-03-19 03:29:45+00",
+  "commits": [{"sha":"29840797c","message":"Add LLM-readable upgrade/updates pointer to infra page","author":"Rahul"}]
 }
