@@ -22,6 +22,15 @@ const VISIBILITY_OPTIONS = [
   { value: 'private',        label: 'Private',    icon: 'lock',   desc: 'Only me + granted emails' },
 ];
 
+const VIS_COLORS = {
+  'public':        '#16a34a', // green
+  'registered':    '#d4883a', // amber
+  'role:resident': '#2563eb', // blue
+  'role:staff':    '#7c3aed', // violet
+  'role:admin':    '#c026d3', // fuchsia
+  'private':       '#dc2626', // red
+};
+
 const ICONS = {
   globe:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"/></svg>',
   person: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
@@ -58,6 +67,20 @@ function getPagePath() {
 
 function getVisibilityLabel(v) {
   return VISIBILITY_OPTIONS.find(o => o.value === v)?.label || v;
+}
+
+function getVisibilityIcon(v) {
+  const opt = VISIBILITY_OPTIONS.find(o => o.value === v);
+  return opt ? ICONS[opt.icon] : ICONS.settings;
+}
+
+function updateSettingsButtonIcon() {
+  const btn = document.getElementById('ppSettingsBtn');
+  if (!btn) return;
+  const vis = pageSettings?.visibility || 'registered';
+  const color = VIS_COLORS[vis] || '#8c8279';
+  btn.innerHTML = getVisibilityIcon(vis);
+  btn.style.color = color;
 }
 
 function showToast(msg, type = 'info', duration = 4000) {
@@ -202,9 +225,9 @@ function injectOwnerToolbar() {
 
     #ppSettingsBtn {
       background: none; border: none; cursor: pointer;
-      color: inherit; padding: 6px;
+      padding: 6px;
       display: flex; align-items: center; justify-content: center;
-      opacity: 0.7; transition: opacity 0.15s;
+      opacity: 0.85; transition: opacity 0.15s;
     }
     #ppSettingsBtn:hover { opacity: 1; }
 
@@ -240,8 +263,7 @@ function injectOwnerToolbar() {
     }
     .pp-vis-option:hover { background: #faf9f6; }
     .pp-vis-option.active { background: #fef3e2; border-color: #d4883a; }
-    .pp-vis-option .pp-vis-icon { flex-shrink: 0; color: #8c8279; }
-    .pp-vis-option.active .pp-vis-icon { color: #d4883a; }
+    .pp-vis-option .pp-vis-icon { flex-shrink: 0; }
     .pp-vis-option .pp-vis-text { flex: 1; }
     .pp-vis-option .pp-vis-name { font-weight: 600; }
     .pp-vis-option .pp-vis-desc { font-size: 0.75rem; color: #8c8279; }
@@ -295,7 +317,7 @@ function injectOwnerToolbar() {
   const btn = document.createElement('button');
   btn.id = 'ppSettingsBtn';
   btn.title = 'Page access settings';
-  btn.innerHTML = ICONS.settings;
+  updateSettingsButtonIcon();
   wrap.appendChild(btn);
 
   const panel = document.createElement('div');
@@ -373,7 +395,7 @@ function renderPanel() {
         <div class="pp-vis-list">
           ${VISIBILITY_OPTIONS.map(opt => `
             <div class="pp-vis-option ${opt.value === currentVis ? 'active' : ''}" data-vis="${opt.value}">
-              <span class="pp-vis-icon">${ICONS[opt.icon]}</span>
+              <span class="pp-vis-icon" style="color:${VIS_COLORS[opt.value] || '#8c8279'}">${ICONS[opt.icon]}</span>
               <div class="pp-vis-text">
                 <div class="pp-vis-name">${opt.label}</div>
                 <div class="pp-vis-desc">${opt.desc}</div>
@@ -405,6 +427,7 @@ function renderPanel() {
         if (newVis === 'private') {
           pageGrants = await fetchPageGrants(pagePath);
         }
+        updateSettingsButtonIcon();
         renderPanel();
         showToast(`Visibility set to ${getVisibilityLabel(newVis)}`, 'success');
       } catch (e) {
