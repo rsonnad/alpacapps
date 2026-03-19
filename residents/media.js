@@ -381,7 +381,14 @@ function humanizeStatus(status) {
 }
 
 function humanizePurpose(purpose) {
-  return purpose.replace(/_/g, ' ').replace(/^pai /, '');
+  const labels = {
+    pai_resident_daily_art: 'Daily Art',
+    pai_work_photo_art: 'Work Art',
+    tesla_vehicle_photo: 'Vehicle',
+    co_reviewed: 'Co-Reviewed',
+    pai_email_art: 'Email Art',
+  };
+  return labels[purpose] || purpose.replace(/^pai_/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function formatDate(value) {
