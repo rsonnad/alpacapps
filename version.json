@@ -1,12 +1,12 @@
 {
-  "version": "v260319.20 5:03a",
-  "release": 934,
-  "sha": "7f34ce374",
-  "fullSha": "7f34ce374c937b79cdf1271ef7580a13c3ec9f43",
+  "version": "v260319.21 3:28p",
+  "release": 935,
+  "sha": "c14d3c56d",
+  "fullSha": "c14d3c56d09a5bf86f823c23efc7569f0f569ea1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 10:03:38+00",
-  "commits": [{"sha":"5499afd49","message":"feat: move todo checklist into DevControl PlanList tab","author":"Rahul"},{"sha":"7f34ce374","message":"chore: remove devtodo.html and todo.js (moved to DevControl PlanList)","author":"Rahul"}]
+  "pushedAt": "2026-03-19 20:28:12+00",
+  "commits": [{"sha":"c14d3c56d","message":"fix: add WITH CHECK to page_access RLS policies for INSERT/upsert","author":"Rahul"}]
 }
