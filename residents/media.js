@@ -125,7 +125,7 @@ async function loadAll() {
     // All completed PAI imagery (what staff Imagery tab showed)
     supabase
       .from('image_gen_jobs')
-      .select('id, prompt, status, created_at, completed_at, result_url, metadata')
+      .select('id, prompt, status, created_at, completed_at, result_url, metadata, batch_label')
       .eq('status', 'completed')
       .not('result_url', 'is', null)
       .order('created_at', { ascending: false })
@@ -133,7 +133,7 @@ async function loadAll() {
     // My jobs (including pending/processing for status display)
     supabase
       .from('image_gen_jobs')
-      .select('id, status, prompt, created_at, completed_at, result_url, error_message, metadata')
+      .select('id, status, prompt, created_at, completed_at, result_url, error_message, metadata, batch_label')
       .contains('metadata', { app_user_id: userId, purpose: DAILY_PURPOSE })
       .order('created_at', { ascending: false })
       .limit(60),
@@ -157,8 +157,9 @@ async function loadAll() {
 }
 
 function getPromptLabel(row) {
-  // Derive a short label from the prompt or metadata
-  const title = row.metadata?.title || row.metadata?.batch_label || '';
+  // Use batch_label (top-level column) as primary grouping key
+  if (row.batch_label) return row.batch_label;
+  const title = row.metadata?.title || '';
   if (title) return title;
   // Fall back to first 80 chars of prompt
   const p = (row.prompt || '').trim();
