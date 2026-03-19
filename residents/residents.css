@@ -896,26 +896,40 @@
   border-bottom: 1px solid var(--border, #ddd);
 }
 .prompt-filter-title {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-muted, #666);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text, #333);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
 }
 .prompt-filter-actions {
   display: flex;
+  align-items: center;
   gap: 0.35rem;
+}
+.prompt-expand-btn {
+  background: none;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  padding: 0.15rem 0.4rem;
+  color: var(--text-muted, #666);
+  transition: transform 0.2s;
+}
+.prompt-expand-btn.expanded {
+  transform: rotate(180deg);
 }
 .prompt-filter-list {
   overflow-y: auto;
   padding: 0.35rem 0;
 }
 .prompt-filter-collapsed {
-  max-height: 4.2rem; /* ~3 items */
+  max-height: 4.5rem; /* ~3 items */
   overflow: hidden;
 }
 .prompt-filter-expanded {
-  max-height: 25rem; /* ~14 items */
+  max-height: 22.5rem; /* ~15 items */
   overflow-y: auto;
 }
 .prompt-filter-item {
@@ -937,7 +951,11 @@
 }
 .prompt-filter-item .prompt-label {
   flex: 1;
+  min-width: 0;
   color: var(--text, #333);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .prompt-filter-item .prompt-count {
   color: var(--text-muted, #999);

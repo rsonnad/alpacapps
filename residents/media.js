@@ -176,11 +176,15 @@ function buildPromptFilter() {
     ? myJobs.filter(j => j.status === 'completed' && j.result_url)
     : allImagery;
 
-  // Group by prompt label and count
+  // Group by prompt label — track count and a sample prompt
   const counts = new Map();
+  const samplePrompts = new Map();
   for (const row of source) {
     const label = getPromptLabel(row);
     counts.set(label, (counts.get(label) || 0) + 1);
+    if (!samplePrompts.has(label) && row.prompt) {
+      samplePrompts.set(label, row.prompt.trim());
+    }
   }
 
   allPromptLabels = [...counts.keys()];
@@ -195,13 +199,19 @@ function buildPromptFilter() {
 
   box.classList.remove('hidden');
 
-  list.innerHTML = allPromptLabels.map((label, i) => `
+  list.innerHTML = allPromptLabels.map((label, i) => {
+    const sample = samplePrompts.get(label) || '';
+    // Take first ~120 chars of prompt, skip if same as label
+    const promptSnippet = sample && sample !== label
+      ? ' — ' + escapeHtml(sample.slice(0, 120)) + (sample.length > 120 ? '…' : '')
+      : '';
+    return `
     <label class="prompt-filter-item">
       <input type="checkbox" checked data-idx="${i}">
-      <span class="prompt-label">${escapeHtml(label)}</span>
+      <span class="prompt-label"><strong>${escapeHtml(label)}</strong>${promptSnippet}</span>
       <span class="prompt-count">${counts.get(label)}</span>
-    </label>
-  `).join('');
+    </label>`;
+  }).join('');
 
   // Bind checkboxes
   list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
@@ -234,7 +244,7 @@ function buildPromptFilter() {
     // Reset to collapsed
     list.classList.add('prompt-filter-collapsed');
     list.classList.remove('prompt-filter-expanded');
-    expandBtn.textContent = allPromptLabels.length > 3 ? 'Show more' : '';
+    expandBtn.classList.remove('expanded');
     expandBtn.style.display = allPromptLabels.length > 3 ? '' : 'none';
 
     // Clone to remove old listeners
@@ -244,7 +254,7 @@ function buildPromptFilter() {
       const isCollapsed = list.classList.contains('prompt-filter-collapsed');
       list.classList.toggle('prompt-filter-collapsed', !isCollapsed);
       list.classList.toggle('prompt-filter-expanded', isCollapsed);
-      newBtn.textContent = isCollapsed ? 'Show less' : 'Show more';
+      newBtn.classList.toggle('expanded', isCollapsed);
     });
   }
 }
