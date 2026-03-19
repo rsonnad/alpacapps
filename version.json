@@ -1,12 +1,12 @@
 {
-  "version": "v260319.19 3:49a",
-  "release": 933,
-  "sha": "310d0b9aa",
-  "fullSha": "310d0b9aa7cc800a6f9d96497ac8002a4dc9cb01",
+  "version": "v260319.20 5:03a",
+  "release": 934,
+  "sha": "7f34ce374",
+  "fullSha": "7f34ce374c937b79cdf1271ef7580a13c3ec9f43",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 08:49:49+00",
-  "commits": [{"sha":"310d0b9aa","message":"fix: make prompt edit icon always visible and move to left of label (#77)","author":"Rahul"}]
+  "pushedAt": "2026-03-19 10:03:38+00",
+  "commits": [{"sha":"5499afd49","message":"feat: move todo checklist into DevControl PlanList tab","author":"Rahul"},{"sha":"7f34ce374","message":"chore: remove devtodo.html and todo.js (moved to DevControl PlanList)","author":"Rahul"}]
 }
