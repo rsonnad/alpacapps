@@ -1,12 +1,12 @@
 {
-  "version": "v260318.40 7:38p",
-  "release": 905,
-  "sha": "b5273e819",
-  "fullSha": "b5273e8195763907a33afd4736c5754f87bf059e",
+  "version": "v260318.41 8:13p",
+  "release": 906,
+  "sha": "845b36b48",
+  "fullSha": "845b36b4829591701573b8c9bbf858fdad57c025",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 00:38:18+00",
-  "commits": [{"sha":"1506c9f22","message":"feat: switch bio to light mode, bump font sizes +2pt, add UW 4.0 GPA","author":"Rahul"},{"sha":"b5273e819","message":"Merge pull request #66 from rsonnad/rahuliofam/rahulbio-seo-fix","author":"Rahul"}]
+  "pushedAt": "2026-03-19 01:13:44+00",
+  "commits": [{"sha":"845b36b48","message":"Add personal page auth system with privacy controls and email grants (#67)","author":"Rahul"}]
 }
