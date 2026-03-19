@@ -1,12 +1,12 @@
 {
-  "version": "v260318.40 7:38p",
-  "release": 905,
-  "sha": "b5273e819",
-  "fullSha": "b5273e8195763907a33afd4736c5754f87bf059e",
+  "version": "v260318.45 10:31p",
+  "release": 910,
+  "sha": "9f9ece27d",
+  "fullSha": "9f9ece27d7d7a493b75993be6d16f8a4af3f856f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 00:38:18+00",
-  "commits": [{"sha":"1506c9f22","message":"feat: switch bio to light mode, bump font sizes +2pt, add UW 4.0 GPA","author":"Rahul"},{"sha":"b5273e819","message":"Merge pull request #66 from rsonnad/rahuliofam/rahulbio-seo-fix","author":"Rahul"}]
+  "pushedAt": "2026-03-19 03:31:12+00",
+  "commits": [{"sha":"a0cf13688","message":"fix: remove 'Also known as Rahulio' from bio footer","author":"Rahul"},{"sha":"9f9ece27d","message":"Merge pull request #70 from rsonnad/rahuliofam/rahulbio-seo-fix","author":"Rahul"}]
 }
