@@ -965,16 +965,11 @@
 .prompt-edit-btn {
   background: none;
   border: none;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   cursor: pointer;
   color: var(--text-muted, #999);
   padding: 0 0.2rem;
   flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.prompt-filter-item:hover .prompt-edit-btn {
-  opacity: 1;
 }
 .prompt-edit-btn:hover {
   color: var(--brand, #1f1720);
