@@ -326,8 +326,10 @@ Key columns on spaces:
 ```
 
 ### Amazon Order History
+Primary use: inventory of electronics, appliances, and gear at Alpaca Playhouse.
+Query by ASIN or product name to find what's in the house, when it was bought, and what it cost.
 ```
-amazon_orders   - Imported Amazon order history (7,924 rows, 2000–2026)
+amazon_orders   - Physical Amazon orders (7,924 rows, 2000–2026)
                   (asin, billing_address, carrier_tracking, currency,
                    gift_message, gift_recipient, gift_sender, item_serial,
                    order_date, order_id, order_status, quantity,
@@ -337,6 +339,8 @@ amazon_orders   - Imported Amazon order history (7,924 rows, 2000–2026)
                    shipping_option, total_amount, total_discounts,
                    unit_price, unit_price_tax, website)
                   Unique: (order_id, asin, ship_date)
+amazon_digital_orders - Digital content orders (Kindle, apps, subscriptions)
+                  TODO: not yet imported
 ```
 
 ### Legacy (Deprecated - don't use for new features)
