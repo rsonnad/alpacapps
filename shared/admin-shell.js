@@ -66,7 +66,7 @@ export const ALL_ADMIN_TABS = [
   { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff', feature: 'associates' },
   { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff', feature: 'pai' },
   { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff', feature: 'voice' },
-  { id: 'todo', label: 'Todo', href: 'devtodo.html', permission: 'view_todo', section: 'staff' },
+  { id: 'todo', label: 'Todo', href: 'devcontrol.html#planlist', permission: 'view_todo', section: 'staff' },
   { id: 'appdev', label: 'App Dev', href: 'appdev.html', permission: 'view_appdev', section: 'staff' },
   // Admin section
   { id: 'users', label: 'Users', href: 'users.html', permission: 'view_users', section: 'admin' },
