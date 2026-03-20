@@ -1,12 +1,12 @@
 {
-  "version": "v260319.23 4:01p",
-  "release": 937,
-  "sha": "888b95c30",
-  "fullSha": "888b95c30e9fdb3dd1070608956e9464d30a93a6",
+  "version": "v260320.01 12:49p",
+  "release": 938,
+  "sha": "75ad09b49",
+  "fullSha": "75ad09b49c3d37d2c67afc23e9ea9c0363a08fc0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-19 21:01:43+00",
-  "commits": [{"sha":"888b95c30","message":"fix: ensure live supabase session before page access write operations","author":"Rahul"}]
+  "pushedAt": "2026-03-20 17:49:24+00",
+  "commits": [{"sha":"75ad09b49","message":"feat: add CAD docs to context discovery","author":"Rahul"}]
 }
