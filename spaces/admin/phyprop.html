@@ -51,6 +51,11 @@
     .pp-badge-red { background: #fee2e2; color: #991b1b; }
     .pp-count { font-size: 0.75rem; color: var(--text-muted, #9ca3af); font-weight: 400; }
     .pp-empty { text-align: center; padding: 2rem 1rem; color: var(--text-muted, #9ca3af); font-size: 0.875rem; }
+    .pp-edge-side {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.75rem; height: 1.5rem; border-radius: 4px;
+      font-size: 0.75rem; font-weight: 600; background: #f3f4f6; color: #4b5563;
+    }
     .pp-tools-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1rem;
@@ -121,6 +126,10 @@
             <div class="pp-stat-value">1.725</div>
           </div>
           <div class="pp-stat">
+            <div class="pp-stat-label">Structures</div>
+            <div class="pp-stat-value" id="statStructures">--</div>
+          </div>
+          <div class="pp-stat">
             <div class="pp-stat-label">Spaces</div>
             <div class="pp-stat-value" id="statSpaces">--</div>
           </div>
@@ -156,6 +165,42 @@
             <h4>Priority List</h4>
             <p>Structure relocation plan for setback compliance</p>
           </a>
+        </div>
+
+        <!-- Parcel Edges (from 3D Digital Twin) -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Property Boundaries <span class="pp-count" id="edgesCount"></span></h3>
+          <p class="pp-section-sub">Survey boundary edges with bearings, distances, and setback requirements</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th style="width:2rem">Side</th><th>Label</th><th>Length</th><th>Bearing</th><th>Road</th><th>Easement</th><th style="text-align:right">Setback</th></tr></thead>
+              <tbody id="edgesBody"><tr><td colspan="7" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Structures (from 3D Digital Twin) -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Structures <span class="pp-count" id="structuresCount"></span></h3>
+          <p class="pp-section-sub">All buildings, containers, trailers, decks, and other structures — grouped by parent space</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Permit</th><th>Dimensions</th><th>Nearest Edge</th><th style="text-align:right">Setback</th></tr></thead>
+              <tbody id="structuresBody"><tr><td colspan="6" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Utilities (from 3D Digital Twin) -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Utilities <span class="pp-count" id="utilitiesCount"></span></h3>
+          <p class="pp-section-sub">Water, septic, electric, and fire protection systems</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Type</th><th>Provider</th><th>System</th><th>Availability Letter</th></tr></thead>
+              <tbody id="utilitiesBody"><tr><td colspan="4" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Spaces & Structures -->

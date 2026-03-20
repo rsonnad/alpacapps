@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     section: 'staff',
     onReady: async () => {
       await Promise.all([
+        loadEdges(),
+        loadStructures(),
+        loadUtilities(),
         loadSpaces(),
         loadThermostats(),
         loadCameras(),
@@ -58,6 +61,118 @@ function setCount(id, n) {
 function setStat(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+// =============================================
+// PARCEL EDGES (3D Digital Twin)
+// =============================================
+
+async function loadEdges() {
+  try {
+    const { data } = await supabase
+      .from('parcel_edges')
+      .select('id, edge_side, edge_label, bearing, length_ft, is_road_frontage, road_name, road_classification, has_easement, easement_type, easement_width_ft, setback_required_ft')
+      .eq('parcel_id', 1)
+      .order('edge_side');
+
+    const body = document.getElementById('edgesBody');
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="7" class="pp-empty">No boundary data found</td></tr>'; return; }
+
+    setCount('edgesCount', data.length);
+
+    body.innerHTML = data.map(e => {
+      const roadInfo = e.is_road_frontage ? esc(e.road_name || e.road_classification || 'Yes') : 'No';
+      const easement = e.has_easement ? `${esc(e.easement_type || 'Yes')}` : 'None';
+      return `<tr>
+        <td><span class="pp-edge-side">${esc(e.edge_side)}</span></td>
+        <td style="font-weight:500;">${esc(e.edge_label || '--')}</td>
+        <td>${e.length_ft ? `${Number(e.length_ft).toFixed(1)} ft` : '--'}</td>
+        <td style="font-size:0.75rem;font-family:monospace;">${esc(e.bearing || '--')}</td>
+        <td>${e.is_road_frontage ? badge(roadInfo, 'blue') : '<span style="color:var(--text-muted)">No</span>'}</td>
+        <td>${e.has_easement ? badge(easement, 'amber') : '<span style="color:var(--text-muted)">None</span>'}</td>
+        <td style="text-align:right;font-weight:600;">${e.setback_required_ft ? `${Number(e.setback_required_ft).toFixed(0)} ft` : '--'}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Edges load error:', err);
+  }
+}
+
+// =============================================
+// STRUCTURES (3D Digital Twin)
+// =============================================
+
+async function loadStructures() {
+  try {
+    const { data } = await supabase
+      .from('structures')
+      .select('id, name, structure_type, use_type, width_ft, length_ft, height_ft, area_sqft, nearest_edge_side, nearest_edge_distance_ft, setback_required_ft, setback_compliant, setback_surplus_ft, permit_status, is_movable, bedrooms, bathrooms, has_plumbing, has_electric, has_hvac, notes, display_order')
+      .eq('parcel_id', 1)
+      .eq('is_active', true)
+      .order('display_order');
+
+    const body = document.getElementById('structuresBody');
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="6" class="pp-empty">No structures found</td></tr>'; return; }
+
+    setCount('structuresCount', data.length);
+    setStat('statStructures', data.length);
+
+    body.innerHTML = data.map(s => {
+      const typeColor = { house: 'blue', outbuilding: 'blue', container: 'gray', trailer_rv: 'amber', deck: 'green', sauna: 'green', utility: 'gray', other: 'gray', shed: 'gray' };
+      const permitColor = { permitted: 'green', unpermitted: 'red', exempt: 'gray', violation: 'red', pending: 'amber', grandfathered: 'blue' };
+      const dims = s.width_ft && s.length_ft ? `${Number(s.width_ft)}' x ${Number(s.length_ft)}'` : s.area_sqft ? `${Number(s.area_sqft)} SF` : '--';
+      const edgeInfo = s.nearest_edge_side && s.nearest_edge_distance_ft != null
+        ? `${Number(s.nearest_edge_distance_ft)}' from ${s.nearest_edge_side}`
+        : '--';
+      const setbackInfo = s.setback_required_ft != null
+        ? (s.setback_compliant
+          ? `${badge(`+${Number(s.setback_surplus_ft).toFixed(0)} ft`, 'green')}`
+          : `${badge(`${Number(s.setback_surplus_ft).toFixed(0)} ft`, 'red')}`)
+        : '--';
+      return `<tr>
+        <td style="font-weight:500;">${esc(s.name)}</td>
+        <td>${badge(s.structure_type, typeColor[s.structure_type] || 'gray')}</td>
+        <td>${badge(s.permit_status, permitColor[s.permit_status] || 'gray')}</td>
+        <td>${dims}</td>
+        <td>${edgeInfo}</td>
+        <td style="text-align:right">${setbackInfo}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Structures load error:', err);
+  }
+}
+
+// =============================================
+// UTILITIES (3D Digital Twin)
+// =============================================
+
+async function loadUtilities() {
+  try {
+    const { data } = await supabase
+      .from('property_utilities')
+      .select('id, utility_type, provider, system_type, status, availability_letter_status, notes')
+      .eq('parcel_id', 1)
+      .order('id');
+
+    const body = document.getElementById('utilitiesBody');
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="4" class="pp-empty">No utility data found</td></tr>'; return; }
+
+    setCount('utilitiesCount', data.length);
+
+    body.innerHTML = data.map(u => {
+      const typeLabel = { water: 'Water', wastewater: 'Wastewater', electric: 'Electric', gas: 'Gas', internet: 'Internet', fire_protection: 'Fire Protection' };
+      const letterColor = { obtained: 'green', pending: 'amber', not_required: 'gray' };
+      return `<tr>
+        <td style="font-weight:500;">${esc(typeLabel[u.utility_type] || u.utility_type)}</td>
+        <td>${esc(u.provider || '--')}</td>
+        <td style="font-size:0.8125rem;">${esc(u.system_type || '--')}</td>
+        <td>${badge(u.availability_letter_status || 'pending', letterColor[u.availability_letter_status] || 'amber')}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Utilities load error:', err);
+  }
 }
 
 // =============================================
