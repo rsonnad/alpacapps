@@ -79,6 +79,38 @@
     .pp-link-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-color: #b8a88a; }
     .pp-link-card h4 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.25rem; color: #1f2937; }
     .pp-link-card p { font-size: 0.8125rem; color: var(--text-muted, #6b7280); margin: 0; }
+
+    /* Subtabs */
+    .pp-subtabs {
+      display: flex; gap: 0; border-bottom: 2px solid var(--border-color, #e5e7eb);
+      margin-bottom: 1.5rem; overflow-x: auto;
+    }
+    .pp-subtab {
+      padding: 0.625rem 1rem; font-size: 0.8125rem; font-weight: 500;
+      color: var(--text-muted, #6b7280); background: none; border: none;
+      border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s; margin-bottom: -2px;
+    }
+    .pp-subtab:hover { color: #1f2937; }
+    .pp-subtab.active { color: #1f2937; border-bottom-color: var(--accent, #b8a88a); }
+
+    /* Structure cards */
+    .pp-struct-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+    .pp-struct-card {
+      background: white; border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 8px; padding: 1.25rem; position: relative;
+    }
+    .pp-struct-card h4 { font-size: 0.9375rem; font-weight: 600; color: #1f2937; margin: 0 0 0.5rem; }
+    .pp-struct-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 1rem; font-size: 0.8125rem; }
+    .pp-struct-meta dt { color: var(--text-muted, #6b7280); }
+    .pp-struct-meta dd { margin: 0; font-weight: 500; color: #1f2937; }
+    .pp-struct-tags { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .pp-compliance-bar {
+      position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 8px 8px 0 0;
+    }
+    .pp-compliance-bar.compliant { background: #22c55e; }
+    .pp-compliance-bar.violation { background: #ef4444; }
+    .pp-compliance-bar.pending { background: #f59e0b; }
   </style>
 </head>
 <body>
@@ -107,12 +139,21 @@
 
     <main class="manage-content">
       <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <div>
             <h2 style="margin: 0;">Physical Property</h2>
             <p style="margin: 0.25rem 0 0; color: var(--text-muted);">All physical assets, devices, structures, and tools at 160 Still Forest Dr</p>
           </div>
         </div>
+
+        <!-- Subtabs -->
+        <div class="pp-subtabs" id="ppSubtabs">
+          <button class="pp-subtab active" data-tab="overview">Overview</button>
+          <button class="pp-subtab" data-tab="structures">Structures</button>
+        </div>
+
+        <!-- Panel: Overview -->
+        <div id="pp-panel-overview" class="pp-panel">
 
         <!-- Overview Stats -->
         <div class="pp-stat-grid" id="statsGrid">
@@ -390,6 +431,79 @@
             </table>
           </div>
         </div>
+
+        </div><!-- /pp-panel-overview -->
+
+        <!-- Panel: Structures -->
+        <div id="pp-panel-structures" class="pp-panel" style="display:none">
+
+          <!-- Parcel Summary -->
+          <div class="pp-section">
+            <h3 class="pp-section-title">Parcel</h3>
+            <p class="pp-section-sub">Land parcel details from the 3D Property Digital Twin database</p>
+            <div id="parcelSummary" class="pp-stat-grid">
+              <div class="pp-stat"><div class="pp-stat-label">Loading...</div><div class="pp-stat-value">--</div></div>
+            </div>
+          </div>
+
+          <!-- Parcel Edges -->
+          <div class="pp-section">
+            <h3 class="pp-section-title">Parcel Edges <span class="pp-count" id="edgesCount"></span></h3>
+            <p class="pp-section-sub">Boundary edges with setback requirements</p>
+            <div class="pp-table-wrap">
+              <table class="pp-table">
+                <thead><tr><th>Side</th><th>Label</th><th>Length</th><th>Bearing</th><th>Road</th><th>Easement</th><th>Setback</th></tr></thead>
+                <tbody id="edgesBody"><tr><td colspan="7" class="pp-empty">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Structures -->
+          <div class="pp-section">
+            <h3 class="pp-section-title">Structures <span class="pp-count" id="structuresCount"></span></h3>
+            <p class="pp-section-sub">All buildings, containers, trailers, decks, and other structures on the property</p>
+            <div id="structureCards">
+              <div class="pp-empty">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Utilities -->
+          <div class="pp-section">
+            <h3 class="pp-section-title">Utilities <span class="pp-count" id="utilitiesCount"></span></h3>
+            <p class="pp-section-sub">Water, septic, electric, and fire protection systems</p>
+            <div class="pp-table-wrap">
+              <table class="pp-table">
+                <thead><tr><th>Type</th><th>Provider</th><th>System</th><th>Availability Letter</th></tr></thead>
+                <tbody id="utilitiesBody"><tr><td colspan="4" class="pp-empty">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Impervious Cover -->
+          <div class="pp-section">
+            <h3 class="pp-section-title">Impervious Cover <span class="pp-count" id="imperviousCount"></span></h3>
+            <p class="pp-section-sub">Tracked impervious surface areas for county compliance</p>
+            <div class="pp-table-wrap">
+              <table class="pp-table">
+                <thead><tr><th>Source</th><th>Type</th><th>Area (sq ft)</th></tr></thead>
+                <tbody id="imperviousBody"><tr><td colspan="3" class="pp-empty">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Zoning Rules -->
+          <div class="pp-section">
+            <h3 class="pp-section-title">Zoning Rules</h3>
+            <p class="pp-section-sub">Bastrop County setback and coverage regulations</p>
+            <div class="pp-table-wrap">
+              <table class="pp-table">
+                <thead><tr><th>Rule</th><th>Category</th><th>Value</th><th>Notes</th></tr></thead>
+                <tbody id="zoningBody"><tr><td colspan="4" class="pp-empty">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div><!-- /pp-panel-structures -->
 
       </div>
     </main>

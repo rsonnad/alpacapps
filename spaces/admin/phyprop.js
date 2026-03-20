@@ -6,6 +6,8 @@ import { supabase } from '../../shared/supabase.js';
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
 
 let authState = null;
+let activeSubtab = 'overview';
+const loadedTabs = new Set();
 
 document.addEventListener('DOMContentLoaded', async () => {
   authState = await initAdminPage({
@@ -13,17 +15,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     requiredRole: 'staff',
     section: 'staff',
     onReady: async () => {
-      await Promise.all([
-        loadSpaces(),
-        loadThermostats(),
-        loadCameras(),
-        loadLighting(),
-        loadVehicles(),
-        loadAppliances(),
-      ]);
+      initSubtabs();
     }
   });
 });
+
+// =============================================
+// SUBTAB ROUTING
+// =============================================
+
+function initSubtabs() {
+  const hash = location.hash.replace('#', '');
+  if (hash && document.getElementById(`pp-panel-${hash}`)) activeSubtab = hash;
+
+  document.querySelectorAll('.pp-subtab').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchSubtab(btn.dataset.tab);
+    });
+  });
+  switchSubtab(activeSubtab);
+}
+
+function switchSubtab(tab) {
+  activeSubtab = tab;
+  location.hash = tab === 'overview' ? '' : tab;
+
+  document.querySelectorAll('.pp-subtab').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === tab)
+  );
+  document.querySelectorAll('.pp-panel').forEach(p => {
+    p.style.display = p.id === `pp-panel-${tab}` ? '' : 'none';
+  });
+
+  if (!loadedTabs.has(tab)) {
+    loadedTabs.add(tab);
+    const loaders = {
+      overview: loadOverviewTab,
+      structures: loadStructuresTab,
+    };
+    loaders[tab]?.();
+  }
+}
+
+async function loadOverviewTab() {
+  await Promise.all([
+    loadSpaces(),
+    loadThermostats(),
+    loadCameras(),
+    loadLighting(),
+    loadVehicles(),
+    loadAppliances(),
+  ]);
+}
+
+async function loadStructuresTab() {
+  await Promise.all([
+    loadParcel(),
+    loadEdges(),
+    loadStructures(),
+    loadUtilities(),
+    loadImpervious(),
+    loadZoning(),
+  ]);
+}
 
 // =============================================
 // HELPERS
@@ -311,5 +366,213 @@ async function loadAppliances() {
     </tr>`).join('');
   } catch (err) {
     console.error('Appliances load error:', err);
+  }
+}
+
+// =============================================
+// STRUCTURES TAB — Parcel
+// =============================================
+
+async function loadParcel() {
+  try {
+    const { data } = await supabase
+      .from('parcels')
+      .select('*')
+      .limit(1)
+      .single();
+
+    const el = document.getElementById('parcelSummary');
+    if (!data) { el.innerHTML = '<div class="pp-empty">No parcel data found</div>'; return; }
+
+    el.innerHTML = `
+      <div class="pp-stat"><div class="pp-stat-label">Name</div><div class="pp-stat-value" style="font-size:1rem;">${esc(data.name)}</div></div>
+      <div class="pp-stat"><div class="pp-stat-label">Acreage</div><div class="pp-stat-value">${data.acreage ?? '--'}</div></div>
+      <div class="pp-stat"><div class="pp-stat-label">Area (sq ft)</div><div class="pp-stat-value">${data.area_sqft ? Number(data.area_sqft).toLocaleString() : '--'}</div></div>
+      <div class="pp-stat"><div class="pp-stat-label">Flood Zone</div><div class="pp-stat-value" style="font-size:1rem;">${esc(data.flood_zone || '--')}</div></div>
+      <div class="pp-stat"><div class="pp-stat-label">ESD District</div><div class="pp-stat-value" style="font-size:1rem;">${esc(data.esd_district || '--')}</div></div>
+      <div class="pp-stat"><div class="pp-stat-label">Survey</div><div class="pp-stat-value" style="font-size:0.875rem;">${esc(data.survey_by || '--')} (${data.survey_date || '--'})</div></div>
+    `;
+  } catch (err) {
+    console.error('Parcel load error:', err);
+  }
+}
+
+// =============================================
+// STRUCTURES TAB — Edges
+// =============================================
+
+async function loadEdges() {
+  try {
+    const { data } = await supabase
+      .from('parcel_edges')
+      .select('*')
+      .order('edge_side');
+
+    const body = document.getElementById('edgesBody');
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="7" class="pp-empty">No edges found</td></tr>'; return; }
+
+    setCount('edgesCount', data.length);
+
+    body.innerHTML = data.map(e => `<tr>
+      <td><span class="pp-badge pp-badge-blue">${esc(e.edge_side)}</span></td>
+      <td style="font-weight:500;">${esc(e.edge_label || '--')}</td>
+      <td>${e.length_ft ? `${Number(e.length_ft).toFixed(1)} ft` : '--'}</td>
+      <td style="font-size:0.75rem;">${esc(e.bearing || '--')}</td>
+      <td>${e.is_road_frontage ? badge(e.road_name || 'Yes', 'green') : badge('No', 'gray')}</td>
+      <td>${e.has_easement ? badge(`${e.easement_type} (${e.easement_width_ft}')`, 'amber') : badge('None', 'gray')}</td>
+      <td>${e.setback_required_ft ? `${e.setback_required_ft} ft` : '--'}</td>
+    </tr>`).join('');
+  } catch (err) {
+    console.error('Edges load error:', err);
+  }
+}
+
+// =============================================
+// STRUCTURES TAB — Structures
+// =============================================
+
+async function loadStructures() {
+  try {
+    const { data } = await supabase
+      .from('structures')
+      .select('*, structure_setbacks(*, edge:edge_id(edge_side, edge_label))')
+      .order('name');
+
+    const el = document.getElementById('structureCards');
+    if (!data || !data.length) { el.innerHTML = '<div class="pp-empty">No structures found</div>'; return; }
+
+    setCount('structuresCount', data.length);
+
+    el.innerHTML = `<div class="pp-struct-cards">${data.map(s => {
+      const permitColors = {
+        permitted: 'green', exempt: 'green', grandfathered: 'blue',
+        unpermitted: 'red', violation: 'red', pending: 'amber',
+      };
+      const complianceClass = s.setback_compliant === true ? 'compliant'
+        : s.setback_compliant === false ? 'violation' : 'pending';
+
+      const dims = [s.width_ft, s.length_ft].filter(Boolean).join(' × ');
+      const dimsStr = dims ? `${dims} ft` : '--';
+      const heightStr = s.height_ft ? `${s.height_ft} ft` : null;
+
+      const amenities = [];
+      if (s.has_plumbing) amenities.push('Plumbing');
+      if (s.has_electric) amenities.push('Electric');
+      if (s.has_hvac) amenities.push('HVAC');
+
+      const setbacks = (s.structure_setbacks || []).map(sb => {
+        const edgeLabel = sb.edge?.edge_side || '?';
+        return `${sb.measured_distance_ft}′ to ${esc(edgeLabel)} (req ${sb.required_distance_ft}′) ${sb.is_compliant ? '✓' : '✗'}`;
+      });
+
+      return `<div class="pp-struct-card">
+        <div class="pp-compliance-bar ${complianceClass}"></div>
+        <h4>${esc(s.name)}</h4>
+        <dl class="pp-struct-meta">
+          <dt>Type</dt><dd>${badge(s.structure_type || '--', 'blue')}</dd>
+          <dt>Use</dt><dd>${badge(s.use_type || '--', 'gray')}</dd>
+          <dt>Dimensions</dt><dd>${esc(dimsStr)}${heightStr ? ` × ${esc(heightStr)} H` : ''}</dd>
+          <dt>Area</dt><dd>${s.area_sqft ? `${Number(s.area_sqft).toLocaleString()} sq ft` : '--'}</dd>
+          <dt>Stories</dt><dd>${s.stories ?? '--'}</dd>
+          <dt>Material</dt><dd>${esc(s.material || '--')}</dd>
+          <dt>Roof</dt><dd>${esc(s.roof_type || '--')}</dd>
+          <dt>Permit</dt><dd>${badge(s.permit_status || 'unknown', permitColors[s.permit_status] || 'gray')}</dd>
+          ${s.guest_capacity ? `<dt>Capacity</dt><dd>${s.guest_capacity} guests</dd>` : ''}
+          ${s.bedrooms ? `<dt>Beds / Baths</dt><dd>${s.bedrooms} / ${s.bathrooms ?? '--'}</dd>` : ''}
+          <dt>Movable</dt><dd>${s.is_movable ? 'Yes' : 'No'}</dd>
+          ${amenities.length ? `<dt>Utilities</dt><dd>${amenities.join(', ')}</dd>` : ''}
+          <dt>Nearest Edge</dt><dd>${s.nearest_edge_side ? `${s.nearest_edge_side} — ${s.nearest_edge_distance_ft}′ (req ${s.setback_required_ft}′)` : '--'}</dd>
+        </dl>
+        ${setbacks.length ? `<div style="margin-top:0.75rem;font-size:0.75rem;color:var(--text-muted);">
+          <strong>Setback Measurements:</strong><br>${setbacks.join('<br>')}
+        </div>` : ''}
+        <div class="pp-struct-tags">
+          ${s.setback_compliant === true ? '<span class="pp-badge pp-badge-green">Compliant</span>' : ''}
+          ${s.setback_compliant === false ? '<span class="pp-badge pp-badge-red">Violation</span>' : ''}
+          ${s.setback_surplus_ft != null && s.setback_surplus_ft < 0 ? `<span class="pp-badge pp-badge-red">${Math.abs(s.setback_surplus_ft)}′ over line</span>` : ''}
+          ${s.setback_surplus_ft != null && s.setback_surplus_ft > 0 ? `<span class="pp-badge pp-badge-green">${s.setback_surplus_ft}′ surplus</span>` : ''}
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  } catch (err) {
+    console.error('Structures load error:', err);
+  }
+}
+
+// =============================================
+// STRUCTURES TAB — Utilities
+// =============================================
+
+async function loadUtilities() {
+  try {
+    const { data } = await supabase
+      .from('property_utilities')
+      .select('*')
+      .order('utility_type');
+
+    const body = document.getElementById('utilitiesBody');
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="4" class="pp-empty">No utilities found</td></tr>'; return; }
+
+    setCount('utilitiesCount', data.length);
+
+    body.innerHTML = data.map(u => `<tr>
+      <td style="font-weight:500;">${esc(u.utility_type)}</td>
+      <td>${esc(u.provider || '--')}</td>
+      <td>${esc(u.system_type || '--')}</td>
+      <td>${badge(u.availability_letter_status || '--', u.availability_letter_status === 'obtained' ? 'green' : u.availability_letter_status === 'pending' ? 'amber' : 'gray')}</td>
+    </tr>`).join('');
+  } catch (err) {
+    console.error('Utilities load error:', err);
+  }
+}
+
+// =============================================
+// STRUCTURES TAB — Impervious Cover
+// =============================================
+
+async function loadImpervious() {
+  try {
+    const { data } = await supabase
+      .from('impervious_cover')
+      .select('*, structure:structure_id(name)')
+      .order('id');
+
+    const body = document.getElementById('imperviousBody');
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="3" class="pp-empty">No impervious cover data</td></tr>'; return; }
+
+    setCount('imperviousCount', data.length);
+
+    body.innerHTML = data.map(ic => `<tr>
+      <td style="font-weight:500;">${esc(ic.structure?.name || ic.source_label || '--')}</td>
+      <td>${esc(ic.surface_type || '--')}</td>
+      <td>${ic.area_sqft ? `${Number(ic.area_sqft).toLocaleString()} sq ft` : '--'}</td>
+    </tr>`).join('');
+  } catch (err) {
+    console.error('Impervious load error:', err);
+  }
+}
+
+// =============================================
+// STRUCTURES TAB — Zoning Rules
+// =============================================
+
+async function loadZoning() {
+  try {
+    const { data } = await supabase
+      .from('zoning_rules')
+      .select('*')
+      .order('id');
+
+    const body = document.getElementById('zoningBody');
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="4" class="pp-empty">No zoning rules found</td></tr>'; return; }
+
+    body.innerHTML = data.map(z => `<tr>
+      <td style="font-weight:500;">${esc(z.rule_name || z.name || '--')}</td>
+      <td>${badge(z.category || z.rule_type || '--', 'blue')}</td>
+      <td>${esc(z.value || z.rule_value || '--')}</td>
+      <td style="font-size:0.75rem;color:var(--text-muted);">${esc(z.notes || z.description || '--')}</td>
+    </tr>`).join('');
+  } catch (err) {
+    console.error('Zoning load error:', err);
   }
 }
