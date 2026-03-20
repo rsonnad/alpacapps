@@ -14,63 +14,76 @@
   <link rel="stylesheet" href="../../styles/site.css">
   <link rel="stylesheet" href="../../styles/tailwind.out.css">
   <style>
-    .phyprop-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    .pp-section { margin-bottom: 2.5rem; }
+    .pp-section-title {
+      font-size: 1.125rem; font-weight: 700; color: #1f2937;
+      margin: 0 0 0.25rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .pp-section-sub { font-size: 0.8125rem; color: var(--text-muted, #6b7280); margin: 0 0 1rem; }
+    .pp-stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem; margin-bottom: 2rem;
+    }
+    .pp-stat {
+      background: white; border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 8px; padding: 0.875rem;
+    }
+    .pp-stat-label { font-size: 0.8125rem; color: var(--text-muted, #6b7280); margin-bottom: 0.125rem; }
+    .pp-stat-value { font-size: 1.375rem; font-weight: 700; color: #1f2937; }
+    .pp-table-wrap {
+      background: white; border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 8px; overflow: hidden;
+    }
+    .pp-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+    .pp-table thead tr { background: #f9fafb; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+    .pp-table th { text-align: left; padding: 0.625rem 1rem; font-weight: 500; color: var(--text-muted, #6b7280); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .pp-table td { padding: 0.625rem 1rem; border-bottom: 1px solid #f3f4f6; }
+    .pp-table tr:last-child td { border-bottom: none; }
+    .pp-table tr:hover td { background: #f9fafb; }
+    .pp-badge {
+      display: inline-block; padding: 0.125rem 0.5rem; border-radius: 999px;
+      font-size: 0.6875rem; font-weight: 500;
+    }
+    .pp-badge-green { background: #dcfce7; color: #166534; }
+    .pp-badge-blue { background: #dbeafe; color: #1e40af; }
+    .pp-badge-amber { background: #fef3c7; color: #92400e; }
+    .pp-badge-gray { background: #f3f4f6; color: #4b5563; }
+    .pp-badge-red { background: #fee2e2; color: #991b1b; }
+    .pp-count { font-size: 0.75rem; color: var(--text-muted, #9ca3af); font-weight: 400; }
+    .pp-empty { text-align: center; padding: 2rem 1rem; color: var(--text-muted, #9ca3af); font-size: 0.875rem; }
+    .pp-tools-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1rem;
-      margin-top: 1rem;
     }
-    .phyprop-card {
-      background: white;
-      border: 1px solid var(--border-color, #e5e7eb);
-      border-radius: 8px;
-      padding: 1.25rem;
-      transition: box-shadow 0.2s;
+    .pp-tool-card {
+      background: white; border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 8px; padding: 1.25rem;
     }
-    .phyprop-card:hover {
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    .pp-tool-card h4 { font-size: 0.9375rem; font-weight: 600; color: #1f2937; margin: 0 0 0.25rem; }
+    .pp-tool-card .pp-tool-ver { font-size: 0.75rem; color: var(--text-muted, #9ca3af); margin-bottom: 0.5rem; }
+    .pp-tool-card p { font-size: 0.8125rem; color: var(--text-muted, #6b7280); margin: 0; line-height: 1.5; }
+    .pp-tool-tag {
+      display: inline-block; padding: 0.125rem 0.375rem; border-radius: 4px;
+      font-size: 0.6875rem; font-weight: 500; background: #ede9fe; color: #5b21b6;
+      margin-right: 0.25rem; margin-top: 0.5rem;
     }
-    .phyprop-card h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #1f2937;
-      margin: 0 0 0.5rem;
+    .pp-link-cards {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.75rem; margin-bottom: 2rem;
     }
-    .phyprop-card p {
-      font-size: 0.875rem;
-      color: var(--text-muted, #6b7280);
-      margin: 0;
-      line-height: 1.5;
+    .pp-link-card {
+      background: white; border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 8px; padding: 1rem; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s;
+      text-decoration: none; color: inherit;
     }
-    .phyprop-stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .phyprop-stat {
-      background: white;
-      border: 1px solid var(--border-color, #e5e7eb);
-      border-radius: 8px;
-      padding: 1rem;
-    }
-    .phyprop-stat-label {
-      font-size: 0.875rem;
-      color: var(--text-muted, #6b7280);
-      margin-bottom: 0.25rem;
-    }
-    .phyprop-stat-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #1f2937;
-    }
+    .pp-link-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-color: #b8a88a; }
+    .pp-link-card h4 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.25rem; color: #1f2937; }
+    .pp-link-card p { font-size: 0.8125rem; color: var(--text-muted, #6b7280); margin: 0; }
   </style>
 </head>
 <body>
-  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <!-- Loading overlay -->
   <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-overlay__logo">
       <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
@@ -79,88 +92,310 @@
     <div class="spinner spinner--sm"></div>
   </div>
 
-  <!-- Access denied (populated by JS) -->
   <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
 
-  <!-- Main app content -->
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
-
-    <span data-site-version style="display:none">v260320.04 1:05p</span>
+    <span data-site-version style="display:none"></span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
       <a class="context-switcher-btn active">Staff</a>
     </div>
 
-    <!-- Tab Navigation -->
     <div class="manage-tabs" id="tabNav"></div>
 
-    <!-- Main Content -->
     <main class="manage-content">
       <div style="max-width: 1200px; margin: 0 auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
           <div>
             <h2 style="margin: 0;">Physical Property</h2>
-            <p style="margin: 0.25rem 0 0; color: var(--text-muted);">3D models, site plans, CAD files, and physical property documentation</p>
+            <p style="margin: 0.25rem 0 0; color: var(--text-muted);">All physical assets, devices, structures, and tools at 160 Still Forest Dr</p>
           </div>
         </div>
 
-        <!-- Stats -->
-        <div class="phyprop-stat-grid" id="statsGrid">
-          <div class="phyprop-stat">
-            <div class="phyprop-stat-label">Property</div>
-            <div class="phyprop-stat-value" style="font-size: 1rem;">160 Still Forest Dr</div>
+        <!-- Overview Stats -->
+        <div class="pp-stat-grid" id="statsGrid">
+          <div class="pp-stat">
+            <div class="pp-stat-label">Acreage</div>
+            <div class="pp-stat-value">1.725</div>
           </div>
-          <div class="phyprop-stat">
-            <div class="phyprop-stat-label">Acreage</div>
-            <div class="phyprop-stat-value">1.725</div>
+          <div class="pp-stat">
+            <div class="pp-stat-label">Spaces</div>
+            <div class="pp-stat-value" id="statSpaces">--</div>
           </div>
-          <div class="phyprop-stat">
-            <div class="phyprop-stat-label">Structures</div>
-            <div class="phyprop-stat-value" id="structureCount">--</div>
+          <div class="pp-stat">
+            <div class="pp-stat-label">Devices</div>
+            <div class="pp-stat-value" id="statDevices">--</div>
           </div>
-          <div class="phyprop-stat">
-            <div class="phyprop-stat-label">Permit Progress</div>
-            <div class="phyprop-stat-value" id="permitProgress">22%</div>
+          <div class="pp-stat">
+            <div class="pp-stat-label">Cameras</div>
+            <div class="pp-stat-value" id="statCameras">--</div>
+          </div>
+          <div class="pp-stat">
+            <div class="pp-stat-label">Vehicles</div>
+            <div class="pp-stat-value" id="statVehicles">--</div>
+          </div>
+          <div class="pp-stat">
+            <div class="pp-stat-label">Permit Progress</div>
+            <div class="pp-stat-value" id="statPermit">22%</div>
           </div>
         </div>
 
-        <!-- Sections -->
-        <div class="phyprop-grid" id="phypropGrid">
-          <div class="phyprop-card" onclick="window.open('/jackie/pages/permittingplan/index.html','_blank');" style="cursor:pointer;">
-            <h3>Permitting Plan</h3>
-            <p>IDP submission tracker, task list, professional directory, and cost estimates for county permitting at 160 Still Forest Dr.</p>
-          </div>
-          <div class="phyprop-card" onclick="window.open('/jackie/pages/permittingplan/siteplan.html','_blank');" style="cursor:pointer;">
-            <h3>Site Plan</h3>
-            <p>Current site plan showing all structures, setback lines, septic location, and drainage. Based on the 2021 survey by 4Ward Land Surveying.</p>
-          </div>
-          <div class="phyprop-card">
-            <h3>3D Property Model</h3>
-            <p>Blender-based 3D model of the full property with terrain, structures, and proposed improvements. Rendered on Alpaca Mac.</p>
-            <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #d97706;">Coming soon</p>
-          </div>
-          <div class="phyprop-card">
-            <h3>CAD Tools</h3>
-            <p>Blender 4.5.7, QGIS 4.0.0, LibreCAD 2.x, and GDAL on Alpaca Mac (192.168.1.74). Add-ons: Bonsai, BlenderGIS, CAD Sketcher, Archipack.</p>
-          </div>
-          <div class="phyprop-card">
-            <h3>Survey & Documents</h3>
-            <p>2021 survey (Jason Ward RPLS #5811), deed records, soil evaluation, existing OSSF permit, and architectural sheets (A-1 through A-3).</p>
-          </div>
-          <div class="phyprop-card">
-            <h3>GIS Data Sources</h3>
-            <p>Bastrop County parcels, TNRIS aerial imagery, USGS 3DEP LiDAR elevation, FEMA flood zones, and TCEQ environmental data.</p>
+        <!-- Quick Links -->
+        <div class="pp-link-cards">
+          <a class="pp-link-card" href="/jackie/pages/permittingplan/index.html" target="_blank">
+            <h4>Permitting Plan</h4>
+            <p>IDP submission tracker, task list, cost estimates</p>
+          </a>
+          <a class="pp-link-card" href="/jackie/pages/permittingplan/siteplan.html" target="_blank">
+            <h4>Site Plan</h4>
+            <p>Structures, setbacks, septic, drainage</p>
+          </a>
+          <a class="pp-link-card" href="/jackie/pages/permittingplan/priority-list.html" target="_blank">
+            <h4>Priority List</h4>
+            <p>Structure relocation plan for setback compliance</p>
+          </a>
+        </div>
+
+        <!-- Spaces & Structures -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Spaces & Structures <span class="pp-count" id="spacesCount"></span></h3>
+          <p class="pp-section-sub">All physical rooms, dwellings, amenities, and storage areas on the property</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Rate</th><th>Beds</th><th>Baths</th><th>Parent</th></tr></thead>
+              <tbody id="spacesBody"><tr><td colspan="6" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
           </div>
         </div>
+
+        <!-- Thermostats -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Thermostats <span class="pp-count" id="thermostatsCount"></span></h3>
+          <p class="pp-section-sub">Nest thermostats controlling HVAC across the property</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Room</th><th>Mode</th><th>Set Temp</th><th>Current</th><th>Humidity</th><th>Status</th></tr></thead>
+              <tbody id="thermostatsBody"><tr><td colspan="6" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cameras -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Cameras <span class="pp-count" id="camerasCount"></span></h3>
+          <p class="pp-section-sub">UniFi Protect cameras with live streaming</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Camera</th><th>Location</th><th>Model</th><th>Quality</th><th>Status</th></tr></thead>
+              <tbody id="camerasBody"><tr><td colspan="5" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Lighting -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Smart Lighting <span class="pp-count" id="lightingCount"></span></h3>
+          <p class="pp-section-sub">Govee and WiZ smart lights grouped by area</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Group</th><th>Area</th><th>Lights</th><th>Online</th></tr></thead>
+              <tbody id="lightingBody"><tr><td colspan="4" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Vehicles -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Vehicles <span class="pp-count" id="vehiclesCount"></span></h3>
+          <p class="pp-section-sub">Tesla vehicles with live state tracking</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Name</th><th>Model</th><th>Year</th><th>Battery</th><th>Range</th><th>State</th></tr></thead>
+              <tbody id="vehiclesBody"><tr><td colspan="6" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Appliances -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Appliances <span class="pp-count" id="appliancesCount"></span></h3>
+          <p class="pp-section-sub">LG laundry, Anova oven, FlashForge printers, Glowforge laser</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Model</th><th>Status</th><th>Last Synced</th></tr></thead>
+              <tbody id="appliancesBody"><tr><td colspan="5" class="pp-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Property Records -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Property Records</h3>
+          <p class="pp-section-sub">Deed, survey, septic, soil, and appraisal data from scanned documents</p>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Record</th><th>Details</th><th>Source</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:500;">Ownership</td><td>Revocable Trust of Subhash Sonnad (Feb 2021, $470,400)</td><td>Correction Warranty Deed</td></tr>
+                <tr><td style="font-weight:500;">Survey</td><td>Lot 14-B, Block 6, Bluebonnet Acres. 1.7348 acres. RPLS #5811</td><td>4Ward Land Surveying (2021)</td></tr>
+                <tr><td style="font-weight:500;">PID</td><td>44401 — Bastrop County Appraisal District</td><td>BCAD</td></tr>
+                <tr><td style="font-weight:500;">Septic (OSSF #18725)</td><td>Jet J-500 aerobic, 300 GPD, spray irrigation. Passed 6/20/2004</td><td>TCEQ / Lee County</td></tr>
+                <tr><td style="font-weight:500;">Soil Profile</td><td>Sandy loam (0-6"), sandy gravel (6-20"), gravelly clay (20-28"), clay (28"+). NOT suitable for conventional drainfield</td><td>2000 Soil Evaluation</td></tr>
+                <tr><td style="font-weight:500;">Flood Zone</td><td>Zone X (unshaded) — NOT in 100-year floodplain</td><td>FEMA / 2021 Survey</td></tr>
+                <tr><td style="font-weight:500;">Appraisal (2022)</td><td>Market: $488,828 (Land: $100,625 + Improvements: $388,203)</td><td>Bastrop CAD</td></tr>
+                <tr><td style="font-weight:500;">Water</td><td>Private well (not public water). Groundwater district certification pending</td><td>Development Description</td></tr>
+                <tr><td style="font-weight:500;">Electric</td><td>Bluebonnet Electric Co-op</td><td>Utility records</td></tr>
+                <tr><td style="font-weight:500;">Architectural Plans</td><td>Sheets A-1 (Floor Plan), A-2 (Bath/Terrace), A-3 (Elevations). Status: For Review (02/04/2025)</td><td>Design docs</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tools & Software -->
+        <div class="pp-section">
+          <h3 class="pp-section-title">Tools & Software</h3>
+          <p class="pp-section-sub">All tools used to manage, model, and monitor the physical property</p>
+
+          <h4 style="font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin: 1.5rem 0 0.75rem;">3D Modeling & CAD — Alpaca Mac (192.168.1.74)</h4>
+          <div class="pp-tools-grid">
+            <div class="pp-tool-card">
+              <h4>Blender</h4>
+              <div class="pp-tool-ver">v4.5.7 — /Applications/Blender.app</div>
+              <p>3D modeling, photorealistic rendering, 2D drafting via Grease Pencil, permit sheet generation. Primary tool for the 3D property model.</p>
+              <span class="pp-tool-tag">3D Modeling</span><span class="pp-tool-tag">Rendering</span><span class="pp-tool-tag">Drafting</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>Bonsai (BlenderBIM)</h4>
+              <div class="pp-tool-ver">Add-on — ~/Downloads/blender-addons/</div>
+              <p>Architectural drafting, IFC export, dimensioned drawing sheets with title blocks. Creates county-submission-ready permit sheets (24x36").</p>
+              <span class="pp-tool-tag">Architecture</span><span class="pp-tool-tag">IFC</span><span class="pp-tool-tag">Permits</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>BlenderGIS</h4>
+              <div class="pp-tool-ver">Add-on — ~/Downloads/blender-addons/</div>
+              <p>Import GIS shapefiles, satellite imagery, and terrain elevation data. Drapes aerial photos onto 3D terrain mesh from USGS LiDAR.</p>
+              <span class="pp-tool-tag">GIS</span><span class="pp-tool-tag">Terrain</span><span class="pp-tool-tag">Satellite</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>CAD Sketcher</h4>
+              <div class="pp-tool-ver">Add-on — ~/Downloads/blender-addons/</div>
+              <p>Constraint-based 2D sketching inside Blender. AutoCAD-style parametric constraints for precise dimensioned drawings.</p>
+              <span class="pp-tool-tag">2D CAD</span><span class="pp-tool-tag">Constraints</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>Archipack</h4>
+              <div class="pp-tool-ver">Add-on — ~/Downloads/blender-addons/</div>
+              <p>Parametric walls, fences, floors, roofs, stairs. Quickly generate building structures from dimensions.</p>
+              <span class="pp-tool-tag">Walls</span><span class="pp-tool-tag">Roofs</span><span class="pp-tool-tag">Parametric</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>MeasureIt-ARCH</h4>
+              <div class="pp-tool-ver">Bundled with Blender</div>
+              <p>Architectural dimension annotations, setback line labels, and measurement overlays directly on 3D models.</p>
+              <span class="pp-tool-tag">Dimensions</span><span class="pp-tool-tag">Annotations</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>QGIS</h4>
+              <div class="pp-tool-ver">v4.0.0 — /Applications/QGIS-final-4_0_0.app</div>
+              <p>GIS exploration, Bastrop County parcel data import, map composition, print layouts. Bundles full GDAL/OGR toolkit for format conversion.</p>
+              <span class="pp-tool-tag">GIS</span><span class="pp-tool-tag">Parcels</span><span class="pp-tool-tag">Maps</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>LibreCAD</h4>
+              <div class="pp-tool-ver">v2.x — /Applications/LibreCAD.app</div>
+              <p>Lightweight 2D CAD for quick drafting. Native DXF format for interoperability with county and engineering workflows.</p>
+              <span class="pp-tool-tag">2D CAD</span><span class="pp-tool-tag">DXF</span>
+            </div>
+          </div>
+
+          <h4 style="font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin: 2rem 0 0.75rem;">GIS Data Sources — Bastrop County</h4>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Data</th><th>Source</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:500;">Parcel boundaries</td><td>Bastrop CAD (bastropcad.org)</td><td>Property lines, lot boundaries, PID lookup</td></tr>
+                <tr><td style="font-weight:500;">Statewide parcels & aerial</td><td>TNRIS (data.tnris.org)</td><td>High-res orthoimagery, LiDAR DEMs, StratMap parcels</td></tr>
+                <tr><td style="font-weight:500;">1m LiDAR DEM</td><td>USGS 3DEP</td><td>Accurate 3D terrain for Blender import</td></tr>
+                <tr><td style="font-weight:500;">Flood zones</td><td>FEMA (msc.fema.gov)</td><td>SFHA boundaries, Zone X confirmation</td></tr>
+                <tr><td style="font-weight:500;">Environmental</td><td>TCEQ (tceq.texas.gov/gis)</td><td>OSSF records, environmental compliance</td></tr>
+                <tr><td style="font-weight:500;">Aerial imagery</td><td>USDA NAIP / Google / Bing</td><td>Satellite overlays via QGIS WMS and BlenderGIS</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4 style="font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin: 2rem 0 0.75rem;">Device Management — AlpacApps Platform</h4>
+          <div class="pp-tools-grid">
+            <div class="pp-tool-card">
+              <h4>Supabase</h4>
+              <div class="pp-tool-ver">Cloud — aphrrfprbixmhissnjfn</div>
+              <p>Central database for all device state, spaces, assignments, and property config. Real-time subscriptions for live device updates.</p>
+              <span class="pp-tool-tag">Database</span><span class="pp-tool-tag">Auth</span><span class="pp-tool-tag">Real-time</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>UniFi Protect</h4>
+              <div class="pp-tool-ver">UDM Pro — 192.168.1.1</div>
+              <p>Camera management, motion detection, PTZ control. HLS streams proxied through cam.alpacaplayhouse.com. UP-Sense environmental sensors.</p>
+              <span class="pp-tool-tag">Cameras</span><span class="pp-tool-tag">Sensors</span><span class="pp-tool-tag">NVR</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>Google Nest / SDM API</h4>
+              <div class="pp-tool-ver">3 thermostats</div>
+              <p>HVAC control via Smart Device Management API. Temperature setpoints, mode switching, eco settings. Edge function proxy.</p>
+              <span class="pp-tool-tag">HVAC</span><span class="pp-tool-tag">Climate</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>Govee API</h4>
+              <div class="pp-tool-ver">63 devices</div>
+              <p>Smart lighting control — on/off, brightness, color, scenes. Grouped by area (Spartan, Garage Mahal, Outhouse, Bedrooms).</p>
+              <span class="pp-tool-tag">Lighting</span><span class="pp-tool-tag">RGB</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>WiZ Proxy</h4>
+              <div class="pp-tool-ver">Port 8902 — Alpaca Mac</div>
+              <p>HTTP-to-UDP bridge for WiZ ceiling bulbs. Controls power, brightness, color via cam.alpacaplayhouse.com proxy.</p>
+              <span class="pp-tool-tag">Lighting</span><span class="pp-tool-tag">UDP</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>Tesla Fleet API</h4>
+              <div class="pp-tool-ver">OAuth2</div>
+              <p>Vehicle state monitoring (battery, location, lock status), remote commands (lock, flash, honk). Edge function proxy.</p>
+              <span class="pp-tool-tag">Vehicles</span><span class="pp-tool-tag">Telemetry</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>LG ThinQ</h4>
+              <div class="pp-tool-ver">Washer + Dryer</div>
+              <p>Laundry appliance monitoring — cycle state, time remaining, notifications. Watcher system for user alerts.</p>
+              <span class="pp-tool-tag">Appliances</span><span class="pp-tool-tag">Laundry</span>
+            </div>
+            <div class="pp-tool-card">
+              <h4>Sonos HTTP API</h4>
+              <div class="pp-tool-ver">Port 5005 — Alpaca Mac</div>
+              <p>Multi-room audio control across 14 Sonos zones. Play, pause, volume, grouping, music search via Spotify.</p>
+              <span class="pp-tool-tag">Audio</span><span class="pp-tool-tag">Multi-room</span>
+            </div>
+          </div>
+
+          <h4 style="font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin: 2rem 0 0.75rem;">Future — Hostinger VPS Automation</h4>
+          <div class="pp-table-wrap">
+            <table class="pp-table">
+              <thead><tr><th>Service</th><th>Deployment</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:500;">QGIS Server</td><td>Docker</td><td>Serve WMS/WFS map tiles to AlpacApps admin dashboard</td></tr>
+                <tr><td style="font-weight:500;">Blender CLI</td><td>Docker</td><td>Headless rendering — on-demand PDF/PNG generation from .blend files</td></tr>
+                <tr><td style="font-weight:500;">GDAL/OGR</td><td>Docker</td><td>GIS format conversion pipeline (shapefile, GeoJSON, DXF)</td></tr>
+                <tr><td style="font-weight:500;">LibreOffice headless</td><td>Docker</td><td>SVG/DXF to PDF conversion for automated permit packet assembly</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
 
-  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
   <script src="../../shared/instant-chrome.js"></script>
-
   <script type="module" src="../../shared/version-info.js"></script>
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
   <script type="module" src="phyprop.js"></script>
