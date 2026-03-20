@@ -90,7 +90,7 @@ async function sendMessage() {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Request failed');
+      throw new Error(data.error || data.message || 'Request failed');
     }
 
     appendMessage('ai', data.reply, data.actions_taken);
