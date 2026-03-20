@@ -1,12 +1,12 @@
 {
-  "version": "v260320.18 6:36p",
-  "release": 955,
-  "sha": "8cc55c76c",
-  "fullSha": "8cc55c76ca3f005dd3849a5212cc537542c9954d",
+  "version": "v260320.19 6:44p",
+  "release": 956,
+  "sha": "7b4c301f7",
+  "fullSha": "7b4c301f7e5fea9a01f13e86f4a071bad3afc9fd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 23:36:54+00",
-  "commits": [{"sha":"8cc55c76c","message":"fix: move all structures to east half to match survey plat","author":"Rahul"}]
+  "pushedAt": "2026-03-20 23:44:25+00",
+  "commits": [{"sha":"7b4c301f7","message":"feat: render entirely from database — no hardcoded positions","author":"Rahul"}]
 }
