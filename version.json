@@ -1,12 +1,12 @@
 {
-  "version": "v260320.02 12:52p",
-  "release": 939,
-  "sha": "48d19875a",
-  "fullSha": "48d19875a772ce8c474b0f03c778db001ffeab21",
-  "actor": "jackie61899280",
+  "version": "v260320.03 12:58p",
+  "release": 940,
+  "sha": "0d76417e2",
+  "fullSha": "0d76417e226b867087e52eb47648a90a243f4bcf",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 17:52:49+00",
-  "commits": [{"sha":"48d19875a","message":"Editable staff hours: tappable entries, audit trail, admin approval for >10hr edits (#78)","author":"jackie61899280"}]
+  "pushedAt": "2026-03-20 17:58:37+00",
+  "commits": [{"sha":"0d76417e2","message":"feat: expandable context files, longer descriptions, reference map","author":"Rahul"}]
 }
