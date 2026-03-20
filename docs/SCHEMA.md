@@ -325,6 +325,58 @@ Key columns on spaces:
   airbnb_blocked_dates - JSONB array of blocked date ranges
 ```
 
+### 3D Property Digital Twin (PostGIS-enabled)
+```
+parcels              - Land parcel: boundaries, legal, zoning, survey info
+                      (name, address, legal_description, parcel_number, acreage, area_sqft,
+                       boundary_geom [POLYGON 4326], ground_elevation_ft,
+                       flood_zone, in_floodplain, houston_toad_habitat, esd_district,
+                       survey_date, survey_by, survey_rpls)
+parcel_edges         - Boundary edges with per-edge setback rules
+                      (parcel_id [FK→parcels], edge_side [N/S/E/W], bearing, length_ft,
+                       edge_geom [LINESTRING 4326], is_road_frontage, road_name,
+                       road_classification, road_row_ft, has_easement, easement_type,
+                       easement_width_ft, setback_required_ft, setback_label)
+structures           - Every structure on property with 3D geometry
+                      (parcel_id [FK→parcels], name, structure_type [enum], use_type [enum],
+                       width_ft, length_ft, height_ft, stories, area_sqft, material,
+                       roof_type [enum], footprint_geom [POLYGON 4326],
+                       lod0_footprint [POLYGONZ 4326],
+                       nearest_edge_side, nearest_edge_distance_ft,
+                       setback_required_ft, setback_compliant, setback_surplus_ft,
+                       permit_status [enum], is_movable, guest_capacity,
+                       bedrooms, bathrooms, has_plumbing, has_electric, has_hvac,
+                       photo_urls [text[]], metadata [jsonb], display_order, is_active)
+structure_setbacks   - Distance from each structure to each edge (computed compliance)
+                      (structure_id [FK→structures], edge_id [FK→parcel_edges],
+                       measured_distance_ft, required_distance_ft,
+                       is_compliant [GENERATED], surplus_ft [GENERATED],
+                       UNIQUE(structure_id, edge_id))
+zoning_rules         - Bastrop County setback/coverage regulations
+                      (jurisdiction, district_name, rule_source,
+                       road setbacks by classification, lodging-specific rules,
+                       container rules, impervious limits)
+property_utilities   - Water, septic, electric, gas, fire protection
+                      (parcel_id [FK→parcels], utility_type, provider, system_type,
+                       location_geom [POINT 4326], availability_letter_status)
+impervious_cover     - Per-structure/surface impervious area tracking
+                      (parcel_id [FK→parcels], structure_id [FK→structures],
+                       surface_type, area_sqft, material)
+permit_applications  - Permit tracking per structure
+                      (parcel_id [FK→parcels], structure_id [FK→structures],
+                       permit_type, permit_number, status, estimated_cost,
+                       scope_of_work, document_urls [text[]])
+inspections          - Inspection sequence per permit
+                      (permit_id [FK→permit_applications], inspection_type,
+                       scheduled_date, completed_date, inspector_name, result)
+permit_documents     - Files linked to permits
+                      (permit_id [FK→permit_applications], document_type, file_url)
+```
+
+Enum types: `structure_type`, `structure_use`, `permit_status`, `roof_shape`
+Extension: PostGIS 3.3 (GEOMETRY columns for spatial queries)
+See `docs/CAD.md` for full schema documentation and tool compatibility matrix.
+
 ### Legacy (Deprecated - don't use for new features)
 ```
 photos          - DEPRECATED: migrated to media (table retained for historical reference)

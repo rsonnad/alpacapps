@@ -166,8 +166,14 @@
   <button id="reset-btn" style="margin-top:10px; margin-left:8px; padding:8px 16px; background:#3a2a2e; color:#a09080; border:1px solid #4a3a3e; border-radius:6px; font-size:0.82rem; font-weight:500; cursor:pointer; font-family:inherit;">Reset to Original</button>
 </div>
 
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
 <script>
 (function() {
+  // Supabase client
+  var SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzNTM3MDAsImV4cCI6MjA1MzkyOTcwMH0.kIR_Gp2PY1z9MjVN5E_JscNTz1T2rGahXZtIoEi8JTY';
+  var sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
   // Setback rules: side -> required distance in feet
   var SETBACK_RULES = {
     'W':  { required: 10, label: 'property line' },
@@ -178,8 +184,8 @@
 
   var SIDE_LABELS = { W: 'West', E: 'East', N: 'North', S: 'South' };
 
-  // Original structures data
-  var ORIGINAL_STRUCTURES = [
+  // Fallback structures data (used if Supabase is unavailable)
+  var FALLBACK_STRUCTURES = [
     { name: "Big Trailer (10'x42') — RV/Lodging", distance: 1, side: 'W', noPermit: false },
     { name: "Red Container #1 (40'x8' = 320 SF)", distance: 2, side: 'W', noPermit: false },
     { name: "Red Container #2 (40'x8' = 320 SF)", distance: 2, side: 'W', noPermit: false },
@@ -193,15 +199,53 @@
     { name: 'Main House', distance: 50, side: 'S', noPermit: false }
   ];
 
-  var structures = JSON.parse(JSON.stringify(ORIGINAL_STRUCTURES));
+  var structures = JSON.parse(JSON.stringify(FALLBACK_STRUCTURES));
+  var dbStructures = null; // Will hold DB records with IDs for saving back
+  var dataSource = 'fallback'; // 'supabase' or 'fallback'
 
-  // Try to load saved data
-  try {
-    var saved = localStorage.getItem('siteplan_structures');
-    if (saved) structures = JSON.parse(saved);
-  } catch(e) {}
+  // Load from Supabase, then render
+  async function loadFromSupabase() {
+    if (!sb) return false;
+    try {
+      var { data, error } = await sb.from('structures').select('*').eq('parcel_id', 1).eq('is_active', true).order('display_order');
+      if (error || !data || !data.length) return false;
+      dbStructures = data;
+      structures = data.map(function(row) {
+        return {
+          id: row.id,
+          name: row.name,
+          distance: parseFloat(row.nearest_edge_distance_ft) || 0,
+          side: row.nearest_edge_side || 'W',
+          noPermit: row.permit_status === 'unpermitted'
+        };
+      });
+      dataSource = 'supabase';
+      return true;
+    } catch(e) {
+      console.warn('Supabase load failed, using fallback:', e);
+      return false;
+    }
+  }
+
+  async function saveToSupabase(index) {
+    if (dataSource !== 'supabase' || !sb || !structures[index] || !structures[index].id) return;
+    var s = structures[index];
+    var rule = SETBACK_RULES[s.side];
+    var required = rule ? rule.required : 10;
+    var compliant = s.distance >= required;
+    await sb.from('structures').update({
+      name: s.name,
+      nearest_edge_side: s.side,
+      nearest_edge_distance_ft: s.distance,
+      setback_required_ft: required,
+      setback_compliant: compliant,
+      setback_surplus_ft: s.distance - required,
+      updated_at: new Date().toISOString()
+    }).eq('id', s.id);
+  }
 
   function save() {
+    // Always save to localStorage as cache
     try { localStorage.setItem('siteplan_structures', JSON.stringify(structures)); } catch(e) {}
   }
 
@@ -239,8 +283,10 @@
       nameInput.className = 'edit-input edit-name';
       nameInput.setAttribute('data-index', i);
       nameInput.addEventListener('change', function() {
-        structures[this.getAttribute('data-index')].name = this.value;
+        var idx = parseInt(this.getAttribute('data-index'));
+        structures[idx].name = this.value;
         save();
+        saveToSupabase(idx);
       });
       tdName.appendChild(nameInput);
       tr.appendChild(tdName);
@@ -255,8 +301,10 @@
       distInput.className = 'edit-input edit-dist';
       distInput.setAttribute('data-index', i);
       distInput.addEventListener('input', function() {
-        structures[this.getAttribute('data-index')].distance = parseFloat(this.value) || 0;
+        var idx = parseInt(this.getAttribute('data-index'));
+        structures[idx].distance = parseFloat(this.value) || 0;
         save();
+        saveToSupabase(idx);
         renderTable();
       });
       tdDist.appendChild(distInput);
@@ -275,8 +323,10 @@
         sideSelect.appendChild(opt);
       });
       sideSelect.addEventListener('change', function() {
-        structures[this.getAttribute('data-index')].side = this.value;
+        var idx = parseInt(this.getAttribute('data-index'));
+        structures[idx].side = this.value;
         save();
+        saveToSupabase(idx);
         renderTable();
       });
       tdSide.appendChild(sideSelect);
@@ -348,16 +398,38 @@
     if (inputs.length) inputs[inputs.length - 1].focus();
   });
 
-  // Reset
-  document.getElementById('reset-btn').addEventListener('click', function() {
-    if (confirm('Reset all structures to original measurements?')) {
-      structures = JSON.parse(JSON.stringify(ORIGINAL_STRUCTURES));
+  // Reset — reload from database
+  document.getElementById('reset-btn').addEventListener('click', async function() {
+    if (confirm('Reset all structures to database values?')) {
+      var loaded = await loadFromSupabase();
+      if (!loaded) {
+        structures = JSON.parse(JSON.stringify(FALLBACK_STRUCTURES));
+      }
       save();
       renderTable();
     }
   });
 
-  renderTable();
+  // Initial load: try Supabase first, fallback to hardcoded
+  (async function init() {
+    var loaded = await loadFromSupabase();
+    if (!loaded) {
+      // Try localStorage cache
+      try {
+        var saved = localStorage.getItem('siteplan_structures');
+        if (saved) structures = JSON.parse(saved);
+      } catch(e) {}
+    }
+    renderTable();
+    // Show data source indicator
+    var scoreBar = document.getElementById('score-bar');
+    if (scoreBar) {
+      var srcBadge = document.createElement('span');
+      srcBadge.style.cssText = 'font-size:0.65rem;color:#807060;margin-left:auto;';
+      srcBadge.textContent = dataSource === 'supabase' ? 'Live DB' : 'Offline';
+      scoreBar.appendChild(srcBadge);
+    }
+  })();
 })();
 </script>
 
