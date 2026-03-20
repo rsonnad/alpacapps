@@ -1,12 +1,12 @@
 {
-  "version": "v260320.19 6:44p",
-  "release": 956,
-  "sha": "7b4c301f7",
-  "fullSha": "7b4c301f7e5fea9a01f13e86f4a071bad3afc9fd",
+  "version": "v260320.20 6:47p",
+  "release": 957,
+  "sha": "ba0ddf48b",
+  "fullSha": "ba0ddf48bf9c1ca752f9891a7f5fbf59438b49de",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 23:44:25+00",
-  "commits": [{"sha":"7b4c301f7","message":"feat: render entirely from database — no hardcoded positions","author":"Rahul"}]
+  "pushedAt": "2026-03-20 23:47:40+00",
+  "commits": [{"sha":"ba0ddf48b","message":"fix: show actual error messages in PAI chat + correct image model","author":"Rahul"}]
 }
