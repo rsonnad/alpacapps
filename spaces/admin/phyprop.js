@@ -433,28 +433,111 @@ async function loadEdges() {
 
 async function loadStructures() {
   try {
-    const { data } = await supabase
-      .from('structures')
-      .select('*, structure_setbacks(*, edge:edge_id(edge_side, edge_label))')
-      .order('name');
+    const [{ data: structures }, { data: spaces }] = await Promise.all([
+      supabase.from('structures')
+        .select('*, structure_setbacks(*, edge:edge_id(edge_side, edge_label))')
+        .order('name'),
+      supabase.from('spaces')
+        .select('id, name, type, parent_id, is_archived')
+        .eq('is_archived', false)
+        .order('name'),
+    ]);
 
-    const el = document.getElementById('structureCards');
-    if (!data || !data.length) { el.innerHTML = '<div class="pp-empty">No structures found</div>'; return; }
+    const el = document.getElementById('structureTree');
+    if (!structures || !structures.length) { el.innerHTML = '<div class="pp-empty">No structures found</div>'; return; }
 
-    setCount('structuresCount', data.length);
+    setCount('structuresCount', structures.length);
 
-    el.innerHTML = `<div class="pp-struct-cards">${data.map(s => {
+    // Build spaces hierarchy: top-level spaces → children
+    const spaceMap = {};
+    (spaces || []).forEach(sp => { spaceMap[sp.id] = sp; });
+    const topSpaces = (spaces || []).filter(sp => !sp.parent_id);
+    const childSpacesOf = (parentId) => (spaces || []).filter(sp => sp.parent_id === parentId);
+
+    // Match structures to spaces by fuzzy name matching
+    const structuresBySpace = {};
+    const unmatched = [];
+    structures.forEach(s => {
+      const nameLower = (s.name || '').toLowerCase();
+      const match = (spaces || []).find(sp => {
+        const spLower = sp.name.toLowerCase();
+        return spLower === nameLower || nameLower.includes(spLower) || spLower.includes(nameLower);
+      });
+      if (match) {
+        if (!structuresBySpace[match.id]) structuresBySpace[match.id] = [];
+        structuresBySpace[match.id].push(s);
+      } else {
+        unmatched.push(s);
+      }
+    });
+
+    // Render tree
+    let html = '<div class="pp-tree">';
+
+    // Render a space group with its structures
+    function renderSpaceGroup(space, depth = 0) {
+      const children = childSpacesOf(space.id);
+      const matched = structuresBySpace[space.id] || [];
+      const hasContent = matched.length > 0 || children.some(c =>
+        (structuresBySpace[c.id] || []).length > 0 || childSpacesOf(c.id).length > 0
+      );
+      if (!hasContent) return '';
+
+      const indent = '<span class="pp-tree-indent"></span>'.repeat(depth);
+      const groupId = `spgrp-${space.id}`;
+      let out = '';
+
+      // Group header row
+      out += `<div class="pp-tree-row pp-group" onclick="document.getElementById('${groupId}').classList.toggle('open');this.querySelector('.pp-tree-arrow').classList.toggle('open')">
+        ${indent}
+        <span class="pp-tree-arrow">&#9654;</span>
+        <span class="pp-tree-name">${esc(space.name)}</span>
+        <span class="pp-tree-badges">
+          ${badge(space.type || '--', space.type === 'Dwelling' ? 'blue' : space.type === 'Amenity' ? 'green' : 'gray')}
+          <span style="font-size:0.6875rem;color:var(--text-muted)">${matched.length} structure${matched.length !== 1 ? 's' : ''}</span>
+        </span>
+      </div>`;
+
+      // Children container
+      out += `<div id="${groupId}" class="pp-tree-children">`;
+
+      // Render structures under this space
+      matched.forEach(s => { out += renderStructureRow(s, depth + 1); });
+
+      // Recurse into child spaces
+      children.forEach(c => { out += renderSpaceGroup(c, depth + 1); });
+
+      out += '</div>';
+      return out;
+    }
+
+    // Render a single structure row + expandable detail
+    function renderStructureRow(s, depth) {
+      const indent = '<span class="pp-tree-indent"></span>'.repeat(depth);
+      const detailId = `stdet-${s.id}`;
+      const compClass = s.setback_compliant === true ? 'compliant'
+        : s.setback_compliant === false ? 'violation' : 'pending';
       const permitColors = {
         permitted: 'green', exempt: 'green', grandfathered: 'blue',
         unpermitted: 'red', violation: 'red', pending: 'amber',
       };
-      const complianceClass = s.setback_compliant === true ? 'compliant'
-        : s.setback_compliant === false ? 'violation' : 'pending';
 
       const dims = [s.width_ft, s.length_ft].filter(Boolean).join(' × ');
-      const dimsStr = dims ? `${dims} ft` : '--';
-      const heightStr = s.height_ft ? `${s.height_ft} ft` : null;
+      const dimsStr = dims ? `${dims} ft` : '';
 
+      let out = `<div class="pp-tree-row" onclick="document.getElementById('${detailId}').classList.toggle('open');this.querySelector('.pp-tree-arrow').classList.toggle('open')">
+        ${indent}
+        <span class="pp-tree-arrow">&#9654;</span>
+        <span class="pp-compliance-dot ${compClass}"></span>
+        <span class="pp-tree-name">${esc(s.name)}</span>
+        <span class="pp-tree-badges">
+          ${badge(s.structure_type || '--', 'blue')}
+          ${badge(s.permit_status || '?', permitColors[s.permit_status] || 'gray')}
+          ${dimsStr ? `<span style="font-size:0.6875rem;color:var(--text-muted)">${esc(dimsStr)}</span>` : ''}
+        </span>
+      </div>`;
+
+      // Expandable detail panel
       const amenities = [];
       if (s.has_plumbing) amenities.push('Plumbing');
       if (s.has_electric) amenities.push('Electric');
@@ -465,35 +548,48 @@ async function loadStructures() {
         return `${sb.measured_distance_ft}′ to ${esc(edgeLabel)} (req ${sb.required_distance_ft}′) ${sb.is_compliant ? '✓' : '✗'}`;
       });
 
-      return `<div class="pp-struct-card">
-        <div class="pp-compliance-bar ${complianceClass}"></div>
-        <h4>${esc(s.name)}</h4>
-        <dl class="pp-struct-meta">
-          <dt>Type</dt><dd>${badge(s.structure_type || '--', 'blue')}</dd>
-          <dt>Use</dt><dd>${badge(s.use_type || '--', 'gray')}</dd>
-          <dt>Dimensions</dt><dd>${esc(dimsStr)}${heightStr ? ` × ${esc(heightStr)} H` : ''}</dd>
+      out += `<div id="${detailId}" class="pp-tree-detail" style="padding-left:${1 + (depth + 1) * 1.25}rem">
+        <dl class="pp-tree-detail-grid">
+          <dt>Type</dt><dd>${esc(s.structure_type || '--')}</dd>
+          <dt>Use</dt><dd>${esc(s.use_type || '--')}</dd>
+          <dt>Dimensions</dt><dd>${dims ? `${dims}${s.height_ft ? ` × ${s.height_ft} H` : ''} ft` : '--'}</dd>
           <dt>Area</dt><dd>${s.area_sqft ? `${Number(s.area_sqft).toLocaleString()} sq ft` : '--'}</dd>
           <dt>Stories</dt><dd>${s.stories ?? '--'}</dd>
           <dt>Material</dt><dd>${esc(s.material || '--')}</dd>
           <dt>Roof</dt><dd>${esc(s.roof_type || '--')}</dd>
-          <dt>Permit</dt><dd>${badge(s.permit_status || 'unknown', permitColors[s.permit_status] || 'gray')}</dd>
+          <dt>Permit</dt><dd>${esc(s.permit_status || '--')}</dd>
           ${s.guest_capacity ? `<dt>Capacity</dt><dd>${s.guest_capacity} guests</dd>` : ''}
           ${s.bedrooms ? `<dt>Beds / Baths</dt><dd>${s.bedrooms} / ${s.bathrooms ?? '--'}</dd>` : ''}
           <dt>Movable</dt><dd>${s.is_movable ? 'Yes' : 'No'}</dd>
           ${amenities.length ? `<dt>Utilities</dt><dd>${amenities.join(', ')}</dd>` : ''}
           <dt>Nearest Edge</dt><dd>${s.nearest_edge_side ? `${s.nearest_edge_side} — ${s.nearest_edge_distance_ft}′ (req ${s.setback_required_ft}′)` : '--'}</dd>
+          ${s.setback_surplus_ft != null ? `<dt>Setback Surplus</dt><dd>${s.setback_surplus_ft > 0 ? `+${s.setback_surplus_ft}′` : `${s.setback_surplus_ft}′`}</dd>` : ''}
         </dl>
-        ${setbacks.length ? `<div style="margin-top:0.75rem;font-size:0.75rem;color:var(--text-muted);">
-          <strong>Setback Measurements:</strong><br>${setbacks.join('<br>')}
+        ${setbacks.length ? `<div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted);">
+          <strong>Setback Measurements:</strong> ${setbacks.join(' · ')}
         </div>` : ''}
-        <div class="pp-struct-tags">
-          ${s.setback_compliant === true ? '<span class="pp-badge pp-badge-green">Compliant</span>' : ''}
-          ${s.setback_compliant === false ? '<span class="pp-badge pp-badge-red">Violation</span>' : ''}
-          ${s.setback_surplus_ft != null && s.setback_surplus_ft < 0 ? `<span class="pp-badge pp-badge-red">${Math.abs(s.setback_surplus_ft)}′ over line</span>` : ''}
-          ${s.setback_surplus_ft != null && s.setback_surplus_ft > 0 ? `<span class="pp-badge pp-badge-green">${s.setback_surplus_ft}′ surplus</span>` : ''}
-        </div>
       </div>`;
-    }).join('')}</div>`;
+
+      return out;
+    }
+
+    // Render top-level spaces
+    topSpaces.forEach(sp => { html += renderSpaceGroup(sp, 0); });
+
+    // Render unmatched structures at root level
+    if (unmatched.length) {
+      html += `<div class="pp-tree-row pp-group" onclick="document.getElementById('spgrp-unmatched').classList.toggle('open');this.querySelector('.pp-tree-arrow').classList.toggle('open')">
+        <span class="pp-tree-arrow">&#9654;</span>
+        <span class="pp-tree-name" style="color:var(--text-muted)">Other Structures</span>
+        <span class="pp-tree-badges"><span style="font-size:0.6875rem;color:var(--text-muted)">${unmatched.length}</span></span>
+      </div>`;
+      html += '<div id="spgrp-unmatched" class="pp-tree-children">';
+      unmatched.forEach(s => { html += renderStructureRow(s, 0); });
+      html += '</div>';
+    }
+
+    html += '</div>';
+    el.innerHTML = html;
   } catch (err) {
     console.error('Structures load error:', err);
   }
