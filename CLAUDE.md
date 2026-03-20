@@ -13,11 +13,15 @@
 
 ## Mandatory Behaviors
 
-1. After code changes: end response with `vYYMMDD.NN H:MMa [model]` + affected URLs (read `version.json`)
+1. **Push & report version at session end (ALWAYS):**
+   - After all code changes are committed, push to main via `./scripts/push-main.sh`
+   - Wait ~60s for CI, then `git pull --rebase origin main`
+   - Read `version.json` and report the **live** version: `vYYMMDD.NN H:MMa [model]` + affected URLs
+   - **Never report a version number before pushing and pulling the CI-bumped version.** The version in `version.json` is only valid after CI runs.
+   - If on a feature branch (not main), say "Pushed to branch `name` (not yet deployed)" — no version number.
 2. On significant decisions: update `PRODUCTDESIGN.md` with **Decision** and **Why**
-3. Push immediately — GitHub Pages deploys on push to main. See `docs/DEPLOY.md`
-4. CI bumps version — never bump locally
-5. Exclude `/mistiq/` from all AlpacApps work
+3. CI bumps version — never bump locally
+4. Exclude `/mistiq/` from all AlpacApps work
 
 ## Code Guards
 
