@@ -557,6 +557,8 @@ async function loadContext() {
     { name: 'DEPLOY.md', path: 'docs/DEPLOY.md', category: 'docs', desc: 'Deployment, pushing, version management', gh: 'docs/DEPLOY.md' },
     { name: 'INTEGRATIONS.md', path: 'docs/INTEGRATIONS.md', category: 'docs', desc: 'External APIs, vendor setup', gh: 'docs/INTEGRATIONS.md' },
     { name: 'CHANGELOG.md', path: 'docs/CHANGELOG.md', category: 'docs', desc: 'Recent changes, migration context', gh: 'docs/CHANGELOG.md' },
+    { name: 'CAD.md', path: 'docs/CAD.md', category: 'docs', desc: 'CAD/3D tools reference — Blender, QGIS, LibreCAD on Alpaca Mac', gh: 'docs/CAD.md' },
+    { name: 'CAD-SITE-PLANS.md', path: 'docs/CAD-SITE-PLANS.md', category: 'docs', desc: 'Site plan workflows, GIS data sources, permit sheet generation', gh: 'docs/CAD-SITE-PLANS.md' },
   ];
 
   const SYSTEM_PROMPT_TOKENS = 8000;
