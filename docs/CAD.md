@@ -70,6 +70,7 @@ All add-on zips are in `~/Downloads/blender-addons/` on Alpaca Mac.
 | Data | Source | URL |
 |------|--------|-----|
 | Parcel boundaries | Bastrop CAD | https://www.bastropcad.org/ |
+| Parcel boundaries (REST API) | Bastrop County ArcGIS | `services3.arcgis.com/wdTkTU0MdZbNBEZy/.../Parcel/FeatureServer/0` |
 | Statewide parcels, LiDAR, aerial | TNRIS | https://data.tnris.org/ |
 | NAIP aerial imagery | USDA | Via QGIS WMS |
 | 1m LiDAR DEM | USGS 3DEP | https://apps.nationalmap.gov/downloader/ |
@@ -166,6 +167,7 @@ parcels (1)
 | in_floodplain | BOOLEAN | false |
 | houston_toad_habitat | BOOLEAN | false |
 | esd_district | TEXT | "BCESD #3" |
+| zoning_district_id | FK→zoning_rules | Links to applicable zoning regulations |
 | survey_date, survey_by, survey_rpls | DATE/TEXT | 4Ward Land Surveying, 2021-02-04 |
 
 #### `parcel_edges` — Each boundary edge with setback rules
@@ -187,6 +189,8 @@ parcels (1)
 | easement_width_ft | NUMERIC | 10 |
 | setback_required_ft | NUMERIC | 10 or 20 depending on edge |
 | setback_label | TEXT | "property line" or "Local Rural Road" |
+| adjoining_owner | TEXT | Name of adjacent property owner |
+| notes | TEXT | Free-form notes |
 
 #### `structures` — Every building, container, trailer, deck on the property
 | Column | Type | Description |
@@ -201,8 +205,14 @@ parcels (1)
 | area_sqft | NUMERIC | Footprint area |
 | material | TEXT | stone_frame, wood, steel_container, rv |
 | roof_type | ENUM | gable, hip, flat, shed, mansard, gambrel, metal_standing_seam, none |
+| color | TEXT | Exterior color description |
+| year_built | INTEGER | Year originally constructed |
+| year_placed | INTEGER | Year placed on property (for containers/trailers) |
+| ground_elevation_ft | NUMERIC(8,2) | Base elevation for 3D |
 | footprint_geom | GEOMETRY(POLYGON, 4326) | 2D footprint for QGIS/GeoJSON |
+| centroid_geom | GEOMETRY(POINT, 4326) | Center point for map markers |
 | lod0_footprint | GEOMETRY(POLYGONZ, 4326) | 3D footprint with elevation for Blender import |
+| nearest_edge_id | FK→parcel_edges | FK to closest boundary edge |
 | nearest_edge_side | TEXT | N, S, E, W |
 | nearest_edge_distance_ft | NUMERIC | Distance to nearest property line |
 | setback_required_ft | NUMERIC | Required setback for that edge |
@@ -210,11 +220,17 @@ parcels (1)
 | setback_surplus_ft | NUMERIC | Positive = surplus, negative = violation |
 | permit_status | ENUM | permitted, unpermitted, exempt, violation, pending, grandfathered |
 | is_movable | BOOLEAN | Trailers = true |
+| is_permanent_structure | BOOLEAN | FALSE for trailers/RVs |
 | guest_capacity | INTEGER | For lodging units |
 | bedrooms, bathrooms | INTEGER/NUMERIC | |
 | has_plumbing, has_electric, has_hvac | BOOLEAN | Utility connections |
+| condition | TEXT | Physical condition notes |
+| space_id | INTEGER | FK to `spaces` table (links to room/unit) |
 | photo_urls | TEXT[] | R2 image URLs |
+| notes | TEXT | Free-form notes |
 | metadata | JSONB | Extensible attributes |
+| display_order | INTEGER | Sort order in UI |
+| is_active | BOOLEAN | Soft delete flag |
 
 #### `structure_setbacks` — Measured distance from each structure to each edge
 | Column | Type | Description |
@@ -307,6 +323,8 @@ Database (Supabase PostGIS)
 ### Current Data (as of March 2026)
 
 **Parcel:** 160 Still Forest Dr — 1.7348 acres, 4 edges, 1 road frontage (south)
+
+**Geometry status:** `boundary_geom`, `edge_geom`, and `footprint_geom` populated from Bastrop County GIS + georeferenced survey. Parcel corners from ArcGIS FeatureServer (prop_id=44401), structure footprints computed via GDAL georeferencing of 4Ward survey PNG with 4 GCPs. See `gis/` directory for scripts and GeoJSON files. Georeferenced survey TIFF on Alpaca Mac at `~/Documents/gis/still-forest/survey-georef.tif`.
 
 **11 Structures:**
 - 5 compliant (Main House, Back House, Deck, Sauna, Bathroom Bldg*)
