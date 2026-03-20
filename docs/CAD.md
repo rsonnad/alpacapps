@@ -335,6 +335,59 @@ Database (Supabase PostGIS)
 
 **Impervious Cover:** 4 containers × 320 SF = 1,280 SF tracked
 
+### Migration Order
+
+Three migrations run in sequence — each depends on the previous:
+
+| # | File | Creates |
+|---|------|---------|
+| 1 | `20260320_3d_property_schema.sql` | 10 tables, enums, spatial indexes, RLS enabled |
+| 2 | `20260320_seed_property_data.sql` | Triggers, 40 RLS policies, seed data |
+| 3 | `20260320_populate_parcel_geometry.sql` | Boundary/edge/footprint geometry, auto-recomputes setbacks |
+
+### Triggers (7)
+
+| Trigger | Table | Event | Function | Purpose |
+|---------|-------|-------|----------|---------|
+| `trg_parcels_updated_at` | `parcels` | BEFORE UPDATE | `update_updated_at()` | Auto-set `updated_at = NOW()` |
+| `trg_structures_updated_at` | `structures` | BEFORE UPDATE | `update_updated_at()` | Auto-set `updated_at = NOW()` |
+| `trg_zoning_rules_updated_at` | `zoning_rules` | BEFORE UPDATE | `update_updated_at()` | Auto-set `updated_at = NOW()` |
+| `trg_property_utilities_updated_at` | `property_utilities` | BEFORE UPDATE | `update_updated_at()` | Auto-set `updated_at = NOW()` |
+| `trg_permit_applications_updated_at` | `permit_applications` | BEFORE UPDATE | `update_updated_at()` | Auto-set `updated_at = NOW()` |
+| `trg_structures_centroid` | `structures` | BEFORE INSERT/UPDATE OF `footprint_geom` | `compute_structure_centroid()` | Auto-compute `centroid_geom = ST_Centroid(footprint_geom)` |
+| `trg_structures_area` | `structures` | BEFORE INSERT/UPDATE OF `footprint_geom` | `compute_structure_area()` | Auto-compute `area_sqft` from geography area (only if NULL or geom changed) |
+
+### RLS Policies (40)
+
+All 10 tables follow the same pattern:
+
+| Role | Access | Policy suffix |
+|------|--------|---------------|
+| `anon` | SELECT | `_anon_read` |
+| `authenticated` | SELECT | `_auth_read` |
+| `authenticated` | INSERT | `_auth_insert` |
+| `authenticated` | UPDATE | `_auth_update` |
+| `authenticated` | DELETE | `_auth_delete` (only on `parcel_edges`, `structures`) |
+
+Tables with all 5 policies: `parcel_edges`, `structures`
+Tables with 4 policies (no DELETE): `parcels`, `structure_setbacks`, `property_utilities`, `impervious_cover`, `permit_applications`, `inspections`
+Tables with 3 policies (no DELETE, no INSERT): `zoning_rules`
+Tables with 3 policies (no DELETE, no UPDATE): `permit_documents`
+
+All policies use `USING (true)` / `WITH CHECK (true)` — no row-level filtering. RLS is enabled for defense-in-depth; access control is role-based.
+
+### Seed Data
+
+Pre-populated in migration #2:
+
+| Table | Count | Key data |
+|-------|-------|----------|
+| `zoning_rules` | 1 | Bastrop County unincorporated — Blue Bonnet Acres (front 20ft, side/rear 10ft, containers >25sqft are permanent) |
+| `parcels` | 1 | 160 Still Forest Dr — 1.7348 acres, parcel #44401 |
+| `structures` | 11 | 5 compliant + 6 violations (see Current Data above) |
+| `property_utilities` | 4 | Water well, aerobic OSSF, Bluebonnet Electric 200A, fire protection (pending tank) |
+| `impervious_cover` | 4 | All containers (4 × 320 SF = 1,280 SF) |
+
 ---
 
 ## Costs
