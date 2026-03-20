@@ -247,125 +247,126 @@ def create_oval(name, cx, cy, rx, ry, height, material, segments=24, z_base=0):
 # ---------------------------------------------------------------------------
 # 7.  STRUCTURES — survey-matched positions
 # ---------------------------------------------------------------------------
-# Positions are placed to match the 4Ward Land Survey plat (2025 update).
-# The survey shows (looking from the road/south):
-#   - Main House: NE quadrant, large rectangular
-#   - Back House: just NW of main house
-#   - Pool: center of property, oval/kidney shape
-#   - Deck: around pool and between houses
-#   - Containers: clustered in the north portion
-#   - Trailers: north area
-#   - Bathroom Bldg: near main house cluster
-#   - Sauna: west of pool area
+# From the 4Ward Land Survey (2025), ALL structures are in the EAST HALF.
+# The west half is entirely trees/empty.
 #
-# Coordinates below are in local feet (SW corner = 0,0).
-# When footprint_geom is populated in DB, these will be replaced by
-# reading from property_data.json.
+# Layout (looking from road/south, all in east half):
+#   - Main House: NE area, large rectangular, ~65 ft from east edge
+#   - Back House: just NW of main house, ~30 ft away
+#   - Pool: directly SOUTH of main house, oval with surrounding deck
+#   - Containers/Trailers: clustered near/north of main house
+#   - Bathroom Bldg: near main house cluster
+#   - Sauna: near pool, slightly west
+#
+# Coordinates in local feet (SW corner = 0,0).
+# The east property line at y=230 is roughly at x=170.
+# All structures placed between x=40 and x=170 (east half only).
 
-# Property approximate dimensions from survey:
-# Width at south (road): ~195 ft
-# Width at north: ~280 ft
-# Depth (N-S): ~330 ft
+# Interpolate east edge x-position at a given y
+def east_edge_x_at(y):
+    """Approximate the east property line x at a given y (SE to NE)."""
+    se_x, se_y = parcel_ft[1]   # SE corner
+    ne_x, ne_y = parcel_ft[2]   # NE corner
+    if ne_y == se_y:
+        return se_x
+    t = (y - se_y) / (ne_y - se_y)
+    t = max(0, min(1, t))
+    return se_x + t * (ne_x - se_x)
 
-# Main House — NE quadrant (~40x60, stone/frame, 2-story)
-# From survey: ~60 ft from east edge, ~230 ft from south (road)
-main_house_x = max_x - 80
-main_house_y = min_y + 240
+# Main House — NE area (~40x60, stone/frame, 2-story)
+# Survey: ~65 ft from east edge, ~230 ft from south (road)
+main_house_y = min_y + 230
+main_house_x = east_edge_x_at(main_house_y) - 85
 create_box("Main_House", main_house_x, main_house_y, 40, 60, 14, mat_stone, rotation=0.05)
 create_roof("Main_House", main_house_x, main_house_y, 42, 62, 14, 6, mat_roof_grey, rotation=0.05)
 
-# Back House — just NW of main house (~20x30, wood)
-back_house_x = main_house_x - 55
-back_house_y = main_house_y + 30
+# Back House — just NW of main house (~20x30, wood), ~30 ft away
+back_house_x = main_house_x - 35
+back_house_y = main_house_y + 25
 create_box("Back_House", back_house_x, back_house_y, 20, 30, 10, mat_wood, rotation=0.05)
 create_roof("Back_House", back_house_x, back_house_y, 22, 32, 10, 4, mat_roof_grey, rotation=0.05)
 
-# Bathroom Bldg — near main house cluster, slightly south
-bath_x = main_house_x - 40
-bath_y = main_house_y - 15
+# Bathroom Bldg — east of back house, near main house
+bath_x = main_house_x - 5
+bath_y = main_house_y + 40
 create_box("Bathroom_Bldg", bath_x, bath_y, 17, 17, 9, mat_bath_bldg, rotation=0.05)
 create_roof("Bathroom_Bldg", bath_x, bath_y, 18, 18, 9, 3, mat_roof_grey, rotation=0.05)
 
-# Pool — center of property, large oval (~20x35 ft)
-pool_x = cx + 15
-pool_y = cy + 30
+# Pool — directly SOUTH of main house, oval (~20x35 ft)
+pool_x = main_house_x - 10
+pool_y = main_house_y - 70
 # Pool deck (larger oval around pool)
 create_oval("Pool_Deck", pool_x, pool_y, 28, 22, 0.5, mat_pool_deck, z_base=-0.05)
 # Pool water surface (inset)
 create_oval("Pool", pool_x, pool_y, 20, 15, 0.1, mat_pool_water, z_base=0.3)
 
-# Deck — large deck area between pool and main house
+# Deck — between pool and main house (connecting area)
 deck_coords = [
-    (pool_x - 30, pool_y - 25),
-    (main_house_x - 20, main_house_y - 35),
-    (main_house_x + 15, main_house_y - 35),
-    (pool_x + 30, pool_y - 20),
-    (pool_x + 30, pool_y + 5),
-    (pool_x - 30, pool_y + 5),
+    (pool_x - 25, pool_y + 20),
+    (main_house_x - 22, main_house_y - 32),
+    (main_house_x + 18, main_house_y - 32),
+    (pool_x + 25, pool_y + 20),
+    (pool_x + 25, pool_y - 5),
+    (pool_x - 25, pool_y - 5),
 ]
 create_polygon("Deck", deck_coords, 1.5, mat_wood_deck, z_base=0.05)
 
-# Sauna — west of pool area, small square (7x7)
-sauna_x = pool_x - 50
-sauna_y = pool_y - 10
+# Sauna — near pool, slightly west (7x7)
+sauna_x = pool_x - 35
+sauna_y = pool_y + 5
 create_box("Sauna", sauna_x, sauna_y, 7, 7, 7, mat_sauna_mat)
 create_roof("Sauna", sauna_x, sauna_y, 8, 8, 7, 2.5, mat_roof_grey)
 
-# --- Containers — clustered in the north portion of the property ---
-# From survey: containers are roughly parallel, in the upper third
+# --- Containers — clustered NEAR the house, north of main house ---
+# Survey shows them behind/north of the main house cluster, east half
 
-container_base_y = max_y - 50  # ~50 ft from north edge
-
-# Red Container #1 — west side of north area
-create_box("Red_Container_1", cx - 40, container_base_y, 8, 40, 8.5,
+# Red Container #1 — north of back house
+create_box("Red_Container_1", back_house_x + 5, back_house_y + 35, 8, 40, 8.5,
            mat_red_steel, rotation=0.05)
 
-# Red Container #2 — east of #1
-create_box("Red_Container_2", cx + 10, container_base_y + 12, 8, 40, 8.5,
+# Red Container #2 — east of #1, parallel
+create_box("Red_Container_2", back_house_x + 20, back_house_y + 50, 8, 40, 8.5,
            mat_red_steel, rotation=0.05)
 
-# Container #3 (blue) — between the reds
-create_box("Container_3", cx - 15, container_base_y - 15, 8, 40, 8.5,
+# Container #3 (blue) — north of main house
+create_box("Container_3", main_house_x - 15, main_house_y + 55, 8, 40, 8.5,
            mat_blue_stl, rotation=0.05)
 
-# Beige Container — slightly south of the cluster
-create_box("Beige_Container", cx + 30, container_base_y - 30, 8, 40, 8.5,
+# Beige Container — east of the cluster
+create_box("Beige_Container", main_house_x + 15, main_house_y + 45, 8, 40, 8.5,
            mat_beige_stl, rotation=0.05)
 
-# --- Trailers — north area ---
+# --- Trailers — near the containers, east half ---
 
-# Big Trailer (10x42) — north area, west side
-create_box("Big_Trailer", cx - 60, container_base_y + 20, 10, 42, 10,
+# Big Trailer (10x42) — just west of container cluster
+create_box("Big_Trailer", back_house_x - 25, back_house_y + 40, 10, 42, 10,
            mat_rv_white, rotation=0.05)
 
-# Small Trailer (7.4x20.4) — east side
-create_box("Small_Trailer", max_x - 50, cy + 60, 7.4, 20.4, 9,
+# Small Trailer (7.4x20.4) — east side, near main house
+create_box("Small_Trailer", main_house_x + 30, main_house_y + 20, 7.4, 20.4, 9,
            mat_rv_white, rotation=0.1)
 
-# --- Driveway — enters from SE, curves north to main house ---
-# Approximated as a polygon path
+# --- Driveway — enters from SE corner, curves north to main house ---
 driveway_pts = [
     # Entry from road (SE area)
-    (se_ft[0] - 30, se_ft[1] + 5),
-    (se_ft[0] - 15, se_ft[1] + 5),
-    (se_ft[0] - 10, se_ft[1] + 30),
-    # Curve north
-    (se_ft[0] - 20, se_ft[1] + 80),
-    (max_x - 40, min_y + 150),
-    # Approach main house area
-    (max_x - 50, main_house_y - 60),
-    (max_x - 70, main_house_y - 50),
-    # Circular area near house
-    (max_x - 90, main_house_y - 55),
-    (max_x - 100, main_house_y - 65),
-    (max_x - 90, main_house_y - 75),
-    (max_x - 60, main_house_y - 70),
-    (max_x - 40, main_house_y - 65),
-    # Return path south (make it a loop for width)
-    (max_x - 55, min_y + 140),
-    (se_ft[0] - 35, se_ft[1] + 70),
-    (se_ft[0] - 40, se_ft[1] + 25),
-    (se_ft[0] - 45, se_ft[1] + 5),
+    (se_ft[0] - 30, se_ft[1] + 3),
+    (se_ft[0] - 15, se_ft[1] + 3),
+    (se_ft[0] - 10, se_ft[1] + 25),
+    # Curve north along east side
+    (main_house_x + 25, min_y + 120),
+    (main_house_x + 20, pool_y - 10),
+    # Pass pool, approach house
+    (main_house_x + 22, main_house_y - 40),
+    (main_house_x + 18, main_house_y - 20),
+    # Turnaround/parking near house
+    (main_house_x - 10, main_house_y - 15),
+    (main_house_x - 20, main_house_y - 25),
+    (main_house_x - 15, main_house_y - 40),
+    # Return path (west side of driveway)
+    (main_house_x + 5, pool_y - 10),
+    (main_house_x + 10, min_y + 110),
+    (se_ft[0] - 40, se_ft[1] + 20),
+    (se_ft[0] - 45, se_ft[1] + 3),
 ]
 create_polygon("Driveway", driveway_pts, 0.15, mat_gravel, z_base=0.02)
 
@@ -430,21 +431,22 @@ structure_centers = [
     (bath_x, bath_y),
     (pool_x, pool_y),
     (sauna_x, sauna_y),
-    (cx - 40, container_base_y),
-    (cx + 10, container_base_y + 12),
-    (cx - 15, container_base_y - 15),
-    (cx + 30, container_base_y - 30),
-    (cx - 60, container_base_y + 20),
-    (max_x - 50, cy + 60),
+    (back_house_x + 5, back_house_y + 35),
+    (back_house_x + 20, back_house_y + 50),
+    (main_house_x - 15, main_house_y + 55),
+    (main_house_x + 15, main_house_y + 45),
+    (back_house_x - 25, back_house_y + 40),
+    (main_house_x + 30, main_house_y + 20),
 ]
 
 for i in range(35):
     for _ in range(80):
-        # 75% of trees placed in west half, 25% elsewhere (matches survey)
-        if random.random() < 0.75:
-            rx = random.uniform(min_x + 10, cx - 20)
+        # 80% of trees in west half (survey shows heavy tree cover on west)
+        # 20% scattered elsewhere but avoiding the east structure cluster
+        if random.random() < 0.80:
+            rx = random.uniform(min_x + 10, cx - 30)
         else:
-            rx = random.uniform(min_x + 10, max_x - 10)
+            rx = random.uniform(min_x + 10, main_house_x - 50)
         ry = random.uniform(min_y + 25, max_y - 10)
 
         # Must be 30 ft from any structure
