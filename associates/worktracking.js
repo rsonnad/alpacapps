@@ -28,6 +28,7 @@ let scheduleData = [];
 let scheduleActuals = {};
 let scheduleLoaded = false;
 let editingEntryId = null;
+let editingEntryOriginal = null;
 
 // =============================================
 // INITIALIZATION
@@ -507,11 +508,13 @@ async function refreshToday() {
       const desc = e.description ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">${escapeHtml(e.description)}</div>` : '';
       const manual = e.is_manual ? '<span class="manual-badge" style="margin-left:0.3rem;">Manual</span>' : '';
       const spaceLabel = e.space_id && spacesMap[e.space_id] ? `<span class="space-tag">${escapeHtml(spacesMap[e.space_id])}</span>` : '';
-      const editBtn = (e.clock_out && !e.is_paid) ? `<button class="entry-edit-btn" onclick="window._openEditModal('${e.id}')">Edit</button>` : '';
-      return `<div class="entry-row">
-        <div><span class="entry-times">${ci} — ${co}</span>${manual}${spaceLabel}${desc}</div>
+      const canEdit = e.clock_out && !e.is_paid;
+      const editableClass = canEdit ? ' editable' : '';
+      const editClick = canEdit ? ` onclick="window._openEditModal('${e.id}')"` : '';
+      const editHint = canEdit ? '<span class="edit-hint">tap to edit</span>' : '';
+      return `<div class="entry-row${editableClass}"${editClick}>
+        <div><span class="entry-times">${ci} — ${co}</span>${manual}${spaceLabel}${editHint}${desc}</div>
         <div style="display:flex;align-items:center;gap:0.5rem;">
-          ${editBtn}
           <span class="entry-duration">${dur}</span>
         </div>
       </div>`;
@@ -788,16 +791,18 @@ async function refreshHistory() {
         const paidClass = e.is_paid ? 'paid' : 'unpaid';
         const manualHtml = e.is_manual ? `<span class="manual-badge" title="${escapeHtml(e.manual_reason || 'Manual entry')}">Manual</span>` : '';
         const spaceHtml = e.space_id && spacesMap[e.space_id] ? `<div class="ed-desc">${escapeHtml(spacesMap[e.space_id])}</div>` : '';
-        const editBtnHtml = (e.clock_out && !e.is_paid) ? `<button class="entry-edit-btn" onclick="window._openEditModal('${e.id}')">Edit</button>` : '';
+        const canEdit = e.clock_out && !e.is_paid;
+        const editableClass = canEdit ? ' editable' : '';
+        const editClick = canEdit ? ` onclick="window._openEditModal('${e.id}')"` : '';
 
-        return `<div class="history-entry">
+        return `<div class="history-entry${editableClass}"${editClick}>
           <div class="entry-time-block">
             <span class="etb-in">${ci}</span>
             <span class="etb-divider">▾</span>
             <span class="etb-out">${co}</span>
           </div>
           <div class="entry-detail">
-            <div class="ed-duration">${dur}${manualHtml}${editBtnHtml}</div>
+            <div class="ed-duration">${dur}${manualHtml}</div>
             ${desc}
             ${spaceHtml}
           </div>
@@ -1401,6 +1406,7 @@ async function openEditModal(entryId) {
   }
 
   editingEntryId = entryId;
+  editingEntryOriginal = { ...entry };
 
   // Populate space dropdown
   const editSpace = document.getElementById('editSpace');
@@ -1427,6 +1433,7 @@ async function openEditModal(entryId) {
 function closeEditModal() {
   document.getElementById('editEntryModal').classList.remove('visible');
   editingEntryId = null;
+  editingEntryOriginal = null;
 }
 
 function computeEditDuration() {
@@ -1446,7 +1453,7 @@ function computeEditDuration() {
 }
 
 async function handleEditSubmit() {
-  if (!editingEntryId) return;
+  if (!editingEntryId || !editingEntryOriginal) return;
 
   const date = document.getElementById('editDate').value;
   const clockIn = document.getElementById('editClockIn').value;
@@ -1461,7 +1468,9 @@ async function handleEditSubmit() {
 
   const ciDateTime = `${date}T${clockIn}`;
   const coDateTime = `${date}T${clockOut}`;
-  if (new Date(coDateTime) <= new Date(ciDateTime)) {
+  const newCi = new Date(ciDateTime);
+  const newCo = new Date(coDateTime);
+  if (newCo <= newCi) {
     showToast('Clock out must be after clock in', 'error');
     return;
   }
@@ -1471,12 +1480,50 @@ async function handleEditSubmit() {
   btn.textContent = 'Saving...';
 
   try {
+    const newDurationMins = Math.round((newCo - newCi) / 60000);
+    const oldDurationMins = parseFloat(editingEntryOriginal.duration_minutes) || 0;
+    const addedMinutes = newDurationMins - oldDurationMins;
+
+    // If edit adds more than 10 hours, require admin approval
+    if (addedMinutes > 600) {
+      await hoursService.createEditRequest(
+        editingEntryId,
+        authState.appUser.id,
+        { clock_in: newCi.toISOString(), clock_out: newCo.toISOString(), description: description || null, space_id: spaceId },
+        { clock_in: editingEntryOriginal.clock_in, clock_out: editingEntryOriginal.clock_out, duration_minutes: oldDurationMins }
+      );
+      showToast('This edit adds over 10 hours — submitted for admin approval', 'info');
+      closeEditModal();
+      return;
+    }
+
+    // Build audit trail of what changed
+    const changes = {};
+    if (newCi.toISOString() !== new Date(editingEntryOriginal.clock_in).toISOString()) {
+      changes.clock_in = { oldVal: editingEntryOriginal.clock_in, newVal: newCi.toISOString() };
+    }
+    if (newCo.toISOString() !== new Date(editingEntryOriginal.clock_out).toISOString()) {
+      changes.clock_out = { oldVal: editingEntryOriginal.clock_out, newVal: newCo.toISOString() };
+    }
+    if ((description || '') !== (editingEntryOriginal.description || '')) {
+      changes.description = { oldVal: editingEntryOriginal.description, newVal: description || null };
+    }
+    if ((spaceId || null) !== (editingEntryOriginal.space_id || null)) {
+      changes.space_id = { oldVal: editingEntryOriginal.space_id, newVal: spaceId };
+    }
+
     await hoursService.updateEntry(editingEntryId, {
-      clock_in: new Date(ciDateTime).toISOString(),
-      clock_out: new Date(coDateTime).toISOString(),
+      clock_in: newCi.toISOString(),
+      clock_out: newCo.toISOString(),
       description: description || null,
       space_id: spaceId
     });
+
+    // Log audit trail
+    if (Object.keys(changes).length > 0) {
+      await hoursService.logEdit(editingEntryId, authState.appUser.id, changes);
+    }
+
     showToast('Entry updated!', 'success');
     closeEditModal();
     await Promise.all([refreshToday(), refreshHistory()]);

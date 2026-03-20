@@ -131,6 +131,22 @@
     .add-wg-form .form-group input { min-width: 180px; }
     .add-wg-form .btn-do-add { background: #6366f1; color: #fff; border: none; padding: 0.4rem 0.85rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
 
+    /* Edit Request Cards */
+    .edit-request-card {
+      background: var(--bg-card); border: 1px solid #fde68a; border-radius: var(--radius);
+      padding: 1rem; margin-bottom: 0.75rem; border-left: 4px solid #f59e0b;
+    }
+    .edit-request-card .erc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .edit-request-card .erc-name { font-weight: 700; font-size: 0.9rem; }
+    .edit-request-card .erc-date { font-size: 0.75rem; color: var(--text-muted); }
+    .edit-request-card .erc-diff { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.85rem; }
+    .edit-request-card .erc-diff .erc-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.15rem; }
+    .edit-request-card .erc-diff .erc-old { color: #dc2626; text-decoration: line-through; }
+    .edit-request-card .erc-diff .erc-new { color: #16a34a; font-weight: 600; }
+    .edit-request-card .erc-actions { display: flex; gap: 0.5rem; }
+    .edit-request-card .btn-approve { background: #16a34a; color: #fff; border: none; padding: 0.4rem 1rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+    .edit-request-card .btn-deny { background: #f3f4f6; color: #dc2626; border: 1px solid #fecaca; padding: 0.4rem 1rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+
     @media (max-width: 768px) {
       .summary-cards { grid-template-columns: repeat(2, 1fr); }
       .filters-bar { flex-direction: column; }
@@ -206,6 +222,15 @@
           <button data-preset="last-month">Last Month</button>
           <button data-preset="all">All Time</button>
         </div>
+      </div>
+
+      <!-- Pending Edit Requests -->
+      <div class="section" id="editRequestsSection" style="display:none;">
+        <div class="section-header">
+          <h2>Pending Edit Requests</h2>
+          <span class="badge unpaid" id="editRequestCount" style="font-size:0.8rem;"></span>
+        </div>
+        <div class="section-body" id="editRequestsBody"></div>
       </div>
 
       <!-- Time Entries -->
