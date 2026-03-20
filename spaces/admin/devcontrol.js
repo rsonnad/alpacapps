@@ -546,19 +546,32 @@ async function loadContext() {
   panel.innerHTML = '<div class="dc-empty">Loading file sizes...</div>';
 
   const CONTEXT_FILES = [
-    { name: 'Global CLAUDE.md', path: '~/.claude/CLAUDE.md', category: 'instructions', desc: 'User\'s private global instructions' },
-    { name: 'Project CLAUDE.md', path: './CLAUDE.md', category: 'instructions', desc: 'Project-specific directives, code guards', gh: 'CLAUDE.md' },
-    { name: 'CLAUDE.local.md', path: './CLAUDE.local.md', category: 'instructions', desc: 'Local overrides (not in repo)' },
-    { name: 'MEMORY.md', path: 'memory/MEMORY.md', category: 'memory', desc: 'Memory index — pointers to saved memories' },
-    { name: 'System prompt', path: '(built-in)', category: 'system', desc: 'Claude base prompt, tool defs, environment' },
-    { name: 'SCHEMA.md', path: 'docs/SCHEMA.md', category: 'docs', desc: 'Database schema — loaded for queries', gh: 'docs/SCHEMA.md' },
-    { name: 'PATTERNS.md', path: 'docs/PATTERNS.md', category: 'docs', desc: 'UI code, Tailwind styling patterns', gh: 'docs/PATTERNS.md' },
-    { name: 'KEY-FILES.md', path: 'docs/KEY-FILES.md', category: 'docs', desc: 'Project structure and file locations', gh: 'docs/KEY-FILES.md' },
-    { name: 'DEPLOY.md', path: 'docs/DEPLOY.md', category: 'docs', desc: 'Deployment, pushing, version management', gh: 'docs/DEPLOY.md' },
-    { name: 'INTEGRATIONS.md', path: 'docs/INTEGRATIONS.md', category: 'docs', desc: 'External APIs, vendor setup', gh: 'docs/INTEGRATIONS.md' },
-    { name: 'CHANGELOG.md', path: 'docs/CHANGELOG.md', category: 'docs', desc: 'Recent changes, migration context', gh: 'docs/CHANGELOG.md' },
-    { name: 'CAD.md', path: 'docs/CAD.md', category: 'docs', desc: 'CAD/3D tools reference — Blender, QGIS, LibreCAD on Alpaca Mac', gh: 'docs/CAD.md' },
-    { name: 'CAD-SITE-PLANS.md', path: 'docs/CAD-SITE-PLANS.md', category: 'docs', desc: 'Site plan workflows, GIS data sources, permit sheet generation', gh: 'docs/CAD-SITE-PLANS.md' },
+    { name: 'Global CLAUDE.md', path: '~/.claude/CLAUDE.md', category: 'instructions',
+      desc: 'User\'s private global instructions for all projects. Contains project identity checks (keyword-to-directory mapping), Bitwarden CLI unlock helpers, and gstack skill routing. Loaded in every session regardless of project.' },
+    { name: 'Project CLAUDE.md', path: './CLAUDE.md', category: 'instructions', gh: 'CLAUDE.md',
+      desc: 'Project-specific directives and code guards for AlpacApps. Defines mandatory behaviors (version stamping, push-on-change, CI versioning), code guards (media_spaces naming, showToast, Tailwind aap-* tokens, hero banner protection), on-demand doc loading triggers, and quick refs for the tech stack (Vanilla HTML/JS, Tailwind v4, Supabase, GitHub Pages, Capacitor 8).' },
+    { name: 'CLAUDE.local.md', path: './CLAUDE.local.md', category: 'instructions',
+      desc: 'Local overrides not committed to the repo. Contains machine-specific settings, experimental flags, or temporary behavioral overrides that only apply to one developer\'s environment. Loaded at startup but invisible to other contributors.' },
+    { name: 'MEMORY.md', path: 'memory/MEMORY.md', category: 'memory', gh: 'memory/MEMORY.md',
+      desc: 'Persistent memory index that carries context across conversations. Contains home automation endpoints (Sonos, WiZ lights, Music Assistant), data lookup routing (which Supabase table answers which question), quick DB query templates, SSH access gotchas, and pointers to detailed memory files for sessions, service access, and cloud infrastructure.' },
+    { name: 'System prompt', path: '(built-in)', category: 'system',
+      desc: 'Claude\'s built-in system prompt including tool definitions, environment detection, safety guidelines, and behavioral instructions. This is fixed by Anthropic and not editable. It defines how Claude reasons, uses tools, handles permissions, and interacts with the filesystem. Always present in every conversation.' },
+    { name: 'SCHEMA.md', path: 'docs/SCHEMA.md', category: 'docs', gh: 'docs/SCHEMA.md',
+      desc: 'Complete Supabase database schema reference. Documents every table (spaces, people, assignments, password_vault, nest_devices, vehicles, camera_streams, stripe_payments, sms_messages, inbound_emails, amazon_orders, etc.), their columns, types, foreign keys, RLS policies, and indexes. Essential for writing correct SQL queries, debugging data issues, and understanding entity relationships.' },
+    { name: 'PATTERNS.md', path: 'docs/PATTERNS.md', category: 'docs', gh: 'docs/PATTERNS.md',
+      desc: 'UI development patterns and Tailwind styling conventions. Defines the aap-* design token system (colors, spacing, typography, border radius), component patterns (cards, modals, toasts, tables, lightbox), shared JS utilities (showToast, openLightbox, initAdminPage), responsive breakpoints, and testing checklists. The authoritative guide for writing frontend code that matches the existing design system.' },
+    { name: 'KEY-FILES.md', path: 'docs/KEY-FILES.md', category: 'docs', gh: 'docs/KEY-FILES.md',
+      desc: 'Project structure and file location index. Maps the full directory tree — shared/ (auth, navigation, Supabase client), spaces/admin/ (management dashboards), jackie/ (property management pages), residents/ (tenant-facing views), vendor/ (third-party libs), edge functions, and static assets. Use this to find where code lives before making changes.' },
+    { name: 'DEPLOY.md', path: 'docs/DEPLOY.md', category: 'docs', gh: 'docs/DEPLOY.md',
+      desc: 'Deployment pipeline documentation. Covers the GitHub Pages deploy flow (push to main triggers build), CI version bumping (automated vYYMMDD.NN format), edge function deployment via Supabase CLI, DNS/domain configuration, cache invalidation, and rollback procedures. Read this before pushing changes or troubleshooting deploy failures.' },
+    { name: 'INTEGRATIONS.md', path: 'docs/INTEGRATIONS.md', category: 'docs', gh: 'docs/INTEGRATIONS.md',
+      desc: 'External API and vendor integration reference. Documents Supabase (auth, storage, realtime, edge functions), Stripe (payments, webhooks), Telnyx (SMS), Resend (email), Google (OAuth, Maps), Nest (thermostats), Tesla (vehicles), UniFi (cameras, sensors), Govee/WiZ (smart lights), LG (appliances), and Capacitor (mobile). Includes API keys location, webhook URLs, rate limits, and pricing notes.' },
+    { name: 'CHANGELOG.md', path: 'docs/CHANGELOG.md', category: 'docs', gh: 'docs/CHANGELOG.md',
+      desc: 'Chronological record of significant changes, features, and fixes. Organized by date with version numbers, affected files, and migration notes. Use this to understand what changed recently, why a migration was done, or what context led to a particular architectural decision. Critical for onboarding and debugging regressions.' },
+    { name: 'CAD.md', path: 'docs/CAD.md', category: 'docs', gh: 'docs/CAD.md',
+      desc: 'CAD and 3D modeling tool reference for the property site plan system. Documents installed software on Alpaca Mac (192.168.1.74): Blender 4.5.7 (3D modeling, rendering, Grease Pencil drafting), QGIS 4.0.0 (GIS parcel data, map composition), LibreCAD 2.x (2D DXF drafting), GDAL 3.12.0 (format conversion). Lists Blender add-ons (Bonsai/BlenderBIM, BlenderGIS, CAD Sketcher, Archipack, MeasureIt-ARCH), GIS data sources for Bastrop County, and quick-start workflows for site plans, 2D drafting, and headless rendering.' },
+    { name: 'CAD-SITE-PLANS.md', path: 'docs/CAD-SITE-PLANS.md', category: 'docs', gh: 'docs/CAD-SITE-PLANS.md',
+      desc: 'End-to-end site plan generation guide for 160 Still Forest Drive, Cedar Creek TX (Bastrop County). Covers the two-machine pipeline (Alpaca Mac design workstation + Hostinger VPS automation backend), all deliverables (county permit sheets, 3D renders, interactive maps, automated permit packets), step-by-step workflows (QGIS base map → Blender 3D scene → BlenderBIM permit sheets → presentation renders → packet assembly), GIS data sources (TNRIS, USGS 3DEP LiDAR, FEMA flood, TCEQ environmental), and AlpacApps integration plans (live property map, on-demand render API, automated permit packet generation).' },
   ];
 
   const SYSTEM_PROMPT_TOKENS = 8000;
@@ -618,26 +631,174 @@ async function loadContext() {
 
   function fmtTok(n) { return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : n.toLocaleString(); }
 
+  // Cache for fetched file contents
+  const contentCache = {};
+
   function renderFileTable(files, label, sublabel) {
     const total = files.reduce((s, f) => s + f.tokens, 0);
+    const tableId = label.replace(/\s+/g, '-').toLowerCase();
     return `
       <h3 class="dc-section-header">${esc(label)}</h3>
       ${sublabel ? `<p class="dc-section-sub">${esc(sublabel)}</p>` : ''}
       <div class="dc-table-wrap">
-        <table class="dc-table">
+        <table class="dc-table" id="ctx-table-${tableId}">
           <thead><tr><th>File</th><th>Description</th><th class="text-right">Tokens</th><th class="text-right">% of Window</th></tr></thead>
           <tbody>
-            ${files.sort((a, b) => b.tokens - a.tokens).map((f) => `
-              <tr>
-                <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CAT[f.category]?.bar || '#999'};margin-right:6px;vertical-align:middle;"></span><span class="mono">${esc(f.name)}</span></td>
+            ${files.sort((a, b) => b.tokens - a.tokens).map((f, idx) => {
+              const expandId = `ctx-expand-${tableId}-${idx}`;
+              const canExpand = !!f.gh;
+              return `
+              <tr class="${canExpand ? 'dc-expandable-row' : ''}" ${canExpand ? `data-gh="${esc(f.gh)}" data-expand-id="${expandId}" onclick="window._toggleContextRow(this)"` : ''} style="${canExpand ? 'cursor:pointer;' : ''}">
+                <td>
+                  ${canExpand ? `<span class="dc-expand-arrow" style="display:inline-block;width:12px;margin-right:4px;font-size:0.6rem;color:var(--text-muted,#888);transition:transform 0.15s;">&#9654;</span>` : `<span style="display:inline-block;width:16px;"></span>`}
+                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CAT[f.category]?.bar || '#999'};margin-right:6px;vertical-align:middle;"></span><span class="mono">${esc(f.name)}</span>
+                </td>
                 <td style="color:var(--text-muted,#888);font-size:0.75rem;">${esc(f.desc)}</td>
                 <td class="text-right tabular" style="font-weight:500;">${fmtTok(f.tokens)}</td>
                 <td class="text-right tabular" style="font-size:0.75rem;color:var(--text-muted,#888);">${((f.tokens / CONTEXT_WINDOW) * 100).toFixed(2)}%</td>
               </tr>
-            `).join('')}
+              <tr id="${expandId}" class="dc-expand-content" style="display:none;">
+                <td colspan="4" style="padding:0;">
+                  <div class="dc-file-preview"><div class="dc-empty" style="padding:1rem;">Click to load content...</div></div>
+                </td>
+              </tr>`;
+            }).join('')}
             <tr class="total-row"><td style="font-weight:600;">Total</td><td></td><td class="text-right tabular" style="font-weight:700;">${fmtTok(total)}</td><td class="text-right tabular" style="font-size:0.75rem;font-weight:600;">${((total / CONTEXT_WINDOW) * 100).toFixed(1)}%</td></tr>
           </tbody>
         </table>
+      </div>`;
+  }
+
+  // Toggle expand/collapse for context file rows
+  window._toggleContextRow = async function(tr) {
+    const expandId = tr.getAttribute('data-expand-id');
+    const ghPath = tr.getAttribute('data-gh');
+    const expandRow = document.getElementById(expandId);
+    const arrow = tr.querySelector('.dc-expand-arrow');
+    if (!expandRow) return;
+
+    const isOpen = expandRow.style.display !== 'none';
+    if (isOpen) {
+      expandRow.style.display = 'none';
+      if (arrow) arrow.style.transform = 'rotate(0deg)';
+      return;
+    }
+
+    expandRow.style.display = '';
+    if (arrow) arrow.style.transform = 'rotate(90deg)';
+
+    const previewDiv = expandRow.querySelector('.dc-file-preview');
+    if (contentCache[ghPath]) {
+      previewDiv.innerHTML = contentCache[ghPath];
+      return;
+    }
+
+    previewDiv.innerHTML = '<div class="dc-empty" style="padding:1rem;">Loading...</div>';
+    try {
+      const res = await fetch(`${RAW_BASE}/main/${ghPath}`);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const text = await res.text();
+      const lines = text.split('\n');
+      const preview = lines.slice(0, 80).join('\n');
+      const truncated = lines.length > 80;
+      const html = `<pre class="dc-file-content">${esc(preview)}${truncated ? `\n\n<span style="color:var(--text-muted,#888);font-style:italic;">... ${lines.length - 80} more lines — <a href="https://github.com/${GH_OWNER}/${GH_REPO}/blob/main/${ghPath}" target="_blank" style="color:var(--accent,#b8a88a);">view full file on GitHub</a></span>` : ''}</pre>`;
+      contentCache[ghPath] = html;
+      previewDiv.innerHTML = html;
+    } catch (err) {
+      previewDiv.innerHTML = `<div class="dc-empty" style="padding:1rem;color:#c62828;">Failed to load: ${esc(err.message)}</div>`;
+    }
+  };
+
+  function renderDocReferenceMap() {
+    const refs = [
+      { from: 'Project CLAUDE.md', to: 'SCHEMA.md', label: 'load for queries' },
+      { from: 'Project CLAUDE.md', to: 'PATTERNS.md', label: 'load for UI code' },
+      { from: 'Project CLAUDE.md', to: 'KEY-FILES.md', label: 'load for file search' },
+      { from: 'Project CLAUDE.md', to: 'DEPLOY.md', label: 'load for deploys' },
+      { from: 'Project CLAUDE.md', to: 'INTEGRATIONS.md', label: 'load for APIs' },
+      { from: 'Project CLAUDE.md', to: 'CHANGELOG.md', label: 'load for history' },
+      { from: 'Project CLAUDE.md', to: 'CAD.md', label: 'load for 3D/CAD' },
+      { from: 'Project CLAUDE.md', to: 'CAD-SITE-PLANS.md', label: 'load for site plans' },
+      { from: 'MEMORY.md', to: 'SCHEMA.md', label: 'data lookup routing' },
+      { from: 'MEMORY.md', to: 'INTEGRATIONS.md', label: 'service access refs' },
+      { from: 'CAD.md', to: 'CAD-SITE-PLANS.md', label: 'tool ref → workflow' },
+      { from: 'CAD-SITE-PLANS.md', to: 'INTEGRATIONS.md', label: 'Supabase/edge fns' },
+      { from: 'SCHEMA.md', to: 'INTEGRATIONS.md', label: 'table ↔ API mapping' },
+      { from: 'PATTERNS.md', to: 'KEY-FILES.md', label: 'component locations' },
+      { from: 'DEPLOY.md', to: 'CHANGELOG.md', label: 'version history' },
+    ];
+
+    // Build node list and positions
+    // Node positions laid out in a 5-column grid
+    const cols = {
+      'Global CLAUDE.md': { col: 0, row: 0 },
+      'Project CLAUDE.md': { col: 0, row: 1 },
+      'CLAUDE.local.md': { col: 0, row: 2 },
+      'MEMORY.md': { col: 1, row: 0 },
+      'System prompt': { col: 1, row: 2 },
+      'SCHEMA.md': { col: 2, row: 0 },
+      'PATTERNS.md': { col: 2, row: 1 },
+      'KEY-FILES.md': { col: 2, row: 2 },
+      'DEPLOY.md': { col: 3, row: 0 },
+      'INTEGRATIONS.md': { col: 3, row: 1 },
+      'CHANGELOG.md': { col: 3, row: 2 },
+      'CAD.md': { col: 4, row: 0 },
+      'CAD-SITE-PLANS.md': { col: 4, row: 1 },
+    };
+
+    const colWidth = 170, rowHeight = 72, padX = 20, padY = 30;
+    const nodeW = 140, nodeH = 36;
+    const svgW = 5 * colWidth + padX * 2;
+    const svgH = 3 * rowHeight + padY * 2 + 20;
+
+    function nodePos(name) {
+      const c = cols[name] || { col: 2, row: 1 };
+      return { x: padX + c.col * colWidth + nodeW / 2, y: padY + c.row * rowHeight + nodeH / 2 };
+    }
+
+    const colLabels = ['Instructions', 'Memory / System', 'Core Docs', 'Ops Docs', 'CAD / 3D'];
+    const catColors = { instructions: '#3b82f6', memory: '#8b5cf6', system: '#6b7280', docs: '#d97706' };
+    function nodeColor(name) {
+      const f = CONTEXT_FILES.find(f => f.name === name);
+      return f ? (catColors[f.category] || '#d97706') : '#999';
+    }
+
+    let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" style="width:100%;max-width:${svgW}px;height:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">`;
+    svg += `<defs><marker id="ctx-arrow" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="5" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="var(--text-muted,#bbb)"/></marker></defs>`;
+
+    // Column labels
+    colLabels.forEach((label, i) => {
+      svg += `<text x="${padX + i * colWidth + nodeW / 2}" y="${padY - 10}" text-anchor="middle" font-size="9" fill="var(--text-muted,#aaa)" font-weight="500" text-transform="uppercase" letter-spacing="0.05em">${label}</text>`;
+    });
+
+    // Draw edges
+    refs.forEach(({ from, to, label }) => {
+      const a = nodePos(from), b = nodePos(to);
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const offsetStart = nodeW / 2 + 4, offsetEnd = nodeW / 2 + 4;
+      const sx = a.x + (dx / dist) * offsetStart, sy = a.y + (dy / dist) * offsetStart;
+      const ex = b.x - (dx / dist) * offsetEnd, ey = b.y - (dy / dist) * offsetEnd;
+      const mx = (sx + ex) / 2, my = (sy + ey) / 2;
+      svg += `<line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="var(--border,#ddd)" stroke-width="1" marker-end="url(#ctx-arrow)" opacity="0.6"/>`;
+      svg += `<text x="${mx}" y="${my - 4}" text-anchor="middle" font-size="7" fill="var(--text-muted,#aaa)">${label}</text>`;
+    });
+
+    // Draw nodes
+    Object.entries(cols).forEach(([name, { col, row }]) => {
+      const x = padX + col * colWidth, y = padY + row * rowHeight;
+      const color = nodeColor(name);
+      svg += `<rect x="${x}" y="${y}" width="${nodeW}" height="${nodeH}" rx="8" fill="var(--bg-card,#fff)" stroke="${color}" stroke-width="1.5"/>`;
+      svg += `<text x="${x + nodeW / 2}" y="${y + nodeH / 2 + 4}" text-anchor="middle" font-size="9.5" font-weight="600" fill="var(--text,#1a1a1a)">${name}</text>`;
+    });
+
+    svg += '</svg>';
+
+    return `
+      <h3 class="dc-section-header" style="margin-top:1.5rem;">Document Reference Map</h3>
+      <p class="dc-section-sub">How context documents reference and depend on each other</p>
+      <div class="dc-table-wrap" style="padding:1.25rem;overflow-x:auto;">
+        ${svg}
       </div>`;
   }
 
@@ -671,7 +832,8 @@ async function loadContext() {
     </div>
 
     ${renderFileTable(alwaysLoaded, 'Always Loaded at Startup')}
-    ${renderFileTable(onDemand, 'On-Demand Docs', 'Loaded when the task matches \u2014 not always in context')}`;
+    ${renderFileTable(onDemand, 'On-Demand Docs', 'Loaded when the task matches \u2014 not always in context')}
+    ${renderDocReferenceMap()}`;
 }
 
 // ═══════════════════════════════════════════════════════════

@@ -256,6 +256,23 @@
 .dc-release-lines .plus { color: #2e7d32; }
 .dc-release-lines .minus { color: #c62828; }
 
+/* Context file expand/collapse */
+.dc-expandable-row:hover td { background: var(--bg-subtle, #faf9f6); }
+.dc-expandable-row .dc-expand-arrow { transition: transform 0.15s ease; }
+.dc-expand-content td { background: var(--bg-subtle, #faf9f6); }
+.dc-file-preview { max-height: 500px; overflow: auto; }
+.dc-file-content {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  padding: 1rem 1.25rem;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text, #1a1a1a);
+  background: transparent;
+}
+
 /* Empty / loading state */
 .dc-empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted, #aaa); font-size: 0.875rem; }
 
