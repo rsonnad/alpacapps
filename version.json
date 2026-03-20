@@ -1,12 +1,12 @@
 {
-  "version": "v260320.08 1:18p",
-  "release": 945,
-  "sha": "d2c3620f2",
-  "fullSha": "d2c3620f2073aa2e5915a0c7259af55d72b65a25",
-  "actor": "jackie61899280",
+  "version": "v260320.09 1:39p",
+  "release": 946,
+  "sha": "59890f764",
+  "fullSha": "59890f76457b4fdc3835f5eeddf70d67cea6d506",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 18:18:30+00",
-  "commits": [{"sha":"6d4e2687a","message":"Add 3D Property Digital Twin directive at top of CAD.md","author":"Jacqueline Giroux"},{"sha":"d2c3620f2","message":"Merge pull request #80 from rsonnad/claude/brave-swartz","author":"jackie61899280"}]
+  "pushedAt": "2026-03-20 18:39:09+00",
+  "commits": [{"sha":"59890f764","message":"feat: replace document reference map grid with tree structure","author":"Rahul"}]
 }
