@@ -1,12 +1,12 @@
 {
-  "version": "v260320.01 12:49p",
-  "release": 938,
-  "sha": "75ad09b49",
-  "fullSha": "75ad09b49c3d37d2c67afc23e9ea9c0363a08fc0",
-  "actor": "rsonnad",
+  "version": "v260320.02 12:52p",
+  "release": 939,
+  "sha": "48d19875a",
+  "fullSha": "48d19875a772ce8c474b0f03c778db001ffeab21",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 17:49:24+00",
-  "commits": [{"sha":"75ad09b49","message":"feat: add CAD docs to context discovery","author":"Rahul"}]
+  "pushedAt": "2026-03-20 17:52:49+00",
+  "commits": [{"sha":"48d19875a","message":"Editable staff hours: tappable entries, audit trail, admin approval for >10hr edits (#78)","author":"jackie61899280"}]
 }
