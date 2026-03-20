@@ -1,5 +1,9 @@
 # CAD & Site Plan System — Tool Reference
 
+> **Database:** All property, structure, setback, and permit data lives in the **3D Property Digital Twin** table set in Supabase (PostGIS-enabled). See "3D Property Digital Twin Database Schema" section below for full schema. **Never hardcode structure data in HTML/JS** — always read from and write to these tables.
+
+> **Tables:** `parcels`, `parcel_edges`, `structures`, `structure_setbacks`, `zoning_rules`, `property_utilities`, `impervious_cover`, `permit_applications`, `inspections`, `permit_documents`
+
 > **All tools are on Alpaca Mac** (192.168.1.74, user `alpaca`).
 > Nothing is on Hostinger VPS — can be added later for automation if needed.
 
