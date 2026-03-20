@@ -710,95 +710,80 @@ async function loadContext() {
   };
 
   function renderDocReferenceMap() {
-    const refs = [
-      { from: 'Project CLAUDE.md', to: 'SCHEMA.md', label: 'load for queries' },
-      { from: 'Project CLAUDE.md', to: 'PATTERNS.md', label: 'load for UI code' },
-      { from: 'Project CLAUDE.md', to: 'KEY-FILES.md', label: 'load for file search' },
-      { from: 'Project CLAUDE.md', to: 'DEPLOY.md', label: 'load for deploys' },
-      { from: 'Project CLAUDE.md', to: 'INTEGRATIONS.md', label: 'load for APIs' },
-      { from: 'Project CLAUDE.md', to: 'CHANGELOG.md', label: 'load for history' },
-      { from: 'Project CLAUDE.md', to: 'CAD.md', label: 'load for 3D/CAD' },
-      { from: 'Project CLAUDE.md', to: 'CAD-SITE-PLANS.md', label: 'load for site plans' },
-      { from: 'MEMORY.md', to: 'SCHEMA.md', label: 'data lookup routing' },
-      { from: 'MEMORY.md', to: 'INTEGRATIONS.md', label: 'service access refs' },
-      { from: 'CAD.md', to: 'CAD-SITE-PLANS.md', label: 'tool ref → workflow' },
-      { from: 'CAD-SITE-PLANS.md', to: 'INTEGRATIONS.md', label: 'Supabase/edge fns' },
-      { from: 'SCHEMA.md', to: 'INTEGRATIONS.md', label: 'table ↔ API mapping' },
-      { from: 'PATTERNS.md', to: 'KEY-FILES.md', label: 'component locations' },
-      { from: 'DEPLOY.md', to: 'CHANGELOG.md', label: 'version history' },
-    ];
-
-    // Build node list and positions
-    // Node positions laid out in a 5-column grid
-    const cols = {
-      'Global CLAUDE.md': { col: 0, row: 0 },
-      'Project CLAUDE.md': { col: 0, row: 1 },
-      'CLAUDE.local.md': { col: 0, row: 2 },
-      'MEMORY.md': { col: 1, row: 0 },
-      'System prompt': { col: 1, row: 2 },
-      'SCHEMA.md': { col: 2, row: 0 },
-      'PATTERNS.md': { col: 2, row: 1 },
-      'KEY-FILES.md': { col: 2, row: 2 },
-      'DEPLOY.md': { col: 3, row: 0 },
-      'INTEGRATIONS.md': { col: 3, row: 1 },
-      'CHANGELOG.md': { col: 3, row: 2 },
-      'CAD.md': { col: 4, row: 0 },
-      'CAD-SITE-PLANS.md': { col: 4, row: 1 },
-    };
-
-    const colWidth = 170, rowHeight = 72, padX = 20, padY = 30;
-    const nodeW = 140, nodeH = 36;
-    const svgW = 5 * colWidth + padX * 2;
-    const svgH = 3 * rowHeight + padY * 2 + 20;
-
-    function nodePos(name) {
-      const c = cols[name] || { col: 2, row: 1 };
-      return { x: padX + c.col * colWidth + nodeW / 2, y: padY + c.row * rowHeight + nodeH / 2 };
-    }
-
-    const colLabels = ['Instructions', 'Memory / System', 'Core Docs', 'Ops Docs', 'CAD / 3D'];
     const catColors = { instructions: '#3b82f6', memory: '#8b5cf6', system: '#6b7280', docs: '#d97706' };
     function nodeColor(name) {
       const f = CONTEXT_FILES.find(f => f.name === name);
       return f ? (catColors[f.category] || '#d97706') : '#999';
     }
 
-    let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" style="width:100%;max-width:${svgW}px;height:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">`;
-    svg += `<defs><marker id="ctx-arrow" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="5" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="var(--text-muted,#bbb)"/></marker></defs>`;
+    function tag(name, hint) {
+      const c = nodeColor(name);
+      const hintSpan = hint ? `<span style="color:var(--text-muted,#999);font-weight:400;margin-left:0.375rem;font-size:0.6875rem;">${hint}</span>` : '';
+      return `<span style="display:inline-flex;align-items:center;gap:0.25rem;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};flex-shrink:0;"></span><span style="font-weight:600;font-size:0.8125rem;">${name}</span>${hintSpan}</span>`;
+    }
 
-    // Column labels
-    colLabels.forEach((label, i) => {
-      svg += `<text x="${padX + i * colWidth + nodeW / 2}" y="${padY - 10}" text-anchor="middle" font-size="9" fill="var(--text-muted,#aaa)" font-weight="500" text-transform="uppercase" letter-spacing="0.05em">${label}</text>`;
-    });
-
-    // Draw edges
-    refs.forEach(({ from, to, label }) => {
-      const a = nodePos(from), b = nodePos(to);
-      const dx = b.x - a.x, dy = b.y - a.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const offsetStart = nodeW / 2 + 4, offsetEnd = nodeW / 2 + 4;
-      const sx = a.x + (dx / dist) * offsetStart, sy = a.y + (dy / dist) * offsetStart;
-      const ex = b.x - (dx / dist) * offsetEnd, ey = b.y - (dy / dist) * offsetEnd;
-      const mx = (sx + ex) / 2, my = (sy + ey) / 2;
-      svg += `<line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="var(--border,#ddd)" stroke-width="1" marker-end="url(#ctx-arrow)" opacity="0.6"/>`;
-      svg += `<text x="${mx}" y="${my - 4}" text-anchor="middle" font-size="7" fill="var(--text-muted,#aaa)">${label}</text>`;
-    });
-
-    // Draw nodes
-    Object.entries(cols).forEach(([name, { col, row }]) => {
-      const x = padX + col * colWidth, y = padY + row * rowHeight;
-      const color = nodeColor(name);
-      svg += `<rect x="${x}" y="${y}" width="${nodeW}" height="${nodeH}" rx="8" fill="var(--bg-card,#fff)" stroke="${color}" stroke-width="1.5"/>`;
-      svg += `<text x="${x + nodeW / 2}" y="${y + nodeH / 2 + 4}" text-anchor="middle" font-size="9.5" font-weight="600" fill="var(--text,#1a1a1a)">${name}</text>`;
-    });
-
-    svg += '</svg>';
+    // Tree structure: each node can have children with relationship labels
+    const treeHTML = `
+      <div class="dc-ref-tree">
+        <style>
+          .dc-ref-tree { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 0.8125rem; }
+          .dc-ref-tree ul { list-style: none; margin: 0; padding-left: 1.5rem; }
+          .dc-ref-tree > ul { padding-left: 0; }
+          .dc-ref-tree li { position: relative; padding: 0.25rem 0; }
+          .dc-ref-tree li::before { content: ''; position: absolute; left: -1rem; top: 0; bottom: 0.75rem; width: 1px; border-left: 1px solid var(--border, #ddd); }
+          .dc-ref-tree li::after { content: ''; position: absolute; left: -1rem; top: 0.9rem; width: 0.75rem; height: 1px; border-bottom: 1px solid var(--border, #ddd); }
+          .dc-ref-tree li:last-child::before { bottom: auto; height: 0.9rem; }
+          .dc-ref-tree > ul > li::before, .dc-ref-tree > ul > li::after { display: none; }
+          .dc-ref-tree .dc-tree-group { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #aaa); margin-top: 0.75rem; margin-bottom: 0.125rem; }
+          .dc-ref-tree .dc-tree-group:first-child { margin-top: 0; }
+        </style>
+        <ul>
+          <li>
+            <div class="dc-tree-group">Always Loaded</div>
+            <ul>
+              <li>${tag('Global CLAUDE.md', 'user-level rules')}</li>
+              <li>
+                ${tag('Project CLAUDE.md', 'project directives — on-demand loader')}
+                <ul>
+                  <li>${tag('SCHEMA.md', 'load for queries')}
+                    <ul><li>${tag('INTEGRATIONS.md', 'table ↔ API mapping')}</li></ul>
+                  </li>
+                  <li>${tag('PATTERNS.md', 'load for UI code')}
+                    <ul><li>${tag('KEY-FILES.md', 'component locations')}</li></ul>
+                  </li>
+                  <li>${tag('KEY-FILES.md', 'load for file search')}</li>
+                  <li>${tag('DEPLOY.md', 'load for deploys')}
+                    <ul><li>${tag('CHANGELOG.md', 'version history')}</li></ul>
+                  </li>
+                  <li>${tag('INTEGRATIONS.md', 'load for APIs')}</li>
+                  <li>${tag('CHANGELOG.md', 'load for history')}</li>
+                  <li>${tag('CAD.md', 'load for 3D/CAD')}
+                    <ul><li>${tag('CAD-SITE-PLANS.md', 'tool ref → workflow')}
+                      <ul><li>${tag('INTEGRATIONS.md', 'Supabase/edge fns')}</li></ul>
+                    </li></ul>
+                  </li>
+                  <li>${tag('CAD-SITE-PLANS.md', 'load for site plans')}</li>
+                </ul>
+              </li>
+              <li>${tag('CLAUDE.local.md', 'local overrides')}</li>
+              <li>
+                ${tag('MEMORY.md', 'persistent memory index')}
+                <ul>
+                  <li>${tag('SCHEMA.md', 'data lookup routing')}</li>
+                  <li>${tag('INTEGRATIONS.md', 'service access refs')}</li>
+                </ul>
+              </li>
+              <li>${tag('System prompt', 'Claude context')}</li>
+            </ul>
+          </li>
+        </ul>
+      </div>`;
 
     return `
       <h3 class="dc-section-header" style="margin-top:1.5rem;">Document Reference Map</h3>
       <p class="dc-section-sub">How context documents reference and depend on each other</p>
       <div class="dc-table-wrap" style="padding:1.25rem;overflow-x:auto;">
-        ${svg}
+        ${treeHTML}
       </div>`;
   }
 
