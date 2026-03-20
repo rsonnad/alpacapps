@@ -186,18 +186,6 @@
             <div class="pp-stat-value" id="statSpaces">--</div>
           </div>
           <div class="pp-stat">
-            <div class="pp-stat-label">Devices</div>
-            <div class="pp-stat-value" id="statDevices">--</div>
-          </div>
-          <div class="pp-stat">
-            <div class="pp-stat-label">Cameras</div>
-            <div class="pp-stat-value" id="statCameras">--</div>
-          </div>
-          <div class="pp-stat">
-            <div class="pp-stat-label">Vehicles</div>
-            <div class="pp-stat-value" id="statVehicles">--</div>
-          </div>
-          <div class="pp-stat">
             <div class="pp-stat-label">Permit Progress</div>
             <div class="pp-stat-value" id="statPermit">22%</div>
           </div>
@@ -231,65 +219,6 @@
           </div>
         </div>
 
-        <!-- Thermostats -->
-        <div class="pp-section">
-          <h3 class="pp-section-title">Thermostats <span class="pp-count" id="thermostatsCount"></span></h3>
-          <p class="pp-section-sub">Nest thermostats controlling HVAC across the property</p>
-          <div class="pp-table-wrap">
-            <table class="pp-table">
-              <thead><tr><th>Room</th><th>Mode</th><th>Set Temp</th><th>Current</th><th>Humidity</th><th>Status</th></tr></thead>
-              <tbody id="thermostatsBody"><tr><td colspan="6" class="pp-empty">Loading...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Cameras -->
-        <div class="pp-section">
-          <h3 class="pp-section-title">Cameras <span class="pp-count" id="camerasCount"></span></h3>
-          <p class="pp-section-sub">UniFi Protect cameras with live streaming</p>
-          <div class="pp-table-wrap">
-            <table class="pp-table">
-              <thead><tr><th>Camera</th><th>Location</th><th>Model</th><th>Quality</th><th>Status</th></tr></thead>
-              <tbody id="camerasBody"><tr><td colspan="5" class="pp-empty">Loading...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Lighting -->
-        <div class="pp-section">
-          <h3 class="pp-section-title">Smart Lighting <span class="pp-count" id="lightingCount"></span></h3>
-          <p class="pp-section-sub">Govee and WiZ smart lights grouped by area</p>
-          <div class="pp-table-wrap">
-            <table class="pp-table">
-              <thead><tr><th>Group</th><th>Area</th><th>Lights</th><th>Online</th></tr></thead>
-              <tbody id="lightingBody"><tr><td colspan="4" class="pp-empty">Loading...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Vehicles -->
-        <div class="pp-section">
-          <h3 class="pp-section-title">Vehicles <span class="pp-count" id="vehiclesCount"></span></h3>
-          <p class="pp-section-sub">Tesla vehicles with live state tracking</p>
-          <div class="pp-table-wrap">
-            <table class="pp-table">
-              <thead><tr><th>Name</th><th>Model</th><th>Year</th><th>Battery</th><th>Range</th><th>State</th></tr></thead>
-              <tbody id="vehiclesBody"><tr><td colspan="6" class="pp-empty">Loading...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Appliances -->
-        <div class="pp-section">
-          <h3 class="pp-section-title">Appliances <span class="pp-count" id="appliancesCount"></span></h3>
-          <p class="pp-section-sub">LG laundry, Anova oven, FlashForge printers, Glowforge laser</p>
-          <div class="pp-table-wrap">
-            <table class="pp-table">
-              <thead><tr><th>Name</th><th>Type</th><th>Model</th><th>Status</th><th>Last Synced</th></tr></thead>
-              <tbody id="appliancesBody"><tr><td colspan="5" class="pp-empty">Loading...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
 
         <!-- Property Records -->
         <div class="pp-section">
@@ -386,57 +315,6 @@
             </table>
           </div>
 
-          <h4 style="font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin: 2rem 0 0.75rem;">Device Management — AlpacApps Platform</h4>
-          <div class="pp-tools-grid">
-            <div class="pp-tool-card">
-              <h4>Supabase</h4>
-              <div class="pp-tool-ver">Cloud — aphrrfprbixmhissnjfn</div>
-              <p>Central database for all device state, spaces, assignments, and property config. Real-time subscriptions for live device updates.</p>
-              <span class="pp-tool-tag">Database</span><span class="pp-tool-tag">Auth</span><span class="pp-tool-tag">Real-time</span>
-            </div>
-            <div class="pp-tool-card">
-              <h4>UniFi Protect</h4>
-              <div class="pp-tool-ver">UDM Pro — 192.168.1.1</div>
-              <p>Camera management, motion detection, PTZ control. HLS streams proxied through cam.alpacaplayhouse.com. UP-Sense environmental sensors.</p>
-              <span class="pp-tool-tag">Cameras</span><span class="pp-tool-tag">Sensors</span><span class="pp-tool-tag">NVR</span>
-            </div>
-            <div class="pp-tool-card">
-              <h4>Google Nest / SDM API</h4>
-              <div class="pp-tool-ver">3 thermostats</div>
-              <p>HVAC control via Smart Device Management API. Temperature setpoints, mode switching, eco settings. Edge function proxy.</p>
-              <span class="pp-tool-tag">HVAC</span><span class="pp-tool-tag">Climate</span>
-            </div>
-            <div class="pp-tool-card">
-              <h4>Govee API</h4>
-              <div class="pp-tool-ver">63 devices</div>
-              <p>Smart lighting control — on/off, brightness, color, scenes. Grouped by area (Spartan, Garage Mahal, Outhouse, Bedrooms).</p>
-              <span class="pp-tool-tag">Lighting</span><span class="pp-tool-tag">RGB</span>
-            </div>
-            <div class="pp-tool-card">
-              <h4>WiZ Proxy</h4>
-              <div class="pp-tool-ver">Port 8902 — Alpaca Mac</div>
-              <p>HTTP-to-UDP bridge for WiZ ceiling bulbs. Controls power, brightness, color via cam.alpacaplayhouse.com proxy.</p>
-              <span class="pp-tool-tag">Lighting</span><span class="pp-tool-tag">UDP</span>
-            </div>
-            <div class="pp-tool-card">
-              <h4>Tesla Fleet API</h4>
-              <div class="pp-tool-ver">OAuth2</div>
-              <p>Vehicle state monitoring (battery, location, lock status), remote commands (lock, flash, honk). Edge function proxy.</p>
-              <span class="pp-tool-tag">Vehicles</span><span class="pp-tool-tag">Telemetry</span>
-            </div>
-            <div class="pp-tool-card">
-              <h4>LG ThinQ</h4>
-              <div class="pp-tool-ver">Washer + Dryer</div>
-              <p>Laundry appliance monitoring — cycle state, time remaining, notifications. Watcher system for user alerts.</p>
-              <span class="pp-tool-tag">Appliances</span><span class="pp-tool-tag">Laundry</span>
-            </div>
-            <div class="pp-tool-card">
-              <h4>Sonos HTTP API</h4>
-              <div class="pp-tool-ver">Port 5005 — Alpaca Mac</div>
-              <p>Multi-room audio control across 14 Sonos zones. Play, pause, volume, grouping, music search via Spotify.</p>
-              <span class="pp-tool-tag">Audio</span><span class="pp-tool-tag">Multi-room</span>
-            </div>
-          </div>
 
           <h4 style="font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin: 2rem 0 0.75rem;">Future — Hostinger VPS Automation</h4>
           <div class="pp-table-wrap">
