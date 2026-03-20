@@ -1,12 +1,12 @@
 {
-  "version": "v260320.16 6:02p",
-  "release": 953,
-  "sha": "6838e3bb6",
-  "fullSha": "6838e3bb68f311397b041596cfbf67a814b027da",
+  "version": "v260320.17 6:26p",
+  "release": 954,
+  "sha": "f5dea6d02",
+  "fullSha": "f5dea6d0208b2586754c2873cafdaed1acc2953f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 23:02:20+00",
-  "commits": [{"sha":"6838e3bb6","message":"fix: use correct Gemini model for PAI image generation","author":"Rahul"}]
+  "pushedAt": "2026-03-20 23:26:04+00",
+  "commits": [{"sha":"6b0191b4b","message":"feat: add survey plats to Renderings tab alongside 3D renders","author":"Rahul"},{"sha":"f5dea6d02","message":"feat: rewrite Blender script to match survey plat layout","author":"Rahul"}]
 }
