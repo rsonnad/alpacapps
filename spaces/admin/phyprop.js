@@ -53,6 +53,7 @@ function switchSubtab(tab) {
     const loaders = {
       overview: loadOverviewTab,
       structures: loadStructuresTab,
+      renderings: loadRenderingsTab,
     };
     loaders[tab]?.();
   }
@@ -671,4 +672,71 @@ async function loadZoning() {
   } catch (err) {
     console.error('Zoning load error:', err);
   }
+}
+
+// =============================================
+// RENDERINGS TAB
+// =============================================
+
+const STORAGE_BASE = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos';
+
+const RENDERINGS = [
+  {
+    title: 'Bird\'s-Eye View — Full Property',
+    description: '160 Still Forest Dr — all 11 structures placed from DB dimensions. Main House (stone), Back House (wood), 4 shipping containers, 2 trailers, deck, sauna, bathroom bldg. Orange lines = setback boundaries.',
+    file: 'renderings/property-birdseye-2026-03-20.png',
+    date: '2026-03-20',
+    engine: 'Cycles',
+    samples: 128,
+    resolution: '2560 × 1440',
+    tags: ['bird\'s-eye', 'full property', 'setbacks'],
+  },
+];
+
+async function loadRenderingsTab() {
+  const el = document.getElementById('renderingsGrid');
+
+  // Also list any additional renders from storage
+  const { data: files } = await supabase.storage
+    .from('housephotos')
+    .list('renderings', { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
+
+  // Merge storage files with known renderings (avoid duplicates)
+  const knownFiles = new Set(RENDERINGS.map(r => r.file.split('/').pop()));
+  const extraFiles = (files || [])
+    .filter(f => f.name.match(/\.(png|jpg|jpeg|webp)$/i) && !knownFiles.has(f.name))
+    .map(f => ({
+      title: f.name.replace(/[-_]/g, ' ').replace(/\.\w+$/, ''),
+      description: '',
+      file: `renderings/${f.name}`,
+      date: f.created_at ? new Date(f.created_at).toISOString().slice(0, 10) : '--',
+      tags: [],
+    }));
+
+  const allRenderings = [...RENDERINGS, ...extraFiles];
+
+  if (!allRenderings.length) {
+    el.innerHTML = '<div class="pp-empty">No renderings yet. Run <code>blender -P render_property.py</code> on Alpaca Mac to generate.</div>';
+    return;
+  }
+
+  el.innerHTML = allRenderings.map(r => {
+    const url = `${STORAGE_BASE}/${r.file}`;
+    return `<div class="pp-render-card">
+      <img src="${esc(url)}" alt="${esc(r.title)}" loading="lazy"
+           onclick="window.open('${esc(url)}', '_blank')">
+      <div class="pp-render-meta">
+        <div class="pp-render-info">
+          <h4>${esc(r.title)}</h4>
+          <p>${esc(r.description)}</p>
+          ${r.engine ? `<p style="margin-top:0.375rem;font-size:0.75rem;color:var(--text-muted);">
+            ${esc(r.engine)} · ${r.samples ? `${r.samples} samples` : ''} · ${esc(r.resolution || '')} · ${esc(r.date)}
+          </p>` : `<p style="margin-top:0.375rem;font-size:0.75rem;color:var(--text-muted);">${esc(r.date)}</p>`}
+        </div>
+        <div class="pp-render-tags">
+          ${(r.tags || []).map(t => `<span class="pp-tool-tag">${esc(t)}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
