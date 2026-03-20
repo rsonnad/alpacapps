@@ -3043,7 +3043,7 @@ async function executeToolCall(
         }
 
         // 1. Generate image via Gemini Flash Image API
-        const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-preview-image-generation";
+        const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
         const geminiImageUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_IMAGE_MODEL}:generateContent`;
         const geminiKey = Deno.env.get("GEMINI_API_KEY");
         if (!geminiKey) return "Error: GEMINI_API_KEY not configured.";
@@ -3080,7 +3080,7 @@ async function executeToolCall(
         const imgUsage = imageData.usageMetadata || {};
         const imgInputTokens = imgUsage.promptTokenCount || 0;
         const imgOutputTokens = (imgUsage.candidatesTokenCount || 0) + (imgUsage.thoughtsTokenCount || 0);
-        const imgCost = (imgInputTokens / 1_000_000) * 0.15 + (imgOutputTokens / 1_000_000) * 0.60;
+        const imgCost = (imgInputTokens / 1_000_000) * 0.30 + (imgOutputTokens / 1_000_000) * 30.0;
 
         const supabaseAdmin = createClient(
           Deno.env.get("SUPABASE_URL")!,
