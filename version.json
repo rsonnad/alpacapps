@@ -1,12 +1,12 @@
 {
-  "version": "v260320.15 5:46p",
-  "release": 952,
-  "sha": "d5274a173",
-  "fullSha": "d5274a173425f34c282b16192f7fe443275d8f64",
+  "version": "v260320.16 6:02p",
+  "release": 953,
+  "sha": "6838e3bb6",
+  "fullSha": "6838e3bb68f311397b041596cfbf67a814b027da",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 22:46:46+00",
-  "commits": [{"sha":"d5274a173","message":"feat: add generate_and_email_image tool to PAI","author":"Rahul"}]
+  "pushedAt": "2026-03-20 23:02:20+00",
+  "commits": [{"sha":"6838e3bb6","message":"fix: use correct Gemini model for PAI image generation","author":"Rahul"}]
 }
