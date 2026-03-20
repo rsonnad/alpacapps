@@ -1,0 +1,47 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "160 Still Forest Dr",
+        "parcel_number": "44401",
+        "lot": "14-B",
+        "block": "6",
+        "subdivision": "Bluebonnet Acres",
+        "acreage": 1.725,
+        "area_sqft": 75123,
+        "survey_by": "4Ward Land Surveying",
+        "survey_date": "2021-02-04",
+        "surveyor_rpls": "5811"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.4595314,
+              30.1310274
+            ],
+            [
+              -97.4598027,
+              30.1305679
+            ],
+            [
+              -97.4609315,
+              30.1310636
+            ],
+            [
+              -97.4606605,
+              30.1315233
+            ],
+            [
+              -97.4595314,
+              30.1310274
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

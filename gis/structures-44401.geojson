@@ -1,0 +1,511 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Main House",
+        "structure_type": "house",
+        "use_type": "primary_residence",
+        "width_ft": 45,
+        "length_ft": 35,
+        "height_ft": 24,
+        "stories": 2,
+        "area_sqft": 1575,
+        "material": "stone_frame",
+        "roof_type": "gable",
+        "permit_status": "permitted",
+        "nearest_edge_side": "S",
+        "nearest_edge_distance_ft": 50,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.46036517601573,
+              30.13136598544209
+            ],
+            [
+              -97.46023824104898,
+              30.131430662038078
+            ],
+            [
+              -97.46028174779218,
+              30.131516048829308
+            ],
+            [
+              -97.46040868275892,
+              30.13145137223332
+            ],
+            [
+              -97.46036517601573,
+              30.13136598544209
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "1-Story Wood Bldg",
+        "structure_type": "outbuilding",
+        "use_type": "lodging",
+        "width_ft": 30,
+        "length_ft": 20,
+        "height_ft": 12,
+        "stories": 1,
+        "area_sqft": 600,
+        "material": "wood",
+        "roof_type": "gable",
+        "permit_status": "permitted",
+        "nearest_edge_side": "N",
+        "nearest_edge_distance_ft": 30,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.46072638359871,
+              30.131284627329382
+            ],
+            [
+              -97.46064176038222,
+              30.131327745011806
+            ],
+            [
+              -97.46066662137832,
+              30.13137653746394
+            ],
+            [
+              -97.46075124459482,
+              30.131333419781516
+            ],
+            [
+              -97.46072638359871,
+              30.131284627329382
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Deck",
+        "structure_type": "deck",
+        "use_type": "amenity",
+        "width_ft": 16,
+        "length_ft": 12,
+        "height_ft": 2,
+        "stories": 1,
+        "area_sqft": 192,
+        "material": "wood",
+        "roof_type": "none",
+        "permit_status": "permitted",
+        "nearest_edge_side": "W",
+        "nearest_edge_distance_ft": 13.4,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.46058287162016,
+              30.13121021797199
+            ],
+            [
+              -97.46053773928111,
+              30.13123321404733
+            ],
+            [
+              -97.46055265587877,
+              30.131262489518612
+            ],
+            [
+              -97.46059778821783,
+              30.13123949344327
+            ],
+            [
+              -97.46058287162016,
+              30.13121021797199
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sauna",
+        "structure_type": "sauna",
+        "use_type": "amenity",
+        "width_ft": 8,
+        "length_ft": 8,
+        "height_ft": 8,
+        "stories": 1,
+        "area_sqft": 64,
+        "material": "wood",
+        "roof_type": "shed",
+        "permit_status": "permitted",
+        "nearest_edge_side": "W",
+        "nearest_edge_distance_ft": 30,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.46066523563518,
+              30.131204095255804
+            ],
+            [
+              -97.4606426694695,
+              30.131215593291525
+            ],
+            [
+              -97.46065261386794,
+              30.131235110272378
+            ],
+            [
+              -97.46067518003362,
+              30.131223612236656
+            ],
+            [
+              -97.46066523563518,
+              30.131204095255804
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Big Trailer (10x42)",
+        "structure_type": "trailer_rv",
+        "use_type": "lodging",
+        "width_ft": 10,
+        "length_ft": 42,
+        "height_ft": 10,
+        "stories": 1,
+        "area_sqft": 420,
+        "material": "rv",
+        "roof_type": "flat",
+        "permit_status": "violation",
+        "nearest_edge_side": "W",
+        "nearest_edge_distance_ft": 1,
+        "is_movable": true
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.4599547036238,
+              30.131115697870705
+            ],
+            [
+              -97.45996907615157,
+              30.131143905544704
+            ],
+            [
+              -97.46007154030104,
+              30.13109169745288
+            ],
+            [
+              -97.46005716777327,
+              30.13106348977888
+            ],
+            [
+              -97.4599547036238,
+              30.131115697870705
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Red Container #1 (40x8)",
+        "structure_type": "container",
+        "use_type": "storage",
+        "width_ft": 8,
+        "length_ft": 40,
+        "height_ft": 8.5,
+        "stories": 1,
+        "area_sqft": 320,
+        "material": "steel_container",
+        "roof_type": "flat",
+        "permit_status": "violation",
+        "nearest_edge_side": "W",
+        "nearest_edge_distance_ft": 2,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.46012054513875,
+              30.131176077368636
+            ],
+            [
+              -97.46013204316782,
+              30.131198643521277
+            ],
+            [
+              -97.46022962807209,
+              30.131148921529068
+            ],
+            [
+              -97.46021813004302,
+              30.131126355376427
+            ],
+            [
+              -97.46012054513875,
+              30.131176077368636
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Red Container #2 (40x8)",
+        "structure_type": "container",
+        "use_type": "storage",
+        "width_ft": 8,
+        "length_ft": 40,
+        "height_ft": 8.5,
+        "stories": 1,
+        "area_sqft": 320,
+        "material": "steel_container",
+        "roof_type": "flat",
+        "permit_status": "violation",
+        "nearest_edge_side": "W",
+        "nearest_edge_distance_ft": 2,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.4600755987175,
+              30.13116817957413
+            ],
+            [
+              -97.46008709674565,
+              30.131190745724965
+            ],
+            [
+              -97.46018468164992,
+              30.131141023732756
+            ],
+            [
+              -97.46017318362176,
+              30.13111845758192
+            ],
+            [
+              -97.4600755987175,
+              30.13116817957413
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Container #3 (40x8)",
+        "structure_type": "container",
+        "use_type": "storage",
+        "width_ft": 8,
+        "length_ft": 40,
+        "height_ft": 8.5,
+        "stories": 1,
+        "area_sqft": 320,
+        "material": "steel_container",
+        "roof_type": "flat",
+        "permit_status": "violation",
+        "nearest_edge_side": "W",
+        "nearest_edge_distance_ft": 5,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.46018675667823,
+              30.13119742123258
+            ],
+            [
+              -97.46019825470978,
+              30.131219987390104
+            ],
+            [
+              -97.46029583961403,
+              30.131170265397895
+            ],
+            [
+              -97.46028434158248,
+              30.131147699240373
+            ],
+            [
+              -97.46018675667823,
+              30.13119742123258
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Beige Container (40x8)",
+        "structure_type": "container",
+        "use_type": "storage",
+        "width_ft": 8,
+        "length_ft": 40,
+        "height_ft": 8.5,
+        "stories": 1,
+        "area_sqft": 320,
+        "material": "steel_container",
+        "roof_type": "flat",
+        "permit_status": "violation",
+        "nearest_edge_side": "S",
+        "nearest_edge_distance_ft": 6,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.45957122480195,
+              30.13102972311409
+            ],
+            [
+              -97.45954865866719,
+              30.131041221134044
+            ],
+            [
+              -97.4595983806594,
+              30.131138806038308
+            ],
+            [
+              -97.45962094679416,
+              30.131127308018353
+            ],
+            [
+              -97.45957122480195,
+              30.13102972311409
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bathroom Bldg",
+        "structure_type": "outbuilding",
+        "use_type": "service",
+        "width_ft": 10,
+        "length_ft": 12,
+        "height_ft": 10,
+        "stories": 1,
+        "area_sqft": 120,
+        "material": "wood",
+        "roof_type": "shed",
+        "permit_status": "unpermitted",
+        "nearest_edge_side": "E",
+        "nearest_edge_distance_ft": 10,
+        "is_movable": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.46022619806674,
+              30.13133296841643
+            ],
+            [
+              -97.46019799032098,
+              30.131347340980764
+            ],
+            [
+              -97.46021290691864,
+              30.131376616452044
+            ],
+            [
+              -97.4602411146644,
+              30.13136224388771
+            ],
+            [
+              -97.46022619806674,
+              30.13133296841643
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Small Trailer (7.5x20.5)",
+        "structure_type": "trailer_rv",
+        "use_type": "lodging",
+        "width_ft": 7.5,
+        "length_ft": 20.5,
+        "height_ft": 9,
+        "stories": 1,
+        "area_sqft": 153.75,
+        "material": "rv",
+        "roof_type": "flat",
+        "permit_status": "violation",
+        "nearest_edge_side": "E",
+        "nearest_edge_distance_ft": 7,
+        "is_movable": true
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -97.4601122524826,
+              30.13135193828749
+            ],
+            [
+              -97.4601230319053,
+              30.13137309409573
+            ],
+            [
+              -97.46017304416874,
+              30.13134761157472
+            ],
+            [
+              -97.46016226474605,
+              30.131326455766484
+            ],
+            [
+              -97.4601122524826,
+              30.13135193828749
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
