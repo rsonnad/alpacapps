@@ -1,12 +1,12 @@
 {
-  "version": "v260320.06 1:15p",
-  "release": 943,
-  "sha": "577fd18ff",
-  "fullSha": "577fd18ffbc4a4b922e856c6c0824c57639c0490",
-  "actor": "rsonnad",
+  "version": "v260320.08 1:18p",
+  "release": 945,
+  "sha": "d2c3620f2",
+  "fullSha": "d2c3620f2073aa2e5915a0c7259af55d72b65a25",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 18:15:18+00",
-  "commits": [{"sha":"577fd18ff","message":"fix: add PhyProp tab icon for nav alignment","author":"Rahul"}]
+  "pushedAt": "2026-03-20 18:18:30+00",
+  "commits": [{"sha":"6d4e2687a","message":"Add 3D Property Digital Twin directive at top of CAD.md","author":"Jacqueline Giroux"},{"sha":"d2c3620f2","message":"Merge pull request #80 from rsonnad/claude/brave-swartz","author":"jackie61899280"}]
 }
