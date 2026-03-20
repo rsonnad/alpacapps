@@ -1,12 +1,12 @@
 {
-  "version": "v260320.05 1:10p",
-  "release": 942,
-  "sha": "60be2caaf",
-  "fullSha": "60be2caafa0961a87cd3e5f85f03481479c22992",
+  "version": "v260320.06 1:15p",
+  "release": 943,
+  "sha": "577fd18ff",
+  "fullSha": "577fd18ffbc4a4b922e856c6c0824c57639c0490",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 18:10:58+00",
-  "commits": [{"sha":"60be2caaf","message":"feat: populate PhyProp with all physical property data and tools","author":"Rahul"}]
+  "pushedAt": "2026-03-20 18:15:18+00",
+  "commits": [{"sha":"577fd18ff","message":"fix: add PhyProp tab icon for nav alignment","author":"Rahul"}]
 }
