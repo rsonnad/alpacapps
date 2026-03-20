@@ -1,12 +1,12 @@
 {
-  "version": "v260320.03 12:58p",
-  "release": 940,
-  "sha": "0d76417e2",
-  "fullSha": "0d76417e226b867087e52eb47648a90a243f4bcf",
+  "version": "v260320.04 1:05p",
+  "release": 941,
+  "sha": "0fa4480c3",
+  "fullSha": "0fa4480c3320bcc0c4eaf65371e44de39b30d762",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 17:58:37+00",
-  "commits": [{"sha":"0d76417e2","message":"feat: expandable context files, longer descriptions, reference map","author":"Rahul"}]
+  "pushedAt": "2026-03-20 18:05:12+00",
+  "commits": [{"sha":"0fa4480c3","message":"feat: add PhyProp staff page for physical property management","author":"Rahul"}]
 }
