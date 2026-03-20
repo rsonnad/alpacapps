@@ -441,20 +441,62 @@ async function loadZoning() {
 
 const STORAGE_BASE = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos';
 
+const SURVEY_PLATS = [
+  {
+    title: 'Land Title Survey — 2025 Update',
+    description: '4Ward Land Surveying (Jason Ward, R.P.L.S. #5811). Shows all current structures including trailers, shipping containers, pool, main house, back house. Lot 14-B, Block 6, Blue Bonnet Acres.',
+    url: '../../jackie/pages/permittingplan/survey-ward-2025.png',
+    date: '2025',
+    tags: ['survey', 'current', '4Ward'],
+  },
+  {
+    title: 'Land Title Survey — Original (2021)',
+    description: 'Original land title survey by 4Ward Land Surveying (Feb 4, 2021). Lot 14-B, Block 6, Blue Bonnet Acres, Corrected Plat, Section One, Bastrop County.',
+    url: '../../jackie/pages/permittingplan/survey-base.png',
+    date: '2021-02-04',
+    tags: ['survey', 'original', '4Ward'],
+  },
+];
+
 const RENDERINGS = [
   {
     title: 'Bird\'s-Eye View — Full Property',
-    description: '160 Still Forest Dr — all 11 structures placed from DB dimensions. Main House (stone), Back House (wood), 4 shipping containers, 2 trailers, deck, sauna, bathroom bldg. Orange lines = setback boundaries.',
+    description: '160 Still Forest Dr — all 11 structures placed from DB dimensions. Main House (stone), Back House (wood), 4 shipping containers, 2 trailers, deck, sauna, bathroom bldg. Orange lines = setback boundaries. Note: structure positions are approximate — awaiting QGIS footprint geometry for accurate placement.',
     file: 'renderings/property-birdseye-2026-03-20.png',
     date: '2026-03-20',
     engine: 'Cycles',
     samples: 128,
     resolution: '2560 × 1440',
-    tags: ['bird\'s-eye', 'full property', 'setbacks'],
+    tags: ['bird\'s-eye', 'full property', 'approximate'],
   },
 ];
 
+function renderCard(r, urlOverride) {
+  const url = urlOverride || `${STORAGE_BASE}/${r.file}`;
+  return `<div class="pp-render-card">
+    <img src="${esc(url)}" alt="${esc(r.title)}" loading="lazy"
+         onclick="window.open('${esc(url)}', '_blank')">
+    <div class="pp-render-meta">
+      <div class="pp-render-info">
+        <h4>${esc(r.title)}</h4>
+        <p>${esc(r.description)}</p>
+        ${r.engine ? `<p style="margin-top:0.375rem;font-size:0.75rem;color:var(--text-muted);">
+          ${esc(r.engine)} · ${r.samples ? `${r.samples} samples` : ''} · ${esc(r.resolution || '')} · ${esc(r.date)}
+        </p>` : `<p style="margin-top:0.375rem;font-size:0.75rem;color:var(--text-muted);">${esc(r.date)}</p>`}
+      </div>
+      <div class="pp-render-tags">
+        ${(r.tags || []).map(t => `<span class="pp-tool-tag">${esc(t)}</span>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
 async function loadRenderingsTab() {
+  // Populate survey plats
+  const surveyEl = document.getElementById('surveyGrid');
+  surveyEl.innerHTML = SURVEY_PLATS.map(s => renderCard(s, s.url)).join('');
+
+  // Populate 3D renderings
   const el = document.getElementById('renderingsGrid');
 
   // Also list any additional renders from storage
@@ -481,23 +523,5 @@ async function loadRenderingsTab() {
     return;
   }
 
-  el.innerHTML = allRenderings.map(r => {
-    const url = `${STORAGE_BASE}/${r.file}`;
-    return `<div class="pp-render-card">
-      <img src="${esc(url)}" alt="${esc(r.title)}" loading="lazy"
-           onclick="window.open('${esc(url)}', '_blank')">
-      <div class="pp-render-meta">
-        <div class="pp-render-info">
-          <h4>${esc(r.title)}</h4>
-          <p>${esc(r.description)}</p>
-          ${r.engine ? `<p style="margin-top:0.375rem;font-size:0.75rem;color:var(--text-muted);">
-            ${esc(r.engine)} · ${r.samples ? `${r.samples} samples` : ''} · ${esc(r.resolution || '')} · ${esc(r.date)}
-          </p>` : `<p style="margin-top:0.375rem;font-size:0.75rem;color:var(--text-muted);">${esc(r.date)}</p>`}
-        </div>
-        <div class="pp-render-tags">
-          ${(r.tags || []).map(t => `<span class="pp-tool-tag">${esc(t)}</span>`).join('')}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  el.innerHTML = allRenderings.map(r => renderCard(r)).join('');
 }
