@@ -29,6 +29,8 @@ let scheduleActuals = {};
 let scheduleLoaded = false;
 let editingEntryId = null;
 let editingEntryOriginal = null;
+let editingOldValues = null;
+const PENCIL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
 
 // =============================================
 // INITIALIZATION
@@ -508,13 +510,11 @@ async function refreshToday() {
       const desc = e.description ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">${escapeHtml(e.description)}</div>` : '';
       const manual = e.is_manual ? '<span class="manual-badge" style="margin-left:0.3rem;">Manual</span>' : '';
       const spaceLabel = e.space_id && spacesMap[e.space_id] ? `<span class="space-tag">${escapeHtml(spacesMap[e.space_id])}</span>` : '';
-      const canEdit = e.clock_out && !e.is_paid;
-      const editableClass = canEdit ? ' editable' : '';
-      const editClick = canEdit ? ` onclick="window._openEditModal('${e.id}')"` : '';
-      const editHint = canEdit ? '<span class="edit-hint">tap to edit</span>' : '';
-      return `<div class="entry-row${editableClass}"${editClick}>
-        <div><span class="entry-times">${ci} — ${co}</span>${manual}${spaceLabel}${editHint}${desc}</div>
+      const editBtn = (e.clock_out && !e.is_paid) ? `<button class="entry-edit-btn" onclick="window._openEditModal('${e.id}')" title="Edit entry">${PENCIL_ICON}</button>` : '';
+      return `<div class="entry-row">
+        <div><span class="entry-times">${ci} — ${co}</span>${manual}${spaceLabel}${desc}</div>
         <div style="display:flex;align-items:center;gap:0.5rem;">
+          ${editBtn}
           <span class="entry-duration">${dur}</span>
         </div>
       </div>`;
@@ -791,18 +791,16 @@ async function refreshHistory() {
         const paidClass = e.is_paid ? 'paid' : 'unpaid';
         const manualHtml = e.is_manual ? `<span class="manual-badge" title="${escapeHtml(e.manual_reason || 'Manual entry')}">Manual</span>` : '';
         const spaceHtml = e.space_id && spacesMap[e.space_id] ? `<div class="ed-desc">${escapeHtml(spacesMap[e.space_id])}</div>` : '';
-        const canEdit = e.clock_out && !e.is_paid;
-        const editableClass = canEdit ? ' editable' : '';
-        const editClick = canEdit ? ` onclick="window._openEditModal('${e.id}')"` : '';
+        const editBtnHtml = (e.clock_out && !e.is_paid) ? `<button class="entry-edit-btn" onclick="window._openEditModal('${e.id}')" title="Edit entry">${PENCIL_ICON}</button>` : '';
 
-        return `<div class="history-entry${editableClass}"${editClick}>
+        return `<div class="history-entry">
           <div class="entry-time-block">
             <span class="etb-in">${ci}</span>
             <span class="etb-divider">▾</span>
             <span class="etb-out">${co}</span>
           </div>
           <div class="entry-detail">
-            <div class="ed-duration">${dur}${manualHtml}</div>
+            <div class="ed-duration">${dur}${manualHtml}${editBtnHtml}</div>
             ${desc}
             ${spaceHtml}
           </div>
@@ -1408,6 +1406,18 @@ async function openEditModal(entryId) {
   editingEntryId = entryId;
   editingEntryOriginal = { ...entry };
 
+  // Capture old values for email notification
+  const ciOld = new Date(entry.clock_in);
+  const coOld = new Date(entry.clock_out);
+  const oldMins = parseFloat(entry.duration_minutes) || 0;
+  editingOldValues = {
+    clock_in: ciOld.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    clock_out: coOld.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    duration: HoursService.formatDuration(oldMins),
+    space_id: entry.space_id,
+    description: entry.description,
+  };
+
   // Populate space dropdown
   const editSpace = document.getElementById('editSpace');
   let opts = '<option value="">No space</option>';
@@ -1525,6 +1535,30 @@ async function handleEditSubmit() {
     }
 
     showToast('Entry updated!', 'success');
+
+    // Send email notification (fire-and-forget)
+    if (editingOldValues) {
+      const newCi = new Date(ciDateTime);
+      const newCo = new Date(coDateTime);
+      const newMins = Math.round((newCo - newCi) / 60000);
+      const formatTime = (d) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const entryDate = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+      emailService.sendTimeEntryEdited({
+        associate_email: authState.appUser.email,
+        first_name: authState.appUser.first_name || authState.appUser.email,
+        entry_date: entryDate,
+        old_clock_in: editingOldValues.clock_in,
+        old_clock_out: editingOldValues.clock_out,
+        old_duration: editingOldValues.duration,
+        new_clock_in: formatTime(newCi),
+        new_clock_out: formatTime(newCo),
+        new_duration: HoursService.formatDuration(newMins),
+        description: description || null,
+        space_name: spaceId && spacesMap[spaceId] ? spacesMap[spaceId] : null,
+      }).catch(err => console.warn('Edit notification email failed:', err));
+    }
+
     closeEditModal();
     await Promise.all([refreshToday(), refreshHistory()]);
   } catch (err) {

@@ -83,6 +83,8 @@ type EmailType =
   | "associate_payout_sent"
   // Task assignment
   | "task_assigned"
+  // Time entry edited
+  | "time_entry_edited"
   // Custom (raw HTML passthrough)
   | "custom"
   // Internal — never sent to recipients directly
@@ -2055,6 +2057,86 @@ ${todoTasks.length > 0 ? `Your Prioritized To-Do List:\n${todoText}` : ''}
 Clock in at https://alpacaplayhouse.com/associates/worktracking.html to get started.
 
 — Alpaca Playhouse`
+      };
+    }
+
+    case "time_entry_edited": {
+      const changedRows = [];
+      if (data.old_clock_in !== data.new_clock_in) {
+        changedRows.push({ label: 'Clock In', old: data.old_clock_in, new: data.new_clock_in });
+      }
+      if (data.old_clock_out !== data.new_clock_out) {
+        changedRows.push({ label: 'Clock Out', old: data.old_clock_out, new: data.new_clock_out });
+      }
+      if (data.old_duration !== data.new_duration) {
+        changedRows.push({ label: 'Duration', old: data.old_duration, new: data.new_duration });
+      }
+
+      const changeTable = changedRows.length > 0 ? `
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px;">
+          <tr style="background:#f0ede8;">
+            <td style="padding:8px 12px;font-size:12px;font-weight:600;color:#7d6f74;border-radius:6px 0 0 0;"></td>
+            <td style="padding:8px 12px;font-size:12px;font-weight:600;color:#7d6f74;text-align:center;">Before</td>
+            <td style="padding:8px 12px;font-size:12px;font-weight:600;color:#7d6f74;text-align:center;border-radius:0 6px 0 0;">After</td>
+          </tr>
+          ${changedRows.map((r: any) => `
+          <tr>
+            <td style="padding:8px 12px;font-size:14px;font-weight:600;color:#2a1f23;border-bottom:1px solid #f0ede8;">${r.label}</td>
+            <td style="padding:8px 12px;font-size:14px;color:#7d6f74;text-align:center;border-bottom:1px solid #f0ede8;text-decoration:line-through;">${r.old}</td>
+            <td style="padding:8px 12px;font-size:14px;color:#2a1f23;text-align:center;border-bottom:1px solid #f0ede8;font-weight:600;">${r.new}</td>
+          </tr>`).join('')}
+        </table>` : '<p style="color:#7d6f74;font-size:14px;">No time changes (description or space updated).</p>';
+
+      return {
+        subject: `Hours edited — ${data.first_name} (${data.entry_date})`,
+        html: `
+          <h2 style="margin:0 0 4px;">Time Entry Edited</h2>
+          <p style="margin:0 0 20px;color:#7d6f74;font-size:14px;">${data.first_name} edited their hours for <strong>${data.entry_date}</strong>.</p>
+
+          ${changeTable}
+
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 20px;">
+            <tr>
+              <td style="padding:16px 20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding:0 0 6px;font-size:13px;"><strong>Date:</strong></td>
+                    <td style="padding:0 0 6px;text-align:right;font-size:13px;">${data.entry_date}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 0 6px;font-size:13px;"><strong>New Times:</strong></td>
+                    <td style="padding:0 0 6px;text-align:right;font-size:13px;">${data.new_clock_in} — ${data.new_clock_out}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 0 6px;font-size:13px;"><strong>Duration:</strong></td>
+                    <td style="padding:0 0 6px;text-align:right;font-size:13px;">${data.new_duration}</td>
+                  </tr>
+                  ${data.space_name ? `<tr>
+                    <td style="padding:0 0 6px;font-size:13px;"><strong>Location:</strong></td>
+                    <td style="padding:0 0 6px;text-align:right;font-size:13px;">${data.space_name}</td>
+                  </tr>` : ''}
+                  ${data.description ? `<tr>
+                    <td style="padding:0 0 0;font-size:13px;"><strong>Description:</strong></td>
+                    <td style="padding:0 0 0;text-align:right;font-size:13px;">${data.description}</td>
+                  </tr>` : ''}
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <p style="margin:0;color:#7d6f74;font-size:13px;">This is an automated notification from Alpaca Playhouse work tracking.</p>
+        `,
+        text: `Time Entry Edited
+
+${data.first_name} edited their hours for ${data.entry_date}.
+
+${changedRows.map((r: any) => `${r.label}: ${r.old} → ${r.new}`).join('\n')}
+
+Date: ${data.entry_date}
+New Times: ${data.new_clock_in} — ${data.new_clock_out}
+Duration: ${data.new_duration}
+${data.space_name ? `Location: ${data.space_name}\n` : ''}${data.description ? `Description: ${data.description}\n` : ''}
+This is an automated notification from Alpaca Playhouse work tracking.`
       };
     }
 

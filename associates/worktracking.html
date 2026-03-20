@@ -457,20 +457,13 @@
     }
     .btn-save-schedule:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Editable entry rows */
-    .entry-row.editable, .history-entry.editable {
-      cursor: pointer; transition: background 0.15s;
-    }
-    .entry-row.editable:hover, .history-entry.editable:hover { background: #f8f7ff; }
-    .entry-row.editable:active, .history-entry.editable:active { background: #eef2ff; }
-    .edit-hint { font-size: 0.6rem; color: #a5b4fc; margin-left: 0.3rem; }
-
     /* Edit entry button */
     .entry-edit-btn {
-      background: none; border: none; cursor: pointer; padding: 0.25rem;
-      font-size: 0.7rem; color: #6366f1; font-weight: 600; white-space: nowrap;
+      background: none; border: none; cursor: pointer; padding: 0.35rem;
+      color: #6366f1; display: inline-flex; align-items: center; border-radius: 6px;
     }
-    .entry-edit-btn:hover { text-decoration: underline; }
+    .entry-edit-btn:hover { background: rgba(99,102,241,0.1); }
+    .entry-edit-btn svg { width: 15px; height: 15px; }
 
     /* Pending edit request badge */
     .pending-edit-badge {

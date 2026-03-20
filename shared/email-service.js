@@ -44,6 +44,8 @@ export const EMAIL_TYPES = {
   ASSOCIATE_PAYOUT_SENT: 'associate_payout_sent',
   // Task assignment
   TASK_ASSIGNED: 'task_assigned',
+  // Time entry edited
+  TIME_ENTRY_EDITED: 'time_entry_edited',
 };
 
 /**
@@ -466,6 +468,28 @@ export const emailService = {
   async sendTaskAssigned(email, data) {
     const recipients = [email, 'alpacaplayhouse@gmail.com'].filter(Boolean);
     return sendEmail(EMAIL_TYPES.TASK_ASSIGNED, recipients, data);
+  },
+
+  // ===== TIME ENTRY EDIT NOTIFICATIONS =====
+
+  /**
+   * Send notification when an associate edits a past time entry
+   * @param {object} data
+   * @param {string} data.associate_email - Associate's email
+   * @param {string} data.first_name - Associate first name
+   * @param {string} data.entry_date - Date of the entry (formatted)
+   * @param {string} data.old_clock_in - Original clock in time
+   * @param {string} data.old_clock_out - Original clock out time
+   * @param {string} data.old_duration - Original duration (formatted)
+   * @param {string} data.new_clock_in - New clock in time
+   * @param {string} data.new_clock_out - New clock out time
+   * @param {string} data.new_duration - New duration (formatted)
+   * @param {string} [data.description] - Work description
+   * @param {string} [data.space_name] - Space/location name
+   */
+  async sendTimeEntryEdited(data) {
+    const recipients = [data.associate_email, 'alpacaplayhouse@gmail.com'].filter(Boolean);
+    return sendEmail(EMAIL_TYPES.TIME_ENTRY_EDITED, recipients, data);
   },
 
   /**
