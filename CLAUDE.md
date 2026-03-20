@@ -8,8 +8,7 @@
 > - `docs/DEPLOY.md` — **load for:** pushing, deploying, version questions
 > - `docs/INTEGRATIONS.md` — **load for:** external APIs, vendor setup, pricing
 > - `docs/CHANGELOG.md` — **load for:** understanding recent changes, migration context
-> - `docs/CAD.md` — **load for:** 3D modeling, Blender, QGIS, CAD tool reference
-> - `docs/CAD-SITE-PLANS.md` — **load for:** site plan workflows, GIS data sources, permit drawings
+> - `docs/CAD.md` — **load for:** 3D modeling, Blender, QGIS, CAD tools, site plan workflows, GIS data sources, permit drawings
 
 ## Mandatory Behaviors
 
