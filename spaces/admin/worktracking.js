@@ -2,6 +2,7 @@
  * Admin Hours Page - Manage associate time entries, rates, and payments
  */
 import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { getAuthState } from '../../shared/auth.js';
 import { supabase } from '../../shared/supabase.js';
 import { hoursService, HoursService } from '../../shared/hours-service.js';
 import { PAYMENT_METHOD_LABELS } from '../../shared/accounting-service.js';
@@ -75,7 +76,7 @@ function setDefaultDates() {
 async function loadAll() {
   // Load associates first — work groups need the associates array for member dropdowns
   await loadAssociates();
-  await Promise.all([loadEntries(), loadWorkGroups(), loadSpacesForEntryModal()]);
+  await Promise.all([loadEntries(), loadWorkGroups(), loadSpacesForEntryModal(), loadEditRequests()]);
 }
 
 async function loadAssociates() {
@@ -977,3 +978,85 @@ function formatGpsUrl(entry) {
   if (!lat || !lng) return null;
   return `https://www.google.com/maps?q=${lat},${lng}`;
 }
+
+// =============================================
+// EDIT REQUESTS (Admin Approval)
+// =============================================
+async function loadEditRequests() {
+  try {
+    const requests = await hoursService.getEditRequests('pending');
+    const section = document.getElementById('editRequestsSection');
+    const body = document.getElementById('editRequestsBody');
+    const countBadge = document.getElementById('editRequestCount');
+
+    if (!requests.length) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = '';
+    countBadge.textContent = `${requests.length} pending`;
+
+    body.innerHTML = requests.map(r => {
+      const name = getRequesterName(r);
+      const requestedAt = new Date(r.requested_at).toLocaleString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      const oldCi = new Date(r.original_clock_in).toLocaleString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      const oldCo = new Date(r.original_clock_out).toLocaleString('en-US', { timeZone: AUSTIN_TIMEZONE, hour: 'numeric', minute: '2-digit' });
+      const newCi = new Date(r.proposed_clock_in).toLocaleString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      const newCo = new Date(r.proposed_clock_out).toLocaleString('en-US', { timeZone: AUSTIN_TIMEZONE, hour: 'numeric', minute: '2-digit' });
+      const oldMins = parseFloat(r.original_duration_minutes) || 0;
+      const newMins = Math.round((new Date(r.proposed_clock_out) - new Date(r.proposed_clock_in)) / 60000);
+      const addedHrs = ((newMins - oldMins) / 60).toFixed(1);
+
+      return `<div class="edit-request-card">
+        <div class="erc-header">
+          <span class="erc-name">${escapeHtml(name)}</span>
+          <span class="erc-date">Requested ${requestedAt}</span>
+        </div>
+        <div class="erc-diff">
+          <div>
+            <div class="erc-label">Original</div>
+            <div class="erc-old">${oldCi} — ${oldCo} (${HoursService.formatDuration(oldMins)})</div>
+          </div>
+          <div>
+            <div class="erc-label">Proposed</div>
+            <div class="erc-new">${newCi} — ${newCo} (${HoursService.formatDuration(newMins)})</div>
+          </div>
+        </div>
+        <div style="font-size:0.8rem;color:#d97706;margin-bottom:0.75rem;font-weight:600;">+${addedHrs} hours added</div>
+        <div class="erc-actions">
+          <button class="btn-approve" onclick="window._reviewEditRequest('${r.id}', 'approved')">Approve</button>
+          <button class="btn-deny" onclick="window._reviewEditRequest('${r.id}', 'denied')">Deny</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    console.error('Failed to load edit requests:', err);
+  }
+}
+
+function getRequesterName(request) {
+  const r = request.requester;
+  if (!r) return 'Unknown';
+  const full = `${r.first_name || ''} ${r.last_name || ''}`.trim();
+  return full || r.display_name || r.email || 'Unknown';
+}
+
+window._reviewEditRequest = async function(requestId, decision) {
+  const auth = getAuthState();
+  if (!auth?.appUser?.id) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = decision === 'approved' ? 'Approving...' : 'Denying...';
+
+  try {
+    await hoursService.reviewEditRequest(requestId, auth.appUser.id, decision);
+    showToast(`Edit request ${decision}`, decision === 'approved' ? 'success' : 'info');
+    await Promise.all([loadEditRequests(), loadEntries()]);
+  } catch (err) {
+    showToast('Failed to review request: ' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = decision === 'approved' ? 'Approve' : 'Deny';
+  }
+};

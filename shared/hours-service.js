@@ -878,6 +878,117 @@ class HoursService {
     const d = new Date(dateStr + (dateStr.includes('T') ? '' : 'T12:00:00'));
     return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: AUSTIN_TIMEZONE });
   }
+
+  // ---- Edit Audit Trail ----
+
+  /**
+   * Log field-level changes to a time entry
+   */
+  async logEdit(entryId, editedBy, changes) {
+    const rows = [];
+    for (const [field, { oldVal, newVal }] of Object.entries(changes)) {
+      if (String(oldVal || '') !== String(newVal || '')) {
+        rows.push({
+          time_entry_id: entryId,
+          edited_by: editedBy,
+          field_changed: field,
+          old_value: oldVal != null ? String(oldVal) : null,
+          new_value: newVal != null ? String(newVal) : null
+        });
+      }
+    }
+    if (!rows.length) return;
+    const { error } = await supabase.from('time_entry_edits').insert(rows);
+    if (error) console.error('Failed to log edits:', error);
+  }
+
+  /**
+   * Get edit history for a time entry
+   */
+  async getEditHistory(entryId) {
+    const { data, error } = await supabase
+      .from('time_entry_edits')
+      .select('*, editor:edited_by(id, display_name, first_name, last_name)')
+      .eq('time_entry_id', entryId)
+      .order('edited_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+
+  // ---- Edit Requests (admin approval for >10hr additions) ----
+
+  /**
+   * Create an edit request that requires admin approval
+   */
+  async createEditRequest(entryId, requestedBy, proposed, original) {
+    const { data, error } = await supabase
+      .from('time_entry_edit_requests')
+      .insert({
+        time_entry_id: entryId,
+        requested_by: requestedBy,
+        proposed_clock_in: proposed.clock_in,
+        proposed_clock_out: proposed.clock_out,
+        proposed_description: proposed.description || null,
+        proposed_space_id: proposed.space_id || null,
+        original_clock_in: original.clock_in,
+        original_clock_out: original.clock_out,
+        original_duration_minutes: original.duration_minutes
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Get pending edit requests (admin)
+   */
+  async getEditRequests(status = 'pending') {
+    const { data, error } = await supabase
+      .from('time_entry_edit_requests')
+      .select('*, requester:requested_by(id, display_name, first_name, last_name, email), entry:time_entry_id(id, clock_in, clock_out, duration_minutes, hourly_rate, associate_id)')
+      .eq('status', status)
+      .order('requested_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Approve or deny an edit request (admin)
+   */
+  async reviewEditRequest(requestId, reviewedBy, decision) {
+    // Update request status
+    const { data: request, error: fetchErr } = await supabase
+      .from('time_entry_edit_requests')
+      .select('*')
+      .eq('id', requestId)
+      .single();
+    if (fetchErr) throw fetchErr;
+
+    const { error: updateErr } = await supabase
+      .from('time_entry_edit_requests')
+      .update({ status: decision, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString() })
+      .eq('id', requestId);
+    if (updateErr) throw updateErr;
+
+    // If approved, apply the edit
+    if (decision === 'approved') {
+      await this.updateEntry(request.time_entry_id, {
+        clock_in: request.proposed_clock_in,
+        clock_out: request.proposed_clock_out,
+        description: request.proposed_description,
+        space_id: request.proposed_space_id
+      });
+
+      // Log the edit
+      await this.logEdit(request.time_entry_id, reviewedBy, {
+        clock_in: { oldVal: request.original_clock_in, newVal: request.proposed_clock_in },
+        clock_out: { oldVal: request.original_clock_out, newVal: request.proposed_clock_out }
+      });
+    }
+
+    return { status: decision };
+  }
 }
 
 export const hoursService = new HoursService();

@@ -457,12 +457,27 @@
     }
     .btn-save-schedule:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* Editable entry rows */
+    .entry-row.editable, .history-entry.editable {
+      cursor: pointer; transition: background 0.15s;
+    }
+    .entry-row.editable:hover, .history-entry.editable:hover { background: #f8f7ff; }
+    .entry-row.editable:active, .history-entry.editable:active { background: #eef2ff; }
+    .edit-hint { font-size: 0.6rem; color: #a5b4fc; margin-left: 0.3rem; }
+
     /* Edit entry button */
     .entry-edit-btn {
       background: none; border: none; cursor: pointer; padding: 0.25rem;
       font-size: 0.7rem; color: #6366f1; font-weight: 600; white-space: nowrap;
     }
     .entry-edit-btn:hover { text-decoration: underline; }
+
+    /* Pending edit request badge */
+    .pending-edit-badge {
+      display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.55rem; font-weight: 700;
+      color: #d97706; background: #fffbeb; padding: 0.1rem 0.35rem; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.03em; margin-left: 0.35rem; border: 1px solid #fde68a;
+    }
 
     /* Tasks Tab */
     .task-card {
