@@ -1,12 +1,12 @@
 {
-  "version": "v260321.07 5:35a",
-  "release": 965,
-  "sha": "ffa2a30d2",
-  "fullSha": "ffa2a30d29249d54585a1a962fb04a9d813c89ba",
+  "version": "v260321.08 5:41a",
+  "release": 966,
+  "sha": "3643cccc5",
+  "fullSha": "3643cccc5be16ded01d5f649c56de59b24c7816e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 10:35:25+00",
-  "commits": [{"sha":"ffa2a30d2","message":"feat: improve Blender render — overhead view, boundary lines, corner pins","author":"Rahul"}]
+  "pushedAt": "2026-03-21 10:41:06+00",
+  "commits": [{"sha":"3643cccc5","message":"feat: enhance render — distinct main house roof, north arrow, visual polish","author":"Rahul"}]
 }
