@@ -1,12 +1,12 @@
 {
-  "version": "v260321.01 3:22a",
-  "release": 959,
-  "sha": "e57e03662",
-  "fullSha": "e57e03662bd810ce05770767bd3a23be08ab6111",
+  "version": "v260321.02 3:48a",
+  "release": 960,
+  "sha": "ba221afbe",
+  "fullSha": "ba221afbec3113f09327f1fd05744675299f6775",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 08:22:36+00",
-  "commits": [{"sha":"e57e03662","message":"feat: add Sponic Garden pitch page (#83)","author":"Rahul"}]
+  "pushedAt": "2026-03-21 08:48:27+00",
+  "commits": [{"sha":"ba221afbe","message":"feat: Sponic Garden page redesign — greenhouse × AI aesthetic (#84)","author":"Rahul"}]
 }
