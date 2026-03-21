@@ -1,12 +1,12 @@
 {
-  "version": "v260321.27 8:45a",
-  "release": 985,
-  "sha": "776a4f986",
-  "fullSha": "776a4f986ebb3d9dd65a6e1fa6e9abdd0e3aa3c7",
+  "version": "v260321.28 8:58a",
+  "release": 986,
+  "sha": "671a52728",
+  "fullSha": "671a52728d8b3234ca203109da87ae7f289a7f91",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 13:45:06+00",
-  "commits": [{"sha":"776a4f986","message":"feat: add SPGD brand regen callback to image-gen worker","author":"Rahul"}]
+  "pushedAt": "2026-03-21 13:58:06+00",
+  "commits": [{"sha":"671a52728","message":"feat: add Blender scene setup script with PBR materials","author":"Rahul"}]
 }
