@@ -1,12 +1,12 @@
 {
-  "version": "v260321.03 4:37a",
-  "release": 961,
-  "sha": "d04d7592b",
-  "fullSha": "d04d7592b94455b04e2213b0c4d45e67695202d9",
+  "version": "v260321.04 4:56a",
+  "release": 962,
+  "sha": "1a9b23aca",
+  "fullSha": "1a9b23acadbdc9c7627383bb238aa3e41ed7a949",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 09:37:59+00",
-  "commits": [{"sha":"d04d7592b","message":"feat: render entirely from database — no hardcoded positions","author":"Rahul"}]
+  "pushedAt": "2026-03-21 09:56:24+00",
+  "commits": [{"sha":"1a9b23aca","message":"feat: add Sponic Garden branding assets — wordmark, emblem, hero illustration","author":"Rahul"}]
 }
