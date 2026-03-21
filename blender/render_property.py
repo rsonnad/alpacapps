@@ -119,6 +119,7 @@ MATERIALS = {
     'underground': make_material("Underground",  (0.35, 0.30, 0.25, 1), roughness=0.9),
     'tree_trunk':  make_material("TreeTrunk",    (0.30, 0.20, 0.10, 1), roughness=0.9),
     'tree_leaf':   make_material("TreeLeaf",     (0.10, 0.30, 0.05, 1), roughness=0.95),
+    'roof_main':   make_material("MainRoof",     (0.45, 0.28, 0.18, 1), roughness=0.5, metallic=0.3),
 }
 
 
@@ -417,8 +418,9 @@ for s in structures_db:
     # Add roof if applicable
     if roof_type and roof_type not in ('none', 'flat'):
         peak = 4 if height < 12 else 6
-        create_roof_from_footprint(name, coords_ft, height, peak,
-                                  MATERIALS['roof'])
+        # Main house gets distinct brown roof
+        roof_mat = MATERIALS['roof_main'] if stype == 'house' else MATERIALS['roof']
+        create_roof_from_footprint(name, coords_ft, height, peak, roof_mat)
 
 # ---------------------------------------------------------------------------
 # 8.  SETBACK LINES — from DB edge geometries
@@ -578,6 +580,36 @@ cam.rotation_euler = rot_quat.to_euler()
 cam.data.lens = 35
 cam.data.clip_end = 2000
 bpy.context.scene.camera = cam
+
+# ---------------------------------------------------------------------------
+# 12b. NORTH ARROW — flat compass indicator near NE corner
+# ---------------------------------------------------------------------------
+arrow_mat = make_material("NorthArrow", (0.9, 0.1, 0.1, 1), roughness=0.3)
+arrow_x = max_x + 30
+arrow_y = cy
+# Flat triangle pointing north (+Y direction)
+arrow_coords = [
+    (arrow_x - 5, arrow_y - 15, 0.2),
+    (arrow_x + 5, arrow_y - 15, 0.2),
+    (arrow_x, arrow_y + 20, 0.2),
+]
+mesh_arrow = bpy.data.meshes.new("NorthArrow")
+obj_arrow = bpy.data.objects.new("NorthArrow", mesh_arrow)
+bpy.context.collection.objects.link(obj_arrow)
+bm = bmesh.new()
+avs = [bm.verts.new(v) for v in arrow_coords]
+bm.faces.new(avs)
+bm.to_mesh(mesh_arrow)
+bm.free()
+obj_arrow.data.materials.append(arrow_mat)
+
+# "N" label — small cube marker above arrow tip
+bpy.ops.mesh.primitive_cube_add(
+    size=4, location=(arrow_x, arrow_y + 27, 2.0))
+n_label = bpy.context.active_object
+n_label.name = "N_Label"
+n_label.scale = (1, 0.3, 1)
+n_label.data.materials.append(arrow_mat)
 
 # ---------------------------------------------------------------------------
 # 13. RENDER SETTINGS
