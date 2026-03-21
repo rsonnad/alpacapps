@@ -104,7 +104,7 @@ MATERIALS = {
     'grass':       make_material("Grass",        (0.18, 0.40, 0.10, 1), roughness=0.95),
     'stone_frame': make_material("Stone/Frame",  (0.65, 0.60, 0.52, 1), roughness=0.85),
     'wood':        make_material("Wood",         (0.45, 0.30, 0.15, 1), roughness=0.75),
-    'wood_deck':   make_material("Wood Deck",    (0.50, 0.35, 0.18, 1), roughness=0.70),
+    'wood_deck':   make_material("Wood Deck",    (0.55, 0.38, 0.20, 1), roughness=0.65),
     'steel_red':   make_material("Red Steel",    (0.60, 0.12, 0.10, 1), roughness=0.4, metallic=0.7),
     'steel_beige': make_material("Beige Steel",  (0.65, 0.58, 0.42, 1), roughness=0.4, metallic=0.7),
     'steel_blue':  make_material("Blue Steel",   (0.15, 0.25, 0.50, 1), roughness=0.4, metallic=0.7),
@@ -377,11 +377,11 @@ for s in structures_db:
 
     # Special handling for pool
     if 'pool' in s['name'].lower() or 'swim' in s['name'].lower():
-        # Pool rim (concrete deck)
+        # Pool concrete rim
         create_polygon_mesh(name + "_Rim", coords_ft, 1.0,
                           MATERIALS['concrete'], z_base=0.02)
-        # Pool water (inset, flush on top)
-        margin = 2  # ft inset
+        # Pool water (slightly inset, raised above rim)
+        margin = 1.5  # ft inset from edge
         pool_cx = sum(c[0] for c in coords_ft) / len(coords_ft)
         pool_cy = sum(c[1] for c in coords_ft) / len(coords_ft)
         inset = []
@@ -394,8 +394,8 @@ for s in structures_db:
                 inset.append((pool_cx + dx * scale, pool_cy + dy * scale))
             else:
                 inset.append(c)
-        create_polygon_mesh(name + "_Water", inset, 0.2,
-                          MATERIALS['pool_water'], z_base=1.1)
+        create_polygon_mesh(name + "_Water", inset, 0.5,
+                          MATERIALS['pool_water'], z_base=1.2)
         continue
 
     # Special handling for driveway/gravel
@@ -403,9 +403,9 @@ for s in structures_db:
         create_polygon_mesh(name, coords_ft, 0.15, MATERIALS['gravel'], z_base=0.02)
         continue
 
-    # Special handling for deck (low height)
+    # Special handling for deck (raised platform)
     if stype == 'deck':
-        create_polygon_mesh(name, coords_ft, max(height, 1.5),
+        create_polygon_mesh(name, coords_ft, max(height, 2.5),
                           MATERIALS['wood_deck'], z_base=0.05)
         continue
 
