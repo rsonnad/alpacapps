@@ -1,12 +1,12 @@
 {
-  "version": "v260321.08 5:41a",
-  "release": 966,
-  "sha": "3643cccc5",
-  "fullSha": "3643cccc5be16ded01d5f649c56de59b24c7816e",
+  "version": "v260321.10 5:46a",
+  "release": 968,
+  "sha": "5d4e80897",
+  "fullSha": "5d4e80897fdfe2af6347c9cc8a4ee34320fc207e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 10:41:06+00",
-  "commits": [{"sha":"3643cccc5","message":"feat: enhance render — distinct main house roof, north arrow, visual polish","author":"Rahul"}]
+  "pushedAt": "2026-03-21 10:46:08+00",
+  "commits": [{"sha":"5d4e80897","message":"feat: update Renderings tab — latest DB-driven render with all 14 structures","author":"Rahul"}]
 }
