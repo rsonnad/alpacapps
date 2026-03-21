@@ -114,7 +114,7 @@ MATERIALS = {
     'road':        make_material("Road",         (0.25, 0.25, 0.25, 1), roughness=0.9),
     'gravel':      make_material("Gravel",       (0.40, 0.38, 0.34, 1), roughness=0.95),
     'setback':     make_material("Setback Line", (1.0, 0.3, 0.0, 0.5), roughness=0.5),
-    'pool_water':  make_material("Pool Water",   (0.15, 0.45, 0.65, 1), roughness=0.1),
+    'pool_water':  make_material("Pool Water",   (0.15, 0.50, 0.85, 1), roughness=0.3),
     'concrete':    make_material("Concrete",     (0.60, 0.58, 0.55, 1), roughness=0.8),
     'underground': make_material("Underground",  (0.35, 0.30, 0.25, 1), roughness=0.9),
     'tree_trunk':  make_material("TreeTrunk",    (0.30, 0.20, 0.10, 1), roughness=0.9),
@@ -244,45 +244,58 @@ def create_polygon_mesh(name, coords_ft, height, material, z_base=0):
 
 
 def create_roof_from_footprint(name, coords_ft, h_base, h_peak, material):
-    """Create a gable roof over a footprint polygon (uses bounding box)."""
+    """Create a gable roof over a footprint polygon, aligned with property angle."""
     xs = [c[0] for c in coords_ft]
     ys = [c[1] for c in coords_ft]
     cx_r = (min(xs) + max(xs)) / 2
     cy_r = (min(ys) + max(ys)) / 2
-    hw = (max(xs) - min(xs)) / 2
-    hl = (max(ys) - min(ys)) / 2
 
-    # Determine roof ridge direction — along the longer axis
-    angle = 0
-    if hw > hl:
-        # Ridge along X (wider), gable on Y ends
-        pass
-    else:
-        # Ridge along Y (longer), gable on X ends — swap
-        hw, hl = hl, hw
-        angle = math.pi / 2
+    # Find the longest edge of the footprint to determine ridge direction
+    max_edge_len = 0
+    ridge_angle = 0
+    for i in range(len(coords_ft)):
+        j = (i + 1) % len(coords_ft)
+        dx = coords_ft[j][0] - coords_ft[i][0]
+        dy = coords_ft[j][1] - coords_ft[i][1]
+        edge_len = math.sqrt(dx**2 + dy**2)
+        if edge_len > max_edge_len:
+            max_edge_len = edge_len
+            ridge_angle = math.atan2(dy, dx)
+
+    # Half-widths: along ridge and perpendicular
+    hl = max_edge_len / 2  # along ridge
+    # Find width perpendicular to ridge
+    cos_a = math.cos(ridge_angle)
+    sin_a = math.sin(ridge_angle)
+    perp_dists = []
+    for c in coords_ft:
+        dx = c[0] - cx_r
+        dy = c[1] - cy_r
+        perp = -dx * sin_a + dy * cos_a
+        perp_dists.append(perp)
+    hw = (max(perp_dists) - min(perp_dists)) / 2
 
     mesh = bpy.data.meshes.new(name + "_roof")
     obj = bpy.data.objects.new(name + "_Roof", mesh)
     bpy.context.collection.objects.link(obj)
 
     bm = bmesh.new()
-    v0 = bm.verts.new((-hw, -hl, h_base))
-    v1 = bm.verts.new((hw, -hl, h_base))
-    v2 = bm.verts.new((hw, hl, h_base))
-    v3 = bm.verts.new((-hw, hl, h_base))
-    v4 = bm.verts.new((0, -hl, h_base + h_peak))
-    v5 = bm.verts.new((0, hl, h_base + h_peak))
+    v0 = bm.verts.new((-hl, -hw, h_base))
+    v1 = bm.verts.new((hl, -hw, h_base))
+    v2 = bm.verts.new((hl, hw, h_base))
+    v3 = bm.verts.new((-hl, hw, h_base))
+    v4 = bm.verts.new((-hl, 0, h_base + h_peak))
+    v5 = bm.verts.new((hl, 0, h_base + h_peak))
 
-    bm.faces.new([v0, v1, v4])
-    bm.faces.new([v2, v3, v5])
-    bm.faces.new([v0, v4, v5, v3])
-    bm.faces.new([v1, v2, v5, v4])
+    bm.faces.new([v0, v1, v5, v4])   # front slope
+    bm.faces.new([v1, v2, v5])        # right gable
+    bm.faces.new([v2, v3, v4, v5])    # back slope
+    bm.faces.new([v3, v0, v4])        # left gable
 
     bm.to_mesh(mesh)
     bm.free()
     obj.location = (cx_r, cy_r, 0)
-    obj.rotation_euler.z = angle
+    obj.rotation_euler.z = ridge_angle
     obj.data.materials.append(material)
     return obj
 
@@ -325,10 +338,10 @@ for s in structures_db:
 
     # Special handling for pool
     if 'pool' in s['name'].lower() or 'swim' in s['name'].lower():
-        # Pool deck (slightly larger)
-        create_polygon_mesh(name + "_Deck", coords_ft, 0.5,
-                          MATERIALS['concrete'], z_base=-0.05)
-        # Pool water (inset)
+        # Pool rim (concrete deck)
+        create_polygon_mesh(name + "_Rim", coords_ft, 1.0,
+                          MATERIALS['concrete'], z_base=0.02)
+        # Pool water (inset, flush on top)
         margin = 2  # ft inset
         pool_cx = sum(c[0] for c in coords_ft) / len(coords_ft)
         pool_cy = sum(c[1] for c in coords_ft) / len(coords_ft)
@@ -342,8 +355,8 @@ for s in structures_db:
                 inset.append((pool_cx + dx * scale, pool_cy + dy * scale))
             else:
                 inset.append(c)
-        create_polygon_mesh(name + "_Water", inset, 0.1,
-                          MATERIALS['pool_water'], z_base=0.3)
+        create_polygon_mesh(name + "_Water", inset, 0.2,
+                          MATERIALS['pool_water'], z_base=1.1)
         continue
 
     # Special handling for driveway/gravel
@@ -420,27 +433,48 @@ for edge in edges_db:
 # ---------------------------------------------------------------------------
 # 9.  TREES — west-biased per survey (heavy coverage on west half)
 # ---------------------------------------------------------------------------
-for i in range(35):
-    for _ in range(80):
-        # 80% of trees in west half (survey shows heavy tree cover on west)
-        if random.random() < 0.80:
-            rx = random.uniform(min_x + 10, cx - 20)
+def point_in_polygon(px, py, polygon):
+    """Ray-casting point-in-polygon test."""
+    n = len(polygon)
+    inside = False
+    j = n - 1
+    for i in range(n):
+        xi, yi = polygon[i]
+        xj, yj = polygon[j]
+        if ((yi > py) != (yj > py)) and (px < (xj - xi) * (py - yi) / (yj - yi) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+
+for i in range(40):
+    placed = False
+    for _ in range(150):
+        # 70% of trees in west half (survey shows heavy tree cover on west)
+        if random.random() < 0.70:
+            rx = random.uniform(min_x + 15, cx - 15)
         else:
-            rx = random.uniform(min_x + 10, max_x - 15)
-        ry = random.uniform(min_y + 25, max_y - 10)
+            rx = random.uniform(cx + 10, max_x - 20)
+        ry = random.uniform(min_y + 25, max_y - 15)
+
+        # Must be inside parcel boundary
+        if not point_in_polygon(rx, ry, parcel_ft):
+            continue
 
         ok = True
         for sc in structure_centers:
-            if math.sqrt((rx - sc[0])**2 + (ry - sc[1])**2) < 30:
+            if math.sqrt((rx - sc[0])**2 + (ry - sc[1])**2) < 40:
                 ok = False
                 break
-        if rx < min_x + 5 or rx > max_x - 5 or ry < min_y + 5 or ry > max_y - 5:
-            ok = False
         if ok:
+            placed = True
             break
 
-    trunk_h = random.uniform(18, 35)
-    crown_r = random.uniform(8, 14)
+    if not placed:
+        continue
+
+    trunk_h = random.uniform(20, 38)
+    crown_r = random.uniform(8, 15)
 
     bpy.ops.mesh.primitive_cylinder_add(
         radius=random.uniform(0.6, 1.2), depth=trunk_h,
@@ -490,7 +524,12 @@ bg.inputs["Strength"].default_value = 0.8
 # ---------------------------------------------------------------------------
 # 12. CAMERA — bird's-eye perspective view
 # ---------------------------------------------------------------------------
-bpy.ops.object.camera_add(location=(cx + 250, cy - 300, 350))
+# Camera from ESE looking WNW — angled to match survey plat perspective
+cam_x = cx + 380
+cam_y = cy - 200
+cam_z = 480
+
+bpy.ops.object.camera_add(location=(cam_x, cam_y, cam_z))
 cam = bpy.context.active_object
 cam.name = "BirdsEye"
 
@@ -498,7 +537,7 @@ direction = Vector((cx, cy, 0)) - cam.location
 rot_quat = direction.to_track_quat('-Z', 'Y')
 cam.rotation_euler = rot_quat.to_euler()
 
-cam.data.lens = 35
+cam.data.lens = 28
 cam.data.clip_end = 2000
 bpy.context.scene.camera = cam
 
@@ -507,7 +546,7 @@ bpy.context.scene.camera = cam
 # ---------------------------------------------------------------------------
 scene = bpy.context.scene
 scene.render.engine = 'CYCLES'
-scene.cycles.samples = 128
+scene.cycles.samples = 64
 scene.cycles.use_denoising = True
 scene.render.resolution_x = 2560
 scene.render.resolution_y = 1440
@@ -531,6 +570,5 @@ print(f"Render to:   {output_path}")
 print(f"To render:   blender -b {blend_path} -o {output_path} -F PNG -f 1")
 print(f"{'='*60}\n")
 
-# Uncomment to auto-render:
-# bpy.ops.render.render(write_still=True)
-# print(f"Render complete: {output_path}")
+bpy.ops.render.render(write_still=True)
+print(f"Render complete: {output_path}")
