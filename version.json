@@ -1,12 +1,12 @@
 {
-  "version": "v260321.26 8:43a",
-  "release": 984,
-  "sha": "a705cdc09",
-  "fullSha": "a705cdc09cb719ae1a043e150dc426827a4bea99",
+  "version": "v260321.27 8:45a",
+  "release": 985,
+  "sha": "776a4f986",
+  "fullSha": "776a4f986ebb3d9dd65a6e1fa6e9abdd0e3aa3c7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 13:43:19+00",
-  "commits": [{"sha":"a705cdc09","message":"docs: add 3D render pipeline with audit of failed approach","author":"Rahul"}]
+  "pushedAt": "2026-03-21 13:45:06+00",
+  "commits": [{"sha":"776a4f986","message":"feat: add SPGD brand regen callback to image-gen worker","author":"Rahul"}]
 }
