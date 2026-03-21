@@ -1,12 +1,12 @@
 {
-  "version": "v260321.05 5:05a",
-  "release": 963,
-  "sha": "efdec8c02",
-  "fullSha": "efdec8c02ff4ed17b08cd213793e0fae91923a7a",
+  "version": "v260321.06 5:19a",
+  "release": 964,
+  "sha": "6686d19f5",
+  "fullSha": "6686d19f50df7944cb11a2f74405208038dd19fe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 10:05:55+00",
-  "commits": [{"sha":"efdec8c02","message":"fix: improve render — blue pool, trees inside parcel, better camera","author":"Rahul"}]
+  "pushedAt": "2026-03-21 10:19:50+00",
+  "commits": [{"sha":"6686d19f5","message":"feat: Sponic Garden branding v2 — AI-tech wordmark and simplified logo mark","author":"Rahul"}]
 }
