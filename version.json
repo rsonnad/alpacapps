@@ -1,12 +1,12 @@
 {
-  "version": "v260321.10 5:46a",
-  "release": 968,
-  "sha": "5d4e80897",
-  "fullSha": "5d4e80897fdfe2af6347c9cc8a4ee34320fc207e",
+  "version": "v260321.11 5:55a",
+  "release": 969,
+  "sha": "39a870a2a",
+  "fullSha": "39a870a2a7b2e39e96ac1f7591915aca2ce815c4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 10:46:08+00",
-  "commits": [{"sha":"5d4e80897","message":"feat: update Renderings tab — latest DB-driven render with all 14 structures","author":"Rahul"}]
+  "pushedAt": "2026-03-21 10:55:41+00",
+  "commits": [{"sha":"39a870a2a","message":"fix: restore pool water visibility, improve deck contrast","author":"Rahul"}]
 }
