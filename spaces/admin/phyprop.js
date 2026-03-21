@@ -460,14 +460,14 @@ const SURVEY_PLATS = [
 
 const RENDERINGS = [
   {
-    title: 'Bird\'s-Eye View — Full Property',
-    description: '160 Still Forest Dr — all 11 structures placed from DB dimensions. Main House (stone), Back House (wood), 4 shipping containers, 2 trailers, deck, sauna, bathroom bldg. Orange lines = setback boundaries. Note: structure positions are approximate — awaiting QGIS footprint geometry for accurate placement.',
-    file: 'renderings/property-birdseye-2026-03-20.png',
-    date: '2026-03-20',
+    title: 'Bird\'s-Eye View — Full Property (DB Geometry)',
+    description: '160 Still Forest Dr — 14 structures rendered from PostGIS footprint_geom. Main House (stone, brown roof), Back House (wood), 4 containers (red/blue/beige), 2 trailers, deck, sauna, bathroom bldg, pool, driveway. Yellow lines = property boundary. Orange lines = setback lines. Red pins = corner markers.',
+    file: 'renderings/property-birdseye-2026-03-21.png',
+    date: '2026-03-21',
     engine: 'Cycles',
     samples: 128,
     resolution: '2560 × 1440',
-    tags: ['bird\'s-eye', 'full property', 'approximate'],
+    tags: ['bird\'s-eye', 'full property', 'database-driven'],
   },
 ];
 
