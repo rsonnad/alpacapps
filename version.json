@@ -1,12 +1,12 @@
 {
-  "version": "v260321.18 6:19a",
-  "release": 976,
-  "sha": "81e3655f7",
-  "fullSha": "81e3655f713933874599f6818616d93a994bee55",
+  "version": "v260321.19 6:21a",
+  "release": 977,
+  "sha": "ea21cddeb",
+  "fullSha": "ea21cddeb27919299612705421c2a81b5ccb9b79",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 11:19:27+00",
-  "commits": [{"sha":"81e3655f7","message":"fix: audio privacy consent + deletion rights (#88)","author":"Rahul"}]
+  "pushedAt": "2026-03-21 11:21:19+00",
+  "commits": [{"sha":"ea21cddeb","message":"feat: add SG app icons, clean scenes, and 5 artistic style wordmark variations","author":"Rahul"}]
 }
