@@ -1,12 +1,12 @@
 {
-  "version": "v260321.21 6:27a",
-  "release": 979,
-  "sha": "1ce51dbf1",
-  "fullSha": "1ce51dbf1cfb87d040ff9a59d5a98c8b32da0a8a",
+  "version": "v260321.22 6:32a",
+  "release": 980,
+  "sha": "ab381ac09",
+  "fullSha": "ab381ac09a030d169b146bd5921aae6aaeeac175",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 11:27:19+00",
-  "commits": [{"sha":"1ce51dbf1","message":"feat: add 5 more blended wordmark variations (35-39)","author":"Rahul"}]
+  "pushedAt": "2026-03-21 11:32:41+00",
+  "commits": [{"sha":"ab381ac09","message":"feat: replace Privacy section with GDPR-compliant data rights + privacy agent (#89)","author":"Rahul"}]
 }
