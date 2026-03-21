@@ -1,12 +1,12 @@
 {
-  "version": "v260321.02 3:48a",
-  "release": 960,
-  "sha": "ba221afbe",
-  "fullSha": "ba221afbec3113f09327f1fd05744675299f6775",
+  "version": "v260321.03 4:37a",
+  "release": 961,
+  "sha": "d04d7592b",
+  "fullSha": "d04d7592b94455b04e2213b0c4d45e67695202d9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 08:48:27+00",
-  "commits": [{"sha":"ba221afbe","message":"feat: Sponic Garden page redesign — greenhouse × AI aesthetic (#84)","author":"Rahul"}]
+  "pushedAt": "2026-03-21 09:37:59+00",
+  "commits": [{"sha":"d04d7592b","message":"feat: render entirely from database — no hardcoded positions","author":"Rahul"}]
 }
