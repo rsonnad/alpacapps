@@ -1,5 +1,7 @@
-*.png
 *.jpg
 *.blend
 *.blend1
 property_data.json
+
+# Keep the render output for GitHub Pages display
+!render_property.png
