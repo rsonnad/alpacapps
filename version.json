@@ -1,12 +1,12 @@
 {
-  "version": "v260320.21 8:48p",
-  "release": 958,
-  "sha": "3710bdb91",
-  "fullSha": "3710bdb916e09a6004f36d57f1cca50aa604e342",
+  "version": "v260321.01 3:22a",
+  "release": 959,
+  "sha": "e57e03662",
+  "fullSha": "e57e03662bd810ce05770767bd3a23be08ab6111",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 01:48:39+00",
-  "commits": [{"sha":"3710bdb91","message":"fix: make PAI image generation async to avoid edge function timeout","author":"Rahul"}]
+  "pushedAt": "2026-03-21 08:22:36+00",
+  "commits": [{"sha":"e57e03662","message":"feat: add Sponic Garden pitch page (#83)","author":"Rahul"}]
 }
