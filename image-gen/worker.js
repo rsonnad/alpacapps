@@ -283,7 +283,19 @@ async function processJob(job) {
       log('info', 'Affirmation extracted', { id: job.id, text: result.textResponse.substring(0, 120) });
     }
 
-    // 8. Update job as completed
+    // 8. Send email if email metadata is present (PAI image+email jobs)
+    if (job.metadata?.email_to) {
+      try {
+        await sendImageEmail(publicUrl, job.metadata, result.textResponse);
+        updatedMetadata.email_sent = true;
+        log('info', 'Email sent', { id: job.id, to: job.metadata.email_to });
+      } catch (emailErr) {
+        updatedMetadata.email_error = emailErr.message;
+        log('error', 'Email failed', { id: job.id, error: emailErr.message });
+      }
+    }
+
+    // 9. Update job as completed
     await supabase.from('image_gen_jobs')
       .update({
         status: 'completed',
@@ -323,6 +335,48 @@ async function processJob(job) {
       })
       .eq('id', job.id);
   }
+}
+
+// ============================================
+// Send email with generated image
+// ============================================
+async function sendImageEmail(imageUrl, metadata, textResponse) {
+  const toEmail = metadata.email_to;
+  const recipientName = metadata.email_recipient_name || '';
+  const emailSubject = metadata.email_subject || 'Your AI-Generated Image from Alpaca Playhouse';
+  const emailMessage = metadata.email_message || '';
+
+  const imageHtml = `
+    ${emailMessage ? `<p style="font-size:16px;color:#333;margin-bottom:16px;">${emailMessage.replace(/\n/g, '<br>')}</p>` : ''}
+    <div style="text-align:center;margin:20px 0;">
+      <img src="${imageUrl}" alt="AI-Generated Image" style="max-width:100%;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15);" />
+    </div>
+    ${textResponse ? `<p style="font-size:14px;color:#666;font-style:italic;text-align:center;margin-top:8px;">${textResponse}</p>` : ''}
+    <p style="font-size:12px;color:#999;margin-top:24px;">This image was created by PAI (Prompt Alpaca Intelligence) using AI image generation.</p>
+  `;
+
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+    },
+    body: JSON.stringify({
+      type: 'custom',
+      to: toEmail,
+      data: {
+        html: imageHtml,
+        subject: emailSubject,
+        text: `${emailMessage ? emailMessage + '\n\n' : ''}View your AI-generated image: ${imageUrl}\n\nThis image was created by PAI using AI image generation.`,
+      },
+    }),
+  });
+
+  const result = await resp.json();
+  if (!resp.ok || result.error) {
+    throw new Error(result.error || `HTTP ${resp.status}`);
+  }
+  log('info', 'Image email sent', { to: toEmail, subject: emailSubject });
 }
 
 // ============================================
