@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sponic Garden — In Promotion of Flourishing</title>
+  <meta property="og:title" content="Sponic Garden — In Promotion of Flourishing">
+  <meta property="og:description" content="A place-based social club designed to promote mental, physical and spiritual health through gardening, wellness, and AI-native infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/sponic-garden.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Sponic Garden — In Promotion of Flourishing">
+  <meta name="twitter:description" content="AI-native social club fusing gardening, fitness, thermal wellness, and community — launching Warsaw, July 2026.">
+  <link rel="icon" href="favicon-r.svg" type="image/svg+xml">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&display=swap');
+
+    :root {
+      --bg: #f6f9f4;
+      --surface: #ffffff;
+      --surface2: #eef3ea;
+      --surface3: #e2eadc;
+      --border: #ccd8c4;
+      --border-light: #dde6d6;
+      --text: #1a2412;
+      --text-soft: #2d3b22;
+      --text-dim: #546847;
+      --text-muted: #7a9168;
+      --green: #2d6a1e;
+      --green-soft: rgba(45, 106, 30, 0.08);
+      --green-border: rgba(45, 106, 30, 0.22);
+      --emerald: #047857;
+      --emerald-soft: rgba(4, 120, 87, 0.07);
+      --emerald-border: rgba(4, 120, 87, 0.20);
+      --earth: #92400e;
+      --earth-soft: rgba(146, 64, 14, 0.07);
+      --earth-border: rgba(146, 64, 14, 0.22);
+      --sky: #0369a1;
+      --sky-soft: rgba(3, 105, 161, 0.06);
+      --sky-border: rgba(3, 105, 161, 0.18);
+      --plum: #7e22ce;
+      --plum-soft: rgba(126, 34, 206, 0.06);
+      --plum-border: rgba(126, 34, 206, 0.18);
+      --warm: #b45309;
+      --warm-soft: rgba(180, 83, 9, 0.07);
+      --warm-border: rgba(180, 83, 9, 0.22);
+      --rose: #be123c;
+      --rose-soft: rgba(190, 18, 60, 0.06);
+      --rose-border: rgba(190, 18, 60, 0.18);
+      --slate: #475569;
+      --slate-soft: rgba(71, 85, 105, 0.06);
+      --slate-border: rgba(71, 85, 105, 0.18);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 5rem 1.5rem 3.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, #e8f0e0 0%, #dde8d4 30%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(45,106,30,0.06), transparent);
+    }
+    .hero-icon {
+      font-size: 3.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.8rem;
+      font-weight: 400;
+      color: var(--green);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+      position: relative;
+    }
+    .hero .tagline {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--text-dim);
+      letter-spacing: 0.02em;
+      margin-bottom: 1.5rem;
+    }
+    .hero .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 540px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .hero .launch-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1.25rem;
+      padding: 0.4rem 1rem;
+      background: var(--green-soft);
+      border: 1px solid var(--green-border);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 2.5rem;
+    }
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      padding-left: 0.1rem;
+    }
+    .section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .section p, .section li {
+      font-size: 0.92rem;
+      color: var(--text-soft);
+      line-height: 1.75;
+    }
+    .section p + p { margin-top: 0.75rem; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.35rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 0.75rem;
+    }
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card p {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.65;
+    }
+    .card ul {
+      list-style: none;
+      padding: 0;
+    }
+    .card li {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      padding: 0.3rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+    .card li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    /* ── Colored accent cards ── */
+    .accent-card {
+      border-left: 3px solid;
+      padding-left: 1.1rem;
+    }
+    .accent-green { border-color: var(--green); }
+    .accent-green h3 { color: var(--green); }
+    .accent-emerald { border-color: var(--emerald); }
+    .accent-emerald h3 { color: var(--emerald); }
+    .accent-earth { border-color: var(--earth); }
+    .accent-earth h3 { color: var(--earth); }
+    .accent-sky { border-color: var(--sky); }
+    .accent-sky h3 { color: var(--sky); }
+    .accent-plum { border-color: var(--plum); }
+    .accent-plum h3 { color: var(--plum); }
+    .accent-warm { border-color: var(--warm); }
+    .accent-warm h3 { color: var(--warm); }
+    .accent-rose { border-color: var(--rose); }
+    .accent-rose h3 { color: var(--rose); }
+    .accent-slate { border-color: var(--slate); }
+    .accent-slate h3 { color: var(--slate); }
+
+    /* ── Grid ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 600px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.1rem; }
+    }
+
+    /* ── Stat pill row ── */
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.85rem;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-dim);
+    }
+    .stat-pill strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    /* ── Table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .data-table th {
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .data-table td {
+      padding: 0.55rem 0.75rem;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-soft);
+      vertical-align: top;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table .check { color: var(--green); font-weight: 700; }
+    .data-table .partial { color: var(--warm); font-weight: 600; }
+    .data-table .tbd { color: var(--text-muted); font-style: italic; }
+
+    /* ── Callout ── */
+    .callout {
+      background: var(--green-soft);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+    .callout p {
+      font-size: 0.88rem;
+      color: var(--green);
+      font-weight: 500;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-light);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="siteHeader"></div>
+
+  <!-- ── Hero ── -->
+  <div class="hero">
+    <span class="hero-icon">🌿</span>
+    <h1>Sponic Garden</h1>
+    <div class="tagline">in promotion of flourishing</div>
+    <p class="subtitle">A place-based social club fusing gardening, fitness, thermal wellness, and community — all orchestrated by a native AI platform built from day one.</p>
+    <div class="launch-badge">📍 Warsaw, Poland · Prototype Launch July 2026</div>
+  </div>
+
+  <div class="container">
+
+    <!-- ── Quick Stats ── -->
+    <div class="stats-row">
+      <span class="stat-pill">👥 <strong>250</strong> capacity</span>
+      <span class="stat-pill">🌱 <strong>64</strong> founding members</span>
+      <span class="stat-pill">💰 <strong>€40</strong> / 1–4 hrs</span>
+      <span class="stat-pill">🏗️ <strong>Indoor–Outdoor</strong> warehouse</span>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- CONCEPT -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Concept</div>
+      <h2>What Is Sponic Garden?</h2>
+      <p>Sponic Garden is a membership-based social club where the core activity is <strong>gardening and plant cultivation</strong> — but the experience extends into fitness, thermal bathing, music, community food, and continuous education. The space is a custom-built indoor–outdoor warehouse-greenhouse hybrid filled with plants, great music, and people pursuing well-being together.</p>
+      <p>What makes Sponic Garden fundamentally different is that <strong>every system — from irrigation to event scheduling to food logistics — runs on a native AI platform</strong> designed from the ground up. The facility is a living lab where AI doesn't just assist operations; it <em>is</em> the operating system.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- PILLARS -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Four Pillars</div>
+      <h2>The Experience</h2>
+
+      <div class="grid-2">
+        <div class="card accent-card accent-green">
+          <h3>🌱 Gardening & Cultivation</h3>
+          <p>Members participate in guided gardening sessions — planting, cultivating, harvesting. The AI manages the cultivation plan, enlisting members during sessions to decide what to plant, how to plant, and what to do with the produce. A full range of horticultural supplies stocked on-site.</p>
+        </div>
+        <div class="card accent-card accent-emerald">
+          <h3>🏋️ Fitness</h3>
+          <ul>
+            <li>30-person hot yoga studio</li>
+            <li>30-person dance studio</li>
+            <li>Open movement & congregation areas (indoor + outdoor)</li>
+          </ul>
+        </div>
+        <div class="card accent-card accent-sky">
+          <h3>🧖 Thermal & Spa</h3>
+          <ul>
+            <li>2 saunas</li>
+            <li>1 steam room</li>
+            <li>2 cold plunges</li>
+            <li>1 hot tub</li>
+            <li>1 cool pool</li>
+          </ul>
+        </div>
+        <div class="card accent-card accent-plum">
+          <h3>🎵 Music & Atmosphere</h3>
+          <p>Pervasive, high-quality sound systems throughout — curated playlists and live sets designed for both human enjoyment and plant stimulation. AI-controlled audio zones adapt to activity, time of day, and crowd energy.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- FOOD -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Food & Drink</div>
+      <h2>Crowd-Sourced Food Service</h2>
+      <p>Food and drink is <strong>crowd-sourced from the local community</strong>. Sponic Garden provides artisan vendors with everything they need to serve: equipment, serving containers and utensils, billing infrastructure, marketing, and on-site delivery logistics — all optimized by AI. The facility becomes a platform that lowers the barrier for local food entrepreneurs while giving members diverse, fresh options.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- AI PLATFORM -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Core Technology</div>
+      <h2>AI-Native Platform</h2>
+      <p>The AI platform is the foundation — not a bolt-on. It powers member-facing digital interfaces, on-site event management agents (calendaring, directing, announcing), and educational sessions ranging from beginner gardening to complex horticulture and wellness science.</p>
+
+      <div class="callout">
+        <p>The goal: natively design a facility and set of interactions where <strong>everything can be cohesively managed by AI</strong>, given the most data-rich feedback mechanisms possible — from physical sensors to digital monitoring to human surveys.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- AI CONTROL SYSTEMS TABLE -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">AI Systems Map</div>
+      <h2>What the AI Controls & How It Learns</h2>
+      <p>Every controllable system is paired with feedback mechanisms — sensor data, digital streams, and human input — so the AI can continuously optimize for human and plant flourishing.</p>
+
+      <div class="card" style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>System</th>
+              <th>AI Controls</th>
+              <th>Feedback Mechanisms</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Irrigation</strong></td>
+              <td>Watering schedules, zone flow rates, nutrient dosing</td>
+              <td><span class="check">✓</span> Soil moisture sensors, soil temp, humidity sensors, plant growth cameras, water flow meters</td>
+            </tr>
+            <tr>
+              <td><strong>Lighting</strong></td>
+              <td>Color, intensity, spectrum, schedules per zone (grow lights + ambient)</td>
+              <td><span class="check">✓</span> Light sensors (PAR/lux), occupancy sensors, time-of-day, plant growth tracking, member surveys</td>
+            </tr>
+            <tr>
+              <td><strong>Audio / Music</strong></td>
+              <td>Zone playlists, volume, genre selection, live event routing</td>
+              <td><span class="check">✓</span> Audio level sensors per zone, occupancy density, activity type detection, member spot surveys, skip/like signals from digital interfaces</td>
+            </tr>
+            <tr>
+              <td><strong>Climate / HVAC</strong></td>
+              <td>Temperature, humidity, ventilation, greenhouse vent openings</td>
+              <td><span class="check">✓</span> Temp/humidity sensors (indoor + outdoor), CO₂ sensors, occupancy count, member comfort surveys</td>
+            </tr>
+            <tr>
+              <td><strong>Video Displays</strong></td>
+              <td>Content rotation, educational slides, event info, wayfinding, ambiance visuals</td>
+              <td><span class="check">✓</span> Screen engagement (camera gaze tracking), content dwell time, digital interaction analytics</td>
+            </tr>
+            <tr>
+              <td><strong>Cameras (Security + Analytics)</strong></td>
+              <td>Zone occupancy counting, flow analysis, safety monitoring</td>
+              <td><span class="check">✓</span> Computer vision: foot traffic patterns, zone density, queue lengths, safety events</td>
+            </tr>
+            <tr>
+              <td><strong>Event Management</strong></td>
+              <td>Scheduling, room assignment, instructor booking, capacity management, announcements</td>
+              <td><span class="check">✓</span> Attendance tracking, booking patterns, no-show rates, post-event surveys, waitlist analytics</td>
+            </tr>
+            <tr>
+              <td><strong>Gardening Sessions</strong></td>
+              <td>Planting plans, task assignments, harvest scheduling, supply ordering</td>
+              <td><span class="check">✓</span> Plant growth cameras, yield tracking, member participation rates, gardener feedback surveys, soil analytics</td>
+            </tr>
+            <tr>
+              <td><strong>Food Service Platform</strong></td>
+              <td>Vendor scheduling, menu optimization, ordering flow, delivery routing</td>
+              <td><span class="check">✓</span> Sales data, item ratings, wait times, vendor performance, waste tracking, member dietary preferences</td>
+            </tr>
+            <tr>
+              <td><strong>Thermal Facilities</strong></td>
+              <td>Sauna/steam temp, plunge temps, session timing, capacity gating</td>
+              <td><span class="check">✓</span> Water/air temp sensors, occupancy sensors, session duration tracking, member wellness surveys</td>
+            </tr>
+            <tr>
+              <td><strong>Fitness Studios</strong></td>
+              <td>Class scheduling, instructor allocation, music/lighting presets per class type</td>
+              <td><span class="check">✓</span> Attendance, opt-in fitness device data (HR, calories — anonymized), post-class surveys, rebooking rates</td>
+            </tr>
+            <tr>
+              <td><strong>Member Interfaces</strong></td>
+              <td>Personalized dashboards, booking, recommendations, educational content delivery</td>
+              <td><span class="check">✓</span> App analytics, feature usage, session frequency, engagement depth, NPS surveys</td>
+            </tr>
+            <tr>
+              <td><strong>Education Programs</strong></td>
+              <td>Curriculum generation, difficulty adaptation, session recommendations</td>
+              <td><span class="check">✓</span> Completion rates, quiz scores, repeat attendance, member skill progression surveys</td>
+            </tr>
+            <tr>
+              <td><strong>Announcements & Wayfinding</strong></td>
+              <td>PA announcements, directional signage, real-time event updates</td>
+              <td><span class="partial">◐</span> Flow pattern changes after announcements, camera-based response tracking</td>
+            </tr>
+            <tr>
+              <td><strong>Supply & Inventory</strong></td>
+              <td>Horticultural supply reordering, equipment allocation, vendor supply chain</td>
+              <td><span class="check">✓</span> Inventory levels, usage rates, spoilage tracking, cost analytics</td>
+            </tr>
+            <tr>
+              <td><strong>Member Health Insights</strong></td>
+              <td>Personalized wellness recommendations (opt-in)</td>
+              <td><span class="partial">◐</span> Anonymized fitness device data (HR, steps, sleep — opt-in), visit frequency, activity mix, self-reported well-being surveys</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- FEEDBACK PHILOSOPHY -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Feedback Philosophy</div>
+      <h2>Three Layers of Intelligence</h2>
+      <div class="grid-3">
+        <div class="card accent-card accent-green">
+          <h3>🔌 Sensor Layer</h3>
+          <p>Cameras, soil moisture, temperature, humidity, CO₂, light levels, audio levels, water flow, occupancy — continuous, passive, everywhere it's not prohibitively expensive.</p>
+        </div>
+        <div class="card accent-card accent-sky">
+          <h3>💻 Digital Layer</h3>
+          <p>App analytics, booking data, sales data, vendor performance, attendance, engagement metrics — every digital interaction is a data point.</p>
+        </div>
+        <div class="card accent-card accent-plum">
+          <h3>🗣️ Human Layer</h3>
+          <p>Extensive but low-intrusion spot surveys. Quick pulse checks letting members convey whether they're receiving value and at what level. Plus opt-in fitness device integration for anonymized health tracking.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- FACILITY -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Physical Space</div>
+      <h2>The Facility</h2>
+      <p>Custom-built in an <strong>indoor–outdoor warehouse/greenhouse hybrid</strong>, equipped with:</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>🌿 Growing Zones</h3>
+          <p>Greenhouse cultivation areas, planting stations, vertical gardens, harvest processing</p>
+        </div>
+        <div class="card">
+          <h3>🏊 Thermal Complex</h3>
+          <p>2 saunas, steam room, 2 cold plunges, hot tub, cool pool</p>
+        </div>
+        <div class="card">
+          <h3>🧘 Fitness Wing</h3>
+          <p>30-person hot yoga studio, 30-person dance studio, open movement areas</p>
+        </div>
+        <div class="card">
+          <h3>🍽️ Food Hall</h3>
+          <p>Vendor stations with provided equipment, communal dining, outdoor seating</p>
+        </div>
+        <div class="card">
+          <h3>📡 Infrastructure</h3>
+          <p>Pervasive cameras, sensors, video screens, audio systems, irrigation, smart lighting — all AI-controlled</p>
+        </div>
+        <div class="card">
+          <h3>🌳 Outdoor Spaces</h3>
+          <p>Garden plots, congregation areas, open-air fitness zones, vendor terraces</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- BUSINESS MODEL -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Business Model</div>
+      <h2>Membership & Pricing</h2>
+      <p>Structured like a sports club or yoga studio — membership-based with à la carte offerings.</p>
+
+      <div class="card accent-card accent-earth">
+        <h3>💳 Pricing (Prototype)</h3>
+        <ul>
+          <li><strong>€40</strong> — admission for 1 to 4 hours</li>
+          <li><strong>€10</strong> — per additional hour</li>
+          <li>À la carte classes, workshops, and premium experiences available</li>
+          <li>Food & drink purchased separately from on-site vendors</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- LAUNCH PLAN -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Launch Plan</div>
+      <h2>Warsaw Prototype — July 2026</h2>
+      <div class="card accent-card accent-warm">
+        <h3>🚀 Phased Rollout</h3>
+        <ul>
+          <li><strong>Phase 1:</strong> Launch with groups of 64 founding members</li>
+          <li><strong>Phase 2:</strong> Expand capacity as systems stabilize and AI learns</li>
+          <li><strong>Phase 3:</strong> Scale to full 250-person prototype capacity</li>
+          <li>Continuous iteration driven by AI feedback loops</li>
+        </ul>
+      </div>
+      <p>Warsaw was chosen for its vibrant wellness culture, affordable operational costs, and growing international community. The prototype will prove the concept, stress-test the AI platform, and refine the membership model before scaling.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- VISION -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Vision</div>
+      <h2>Why This Matters</h2>
+      <p>Most wellness concepts treat technology as an afterthought — a booking system bolted onto a spa. Sponic Garden inverts this: <strong>the AI platform is the foundation</strong>, and the physical space is designed around what AI can measure, optimize, and learn from.</p>
+      <p>The result is a place where plants and people flourish together, where every element of the environment — light, sound, temperature, soil, food, activity — is being continuously tuned by an intelligence that gets better every day.</p>
+      <p>Gardening is the anchor because it is inherently therapeutic, communal, productive, and measurable. It gives people a reason to return, a rhythm to follow, and something tangible to show for their time. The wellness amenities complement this core activity, and the AI ties everything into a cohesive experience that no human operations team could manage at this fidelity.</p>
+
+      <div class="callout">
+        <p>Sponic Garden is not a gym with plants. It's not a co-working space with a sauna. It is a new category: <strong>an AI-native social club designed from the ground up to promote human and botanical flourishing.</strong></p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span data-site-version></span>
+  </footer>
+
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
+  </script>
+</body>
+</html>
