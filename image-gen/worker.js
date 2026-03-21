@@ -317,6 +317,23 @@ async function processJob(job) {
       url: publicUrl,
     });
 
+    // 10. SPGD brand regen callback — update spgd_brand_reviews with result
+    if (job.metadata?.purpose === 'spgd_brand_regen' && job.metadata?.source_asset_id) {
+      const { error: spgdErr } = await supabase.from('spgd_brand_reviews')
+        .update({
+          status: 'regenerated',
+          metadata: {
+            ...(job.metadata || {}),
+            result_url: publicUrl,
+            result_media_id: media.id,
+            completed_at: new Date().toISOString(),
+          },
+        })
+        .eq('asset_id', job.metadata.source_asset_id);
+      if (spgdErr) log('warn', 'SPGD callback failed', { error: spgdErr.message });
+      else log('info', 'SPGD brand review updated', { assetId: job.metadata.source_asset_id });
+    }
+
   } catch (err) {
     log('error', 'Job failed', {
       id: job.id,
