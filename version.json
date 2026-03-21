@@ -1,12 +1,12 @@
 {
-  "version": "v260321.19 6:21a",
-  "release": 977,
-  "sha": "ea21cddeb",
-  "fullSha": "ea21cddeb27919299612705421c2a81b5ccb9b79",
+  "version": "v260321.20 6:24a",
+  "release": 978,
+  "sha": "f510ba299",
+  "fullSha": "f510ba2992ad3899030460a38fb7d3a1cb7f04f8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 11:21:19+00",
-  "commits": [{"sha":"ea21cddeb","message":"feat: add SG app icons, clean scenes, and 5 artistic style wordmark variations","author":"Rahul"}]
+  "pushedAt": "2026-03-21 11:24:21+00",
+  "commits": [{"sha":"f510ba299","message":"feat: add 5 blended wordmarks — botanical+music+spa+AI tech","author":"Rahul"}]
 }
