@@ -1,12 +1,12 @@
 {
-  "version": "v260320.20 6:47p",
-  "release": 957,
-  "sha": "ba0ddf48b",
-  "fullSha": "ba0ddf48bf9c1ca752f9891a7f5fbf59438b49de",
+  "version": "v260320.21 8:48p",
+  "release": 958,
+  "sha": "3710bdb91",
+  "fullSha": "3710bdb916e09a6004f36d57f1cca50aa604e342",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-20 23:47:40+00",
-  "commits": [{"sha":"ba0ddf48b","message":"fix: show actual error messages in PAI chat + correct image model","author":"Rahul"}]
+  "pushedAt": "2026-03-21 01:48:39+00",
+  "commits": [{"sha":"3710bdb91","message":"fix: make PAI image generation async to avoid edge function timeout","author":"Rahul"}]
 }
