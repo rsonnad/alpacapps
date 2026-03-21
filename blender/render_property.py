@@ -101,8 +101,8 @@ def make_material(name, color, roughness=0.8, metallic=0.0):
     return mat
 
 MATERIALS = {
-    'grass':       make_material("Grass",        (0.15, 0.35, 0.08, 1), roughness=0.95),
-    'stone_frame': make_material("Stone/Frame",  (0.55, 0.50, 0.42, 1), roughness=0.85),
+    'grass':       make_material("Grass",        (0.18, 0.40, 0.10, 1), roughness=0.95),
+    'stone_frame': make_material("Stone/Frame",  (0.65, 0.60, 0.52, 1), roughness=0.85),
     'wood':        make_material("Wood",         (0.45, 0.30, 0.15, 1), roughness=0.75),
     'wood_deck':   make_material("Wood Deck",    (0.50, 0.35, 0.18, 1), roughness=0.70),
     'steel_red':   make_material("Red Steel",    (0.60, 0.12, 0.10, 1), roughness=0.4, metallic=0.7),
@@ -110,11 +110,11 @@ MATERIALS = {
     'steel_blue':  make_material("Blue Steel",   (0.15, 0.25, 0.50, 1), roughness=0.4, metallic=0.7),
     'steel':       make_material("Steel",        (0.45, 0.45, 0.48, 1), roughness=0.4, metallic=0.7),
     'rv':          make_material("RV White",     (0.85, 0.85, 0.82, 1), roughness=0.5, metallic=0.3),
-    'roof':        make_material("Roof",         (0.30, 0.30, 0.32, 1), roughness=0.6, metallic=0.4),
+    'roof':        make_material("Roof",         (0.35, 0.25, 0.22, 1), roughness=0.6, metallic=0.4),
     'road':        make_material("Road",         (0.25, 0.25, 0.25, 1), roughness=0.9),
     'gravel':      make_material("Gravel",       (0.40, 0.38, 0.34, 1), roughness=0.95),
     'setback':     make_material("Setback Line", (1.0, 0.3, 0.0, 0.5), roughness=0.5),
-    'pool_water':  make_material("Pool Water",   (0.15, 0.50, 0.85, 1), roughness=0.3),
+    'pool_water':  make_material("Pool Water",   (0.10, 0.45, 0.90, 1), roughness=0.2),
     'concrete':    make_material("Concrete",     (0.60, 0.58, 0.55, 1), roughness=0.8),
     'underground': make_material("Underground",  (0.35, 0.30, 0.25, 1), roughness=0.9),
     'tree_trunk':  make_material("TreeTrunk",    (0.30, 0.20, 0.10, 1), roughness=0.9),
@@ -180,6 +180,44 @@ bm.faces.new(verts)
 bm.to_mesh(mesh)
 bm.free()
 obj.data.materials.append(MATERIALS['grass'])
+
+# Parcel boundary edge lines (visible property lines like survey plat)
+boundary_mat = make_material("BoundaryLine", (0.85, 0.75, 0.10, 1), roughness=0.5)
+line_w = 1.0  # width of boundary line in feet
+for i in range(len(parcel_ft)):
+    j = (i + 1) % len(parcel_ft)
+    x1, y1 = parcel_ft[i]
+    x2, y2 = parcel_ft[j]
+    dx = x2 - x1
+    dy = y2 - y1
+    ln = math.sqrt(dx**2 + dy**2)
+    if ln < 0.1:
+        continue
+    nx, ny = -dy / ln * line_w, dx / ln * line_w
+    line_verts = [
+        (x1 - nx, y1 - ny, 0.03),
+        (x2 - nx, y2 - ny, 0.03),
+        (x2 + nx, y2 + ny, 0.03),
+        (x1 + nx, y1 + ny, 0.03),
+    ]
+    mesh_bl = bpy.data.meshes.new(f"BoundaryLine_{i}")
+    obj_bl = bpy.data.objects.new(f"BoundaryLine_{i}", mesh_bl)
+    bpy.context.collection.objects.link(obj_bl)
+    bm = bmesh.new()
+    bvs = [bm.verts.new(v) for v in line_verts]
+    bm.faces.new(bvs)
+    bm.to_mesh(mesh_bl)
+    bm.free()
+    obj_bl.data.materials.append(boundary_mat)
+
+# Corner markers (iron pins — small red cylinders at each corner)
+pin_mat = make_material("CornerPin", (0.8, 0.1, 0.1, 1), roughness=0.3, metallic=0.8)
+for i, (px, py) in enumerate(parcel_ft):
+    bpy.ops.mesh.primitive_cylinder_add(
+        radius=1.5, depth=2.0, location=(px, py, 1.0))
+    pin = bpy.context.active_object
+    pin.name = f"CornerPin_{i}"
+    pin.data.materials.append(pin_mat)
 
 # ---------------------------------------------------------------------------
 # 5.  ROAD — along the south edge (from DB edges)
@@ -312,8 +350,8 @@ for s in structures_db:
     roof_type = s.get('roof_type')
     material = get_material(s)
 
-    # Skip utility structures that are underground
-    if s.get('material') == 'underground' and height == 0:
+    # Skip underground utility structures (e.g. septic)
+    if stype == 'utility' and height == 0:
         continue
 
     # Get footprint from DB geometry
@@ -447,15 +485,15 @@ def point_in_polygon(px, py, polygon):
     return inside
 
 
-for i in range(40):
+for i in range(30):
     placed = False
-    for _ in range(150):
-        # 70% of trees in west half (survey shows heavy tree cover on west)
-        if random.random() < 0.70:
-            rx = random.uniform(min_x + 15, cx - 15)
+    for _ in range(200):
+        # 75% of trees in west half (survey shows heavy tree cover on west)
+        if random.random() < 0.75:
+            rx = random.uniform(min_x + 15, cx - 10)
         else:
-            rx = random.uniform(cx + 10, max_x - 20)
-        ry = random.uniform(min_y + 25, max_y - 15)
+            rx = random.uniform(cx + 15, max_x - 20)
+        ry = random.uniform(min_y + 40, max_y - 25)
 
         # Must be inside parcel boundary
         if not point_in_polygon(rx, ry, parcel_ft):
@@ -463,7 +501,7 @@ for i in range(40):
 
         ok = True
         for sc in structure_centers:
-            if math.sqrt((rx - sc[0])**2 + (ry - sc[1])**2) < 40:
+            if math.sqrt((rx - sc[0])**2 + (ry - sc[1])**2) < 50:
                 ok = False
                 break
         if ok:
@@ -473,11 +511,11 @@ for i in range(40):
     if not placed:
         continue
 
-    trunk_h = random.uniform(20, 38)
-    crown_r = random.uniform(8, 15)
+    trunk_h = random.uniform(18, 30)
+    crown_r = random.uniform(5, 9)
 
     bpy.ops.mesh.primitive_cylinder_add(
-        radius=random.uniform(0.6, 1.2), depth=trunk_h,
+        radius=random.uniform(0.5, 1.0), depth=trunk_h,
         location=(rx, ry, trunk_h / 2))
     trunk = bpy.context.active_object
     trunk.name = f"TreeTrunk_{i}"
@@ -485,13 +523,13 @@ for i in range(40):
 
     bpy.ops.mesh.primitive_ico_sphere_add(
         radius=crown_r, subdivisions=2,
-        location=(rx, ry, trunk_h + crown_r * 0.5))
+        location=(rx, ry, trunk_h + crown_r * 0.4))
     crown = bpy.context.active_object
     crown.name = f"TreeCrown_{i}"
     crown.scale = (
-        random.uniform(0.8, 1.2),
-        random.uniform(0.8, 1.2),
-        random.uniform(0.7, 1.0),
+        random.uniform(0.85, 1.15),
+        random.uniform(0.85, 1.15),
+        random.uniform(0.65, 0.9),
     )
     crown.data.materials.append(MATERIALS['tree_leaf'])
 
@@ -501,15 +539,15 @@ for i in range(40):
 bpy.ops.object.light_add(type='SUN', location=(0, 0, 200))
 sun = bpy.context.active_object
 sun.name = "Sun"
-sun.data.energy = 5
+sun.data.energy = 6
 sun.data.angle = math.radians(0.5)
-sun.rotation_euler = (math.radians(45), math.radians(15), math.radians(-30))
+sun.rotation_euler = (math.radians(50), math.radians(10), math.radians(-25))
 
 bpy.ops.object.light_add(type='SUN', location=(0, 0, 200))
 fill = bpy.context.active_object
 fill.name = "Fill_Light"
-fill.data.energy = 1.5
-fill.rotation_euler = (math.radians(70), math.radians(-40), math.radians(60))
+fill.data.energy = 2.0
+fill.rotation_euler = (math.radians(65), math.radians(-35), math.radians(55))
 
 # ---------------------------------------------------------------------------
 # 11. WORLD (sky)
@@ -524,10 +562,10 @@ bg.inputs["Strength"].default_value = 0.8
 # ---------------------------------------------------------------------------
 # 12. CAMERA — bird's-eye perspective view
 # ---------------------------------------------------------------------------
-# Camera from ESE looking WNW — angled to match survey plat perspective
-cam_x = cx + 380
-cam_y = cy - 200
-cam_z = 480
+# Camera nearly overhead with slight ESE offset for depth perception
+cam_x = cx + 100
+cam_y = cy - 60
+cam_z = 750
 
 bpy.ops.object.camera_add(location=(cam_x, cam_y, cam_z))
 cam = bpy.context.active_object
@@ -537,7 +575,7 @@ direction = Vector((cx, cy, 0)) - cam.location
 rot_quat = direction.to_track_quat('-Z', 'Y')
 cam.rotation_euler = rot_quat.to_euler()
 
-cam.data.lens = 28
+cam.data.lens = 35
 cam.data.clip_end = 2000
 bpy.context.scene.camera = cam
 
@@ -546,7 +584,7 @@ bpy.context.scene.camera = cam
 # ---------------------------------------------------------------------------
 scene = bpy.context.scene
 scene.render.engine = 'CYCLES'
-scene.cycles.samples = 64
+scene.cycles.samples = 128
 scene.cycles.use_denoising = True
 scene.render.resolution_x = 2560
 scene.render.resolution_y = 1440
