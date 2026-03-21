@@ -1,12 +1,12 @@
 {
-  "version": "v260321.25 8:24a",
-  "release": 983,
-  "sha": "2285d3dae",
-  "fullSha": "2285d3dae62c2a7d54732570323a99dd467ec6f5",
+  "version": "v260321.26 8:43a",
+  "release": 984,
+  "sha": "a705cdc09",
+  "fullSha": "a705cdc09cb719ae1a043e150dc426827a4bea99",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 13:24:10+00",
-  "commits": [{"sha":"2285d3dae","message":"feat: charter margin note link (#90)","author":"Rahul"}]
+  "pushedAt": "2026-03-21 13:43:19+00",
+  "commits": [{"sha":"a705cdc09","message":"docs: add 3D render pipeline with audit of failed approach","author":"Rahul"}]
 }
