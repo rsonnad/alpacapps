@@ -1,12 +1,12 @@
 {
-  "version": "v260321.04 4:56a",
-  "release": 962,
-  "sha": "1a9b23aca",
-  "fullSha": "1a9b23acadbdc9c7627383bb238aa3e41ed7a949",
+  "version": "v260321.05 5:05a",
+  "release": 963,
+  "sha": "efdec8c02",
+  "fullSha": "efdec8c02ff4ed17b08cd213793e0fae91923a7a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-21 09:56:24+00",
-  "commits": [{"sha":"1a9b23aca","message":"feat: add Sponic Garden branding assets — wordmark, emblem, hero illustration","author":"Rahul"}]
+  "pushedAt": "2026-03-21 10:05:55+00",
+  "commits": [{"sha":"efdec8c02","message":"fix: improve render — blue pool, trees inside parcel, better camera","author":"Rahul"}]
 }
