@@ -1,12 +1,12 @@
 {
-  "version": "v260322.09 2:14p",
-  "release": 1005,
-  "sha": "a26a79f13",
-  "fullSha": "a26a79f13e584e6087679e4a39495e7e0c3cd224",
+  "version": "v260322.10 2:16p",
+  "release": 1006,
+  "sha": "2fa8a9c15",
+  "fullSha": "2fa8a9c1560d8192736a890b55cac874b5cd6275",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 19:14:22+00",
-  "commits": [{"sha":"a26a79f13","message":"fix: route community fit inquiry emails to team@ and skip approval gate","author":"Rahul"}]
+  "pushedAt": "2026-03-22 19:16:58+00",
+  "commits": [{"sha":"2fa8a9c15","message":"fix: use correct Tesloop triswoosh logo instead of old wings logo","author":"Rahul"}]
 }
