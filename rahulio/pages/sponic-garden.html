@@ -135,13 +135,20 @@
     }
 
     .hero-content { position: relative; z-index: 2; }
+    .hero-logo {
+      display: block;
+      max-width: 420px;
+      width: 100%;
+      height: auto;
+      margin: 0 auto 0.15rem;
+    }
     .hero h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 3rem;
-      font-weight: 400;
-      color: var(--vine);
-      letter-spacing: -0.02em;
-      margin-bottom: 0.15rem;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
     }
     /* SVG vine underline */
     .vine-underline {
@@ -182,7 +189,7 @@
     }
 
     @media (max-width: 600px) {
-      .hero h1 { font-size: 2.2rem; }
+      .hero-logo { max-width: 300px; }
       .hero-leaf-left, .hero-leaf-right { display: none; }
     }
 
@@ -634,14 +641,8 @@
     </svg>
 
     <div class="hero-content">
+      <img src="sponic-garden/branding/wordmark-transparent.png" alt="Sponic Garden" class="hero-logo">
       <h1>Sponic Garden</h1>
-      <!-- Vine underline -->
-      <svg class="vine-underline" viewBox="0 0 200 12" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0 6 Q40 2 70 6 T130 5 T200 6" fill="none" stroke="#1a4d2e" stroke-width="1.5" opacity="0.4"/>
-        <circle cx="100" cy="5" r="2" fill="#1a4d2e" opacity="0.3"/>
-        <path d="M98 3c-3-4-8-3-6 1" fill="none" stroke="#1a4d2e" stroke-width="0.8" opacity="0.3"/>
-        <path d="M102 3c3-4 8-3 6 1" fill="none" stroke="#1a4d2e" stroke-width="0.8" opacity="0.3"/>
-      </svg>
       <div class="tagline">the art and science of cultivation</div>
       <p class="subtitle">A place-based social club fusing gardening, fitness, thermal wellness, and community — all orchestrated by a native AI platform built from day one.</p>
       <div class="launch-badge">Warsaw, Poland · Prototype Launch July 2026</div>
