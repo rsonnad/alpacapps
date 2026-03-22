@@ -1,12 +1,12 @@
 {
-  "version": "v260321.33 9:53p",
-  "release": 991,
-  "sha": "fcfcff30d",
-  "fullSha": "fcfcff30d6edd1dad5b0d1d180bc87d9a7be3d04",
+  "version": "v260321.34 10:02p",
+  "release": 992,
+  "sha": "8d4d68f38",
+  "fullSha": "8d4d68f3886d724b8d3deadb454af6c03e682439",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 02:53:32+00",
-  "commits": [{"sha":"fcfcff30d","message":"feat: add profile photo to bio page and fix OG image tags","author":"Rahul"}]
+  "pushedAt": "2026-03-22 03:02:15+00",
+  "commits": [{"sha":"8d4d68f38","message":"refactor: sync business model with 5%/week growth ramp","author":"Rahul"}]
 }
