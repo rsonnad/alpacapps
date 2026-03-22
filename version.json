@@ -1,12 +1,12 @@
 {
-  "version": "v260321.35 10:05p",
-  "release": 993,
-  "sha": "1f4a7f888",
-  "fullSha": "1f4a7f88875e59d41dcf7478ae67238c0d85983b",
+  "version": "v260321.36 10:06p",
+  "release": 994,
+  "sha": "4591a1b3d",
+  "fullSha": "4591a1b3da057f1166a3d2d5f9f26f966171426e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 03:05:15+00",
-  "commits": [{"sha":"1f4a7f888","message":"fix: improve OG image to proper social card layout","author":"Rahul"}]
+  "pushedAt": "2026-03-22 03:06:35+00",
+  "commits": [{"sha":"4591a1b3d","message":"docs: update Alpaca Mac media tools with verified info","author":"Rahul"}]
 }
