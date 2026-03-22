@@ -1,12 +1,12 @@
 {
-  "version": "v260322.05 1:51a",
-  "release": 1001,
-  "sha": "f04e43260",
-  "fullSha": "f04e43260b626b0c8b0c6aa8451cef0933253e29",
+  "version": "v260322.06 2:34a",
+  "release": 1002,
+  "sha": "6f955fc02",
+  "fullSha": "6f955fc024fd1be11d0e055b822d4a97c4eb6516",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 06:51:05+00",
-  "commits": [{"sha":"f04e43260","message":"docs: update patent attribution on bio page","author":"Rahul"}]
+  "pushedAt": "2026-03-22 07:34:25+00",
+  "commits": [{"sha":"6f955fc02","message":"feat: add company and school logos to bio page","author":"Rahul"}]
 }
