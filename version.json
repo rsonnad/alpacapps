@@ -1,12 +1,12 @@
 {
-  "version": "v260322.08 2:06p",
-  "release": 1004,
-  "sha": "4c20a1140",
-  "fullSha": "4c20a1140f900127aed10366bcec29d6069760c4",
+  "version": "v260322.09 2:14p",
+  "release": 1005,
+  "sha": "a26a79f13",
+  "fullSha": "a26a79f13e584e6087679e4a39495e7e0c3cd224",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 19:06:25+00",
-  "commits": [{"sha":"a5a193b9f","message":"feat: use real Tesloop, Geodelic, and thePlatform logos from RVAULT20 archive","author":"Rahul"},{"sha":"4c20a1140","message":"Merge branch 'gallant-shannon'","author":"Rahul"}]
+  "pushedAt": "2026-03-22 19:14:22+00",
+  "commits": [{"sha":"a26a79f13","message":"fix: route community fit inquiry emails to team@ and skip approval gate","author":"Rahul"}]
 }
