@@ -1907,6 +1907,28 @@
           console.error('Failed to send admin notification email:', emailError);
         }
 
+        // Send confirmation email to applicant
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              type: 'community_fit_confirmation',
+              to: [email],
+              data: {
+                name: firstName,
+                accommodation: accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation'),
+                timeframe: getValue('desired_timeframe'),
+              }
+            })
+          });
+        } catch (confirmError) {
+          console.error('Failed to send applicant confirmation email:', confirmError);
+        }
+
         // Save for ask box and persist for future visits
         submittedFirstName = firstName;
         submittedEmail = email;

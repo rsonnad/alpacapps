@@ -51,6 +51,7 @@ type EmailType =
   // Contact form
   | "contact_form"
   | "community_fit_inquiry"
+  | "community_fit_confirmation"
   // Bug reports
   | "bug_report_received"
   | "bug_report_fixed"
@@ -1224,6 +1225,40 @@ Visiting Guide Response:
 ${data.visiting_guide || 'Not provided'}
 
 ${data.photo_url ? `Photo: ${data.photo_url}` : ''}`
+      };
+
+    // ===== COMMUNITY FIT CONFIRMATION (to applicant) =====
+    case "community_fit_confirmation":
+      return {
+        subject: `Thanks for your inquiry, ${data.name || 'there'}!`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333; margin-bottom: 8px;">We got your inquiry!</h2>
+            <p style="color: #555; line-height: 1.6;">Hi ${data.name || 'there'},</p>
+            <p style="color: #555; line-height: 1.6;">Thanks for reaching out about living at the Alpaca Playhouse. We're excited that you're interested in our community!</p>
+
+            <div style="background: #f8f9fa; border-radius: 8px; padding: 16px 20px; margin: 20px 0;">
+              <p style="margin: 0 0 8px; color: #333; font-weight: 600;">What you submitted:</p>
+              <p style="margin: 0 0 4px; color: #555;">Accommodation: <strong>${data.accommodation || 'Flexible'}</strong></p>
+              <p style="margin: 0; color: #555;">Timeframe: <strong>${data.timeframe || 'Not specified'}</strong></p>
+            </div>
+
+            <p style="color: #555; line-height: 1.6;">Our team will review your inquiry and get back to you soon. In the meantime, feel free to reply to this email if you have any questions.</p>
+
+            <p style="color: #555; line-height: 1.6;">We look forward to getting to know you!</p>
+          </div>
+        `,
+        text: `Hi ${data.name || 'there'},
+
+Thanks for reaching out about living at the Alpaca Playhouse. We're excited that you're interested in our community!
+
+What you submitted:
+- Accommodation: ${data.accommodation || 'Flexible'}
+- Timeframe: ${data.timeframe || 'Not specified'}
+
+Our team will review your inquiry and get back to you soon. In the meantime, feel free to reply to this email if you have any questions.
+
+We look forward to getting to know you!`
       };
 
     // ===== BUG REPORT NOTIFICATIONS =====
