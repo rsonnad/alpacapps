@@ -1,12 +1,12 @@
 {
-  "version": "v260321.34 10:02p",
-  "release": 992,
-  "sha": "8d4d68f38",
-  "fullSha": "8d4d68f3886d724b8d3deadb454af6c03e682439",
+  "version": "v260321.35 10:05p",
+  "release": 993,
+  "sha": "1f4a7f888",
+  "fullSha": "1f4a7f88875e59d41dcf7478ae67238c0d85983b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 03:02:15+00",
-  "commits": [{"sha":"8d4d68f38","message":"refactor: sync business model with 5%/week growth ramp","author":"Rahul"}]
+  "pushedAt": "2026-03-22 03:05:15+00",
+  "commits": [{"sha":"1f4a7f888","message":"fix: improve OG image to proper social card layout","author":"Rahul"}]
 }
