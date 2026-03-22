@@ -1,15 +1,21 @@
 {
-  "generatedAt": "2026-03-21T14:32:56.991Z",
+  "generatedAt": "2026-03-22T01:56:43.760Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
     {
+      "path": "sponic-garden/business-model.html",
+      "title": "Sponic Garden — Business Model",
+      "section": null,
+      "modifiedAt": "2026-03-22T01:55:44.000Z"
+    },
+    {
       "path": "sponic-garden.html",
       "title": "Sponic Garden — The Art and Science of Cultivation",
       "section": null,
-      "modifiedAt": "2026-03-21T13:24:10.000Z"
+      "modifiedAt": "2026-03-22T01:55:44.000Z"
     },
     {
       "path": "rachelcarrental.html",
