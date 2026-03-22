@@ -1,12 +1,12 @@
 {
-  "version": "v260322.11 2:23p",
-  "release": 1007,
-  "sha": "5ea27de65",
-  "fullSha": "5ea27de65b51254b804db4951ffa78d428ef580b",
+  "version": "v260322.12 2:47p",
+  "release": 1008,
+  "sha": "e224fe977",
+  "fullSha": "e224fe97755b3cbf86ad05880b3846849a5c2000",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 19:23:07+00",
-  "commits": [{"sha":"5ea27de65","message":"fix: use real Geodelic logo from Crunchbase (colorful globe + wordmark)","author":"Rahul"}]
+  "pushedAt": "2026-03-22 19:47:52+00",
+  "commits": [{"sha":"e224fe977","message":"feat: send confirmation email to community fit inquiry applicants","author":"Rahul"}]
 }
