@@ -1,16 +1,42 @@
 # Alpaca Mac — Media & Video Tools Reference
 
-> **Machine:** Mac Studio (Alpaca Mac) — 192.168.1.74
-> **User:** `alpaca` (shared guest account)
-> **OS:** macOS
-> **Connect:** `ssh alpaca@192.168.1.74` (must be on Alpaca Playhouse WiFi)
+> **Machine:** Mac Studio ("Alpaca Mac")
+> **OS:** macOS 12 (Monterey)
+> **Credentials:** Provided separately via Bitwarden Send (ask Rahul if you don't have them)
 
 ---
 
-## Installed Tools
+## Connecting
 
-### FFmpeg (via Homebrew)
+### Prerequisites
+- You must be connected to the **Alpaca Playhouse WiFi** network (on-site only)
+- SSH credentials are in the Bitwarden Send link you received
 
+### SSH Connection
+```bash
+ssh alpaca@192.168.1.74
+```
+
+### First-Time Setup (run once after connecting)
+The `alpaca` user's PATH may not include `/usr/local/bin` by default. Run this once:
+```bash
+echo 'export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+After this, all tools below will be available by name (e.g., `ffmpeg` instead of `/usr/local/bin/ffmpeg`).
+
+### If PATH isn't set yet
+Prefix commands with the full path:
+```bash
+/usr/local/bin/ffmpeg -version
+```
+
+---
+
+## Verified Installed Tools
+
+### FFmpeg 8.1
 Full-featured video/audio encoder, decoder, transcoder, and stream processor.
 
 ```bash
@@ -26,7 +52,7 @@ ffmpeg -i video.mp4 -vn -c:a libmp3lame -q:a 2 audio.mp3
 # Create a thumbnail from video
 ffmpeg -i video.mp4 -ss 00:00:05 -frames:v 1 thumbnail.jpg
 
-# Trim video (no re-encode)
+# Trim video (no re-encode, fast)
 ffmpeg -i input.mp4 -ss 00:01:00 -to 00:02:30 -c copy trimmed.mp4
 
 # Resize video to 1080p
@@ -38,8 +64,7 @@ ffmpeg -framerate 30 -i frame_%04d.png -c:v libx264 -pix_fmt yuv420p output.mp4
 # Add text overlay / watermark
 ffmpeg -i input.mp4 -vf "drawtext=text='Alpaca Playhouse':fontsize=24:fontcolor=white:x=10:y=10" output.mp4
 
-# Concatenate videos (file list method)
-# Create list.txt with lines like: file 'clip1.mp4'
+# Concatenate videos (create list.txt with lines like: file 'clip1.mp4')
 ffmpeg -f concat -safe 0 -i list.txt -c copy merged.mp4
 
 # Generate waveform image from audio
@@ -49,61 +74,50 @@ ffmpeg -i audio.mp3 -filter_complex "showwavespic=s=1920x200:colors=blue" wavefo
 ffmpeg -i video.mp4 -vf fps=1 frames/frame_%04d.jpg
 ```
 
-### FFprobe (bundled with FFmpeg)
-
-Inspect media file metadata.
+### FFprobe 8.1 (bundled with FFmpeg)
+Inspect media file metadata without processing.
 
 ```bash
-# Show all metadata
+# Show all metadata as JSON
 ffprobe -v quiet -print_format json -show_format -show_streams input.mp4
 
-# Quick summary
+# Quick summary (duration, size, bitrate)
 ffprobe -v error -show_entries format=duration,size,bit_rate -of default=noprint_wrappers=1 input.mp4
 
 # Get video resolution
 ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 input.mp4
 ```
 
-### yt-dlp (via Homebrew)
-
-Download video/audio from YouTube and 1000+ sites.
-
-```bash
-# Download best quality video+audio
-yt-dlp "https://youtube.com/watch?v=VIDEO_ID"
-
-# Download audio only (MP3)
-yt-dlp -x --audio-format mp3 "https://youtube.com/watch?v=VIDEO_ID"
-
-# Download specific format (list available first)
-yt-dlp -F "URL"            # list formats
-yt-dlp -f 137+140 "URL"    # pick video+audio format codes
-
-# Download playlist
-yt-dlp -o "%(playlist_index)s-%(title)s.%(ext)s" "PLAYLIST_URL"
-
-# Download with subtitles
-yt-dlp --write-subs --sub-lang en "URL"
-```
-
-### Blender 4.5 (CLI for video)
-
-Blender's Video Sequence Editor (VSE) can be used headlessly for compositing and rendering.
+### Blender 4.5.7 LTS
+3D modeling, rendering, and Video Sequence Editor. Can be used headlessly from CLI.
 
 ```bash
-# Path
+# Path (always use full path — not on default PATH)
 /usr/local/bin/blender
 
-# Render a .blend project to video
+# Check version
+/usr/local/bin/blender --version
+
+# Render a .blend project to PNG frames
 /usr/local/bin/blender -b project.blend -o //output/frame_#### -F PNG -a
 
 # Render specific frame range
 /usr/local/bin/blender -b project.blend -s 1 -e 250 -a
+
+# Run a Python script in Blender
+/usr/local/bin/blender -b --python script.py
 ```
 
-### ImageMagick (via Homebrew)
+**Blender add-ons available** (in `~/Downloads/blender-addons/`):
+- Bonsai (BlenderBIM) — architectural drafting, IFC export
+- BlenderGIS — GIS data import, terrain, satellite imagery
+- CAD Sketcher — parametric 2D sketching
+- Archipack — parametric walls, fences, roofs
 
-Image processing from the command line.
+### ImageMagick 7.x
+Image processing from the command line. Installed via Homebrew.
+
+> **Note:** After install, `magick` may need `brew link imagemagick` to appear on PATH. If `magick` isn't found, use the full Cellar path: `$(brew --prefix imagemagick)/bin/magick`
 
 ```bash
 # Resize image
@@ -118,9 +132,44 @@ magick montage *.jpg -geometry 200x200+5+5 -tile 4x contact_sheet.jpg
 # Add text to image
 magick input.jpg -pointsize 36 -fill white -annotate +10+40 "Alpaca Playhouse" output.jpg
 
-# Batch resize all images in directory
+# Batch resize
 for f in *.jpg; do magick "$f" -resize 50% "resized_$f"; done
 ```
+
+### yt-dlp
+Download video/audio from YouTube and 1000+ sites. Installed as standalone binary.
+
+```bash
+# Download best quality video+audio
+yt-dlp "https://youtube.com/watch?v=VIDEO_ID"
+
+# Download audio only (MP3)
+yt-dlp -x --audio-format mp3 "https://youtube.com/watch?v=VIDEO_ID"
+
+# List available formats
+yt-dlp -F "URL"
+
+# Download specific format codes
+yt-dlp -f 137+140 "URL"
+
+# Download with subtitles
+yt-dlp --write-subs --sub-lang en "URL"
+
+# Download playlist
+yt-dlp -o "%(playlist_index)s-%(title)s.%(ext)s" "PLAYLIST_URL"
+```
+
+---
+
+## Also Installed (CAD/GIS)
+
+These are primarily for property/construction work but may be useful:
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| QGIS | 4.0.0 | GIS mapping, parcel data, print layouts |
+| LibreCAD | 2.x | 2D CAD drafting (DXF format) |
+| GDAL/OGR | 3.12.0 | Geospatial format conversion (bundled with QGIS) |
 
 ---
 
@@ -128,7 +177,7 @@ for f in *.jpg; do magick "$f" -resize 50% "resized_$f"; done
 
 ### Property Walkthrough Video
 ```bash
-# 1. Transfer video from phone/camera to Mac
+# 1. Transfer video from phone/camera to Mac (AirDrop or USB)
 # 2. Trim to relevant section
 ffmpeg -i raw_walkthrough.mov -ss 00:00:10 -to 00:05:00 -c copy trimmed.mp4
 # 3. Add property watermark
@@ -139,27 +188,40 @@ ffmpeg -i final.mp4 -ss 00:00:03 -frames:v 1 thumbnail.jpg
 
 ### Timelapse from Photos
 ```bash
-# Photos named IMG_0001.jpg through IMG_0500.jpg
 ffmpeg -framerate 24 -i IMG_%04d.jpg -c:v libx264 -pix_fmt yuv420p timelapse.mp4
 ```
 
 ### Audio Extraction for Transcription
 ```bash
-# Extract clean audio for Whisper/transcription
 ffmpeg -i meeting.mp4 -vn -ar 16000 -ac 1 -c:a pcm_s16le meeting.wav
+```
+
+### Download and Process YouTube Video
+```bash
+# Download
+yt-dlp -o "%(title)s.%(ext)s" "URL"
+# Convert to MP4 if needed
+ffmpeg -i "downloaded.webm" -c:v libx264 -c:a aac output.mp4
 ```
 
 ---
 
 ## File Locations
 
-- **Working directory:** Use `~/Desktop` or `~/Movies` for media projects
-- **Blender projects:** `~/Documents/blender/`
-- **Downloaded media:** `~/Downloads/`
+| Purpose | Path |
+|---------|------|
+| Working directory | `~/Desktop` or `~/Movies` |
+| Blender projects | `~/Documents/blender/` |
+| Downloads | `~/Downloads/` |
+| Blender add-ons | `~/Downloads/blender-addons/` |
 
-## Notes
+## Troubleshooting
 
-- All tools installed via Homebrew (`brew upgrade` to update)
-- This is the `alpaca` guest account — not the admin account
-- Must be on local network (Alpaca Playhouse WiFi) to SSH in
-- For Blender GUI work, use Chrome Remote Desktop (PIN in password vault)
+| Problem | Solution |
+|---------|----------|
+| `ffmpeg: command not found` | Run `export PATH="/usr/local/bin:$PATH"` or use full path `/usr/local/bin/ffmpeg` |
+| `magick: command not found` | Run `brew link imagemagick` or use `$(brew --prefix imagemagick)/bin/magick` |
+| `yt-dlp: command not found` | Use full path `/usr/local/bin/yt-dlp` |
+| Can't connect via SSH | Verify you're on Alpaca Playhouse WiFi. The Mac is at 192.168.1.74 |
+| Need to update tools | Run `brew upgrade ffmpeg imagemagick` (yt-dlp: `yt-dlp -U`) |
+| Need GUI access (Blender UI) | Use Chrome Remote Desktop — PIN is in the password vault |
