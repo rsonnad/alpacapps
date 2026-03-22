@@ -1,12 +1,12 @@
 {
-  "version": "v260321.37 10:45p",
-  "release": 995,
-  "sha": "db4e20279",
-  "fullSha": "db4e20279e0be08ded3bdfc6395461b643a1c03b",
+  "version": "v260321.38 11:46p",
+  "release": 996,
+  "sha": "834bc85dc",
+  "fullSha": "834bc85dc96237344007adddbd31c053c8b33ca9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 03:45:26+00",
-  "commits": [{"sha":"db4e20279","message":"feat: add redirect from /rahulio/ to /rahulio/bio/","author":"Rahul"}]
+  "pushedAt": "2026-03-22 04:46:06+00",
+  "commits": [{"sha":"834bc85dc","message":"feat: add transparent PNG logo to Sponic Garden hero + B&W variants","author":"Rahul"}]
 }
