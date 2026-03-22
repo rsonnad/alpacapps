@@ -1,12 +1,12 @@
 {
-  "version": "v260321.38 11:46p",
-  "release": 996,
-  "sha": "834bc85dc",
-  "fullSha": "834bc85dc96237344007adddbd31c053c8b33ca9",
+  "version": "v260322.01 12:09a",
+  "release": 997,
+  "sha": "6953b8f1c",
+  "fullSha": "6953b8f1c50587d215b85cbd42cc426d6e458f5c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 04:46:06+00",
-  "commits": [{"sha":"834bc85dc","message":"feat: add transparent PNG logo to Sponic Garden hero + B&W variants","author":"Rahul"}]
+  "pushedAt": "2026-03-22 05:09:22+00",
+  "commits": [{"sha":"b20a0cc00","message":"fix: use champion logo 62-sonics-slate-transparent in SPGD hero","author":"Rahul"},{"sha":"6953b8f1c","message":"Merge branch 'kind-ritchie'","author":"Rahul"}]
 }
