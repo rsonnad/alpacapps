@@ -1,12 +1,12 @@
 {
-  "version": "v260322.07 1:44p",
-  "release": 1003,
-  "sha": "b4024416a",
-  "fullSha": "b4024416afdcbe7d67fa94cc161a68a6daf93dff",
+  "version": "v260322.08 2:06p",
+  "release": 1004,
+  "sha": "4c20a1140",
+  "fullSha": "4c20a1140f900127aed10366bcec29d6069760c4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 18:44:02+00",
-  "commits": [{"sha":"34306501a","message":"docs: update patent attribution on bio page","author":"Rahul"},{"sha":"3d56bbcff","message":"feat: add company and school logos to bio page","author":"Rahul"},{"sha":"bd4ead7eb","message":"feat: replace placeholder logos with real company/school logos via Google favicon API","author":"Rahul"},{"sha":"b4024416a","message":"feat: replace placeholder logos with real company/school logos via Google favicon API","author":"Rahul"}]
+  "pushedAt": "2026-03-22 19:06:25+00",
+  "commits": [{"sha":"a5a193b9f","message":"feat: use real Tesloop, Geodelic, and thePlatform logos from RVAULT20 archive","author":"Rahul"},{"sha":"4c20a1140","message":"Merge branch 'gallant-shannon'","author":"Rahul"}]
 }
