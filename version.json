@@ -1,12 +1,12 @@
 {
-  "version": "v260322.10 2:16p",
-  "release": 1006,
-  "sha": "2fa8a9c15",
-  "fullSha": "2fa8a9c1560d8192736a890b55cac874b5cd6275",
+  "version": "v260322.11 2:23p",
+  "release": 1007,
+  "sha": "5ea27de65",
+  "fullSha": "5ea27de65b51254b804db4951ffa78d428ef580b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 19:16:58+00",
-  "commits": [{"sha":"2fa8a9c15","message":"fix: use correct Tesloop triswoosh logo instead of old wings logo","author":"Rahul"}]
+  "pushedAt": "2026-03-22 19:23:07+00",
+  "commits": [{"sha":"5ea27de65","message":"fix: use real Geodelic logo from Crunchbase (colorful globe + wordmark)","author":"Rahul"}]
 }
