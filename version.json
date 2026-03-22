@@ -1,12 +1,12 @@
 {
-  "version": "v260322.12 2:47p",
-  "release": 1008,
-  "sha": "e224fe977",
-  "fullSha": "e224fe97755b3cbf86ad05880b3846849a5c2000",
+  "version": "v260322.13 2:52p",
+  "release": 1009,
+  "sha": "649dbba1e",
+  "fullSha": "649dbba1ea42790715d1614158de079677f35ab8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-22 19:47:52+00",
-  "commits": [{"sha":"e224fe977","message":"feat: send confirmation email to community fit inquiry applicants","author":"Rahul"}]
+  "pushedAt": "2026-03-22 19:52:26+00",
+  "commits": [{"sha":"649dbba1e","message":"feat: add CatGPT cyberpunk cat logo, stored in Supabase as catgpt-logo.png","author":"Rahul"}]
 }
