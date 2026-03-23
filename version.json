@@ -1,12 +1,12 @@
 {
-  "version": "v260322.27 11:46p",
-  "release": 1023,
-  "sha": "c72f5a8b3",
-  "fullSha": "c72f5a8b30c8acd99ace56f32a07b1ff03b4a9d5",
+  "version": "v260323.01 12:03a",
+  "release": 1024,
+  "sha": "a263c93da",
+  "fullSha": "a263c93da7af00f472f577875da948cd7ce3ee12",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-23 04:46:51+00",
-  "commits": [{"sha":"c72f5a8b3","message":"fix: format Charter margin note with proper spacing and numbered list","author":"Rahul"}]
+  "pushedAt": "2026-03-23 05:03:42+00",
+  "commits": [{"sha":"a263c93da","message":"feat: add large hero image and restore gardening image in card","author":"Rahul"}]
 }
