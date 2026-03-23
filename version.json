@@ -1,12 +1,12 @@
 {
-  "version": "v260323.04 1:43p",
-  "release": 1027,
-  "sha": "27b846e8c",
-  "fullSha": "27b846e8c19e1bcccf3bab771d085e497e463516",
+  "version": "v260323.05 4:19p",
+  "release": 1028,
+  "sha": "8d1654e2a",
+  "fullSha": "8d1654e2a5a4e605c140650c2e21a4e7187ee817",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-23 18:43:34+00",
-  "commits": [{"sha":"27b846e8c","message":"fix: skip $0 payroll summaries and improve error handling","author":"Rahul"}]
+  "pushedAt": "2026-03-23 21:19:07+00",
+  "commits": [{"sha":"8d1654e2a","message":"feat: add OldMacKiosk — native macOS kiosk app for pacBook","author":"Rahul"}]
 }
