@@ -1,12 +1,12 @@
 {
-  "version": "v260323.01 12:03a",
-  "release": 1024,
-  "sha": "a263c93da",
-  "fullSha": "a263c93da7af00f472f577875da948cd7ce3ee12",
+  "version": "v260323.02 8:04a",
+  "release": 1025,
+  "sha": "a9d24fb38",
+  "fullSha": "a9d24fb3870e5034467edc89ec2239b8611f0e11",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-23 05:03:42+00",
-  "commits": [{"sha":"a263c93da","message":"feat: add large hero image and restore gardening image in card","author":"Rahul"}]
+  "pushedAt": "2026-03-23 13:04:26+00",
+  "commits": [{"sha":"a9d24fb38","message":"docs: add Pascal Editor setup guide for Mac Mini M4","author":"Rahul"}]
 }
