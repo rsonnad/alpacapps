@@ -1,12 +1,12 @@
 {
-  "version": "v260322.25 11:34p",
-  "release": 1021,
-  "sha": "533d4d134",
-  "fullSha": "533d4d134d4fd41ca32e2a2b52c104e34b6b62b5",
+  "version": "v260322.26 11:36p",
+  "release": 1022,
+  "sha": "aa23a7338",
+  "fullSha": "aa23a7338cacf5218fae284cf33ab61e45f38ce3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-23 04:34:35+00",
-  "commits": [{"sha":"533d4d134","message":"fix: remove image overflow causing text overlap in concept section","author":"Rahul"}]
+  "pushedAt": "2026-03-23 04:36:27+00",
+  "commits": [{"sha":"aa23a7338","message":"chore: archive Sponic Garden page, redirect old URL to sponicgarden.com","author":"Rahul"}]
 }
