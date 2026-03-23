@@ -66,6 +66,15 @@ serve(async (_req) => {
         continue;
       }
 
+      // Skip if total minutes or amount would be $0
+      const quickTotalMinutes = entries.reduce((sum, e) => sum + parseFloat(e.duration_minutes || "0"), 0);
+      const quickRate = parseFloat(assoc.hourly_rate || "0");
+      const quickAmount = (quickTotalMinutes / 60) * quickRate;
+      if (quickTotalMinutes <= 0 || quickAmount <= 0) {
+        results.push({ associate: name, status: "no_payable_hours" });
+        continue;
+      }
+
       // ─── 2b. Idempotency: check for existing pending approval this week ───
       const mondayStart = getMondayOfWeek(new Date());
       const { data: existing } = await sb
@@ -259,12 +268,27 @@ ${!hasStripe ? `<div style="background:#fff8e1;border-left:4px solid #f9a825;pad
         }),
       });
 
-      const sendResult = await sendRes.json();
-      console.log(`Payroll summary for ${name}: $${amount.toFixed(2)}`, sendResult);
+      const sendResultText = await sendRes.text();
+      let sendResult: Record<string, unknown>;
+      try {
+        sendResult = JSON.parse(sendResultText);
+      } catch {
+        console.error(`send-email returned non-JSON for ${name}:`, sendResultText.slice(0, 500));
+        results.push({ associate: name, status: "error_non_json", amount });
+        continue;
+      }
+
+      if (!sendRes.ok || sendResult.error) {
+        console.error(`send-email error for ${name} (${sendRes.status}):`, sendResult.error || sendResultText.slice(0, 300));
+        results.push({ associate: name, status: `error_${sendRes.status}`, amount });
+        continue;
+      }
+
+      console.log(`Payroll summary for ${name}: $${amount.toFixed(2)}`, JSON.stringify(sendResult));
 
       results.push({
         associate: name,
-        status: sendResult.status === "pending_approval" ? "approval_sent" : sendResult.status || "sent",
+        status: sendResult.status === "pending_approval" ? "approval_sent" : String(sendResult.status || "sent"),
         amount,
       });
     }
