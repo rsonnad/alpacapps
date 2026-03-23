@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-03-23T04:37:17.597Z",
+  "generatedAt": "2026-03-23T04:47:41.464Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
     {
+      "path": "sponic-garden.html",
+      "title": "Sponic Garden — The Art and Science of Cultivation",
+      "section": null,
+      "modifiedAt": "2026-03-23T04:46:51.000Z"
+    },
+    {
       "path": "archive-sponic-garden.html",
       "title": "OLD ARCHIVE DO NOT UPDATE - Sponic Garden",
       "section": null,
       "modifiedAt": "2026-03-23T04:36:14.000Z"
-    },
-    {
-      "path": "sponic-garden.html",
-      "title": "Sponic Garden — The Art and Science of Cultivation",
-      "section": null,
-      "modifiedAt": "2026-03-23T04:34:29.000Z"
     },
     {
       "path": "sponic-garden/business-model.html",

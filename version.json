@@ -1,12 +1,12 @@
 {
-  "version": "v260322.26 11:36p",
-  "release": 1022,
-  "sha": "aa23a7338",
-  "fullSha": "aa23a7338cacf5218fae284cf33ab61e45f38ce3",
+  "version": "v260322.27 11:46p",
+  "release": 1023,
+  "sha": "c72f5a8b3",
+  "fullSha": "c72f5a8b30c8acd99ace56f32a07b1ff03b4a9d5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-23 04:36:27+00",
-  "commits": [{"sha":"aa23a7338","message":"chore: archive Sponic Garden page, redirect old URL to sponicgarden.com","author":"Rahul"}]
+  "pushedAt": "2026-03-23 04:46:51+00",
+  "commits": [{"sha":"c72f5a8b3","message":"fix: format Charter margin note with proper spacing and numbered list","author":"Rahul"}]
 }
