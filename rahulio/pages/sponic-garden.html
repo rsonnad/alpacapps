@@ -1212,6 +1212,73 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════
+         6b. AUTONOMOUS OPTIMIZATION LOOPS
+         ══════════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-label">Autonomous Optimization</div>
+      <h2>The Experiment Engine</h2>
+      <p>The AI operational management agent runs a closed-loop control system — sensors feed data, explicit feedback (surveys, votes) and implicit feedback (motion patterns, visual sentiment detection) drive an optimization process. Inspired by <a href="https://github.com/karpathy/autoresearch" style="color:var(--green);font-weight:500">autoresearch</a>, the system continuously runs small, safe experiments across every domain of the facility.</p>
+
+      <div class="callout" style="margin-bottom:1rem">
+        <p>🔄 <strong>The Loop:</strong> Modify one variable → run for a fixed time window → evaluate the metric → keep or revert → repeat. Over weeks, the AI autonomously discovers winning combinations — without anyone manually tuning.</p>
+      </div>
+
+      <div class="grid-2" style="margin-top:0.75rem">
+        <div class="card accent-card accent-green">
+          <h3>🌡️ Environment Tuning</h3>
+          <ul>
+            <li><strong>Modify:</strong> One environment variable — playlist genre, sauna temp, lighting warmth</li>
+            <li><strong>Run:</strong> Fixed 2-hour session block</li>
+            <li><strong>Evaluate:</strong> Survey scores, occupancy duration, rebooking rate</li>
+            <li><strong>Result:</strong> AI discovers which music × temperature × lighting combos produce peak satisfaction</li>
+          </ul>
+          <p style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted)">Not everything is initially suited for optimization — but many aspects of the experience can be.</p>
+        </div>
+
+        <div class="card accent-card accent-warm">
+          <h3>🍽️ Vendor & Menu Rotation</h3>
+          <ul>
+            <li><strong>Modify:</strong> Swap a food vendor or menu item for a time slot</li>
+            <li><strong>Evaluate:</strong> Sales volume, waste, member ratings</li>
+            <li><strong>Result:</strong> Autonomous weekly vendor schedule optimization</li>
+          </ul>
+          <p style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted)">New vendors enter as "challengers" — fits the champion/challenger charter pattern.</p>
+        </div>
+
+        <div class="card accent-card accent-sky">
+          <h3>🧘 Class & Event Scheduling</h3>
+          <ul>
+            <li><strong>Modify:</strong> Class time, instructor, or class type for a slot</li>
+            <li><strong>Evaluate:</strong> Attendance rate, post-class ratings, retention</li>
+            <li><strong>Result:</strong> AI discovers e.g. hot yoga at 7am with Instructor X and ambient electronica scores highest — locks it in as "champion"</li>
+          </ul>
+        </div>
+
+        <div class="card accent-card accent-emerald">
+          <h3>🌱 Plant Cultivation Experiments</h3>
+          <ul>
+            <li><strong>Modify:</strong> One growing parameter — light spectrum, watering schedule, nutrient mix</li>
+            <li><strong>Run:</strong> Fixed 1-week growth window</li>
+            <li><strong>Evaluate:</strong> Growth rate, yield, member "Garden Show" votes</li>
+            <li><strong>Result:</strong> Autonomous plant optimization — the AI is the geneticist</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:0.8rem;border-left:3px solid var(--plum);padding-left:1rem">
+        <h3 style="color:var(--plum)">🧬 The Meta-Pattern: Champion / Challenger = Autoresearch</h3>
+        <p>The existing charter pattern — one <strong>champion</strong> (current winner) + two <strong>challengers</strong> (alternatives people can vote as better) — is autoresearch applied to community decisions. The key formalizations:</p>
+        <ul>
+          <li><strong>Fixed evaluation windows</strong> — not open-ended</li>
+          <li><strong>Single-variable changes</strong> — test one thing at a time</li>
+          <li><strong>Automated keep/discard logic</strong> — clear metric decides</li>
+          <li><strong>Autonomous operation</strong> — overnight where possible</li>
+        </ul>
+        <p style="margin-top:0.4rem"><strong>The facility becomes a living experiment that optimizes itself</strong> — exactly the AI-native vision, with a proven engineering pattern for how the iteration loop works.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
          7. OPTIMIZATION METRICS (new)
          ══════════════════════════════════════════════════ -->
     <div class="section">
