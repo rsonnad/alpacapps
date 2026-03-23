@@ -603,6 +603,26 @@
     .cns-diagram svg { max-width: 100%; }
 
     /* ════════════════════════════════════════════════════
+       SECTION ILLUSTRATIONS
+       ════════════════════════════════════════════════════ */
+    .section-illustration {
+      margin: 1.5rem -1.25rem 1.5rem;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+    }
+    .section-illustration img {
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: zoom-in;
+    }
+    @media (min-width: 920px) {
+      .section-illustration { margin-left: 0; margin-right: -180px; }
+    }
+
+    /* ════════════════════════════════════════════════════
        FOOTER
        ════════════════════════════════════════════════════ */
     footer {
@@ -665,6 +685,7 @@
     <div class="section has-margin-notes">
       <div class="section-label">Concept</div>
       <h2>What Is Sponic Garden?</h2>
+      <div class="section-illustration"><img src="sponic-garden/branding/hp-01-hp-hero-overview.jpg" alt="The Sponic Garden warehouse-greenhouse complex at golden hour" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
       <p>Sponic Garden is a membership-based social club where the core activity is <strong>gardening and plant cultivation</strong> — but the experience extends into fitness, thermal bathing, music, community food, and continuous education. The space is a custom-built indoor–outdoor warehouse-greenhouse hybrid filled with plants, great music, and people pursuing well-being together.</p>
       <p>What makes it fundamentally different is that <strong>every system — from irrigation to event scheduling to food logistics — runs on a <span class="annotation" data-note="Not bolted-on SaaS tools — a unified platform with multimodal data fusion, built from day one.">native AI platform</span></strong>. The facility is a living lab where AI doesn't assist operations — it <em>is</em> the operating system.</p>
       <div class="margin-note" style="top: 0.5rem;">Think: a greenhouse that learns. Every sensor reading, every member interaction, every plant measurement feeds a single intelligence that gets better daily.</div>
@@ -681,6 +702,7 @@
       <div class="grid-2">
         <div class="card accent-card accent-green">
           <h3>🌱 Gardening & Cultivation</h3>
+      <div class="section-illustration" style="margin-bottom:1rem"><img src="sponic-garden/branding/hp-02-hp-gardening-session.jpg" alt="AI-guided gardening session with cultivation dashboard" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
           <p>Members participate in guided gardening sessions — planting, cultivating, harvesting. The AI manages the <span class="annotation" data-note="Planting plans, task assignments, harvest scheduling, supply ordering — all AI-coordinated with member input.">cultivation plan</span>, enlisting members to decide what to plant, how to care for it, and what to do with the produce.</p>
           <details class="expandable">
             <summary>Why gardening is the anchor</summary>
@@ -691,6 +713,7 @@
           <details class="expandable">
             <summary>🏆 The Garden Show — gamified cultivation</summary>
             <div class="expand-body">
+              <div class="section-illustration" style="margin:0.8rem 0"><img src="sponic-garden/branding/hp-03-hp-garden-show.jpg" alt="The Garden Show — members voting on plant photos displayed on video screens" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
               <p>Gardening at Sponic Garden isn't just therapeutic — it's <strong>competitive and celebratory</strong>. Members photograph their creations throughout the growing cycle, building a visual portfolio of their work. On a regular cadence, the community hosts <strong>The Garden Show</strong>:</p>
               <p><strong>How it works:</strong> Members submit photos of their best plants, arrangements, harvests, or creative garden projects via the app. All submissions are displayed on the facility's video screens and in a digital gallery. The community votes — each member gets a limited number of votes to cast across categories. Top entries win prizes: free visit passes, premium workshop access, featured vendor collaborations, or "Golden Trowel" recognition displayed at the facility.</p>
               <p><strong>Categories</strong> rotate seasonally — tallest plant, most creative arrangement, best herb garden, biggest harvest yield, most improved plot, best team project. The AI tracks participation, suggests categories based on what's growing, and surfaces trending entries to keep engagement high.</p>
@@ -700,6 +723,7 @@
           <details class="expandable">
             <summary>📸 AI-powered social media</summary>
             <div class="expand-body">
+              <div class="section-illustration" style="margin:0.8rem 0"><img src="sponic-garden/branding/hp-04-hp-ai-social.jpg" alt="AI identifying photo opportunities and one-tap social sharing" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
               <p>The AI identifies <strong>photo opportunities</strong> throughout the facility — a plant hitting a growth milestone, a stunning arrangement, golden-hour light in the greenhouse, a member's first harvest. If the member opts in, the AI captures or prompts the moment, applies on-brand framing, and offers one-tap sharing to their social channels.</p>
               <p>Posts are <strong>automatically distributed and measured</strong> — the AI tracks engagement (likes, shares, reach), learns what content resonates, and refines its photo-op suggestions and timing. Members build a visual journal of their cultivation journey; Sponic Garden gets authentic, member-generated marketing at scale. The entire social media strategy — content identification, capture prompts, distribution, and performance analytics — is AI-managed.</p>
             </div>
@@ -708,6 +732,7 @@
 
         <div class="card accent-card accent-emerald">
           <h3>🏋️ Fitness</h3>
+      <div class="section-illustration" style="margin-bottom:0.8rem"><img src="sponic-garden/branding/hp-05-hp-yoga-studio.jpg" alt="AI-managed hot yoga studio with class metrics and climate control" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
           <ul>
             <li>30-person hot yoga studio</li>
             <li>30-person dance studio</li>
@@ -718,6 +743,7 @@
 
         <div class="card accent-card accent-sky">
           <h3>🧖 Thermal & Spa</h3>
+      <div class="section-illustration" style="margin-bottom:0.8rem"><img src="sponic-garden/branding/hp-06-hp-thermal-circuit.jpg" alt="AI-guided thermal contrast therapy circuit with digital temperature displays" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
           <ul>
             <li>2 saunas · 1 steam room</li>
             <li>2 cold plunges · 1 hot tub · 1 cool pool</li>
@@ -732,6 +758,7 @@
 
         <div class="card accent-card accent-plum">
           <h3>🎵 Music & Atmosphere</h3>
+      <div class="section-illustration" style="margin-bottom:0.8rem"><img src="sponic-garden/branding/hp-07-hp-music-zones.jpg" alt="AI-controlled audio zones adapting to crowd energy" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
           <p>Pervasive, high-quality sound systems throughout — curated playlists and live sets for both human enjoyment and plant stimulation. AI-controlled audio zones adapt to activity, time of day, and crowd energy.</p>
           <details class="expandable">
             <summary>How the AI reads the room</summary>
@@ -749,8 +776,10 @@
     <div class="section has-margin-notes">
       <div class="section-label">Food & Drink</div>
       <h2>Crowd-Sourced Food Service & Artisan Vending</h2>
+      <div class="section-illustration"><img src="sponic-garden/branding/hp-08-hp-food-hall.jpg" alt="Crowd-sourced food hall with digital menus and garden-to-plate tracking" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
       <p>Food and drink is <strong>crowd-sourced from the local community</strong>. Sponic Garden provides artisan vendors with everything they need: equipment, serving containers and utensils, billing infrastructure, marketing, and on-site delivery logistics — all optimized by AI. The facility becomes a platform that lowers the barrier for local food entrepreneurs while giving members diverse, fresh options.</p>
-      <p>Beyond food, the marketplace extends to <strong>artisan vendors</strong> — handmade jewelry, clothing, crafts, and wellness products. The same infrastructure that supports food vendors (billing, marketing, scheduling) powers a rotating market of local makers, turning Sponic Garden into a vibrant community bazaar.</p>
+      <p>Beyond food, the marketplace extends to <strong>artisan vendors</strong>
+      <div class="section-illustration" style="margin:1rem 0"><img src="sponic-garden/branding/hp-09-hp-artisan-bazaar.jpg" alt="Artisan market and community bazaar with local makers" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div> — handmade jewelry, clothing, crafts, and wellness products. The same infrastructure that supports food vendors (billing, marketing, scheduling) powers a rotating market of local makers, turning Sponic Garden into a vibrant community bazaar.</p>
       <div class="margin-note" style="top:0">AI tracks sales data, consumption rates, waste levels, queue lengths, and member ratings to optimize vendor scheduling, menu composition, and portioning.</div>
 
       <details class="expandable">
@@ -780,6 +809,7 @@
     <div class="section">
       <div class="section-label">Architecture</div>
       <h2>The Central Nervous System</h2>
+      <div class="section-illustration"><img src="sponic-garden/branding/hp-10-hp-central-brain.jpg" alt="The AI central nervous system — observe, reason, actuate, learn" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
       <p>The AI operates as a <strong>closed-loop control system</strong> — continuously observing, reasoning, and actuating across every domain, then learning from the results.</p>
 
       <!-- Observe → Reason → Actuate diagram -->
@@ -1246,6 +1276,7 @@
     <div class="section">
       <div class="section-label">Feedback Philosophy</div>
       <h2>Three Layers of Intelligence</h2>
+      <div class="section-illustration"><img src="sponic-garden/branding/hp-11-hp-sensor-mesh.jpg" alt="The sensor layer — cameras, probes, monitors connected to AI" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
       <div class="grid-3">
         <div class="card accent-card accent-green">
           <h3>🔌 Sensor Layer</h3>
@@ -1274,6 +1305,7 @@
     <div class="section">
       <div class="section-label">Trust & Compliance</div>
       <h2>Your Data, Your Agent</h2>
+      <div class="section-illustration"><img src="sponic-garden/branding/hp-12-hp-privacy-agent.jpg" alt="AI privacy agent — member reviewing their data on phone" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
       <p>Operating under EU GDPR, Sponic Garden doesn't just comply — it gives every member an <strong>AI-powered privacy agent</strong> that makes exercising your data rights as easy as asking a question.</p>
 
       <div class="card accent-card accent-slate">
@@ -1416,7 +1448,23 @@
     <!-- ══════════════════════════════════════════════════
          13. VISION
          ══════════════════════════════════════════════════ -->
+    
+    <!-- ══════════════════════════════════════════════════
+         AUTOMATED PATENT GENERATION
+         ══════════════════════════════════════════════════ -->
     <div class="section">
+      <div class="section-label">Intellectual Property</div>
+      <h2>AI-Automated Patent Generation</h2>
+      <div class="section-illustration"><img src="sponic-garden/branding/hp-13-hp-patent-gen.jpg" alt="AI generating patent specifications from system diagrams" loading="lazy" onclick="openLightbox && openLightbox(this.src)"></div>
+      <p>The same AI platform that runs the facility also generates the intellectual property that protects its innovations. System designs, sensor configurations, and novel algorithms are automatically documented and drafted into patent-ready specifications.</p>
+      <div class="card accent-card accent-plum">
+        <h3>📄 Sonic Vision — Provisional Patent</h3>
+        <p>Our first AI-generated patent: an adaptive ambient audio system using computer vision for real-time audience detection, behavioral feedback analysis, and gesture-based control. The system observes how people <em>react</em> to its own music selections and adapts in real-time — a closed-loop feedback system that no existing patent covers.</p>
+        <p style="margin-top:0.5rem"><a href="https://sponicgarden.com/patents/specification.html" style="color:var(--plum);font-weight:600;text-decoration:none;border-bottom:1px solid var(--plum-border)">View Patent Specification →</a></p>
+      </div>
+    </div>
+
+<div class="section">
       <div class="section-label">Vision</div>
       <h2>Why This Matters</h2>
       <p>Most wellness concepts treat technology as an afterthought — a booking system bolted onto a spa. Sponic Garden inverts this: <strong>the AI platform is the foundation</strong>, and the physical space is designed around what AI can measure, optimize, and learn from.</p>
