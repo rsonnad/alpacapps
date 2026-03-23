@@ -1,12 +1,12 @@
 {
-  "version": "v260322.17 10:02p",
-  "release": 1013,
-  "sha": "89587a8e0",
-  "fullSha": "89587a8e0bd4000bb6262d9ceee87bd7006e8458",
+  "version": "v260322.18 10:18p",
+  "release": 1014,
+  "sha": "d1bdfe2f7",
+  "fullSha": "d1bdfe2f781f1ecd96d27c32e2f3ea999f731b5e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-23 03:02:51+00",
-  "commits": [{"sha":"89587a8e0","message":"feat: add 7 warehouse campus illustrations — broad ages, ambient tech","author":"Rahul"}]
+  "pushedAt": "2026-03-23 03:18:00+00",
+  "commits": [{"sha":"d1bdfe2f7","message":"feat: add 14 AI warehouse scenes — Gemini Pro vs Flash comparison","author":"Rahul"}]
 }
