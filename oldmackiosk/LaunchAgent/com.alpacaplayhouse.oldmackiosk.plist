@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.alpacaplayhouse.oldmackiosk</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Applications/OldMacKiosk.app/Contents/MacOS/OldMacKiosk</string>
+    </array>
+
+    <!-- Start on login -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart if it crashes -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Wait 5 seconds after login before starting (let desktop settle) -->
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+
+    <!-- Stdout/stderr for debugging -->
+    <key>StandardOutPath</key>
+    <string>/tmp/oldmackiosk.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/oldmackiosk.err</string>
+</dict>
+</plist>
