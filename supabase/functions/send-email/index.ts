@@ -82,6 +82,8 @@ type EmailType =
   | "work_checkout_summary"
   // Associate payout
   | "associate_payout_sent"
+  // Weekly payroll summary (admin approval)
+  | "weekly_payroll_summary"
   // Task assignment
   | "task_assigned"
   // Time entry edited
