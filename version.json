@@ -1,12 +1,12 @@
 {
-  "version": "v260323.05 4:19p",
-  "release": 1028,
-  "sha": "8d1654e2a",
-  "fullSha": "8d1654e2a5a4e605c140650c2e21a4e7187ee817",
+  "version": "v260324.01 12:39p",
+  "release": 1029,
+  "sha": "ca7e6a460",
+  "fullSha": "ca7e6a4603f1173f72610ed8f4069db9d4b49dfe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-23 21:19:07+00",
-  "commits": [{"sha":"8d1654e2a","message":"feat: add OldMacKiosk — native macOS kiosk app for pacBook","author":"Rahul"}]
+  "pushedAt": "2026-03-24 17:39:50+00",
+  "commits": [{"sha":"ca7e6a460","message":"feat: add multi-location residence tracking (sharingwood)","author":"Rahul"}]
 }
