@@ -4,9 +4,22 @@
 ### Core Tables
 ```
 spaces          - Rental units (name, rates, beds, baths, visibility flags)
-people          - Tenants/guests (name, contact, type)
+people          - Tenants/guests (name, contact, type, residence_location)
 assignments     - Bookings (person_id, dates, rate, status)
 assignment_spaces - Junction: which spaces are in which assignments
+```
+
+### Multi-Location Support
+```
+people.residence_location - Segregates tenants by property location
+  Values: 'cedar_creek' (default, Alpaca Playhouse), 'sharingwood' (Snohomish WA)
+
+spaces.location           - Matches residence_location for filtering
+
+NOTE: Sharingwood is a SEPARATE tax entity from Alpaca Playhouse.
+      AlpacApps only manages late rent email tracking for Sharingwood.
+      Accounting is handled elsewhere (Finleg). Forward payment notifications
+      to agent@finleg.net.
 ```
 
 ### Media System (New - use this, not legacy photos)
