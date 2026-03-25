@@ -1,12 +1,12 @@
 {
-  "version": "v260324.02 10:42p",
-  "release": 1030,
-  "sha": "ee0bb49e2",
-  "fullSha": "ee0bb49e2eb044ee4daa62d01ff7d0aaf03c87b5",
+  "version": "v260324.03 10:45p",
+  "release": 1031,
+  "sha": "99b7abe42",
+  "fullSha": "99b7abe42e203b6939cce65fa8e266f421cbaee6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-25 03:42:37+00",
-  "commits": [{"sha":"ee0bb49e2","message":"docs: add Paca's Mac mini as primary home server, update architecture","author":"Rahul"}]
+  "pushedAt": "2026-03-25 03:45:31+00",
+  "commits": [{"sha":"99b7abe42","message":"docs: update IPs — mini-mac→.100, alpaca-mac→.101","author":"Rahul"}]
 }
