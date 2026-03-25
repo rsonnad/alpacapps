@@ -1,7 +1,7 @@
 # Home Automation — Alpaca Playhouse
 
 > Comprehensive reference for all smart home devices, Home Assistant setup, and migration plans.
-> Last updated: 2026-03-22
+> Last updated: 2026-03-25
 
 ---
 
@@ -11,7 +11,7 @@
                     ┌─────────────────────────────────────┐
                     │       Home Assistant OS 17.1         │
                     │     http://192.168.1.39:8123         │
-                    │  (QEMU VM on Rahul M4 Airtop)       │
+                    │  (QEMU VM on Alpuca Mac Mini M4)     │
                     └───┬────┬────┬────┬────┬────┬────┬───┘
                         │    │    │    │    │    │    │
               ┌─────────┘    │    │    │    │    │    └─────────┐
@@ -38,18 +38,21 @@
 
 ## 1. Home Assistant OS — VM Setup
 
-### Current Host: Rahul M4 Airtop
+### Current Host: Alpuca (Mac Mini M4)
 
 | Setting | Value |
 |---------|-------|
 | **HAOS Version** | 17.1 |
-| **VM IP** | `192.168.1.39` (bridged on en0 via vmnet) |
+| **VM IP** | `192.168.1.39` (bridged on en1 via vmnet) |
 | **Web UI** | http://192.168.1.39:8123 |
 | **Login** | `alpacaadmin` / `playhouse` |
-| **Host Machine** | Rahul M4 Airtop (Apple Silicon) |
-| **Hypervisor** | Raw QEMU with `vmnet-bridged` (NOT UTM — UTM can't do bridged networking in QEMU mode) |
+| **Host Machine** | Alpuca — Mac mini M4 (Apple Silicon), 24 GB RAM |
+| **Host IP** | `192.168.1.200` |
+| **Host SSH** | `ssh paca@192.168.1.200` |
+| **Hypervisor** | Raw QEMU with `vmnet-bridged` on en1 (NOT UTM — UTM can't do bridged networking in QEMU mode) |
 | **Start Script** | `sudo ~/homeassistant-vm/start-ha.sh` |
 | **Auto-start** | LaunchDaemon at `/Library/LaunchDaemons/com.alpacapps.homeassistant-vm.plist` |
+| **Migrated from** | Rahul M4 Airtop (2026-03-25) |
 | **API Token (long-lived)** | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxN2FlNmMyNTdhYWY0NGMxODBjZmMxOWU3ZDBiZWExMiIsImlhdCI6MTc3NDE1NTUzNSwiZXhwIjoyMDg5NTE1NTM1fQ.MdIZq95i9pJBKuKxn_aeyrK1O55JbMhsgtnM7GcTkXQ` |
 | **Token Name** | `claude-automation` |
 
@@ -91,27 +94,29 @@ The old HA Core instance on Almaca (192.168.1.200:8123) is still running as refe
 
 ---
 
-## 2. Migration Plan — Mac Mini (~2026-03-31)
+## 2. Migration — Completed 2026-03-25
 
-### Steps
+HAOS successfully migrated from Rahul M4 Airtop to Alpuca (Mac mini M4).
 
-1. **Create HAOS backup** via Settings → System → Backups → Create Backup
-2. **Transfer backup** to Mac Mini (SCP or USB)
-3. **Install QEMU** on Mac Mini (`brew install qemu`)
-4. **Copy VM folder** `~/homeassistant-vm/` to Mac Mini
-5. **Update `start-ha.sh`** with correct network interface name (check `ifconfig` on Mini)
-6. **Start VM** on Mac Mini: `sudo ~/homeassistant-vm/start-ha.sh`
-7. **Restore backup** if needed via HAOS onboarding
-8. **Update LaunchDaemon** — copy plist to `/Library/LaunchDaemons/` on Mac Mini
-9. **Verify all devices** reconnect (same subnet, so IPs stay the same)
-10. **Disable sleep** on Mac Mini: `sudo pmset -a sleep 0 displaysleep 0`
+### What was done
 
-### Why Mac Mini
+1. Installed QEMU on Alpuca via Homebrew (`/opt/homebrew/bin/qemu-system-aarch64`)
+2. Copied VM folder `~/homeassistant-vm/` from Airtop to Alpuca via rsync
+3. Updated `start-ha.sh` — changed bridge interface from `en0` to `en1` (Alpuca's active Ethernet)
+4. Updated LaunchDaemon plist — fixed paths from `/Users/rahulio/` to `/Users/alpuca/`
+5. Installed LaunchDaemon on Alpuca at `/Library/LaunchDaemons/com.alpacapps.homeassistant-vm.plist`
+6. Started VM — HAOS booted, kept IP 192.168.1.39, all 181 entities loaded
 
-- Apple Silicon native — better QEMU performance
-- Dedicated home server (not Airtop which is a dev machine)
-- `home-assistant-chip-core` Matter wheel available on ARM64 (blocked on Intel x86_64)
-- Lower power consumption for always-on server
+### Key difference from Airtop
+
+- **Network interface:** `en1` on Alpuca (not `en0` — en0 is the inactive WiFi adapter on Mac mini)
+- **QEMU path:** `/opt/homebrew/bin/qemu-system-aarch64` (Homebrew on Apple Silicon)
+- **User home:** `/Users/alpuca/` (SSH user: `paca`)
+
+### Airtop cleanup (TODO)
+
+- [ ] Disable the LaunchDaemon on Airtop: `sudo launchctl unload /Library/LaunchDaemons/com.alpacapps.homeassistant-vm.plist`
+- [ ] Optionally archive or delete `~/homeassistant-vm/` on Airtop after confirming Alpuca is stable
 
 ---
 
