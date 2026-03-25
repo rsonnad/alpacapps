@@ -1,12 +1,12 @@
 {
-  "version": "v260324.04 10:57p",
-  "release": 1032,
-  "sha": "fe4b93f02",
-  "fullSha": "fe4b93f023833a94f0dee36789106b89fd5b9dd7",
+  "version": "v260324.05 10:58p",
+  "release": 1033,
+  "sha": "510920207",
+  "fullSha": "5109202078a4c5e7a797e0617f6da9650c06cfb2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-25 03:57:07+00",
-  "commits": [{"sha":"fe4b93f02","message":"feat: add weekly associate schedule report email system","author":"Rahul"}]
+  "pushedAt": "2026-03-25 03:58:39+00",
+  "commits": [{"sha":"510920207","message":"docs: rename Alpaca Mac → Almaca, update all IPs to .100/.101","author":"Rahul"}]
 }
