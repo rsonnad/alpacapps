@@ -1,8 +1,8 @@
 #!/bin/bash
-# MediaMTX Setup Script for Alpaca Mac
+# MediaMTX Setup Script for Almaca
 # Installs MediaMTX, extracts UDM Pro cert fingerprint, deploys config & launchd service
 #
-# Run this ON the Alpaca Mac (or via SSH):
+# Run this ON the Almaca (or via SSH):
 #   ssh alpaca@100.94.221.98 'bash -s' < scripts/mediamtx/setup.sh
 #
 # Or from the DO droplet:
@@ -126,16 +126,16 @@ if curl -s http://localhost:9997/v3/paths/list > /dev/null 2>&1; then
     echo "MediaMTX is running!"
     echo ""
     echo "Stream URLs (from any machine on the LAN or Tailscale):"
-    echo "  RTSP:   rtsp://192.168.1.74:8554/{stream-name}"
-    echo "  HLS:    http://192.168.1.74:8888/{stream-name}"
-    echo "  WebRTC: http://192.168.1.74:8889/{stream-name}"
+    echo "  RTSP:   rtsp://192.168.1.100:8554/{stream-name}"
+    echo "  HLS:    http://192.168.1.100:8888/{stream-name}"
+    echo "  WebRTC: http://192.168.1.100:8889/{stream-name}"
     echo ""
     echo "Available streams:"
     echo "  alpacamera-high, alpacamera-med, alpacamera-low"
     echo "  front-house-high, front-house-med, front-house-low"
     echo "  side-yard-high, side-yard-med, side-yard-low"
     echo ""
-    echo "API:      http://192.168.1.74:9997/v3/paths/list"
+    echo "API:      http://192.168.1.100:9997/v3/paths/list"
     echo "Logs:     $INSTALL_DIR/mediamtx.log"
     echo ""
     echo "Fingerprint used: $FINGERPRINT"

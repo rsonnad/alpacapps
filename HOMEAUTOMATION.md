@@ -36,7 +36,7 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
     └───────────────────┘ └──────────────────┘  └──────────────────┘
 
                           ┌──────────────────┐
-                          │  Alpaca Mac       │
+                          │  Almaca       │
                           │  (legacy, WiFi)   │
                           │  192.168.1.101    │
                           │  Secondary/backup │
@@ -81,21 +81,21 @@ Tailscale connects remote servers to the Mac mini and the entire LAN. All machin
 |---------|-------------|----------|------|
 | Paca's Mac mini | `100.74.59.97` | pacas-mac-mini | Primary home server, subnet router |
 | Hostinger VPS | See `HOMEAUTOMATION.local.md` | TBD | Replaces DO droplet |
-| Alpaca Mac (legacy) | See `HOMEAUTOMATION.local.md` | alpacaopenmac-1 | Secondary/backup |
+| Almaca (legacy) | See `HOMEAUTOMATION.local.md` | alpacaopenmac-1 | Secondary/backup |
 
 **Subnet Routing:** The Mac mini advertises `192.168.1.0/24` to the Tailnet, allowing the Hostinger VPS to reach any LAN device directly through Tailscale (no SSH hop needed for TCP/HTTPS traffic).
 
 **Configuration:**
 - Mac mini: `tailscale set --advertise-routes=192.168.1.0/24`
 - DO Droplet: `tailscale up --accept-routes`
-- Alpaca Mac: IP forwarding enabled (`net.inet.ip.forwarding=1` in `/etc/sysctl.conf`)
+- Almaca: IP forwarding enabled (`net.inet.ip.forwarding=1` in `/etc/sysctl.conf`)
 - Tailscale Admin: Subnet route approved for `alpacaopenmac`
 
-**Note:** UDP-based protocols (WiZ lights, Sonos mDNS discovery) still require executing commands on the Alpaca Mac via SSH, since Tailscale subnet routing only forwards TCP traffic reliably. The Sonos HTTP API on the Alpaca Mac handles this bridging for Sonos control.
+**Note:** UDP-based protocols (WiZ lights, Sonos mDNS discovery) still require executing commands on the Almaca via SSH, since Tailscale subnet routing only forwards TCP traffic reliably. The Sonos HTTP API on the Almaca handles this bridging for Sonos control.
 
 ## Paca's Mac mini (Primary Home Server)
 
-Mac mini M4 (Mac16,10), 24 GB RAM, 256 GB SSD, macOS 26.3.1 (Tahoe). Headless, on Ethernet. Primary home server replacing the Alpaca Mac for all services.
+Mac mini M4 (Mac16,10), 24 GB RAM, 256 GB SSD, macOS 26.3.1 (Tahoe). Headless, on Ethernet. Primary home server replacing the Almaca for all services.
 
 ### Network & Access
 
@@ -204,7 +204,7 @@ open vnc://192.168.1.100
 
 ---
 
-## Alpaca Mac (Legacy — Secondary Server)
+## Almaca (Legacy — Secondary Server)
 
 A dedicated MacBook running macOS 12.7.6 (Monterey), lid closed, plugged in, on Black Rock City WiFi. **Being phased out in favor of Paca's Mac mini.** Kept as secondary/backup.
 
@@ -339,7 +339,7 @@ tail -f ~/node-sonos-http-api/logs/stdout.log
 
 ### Sonos HTTP API
 
-Base URL (from Alpaca Mac): `http://localhost:5005`
+Base URL (from Almaca): `http://localhost:5005`
 Base URL (from DO Droplet via Tailscale): `http://<alpaca-mac-tailscale-ip>:5005`
 
 Room names are case-insensitive. Spaces in room names use `%20` in URLs.
@@ -488,7 +488,7 @@ Config file: `~/node-sonos-http-api/settings.json`
 
 The balance endpoint is a custom action added to node-sonos-http-api. Stock node-sonos-http-api does NOT support balance control (upstream PR #454 was never merged).
 
-**File:** `~/node-sonos-http-api/lib/actions/balance.js` (on Alpaca Mac)
+**File:** `~/node-sonos-http-api/lib/actions/balance.js` (on Almaca)
 
 **How it works:**
 - Sends raw SOAP `SetVolume` calls to the speaker's `RenderingControl` endpoint
@@ -510,13 +510,13 @@ GET /{room}/balance/50     # Right-biased (LF=50%, RF=100%)
 
 ### Hostinger VPS Proxies (Sonos + Music Assistant)
 
-Music traffic now routes through Hostinger VPS (`alpaclaw.cloud`) as the public proxy layer to Alpaca Mac over Tailscale.
+Music traffic now routes through Hostinger VPS (`alpaclaw.cloud`) as the public proxy layer to Almaca over Tailscale.
 
 ```
 Browser / Mobile / PAI
   -> Supabase Edge Function (sonos-control)
     -> Hostinger Caddy proxy (HTTPS)
-      -> Alpaca Mac via Tailscale
+      -> Almaca via Tailscale
          - Sonos HTTP API :5005
          - Music Assistant :8095
 ```
@@ -538,9 +538,9 @@ Browser / Mobile / PAI
 
 `sonos-control` routes playback and grouping actions to MA first, with Sonos fallback. Announce and EQ actions remain Sonos-proxy-based.
 
-For **Music Assistant on Alpaca Mac** (Docker, auto-start, local/hard-drive music, and schedule automation), see **`docs/music-assistant-alpaca-mac-setup.md`**.
+For **Music Assistant on Almaca** (Docker, auto-start, local/hard-drive music, and schedule automation), see **`docs/music-assistant-alpaca-mac-setup.md`**.
 
-### Legacy Sonos Proxy Chain (Browser → Supabase → DO Droplet → Alpaca Mac)
+### Legacy Sonos Proxy Chain (Browser → Supabase → DO Droplet → Almaca)
 
 The browser doesn't access the Sonos HTTP API directly. Instead, requests flow through a proxy chain:
 
@@ -548,7 +548,7 @@ The browser doesn't access the Sonos HTTP API directly. Instead, requests flow t
 Browser (sonos.js)
   → Supabase Edge Function (sonos-control)
     → Nginx reverse proxy on DO droplet (port 8055)
-      → Alpaca Mac via Tailscale (100.94.221.98:5005)
+      → Almaca via Tailscale (100.94.221.98:5005)
         → node-sonos-http-api → Sonos speakers
 ```
 
@@ -575,7 +575,7 @@ server {
 
 - Port 8055 is opened in UFW (`ufw allow 8055/tcp`)
 - Secret is verified via `X-Sonos-Secret` header
-- Path `/sonos/` prefix is stripped before proxying to Alpaca Mac
+- Path `/sonos/` prefix is stripped before proxying to Almaca
 - Actual secret value is in `HOMEAUTOMATION.local.md`
 
 #### Supabase Edge Function: `sonos-control`
@@ -605,7 +605,7 @@ Set with: `supabase secrets set SONOS_PROXY_URL="..." SONOS_PROXY_SECRET="..."`
 ### Important Notes
 
 - **Must use Node.js 18** — Node 20+ has unresolved keep-alive bugs with this project
-- **Speakers discovered via mDNS/SSDP** — Alpaca Mac must be on the same subnet as Sonos speakers
+- **Speakers discovered via mDNS/SSDP** — Almaca must be on the same subnet as Sonos speakers
 - **Sonos S1 vs S2** — Check which system version the speakers use. The API works with both but mixed environments can cause discovery issues.
 
 ## UniFi Dream Machine Pro — Network API
@@ -685,11 +685,11 @@ rtsps://192.168.1.1:7441/<unique_stream_token>
 ### go2rtc (Camera Streaming)
 
 go2rtc converts RTSPS from UniFi Protect into HLS/WebRTC/MSE for browser playback.
-Runs on Alpaca Mac as launchd service `com.go2rtc` (v1.9.14).
+Runs on Almaca as launchd service `com.go2rtc` (v1.9.14).
 
 **Why go2rtc, not MediaMTX:** MediaMTX's HLS muxer crashes repeatedly on UniFi Protect's malformed SPS NAL units ("unable to extract DTS: invalid SPS"). go2rtc handles these quirky streams perfectly with zero errors.
 
-**Config:** `~/go2rtc/go2rtc.yaml` on Alpaca Mac (source in `scripts/go2rtc/go2rtc.yaml`)
+**Config:** `~/go2rtc/go2rtc.yaml` on Almaca (source in `scripts/go2rtc/go2rtc.yaml`)
 
 **Key detail:** UniFi Protect URLs use `rtspx://` protocol (RTSP over TLS control channel, no SRTP on media data). Remove `?enableSrtp` from the Protect RTSP URLs.
 
@@ -733,7 +733,7 @@ Runs on Alpaca Mac as launchd service `com.go2rtc` (v1.9.14).
 
 **Service management:**
 ```bash
-# On Alpaca Mac
+# On Almaca
 launchctl list | grep go2rtc                                   # Check status
 launchctl unload ~/Library/LaunchAgents/com.go2rtc.plist       # Stop
 launchctl load ~/Library/LaunchAgents/com.go2rtc.plist         # Start
@@ -789,7 +789,7 @@ The UDM Pro exposes an unofficial REST API for camera settings (IR, PTZ, etc.).
 **Authentication:** Same as Network API — cookie-based with CSRF token from JWT.
 
 ```bash
-# IR LED control script (on Alpaca Mac)
+# IR LED control script (on Almaca)
 python3 /tmp/unifi_ir.py auto    # Set all cameras to auto IR
 python3 /tmp/unifi_ir.py on      # Force IR LEDs on
 python3 /tmp/unifi_ir.py off     # Force IR LEDs off
@@ -851,7 +851,7 @@ Use cron on Hostinger VPS to trigger Sonos or MA actions via Hostinger proxy (fi
 All commands assume running on the DO droplet. The droplet has direct LAN access via Tailscale subnet routing.
 
 ```bash
-# === Sonos (via Alpaca Mac Sonos HTTP API) ===
+# === Sonos (via Almaca Sonos HTTP API) ===
 
 # List all Sonos zones
 curl -s http://<alpaca-tailscale-ip>:5005/zones | python3 -m json.tool
@@ -893,7 +893,7 @@ curl -k -b /tmp/unifi_cookies.txt \
 curl -k -b /tmp/unifi_cookies.txt \
   https://192.168.1.1/proxy/protect/api/cameras
 
-# === WiZ Lights (via SSH to Alpaca Mac — UDP requires LAN presence) ===
+# === WiZ Lights (via SSH to Almaca — UDP requires LAN presence) ===
 
 # Turn on a light
 ssh alpaca@<alpaca-tailscale-ip> \
@@ -905,7 +905,7 @@ ssh alpaca@<alpaca-tailscale-ip> \
 
 # === Infrastructure ===
 
-# SSH to Alpaca Mac
+# SSH to Almaca
 ssh alpaca@<alpaca-tailscale-ip>
 
 # Check Tailscale status
@@ -916,16 +916,16 @@ tailscale status
 
 ### Sonos speakers not found (`/zones` returns empty)
 
-1. Verify Alpaca Mac is on Black Rock City WiFi: `networksetup -getairportnetwork en0`
+1. Verify Almaca is on Black Rock City WiFi: `networksetup -getairportnetwork en0`
 2. Check firewall isn't blocking UDP 1900/1905 (SSDP discovery)
 3. Restart the Sonos API service (see launchd commands above)
 4. Try `/reindex` to force re-discovery
 
-### Can't SSH to Alpaca Mac from DO droplet
+### Can't SSH to Almaca from DO droplet
 
 1. Check Tailscale is running on both: `tailscale status`
 2. Verify both are on the same Tailnet (same account)
-3. Check Alpaca Mac hasn't gone to sleep (power adapter must be connected)
+3. Check Almaca hasn't gone to sleep (power adapter must be connected)
 4. If Mac rebooted, verify auto-login worked and Tailscale started
 
 ### Sonos API not responding after Mac reboot
@@ -938,7 +938,7 @@ tailscale status
 
 Debug the proxy chain step by step:
 
-1. **Alpaca Mac → Sonos HTTP API** (from DO droplet via Tailscale):
+1. **Almaca → Sonos HTTP API** (from DO droplet via Tailscale):
    ```bash
    ssh alpaca@100.94.221.98 "curl -s http://localhost:5005/zones | head -c 200"
    ```
@@ -965,7 +965,7 @@ Debug the proxy chain step by step:
 - `SONOS_PROXY_URL` or `SONOS_PROXY_SECRET` Supabase secrets don't match nginx config
 - Secrets changed but edge function not redeployed (secrets only take effect on next deploy)
 - Port 8055 blocked by UFW on DO droplet
-- Tailscale tunnel down between DO droplet and Alpaca Mac
+- Tailscale tunnel down between DO droplet and Almaca
 
 ### TTS not working
 
@@ -977,9 +977,9 @@ Debug the proxy chain step by step:
 
 1. Check Tailscale on droplet accepts routes: `tailscale status` — look for "accept-routes" warning
 2. If needed: `tailscale up --accept-routes`
-3. Check Alpaca Mac is advertising routes: `tailscale status` on the Mac
+3. Check Almaca is advertising routes: `tailscale status` on the Mac
 4. If needed: `/Applications/Tailscale.app/Contents/MacOS/Tailscale up --advertise-routes=192.168.1.0/24`
-5. Check IP forwarding on Alpaca Mac: `sysctl net.inet.ip.forwarding` (should be `1`)
+5. Check IP forwarding on Almaca: `sysctl net.inet.ip.forwarding` (should be `1`)
 6. If needed: `sudo sysctl -w net.inet.ip.forwarding=1`
 7. Verify subnet route is approved in Tailscale admin: https://login.tailscale.com/admin/machines
 
@@ -994,7 +994,7 @@ Debug the proxy chain step by step:
 
 The property has **100+ lights** across three ecosystems, plus Alexa and Matter integration.
 Lighting has historically been managed ad-hoc through individual apps (WiZ, Govee Home, Alexa).
-The goal is to unify control through the DO droplet → Alpaca Mac → local network chain.
+The goal is to unify control through the DO droplet → Almaca → local network chain.
 
 ### Ecosystem Overview
 
@@ -1037,10 +1037,10 @@ All WiZ bulbs are model **ESP05_SHRGBL_21** (RGBL color bulbs), firmware **1.35.
 
 #### WiZ Control (pywizlight)
 
-Installed on Alpaca Mac at `/Users/alpaca/Library/Python/3.9/bin/wizlight`.
+Installed on Almaca at `/Users/alpaca/Library/Python/3.9/bin/wizlight`.
 
 ```bash
-# From Alpaca Mac (or via SSH from droplet)
+# From Almaca (or via SSH from droplet)
 # Discover all WiZ lights
 /Users/alpaca/Library/Python/3.9/bin/wizlight discover --b 192.168.1.255
 
@@ -1249,7 +1249,7 @@ The `14C14E*` hostnames are Nest thermostats (.111, .139, .249). The 10 on the f
 
 ### TP-Link Kasa Devices (2 discovered)
 
-Discovered via `python-kasa` (installed on Alpaca Mac at `/Users/alpaca/Library/Python/3.9/bin/kasa`).
+Discovered via `python-kasa` (installed on Almaca at `/Users/alpaca/Library/Python/3.9/bin/kasa`).
 
 | Device | IP | Model | Room | State | Extra |
 |--------|-----|-------|------|-------|-------|
@@ -1257,7 +1257,7 @@ Discovered via `python-kasa` (installed on Alpaca Mac at `/Users/alpaca/Library/
 | **Nook** | 192.168.1.101 | HS220(US) | Nook | ON (25% brightness) | Dimmer switch, MAC 00:5F:67:10:F9:51 |
 
 ```bash
-# From Alpaca Mac — discover TP-Link devices
+# From Almaca — discover TP-Link devices
 /Users/alpaca/Library/Python/3.9/bin/kasa discover
 
 # Turn on/off
@@ -1270,7 +1270,7 @@ Discovered via `python-kasa` (installed on Alpaca Mac at `/Users/alpaca/Library/
 
 ### Tuya Devices (3 confirmed + 2 additional)
 
-Discovered via `tinytuya` (installed on Alpaca Mac) and UDM Pro client list. All confirmed Tuya devices show hostname "wlan0" and OUI "Tuya Smart Inc."
+Discovered via `tinytuya` (installed on Almaca) and UDM Pro client list. All confirmed Tuya devices show hostname "wlan0" and OUI "Tuya Smart Inc."
 
 | Device | IP | MAC | Protocol | Notes |
 |--------|-----|-----|----------|-------|
@@ -1369,7 +1369,7 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 - `alexa-cookie2` (npm, in `/opt/alexa-remote-control/node_modules/`)
 - `jq` (system package)
 
-### Software Installed on Alpaca Mac for Lighting
+### Software Installed on Almaca for Lighting
 
 | Tool | Path | Purpose |
 |------|------|---------|
@@ -1397,12 +1397,12 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 
 ### TODO: Camera Streaming
 
-- [x] ~~**Deploy camera streaming**~~ — Deployed 2026-02-07. go2rtc v1.9.14 on Alpaca Mac with 9 streams. Caddy reverse proxy on DO droplet at `cam.alpacaplayhouse.com`. HLS.js frontend at `residents/cameras.html`.
+- [x] ~~**Deploy camera streaming**~~ — Deployed 2026-02-07. go2rtc v1.9.14 on Almaca with 9 streams. Caddy reverse proxy on DO droplet at `cam.alpacaplayhouse.com`. HLS.js frontend at `residents/cameras.html`.
 - [x] ~~**Fix Tailscale connectivity**~~ — Fixed 2026-02-07. Re-authenticated Tailscale, new device `alpacaopenmac-1` at `100.94.221.98`. Key expiry disabled.
 - [x] ~~**MediaMTX → go2rtc migration**~~ — MediaMTX crashed on UniFi Protect's malformed SPS NAL units. Switched to go2rtc which handles them perfectly. MediaMTX binary kept at `~/mediamtx/mediamtx.v1.16.0.bak` but service is unloaded.
-- [x] ~~**Identify Trolink cameras**~~ — These are Wansview/Trolink cameras (Trolink is Wansview's OEM). RTSP on port 554, ONVIF on port 8899, HTTP on port 80 (Boa web server, hi3510 chipset). Each camera has unique RTSP credentials set via Wansview app (Settings > Local Application > Local Account). Wansview 4 (.132) is streaming via go2rtc. Wansview 1 (.18) verified working via ffprobe but unreachable from Alpaca Mac. Wansview 2 (.21) and 3 (.26) accept auth but send no video data (likely physically offline).
+- [x] ~~**Identify Trolink cameras**~~ — These are Wansview/Trolink cameras (Trolink is Wansview's OEM). RTSP on port 554, ONVIF on port 8899, HTTP on port 80 (Boa web server, hi3510 chipset). Each camera has unique RTSP credentials set via Wansview app (Settings > Local Application > Local Account). Wansview 4 (.132) is streaming via go2rtc. Wansview 1 (.18) verified working via ffprobe but unreachable from Almaca. Wansview 2 (.21) and 3 (.26) accept auth but send no video data (likely physically offline).
 - [ ] **Get physical locations of Wansview cameras** — Currently named "Wansview 1" through "Wansview 4" as placeholders
-- [ ] **Troubleshoot Wansview 1 (.18)** — RTSP confirmed working via DO droplet but go2rtc on Alpaca Mac gets "host is down". May be a WiFi/ARP issue on the local network.
+- [ ] **Troubleshoot Wansview 1 (.18)** — RTSP confirmed working via DO droplet but go2rtc on Almaca gets "host is down". May be a WiFi/ARP issue on the local network.
 - [ ] **Troubleshoot Wansview 2 (.21) and 3 (.26)** — RTSP auth succeeds with all credentials but cameras send no video. Likely powered off or disconnected.
 
 ### Wansview Camera Integration
@@ -1427,7 +1427,7 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 - `lHSsv3X9` / `scbevBv1uBW4n9P7`
 - `v0H7TTAR` / `8kRmuNVjy9osqAYS`
 
-**go2rtc streams** (in `scripts/go2rtc/go2rtc.yaml`, deployed to `~/go2rtc/go2rtc.yaml` on Alpaca Mac):
+**go2rtc streams** (in `scripts/go2rtc/go2rtc.yaml`, deployed to `~/go2rtc/go2rtc.yaml` on Almaca):
 ```yaml
 wansview-1-high:
   - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch0
@@ -1490,11 +1490,11 @@ wansview-4-low:
 
 ### Phase 1: WiZ in the app (fastest win)
 
-WiZ is already controllable via local UDP; we have `scripts/wiz-proxy/server.js` that accepts HTTP and sends UDP (or SSH to Alpaca Mac).
+WiZ is already controllable via local UDP; we have `scripts/wiz-proxy/server.js` that accepts HTTP and sends UDP (or SSH to Almaca).
 
 | Step | What |
 |------|------|
-| 1. Run wiz-proxy | Deploy proxy on a host that can reach bulbs: either on Alpaca Mac (direct UDP) or on DO/Oracle with `WIZ_SSH_TARGET` set to Alpaca Mac. Set `WIZ_PROXY_TOKEN`. Expose via Caddy (e.g. `lights.alpacaplayhouse.com/wiz` or path on existing domain). |
+| 1. Run wiz-proxy | Deploy proxy on a host that can reach bulbs: either on Almaca (direct UDP) or on DO/Oracle with `WIZ_SSH_TARGET` set to Almaca. Set `WIZ_PROXY_TOKEN`. Expose via Caddy (e.g. `lights.alpacaplayhouse.com/wiz` or path on existing domain). |
 | 2. DB | Add `wiz_devices` (ip, name, room_id, display_order) and `wiz_rooms` (room_id, name, display_order) — or a single `wiz_groups` (name, list of ips as JSON/text). Seed from HOMEAUTOMATION.md (room 4352002 = 6 IPs for kitchen; 4528222, 4937866 for others). |
 | 3. Edge function | Add `wiz-control` (or extend a generic `lighting-control`): auth, read group/device from body, call wiz-proxy URL with Bearer token for power/brightness/color. Store proxy URL and token in Supabase secrets. |
 | 4. Lighting page | Load WiZ groups from DB; render a "WiZ" or per-room section (e.g. Kitchen, Living Room) with on/off, brightness, color. Call edge function. |
@@ -1509,7 +1509,7 @@ Get a Matter controller we own on the LAN and an HTTP API our backend can call.
 | Step | What |
 |------|------|
 | 1. Choose controller | Options: **matter-server** (Node, has REST/API), **Home Assistant** (Matter integration + REST/API), or **chip-tool** (CLI, would need a thin wrapper). matter-server or HA is typical for "our fabric, our API." |
-| 2. Run on LAN | Install on Alpaca Mac (or a Pi on the same network). Matter requires LAN for commissioning and control. |
+| 2. Run on LAN | Install on Almaca (or a Pi on the same network). Matter requires LAN for commissioning and control. |
 | 3. Commission devices | One-time: add each Matter bulb (Govee Matter, Linkind, etc.) to this controller's fabric. May require re-commissioning if they're currently on Alexa/Google. |
 | 4. HTTP proxy | Either use the controller's built-in API (e.g. matter-server HTTP) or build a thin proxy that translates "group X on/off, brightness, color" into Matter cluster commands. Proxy must be callable from our edge function (so expose via Caddy/Tailscale like wiz-proxy). |
 | 5. DB | Add `matter_devices` and `matter_groups` (or a unified schema) so we know which node IDs belong to "Kitchen (Matter)" etc. |
@@ -1534,7 +1534,7 @@ Let one logical group (e.g. "Kitchen") span backends: some bulbs WiZ, some Matte
 
 | Phase | Scope | Dependency |
 |-------|--------|------------|
-| 1. WiZ | wiz-proxy already exists; add DB, edge fn, UI, PAI | Proxy URL + token; SSH to Alpaca Mac if proxy runs on droplet |
+| 1. WiZ | wiz-proxy already exists; add DB, edge fn, UI, PAI | Proxy URL + token; SSH to Almaca if proxy runs on droplet |
 | 2. Matter | Matter controller + HTTP API + DB + edge fn + UI + PAI | Controller choice; commissioning time |
 | 3. Unified | Logical groups that fan out to WiZ + Matter (+ Govee) | Phases 1 and 2 done |
 

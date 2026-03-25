@@ -1,26 +1,27 @@
-# Alpaca Mac — Media & Video Tools Reference
+# Paca's Mac mini — Media & Video Tools Reference
 
-> **Machine:** Mac Studio ("Alpaca Mac")
-> **OS:** macOS 12 (Monterey)
-> **Credentials:** Provided separately via Bitwarden Send (ask Rahul if you don't have them)
+> **Machine:** Mac mini M4 ("Paca's Mac mini") — replaced the old Almaca
+> **OS:** macOS 26 (Tahoe)
+> **LAN IP:** 192.168.1.100 | **Tailscale:** 100.74.59.97
 
 ---
 
 ## Connecting
 
 ### Prerequisites
-- You must be connected to the **Alpaca Playhouse WiFi** network (on-site only)
-- SSH credentials are in the Bitwarden Send link you received
+- You must be connected to the **Alpaca Playhouse WiFi/LAN** or **Tailscale**
+- SSH key auth is configured; password in Bitwarden if needed
 
 ### SSH Connection
 ```bash
-ssh alpaca@192.168.1.74
+ssh paca@192.168.1.100          # LAN
+ssh paca@100.74.59.97           # Tailscale
 ```
 
 ### First-Time Setup (run once after connecting)
-The `alpaca` user's PATH may not include `/usr/local/bin` by default. Run this once:
+The SSH PATH doesn't include Homebrew by default. Run this once:
 ```bash
-echo 'export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"' >> ~/.zshrc
+echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
@@ -222,6 +223,6 @@ ffmpeg -i "downloaded.webm" -c:v libx264 -c:a aac output.mp4
 | `ffmpeg: command not found` | Run `export PATH="/usr/local/bin:$PATH"` or use full path `/usr/local/bin/ffmpeg` |
 | `magick: command not found` | Run `brew link imagemagick` or use `$(brew --prefix imagemagick)/bin/magick` |
 | `yt-dlp: command not found` | Use full path `/usr/local/bin/yt-dlp` |
-| Can't connect via SSH | Verify you're on Alpaca Playhouse WiFi. The Mac is at 192.168.1.74 |
+| Can't connect via SSH | Verify you're on Alpaca Playhouse WiFi/LAN or Tailscale. Mac mini is at 192.168.1.100 (LAN) or 100.74.59.97 (Tailscale) |
 | Need to update tools | Run `brew upgrade ffmpeg imagemagick` (yt-dlp: `yt-dlp -U`) |
 | Need GUI access (Blender UI) | Use Chrome Remote Desktop — PIN is in the password vault |

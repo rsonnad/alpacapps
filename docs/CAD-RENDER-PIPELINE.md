@@ -2,7 +2,7 @@
 
 > **Status:** Pipeline designed, awaiting on-site data collection
 > **Property:** 160 Still Forest Drive, Cedar Creek TX 78612 (Bastrop County)
-> **Tools:** Blender 4.5 + add-ons, QGIS 4.0, GDAL — all on Alpaca Mac (192.168.1.74)
+> **Tools:** Blender 4.5 + add-ons, QGIS 4.0, GDAL — all on Paca's Mac mini (192.168.1.100)
 
 ---
 
@@ -149,7 +149,7 @@ Things NOT in the database that affect the 3D model:
 
 ### Phase 2: GIS Base Layer
 
-**Where:** Desktop work on Alpaca Mac
+**Where:** Desktop work on Almaca
 **Tool:** QGIS 4.0 + GDAL
 
 #### Step 2A: Download USGS 3DEP LiDAR DEM
@@ -158,10 +158,10 @@ Things NOT in the database that affect the 3D model:
 2. Search: 30.145°N, -97.358°W (property coords)
 3. Select: Elevation Products (3DEP) → 1 Meter DEM
 4. Download the tile covering the property (GeoTIFF format)
-5. Save to `~/gis-data/dem/` on Alpaca Mac
+5. Save to `~/gis-data/dem/` on Almaca
 
 ```bash
-# Clip DEM to property area with buffer (GDAL on Alpaca Mac)
+# Clip DEM to property area with buffer (GDAL on Almaca)
 /Applications/QGIS-final-4_0_0.app/Contents/MacOS/gdalwarp \
   -te -97.362 30.142 -97.354 30.150 \
   -t_srs EPSG:4326 \
@@ -212,7 +212,7 @@ curl -s -X POST \
 
 ### Phase 3: Blender Scene Assembly
 
-**Where:** Alpaca Mac, Blender with GUI (not headless)
+**Where:** Almaca, Blender with GUI (not headless)
 **Required add-ons:** BlenderGIS (terrain import), MeasureIt-ARCH (dimensions)
 
 #### Step 3A: Terrain Import
@@ -341,7 +341,7 @@ Resolution: 3840×2160 (4K) for hero shots, 1920×1080 for secondary
 Color Management: Filmic (medium-high contrast)
 ```
 
-Note: Alpaca Mac is Intel (no GPU Cycles acceleration). Expect 5-15 minutes per frame at 4K with Cycles CPU rendering. Consider EEVEE for faster preview renders.
+Note: Almaca is Intel (no GPU Cycles acceleration). Expect 5-15 minutes per frame at 4K with Cycles CPU rendering. Consider EEVEE for faster preview renders.
 
 #### Step 4B: Post-Processing
 
@@ -475,7 +475,7 @@ A future session can follow this checklist to produce the render:
 
 ### Pre-requisites
 - [ ] Associate tasks 1-4 completed (photos + measurements uploaded)
-- [ ] BlenderGIS add-on activated in Blender on Alpaca Mac
+- [ ] BlenderGIS add-on activated in Blender on Almaca
 - [ ] MeasureIt-ARCH add-on activated in Blender
 - [ ] USGS 3DEP LiDAR DEM downloaded for property area
 - [ ] TNRIS aerial imagery downloaded (or use BlenderGIS live tiles)

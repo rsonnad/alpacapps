@@ -4,7 +4,7 @@
 
 > **Tables:** `parcels`, `parcel_edges`, `structures`, `structure_setbacks`, `zoning_rules`, `property_utilities`, `impervious_cover`, `permit_applications`, `inspections`, `permit_documents`
 
-> **All tools are on Alpaca Mac** (192.168.1.74, user `alpaca`).
+> **All tools are on Paca's Mac mini** (192.168.1.100, user `paca`).
 > Nothing is on Hostinger VPS — can be added later for automation if needed.
 
 ---
@@ -50,7 +50,7 @@
 
 ## Blender Add-ons (Downloaded, Need GUI Activation)
 
-All add-on zips are in `~/Downloads/blender-addons/` on Alpaca Mac.
+All add-on zips are in `~/Downloads/blender-addons/` on Almaca.
 
 **To install each:** Blender → Edit → Preferences → Add-ons → Install → select the .zip file → Enable.
 

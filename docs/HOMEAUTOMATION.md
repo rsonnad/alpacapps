@@ -17,7 +17,7 @@
               ┌─────────┘    │    │    │    │    │    └─────────┐
               ▼              ▼    │    ▼    │    ▼              ▼
          WiZ Bulbs      Sonos │  Cast  │  TP-Link      Music Assistant
-         (16/26)      (9 speakers)    │        │       (192.168.1.74:8095)
+         (16/26)      (9 speakers)    │        │       (192.168.1.100:8095)
                               │       │        │
                          ┌────┘       │        └────┐
                          ▼            ▼             ▼
@@ -85,9 +85,9 @@ FS0:
 EFI\BOOT\BOOTAA64.EFI
 ```
 
-### Previous HA Core (Alpaca Mac)
+### Previous HA Core (Almaca)
 
-The old HA Core instance on Alpaca Mac (192.168.1.74:8123) is still running as reference. It's a venv-based install under `~/homeassistant-venv/` with config at `~/.homeassistant/`. This will be decommissioned after HAOS migration is complete.
+The old HA Core instance on Almaca (192.168.1.100:8123) is still running as reference. It's a venv-based install under `~/homeassistant-venv/` with config at `~/.homeassistant/`. This will be decommissioned after HAOS migration is complete.
 
 ---
 
@@ -123,7 +123,7 @@ The old HA Core instance on Alpaca Mac (192.168.1.74:8123) is still running as r
 | **Sonos** | 9 speakers | Loaded | All rooms working |
 | **Google Cast** | 2 devices | Loaded | Jon + 1 other |
 | **TP-Link** | 3 devices | Loaded | Cabin 1 KL135, Nook HS220, Stair Landing HS210 |
-| **Music Assistant** | 1 entry | Loaded | Connected to Alpaca Mac :8095 |
+| **Music Assistant** | 1 entry | Loaded | Connected to Almaca :8095 |
 | **DLNA DMR** | 1 device | Loaded | Spartan WiiM |
 | **LinkPlay** | 1 device | Loaded | Spartan WiiM |
 | **IPP (Printer)** | 1 device | Loaded | HP ENVY Photo 7800 |
@@ -174,7 +174,7 @@ All WiZ RGBW Tunable bulbs communicate via UDP port 38899. They are auto-discove
 - Living Room: 2 bulbs
 - 4 unassigned IPs: .10, .120, .142, .212
 
-**WiZ Proxy (legacy):** Still running on Alpaca Mac port 8902, tunneled via `cam.alpacaplayhouse.com`. Will be deprecated once all bulbs are in HAOS.
+**WiZ Proxy (legacy):** Still running on Almaca port 8902, tunneled via `cam.alpacaplayhouse.com`. Will be deprecated once all bulbs are in HAOS.
 
 ### 4.2 Sonos Speakers (9 speakers, 22 entities)
 
@@ -190,13 +190,13 @@ All WiZ RGBW Tunable bulbs communicate via UDP port 38899. They are auto-discove
 | DJ | `media_player.dj` | paused |
 | garage outdoors | `media_player.garage_outdoors` | paused |
 
-**Full Sonos room list** (from Sonos HTTP API on Alpaca Mac :5005):
+**Full Sonos room list** (from Sonos HTTP API on Almaca :5005):
 Living Sound, Dining Sound, Outhouse, Skyloft Sound, Front Outside Sound, Pequeno, MasterBlaster, DJ, garage outdoors, Kitchen, Office, Bedroom, TV Room, Bathroom
 
-**Sonos HTTP API** (legacy, still on Alpaca Mac):
+**Sonos HTTP API** (legacy, still on Almaca):
 ```bash
-curl http://192.168.1.74:5005/{Room}/musicsearch/spotify/song/{query}
-curl http://192.168.1.74:5005/{Room}/{play|pause|stop}
+curl http://192.168.1.100:5005/{Room}/musicsearch/spotify/song/{query}
+curl http://192.168.1.100:5005/{Room}/{play|pause|stop}
 ```
 
 ### 4.3 TP-Link Smart Home (3 devices)
@@ -259,9 +259,9 @@ Needs HACS integration: `Tesla Custom Integration` — requires Tesla auth token
 
 | Camera | Location | IP | Model | Stream |
 |--------|----------|-----|-------|--------|
-| Alpacamera | Backyard/patio | 192.168.1.74 (Protect proxy) | G5 PTZ | RTSP :8554 |
-| Front Of House | Front yard/driveway | 192.168.1.74 (Protect proxy) | G5 PTZ | RTSP :8554 |
-| Side Yard | Side deck area | 192.168.1.74 (Protect proxy) | G5 PTZ | RTSP :8554 |
+| Alpacamera | Backyard/patio | 192.168.1.100 (Protect proxy) | G5 PTZ | RTSP :8554 |
+| Front Of House | Front yard/driveway | 192.168.1.100 (Protect proxy) | G5 PTZ | RTSP :8554 |
+| Side Yard | Side deck area | 192.168.1.100 (Protect proxy) | G5 PTZ | RTSP :8554 |
 | Back Yard | Back yard | 192.168.1.24 | Wansview | RTSP :8554 |
 | Front Cam | Front entrance | 192.168.1.132 | Wansview | RTSP :8554 |
 | Garage | Garage | 192.168.1.18 | Wansview | RTSP :8554 |
@@ -380,7 +380,7 @@ Rooms to create in HAOS (matching physical property):
 | Device | IP | Purpose |
 |--------|-----|---------|
 | UDM Pro | 192.168.1.1 | Router, UniFi Protect |
-| Alpaca Mac | 192.168.1.74 | Old HA Core, Sonos API, WiZ Proxy, Music Assistant, UniFi Protect RTSP proxy |
+| Almaca | 192.168.1.100 | Old HA Core, Sonos API, WiZ Proxy, Music Assistant, UniFi Protect RTSP proxy |
 | HAOS VM | 192.168.1.39 | New Home Assistant OS |
 | Nest Kitchen | 192.168.1.139 | Thermostat |
 | Nest Master | 192.168.1.111 | Thermostat |
@@ -391,9 +391,9 @@ Rooms to create in HAOS (matching physical property):
 
 ---
 
-## 9. Legacy Systems (still running on Alpaca Mac)
+## 9. Legacy Systems (still running on Almaca)
 
-These services on Alpaca Mac (192.168.1.74) will be migrated or deprecated:
+These services on Almaca (192.168.1.100) will be migrated or deprecated:
 
 | Service | Port | Status | Migrate? |
 |---------|------|--------|----------|

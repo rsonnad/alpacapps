@@ -1,6 +1,6 @@
-# Music Assistant on Alpaca Mac — Setup & Home Music Automation
+# Music Assistant on Almaca — Setup & Home Music Automation
 
-Review and configuration guide for Music Assistant (MA) on the Alpaca Mac: Docker setup, local/hard-drive music, and scheduled playback for home music automation.
+Review and configuration guide for Music Assistant (MA) on the Almaca: Docker setup, local/hard-drive music, and scheduled playback for home music automation.
 
 **Related:** [MUSIC-ASSISTANT-EVALUATION.md](./MUSIC-ASSISTANT-EVALUATION.md), [music-assistant-api-mapping.md](./music-assistant-api-mapping.md), [instructions/music-assistant-implementation-plan.md](../instructions/music-assistant-implementation-plan.md).
 
@@ -10,13 +10,13 @@ Review and configuration guide for Music Assistant (MA) on the Alpaca Mac: Docke
 
 | Layer | Role |
 |-------|------|
-| **Alpaca Mac** | Runs node-sonos-http-api (:5005) and Music Assistant in Docker (:8095). Same LAN as Sonos. |
-| **Hostinger** | HTTPS proxy: `/sonos/*` → Sonos API, `/ma-api` → MA API. Reaches Alpaca Mac via Tailscale. |
+| **Almaca** | Runs node-sonos-http-api (:5005) and Music Assistant in Docker (:8095). Same LAN as Sonos. |
+| **Hostinger** | HTTPS proxy: `/sonos/*` → Sonos API, `/ma-api` → MA API. Reaches Almaca via Tailscale. |
 | **Supabase** | Edge function `sonos-control` routes playback/grouping to MA first, fallback to Sonos proxy; announce/EQ stay on Sonos. |
 
 ---
 
-## 2. Music Assistant on Alpaca Mac — Checklist
+## 2. Music Assistant on Almaca — Checklist
 
 ### 2.1 Native install (Python 3.12 venv — no Docker)
 
@@ -26,14 +26,14 @@ Review and configuration guide for Music Assistant (MA) on the Alpaca Mac: Docke
 - [x] **Data dir:** `~/music-assistant-data/`
 - [x] **Auto-start:** LaunchAgent `~/Library/LaunchAgents/com.music-assistant.server.plist` — starts on boot, auto-restarts on crash
 - [x] **Logs:** `/tmp/music-assistant.log`
-- [x] **Web UI:** `http://192.168.1.74:8095` — verified accessible from dev machine
+- [x] **Web UI:** `http://192.168.1.100:8095` — verified accessible from dev machine
 - [x] **Stream server:** port 8097 (auto-detected LAN IP)
 
 > **Why native, not Docker?** macOS 12 on this Intel Mac can't run Docker (QEMU/Colima fails due to missing llvm). Native pip install works fine and uses less resources.
 
 ### 2.2 First-run and Sonos provider (MANUAL)
 
-- [ ] Open MA UI: `http://192.168.1.74:8095`. Complete first-run setup (admin user if prompted).
+- [ ] Open MA UI: `http://192.168.1.100:8095`. Complete first-run setup (admin user if prompted).
 - [ ] **Settings → Player providers:** Add **Sonos S1** (or **Sonos** for S2). Confirm all zones appear with correct names.
 - [ ] **Settings:** Create a long-lived **API token**. Store in Supabase secret `MUSIC_ASSISTANT_TOKEN` and (if needed) on Hostinger for Caddy injection.
 
@@ -70,7 +70,7 @@ Music Assistant can serve music from local folders or mounted drives so resident
 4. **Multiple drives/folders:** Add multiple Filesystem providers or multiple paths under one provider if supported (see MA docs).
 5. **Sync:** MA will scan and catalog; configure sync interval in provider settings if needed.
 
-### 3.2 Paths on Alpaca Mac
+### 3.2 Paths on Almaca
 
 - Internal disk: e.g. `/Users/alpaca/Music` or a dedicated volume.
 - External USB drive: typically `/Volumes/DriveName`; ensure the drive is mounted before Docker (and MA) starts, or use a LaunchAgent to start MA after mounts are available.
@@ -119,12 +119,12 @@ Music Assistant can serve music from local folders or mounted drives so resident
 
 | Item | Where | Purpose |
 |------|--------|---------|
-| MA native (Python 3.12 venv) | Alpaca Mac | MA server, port 8095 — LaunchAgent auto-starts |
-| MA data dir | Alpaca Mac `~/music-assistant-data/` | Persistent config + database |
-| Music folders | Alpaca Mac filesystem | Local/hard-drive music → MA Filesystem provider (no Docker bind mount needed) |
+| MA native (Python 3.12 venv) | Almaca | MA server, port 8095 — LaunchAgent auto-starts |
+| MA data dir | Almaca `~/music-assistant-data/` | Persistent config + database |
+| Music folders | Almaca filesystem | Local/hard-drive music → MA Filesystem provider (no Docker bind mount needed) |
 | MA API token | Supabase `MUSIC_ASSISTANT_TOKEN`, optionally Hostinger | Auth for MA API |
-| Sonos proxy | Hostinger Caddy | `/sonos/*` → Alpaca Mac :5005 |
-| MA proxy | Hostinger Caddy | `/ma-api` → Alpaca Mac :8095/api |
+| Sonos proxy | Hostinger Caddy | `/sonos/*` → Almaca :5005 |
+| MA proxy | Hostinger Caddy | `/ma-api` → Almaca :8095/api |
 | Schedule runner | pg_cron job #31 (`*/5 * * * *`) | Calls `sonos-control` `run-schedules` action → checks due `sonos_schedules` → MA/Sonos |
 
 ---

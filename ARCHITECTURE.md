@@ -69,11 +69,11 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Bug Reporter | Chrome Extension + DO Worker | Extension: local install, Worker: same droplet as OpenClaw |
 | Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
-| Home Server (Alpaca Mac) | On-premise Mac | LAN: 192.168.1.74, Tailscale: see HOMEAUTOMATION.local.md |
-| Sonos Control API | Alpaca Mac | node-sonos-http-api on port 5005 |
-| Camera Talkback Relay | Alpaca Mac | FFmpeg WebSocket relay on port 8902 |
+| Home Server (Paca's Mac mini) | On-premise Mac mini M4 | LAN: 192.168.1.100, Tailscale: 100.74.59.97 |
+| Sonos Control API | Mac mini | node-sonos-http-api on port 5005 |
+| Camera Talkback Relay | Mac mini | FFmpeg WebSocket relay on port 8902 |
 | Network Management | UDM Pro | UniFi Network API on https://192.168.1.1 |
-| Camera Streaming | go2rtc on Alpaca Mac | RTSP→HLS via Caddy proxy at cam.alpacaplayhouse.com |
+| Camera Streaming | go2rtc on Mac mini | RTSP→HLS via Caddy proxy at cam.alpacaplayhouse.com |
 | Nest Thermostats | Google SDM API | OAuth tokens in `nest_config` table |
 | Weather Forecast | OpenWeatherMap | API key in `weather_config` table |
 | Govee Lighting | Govee Cloud API | API key as Supabase secret `GOVEE_API_KEY` |
@@ -178,7 +178,7 @@ alpacapps/
 │       ├── resend-inbound-webhook/  # Inbound email receiver & router + Zelle auto-recording
 │       ├── contact-form/      # Contact form submission handler
 │       ├── govee-control/     # Govee Cloud API proxy (resident+ auth)
-│       ├── sonos-control/     # Sonos HTTP API proxy via Alpaca Mac (resident+ auth)
+│       ├── sonos-control/     # Sonos HTTP API proxy via Almaca (resident+ auth)
 │       ├── nest-control/      # Google SDM API proxy with OAuth token mgmt (resident+ auth)
 │       ├── nest-token-refresh/ # Standalone Nest OAuth token refresher
 │       ├── tesla-command/     # Tesla Fleet API commands (lock, unlock, wake, flash, honk)
@@ -1127,8 +1127,8 @@ Rich receipt with payment history, outstanding balance calculation, and "Pay Now
 - API: FlashForge TCP G-code protocol on port 8899 (no authentication required)
 - HTTP REST API on port 8898 (requires checkCode — not used)
 - MJPEG camera stream on port 8080
-- Architecture: Browser → `printer-control` edge function → Hostinger Caddy → Alpaca Mac (Tailscale) → `printer-proxy.js` (port 8903) → TCP to printer LAN IP
-- Proxy: `scripts/printer-proxy/printer-proxy.js` — HTTP→TCP bridge on Alpaca Mac, auto-wraps control commands in M601 S1/M602 (request/release control)
+- Architecture: Browser → `printer-control` edge function → Hostinger Caddy → Almaca (Tailscale) → `printer-proxy.js` (port 8903) → TCP to printer LAN IP
+- Proxy: `scripts/printer-proxy/printer-proxy.js` — HTTP→TCP bridge on Almaca, auto-wraps control commands in M601 S1/M602 (request/release control)
 - Edge function: `printer-control` — getStatus, startPrint, pausePrint, resumePrint, cancelPrint, setTemperature, toggleLight, homeAxes, listFiles
 - Data service: `shared/services/printer-data.js` — display helpers, temp formatting, print progress
 - DB: `printer_config` (proxy URL/secret), `printer_devices` (cached state in `last_state` JSONB)
@@ -1884,7 +1884,7 @@ Programmatic control of on-premise hardware (Sonos speakers, UniFi network, came
 See `HOMEAUTOMATION.md` for full documentation and `HOMEAUTOMATION.local.md` for credentials.
 
 ```
-DO Droplet ──── Tailscale VPN ────► Alpaca Mac (home server)
+DO Droplet ──── Tailscale VPN ────► Almaca (home server)
                                           │
                                     LAN (192.168.1.0/24)
                                           │
@@ -1901,15 +1901,15 @@ DO Droplet ──── Tailscale VPN ────► Alpaca Mac (home server)
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Alpaca Mac | On-premise, Black Rock City WiFi | Runs Sonos API + camera restreaming + talkback |
-| node-sonos-http-api | Alpaca Mac :5005 | REST API for 12 Sonos speaker zones |
-| go2rtc | Alpaca Mac :1984 | RTSP→HLS restreaming from UniFi Protect |
-| talkback-relay | Alpaca Mac :8902 | WebSocket→FFmpeg→UDP two-way camera audio |
-| Tailscale | DO Droplet + Alpaca Mac | Encrypted mesh VPN for remote access |
+| Almaca | On-premise, Black Rock City WiFi | Runs Sonos API + camera restreaming + talkback |
+| node-sonos-http-api | Almaca :5005 | REST API for 12 Sonos speaker zones |
+| go2rtc | Almaca :1984 | RTSP→HLS restreaming from UniFi Protect |
+| talkback-relay | Almaca :8902 | WebSocket→FFmpeg→UDP two-way camera audio |
+| Tailscale | DO Droplet + Almaca | Encrypted mesh VPN for remote access |
 | Caddy | DO Droplet | Reverse proxy: cam.alpacaplayhouse.com → go2rtc |
 | UniFi Network API | UDM Pro :443 | Firewall, DHCP, WiFi management |
 | UniFi Protect | UDM Pro :7441 | Camera RTSP streams + snapshot API |
-| Uptime Kuma | Alpaca Mac :3001 | Service health monitoring |
+| Uptime Kuma | Almaca :3001 | Service health monitoring |
 
 ### Unified Lighting Control Plane (in progress)
 
