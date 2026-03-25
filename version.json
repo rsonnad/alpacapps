@@ -1,12 +1,12 @@
 {
-  "version": "v260324.05 10:58p",
-  "release": 1033,
-  "sha": "510920207",
-  "fullSha": "5109202078a4c5e7a797e0617f6da9650c06cfb2",
+  "version": "v260324.06 11:03p",
+  "release": 1034,
+  "sha": "7951929ed",
+  "fullSha": "7951929ed54e335cb53479802a26ca0688fea8e2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-25 03:58:39+00",
-  "commits": [{"sha":"510920207","message":"docs: rename Alpaca Mac → Almaca, update all IPs to .100/.101","author":"Rahul"}]
+  "pushedAt": "2026-03-25 04:03:25+00",
+  "commits": [{"sha":"7951929ed","message":"docs: rename Alpaca Mac → Almaca, update all IPs to .100/.101","author":"Rahul"}]
 }
