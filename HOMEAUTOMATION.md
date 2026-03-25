@@ -38,7 +38,7 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
                           ┌──────────────────┐
                           │  Alpaca Mac       │
                           │  (legacy, WiFi)   │
-                          │  192.168.1.74     │
+                          │  192.168.1.101    │
                           │  Secondary/backup │
                           └──────────────────┘
 ```
@@ -99,13 +99,13 @@ Mac mini M4 (Mac16,10), 24 GB RAM, 256 GB SSD, macOS 26.3.1 (Tahoe). Headless, o
 
 ### Network & Access
 
-- **LAN IP:** `192.168.1.31` (DHCP reservation on UDM Pro — will persist across reboots/cable changes)
+- **LAN IP:** `192.168.1.100` (DHCP reservation on UDM Pro — will persist across reboots/cable changes)
 - **Tailscale IP:** `100.74.59.97`
 - **Tailscale Hostname:** `pacas-mac-mini`
 - **Tailscale Account:** `alpacaautomatic@gmail.com`
 - **User:** `alpuca` (admin, auto-login)
-- **SSH:** `ssh paca@192.168.1.31` (Remote Login enabled)
-- **VNC:** `vnc://192.168.1.31` (Screen Sharing enabled, port 5900)
+- **SSH:** `ssh paca@192.168.1.100` (Remote Login enabled)
+- **VNC:** `vnc://192.168.1.100` (Screen Sharing enabled, port 5900)
 - **Chrome Remote Desktop:** Installed (fallback remote access)
 
 > **Note:** SSH user is `paca` (short alias), macOS user is `alpuca`. Both work.
@@ -182,7 +182,7 @@ Configured to survive power outages, reboots, and network disruptions without hu
 
 ```bash
 # SSH into Mac mini
-ssh paca@192.168.1.31
+ssh paca@192.168.1.100
 
 # List all LaunchAgents
 launchctl list | grep -E 'alpacapps|sonos|go2rtc|music|uptime|cloudflare|blink|mediamtx|wiz|ptz|talkback|po-token|printer|colima'
@@ -199,7 +199,7 @@ export PATH=/opt/homebrew/bin:$PATH
 docker ps -a
 
 # VNC from another Mac on the LAN
-open vnc://192.168.1.31
+open vnc://192.168.1.100
 ```
 
 ---
