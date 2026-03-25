@@ -1,12 +1,12 @@
 {
-  "version": "v260324.07 11:06p",
-  "release": 1035,
-  "sha": "d99038766",
-  "fullSha": "d990387663084badf114d7b4dd608195cea2d2c0",
+  "version": "v260324.08 11:19p",
+  "release": 1036,
+  "sha": "6fc3a60a2",
+  "fullSha": "6fc3a60a235e8a5ebcc8b83bd3d1fa71fcdcf372",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-25 04:06:14+00",
-  "commits": [{"sha":"d99038766","message":"fix: correct week label in weekly schedule report","author":"Rahul"}]
+  "pushedAt": "2026-03-25 04:19:24+00",
+  "commits": [{"sha":"6fc3a60a2","message":"fix: replace mini-mac-tailscale-ip placeholder with actual Alpuca IP","author":"Rahul"}]
 }
