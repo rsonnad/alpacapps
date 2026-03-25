@@ -88,6 +88,8 @@ type EmailType =
   | "task_assigned"
   // Time entry edited
   | "time_entry_edited"
+  // Weekly associate schedule report
+  | "weekly_associate_schedule"
   // Custom (raw HTML passthrough)
   | "custom"
   // Internal — never sent to recipients directly
@@ -109,6 +111,15 @@ interface EmailTemplate {
   subject: string;
   html: string;
   text: string;
+}
+
+// Format "09:30:00" → "9:30 AM"
+function formatTime12(time: string): string {
+  if (!time) return '';
+  const [h, m] = time.split(':').map(Number);
+  const suffix = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${String(m).padStart(2, '0')} ${suffix}`;
 }
 
 // Template generators
@@ -2174,6 +2185,81 @@ New Times: ${data.new_clock_in} — ${data.new_clock_out}
 Duration: ${data.new_duration}
 ${data.space_name ? `Location: ${data.space_name}\n` : ''}${data.description ? `Description: ${data.description}\n` : ''}
 This is an automated notification from Alpaca Playhouse work tracking.`
+      };
+    }
+
+    case "weekly_associate_schedule": {
+      const schedDays = (data.schedule_days || []) as any[];
+      const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+      const scheduleRows = schedDays.length > 0
+        ? schedDays.map((d: any) => {
+            const dt = new Date(d.schedule_date + 'T12:00:00');
+            const dayName = dayNames[dt.getUTCDay()];
+            const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+            const startTime = formatTime12(d.start_time);
+            const endTime = formatTime12(d.end_time);
+            const hours = (d.scheduled_minutes / 60).toFixed(1);
+            return `
+              <tr>
+                <td style="padding:10px 12px;font-size:14px;font-weight:600;color:#2a1f23;border-bottom:1px solid #f0ede8;">${dayName}, ${dateStr}</td>
+                <td style="padding:10px 12px;font-size:14px;color:#2a1f23;text-align:center;border-bottom:1px solid #f0ede8;">${startTime}</td>
+                <td style="padding:10px 12px;font-size:14px;color:#2a1f23;text-align:center;border-bottom:1px solid #f0ede8;">${endTime}</td>
+                <td style="padding:10px 12px;font-size:14px;color:#2a1f23;text-align:center;border-bottom:1px solid #f0ede8;">${hours}h</td>
+              </tr>`;
+          }).join('')
+        : `<tr><td colspan="4" style="padding:16px 12px;text-align:center;color:#7d6f74;font-style:italic;">No scheduled days this week</td></tr>`;
+
+      const totalHours = schedDays.reduce((sum: number, d: any) => sum + (d.scheduled_minutes || 0), 0) / 60;
+      const weekLabel = data.week_label || 'Upcoming Week';
+
+      return {
+        subject: `Weekly Schedule — ${data.associate_name} (${weekLabel})`,
+        html: `
+          <h2 style="margin:0 0 4px;">Weekly Work Schedule</h2>
+          <p style="margin:0 0 20px;color:#7d6f74;font-size:14px;">${data.associate_name}'s schedule for <strong>${weekLabel}</strong></p>
+
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px;">
+            <tr style="background:#f0ede8;">
+              <td style="padding:8px 12px;font-size:12px;font-weight:600;color:#7d6f74;border-radius:6px 0 0 0;">Day</td>
+              <td style="padding:8px 12px;font-size:12px;font-weight:600;color:#7d6f74;text-align:center;">Start</td>
+              <td style="padding:8px 12px;font-size:12px;font-weight:600;color:#7d6f74;text-align:center;">End</td>
+              <td style="padding:8px 12px;font-size:12px;font-weight:600;color:#7d6f74;text-align:center;border-radius:0 6px 0 0;">Hours</td>
+            </tr>
+            ${scheduleRows}
+          </table>
+
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 20px;">
+            <tr>
+              <td style="padding:16px 20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="font-size:14px;font-weight:600;color:#2a1f23;">Total Scheduled Hours</td>
+                    <td style="font-size:20px;font-weight:700;color:#2a1f23;text-align:right;">${totalHours.toFixed(1)}h</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:13px;color:#7d6f74;padding-top:4px;">Scheduled Days</td>
+                    <td style="font-size:13px;color:#7d6f74;text-align:right;padding-top:4px;">${schedDays.length} day${schedDays.length !== 1 ? 's' : ''}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <p style="margin:0;color:#7d6f74;font-size:13px;">This is an automated weekly schedule report from Alpaca Playhouse.</p>
+        `,
+        text: `Weekly Work Schedule — ${data.associate_name}
+Week: ${weekLabel}
+
+${schedDays.map((d: any) => {
+  const dt = new Date(d.schedule_date + 'T12:00:00');
+  const dayName = dayNames[dt.getUTCDay()];
+  return `${dayName}, ${dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}: ${formatTime12(d.start_time)} — ${formatTime12(d.end_time)} (${(d.scheduled_minutes / 60).toFixed(1)}h)`;
+}).join('\n')}
+
+Total: ${totalHours.toFixed(1)} hours across ${schedDays.length} day(s)
+
+This is an automated weekly schedule report from Alpaca Playhouse.`
       };
     }
 
