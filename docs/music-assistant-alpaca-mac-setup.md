@@ -26,14 +26,14 @@ Review and configuration guide for Music Assistant (MA) on the Almaca: Docker se
 - [x] **Data dir:** `~/music-assistant-data/`
 - [x] **Auto-start:** LaunchAgent `~/Library/LaunchAgents/com.music-assistant.server.plist` — starts on boot, auto-restarts on crash
 - [x] **Logs:** `/tmp/music-assistant.log`
-- [x] **Web UI:** `http://192.168.1.100:8095` — verified accessible from dev machine
+- [x] **Web UI:** `http://192.168.1.200:8095` — verified accessible from dev machine
 - [x] **Stream server:** port 8097 (auto-detected LAN IP)
 
 > **Why native, not Docker?** macOS 12 on this Intel Mac can't run Docker (QEMU/Colima fails due to missing llvm). Native pip install works fine and uses less resources.
 
 ### 2.2 First-run and Sonos provider (MANUAL)
 
-- [ ] Open MA UI: `http://192.168.1.100:8095`. Complete first-run setup (admin user if prompted).
+- [ ] Open MA UI: `http://192.168.1.200:8095`. Complete first-run setup (admin user if prompted).
 - [ ] **Settings → Player providers:** Add **Sonos S1** (or **Sonos** for S2). Confirm all zones appear with correct names.
 - [ ] **Settings:** Create a long-lived **API token**. Store in Supabase secret `MUSIC_ASSISTANT_TOKEN` and (if needed) on Hostinger for Caddy injection.
 

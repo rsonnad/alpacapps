@@ -4,7 +4,7 @@
 
 > **Tables:** `parcels`, `parcel_edges`, `structures`, `structure_setbacks`, `zoning_rules`, `property_utilities`, `impervious_cover`, `permit_applications`, `inspections`, `permit_documents`
 
-> **All tools are on Alpuca** (192.168.1.100, user `paca`).
+> **All tools are on Alpuca** (192.168.1.200, user `paca`).
 > Nothing is on Hostinger VPS — can be added later for automation if needed.
 
 ---

@@ -99,13 +99,13 @@ Alpuca (Mac mini M4) (Mac16,10), 24 GB RAM, 256 GB SSD, macOS 26.3.1 (Tahoe). He
 
 ### Network & Access
 
-- **LAN IP:** `192.168.1.100` (DHCP reservation on UDM Pro — will persist across reboots/cable changes)
+- **LAN IP:** `192.168.1.200` (DHCP reservation on UDM Pro — will persist across reboots/cable changes)
 - **Tailscale IP:** `100.74.59.97`
 - **Tailscale Hostname:** `alpuca`
 - **Tailscale Account:** `alpacaautomatic@gmail.com`
 - **User:** `alpuca` (admin, auto-login)
-- **SSH:** `ssh paca@192.168.1.100` (Remote Login enabled)
-- **VNC:** `vnc://192.168.1.100` (Screen Sharing enabled, port 5900)
+- **SSH:** `ssh paca@192.168.1.200` (Remote Login enabled)
+- **VNC:** `vnc://192.168.1.200` (Screen Sharing enabled, port 5900)
 - **Chrome Remote Desktop:** Installed (fallback remote access)
 
 > **Note:** SSH user is `paca` (short alias), macOS user is `alpuca`. Both work.
@@ -182,7 +182,7 @@ Configured to survive power outages, reboots, and network disruptions without hu
 
 ```bash
 # SSH into Alpuca
-ssh paca@192.168.1.100
+ssh paca@192.168.1.200
 
 # List all LaunchAgents
 launchctl list | grep -E 'alpacapps|sonos|go2rtc|music|uptime|cloudflare|blink|mediamtx|wiz|ptz|talkback|po-token|printer|colima'
@@ -199,7 +199,7 @@ export PATH=/opt/homebrew/bin:$PATH
 docker ps -a
 
 # VNC from another Mac on the LAN
-open vnc://192.168.1.100
+open vnc://192.168.1.200
 ```
 
 ---
@@ -1336,7 +1336,7 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 | Hostname | IP | MAC | Type |
 |----------|-----|-----|------|
 | amazon-080d0e2f9 | 192.168.1.42 | 0c:ee:99:91:8a:4f | Echo |
-| amazon-7c33ec9c38900cc0 | 192.168.1.100 | 0c:dc:91:76:4a:d7 | Echo |
+| amazon-7c33ec9c38900cc0 | 192.168.1.200 | 0c:dc:91:76:4a:d7 | Echo |
 | echoshow-3bf32cb7f1ef46a6 | 192.168.1.131 | 08:91:a3:37:4f:4f | Echo Show |
 | echoshow-9f2eb6d9d752aab3 | 192.168.1.184 | 58:e4:88:b5:37:af | Echo Show |
 | amazon-67f77a339 | 192.168.1.190 | a4:08:01:b4:36:06 | Echo |

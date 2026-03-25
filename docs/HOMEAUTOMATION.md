@@ -17,7 +17,7 @@
               ┌─────────┘    │    │    │    │    │    └─────────┐
               ▼              ▼    │    ▼    │    ▼              ▼
          WiZ Bulbs      Sonos │  Cast  │  TP-Link      Music Assistant
-         (16/26)      (9 speakers)    │        │       (192.168.1.100:8095)
+         (16/26)      (9 speakers)    │        │       (192.168.1.200:8095)
                               │       │        │
                          ┌────┘       │        └────┐
                          ▼            ▼             ▼
@@ -87,7 +87,7 @@ EFI\BOOT\BOOTAA64.EFI
 
 ### Previous HA Core (Almaca)
 
-The old HA Core instance on Almaca (192.168.1.100:8123) is still running as reference. It's a venv-based install under `~/homeassistant-venv/` with config at `~/.homeassistant/`. This will be decommissioned after HAOS migration is complete.
+The old HA Core instance on Almaca (192.168.1.200:8123) is still running as reference. It's a venv-based install under `~/homeassistant-venv/` with config at `~/.homeassistant/`. This will be decommissioned after HAOS migration is complete.
 
 ---
 
@@ -195,8 +195,8 @@ Living Sound, Dining Sound, Outhouse, Skyloft Sound, Front Outside Sound, Pequen
 
 **Sonos HTTP API** (legacy, still on Almaca):
 ```bash
-curl http://192.168.1.100:5005/{Room}/musicsearch/spotify/song/{query}
-curl http://192.168.1.100:5005/{Room}/{play|pause|stop}
+curl http://192.168.1.200:5005/{Room}/musicsearch/spotify/song/{query}
+curl http://192.168.1.200:5005/{Room}/{play|pause|stop}
 ```
 
 ### 4.3 TP-Link Smart Home (3 devices)
@@ -259,9 +259,9 @@ Needs HACS integration: `Tesla Custom Integration` — requires Tesla auth token
 
 | Camera | Location | IP | Model | Stream |
 |--------|----------|-----|-------|--------|
-| Alpacamera | Backyard/patio | 192.168.1.100 (Protect proxy) | G5 PTZ | RTSP :8554 |
-| Front Of House | Front yard/driveway | 192.168.1.100 (Protect proxy) | G5 PTZ | RTSP :8554 |
-| Side Yard | Side deck area | 192.168.1.100 (Protect proxy) | G5 PTZ | RTSP :8554 |
+| Alpacamera | Backyard/patio | 192.168.1.200 (Protect proxy) | G5 PTZ | RTSP :8554 |
+| Front Of House | Front yard/driveway | 192.168.1.200 (Protect proxy) | G5 PTZ | RTSP :8554 |
+| Side Yard | Side deck area | 192.168.1.200 (Protect proxy) | G5 PTZ | RTSP :8554 |
 | Back Yard | Back yard | 192.168.1.24 | Wansview | RTSP :8554 |
 | Front Cam | Front entrance | 192.168.1.132 | Wansview | RTSP :8554 |
 | Garage | Garage | 192.168.1.18 | Wansview | RTSP :8554 |
@@ -380,7 +380,7 @@ Rooms to create in HAOS (matching physical property):
 | Device | IP | Purpose |
 |--------|-----|---------|
 | UDM Pro | 192.168.1.1 | Router, UniFi Protect |
-| Almaca | 192.168.1.100 | Old HA Core, Sonos API, WiZ Proxy, Music Assistant, UniFi Protect RTSP proxy |
+| Almaca | 192.168.1.200 | Old HA Core, Sonos API, WiZ Proxy, Music Assistant, UniFi Protect RTSP proxy |
 | HAOS VM | 192.168.1.39 | New Home Assistant OS |
 | Nest Kitchen | 192.168.1.139 | Thermostat |
 | Nest Master | 192.168.1.111 | Thermostat |
@@ -393,7 +393,7 @@ Rooms to create in HAOS (matching physical property):
 
 ## 9. Legacy Systems (still running on Almaca)
 
-These services on Almaca (192.168.1.100) will be migrated or deprecated:
+These services on Almaca (192.168.1.200) will be migrated or deprecated:
 
 | Service | Port | Status | Migrate? |
 |---------|------|--------|----------|

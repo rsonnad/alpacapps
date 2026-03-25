@@ -2,7 +2,7 @@
 
 > **Status:** Pipeline designed, awaiting on-site data collection
 > **Property:** 160 Still Forest Drive, Cedar Creek TX 78612 (Bastrop County)
-> **Tools:** Blender 4.5 + add-ons, QGIS 4.0, GDAL — all on Alpuca (192.168.1.100)
+> **Tools:** Blender 4.5 + add-ons, QGIS 4.0, GDAL — all on Alpuca (192.168.1.200)
 
 ---
 
