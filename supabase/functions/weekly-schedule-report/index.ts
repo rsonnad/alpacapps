@@ -35,24 +35,28 @@ serve(async (_req) => {
   const results: { associate: string; status: string; days?: number }[] = [];
 
   try {
-    // Calculate the upcoming work week using Central Time
-    // When called Sunday night: show Mon-Sun of the coming week
-    // When called mid-week (manual/test): show remaining days through end of week + next week
+    // Calculate the target work week using Central Time
     const centralNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }));
-    const centralDateStr = centralNow.toISOString().split("T")[0]; // today in Central
+    const dayOfWeek = centralNow.getDay(); // 0=Sun, 1=Mon, ...
 
-    // Find next Monday from today (Central)
-    const dayOfWeek = centralNow.getDay(); // 0=Sun
-    const daysUntilMonday = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 0 : (8 - dayOfWeek);
-    const nextMonday = new Date(centralNow);
-    nextMonday.setDate(nextMonday.getDate() + daysUntilMonday);
-    const nextSunday = new Date(nextMonday);
-    nextSunday.setDate(nextSunday.getDate() + 6);
+    // On Sunday (cron night): show the UPCOMING week (tomorrow Mon – next Sun)
+    // Any other day (manual/test): show the CURRENT week (this Mon – this Sun)
+    let targetMonday: Date;
+    if (dayOfWeek === 0) {
+      // Sunday → upcoming week starts tomorrow
+      targetMonday = new Date(centralNow);
+      targetMonday.setDate(targetMonday.getDate() + 1);
+    } else {
+      // Mon-Sat → current week's Monday
+      targetMonday = new Date(centralNow);
+      targetMonday.setDate(targetMonday.getDate() - (dayOfWeek - 1));
+    }
+    const targetSunday = new Date(targetMonday);
+    targetSunday.setDate(targetSunday.getDate() + 6);
 
-    // For the query range: include today through end of next week
-    const startStr = centralDateStr;
-    const endStr = nextSunday.toISOString().split("T")[0];
-    const weekLabel = `${nextMonday.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${nextSunday.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+    const startStr = targetMonday.toISOString().split("T")[0];
+    const endStr = targetSunday.toISOString().split("T")[0];
+    const weekLabel = `${targetMonday.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${targetSunday.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 
     // Find tracked associates
     for (const email of TRACKED_ASSOCIATES) {
