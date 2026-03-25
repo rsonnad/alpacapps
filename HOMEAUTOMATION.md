@@ -47,7 +47,7 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
 
 The Hostinger VPS (replacing DO droplet) has **direct access to the entire LAN** (`192.168.1.0/24`) via Tailscale subnet routing through Alpuca. This means:
 
-- **Sonos:** VPS curls `http://<mini-mac-tailscale-ip>:5005/{room}/{action}` (Sonos API runs on Alpuca)
+- **Sonos:** VPS curls `http://100.74.59.97:5005/{room}/{action}` (Sonos API runs on Alpuca)
 - **UDM Pro API:** VPS curls `https://192.168.1.1/api/...` directly (session-based cookie auth)
 - **UniFi Protect:** VPS curls `https://192.168.1.1/proxy/protect/api/...` directly
 - **WiZ Lights:** VPS sends commands via SSH to Alpuca (UDP requires LAN presence)
