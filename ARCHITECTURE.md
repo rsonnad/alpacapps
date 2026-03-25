@@ -69,11 +69,11 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Bug Reporter | Chrome Extension + DO Worker | Extension: local install, Worker: same droplet as OpenClaw |
 | Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
-| Home Server (Paca's Mac mini) | On-premise Mac mini M4 | LAN: 192.168.1.100, Tailscale: 100.74.59.97 |
-| Sonos Control API | Mac mini | node-sonos-http-api on port 5005 |
-| Camera Talkback Relay | Mac mini | FFmpeg WebSocket relay on port 8902 |
+| Home Server (Alpuca) | On-premise Mac mini M4 | LAN: 192.168.1.100, Tailscale: 100.74.59.97 |
+| Sonos Control API | Alpuca | node-sonos-http-api on port 5005 |
+| Camera Talkback Relay | Alpuca | FFmpeg WebSocket relay on port 8902 |
 | Network Management | UDM Pro | UniFi Network API on https://192.168.1.1 |
-| Camera Streaming | go2rtc on Mac mini | RTSP→HLS via Caddy proxy at cam.alpacaplayhouse.com |
+| Camera Streaming | go2rtc on Alpuca | RTSP→HLS via Caddy proxy at cam.alpacaplayhouse.com |
 | Nest Thermostats | Google SDM API | OAuth tokens in `nest_config` table |
 | Weather Forecast | OpenWeatherMap | API key in `weather_config` table |
 | Govee Lighting | Govee Cloud API | API key as Supabase secret `GOVEE_API_KEY` |

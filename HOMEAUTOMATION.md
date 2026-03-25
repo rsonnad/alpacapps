@@ -9,7 +9,7 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
 
 ```
 ┌─────────────────────┐                          ┌──────────────────────────┐
-│  Hostinger VPS       │                          │  Paca's Mac mini (M4)    │
+│  Hostinger VPS       │                          │  Alpuca (M4)    │
 │  (replacing DO       │───── Tailscale VPN ────►│  (primary home server)   │
 │   droplet)           │    (subnet routing)      │  Ethernet, headless      │
 │                      │                          │                          │
@@ -45,13 +45,13 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
 
 ### Connectivity Model
 
-The Hostinger VPS (replacing DO droplet) has **direct access to the entire LAN** (`192.168.1.0/24`) via Tailscale subnet routing through the Mac mini. This means:
+The Hostinger VPS (replacing DO droplet) has **direct access to the entire LAN** (`192.168.1.0/24`) via Tailscale subnet routing through Alpuca. This means:
 
-- **Sonos:** VPS curls `http://<mini-mac-tailscale-ip>:5005/{room}/{action}` (Sonos API runs on Mac mini)
+- **Sonos:** VPS curls `http://<mini-mac-tailscale-ip>:5005/{room}/{action}` (Sonos API runs on Alpuca)
 - **UDM Pro API:** VPS curls `https://192.168.1.1/api/...` directly (session-based cookie auth)
 - **UniFi Protect:** VPS curls `https://192.168.1.1/proxy/protect/api/...` directly
-- **WiZ Lights:** VPS sends commands via SSH to Mac mini (UDP requires LAN presence)
-- **Govee Lights:** Cloud API from anywhere, or LAN control via Mac mini
+- **WiZ Lights:** VPS sends commands via SSH to Alpuca (UDP requires LAN presence)
+- **Govee Lights:** Cloud API from anywhere, or LAN control via Alpuca
 - **All other LAN devices:** Reachable from VPS at their `192.168.1.x` IPs
 
 ## Network Topology
@@ -75,33 +75,33 @@ All three SSIDs are on the **Native Network** (same `192.168.1.0/24` subnet):
 
 ### Tailscale Mesh VPN
 
-Tailscale connects remote servers to the Mac mini and the entire LAN. All machines use the `alpacaautomatic@gmail.com` account.
+Tailscale connects remote servers to Alpuca and the entire LAN. All machines use the `alpacaautomatic@gmail.com` account.
 
 | Machine | Tailscale IP | Hostname | Role |
 |---------|-------------|----------|------|
-| Paca's Mac mini | `100.74.59.97` | pacas-mac-mini | Primary home server, subnet router |
+| Alpuca | `100.74.59.97` | alpuca | Primary home server, subnet router |
 | Hostinger VPS | See `HOMEAUTOMATION.local.md` | TBD | Replaces DO droplet |
 | Almaca (legacy) | See `HOMEAUTOMATION.local.md` | alpacaopenmac-1 | Secondary/backup |
 
-**Subnet Routing:** The Mac mini advertises `192.168.1.0/24` to the Tailnet, allowing the Hostinger VPS to reach any LAN device directly through Tailscale (no SSH hop needed for TCP/HTTPS traffic).
+**Subnet Routing:** Alpuca advertises `192.168.1.0/24` to the Tailnet, allowing the Hostinger VPS to reach any LAN device directly through Tailscale (no SSH hop needed for TCP/HTTPS traffic).
 
 **Configuration:**
-- Mac mini: `tailscale set --advertise-routes=192.168.1.0/24`
+- Alpuca: `tailscale set --advertise-routes=192.168.1.0/24`
 - DO Droplet: `tailscale up --accept-routes`
 - Almaca: IP forwarding enabled (`net.inet.ip.forwarding=1` in `/etc/sysctl.conf`)
 - Tailscale Admin: Subnet route approved for `alpacaopenmac`
 
 **Note:** UDP-based protocols (WiZ lights, Sonos mDNS discovery) still require executing commands on the Almaca via SSH, since Tailscale subnet routing only forwards TCP traffic reliably. The Sonos HTTP API on the Almaca handles this bridging for Sonos control.
 
-## Paca's Mac mini (Primary Home Server)
+## Alpuca (Primary Home Server)
 
-Mac mini M4 (Mac16,10), 24 GB RAM, 256 GB SSD, macOS 26.3.1 (Tahoe). Headless, on Ethernet. Primary home server replacing the Almaca for all services.
+Alpuca (Mac mini M4) (Mac16,10), 24 GB RAM, 256 GB SSD, macOS 26.3.1 (Tahoe). Headless, on Ethernet. Primary home server replacing the Almaca for all services.
 
 ### Network & Access
 
 - **LAN IP:** `192.168.1.100` (DHCP reservation on UDM Pro — will persist across reboots/cable changes)
 - **Tailscale IP:** `100.74.59.97`
-- **Tailscale Hostname:** `pacas-mac-mini`
+- **Tailscale Hostname:** `alpuca`
 - **Tailscale Account:** `alpacaautomatic@gmail.com`
 - **User:** `alpuca` (admin, auto-login)
 - **SSH:** `ssh paca@192.168.1.100` (Remote Login enabled)
@@ -130,7 +130,7 @@ Configured to survive power outages, reboots, and network disruptions without hu
 
 ### What Happens on Reboot
 
-1. Power returns → Mac mini auto-starts (`autorestart 1`)
+1. Power returns → Alpuca auto-starts (`autorestart 1`)
 2. `alpuca` user logs in automatically (no password prompt)
 3. Caffeinate daemon starts (LaunchDaemon, runs before login)
 4. Tailscale starts (Login Item, already signed in as `alpacaautomatic@gmail.com`)
@@ -181,7 +181,7 @@ Configured to survive power outages, reboots, and network disruptions without hu
 ### Managing Services
 
 ```bash
-# SSH into Mac mini
+# SSH into Alpuca
 ssh paca@192.168.1.100
 
 # List all LaunchAgents
@@ -206,7 +206,7 @@ open vnc://192.168.1.100
 
 ## Almaca (Legacy — Secondary Server)
 
-A dedicated MacBook running macOS 12.7.6 (Monterey), lid closed, plugged in, on Black Rock City WiFi. **Being phased out in favor of Paca's Mac mini.** Kept as secondary/backup.
+A dedicated MacBook running macOS 12.7.6 (Monterey), lid closed, plugged in, on Black Rock City WiFi. **Being phased out in favor of Alpuca.** Kept as secondary/backup.
 
 ### Bulletproof Configuration
 

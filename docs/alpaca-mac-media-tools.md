@@ -1,6 +1,6 @@
-# Paca's Mac mini — Media & Video Tools Reference
+# Alpuca — Media & Video Tools Reference
 
-> **Machine:** Mac mini M4 ("Paca's Mac mini") — replaced the old Almaca
+> **Machine:** Mac mini M4 ("Alpuca") — replaced the old Almaca
 > **OS:** macOS 26 (Tahoe)
 > **LAN IP:** 192.168.1.100 | **Tailscale:** 100.74.59.97
 
@@ -223,6 +223,6 @@ ffmpeg -i "downloaded.webm" -c:v libx264 -c:a aac output.mp4
 | `ffmpeg: command not found` | Run `export PATH="/usr/local/bin:$PATH"` or use full path `/usr/local/bin/ffmpeg` |
 | `magick: command not found` | Run `brew link imagemagick` or use `$(brew --prefix imagemagick)/bin/magick` |
 | `yt-dlp: command not found` | Use full path `/usr/local/bin/yt-dlp` |
-| Can't connect via SSH | Verify you're on Alpaca Playhouse WiFi/LAN or Tailscale. Mac mini is at 192.168.1.100 (LAN) or 100.74.59.97 (Tailscale) |
+| Can't connect via SSH | Verify you're on Alpaca Playhouse WiFi/LAN or Tailscale. Alpuca is at 192.168.1.100 (LAN) or 100.74.59.97 (Tailscale) |
 | Need to update tools | Run `brew upgrade ffmpeg imagemagick` (yt-dlp: `yt-dlp -U`) |
 | Need GUI access (Blender UI) | Use Chrome Remote Desktop — PIN is in the password vault |
