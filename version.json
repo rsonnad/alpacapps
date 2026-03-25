@@ -1,12 +1,12 @@
 {
-  "version": "v260325.04 1:38a",
-  "release": 1040,
-  "sha": "4ac4285c3",
-  "fullSha": "4ac4285c3c118480e9cd348ee02619bf5242e44c",
+  "version": "v260325.05 1:43a",
+  "release": 1041,
+  "sha": "c5670c1e2",
+  "fullSha": "c5670c1e2175204a588356bbef2cb7d7be342e1b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-25 06:38:08+00",
-  "commits": [{"sha":"4ac4285c3","message":"fix: allow auto-approving email type even when specific email already sent","author":"Rahul"}]
+  "pushedAt": "2026-03-25 06:43:57+00",
+  "commits": [{"sha":"c5670c1e2","message":"docs: update Alpuca IP to 192.168.1.200 (final)","author":"Rahul"}]
 }
