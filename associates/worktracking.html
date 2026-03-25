@@ -122,6 +122,24 @@
       word-break: break-all; line-height: 1.2; max-height: 2.4em; overflow: hidden;
     }
 
+    /* Photo Required Banners */
+    .photo-required-banner {
+      background: #fef3c7; border: 2px solid #f59e0b; border-radius: 10px;
+      padding: 1rem; margin-bottom: 1rem; text-align: center;
+      animation: photoBannerPulse 2s ease-in-out 3;
+    }
+    .photo-required-banner .banner-icon { font-size: 2rem; margin-bottom: 0.25rem; }
+    .photo-required-banner .banner-title { font-size: 1rem; font-weight: 700; color: #92400e; margin-bottom: 0.25rem; }
+    .photo-required-banner .banner-desc { font-size: 0.85rem; color: #92400e; margin: 0; }
+    .photo-required-banner .banner-dismiss {
+      margin-top: 0.5rem; background: none; border: 1px solid #d97706; color: #92400e;
+      padding: 0.3rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+    }
+    @keyframes photoBannerPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+      50% { box-shadow: 0 0 0 8px rgba(245,158,11,0.2); }
+    }
+
     /* History Section */
     .history-filters { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
     .history-filters select, .history-filters input {
@@ -624,6 +642,17 @@
 
       <!-- Today Tab -->
       <div class="tab-content" id="tabToday">
+        <!-- Clock-In Summary: tasks + photo reminder (shown after clock-in) -->
+        <div id="clockInSummary" style="display:none;">
+          <div class="photo-required-banner" style="border-color:#3d8b7a;background:#ecfdf5;">
+            <div class="banner-icon">📋</div>
+            <div class="banner-title" style="color:#065f46;">You're Clocked In — Here's Your Task List</div>
+            <div id="clockInTaskList" style="text-align:left;margin:0.5rem 0;font-size:0.9rem;color:#065f46;"></div>
+            <p class="banner-desc" style="color:#065f46;margin-top:0.75rem;">📸 <strong>Before photos required</strong> — scroll down to take a photo of the area before you start.</p>
+            <button class="banner-dismiss" onclick="document.getElementById('clockInSummary').style.display='none'">Got it</button>
+          </div>
+        </div>
+
         <div class="today-card">
           <h3>Today's Work</h3>
           <div class="today-stats">
@@ -633,7 +662,19 @@
           <div id="todayEntries"><p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">No entries yet today</p></div>
         </div>
 
-        <div class="photo-section">
+        <div class="photo-section" id="photoSection">
+          <div class="photo-required-banner" id="beforePhotoBanner" style="display:none;">
+            <div class="banner-icon">📸</div>
+            <div class="banner-title">Before Photos Required</div>
+            <p class="banner-desc">Take a photo of the area before you start working. This helps track progress and quality.</p>
+            <button class="banner-dismiss" onclick="document.getElementById('beforePhotoBanner').style.display='none'">Got it</button>
+          </div>
+          <div class="photo-required-banner" id="afterPhotoBanner" style="display:none;">
+            <div class="banner-icon">📸</div>
+            <div class="banner-title">After Photos Required</div>
+            <p class="banner-desc">Take a photo of your completed work before clocking out. This documents what you accomplished.</p>
+            <button class="banner-dismiss" onclick="document.getElementById('afterPhotoBanner').style.display='none'">Got it</button>
+          </div>
           <h3>Work Photos & Files</h3>
           <div class="photo-type-selector">
             <button class="active" data-photo-type="before">Before</button>

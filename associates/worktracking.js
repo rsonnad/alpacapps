@@ -277,8 +277,15 @@ async function handleClockIn() {
     updateClockUI();
     await refreshToday();
 
-    // Auto-switch to Tasks tab so associate sees their prioritized todo list
-    switchToTab('tasks');
+    // Show clock-in summary with task list + photo reminder at top of Today tab
+    switchToTab('today');
+    setPhotoType('before');
+    showPhotoBanner('before');
+    await showClockInSummary();
+
+    // Send clock-in email with task list to associate + admin
+    sendClockInEmail().catch(err => console.warn('Clock-in email failed (non-critical):', err.message));
+
     // Schedule a one-shot photo reminder 15 min after clock-in
     if (activeEntry?.id) {
       const entryId = activeEntry.id;
@@ -300,7 +307,14 @@ async function handleClockIn() {
 async function showClockoutPrompt() {
   document.getElementById('clockoutPrompt').classList.add('visible');
   document.getElementById('clockoutDesc').value = '';
-  document.getElementById('clockoutDesc').focus();
+
+  // Switch to Today tab, show After photo banner, and scroll to photo section
+  switchToTab('today');
+  setPhotoType('after');
+  showPhotoBanner('after');
+  setTimeout(() => {
+    document.getElementById('photoSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
 
   // Check if after photos exist for this session
   const warning = document.getElementById('afterPhotoWarning');
@@ -574,6 +588,104 @@ function getFileIcon(mimeType, filename) {
   if (mimeType.includes('text') || ext === 'txt') return '📃';
   if (mimeType.includes('zip') || mimeType.includes('compressed') || ext === 'zip') return '🗜️';
   return '📎';
+}
+
+/** Show the clock-in summary card with the associate's task list */
+async function showClockInSummary() {
+  const summary = document.getElementById('clockInSummary');
+  const taskListDiv = document.getElementById('clockInTaskList');
+  if (!summary || !taskListDiv) return;
+
+  try {
+    const userId = authState?.appUser?.id;
+    const { data: tasks } = await supabase
+      .from('tasks')
+      .select('id, title, priority, status, space:space_id(name)')
+      .in('status', ['open', 'in_progress'])
+      .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+      .order('priority', { ascending: true, nullsFirst: false })
+      .limit(10);
+
+    if (tasks && tasks.length > 0) {
+      const pLabels = { 1: '🔴', 2: '🟠', 3: '🟡', 4: '🔵' };
+      taskListDiv.innerHTML = tasks.map(t => {
+        const icon = pLabels[t.priority] || '⚪';
+        const loc = t.space?.name ? ` <span style="color:#6b7280;font-size:0.8rem;">(${escapeHtml(t.space.name)})</span>` : '';
+        return `<div style="padding:0.25rem 0;">${icon} ${escapeHtml(t.title)}${loc}</div>`;
+      }).join('');
+    } else {
+      taskListDiv.innerHTML = '<div style="padding:0.25rem 0;">No open tasks — you\'re all caught up!</div>';
+    }
+
+    summary.style.display = 'block';
+    // Scroll to top of today tab so summary is visible without scrolling
+    summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    console.warn('Failed to show clock-in summary:', err.message);
+  }
+}
+
+/** Send clock-in email with task list to associate + admin */
+async function sendClockInEmail() {
+  const userId = authState?.appUser?.id;
+  if (!userId) return;
+
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('id, title, priority, status, space:space_id(name), notes')
+    .in('status', ['open', 'in_progress'])
+    .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+    .order('priority', { ascending: true, nullsFirst: false })
+    .limit(20);
+
+  const taskList = (tasks || []).map(t => ({
+    title: t.title,
+    priority: t.priority,
+    location: t.space?.name || '',
+    notes: t.notes || '',
+  }));
+
+  const spaceSel = document.getElementById('spaceSelector');
+  const spaceName = spaceSel?.options[spaceSel.selectedIndex]?.text || '';
+
+  const emailData = {
+    associate_email: authState.appUser.email,
+    first_name: authState.appUser.first_name || authState.appUser.display_name || 'Team Member',
+    space_name: spaceName,
+    clock_in_time: HoursService.formatTime(activeEntry?.clock_in || new Date().toISOString()),
+    tasks: taskList,
+  };
+
+  // Send via edge function
+  await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({
+      type: 'work_clockin_summary',
+      to: [authState.appUser.email, 'alpacaautomatic@gmail.com'].filter(Boolean),
+      data: emailData,
+    }),
+  });
+}
+
+/** Set the photo type selector to a specific type */
+function setPhotoType(type) {
+  document.querySelectorAll('[data-photo-type]').forEach(b => {
+    b.classList.toggle('active', b.dataset.photoType === type);
+  });
+  selectedPhotoType = type;
+}
+
+/** Show a prominent photo-required banner */
+function showPhotoBanner(phase) {
+  const beforeBanner = document.getElementById('beforePhotoBanner');
+  const afterBanner = document.getElementById('afterPhotoBanner');
+  if (beforeBanner) beforeBanner.style.display = phase === 'before' ? 'block' : 'none';
+  if (afterBanner) afterBanner.style.display = phase === 'after' ? 'block' : 'none';
 }
 
 async function handlePhotoUpload(file) {

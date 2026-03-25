@@ -78,6 +78,8 @@ type EmailType =
   | "waiver_confirmation"
   // Work photo reminder
   | "work_photo_reminder"
+  // Work clock-in summary (tasks + photo reminder)
+  | "work_clockin_summary"
   // Work checkout summary
   | "work_checkout_summary"
   // Associate payout
@@ -1879,6 +1881,58 @@ This is just a friendly nudge — no photos are required if they aren't relevant
 Yours generatively,
 PAI
 the Alpaca Playhouse property AI agent`
+      };
+    }
+
+    case "work_clockin_summary": {
+      const tasks = data.tasks || [];
+      const pLabels: Record<number, string> = { 1: 'Urgent', 2: 'High', 3: 'Medium', 4: 'Low' };
+      const pColors: Record<number, string> = { 1: '#dc2626', 2: '#ea580c', 3: '#ca8a04', 4: '#2563eb' };
+
+      const taskRows = tasks.length > 0
+        ? tasks.map((t: any) => {
+            const p = t.priority ? Number(t.priority) : 0;
+            const badge = p ? `<span style="display:inline-block;background:${pColors[p] || '#9ca3af'};color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:6px;">${pLabels[p] || ''}</span>` : '';
+            const loc = t.location ? ` <span style="color:#7d6f74;font-size:12px;">(${t.location})</span>` : '';
+            return `<tr><td style="padding:6px 0;border-bottom:1px solid #f0f0f0;">${badge}<strong>${t.title}</strong>${loc}${t.notes ? `<br><span style="color:#7d6f74;font-size:12px;">${t.notes}</span>` : ''}</td></tr>`;
+          }).join('')
+        : '<tr><td style="padding:6px 0;color:#7d6f74;">No open tasks — you\'re all caught up!</td></tr>';
+
+      return {
+        subject: `Clocked In — ${data.first_name}${data.space_name ? ` at ${data.space_name}` : ''} (${new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })})`,
+        html: `
+          <h2 style="margin:0 0 4px;">You're Clocked In</h2>
+          <p style="margin:0 0 20px;color:#7d6f74;font-size:14px;">${data.first_name} clocked in at ${data.clock_in_time}${data.space_name ? ` — ${data.space_name}` : ''}.</p>
+
+          <p style="margin:0 0 8px;font-weight:600;font-size:16px;">📋 Your Task List</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 20px;">
+            <tr><td style="padding:12px 16px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                ${taskRows}
+              </table>
+            </td></tr>
+          </table>
+
+          <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin:0 0 20px;text-align:center;">
+            <p style="margin:0;font-weight:700;color:#92400e;font-size:15px;">📸 Before Photos Required</p>
+            <p style="margin:8px 0 12px;color:#92400e;font-size:13px;">Take a photo of the work area before you start.</p>
+            <a href="https://alpacaplayhouse.com/associates/worktracking.html" style="display:inline-block;background:#3d8b7a;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;">Upload Photos</a>
+          </div>
+
+          <p style="margin:16px 0 0;color:#7d6f74;font-size:13px;">This is an automated clock-in summary from Alpaca Playhouse work tracking.</p>
+        `,
+        text: `You're Clocked In
+
+${data.first_name} clocked in at ${data.clock_in_time}${data.space_name ? ` — ${data.space_name}` : ''}.
+
+YOUR TASK LIST:
+${tasks.length > 0 ? tasks.map((t: any) => `• ${t.title}${t.location ? ` (${t.location})` : ''}${t.notes ? ` — ${t.notes}` : ''}`).join('\n') : 'No open tasks — you\'re all caught up!'}
+
+BEFORE PHOTOS REQUIRED
+Take a photo of the work area before you start.
+Upload: https://alpacaplayhouse.com/associates/worktracking.html
+
+This is an automated clock-in summary from Alpaca Playhouse work tracking.`,
       };
     }
 

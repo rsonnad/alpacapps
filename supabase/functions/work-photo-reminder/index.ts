@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               from: 'Alpaca Team <team@alpacaplayhouse.com>',
-              to: [appUser.email],
+              to: [appUser.email, 'alpacaautomatic@gmail.com'],
               reply_to: 'team@alpacaplayhouse.com',
               subject: 'Reminder: Upload Before Photos for Your Work Session',
               html: buildHtml(firstName, 'clock_in', spaceName),
@@ -215,7 +215,7 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               from: 'Alpaca Team <team@alpacaplayhouse.com>',
-              to: [appUser.email],
+              to: [appUser.email, 'alpacaautomatic@gmail.com'],
               reply_to: 'team@alpacaplayhouse.com',
               subject: 'Reminder: Upload After Photos for Your Work Session',
               html: buildHtml(firstName, 'clock_out', spaceName),
