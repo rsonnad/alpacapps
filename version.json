@@ -1,12 +1,12 @@
 {
-  "version": "v260324.08 11:19p",
-  "release": 1036,
-  "sha": "6fc3a60a2",
-  "fullSha": "6fc3a60a235e8a5ebcc8b83bd3d1fa71fcdcf372",
+  "version": "v260325.02 12:31a",
+  "release": 1038,
+  "sha": "aeffebf7f",
+  "fullSha": "aeffebf7f617b83eaa674c6da3adf3c211efa612",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-25 04:19:24+00",
-  "commits": [{"sha":"6fc3a60a2","message":"fix: replace mini-mac-tailscale-ip placeholder with actual Alpuca IP","author":"Rahul"}]
+  "pushedAt": "2026-03-25 05:31:03+00",
+  "commits": [{"sha":"aeffebf7f","message":"Update spaces/ical/jons-room.ics [automated]","author":"Rahul"}]
 }
