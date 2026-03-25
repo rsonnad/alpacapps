@@ -1,12 +1,12 @@
 {
-  "version": "v260325.06 2:14a",
-  "release": 1042,
-  "sha": "9bd0abd04",
-  "fullSha": "9bd0abd04aa3b4797d637a070df5b59f1e19876e",
+  "version": "v260325.07 5:35p",
+  "release": 1043,
+  "sha": "f5adb0ed2",
+  "fullSha": "f5adb0ed2b19642a8088217e44a5f2c2858ac358",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-25 07:14:50+00",
-  "commits": [{"sha":"9bd0abd04","message":"docs: update HAOS host from Airtop to Alpuca after migration","author":"Rahul"}]
+  "pushedAt": "2026-03-25 22:35:25+00",
+  "commits": [{"sha":"f5adb0ed2","message":"feat: enforce before/after photos at clock-in/out + clock-in summary email","author":"Rahul"}]
 }
