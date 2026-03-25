@@ -8,42 +8,51 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
 ## Architecture
 
 ```
-┌─────────────────────┐                          ┌──────────────────┐
-│  DO Droplet          │                          │  Alpaca Mac      │
-│  (openclawzcloud-    │───── Tailscale VPN ────►│  (home server)   │
-│   runner)            │    (subnet routing)      │                  │
-│                      │                          │  node-sonos-     │
-│  - Cron alarms       │  ┌─ direct LAN access ─►│   http-api :5005 │
-│  - Bot triggers      │  │  192.168.1.0/24      │  go2rtc    :1984 │
-│  - UDM Pro API calls │  │  (via subnet route)  │  SSH       :22   │
-│  - Lighting control  │  │                       │  pywizlight      │
-└──────────┬──────────┘  │                       └────────┬─────────┘
-           │              │                                │
-           └──────────────┘                   LAN (192.168.1.0/24)
-                                                          │
-              ┌───────────────────┬───────────────────────┤
-              │                   │                       │
-    ┌────────▼─────────┐ ┌──────▼──────────┐  ┌────────▼─────────┐
-    │  UDM Pro          │ │  Smart Lights    │  │  Sonos Speakers   │
-    │  192.168.1.1      │ │                  │  │  12 zones         │
-    │                   │ │  WiZ (11 bulbs)  │  │                   │
-    │  - Network API    │ │  Govee (~19)     │  │  Living Sound     │
-    │  - UniFi Protect  │ │  Kasa (2 switches)│  │  MasterBlaster    │
-    │  - WireGuard VPN  │ │  Tuya (2)        │  │  DJ, Backyard...  │
-    │  - DHCP/Firewall  │ │  Matter (13)     │  │  (see full list)  │
+┌─────────────────────┐                          ┌──────────────────────────┐
+│  Hostinger VPS       │                          │  Paca's Mac mini (M4)    │
+│  (replacing DO       │───── Tailscale VPN ────►│  (primary home server)   │
+│   droplet)           │    (subnet routing)      │  Ethernet, headless      │
+│                      │                          │                          │
+│  - Cron alarms       │  ┌─ direct LAN access ─►│  Sonos API  :5005        │
+│  - Bot triggers      │  │  192.168.1.0/24      │  go2rtc     :1984        │
+│  - UDM Pro API calls │  │  (via subnet route)  │  Music Asst :8095        │
+│  - Lighting control  │  │                       │  WiZ proxy  :8903        │
+└──────────┬──────────┘  │                       │  Uptime Kuma:3001        │
+           │              │                       │  + 10 more services      │
+           └──────────────┘                       └────────┬─────────────────┘
+                                                           │
+                                              LAN (192.168.1.0/24)
+                                                           │
+              ┌───────────────────┬────────────────────────┤
+              │                   │                        │
+    ┌────────▼─────────┐ ┌──────▼──────────┐  ┌─────────▼─────────┐
+    │  UDM Pro          │ │  Smart Lights    │  │  Sonos Speakers    │
+    │  192.168.1.1      │ │                  │  │  12 zones          │
+    │                   │ │  WiZ (11 bulbs)  │  │                    │
+    │  - Network API    │ │  Govee (~19)     │  │  Living Sound      │
+    │  - UniFi Protect  │ │  Kasa (2 switches)│  │  MasterBlaster     │
+    │  - WireGuard VPN  │ │  Tuya (2)        │  │  DJ, Backyard...   │
+    │  - DHCP/Firewall  │ │  Matter (13)     │  │  (see full list)   │
     └───────────────────┘ └──────────────────┘  └──────────────────┘
+
+                          ┌──────────────────┐
+                          │  Alpaca Mac       │
+                          │  (legacy, WiFi)   │
+                          │  192.168.1.74     │
+                          │  Secondary/backup │
+                          └──────────────────┘
 ```
 
 ### Connectivity Model
 
-The DO droplet has **direct access to the entire LAN** (`192.168.1.0/24`) via Tailscale subnet routing through the Alpaca Mac. This means:
+The Hostinger VPS (replacing DO droplet) has **direct access to the entire LAN** (`192.168.1.0/24`) via Tailscale subnet routing through the Mac mini. This means:
 
-- **Sonos:** Droplet curls `http://<alpaca-tailscale-ip>:5005/{room}/{action}` (Sonos API runs on Alpaca Mac)
-- **UDM Pro API:** Droplet curls `https://192.168.1.1/api/...` directly (session-based cookie auth)
-- **UniFi Protect:** Droplet curls `https://192.168.1.1/proxy/protect/api/...` directly
-- **WiZ Lights:** Droplet sends commands via SSH to Alpaca Mac (UDP requires LAN presence)
-- **Govee Lights:** Cloud API from anywhere, or LAN control via Alpaca Mac
-- **All other LAN devices:** Reachable from droplet at their `192.168.1.x` IPs
+- **Sonos:** VPS curls `http://<mini-mac-tailscale-ip>:5005/{room}/{action}` (Sonos API runs on Mac mini)
+- **UDM Pro API:** VPS curls `https://192.168.1.1/api/...` directly (session-based cookie auth)
+- **UniFi Protect:** VPS curls `https://192.168.1.1/proxy/protect/api/...` directly
+- **WiZ Lights:** VPS sends commands via SSH to Mac mini (UDP requires LAN presence)
+- **Govee Lights:** Cloud API from anywhere, or LAN control via Mac mini
+- **All other LAN devices:** Reachable from VPS at their `192.168.1.x` IPs
 
 ## Network Topology
 
@@ -66,26 +75,138 @@ All three SSIDs are on the **Native Network** (same `192.168.1.0/24` subnet):
 
 ### Tailscale Mesh VPN
 
-Tailscale connects the DO droplet to the Alpaca Mac and the entire LAN:
+Tailscale connects remote servers to the Mac mini and the entire LAN. All machines use the `alpacaautomatic@gmail.com` account.
 
-| Machine | Tailscale IP | Hostname |
-|---------|-------------|----------|
-| DO Droplet | See `HOMEAUTOMATION.local.md` | openclawzcloudrunner |
-| Alpaca Mac | See `HOMEAUTOMATION.local.md` | alpacaopenmac-1 |
+| Machine | Tailscale IP | Hostname | Role |
+|---------|-------------|----------|------|
+| Paca's Mac mini | `100.74.59.97` | pacas-mac-mini | Primary home server, subnet router |
+| Hostinger VPS | See `HOMEAUTOMATION.local.md` | TBD | Replaces DO droplet |
+| Alpaca Mac (legacy) | See `HOMEAUTOMATION.local.md` | alpacaopenmac-1 | Secondary/backup |
 
-**Subnet Routing:** The Alpaca Mac advertises `192.168.1.0/24` to the Tailnet, allowing the DO droplet to reach any LAN device directly through Tailscale (no SSH hop needed for TCP/HTTPS traffic).
+**Subnet Routing:** The Mac mini advertises `192.168.1.0/24` to the Tailnet, allowing the Hostinger VPS to reach any LAN device directly through Tailscale (no SSH hop needed for TCP/HTTPS traffic).
 
 **Configuration:**
-- Alpaca Mac: `tailscale up --advertise-routes=192.168.1.0/24`
+- Mac mini: `tailscale set --advertise-routes=192.168.1.0/24`
 - DO Droplet: `tailscale up --accept-routes`
 - Alpaca Mac: IP forwarding enabled (`net.inet.ip.forwarding=1` in `/etc/sysctl.conf`)
 - Tailscale Admin: Subnet route approved for `alpacaopenmac`
 
 **Note:** UDP-based protocols (WiZ lights, Sonos mDNS discovery) still require executing commands on the Alpaca Mac via SSH, since Tailscale subnet routing only forwards TCP traffic reliably. The Sonos HTTP API on the Alpaca Mac handles this bridging for Sonos control.
 
-## Alpaca Mac (Home Server)
+## Paca's Mac mini (Primary Home Server)
 
-A dedicated MacBook running macOS 12.7.6 (Monterey), lid closed, plugged in, on Black Rock City WiFi. Acts as a bridge between the DO droplet and local LAN devices.
+Mac mini M4 (Mac16,10), 24 GB RAM, 256 GB SSD, macOS 26.3.1 (Tahoe). Headless, on Ethernet. Primary home server replacing the Alpaca Mac for all services.
+
+### Network & Access
+
+- **LAN IP:** `192.168.1.31` (DHCP reservation on UDM Pro — will persist across reboots/cable changes)
+- **Tailscale IP:** `100.74.59.97`
+- **Tailscale Hostname:** `pacas-mac-mini`
+- **Tailscale Account:** `alpacaautomatic@gmail.com`
+- **User:** `alpuca` (admin, auto-login)
+- **SSH:** `ssh paca@192.168.1.31` (Remote Login enabled)
+- **VNC:** `vnc://192.168.1.31` (Screen Sharing enabled, port 5900)
+- **Chrome Remote Desktop:** Installed (fallback remote access)
+
+> **Note:** SSH user is `paca` (short alias), macOS user is `alpuca`. Both work.
+
+### Bulletproof Configuration
+
+Configured to survive power outages, reboots, and network disruptions without human intervention.
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| Auto-login | `alpuca` | No password prompt on boot |
+| `autorestart` | `1` | **Auto power-on after power failure** (Mac Mini feature — MacBooks don't support this) |
+| `sleep` | `0` | Never sleep |
+| `disksleep` | `0` | Never spin down disks |
+| `displaysleep` | `0` | Never turn off display signal |
+| `womp` | `1` | Wake on LAN enabled |
+| `standby` | `0` | No standby mode |
+| Caffeinate daemon | Running | `/Library/LaunchDaemons/com.caffeinate.plist` — safety net against sleep |
+| Passwordless sudo | `alpuca` | `/etc/sudoers.d/alpuca` |
+| IP forwarding | `1` | `/etc/sysctl.conf` — persists across reboot |
+| Subnet routing | `192.168.1.0/24` | Tailscale advertised route |
+
+### What Happens on Reboot
+
+1. Power returns → Mac mini auto-starts (`autorestart 1`)
+2. `alpuca` user logs in automatically (no password prompt)
+3. Caffeinate daemon starts (LaunchDaemon, runs before login)
+4. Tailscale starts (Login Item, already signed in as `alpacaautomatic@gmail.com`)
+5. Colima/Docker starts (`com.alpacapps.colima.plist`)
+6. All 18 LaunchAgents start (Sonos API, go2rtc, WiZ proxy, etc.)
+7. Subnet route re-advertised → Hostinger VPS can reach LAN within ~60s
+
+**No human intervention required.**
+
+### Services Running
+
+| Service | Port | LaunchAgent | Purpose |
+|---------|------|-------------|---------|
+| node-sonos-http-api | 5005 | `com.sonos.httpapi` | Sonos speaker control |
+| go2rtc | 1984, 8554, 8555 | `com.go2rtc` | Camera HLS/WebRTC/RTSP streaming |
+| Music Assistant | 8095, 8097 | `com.music-assistant.server` | Music control plane (requires Docker/Colima) |
+| Uptime Kuma | 3001 | `com.uptime-kuma` | Service monitoring dashboard |
+| WiZ proxy | 8903 | `com.alpacapps.wiz-proxy` | WiZ smart light UDP bridge |
+| PTZ proxy | 8904 | `com.alpacapps.ptz-proxy` | Camera PTZ control |
+| File search API | 3500 | `com.alpacapps.file-search-api` | Local file search |
+| Cloudflare tunnel | — | `com.cloudflare.tunnel` | Cloudflare tunnel for external access |
+| Blink poller | — | `com.blink-poller` | Blink camera polling |
+| MediaMTX | — | `com.mediamtx` | Media streaming relay |
+| UDM tunnel | — | `com.alpacapps.udm-tunnel` | UDM Pro SSH tunnel |
+| Talkback relay | — | `com.talkback-relay` | Camera talkback audio relay |
+| PO token server | — | `com.po-token-server` | YouTube PO token generation |
+| Printer proxy | — | `com.printer-proxy` | Network printer proxy |
+| Colima (Docker) | — | `com.alpacapps.colima` | Docker runtime via macOS Virtualization.Framework |
+
+### Software Installed
+
+- **Homebrew** (`/opt/homebrew/bin/brew`) — Apple Silicon path
+- **Node.js 20.20.1** via nvm (`/opt/homebrew/bin/node`)
+- **Docker 29.3.0** via Colima (macOS Virtualization.Framework)
+- **FFmpeg 8.1** (`/opt/homebrew/bin/ffmpeg`)
+- **Tailscale** (`/Applications/Tailscale.app`)
+- **Cloudflared** (`/opt/homebrew/bin/cloudflared`)
+- **rclone** (cloud storage sync)
+- **jq** (JSON processing)
+- **tmux** (terminal multiplexer)
+- **sshpass** (automated SSH)
+- **Python 3.12, 3.14** (`/opt/homebrew/bin/python3`)
+- **Chrome Remote Desktop** (fallback remote access)
+- **Google Chrome** (browser)
+
+> **PATH note:** SSH sessions don't include `/opt/homebrew/bin` by default. Prefix commands with full path or run `export PATH=/opt/homebrew/bin:$PATH` first.
+
+### Managing Services
+
+```bash
+# SSH into Mac mini
+ssh paca@192.168.1.31
+
+# List all LaunchAgents
+launchctl list | grep -E 'alpacapps|sonos|go2rtc|music|uptime|cloudflare|blink|mediamtx|wiz|ptz|talkback|po-token|printer|colima'
+
+# Restart a service (example: Sonos API)
+launchctl unload ~/Library/LaunchAgents/com.sonos.httpapi.plist
+launchctl load ~/Library/LaunchAgents/com.sonos.httpapi.plist
+
+# Check all listening ports
+lsof -iTCP -sTCP:LISTEN -nP | awk '{print $1, $9}' | sort -u
+
+# Check Docker containers
+export PATH=/opt/homebrew/bin:$PATH
+docker ps -a
+
+# VNC from another Mac on the LAN
+open vnc://192.168.1.31
+```
+
+---
+
+## Alpaca Mac (Legacy — Secondary Server)
+
+A dedicated MacBook running macOS 12.7.6 (Monterey), lid closed, plugged in, on Black Rock City WiFi. **Being phased out in favor of Paca's Mac mini.** Kept as secondary/backup.
 
 ### Bulletproof Configuration
 
