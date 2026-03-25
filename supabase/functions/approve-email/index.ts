@@ -50,12 +50,34 @@ serve(async (req) => {
     }
 
     if (approval.status !== "pending") {
+      // If action is approve_all and confirmed, still allow auto-approving the type
+      if (action === "approve_all" && confirmed) {
+        await sb.from("email_type_approval_config").update({
+          requires_approval: false,
+          auto_approved_at: new Date().toISOString(),
+          auto_approved_by: "admin_button",
+          updated_at: new Date().toISOString(),
+        }).eq("email_type", approval.email_type);
+
+        const autoType = approval.email_type.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+        return redirectToResult(
+          "success",
+          "Type Auto-Approved",
+          `This email was already sent, but all future <strong>${autoType}</strong> emails will now send automatically.`,
+          autoType,
+        );
+      }
+
+      // Show "already processed" but offer the option to auto-approve the type
       const ts = new Date(approval.approved_at || approval.created_at)
         .toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" });
       return redirectToResult(
         "warning",
         "Already Processed",
         `This email was already ${approval.status} on ${ts} CT.`,
+        undefined,
+        // Pass token + email_type so the result page can offer "approve type" button
+        { token: token!, email_type: approval.email_type },
       );
     }
 
@@ -275,11 +297,16 @@ async function processPayrollApproval(html: string, supabaseUrl: string, supabas
   }
 }
 
-function redirectToResult(status: string, title: string, message: string, autoType?: string): Response {
+function redirectToResult(status: string, title: string, message: string, autoType?: string, typeApproval?: { token: string; email_type: string }): Response {
   const url = new URL(RESULT_PAGE);
   url.searchParams.set("status", status);
   url.searchParams.set("title", title);
   url.searchParams.set("message", message);
   if (autoType) url.searchParams.set("auto_type", autoType);
+  if (typeApproval) {
+    url.searchParams.set("offer_type_approval", "1");
+    url.searchParams.set("approval_token", typeApproval.token);
+    url.searchParams.set("email_type_label", typeApproval.email_type.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()));
+  }
   return Response.redirect(url.toString(), 302);
 }
