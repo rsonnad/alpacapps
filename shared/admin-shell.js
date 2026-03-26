@@ -18,7 +18,7 @@ import { getEnabledFeatures } from './feature-registry.js';
 // Permission keys for staff/admin section detection
 const STAFF_PERMISSION_KEYS = [
   'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
-  'view_purchases', 'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev',
+  'view_purchases', 'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev', 'view_inventory',
 ];
 const ADMIN_PERMISSION_KEYS = [
   'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'view_testdev', 'view_openclaw',
@@ -39,6 +39,7 @@ const TAB_ICONS = {
   todo:       _i('<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>'),
   phyprop:    _i('<path d="M2 22V8l10-6 10 6v14"/><path d="M6 12v10"/><path d="M18 12v10"/><path d="M2 22h20"/><rect x="9" y="14" width="6" height="8"/>'),
   appdev:     _i('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'),
+  inventory:  _i('<path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="10" y1="12" x2="14" y2="12"/>'),
   users:      _i('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>'),
   passwords:  _i('<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>'),
   settings:   _i('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>'),
@@ -69,6 +70,7 @@ export const ALL_ADMIN_TABS = [
   { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff', feature: 'voice' },
   { id: 'todo', label: 'Todo', href: 'devcontrol.html#planlist', permission: 'view_todo', section: 'staff' },
   { id: 'phyprop', label: 'PhyProp', href: 'phyprop.html', permission: 'view_spaces', section: 'staff' },
+  { id: 'inventory', label: 'Inventory', href: 'inventory.html', permission: 'view_inventory', section: 'staff' },
   { id: 'appdev', label: 'App Dev', href: 'appdev.html', permission: 'view_appdev', section: 'staff' },
   // Admin section
   { id: 'users', label: 'Users', href: 'users.html', permission: 'view_users', section: 'admin' },
