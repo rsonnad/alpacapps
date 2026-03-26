@@ -75,6 +75,7 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 - Database + Storage + Auth (Supabase) — Free
 - Parallel AI Agents (Conductor) — Free, [conductor.build](https://conductor.build)
 - Tailwind CSS v4 (utility-class styling) — Free
+- Secrets Management (Bitwarden CLI) — Free
 - AI Developer (Claude Code) — you're already here
 
 **Communication:**
@@ -169,6 +170,35 @@ Determine which features are NOT selected. These will be pruned or hidden.
 5. **Commit and push** the `.claudeignore` (and deletions if pruned).
 
 **Important:** The `.claudeignore` is generated BEFORE any other setup steps, so Claude Code immediately benefits from the reduced search scope for the rest of the wizard.
+
+### Step 1c: Bitwarden Setup
+
+Set up Bitwarden CLI for secrets management. All credentials generated during setup go here.
+
+**Steps (all handled by you):**
+1. Check if `bw` CLI is installed: `which bw`
+   - If missing: `npm install -g @bitwarden/cli`
+2. Check login status: `bw status` — look for `"status":"unlocked"`
+   - If not logged in, tell user: "Run `bw login` to authenticate, then `export BW_SESSION=$(bw unlock --raw)` to unlock your vault."
+   - Pause until user confirms their session is active.
+3. Sync vault: `bw sync`
+4. **For solo users:** Create a folder named `DevOps-{project}` to organize project secrets.
+5. **For teams (Bitwarden Organization):**
+   - Check if user has an org: `bw list organizations`
+   - If yes, create a Collection named `DevOps-{project}` in the org
+   - If no, tell user: "Create a free Bitwarden Organization at https://vault.bitwarden.com — free for up to 2 users. Then invite your collaborators."
+6. As each service is configured in later steps, store credentials in Bitwarden:
+   ```bash
+   # Example: store a Supabase anon key
+   bw get template item | jq '.name="Supabase — {project}" | .notes="Anon key and service role" | .login.username="anon-key-value" | .login.password="service-role-value"' | bw encode | bw create item
+   ```
+7. In `docs/CREDENTIALS.md`, use `bw get` references instead of plaintext:
+   ```markdown
+   - **Supabase Anon Key:** `bw get username "Supabase — {project}"`
+   - **Supabase Service Role:** `bw get password "Supabase — {project}"`
+   ```
+
+**Key rule:** Never write plaintext secrets into any tracked file. Always use `bw get` references in `docs/CREDENTIALS.md`.
 
 ### Step 2: GitHub + GitHub Pages
 

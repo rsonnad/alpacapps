@@ -10,6 +10,7 @@ AlpacApps is a full-stack platform using:
 - **Supabase** — PostgreSQL database, auth, storage, edge functions (free tier)
 - **Claude Code** — AI developer agent that writes and deploys code
 - **Conductor** — Mac app for running parallel Claude Code agents (macOS only)
+- **Bitwarden** — password & secrets manager (`bw` CLI) for team credential sharing
 - **Tailwind CSS v4** — styling framework
 
 Architecture: Browser → GitHub Pages → Supabase (no server-side code). Edge functions handle sensitive operations.
@@ -58,6 +59,7 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 | Supabase | PostgreSQL, auth, file storage, edge functions |
 | Conductor | Parallel AI coding agents (macOS only) |
 | Claude Code | AI developer — writes, tests, deploys code |
+| Bitwarden | Secrets manager — team credential sharing via `bw` CLI |
 
 ### Optional services
 | Service | Purpose | Cost |

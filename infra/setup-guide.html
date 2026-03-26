@@ -261,6 +261,17 @@
     </ul>
     <p>Then authenticate: <code>gh auth login</code> (follow prompts, choose HTTPS, authenticate via browser).</p>
 
+    <h3>Bitwarden (secrets manager)</h3>
+    <p>Bitwarden stores all project credentials (API keys, database passwords, service tokens) so they&rsquo;re never pasted into chat or committed to code.</p>
+    <ol>
+      <li>Create a free account at <a href="https://vault.bitwarden.com/#/register" target="_blank">vault.bitwarden.com</a> if you don&rsquo;t have one</li>
+      <li>Install the CLI: <code>npm install -g @bitwarden/cli</code></li>
+      <li>Login: <code>bw login</code></li>
+      <li>Unlock: <code>export BW_SESSION=$(bw unlock --raw)</code></li>
+    </ol>
+    <p><strong>Working with others?</strong> Create a <a href="https://bitwarden.com/help/about-organizations/" target="_blank">Bitwarden Organization</a> (free for 2 users) and invite collaborators. Shared Collections let everyone access project secrets without passing them through Slack or email.</p>
+    <div class="validate">Ask the user to run <code>bw status</code> and confirm it shows <code>"status":"unlocked"</code>.</div>
+
     <h3>Claude Code (required for Conductor)</h3>
     <p>Claude Code is the AI developer engine that powers Conductor. Check if the Claude desktop app is installed:</p>
     <ol>

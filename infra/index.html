@@ -899,8 +899,9 @@
           <span>Database + Auth + Storage</span>
           <span>Website + Hosting</span>
           <span>Tailwind CSS v4</span>
+          <span>Secrets Management</span>
         </div>
-        <div class="layer-services">Supabase &bull; GitHub Pages &bull; Conductor &bull; Tailwind &bull; Free</div>
+        <div class="layer-services">Supabase &bull; GitHub Pages &bull; Conductor &bull; Tailwind &bull; Bitwarden &bull; Free</div>
       </div>
     </div>
     <div class="stack-sidebar">
@@ -992,6 +993,26 @@
             <li><strong>Plans:</strong> Free tier (daily limits), Pro ($20/mo, recommended), Max ($100/mo for heavy building), Max+ ($200/mo for intensive development).</li>
           </ul>
           <p><a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Go to Claude Code &rarr;</a></p>
+        </details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc calc-svc--core calc-svc--locked">
+          <input type="checkbox" checked disabled data-svc="bitwarden">
+          <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/bitwarden/175DDC" alt="Bitwarden"></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Bitwarden</span><span class="calc-svc__desc">Password &amp; secrets manager for teams</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Open-source password manager that serves as the single source of truth for all project secrets &mdash; API keys, database passwords, SSH credentials, and service tokens.</p>
+          <ul>
+            <li><strong>Why it&rsquo;s core:</strong> Every service you add generates credentials. Bitwarden stores them securely so you never paste secrets into chat, docs, or code.</li>
+            <li><strong>CLI access:</strong> The <code>bw</code> CLI lets you retrieve secrets in terminal scripts &mdash; <code>bw get password &quot;Supabase &mdash; myproject&quot;</code> pulls the value directly.</li>
+            <li><strong>Multi-collaborator:</strong> Create a Bitwarden Organization (free for 2 users) and share Collections per project. Each collaborator installs the CLI and unlocks with their own master password &mdash; no secrets in Slack or email.</li>
+            <li><strong>What goes in:</strong> API keys, OAuth secrets, SSH passwords, Supabase service role keys, Stripe keys, Telnyx tokens &mdash; anything from <code>docs/CREDENTIALS.md</code>.</li>
+          </ul>
+          <p><a href="https://bitwarden.com" target="_blank">Go to Bitwarden &rarr;</a></p>
         </details>
       </div>
 

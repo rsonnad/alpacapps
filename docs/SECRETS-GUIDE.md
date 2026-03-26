@@ -152,6 +152,71 @@ bw get totp "Service Name"
 | `utility` | Utilities (electric, water, internet) |
 | `austin` / `washington` / `california` | Geographic location |
 
+## Multi-Collaborator Setup
+
+Bitwarden Organizations let multiple people access shared project secrets without passing credentials through Slack, email, or chat.
+
+### Initial Setup (Project Owner)
+
+1. **Create a Bitwarden Organization** at https://vault.bitwarden.com (free for up to 2 users, or Teams plan for more)
+2. **Create a Collection** per project: `DevOps-alpacapps`, `DevOps-finleg`, etc.
+3. **Invite collaborators** by email — they'll create their own Bitwarden account if needed
+4. **Assign Collections** to collaborators with appropriate access:
+   - **Admin** — can add/edit/delete items in the collection
+   - **User** — can view and use items (read-only)
+
+### Collaborator Onboarding
+
+Each new collaborator runs these steps once:
+
+```bash
+# 1. Install Bitwarden CLI
+npm install -g @bitwarden/cli
+
+# 2. Login with their own account
+bw login
+
+# 3. Unlock and export session
+export BW_SESSION=$(bw unlock --raw)
+
+# 4. Sync to pull shared collections
+bw sync
+
+# 5. Verify access — should see project items
+bw list items --collectionid $(bw list collections | jq -r '.[] | select(.name=="DevOps-alpacapps") | .id')
+```
+
+Add this to their shell profile (`.bashrc` / `.zshrc`) for convenience:
+```bash
+# Bitwarden session helper
+bw-unlock() { export BW_SESSION=$(bw unlock --raw); }
+```
+
+### Access Control Rules
+
+| Role | Can view secrets | Can add/edit secrets | Can invite others |
+|------|:---:|:---:|:---:|
+| Owner | Yes | Yes | Yes |
+| Admin | Yes | Yes | No |
+| User  | Yes | No  | No  |
+
+### What Goes Where
+
+| Location | Contains | Who sees it |
+|----------|----------|-------------|
+| Bitwarden Organization Collection | Actual secret values | Org members with collection access |
+| `docs/CREDENTIALS.md` (gitignored) | `bw get` references only | Anyone who clones the repo (but no actual values) |
+| Supabase env vars | Runtime copies of secrets | Edge functions at runtime |
+| `.env` files | Never used — use `bw get` instead | N/A |
+
+### Rules for Teams
+
+1. **Never share secrets outside Bitwarden.** No Slack DMs, no email, no shared docs.
+2. **One item per service.** Don't split a service's credentials across multiple items.
+3. **Use hidden custom fields** for API keys and tokens — they're masked in the UI by default.
+4. **Rotate via Bitwarden.** Update the item in Bitwarden first, then update Supabase env vars. Old values are preserved in item history.
+5. **Offboard by removing from Organization.** When someone leaves, remove them from the org — all shared access revokes instantly.
+
 ## Rotation Checklist
 
 When rotating secrets:
