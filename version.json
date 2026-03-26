@@ -1,12 +1,12 @@
 {
-  "version": "v260326.02 10:56a",
-  "release": 1045,
-  "sha": "d22918bff",
-  "fullSha": "d22918bff39952302a1944a3bf30f04557e38759",
+  "version": "v260326.03 11:13a",
+  "release": 1046,
+  "sha": "75940208d",
+  "fullSha": "75940208de0b2c836bc33054c6655bfa0164cbb7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-26 15:56:38+00",
-  "commits": [{"sha":"d22918bff","message":"feat: add Digital Inventory admin page with full system catalog","author":"Paca"}]
+  "pushedAt": "2026-03-26 16:13:23+00",
+  "commits": [{"sha":"75940208d","message":"fix: add missing site.css + tailwind.out.css to 38 pages with broken headers","author":"Rahul"}]
 }

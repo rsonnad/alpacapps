@@ -1,21 +1,111 @@
 {
-  "generatedAt": "2026-03-26T15:57:37.003Z",
+  "generatedAt": "2026-03-26T16:14:10.562Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
     {
-      "path": "sponic-garden.html",
-      "title": "Sponic Garden — The Art and Science of Cultivation",
+      "path": "WarsawPilot/index.html",
+      "title": "Three Pillars — The IRL Social Network",
       "section": null,
-      "modifiedAt": "2026-03-26T07:52:41.000Z"
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "WarsawPilot/v1.html",
+      "title": "Three Pillars — Warsaw Pilot",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "WarsawPilot/v2.html",
+      "title": "Three Pillars — AI-Infused Spaces for Human Growth",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
     },
     {
       "path": "archive-sponic-garden.html",
       "title": "OLD ARCHIVE DO NOT UPDATE - Sponic Garden",
       "section": null,
-      "modifiedAt": "2026-03-23T04:36:14.000Z"
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "calliinstall/index.html",
+      "title": "Set Up Your New Machine — CalliApp",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "donate.html",
+      "title": "Donate — Gaden Shartse Gungru Khangtsen Monastery",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "get-a-tesla.html",
+      "title": "Why You Should Get Annabelle a Tesla",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "india-business-visa.html",
+      "title": "Indian Visa via Business: Step-by-Step for EU Citizens",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "no-longer-a-hot-mess.html",
+      "title": "No longer a hot mess.",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "perps/index.html",
+      "title": "MEXC vs Hyperliquid: Stock Perps Showdown",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "poland-sauna-business.html",
+      "title": "Starting a Sauna Business in Poland: Complete Guide for Americans",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "saleemproto/index.html",
+      "title": "VIP Insider's Guide to SXSW 2026 — The Anti-VC",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "simplearch/index.html",
+      "title": "AlpacApps — Architecture",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "spiritofpai.html",
+      "title": "Spirit of PAI — When AI Inhabits a Home",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "sponic-garden.html",
+      "title": "Sponic Garden — The Art and Science of Cultivation",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "weatheralert/index.html",
+      "title": "Severe Weather Monitor — AlpacApps",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "withinmigration.html",
+      "title": "Within Center — Site Migration Proposal",
+      "section": null,
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
     },
     {
       "path": "sponic-garden/business-model.html",
@@ -30,56 +120,14 @@
       "modifiedAt": "2026-03-19T04:41:39.000Z"
     },
     {
-      "path": "WarsawPilot/index.html",
-      "title": "Three Pillars — The IRL Social Network",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "WarsawPilot/v1.html",
-      "title": "Three Pillars — Warsaw Pilot",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "WarsawPilot/v2.html",
-      "title": "Three Pillars — AI-Infused Spaces for Human Growth",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "calliinstall/index.html",
-      "title": "Set Up Your New Machine — CalliApp",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
       "path": "claudesessions/index.html",
       "title": "Claude Sessions",
       "section": null,
       "modifiedAt": "2026-03-19T01:13:44.000Z"
     },
     {
-      "path": "donate.html",
-      "title": "Donate — Gaden Shartse Gungru Khangtsen Monastery",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
       "path": "files/index.html",
       "title": "File Vault",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "get-a-tesla.html",
-      "title": "Why You Should Get Annabelle a Tesla",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "india-business-visa.html",
-      "title": "Indian Visa via Business: Step-by-Step for EU Citizens",
       "section": null,
       "modifiedAt": "2026-03-19T01:13:44.000Z"
     },
@@ -96,42 +144,6 @@
       "modifiedAt": "2026-03-19T01:13:44.000Z"
     },
     {
-      "path": "no-longer-a-hot-mess.html",
-      "title": "No longer a hot mess.",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "perps/index.html",
-      "title": "MEXC vs Hyperliquid: Stock Perps Showdown",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "poland-sauna-business.html",
-      "title": "Starting a Sauna Business in Poland: Complete Guide for Americans",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "saleemproto/index.html",
-      "title": "VIP Insider's Guide to SXSW 2026 — The Anti-VC",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "simplearch/index.html",
-      "title": "AlpacApps — Architecture",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "spiritofpai.html",
-      "title": "Spirit of PAI — When AI Inhabits a Home",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
       "path": "thaivisa/index.html",
       "title": "Thai Visa Strategy Guide",
       "section": null,
@@ -144,46 +156,34 @@
       "modifiedAt": "2026-03-19T01:13:44.000Z"
     },
     {
-      "path": "weatheralert/index.html",
-      "title": "Severe Weather Monitor — AlpacApps",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "withinmigration.html",
-      "title": "Within Center — Site Migration Proposal",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
       "path": "E2v/e2v2.html",
       "title": "E-2 Visa Playbook v2: Polish Citizen in Austin, TX",
       "section": "E-2 Visa",
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
     },
     {
       "path": "E2v/ev23.html",
       "title": "AlpacApps → E-2 Business | E-2 Visa Investment Guide",
       "section": "E-2 Visa",
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
     },
     {
       "path": "E2v/index.html",
       "title": "E-2 Visa Playbook: Polish Citizen in Austin, TX",
       "section": "E-2 Visa",
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
-      "path": "sloop/index.html",
-      "title": "Sloop — Alpaca Playhouse",
-      "section": "Projects",
-      "modifiedAt": "2026-03-19T04:52:59.000Z"
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
     },
     {
       "path": "bandb/index.html",
       "title": "The Animist Apothecary — Bodywork + Botanicals",
       "section": "Projects",
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
+    },
+    {
+      "path": "sloop/index.html",
+      "title": "Sloop — Alpaca Playhouse",
+      "section": "Projects",
+      "modifiedAt": "2026-03-26T16:13:07.000Z"
     },
     {
       "path": "iaw/index.html",
