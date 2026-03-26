@@ -1,15 +1,16 @@
 # Secrets Management Guide
 
-> Cross-project guide for managing secrets with 1Password as source of truth.
+> Cross-project guide for managing secrets with Bitwarden as source of truth.
+> Uses Bitwarden CLI (`bw`) for secret retrieval.
 > Replicable across all projects (alpacapps, finleg, portsie, etc.)
 
 ## Architecture: 4-Tier Model
 
 ```
-1Password Vaults (source of truth)
-    ↓ op:// references
+Bitwarden Vault (source of truth)
+    ↓ bw get / bw list
 Local Config Files (CREDENTIALS.md, .mcp.json, memory/)
-    ↓ op read / env injection
+    ↓ bw get / env injection
 Supabase Env Vars (runtime secrets for edge functions)
     ↓ RLS / service role
 DB Row-Level Secrets (per-account tokens in config tables)
@@ -17,7 +18,23 @@ DB Row-Level Secrets (per-account tokens in config tables)
 
 **Rule:** Secrets flow DOWN only. Never copy a runtime secret back up.
 
-## Vault Naming Convention
+## Prerequisites
+
+```bash
+# Install Bitwarden CLI
+npm install -g @bitwarden/cli
+
+# Login and unlock (session token required for all commands)
+bw login
+export BW_SESSION=$(bw unlock --raw)
+
+# Sync vault before retrieving secrets
+bw sync
+```
+
+## Collection Naming Convention
+
+Bitwarden uses **Organizations → Collections** (instead of vaults).
 
 | Pattern | Example | Contents |
 |---------|---------|----------|
@@ -30,38 +47,48 @@ DB Row-Level Secrets (per-account tokens in config tables)
 
 ## Item Structure
 
-### API Credentials (`API Credential` category)
+### API Credentials (`Secure Note` or `Login` type with custom fields)
 ```
-Title: {Service} — {Purpose}
-Tags: [service-name, category]
-Sections:
-  API Keys/    → token[password], key[password]
-  OAuth/       → Client ID, Client Secret[password], Refresh Token[password]
-  Config/      → Supabase Secret Name, Free Tier, API Base
-  Endpoints/   → Base URL, Auth URL, Webhook URL
-```
-
-### Server Access (`Server` category)
-```
-Title: {Provider} — {Role}
-Tags: [provider, ssh]
-Sections:
-  Account/     → Email, Dashboard Password[password]
-  SSH/         → IP, User, Password[password], Auth Method, Command
-  Server/      → OS, Specs, Domain, URL
-  Docker/      → Tokens, Compose Path, Container
+Name: {Service} — {Purpose}
+Custom Fields:
+  token        [hidden]
+  api_key      [hidden]
+  client_id    [text]
+  client_secret [hidden]
+  refresh_token [hidden]
+  supabase_secret_name [text]
+  api_base     [text]
+Notes: Free tier info, endpoint URLs
 ```
 
-### Login Accounts (`Login` category)
+### Server Access (`Login` type)
 ```
-Title: {Service} — {Context}
-Tags: [category-tag]
-Fields: username, password
-URL: service login page
-Sections:
-  Billing/     → Autopay Account, Due Date, Account Number
-  Policy/      → Policy Number, Coverage, Agent
-  Config/      → Webhook URL, Plan details
+Name: {Provider} — {Role}
+Username: SSH user (e.g. root)
+Password: SSH password
+URI: ssh://IP-address
+Custom Fields:
+  auth_method  [text]    (password / key)
+  os           [text]
+  specs        [text]
+  domain       [text]
+  docker_token [hidden]
+  compose_path [text]
+Notes: Dashboard URL, container info
+```
+
+### Login Accounts (`Login` type)
+```
+Name: {Service} — {Context}
+Username: login email/username
+Password: login password
+URI: service login page
+Custom Fields:
+  account_number [text]
+  policy_number  [text]
+  due_date       [text]
+  webhook_url    [text]
+Notes: Billing, coverage, plan details
 ```
 
 ## Reference Format in Config Files
@@ -69,28 +96,47 @@ Sections:
 In `CREDENTIALS.md` and memory files, replace plaintext secrets with:
 
 ```markdown
-- **API Key:** `op read "op://DevOps-alpacapps/Service Name/Section/Field"`
+- **API Key:** `bw get password "Service Name — Purpose"`
+```
+
+For custom fields:
+
+```markdown
+- **Client Secret:** `bw get item "Service Name" | jq -r '.fields[] | select(.name=="client_secret") | .value'`
 ```
 
 In shell commands:
+
 ```bash
-# Inline substitution
-curl -H "Authorization: Bearer $(op read 'op://DevOps-alpacapps/Supabase/API Keys/Management API Token')"
+# Ensure session is active
+export BW_SESSION=$(bw unlock --raw)
+
+# Get a password (simplest form)
+curl -H "Authorization: Bearer $(bw get password 'Supabase — alpacapps')"
+
+# Get a custom field value
+bw get item "Supabase — alpacapps" | jq -r '.fields[] | select(.name=="management_api_token") | .value'
 
 # Password file generation
-op read "op://DevOps-alpacapps/Hostinger VPS/SSH/Password" > ~/.ssh/service.pass && chmod 600 ~/.ssh/service.pass
+bw get password "Hostinger VPS — Root" > ~/.ssh/service.pass && chmod 600 ~/.ssh/service.pass
 
 # sshpass integration
-sshpass -p "$(op read 'op://DevOps-alpacapps/Hostinger VPS/SSH/Password')" ssh root@host
+sshpass -p "$(bw get password 'Hostinger VPS — Root')" ssh root@host
+
+# Get username
+bw get username "Service Name"
+
+# Get TOTP code
+bw get totp "Service Name"
 ```
 
 ## Setting Up a New Project
 
-1. **Create vault:** `DevOps-{project}` in 1Password
-2. **Add items:** Follow the structure patterns above
-3. **Create CREDENTIALS.md:** Use `op://` references (never plaintext)
-4. **Supabase secrets:** `supabase secrets set KEY=$(op read 'op://...')`
-5. **MCP config:** Reference via env vars or `op://` in `.mcp.json`
+1. **Create collection:** `DevOps-{project}` in Bitwarden (requires an Organization)
+2. **Add items:** Follow the structure patterns above, assign to the collection
+3. **Create CREDENTIALS.md:** Use `bw get` references (never plaintext)
+4. **Supabase secrets:** `supabase secrets set KEY=$(bw get password 'Item Name')`
+5. **MCP config:** Reference via env vars in `.mcp.json`
 
 ## Tag Taxonomy
 
@@ -106,12 +152,12 @@ sshpass -p "$(op read 'op://DevOps-alpacapps/Hostinger VPS/SSH/Password')" ssh r
 | `utility` | Utilities (electric, water, internet) |
 | `austin` / `washington` / `california` | Geographic location |
 
-## Rotation Checklist (future)
+## Rotation Checklist
 
 When rotating secrets:
 1. Generate new secret in the service dashboard
-2. Update 1Password item (old value goes to password history automatically)
+2. Update the Bitwarden item (`bw edit item` or via the app — old values are in item history)
 3. Update Supabase env vars: `supabase secrets set KEY=new_value`
 4. Restart affected edge functions: `supabase functions deploy <name>`
 5. Verify with a test request
-6. No need to update CREDENTIALS.md — `op://` references stay the same
+6. No need to update CREDENTIALS.md — `bw get` references use item names, not values
