@@ -1,12 +1,12 @@
 {
-  "version": "v260325.07 5:35p",
-  "release": 1043,
-  "sha": "f5adb0ed2",
-  "fullSha": "f5adb0ed2b19642a8088217e44a5f2c2858ac358",
+  "version": "v260326.01 2:52a",
+  "release": 1044,
+  "sha": "5172a2d2f",
+  "fullSha": "5172a2d2f6ef4e6011f34fc411bacc7759f621a1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm46oaq",
-  "pushedAt": "2026-03-25 22:35:25+00",
-  "commits": [{"sha":"f5adb0ed2","message":"feat: enforce before/after photos at clock-in/out + clock-in summary email","author":"Rahul"}]
+  "pushedAt": "2026-03-26 07:52:41+00",
+  "commits": [{"sha":"5172a2d2f","message":"copy: update Sponic Garden subtitle to destination social venues positioning","author":"Rahul"}]
 }
