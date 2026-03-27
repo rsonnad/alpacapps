@@ -1,12 +1,12 @@
 {
-  "version": "v260327.34 3:47p",
-  "release": 1080,
-  "sha": "4fbd1bfd5",
-  "fullSha": "4fbd1bfd5fc747a95cba20a1243e0401329d5c5e",
+  "version": "v260327.35 3:55p",
+  "release": 1081,
+  "sha": "412797089",
+  "fullSha": "4127970896cdeebe36d6053a73653b19a46b2107",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 20:47:16+00",
-  "commits": [{"sha":"4fbd1bfd5","message":"feat: add strip light effects tab to device testing page","author":"Rahul"}]
+  "pushedAt": "2026-03-27 20:55:30+00",
+  "commits": [{"sha":"412797089","message":"fix: backup now shows pending in schedule, paths are copy-to-clipboard buttons","author":"Paca"}]
 }
