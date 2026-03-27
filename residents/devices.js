@@ -164,7 +164,10 @@ async function fetchLighting() {
 async function fetchSonos() {
   // Try live Sonos API first for real-time playback info
   try {
-    const zoneGroups = await loadZones();
+    const zoneGroups = await Promise.race([
+      loadZones(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Sonos timeout')), 8000)),
+    ]);
     if (zoneGroups.length > 0) {
       // Flatten zone groups into individual zone rows
       const zones = [];
