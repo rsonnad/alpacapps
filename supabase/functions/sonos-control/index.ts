@@ -2,7 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 import { logApiUsage } from "../_shared/api-usage-log.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface SonosRequest {
   action:
     | "getZones"
@@ -588,7 +590,7 @@ async function tryMusicAssistantAction(
       ]);
     case "volume": {
       if (body.value === undefined || body.value === null) throw new Error("Missing value");
-      const value = Number(body.value);
+      const value = Math.max(0, Math.min(100, Number(body.value)));
       return maRequestWithFallbackCommands(maUrl, maToken, [
         { command: "players/cmd/volume_set", args: { player_id: playerId, volume_level: value } },
         { command: "players/set_volume", args: { player_id: playerId, volume: value } },
@@ -625,29 +627,23 @@ async function tryMusicAssistantAction(
   }
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(body: unknown, status = 200) {
+function jsonResponse(req: Request, body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     // Verify auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -657,11 +653,11 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
 
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
-    const isInternalCall = token === supabaseServiceKey;
+    const isInternalCall = await timingSafeEqual(token, supabaseServiceKey);
     // Allow pg_cron calls with X-Cron-Secret header
     const cronSecret = Deno.env.get("SCHEDULE_CRON_SECRET");
     const cronHeader = req.headers.get("X-Cron-Secret");
-    const isCronCall = !!(cronSecret && cronHeader === cronSecret);
+    const isCronCall = !!(cronSecret && cronHeader && await timingSafeEqual(cronHeader, cronSecret));
     let userId: string | null = null;
 
     if (!isInternalCall && !isCronCall) {
@@ -670,14 +666,14 @@ serve(async (req) => {
         error: authError,
       } = await supabase.auth.getUser(token);
       if (authError || !user) {
-        return jsonResponse({ error: "Invalid token" }, 401);
+        return jsonResponse(req, { error: "Invalid token" }, 401);
       }
 
       // Check granular permission: control_music
       const { appUser, hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_music");
       userId = appUser?.id ?? null;
       if (!hasPermission) {
-        return jsonResponse({ error: "Insufficient permissions" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
     }
 
@@ -696,7 +692,7 @@ serve(async (req) => {
     // =============================================
     if (action === "run-schedules") {
       if (!isInternalCall && !isCronCall) {
-        return jsonResponse({ error: "Forbidden: internal only" }, 403);
+        return jsonResponse(req, { error: "Forbidden: internal only" }, 403);
       }
       console.log("Schedule runner: checking for due schedules");
 
@@ -716,16 +712,16 @@ serve(async (req) => {
       // Find active schedules whose time_of_day is within ±7 minutes of now
       const { data: schedules, error: schedErr } = await supabase
         .from("sonos_schedules")
-        .select("*")
+        .select("id, name, time_of_day, recurrence, custom_days, one_time_date, last_fired_at, volume, room, source_type, playlist_name")
         .eq("is_active", true);
 
       if (schedErr) {
         console.error("Schedule runner: query error", schedErr.message);
-        return jsonResponse({ error: schedErr.message }, 500);
+        return jsonResponse(req, { error: "Failed to load schedules" }, 500);
       }
       if (!schedules || schedules.length === 0) {
         console.log("Schedule runner: no active schedules");
-        return jsonResponse({ status: "ok", fired: 0 });
+        return jsonResponse(req, { status: "ok", fired: 0 });
       }
 
       const results: Array<{ id: number; name: string; status: string; error?: string }> = [];
@@ -838,7 +834,7 @@ serve(async (req) => {
       }
 
       console.log(`Schedule runner: done. Fired ${results.filter(r => r.status === "fired").length}/${results.length} schedules`);
-      return jsonResponse({ status: "ok", time: currentTime, date: todayDate, fired: results.length, results });
+      return jsonResponse(req, { status: "ok", time: currentTime, date: todayDate, fired: results.length, results });
     }
 
     const maActions = new Set([
@@ -866,14 +862,14 @@ serve(async (req) => {
     if (useMa && maUrl && maActions.has(action)) {
       try {
         const maResult = await tryMusicAssistantAction(body, maUrl, maToken);
-        return jsonResponse(maResult, 200);
+        return jsonResponse(req, maResult, 200);
       } catch (maError) {
         console.warn(`MA routing failed for ${action}, falling back to Sonos:`, (maError as Error).message);
       }
     }
 
     if (!proxyUrl || !proxySecret) {
-      return jsonResponse({ error: "Sonos proxy not configured" }, 500);
+      return jsonResponse(req, { error: "Sonos proxy not configured" }, 500);
     }
 
     // Build Sonos HTTP API path
@@ -885,61 +881,62 @@ serve(async (req) => {
         path = "/zones";
         break;
       case "getState":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/state`;
         break;
       case "play":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/play`;
         break;
       case "pause":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/pause`;
         break;
       case "playpause":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/playpause`;
         break;
       case "next":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/next`;
         break;
       case "previous":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/previous`;
         break;
       case "volume": {
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         const vol = body.value;
         if (vol === undefined || vol === null)
-          return jsonResponse({ error: "Missing value" }, 400);
-        path = `/${room}/volume/${encodeURIComponent(String(vol))}`;
+          return jsonResponse(req, { error: "Missing value" }, 400);
+        const clampedVol = Math.max(0, Math.min(100, Number(vol)));
+        path = `/${room}/volume/${encodeURIComponent(String(clampedVol))}`;
         break;
       }
       case "mute":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/mute`;
         break;
       case "unmute":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/unmute`;
         break;
       case "favorite":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
-        if (!body.name) return jsonResponse({ error: "Missing name" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
+        if (!body.name) return jsonResponse(req, { error: "Missing name" }, 400);
         path = `/${room}/favorite/${encodeURIComponent(body.name)}`;
         break;
       case "favorites":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/favorites`;
         break;
       case "playlists":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/playlists`;
         break;
       case "playlist":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
-        if (!body.name) return jsonResponse({ error: "Missing name" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
+        if (!body.name) return jsonResponse(req, { error: "Missing name" }, 400);
         path = `/${room}/playlist/${encodeURIComponent(body.name)}`;
         break;
       case "pauseall":
@@ -949,52 +946,55 @@ serve(async (req) => {
         path = "/resumeall";
         break;
       case "join":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
-        if (!body.other) return jsonResponse({ error: "Missing other" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
+        if (!body.other) return jsonResponse(req, { error: "Missing other" }, 400);
         path = `/${room}/join/${encodeURIComponent(body.other)}`;
         break;
       case "leave":
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/leave`;
         break;
       case "bass": {
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         const bassVal = body.value;
         if (bassVal === undefined || bassVal === null)
-          return jsonResponse({ error: "Missing value" }, 400);
+          return jsonResponse(req, { error: "Missing value" }, 400);
         path = `/${room}/bass/${encodeURIComponent(String(bassVal))}`;
         break;
       }
       case "treble": {
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         const trebleVal = body.value;
         if (trebleVal === undefined || trebleVal === null)
-          return jsonResponse({ error: "Missing value" }, 400);
+          return jsonResponse(req, { error: "Missing value" }, 400);
         path = `/${room}/treble/${encodeURIComponent(String(trebleVal))}`;
         break;
       }
       case "loudness": {
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         const loudnessVal = body.value;
         if (loudnessVal === undefined || loudnessVal === null)
-          return jsonResponse({ error: "Missing value" }, 400);
+          return jsonResponse(req, { error: "Missing value" }, 400);
         path = `/${room}/loudness/${encodeURIComponent(String(loudnessVal))}`;
         break;
       }
       case "balance": {
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         const balVal = body.value;
         if (balVal === undefined || balVal === null)
-          return jsonResponse({ error: "Missing value" }, 400);
+          return jsonResponse(req, { error: "Missing value" }, 400);
         path = `/${room}/balance/${encodeURIComponent(String(balVal))}`;
         break;
       }
       case "announce": {
-        if (!body.text) return jsonResponse({ error: "Missing text" }, 400);
+        if (!body.text) return jsonResponse(req, { error: "Missing text" }, 400);
+        if (body.text.length > 500) {
+          return jsonResponse(req, { error: "Announcement text too long (max 500 characters)" }, 400);
+        }
 
         const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
         if (!geminiApiKey) {
-          return jsonResponse({ error: "Gemini API key not configured" }, 500);
+          return jsonResponse(req, { error: "Gemini API key not configured" }, 500);
         }
 
         const voiceName = body.voice || "Kore";
@@ -1020,7 +1020,7 @@ serve(async (req) => {
         if (!ttsResponse.ok) {
           const errBody = await ttsResponse.text();
           console.error("Gemini TTS error:", ttsResponse.status, errBody);
-          return jsonResponse({ error: `TTS generation failed: ${ttsResponse.status}`, detail: errBody.substring(0, 500) }, 500);
+          return jsonResponse(req, { error: "TTS generation failed" }, 500);
         }
 
         const ttsResult = await ttsResponse.json();
@@ -1041,7 +1041,7 @@ serve(async (req) => {
         const audioData = ttsResult.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
         if (!audioData) {
           console.error("Gemini TTS: no audio data in response", JSON.stringify(ttsResult).substring(0, 500));
-          return jsonResponse({ error: "TTS returned no audio data" }, 500);
+          return jsonResponse(req, { error: "TTS returned no audio data" }, 500);
         }
 
         // 2. Convert base64 PCM to WAV
@@ -1065,7 +1065,7 @@ serve(async (req) => {
 
         if (uploadError) {
           console.error("Storage upload error:", uploadError.message);
-          return jsonResponse({ error: `Upload failed: ${uploadError.message}` }, 500);
+          return jsonResponse(req, { error: "Audio upload failed" }, 500);
         }
 
         const { data: urlData } = supabase.storage
@@ -1094,7 +1094,7 @@ serve(async (req) => {
             headers: { "X-Sonos-Secret": proxySecret },
           });
           if (!zonesResp.ok) {
-            return jsonResponse({ error: "Failed to fetch Sonos zones" }, 500);
+            return jsonResponse(req, { error: "Failed to fetch Sonos zones" }, 500);
           }
           const zones = await zonesResp.json();
           const announcePromises = zones
@@ -1109,14 +1109,14 @@ serve(async (req) => {
           const succeeded = results.filter((r) => r.status === "fulfilled").length;
           const failed = results.filter((r) => r.status === "rejected").length;
           console.log(`Announce: broadcast complete, ${succeeded} succeeded, ${failed} failed`);
-          return jsonResponse({ status: "success", zones: succeeded, failed });
+          return jsonResponse(req, { status: "success", zones: succeeded, failed });
         }
         break;
       }
 
       case "spotify-search": {
         const query = body.query;
-        if (!query) return jsonResponse({ error: "Missing query" }, 400);
+        if (!query) return jsonResponse(req, { error: "Missing query" }, 400);
         const searchType = body.searchType || "track";
         const limit = Math.min(body.limit || 10, 20);
         // Map UI types to Spotify API types
@@ -1143,7 +1143,7 @@ serve(async (req) => {
           if (!searchResp.ok) {
             const errText = await searchResp.text();
             console.error("Spotify search error:", searchResp.status, errText);
-            return jsonResponse({ error: `Spotify search failed: ${searchResp.status}` }, searchResp.status);
+            return jsonResponse(req, { error: `Spotify search failed: ${searchResp.status}` }, searchResp.status);
           }
           const searchData = await searchResp.json();
           // Normalize results based on type
@@ -1200,36 +1200,36 @@ serve(async (req) => {
             metadata: { query, searchType: spotifyType, results_count: results.length },
             app_user_id: userId,
           });
-          return jsonResponse({ results, total: results.length });
+          return jsonResponse(req, { results, total: results.length });
         } catch (err) {
-          console.error("Spotify search error:", err.message);
-          return jsonResponse({ error: err.message }, 500);
+          console.error("Spotify search error:", err.message, err.stack);
+          return jsonResponse(req, { error: "Spotify search failed" }, 500);
         }
       }
 
       case "musicsearch": {
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         const service = body.service || "spotify";
         const searchType = body.searchType || "song";
         const query = body.query;
-        if (!query) return jsonResponse({ error: "Missing query" }, 400);
+        if (!query) return jsonResponse(req, { error: "Missing query" }, 400);
         const allowedServices = ["spotify", "apple", "deezer", "library"];
         const allowedTypes = ["song", "album", "playlist", "station"];
         if (!allowedServices.includes(service))
-          return jsonResponse({ error: `Invalid service: ${service}` }, 400);
+          return jsonResponse(req, { error: `Invalid service: ${service}` }, 400);
         if (!allowedTypes.includes(searchType))
-          return jsonResponse({ error: `Invalid type: ${searchType}` }, 400);
+          return jsonResponse(req, { error: `Invalid type: ${searchType}` }, 400);
         path = `/${room}/musicsearch/${encodeURIComponent(service)}/${encodeURIComponent(searchType)}/${encodeURIComponent(query)}`;
         break;
       }
 
       case "spotify-play": {
-        if (!room) return jsonResponse({ error: "Missing room" }, 400);
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         const spotifyUri = body.uri;
-        if (!spotifyUri) return jsonResponse({ error: "Missing uri" }, 400);
+        if (!spotifyUri) return jsonResponse(req, { error: "Missing uri" }, 400);
         // Validate it's a spotify URI
         if (!spotifyUri.startsWith("spotify:"))
-          return jsonResponse({ error: "Invalid Spotify URI" }, 400);
+          return jsonResponse(req, { error: "Invalid Spotify URI" }, 400);
         // "now" replaces queue, "queue" appends
         const mode = body.enqueue ? "queue" : "now";
         path = `/${room}/spotify/${mode}/${encodeURIComponent(spotifyUri)}`;
@@ -1238,11 +1238,11 @@ serve(async (req) => {
 
       case "tts_preview": {
         // Generate TTS audio and return the URL — no Sonos playback
-        if (!body.text) return jsonResponse({ error: "Missing text" }, 400);
+        if (!body.text) return jsonResponse(req, { error: "Missing text" }, 400);
 
         const previewGeminiKey = Deno.env.get("GEMINI_API_KEY");
         if (!previewGeminiKey) {
-          return jsonResponse({ error: "Gemini API key not configured" }, 500);
+          return jsonResponse(req, { error: "Gemini API key not configured" }, 500);
         }
 
         const previewVoice = body.voice || "Sulafat";
@@ -1266,13 +1266,13 @@ serve(async (req) => {
 
         if (!previewTtsResp.ok) {
           const errBody = await previewTtsResp.text();
-          return jsonResponse({ error: `TTS failed: ${previewTtsResp.status}`, detail: errBody.substring(0, 500) }, 500);
+          return jsonResponse(req, { error: "TTS preview generation failed" }, 500);
         }
 
         const previewResult = await previewTtsResp.json();
         const previewAudioData = previewResult.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
         if (!previewAudioData) {
-          return jsonResponse({ error: "TTS returned no audio data" }, 500);
+          return jsonResponse(req, { error: "TTS returned no audio data" }, 500);
         }
 
         // Convert PCM to WAV
@@ -1294,7 +1294,8 @@ serve(async (req) => {
           });
 
         if (previewUploadErr) {
-          return jsonResponse({ error: `Upload failed: ${previewUploadErr.message}` }, 500);
+          console.error("TTS preview upload error:", previewUploadErr.message);
+          return jsonResponse(req, { error: "TTS preview upload failed" }, 500);
         }
 
         const { data: previewUrlData } = supabase.storage
@@ -1314,7 +1315,7 @@ serve(async (req) => {
           app_user_id: userId,
         });
 
-        return jsonResponse({
+        return jsonResponse(req, {
           status: "success",
           audio_url: previewUrlData.publicUrl,
           duration_secs: Math.ceil(previewPcm.length / (24000 * 2)),
@@ -1322,7 +1323,7 @@ serve(async (req) => {
       }
 
       default:
-        return jsonResponse({ error: `Unknown action: ${action}` }, 400);
+        return jsonResponse(req, { error: `Unknown action: ${action}` }, 400);
     }
 
     // Forward to Sonos proxy on DO droplet
@@ -1341,17 +1342,17 @@ serve(async (req) => {
         // Normalize error to a string so clients don't get [object Object]
         const errMsg = typeof json.error === "string" ? json.error
           : json.message || json.response || result.substring(0, 200);
-        return jsonResponse({ error: errMsg }, sonosResponse.status);
+        return jsonResponse(req, { error: errMsg }, sonosResponse.status);
       }
-      return jsonResponse(json, 200);
+      return jsonResponse(req, json, 200);
     } catch {
-      return jsonResponse(
+      return jsonResponse(req, 
         { status: sonosResponse.ok ? "ok" : "error", response: result },
         sonosResponse.ok ? 200 : sonosResponse.status
       );
     }
   } catch (error) {
-    console.error("Sonos control error:", error.message);
-    return jsonResponse({ error: error.message }, 500);
+    console.error("Sonos control error:", error.message, error.stack);
+    return jsonResponse(req, { error: "Internal error processing sonos control request" }, 500);
   }
 });

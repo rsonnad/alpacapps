@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 type AlexaRequestEnvelope = {
   version: string;
   context?: {
@@ -29,13 +30,7 @@ type RoomTarget = {
   govee_group_ids: string[] | null;
 };
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function alexaResponse(text: string, endSession = true) {
+function alexaResponse(req: Request, text: string, endSession = true) {
   return new Response(
     JSON.stringify({
       version: "1.0",
@@ -49,7 +44,7 @@ function alexaResponse(text: string, endSession = true) {
     }),
     {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     },
   );
 }
@@ -269,13 +264,13 @@ async function getRoomTarget(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   if (req.method !== "POST") {
     return new Response("Method not allowed", {
       status: 405,
-      headers: corsHeaders,
+      headers: getCorsHeaders(req),
     });
   }
 
@@ -286,19 +281,19 @@ serve(async (req) => {
     if (skillId) {
       const appId = body?.session?.application?.applicationId || "";
       if (appId && appId !== skillId) {
-        return alexaResponse("Skill ID mismatch.");
+        return alexaResponse(req, "Skill ID mismatch.");
       }
     }
 
     const requestType = body?.request?.type || "";
     if (requestType === "LaunchRequest") {
-      return alexaResponse(
+      return alexaResponse(req, 
         "Alpaca Home is ready. You can say turn master pasture lights on.",
       );
     }
 
     if (requestType !== "IntentRequest") {
-      return alexaResponse("Unsupported request type.");
+      return alexaResponse(req, "Unsupported request type.");
     }
 
     const intentName = body?.request?.intent?.name || "";
@@ -313,7 +308,7 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceRoleKey) {
       console.error("Missing required Supabase env vars.");
-      return alexaResponse("Configuration error.");
+      return alexaResponse(req, "Configuration error.");
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
@@ -334,7 +329,7 @@ serve(async (req) => {
       };
     }
     if (!roomTarget) {
-      return alexaResponse(
+      return alexaResponse(req, 
         alexaDeviceId
           ? "This Echo is not mapped to a room yet."
           : "I could not determine which room to control.",
@@ -348,42 +343,42 @@ serve(async (req) => {
     if (intentName === "TurnLightsOnIntent") {
       if (wizIps.length > 0) {
         const wizResult = await callWizProxy(wizIps, true);
-        return alexaResponse(`${roomName} lights are on (${wizResult.okCount}/${wizResult.total}).`);
+        return alexaResponse(req, `${roomName} lights are on (${wizResult.okCount}/${wizResult.total}).`);
       }
       if (groupIds.length > 0) {
         for (const groupId of groupIds) {
           await callGoveeControl(supabaseUrl, serviceRoleKey, groupId, true);
         }
-        return alexaResponse(`${roomName} lights are on.`);
+        return alexaResponse(req, `${roomName} lights are on.`);
       }
       console.error(`No WiZ IPs or Govee group IDs configured for ${roomKey}.`);
-      return alexaResponse(`${roomName} lights are not configured yet.`);
+      return alexaResponse(req, `${roomName} lights are not configured yet.`);
     }
 
     if (intentName === "TurnLightsOffIntent") {
       if (wizIps.length > 0) {
         const wizResult = await callWizProxy(wizIps, false);
-        return alexaResponse(`${roomName} lights are off (${wizResult.okCount}/${wizResult.total}).`);
+        return alexaResponse(req, `${roomName} lights are off (${wizResult.okCount}/${wizResult.total}).`);
       }
       if (groupIds.length > 0) {
         for (const groupId of groupIds) {
           await callGoveeControl(supabaseUrl, serviceRoleKey, groupId, false);
         }
-        return alexaResponse(`${roomName} lights are off.`);
+        return alexaResponse(req, `${roomName} lights are off.`);
       }
       console.error(`No WiZ IPs or Govee group IDs configured for ${roomKey}.`);
-      return alexaResponse(`${roomName} lights are not configured yet.`);
+      return alexaResponse(req, `${roomName} lights are not configured yet.`);
     }
 
     if (intentName === "SetBrightnessIntent") {
       const raw = body?.request?.intent?.slots?.brightness?.value || "";
       const parsed = Number.parseInt(raw, 10);
       if (!Number.isFinite(parsed) || parsed < 1 || parsed > 100) {
-        return alexaResponse("Please give a brightness between 1 and 100.");
+        return alexaResponse(req, "Please give a brightness between 1 and 100.");
       }
       if (wizIps.length > 0) {
         const wizResult = await callWizProxy(wizIps, undefined, parsed);
-        return alexaResponse(`Set ${roomName} lights to ${parsed} percent (${wizResult.okCount}/${wizResult.total}).`);
+        return alexaResponse(req, `Set ${roomName} lights to ${parsed} percent (${wizResult.okCount}/${wizResult.total}).`);
       }
       if (groupIds.length > 0) {
         for (const groupId of groupIds) {
@@ -395,23 +390,23 @@ serve(async (req) => {
             parsed,
           );
         }
-        return alexaResponse(`Set ${roomName} lights to ${parsed} percent.`);
+        return alexaResponse(req, `Set ${roomName} lights to ${parsed} percent.`);
       }
       console.error(`No WiZ IPs or Govee group IDs configured for ${roomKey}.`);
-      return alexaResponse(`${roomName} lights are not configured yet.`);
+      return alexaResponse(req, `${roomName} lights are not configured yet.`);
     }
 
     if (intentName === "SetColorIntent") {
       const rawColor = body?.request?.intent?.slots?.color?.value || "";
       const rgbInt = parseNamedColorToRgbInt(rawColor);
       if (rgbInt == null) {
-        return alexaResponse("I couldn't parse that color. Try a basic color like red, blue, or warm white.");
+        return alexaResponse(req, "I couldn't parse that color. Try a basic color like red, blue, or warm white.");
       }
       const rgb = rgbIntToParts(rgbInt);
       if (wizIps.length > 0) {
         const wizResult = await callWizProxy(wizIps, undefined, undefined, rgb);
         if (groupIds.length === 0) {
-          return alexaResponse(`Set ${roomName} lights to ${rawColor} (${wizResult.okCount}/${wizResult.total}).`);
+          return alexaResponse(req, `Set ${roomName} lights to ${rawColor} (${wizResult.okCount}/${wizResult.total}).`);
         }
       }
       if (groupIds.length > 0) {
@@ -421,20 +416,20 @@ serve(async (req) => {
       }
       if (wizIps.length === 0 && groupIds.length === 0) {
         console.error(`No WiZ IPs or Govee group IDs configured for ${roomKey}.`);
-        return alexaResponse(`${roomName} lights are not configured yet.`);
+        return alexaResponse(req, `${roomName} lights are not configured yet.`);
       }
-      return alexaResponse(`Set ${roomName} lights to ${rawColor}.`);
+      return alexaResponse(req, `Set ${roomName} lights to ${rawColor}.`);
     }
 
     if (intentName === "AMAZON.HelpIntent") {
-      return alexaResponse(
+      return alexaResponse(req, 
         "Try saying, turn master pasture lights on, or turn master pasture lights off.",
       );
     }
 
-    return alexaResponse("I do not support that command yet.");
+    return alexaResponse(req, "I do not support that command yet.");
   } catch (error) {
     console.error("alexa-room-control error:", error);
-    return alexaResponse("Sorry, I hit an error controlling the lights.");
+    return alexaResponse(req, "Sorry, I hit an error controlling the lights.");
   }
 });

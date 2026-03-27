@@ -2,7 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 import { logApiUsage } from "../_shared/api-usage-log.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 const TESLA_TOKEN_URL =
   "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token";
 const DEFAULT_FLEET_API_BASE =
@@ -16,16 +18,10 @@ interface TeslaCommandRequest {
   account_id?: number; // tesla_accounts.id (for exchangeCode)
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -40,7 +36,7 @@ const COMMAND_MAP: Record<string, { method: string; pathSuffix: string }> = {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -57,25 +53,25 @@ serve(async (req) => {
     // failures when the user's Supabase JWT expires during the Tesla redirect.
     if (body.action === "exchangeCode") {
       if (!body.code) {
-        return jsonResponse({ error: "Missing authorization code" }, 400);
+        return jsonResponse(req, { error: "Missing authorization code" }, 400);
       }
       if (!body.account_id) {
-        return jsonResponse({ error: "Missing account_id" }, 400);
+        return jsonResponse(req, { error: "Missing account_id" }, 400);
       }
 
       // Load account to get Fleet API credentials
       const { data: acct, error: acctErr } = await supabase
         .from("tesla_accounts")
-        .select("*")
+        .select("id, fleet_client_id, fleet_client_secret, fleet_api_base")
         .eq("id", body.account_id)
         .single();
 
       if (acctErr || !acct) {
-        return jsonResponse({ error: "Account not found" }, 404);
+        return jsonResponse(req, { error: "Account not found" }, 404);
       }
 
       if (!acct.fleet_client_id || !acct.fleet_client_secret) {
-        return jsonResponse({ error: "Fleet API credentials not configured on account" }, 400);
+        return jsonResponse(req, { error: "Fleet API credentials not configured on account" }, 400);
       }
 
       // Exchange authorization code for tokens
@@ -97,14 +93,14 @@ serve(async (req) => {
       const tokenData = await tokenResponse.json();
       if (tokenData.error) {
         console.error("OAuth token exchange error:", tokenData);
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: `Token exchange failed: ${tokenData.error_description || tokenData.error}` },
           400
         );
       }
 
       if (!tokenData.access_token || !tokenData.refresh_token) {
-        return jsonResponse({ error: "Token response missing tokens" }, 500);
+        return jsonResponse(req, { error: "Token response missing tokens" }, 500);
       }
 
       // Save tokens to account — clear needs_reauth since we have fresh tokens
@@ -125,7 +121,7 @@ serve(async (req) => {
 
       if (updateErr) {
         console.error("Failed to save tokens:", updateErr.message);
-        return jsonResponse({ error: `Failed to save tokens: ${updateErr.message}` }, 500);
+        return jsonResponse(req, { error: `Failed to save tokens: ${updateErr.message}` }, 500);
       }
 
       console.log(`Tesla OAuth tokens saved for account ${body.account_id}`);
@@ -138,19 +134,19 @@ serve(async (req) => {
         estimated_cost_usd: 0,
         metadata: { account_id: body.account_id },
       });
-      return jsonResponse({ success: true, account_id: body.account_id });
+      return jsonResponse(req, { success: true, account_id: body.account_id });
     }
 
     // ---- Vehicle Commands (require auth) ----
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
 
     const token = authHeader.replace("Bearer ", "");
 
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
-    const isInternalCall = token === supabaseServiceKey;
+    const isInternalCall = await timingSafeEqual(token, supabaseServiceKey);
 
     let appUser: any = null;
     if (!isInternalCall) {
@@ -159,38 +155,38 @@ serve(async (req) => {
         error: authError,
       } = await supabase.auth.getUser(token);
       if (authError || !user) {
-        return jsonResponse({ error: "Invalid token" }, 401);
+        return jsonResponse(req, { error: "Invalid token" }, 401);
       }
 
       // Check granular permission: control_cars
       const result = await getAppUserWithPermission(supabase, user.id, "control_cars");
       appUser = result.appUser;
       if (!result.hasPermission) {
-        return jsonResponse({ error: "Insufficient permissions" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
     }
 
     const { vehicle_id, command } = body;
 
     if (!vehicle_id || !command) {
-      return jsonResponse({ error: "Missing vehicle_id or command" }, 400);
+      return jsonResponse(req, { error: "Missing vehicle_id or command" }, 400);
     }
 
     const commandConfig = COMMAND_MAP[command];
     if (!commandConfig) {
-      return jsonResponse({ error: `Unknown command: ${command}` }, 400);
+      return jsonResponse(req, { error: `Unknown command: ${command}` }, 400);
     }
 
     // 4. Load vehicle + account + drivers
     const { data: vehicle, error: vehicleError } = await supabase
       .from("vehicles")
-      .select("*, tesla_accounts(*), vehicle_drivers(person_id)")
+      .select("id, name, vehicle_api_id, vehicle_state, owner_id, last_state, tesla_accounts(id, is_active, fleet_client_id, fleet_client_secret, fleet_api_base, access_token, refresh_token, token_expires_at, needs_reauth), vehicle_drivers(person_id)")
       .eq("id", vehicle_id)
       .eq("is_active", true)
       .single();
 
     if (vehicleError || !vehicle) {
-      return jsonResponse({ error: "Vehicle not found" }, 404);
+      return jsonResponse(req, { error: "Vehicle not found" }, 404);
     }
 
     // 5. Non-owner/non-driver restriction: only allow commands when battery >50% AND plugged in
@@ -209,7 +205,7 @@ serve(async (req) => {
           const reasons = [];
           if (!pluggedIn) reasons.push("not plugged in");
           if (!batteryOk) reasons.push(`battery is ${state.battery_level ?? "unknown"}%`);
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: `Only assigned drivers can control this vehicle (${reasons.join(", ")})` },
             403
           );
@@ -219,11 +215,11 @@ serve(async (req) => {
 
     const account = vehicle.tesla_accounts;
     if (!account || !account.is_active) {
-      return jsonResponse({ error: "Tesla account not active" }, 400);
+      return jsonResponse(req, { error: "Tesla account not active" }, 400);
     }
 
     if (!account.fleet_client_id || !account.fleet_client_secret) {
-      return jsonResponse(
+      return jsonResponse(req, 
         { error: "Fleet API credentials not configured" },
         400
       );
@@ -231,7 +227,7 @@ serve(async (req) => {
 
     // Check if account needs re-authorization
     if (account.needs_reauth) {
-      return jsonResponse(
+      return jsonResponse(req, 
         { error: "Tesla account needs re-authorization. Please reconnect from the Cars page." },
         401
       );
@@ -247,7 +243,7 @@ serve(async (req) => {
       // If refresh failed, mark account for re-auth if it's a login_required error
       if (err.message?.includes("login_required") || err.message?.includes("invalid_grant")) {
         await markNeedsReauth(supabase, account.id, err.message);
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: "Tesla session expired. Please reconnect your Tesla account.", needs_reauth: true },
           401
         );
@@ -264,7 +260,7 @@ serve(async (req) => {
         apiBase
       );
       if (!wakeResult.success) {
-        return jsonResponse(
+        return jsonResponse(req, 
           {
             error: `Failed to wake vehicle: ${wakeResult.error}`,
             vehicle_state: "asleep",
@@ -311,12 +307,12 @@ serve(async (req) => {
       } catch (retryErr) {
         if (retryErr.message?.includes("login_required") || retryErr.message?.includes("invalid_grant")) {
           await markNeedsReauth(supabase, account.id, retryErr.message);
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: "Tesla session expired. Please reconnect your Tesla account.", needs_reauth: true },
             401
           );
         }
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: `Command failed after token refresh: ${retryErr.message}` },
           500
         );
@@ -328,7 +324,7 @@ serve(async (req) => {
       console.error(
         `Command failed: ${cmdResponse.status} ${errText.substring(0, 200)}`
       );
-      return jsonResponse(
+      return jsonResponse(req, 
         {
           error: `Command failed (${cmdResponse.status})`,
           details: errText.substring(0, 200),
@@ -367,15 +363,15 @@ serve(async (req) => {
         .eq("id", vehicle.id);
     }
 
-    return jsonResponse({
+    return jsonResponse(req, {
       success: true,
       result: cmdData.response?.result ?? true,
       vehicle_name: vehicle.name,
       command,
     });
   } catch (error) {
-    console.error("Tesla command error:", error.message);
-    return jsonResponse({ error: error.message }, 500);
+    console.error("Tesla command error:", error.message, error.stack);
+    return jsonResponse(req, { error: "Internal error processing tesla command" }, 500);
   }
 });
 
@@ -453,7 +449,7 @@ async function retryWithFreshToken(
   // Re-read account from DB — the poller may have already refreshed
   const { data: freshAccount, error } = await supabase
     .from("tesla_accounts")
-    .select("*")
+    .select("id, access_token, refresh_token, token_expires_at, fleet_client_id, fleet_client_secret")
     .eq("id", staleAccount.id)
     .single();
 
@@ -496,7 +492,7 @@ async function getValidAccessToken(
   // Token expired or missing — re-read from DB first (poller may have refreshed)
   const { data: freshAccount } = await supabase
     .from("tesla_accounts")
-    .select("*")
+    .select("id, access_token, refresh_token, token_expires_at, fleet_client_id, fleet_client_secret")
     .eq("id", account.id)
     .single();
 

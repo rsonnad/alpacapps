@@ -10,11 +10,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface PaymentRequest {
   sourceId: string;       // Card token from Square Web SDK
   amount: number;         // Amount in cents
@@ -36,7 +32,7 @@ interface SquareConfig {
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -53,7 +49,7 @@ Deno.serve(async (req) => {
     if (!sourceId || !amount || !paymentRecordId) {
       return new Response(
         JSON.stringify({ success: false, error: 'sourceId, amount, and paymentRecordId are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -67,7 +63,7 @@ Deno.serve(async (req) => {
       console.error('Failed to load Square config:', configError);
       return new Response(
         JSON.stringify({ success: false, error: 'Square configuration not found' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -80,7 +76,7 @@ Deno.serve(async (req) => {
       if (!userAccessToken) {
         return new Response(
           JSON.stringify({ success: false, error: 'Authentication required for test mode override' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -95,7 +91,7 @@ Deno.serve(async (req) => {
         console.error('Test mode override auth failed:', authError);
         return new Response(
           JSON.stringify({ success: false, error: 'Invalid authentication token' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -110,7 +106,7 @@ Deno.serve(async (req) => {
         console.error('Test mode override denied — not staff/admin:', user.email);
         return new Response(
           JSON.stringify({ success: false, error: 'Staff or admin role required for test mode override' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -171,7 +167,7 @@ Deno.serve(async (req) => {
           error: errorMessage,
           details: squareResult.errors
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -200,14 +196,14 @@ Deno.serve(async (req) => {
         status: payment.status,
         isTest: isTestMode
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error processing payment:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

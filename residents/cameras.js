@@ -18,8 +18,28 @@ let cameraSettings = {};
 // Blink snapshot refresh intervals
 const blinkRefreshIntervals = {};
 const BLINK_REFRESH_MS = 60000; // refresh snapshot every 60s
-const BLINK_STORAGE_BASE = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos';
-const BLINK_SNAPSHOT_PATH = 'cameras/blink-latest.jpg';
+const BLINK_SNAPSHOT_BUCKET = 'camera-snapshots';
+const BLINK_SNAPSHOT_PATH = 'blink-latest.jpg';
+// Signed URL cache (refreshed every 50 min, URLs valid for 60 min)
+let blinkSignedUrl = '';
+let blinkSignedUrlExpiry = 0;
+
+async function getBlinkSnapshotUrl() {
+  const now = Date.now();
+  if (blinkSignedUrl && now < blinkSignedUrlExpiry) {
+    return `${blinkSignedUrl}&t=${now}`;
+  }
+  const { data, error } = await supabase.storage
+    .from(BLINK_SNAPSHOT_BUCKET)
+    .createSignedUrl(BLINK_SNAPSHOT_PATH, 3600); // 60 min
+  if (error || !data?.signedUrl) {
+    console.error('Failed to get signed URL for blink snapshot:', error);
+    return '';
+  }
+  blinkSignedUrl = data.signedUrl;
+  blinkSignedUrlExpiry = now + 50 * 60 * 1000; // refresh 10 min before expiry
+  return `${blinkSignedUrl}&t=${now}`;
+}
 
 const PTZ_PROXY_BASE = 'https://cam.alpacaplayhouse.com/ptz';
 const CAMERA_PROXY_BASE = 'https://cam.alpacaplayhouse.com/camera';
@@ -38,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
       await loadCameras();
       renderCameras();
+      await loadBlinkSnapshotUrls();
       renderLightbox();
       bindKeyboard();
       // Load settings for all cameras with PTZ support
@@ -249,7 +270,7 @@ function renderCameras() {
       </div>
       <div class="camera-card__video blink-snapshot-container" id="video-container-${i}" data-cam="${i}">
         <img id="blink-img-${i}" class="blink-snapshot-img"
-          src="${BLINK_STORAGE_BASE}/${BLINK_SNAPSHOT_PATH}?t=${Date.now()}"
+          src="" data-blink-snapshot="true"
           alt="${cam.name} snapshot"
           onerror="this.style.opacity='0.3'"
           onload="this.style.opacity='1'"
@@ -684,8 +705,18 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // =============================================
-// BLINK SNAPSHOT REFRESH
+// BLINK SNAPSHOT (signed URL — private bucket)
 // =============================================
+
+/** Load signed URLs for all blink snapshot <img> elements after render */
+async function loadBlinkSnapshotUrls() {
+  const url = await getBlinkSnapshotUrl();
+  if (!url) return;
+  document.querySelectorAll('img[data-blink-snapshot]').forEach(img => {
+    img.src = url;
+  });
+}
+
 function startBlinkSnapshotRefresh(camIndexOrKey) {
   // Supports grid cameras (numeric index) and lightbox ('lb')
   const isLightbox = camIndexOrKey === 'lb';
@@ -696,8 +727,13 @@ function startBlinkSnapshotRefresh(camIndexOrKey) {
   const dot = isLightbox ? null : document.getElementById(`dot-${camIndexOrKey}`);
   if (!img) return;
 
-  function refreshSnapshot() {
-    const url = `${BLINK_STORAGE_BASE}/${BLINK_SNAPSHOT_PATH}?t=${Date.now()}`;
+  async function refreshSnapshot() {
+    const url = await getBlinkSnapshotUrl();
+    if (!url) {
+      if (dot) dot.className = 'status-dot status-connecting';
+      if (timeEl) timeEl.textContent = 'Snapshot unavailable';
+      return;
+    }
     const tempImg = new Image();
     tempImg.onload = () => {
       img.src = url;
@@ -1064,7 +1100,7 @@ function openLightbox(camIndex) {
       lbVideo.parentNode.insertBefore(lbBlinkImg, lbVideo);
     }
     lbBlinkImg.style.display = 'block';
-    lbBlinkImg.src = `${BLINK_STORAGE_BASE}/${BLINK_SNAPSHOT_PATH}?t=${Date.now()}`;
+    getBlinkSnapshotUrl().then(url => { if (url) lbBlinkImg.src = url; });
     // Start refresh in lightbox
     startBlinkSnapshotRefresh('lb');
   } else {

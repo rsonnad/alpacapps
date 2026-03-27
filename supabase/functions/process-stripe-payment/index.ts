@@ -9,11 +9,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
+import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 
 interface CreatePaymentRequest {
   amount: number;           // Total amount in cents (including fee)
@@ -79,7 +75,7 @@ async function createPaymentIntent(
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeadersOpen });
   }
 
   try {
@@ -104,13 +100,13 @@ Deno.serve(async (req) => {
     if (!amount || amount < 50) {
       return new Response(
         JSON.stringify({ success: false, error: 'amount (cents, min 50) is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
     if (!payment_type || !reference_type || !reference_id) {
       return new Response(
         JSON.stringify({ success: false, error: 'payment_type, reference_type, and reference_id are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -122,7 +118,7 @@ Deno.serve(async (req) => {
     if (configError || !config) {
       return new Response(
         JSON.stringify({ success: false, error: 'Stripe configuration not found' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -130,7 +126,7 @@ Deno.serve(async (req) => {
     if (!stripeConfig.is_active) {
       return new Response(
         JSON.stringify({ success: false, error: 'Stripe is not active in Settings.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -140,7 +136,7 @@ Deno.serve(async (req) => {
     if (!secretKey) {
       return new Response(
         JSON.stringify({ success: false, error: 'Stripe secret key not configured' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -170,7 +166,7 @@ Deno.serve(async (req) => {
       console.error('Failed to create stripe_payments record:', insertError);
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to create payment record' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -214,7 +210,7 @@ Deno.serve(async (req) => {
         paymentIntentId: pi.id,
         paymentRecordId: paymentRecord.id
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Process Stripe payment error:', error);
@@ -223,7 +219,7 @@ Deno.serve(async (req) => {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
   }
 });

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 type LightingAction =
   | "list_groups"
   | "list_entities"
@@ -23,16 +24,10 @@ interface LightingRequest {
   transition?: number;
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: unknown, status = 200) {
+function jsonResponse(req: Request, data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -193,13 +188,13 @@ async function getGroupWithTargets(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -214,7 +209,7 @@ serve(async (req) => {
         error: authError,
       } = await supabase.auth.getUser(token);
       if (authError || !user) {
-        return jsonResponse({ error: "Invalid token" }, 401);
+        return jsonResponse(req, { error: "Invalid token" }, 401);
       }
       const { hasPermission } = await getAppUserWithPermission(
         supabase,
@@ -222,13 +217,13 @@ serve(async (req) => {
         "control_lighting",
       );
       if (!hasPermission) {
-        return jsonResponse({ error: "Insufficient permissions" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
     }
 
     const body = (await req.json()) as LightingRequest;
     if (!body?.action) {
-      return jsonResponse({ error: "action is required" }, 400);
+      return jsonResponse(req, { error: "action is required" }, 400);
     }
 
     const { data: haConfig } = await supabase
@@ -258,12 +253,12 @@ serve(async (req) => {
         ...g,
         lighting_group_targets: (g.lighting_group_targets || []).filter((t: any) => t.is_active),
       }));
-      return jsonResponse({ groups });
+      return jsonResponse(req, { groups });
     }
 
     if (body.action === "list_entities" || body.action === "sync_entities") {
       if (!haActive || !haBaseUrl || !haToken) {
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: "Home Assistant is not configured (HA_BASE_URL/HA_TOKEN)." },
           500,
         );
@@ -292,13 +287,13 @@ serve(async (req) => {
         }
       }
 
-      return jsonResponse({ entities, synced: body.action === "sync_entities" });
+      return jsonResponse(req, { entities, synced: body.action === "sync_entities" });
     }
 
     const group = await getGroupWithTargets(supabase, body);
     const targets = group.targets || [];
     if (!targets.length) {
-      return jsonResponse({ error: `No active targets configured for ${group.name}` }, 400);
+      return jsonResponse(req, { error: `No active targets configured for ${group.name}` }, 400);
     }
 
     if (body.action === "get_group_state") {
@@ -361,7 +356,7 @@ serve(async (req) => {
           });
         }
       }
-      return jsonResponse({
+      return jsonResponse(req, {
         group: { id: group.id, key: group.key, name: group.name },
         state: {
           on: onCount > 0,
@@ -377,7 +372,7 @@ serve(async (req) => {
     const results: any[] = [];
 
     if (testMode) {
-      return jsonResponse({
+      return jsonResponse(req, {
         ok: true,
         test_mode: true,
         action: body.action,
@@ -388,7 +383,7 @@ serve(async (req) => {
 
     if (haTargets.length) {
       if (!haActive || !haBaseUrl || !haToken) {
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: "Home Assistant targets exist but HA is not configured." },
           500,
         );
@@ -497,7 +492,7 @@ serve(async (req) => {
       results.push({ backend: "govee_cloud", ok: true, count: goveeTargets.length });
     }
 
-    return jsonResponse({
+    return jsonResponse(req, {
       ok: true,
       action: body.action,
       group: { id: group.id, key: group.key, name: group.name },
@@ -505,6 +500,6 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("home-assistant-control error:", (error as Error).message);
-    return jsonResponse({ error: (error as Error).message }, 500);
+    return jsonResponse(req, { error: (error as Error).message }, 500);
   }
 });

@@ -5,7 +5,7 @@
  * to camera_events table, sends SMS via configurable rules.
  *
  * Auth: Cookie + CSRF token to UDM Pro (same as ptz-proxy)
- * Storage: Thumbnails uploaded to Supabase Storage (housephotos/camera-events/)
+ * Storage: Thumbnails uploaded to Supabase Storage (camera-snapshots/events/)
  * SMS: Via send-sms edge function (Telnyx)
  *
  * Deploy to: /opt/camera-event-poller/ on DO droplet
@@ -24,8 +24,8 @@ const UDM_HOST = process.env.UDM_HOST || '192.168.1.1';
 const UDM_USER = process.env.UDM_USER || 'alpacaauto';
 const UDM_PASS = process.env.UDM_PASS || '';
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '10000'); // 10s
-const STORAGE_BUCKET = 'housephotos';
-const STORAGE_PREFIX = 'camera-events';
+const STORAGE_BUCKET = 'camera-snapshots';
+const STORAGE_PREFIX = 'events';
 
 // Known camera names (fallback if API doesn't return them)
 const CAMERA_NAMES = {

@@ -12,14 +12,10 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -40,7 +36,7 @@ Deno.serve(async (req) => {
     if (!token || !file) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: token, file' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -48,7 +44,7 @@ Deno.serve(async (req) => {
     if (!file.type.startsWith('image/')) {
       return new Response(
         JSON.stringify({ error: 'File must be an image' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -63,14 +59,14 @@ Deno.serve(async (req) => {
     if (tokenError || !tokenRecord) {
       return new Response(
         JSON.stringify({ error: 'Invalid or already-used upload token' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (new Date(tokenRecord.expires_at) < new Date()) {
       return new Response(
         JSON.stringify({ error: 'This upload link has expired. Please request a new one.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -262,7 +258,7 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
           error: 'We were unable to analyze your ID photo. This can happen with certain image types or lighting conditions. Please try again with a clearer, well-lit photo of your ID. If this persists, contact team@alpacaplayhouse.com.',
           technical_detail: lastError,
         }),
-        { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 422, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -317,7 +313,7 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
           success: false,
           error: 'The uploaded image does not appear to be a valid ID document. Please try again with a clear photo of your driver\'s license.',
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -448,14 +444,14 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
         verification_status: verificationStatus,
         name_match_score: score,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Verification error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

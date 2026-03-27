@@ -13,11 +13,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface OnboardRequest {
   action: 'create_account' | 'create_account_link';
   associate_id: string;
@@ -49,7 +45,7 @@ async function stripePost(secretKey: string, endpoint: string, params: Record<st
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -62,7 +58,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ success: false, error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -71,7 +67,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -81,7 +77,7 @@ Deno.serve(async (req) => {
     if (!action || !associate_id) {
       return new Response(
         JSON.stringify({ success: false, error: 'action and associate_id are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -94,21 +90,21 @@ Deno.serve(async (req) => {
     if (configError || !config) {
       return new Response(
         JSON.stringify({ success: false, error: 'Stripe configuration not found' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (!config.is_active) {
       return new Response(
         JSON.stringify({ success: false, error: 'Stripe is not active. Enable it in Settings.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (!config.connect_enabled) {
       return new Response(
         JSON.stringify({ success: false, error: 'Stripe Connect is not enabled. Enable it in Settings.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -116,7 +112,7 @@ Deno.serve(async (req) => {
     if (!secretKey) {
       return new Response(
         JSON.stringify({ success: false, error: `Missing ${config.test_mode ? 'sandbox' : 'production'} Stripe secret key` }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -130,7 +126,7 @@ Deno.serve(async (req) => {
     if (assocError || !associate) {
       return new Response(
         JSON.stringify({ success: false, error: 'Associate not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -151,7 +147,7 @@ Deno.serve(async (req) => {
             already_existed: true,
             message: 'Connect account already exists'
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -204,7 +200,7 @@ Deno.serve(async (req) => {
           account_id: accountId,
           message: `Created Stripe Connect account for ${associateName}`
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -214,7 +210,7 @@ Deno.serve(async (req) => {
       if (!connectAccountId) {
         return new Response(
           JSON.stringify({ success: false, error: 'No Connect account exists. Call create_account first.' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -247,13 +243,13 @@ Deno.serve(async (req) => {
           url: accountLink.url as string,
           message: 'Redirect associate to this URL to complete Stripe onboarding'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
       JSON.stringify({ success: false, error: `Unknown action: ${action}` }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -263,7 +259,7 @@ Deno.serve(async (req) => {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

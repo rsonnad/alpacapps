@@ -2,7 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 import { logApiUsage } from "../_shared/api-usage-log.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 const SDM_BASE_URL = "https://smartdevicemanagement.googleapis.com/v1";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
@@ -25,16 +27,10 @@ interface NestRequest {
   redirectUri?: string; // OAuth redirect URI
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -48,14 +44,14 @@ function cToF(c: number): number {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     // Verify auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -65,7 +61,7 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
 
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
-    const isInternalCall = token === supabaseServiceKey;
+    const isInternalCall = await timingSafeEqual(token, supabaseServiceKey);
     let userId: string | null = null;
     let appUser: Record<string, unknown> | null = null;
 
@@ -75,7 +71,7 @@ serve(async (req) => {
         error: authError,
       } = await supabase.auth.getUser(token);
       if (authError || !user) {
-        return jsonResponse({ error: "Invalid token" }, 401);
+        return jsonResponse(req, { error: "Invalid token" }, 401);
       }
 
       // Check granular permission: control_climate
@@ -83,22 +79,22 @@ serve(async (req) => {
       appUser = permResult.appUser;
       userId = appUser?.id as string ?? null;
       if (!permResult.hasPermission) {
-        return jsonResponse({ error: "Insufficient permissions" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
     }
 
     // Read nest_config
     const { data: config, error: configError } = await supabase
       .from("nest_config")
-      .select("*")
+      .select("is_active, google_client_id, google_client_secret, refresh_token, access_token, token_expires_at, sdm_project_id, test_mode")
       .single();
 
     if (configError || !config) {
-      return jsonResponse({ error: "Nest not configured" }, 500);
+      return jsonResponse(req, { error: "Nest not configured" }, 500);
     }
 
     if (!config.is_active) {
-      return jsonResponse({ error: "Nest integration is disabled" }, 503);
+      return jsonResponse(req, { error: "Nest integration is disabled" }, 503);
     }
 
     const body: NestRequest = await req.json();
@@ -107,14 +103,14 @@ serve(async (req) => {
     // OAuth callback is admin-only
     if (action === "oauthCallback") {
       if (!["admin", "oracle"].includes(appUser?.role)) {
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: "Admin required for OAuth setup" },
           403
         );
       }
 
       if (!body.code) {
-        return jsonResponse({ error: "Missing authorization code" }, 400);
+        return jsonResponse(req, { error: "Missing authorization code" }, 400);
       }
 
       const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
@@ -134,7 +130,7 @@ serve(async (req) => {
       const tokenData = await tokenResponse.json();
       if (tokenData.error) {
         console.error("OAuth token error:", tokenData);
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: `OAuth failed: ${tokenData.error_description || tokenData.error}` },
           400
         );
@@ -152,12 +148,12 @@ serve(async (req) => {
         })
         .eq("id", 1);
 
-      return jsonResponse({ success: true });
+      return jsonResponse(req, { success: true });
     }
 
     // For all other actions, we need a valid access token
     if (!config.refresh_token) {
-      return jsonResponse(
+      return jsonResponse(req, 
         { error: "Nest not authorized. Admin must complete OAuth setup." },
         401
       );
@@ -166,7 +162,7 @@ serve(async (req) => {
     // Test mode: log and return mock data
     if (config.test_mode) {
       console.log(`[TEST MODE] nest-control action=${action}`, body);
-      return jsonResponse({
+      return jsonResponse(req, {
         test_mode: true,
         action,
         message: "Test mode - no API call made",
@@ -187,7 +183,7 @@ serve(async (req) => {
         );
         const data = await res.json();
         if (!res.ok) {
-          return jsonResponse({ error: data.error?.message || "SDM API error" }, res.status);
+          return jsonResponse(req, { error: data.error?.message || "SDM API error" }, res.status);
         }
         await logApiUsage(supabase, {
           vendor: "google_sdm",
@@ -198,12 +194,12 @@ serve(async (req) => {
           estimated_cost_usd: 0,
           app_user_id: userId,
         });
-        return jsonResponse(data);
+        return jsonResponse(req, data);
       }
 
       case "getDeviceState": {
         if (!body.deviceId) {
-          return jsonResponse({ error: "Missing deviceId" }, 400);
+          return jsonResponse(req, { error: "Missing deviceId" }, 400);
         }
         const res = await fetch(
           `${SDM_BASE_URL}/${body.deviceId}`,
@@ -213,7 +209,7 @@ serve(async (req) => {
         );
         const data = await res.json();
         if (!res.ok) {
-          return jsonResponse({ error: data.error?.message || "SDM API error" }, res.status);
+          return jsonResponse(req, { error: data.error?.message || "SDM API error" }, res.status);
         }
 
         await logApiUsage(supabase, {
@@ -286,9 +282,9 @@ serve(async (req) => {
             .update({ last_state: state, updated_at: new Date().toISOString() })
             .eq("sdm_device_id", body.deviceId);
 
-          return jsonResponse(state);
+          return jsonResponse(req, state);
         }
-        return jsonResponse(data);
+        return jsonResponse(req, data);
       }
 
       case "getAllStates": {
@@ -300,7 +296,7 @@ serve(async (req) => {
           .eq("device_type", "thermostat");
 
         if (!devices || devices.length === 0) {
-          return jsonResponse({ devices: [] });
+          return jsonResponse(req, { devices: [] });
         }
 
         const states = await Promise.allSettled(
@@ -485,7 +481,7 @@ serve(async (req) => {
           estimated_cost_usd: 0,
           app_user_id: userId,
         });
-        return jsonResponse({
+        return jsonResponse(req, {
           devices: results.filter((r) => !r.error),
           ...(synced ? { synced: true } : {}),
           ...(rejected.length > 0 ? { errors: rejected } : {}),
@@ -494,8 +490,13 @@ serve(async (req) => {
 
       case "setTemperature": {
         if (!body.deviceId) {
-          return jsonResponse({ error: "Missing deviceId" }, 400);
+          return jsonResponse(req, { error: "Missing deviceId" }, 400);
         }
+
+        // Clamp temperature inputs to safe range (50-85°F)
+        const TEMP_MIN_F = 50;
+        const TEMP_MAX_F = 85;
+        const clampTemp = (t: number) => Math.max(TEMP_MIN_F, Math.min(TEMP_MAX_F, t));
 
         let command: string;
         let params: Record<string, number>;
@@ -505,8 +506,8 @@ serve(async (req) => {
           command =
             "sdm.devices.commands.ThermostatTemperatureSetpoint.SetRange";
           params = {
-            heatCelsius: fToC(body.heatTemp),
-            coolCelsius: fToC(body.coolTemp),
+            heatCelsius: fToC(clampTemp(body.heatTemp)),
+            coolCelsius: fToC(clampTemp(body.coolTemp)),
           };
         } else if (body.temperature != null) {
           // Determine command based on current mode
@@ -520,14 +521,14 @@ serve(async (req) => {
           if (currentMode === "COOL") {
             command =
               "sdm.devices.commands.ThermostatTemperatureSetpoint.SetCool";
-            params = { coolCelsius: fToC(body.temperature) };
+            params = { coolCelsius: fToC(clampTemp(body.temperature)) };
           } else {
             command =
               "sdm.devices.commands.ThermostatTemperatureSetpoint.SetHeat";
-            params = { heatCelsius: fToC(body.temperature) };
+            params = { heatCelsius: fToC(clampTemp(body.temperature)) };
           }
         } else {
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: "Missing temperature parameter" },
             400
           );
@@ -547,7 +548,7 @@ serve(async (req) => {
 
         if (!res.ok) {
           const errData = await res.json();
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: errData.error?.message || "Failed to set temperature" },
             res.status
           );
@@ -562,12 +563,12 @@ serve(async (req) => {
           metadata: { deviceId: body.deviceId },
           app_user_id: userId,
         });
-        return jsonResponse({ success: true });
+        return jsonResponse(req, { success: true });
       }
 
       case "setMode": {
         if (!body.deviceId || !body.mode) {
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: "Missing deviceId or mode" },
             400
           );
@@ -590,7 +591,7 @@ serve(async (req) => {
 
         if (!res.ok) {
           const errData = await res.json();
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: errData.error?.message || "Failed to set mode" },
             res.status
           );
@@ -605,12 +606,12 @@ serve(async (req) => {
           metadata: { deviceId: body.deviceId, mode: body.mode },
           app_user_id: userId,
         });
-        return jsonResponse({ success: true });
+        return jsonResponse(req, { success: true });
       }
 
       case "setEco": {
         if (!body.deviceId || !body.ecoMode) {
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: "Missing deviceId or ecoMode" },
             400
           );
@@ -633,7 +634,7 @@ serve(async (req) => {
 
         if (!res.ok) {
           const errData = await res.json();
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: errData.error?.message || "Failed to set eco mode" },
             res.status
           );
@@ -648,15 +649,15 @@ serve(async (req) => {
           metadata: { deviceId: body.deviceId, ecoMode: body.ecoMode },
           app_user_id: userId,
         });
-        return jsonResponse({ success: true });
+        return jsonResponse(req, { success: true });
       }
 
       default:
-        return jsonResponse({ error: `Unknown action: ${action}` }, 400);
+        return jsonResponse(req, { error: `Unknown action: ${action}` }, 400);
     }
   } catch (error) {
-    console.error("Nest control error:", error.message);
-    return jsonResponse({ error: error.message }, 500);
+    console.error("Nest control error:", error.message, error.stack);
+    return jsonResponse(req, { error: "Internal error processing nest control request" }, 500);
   }
 });
 

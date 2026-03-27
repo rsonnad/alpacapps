@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 // =============================================
 // Types
 // =============================================
@@ -93,16 +94,10 @@ const MONTHLY_SPEND_ALERT_THRESHOLD = 10.0; // USD
 
 const GOVEE_BASE_URL = "https://openapi.api.govee.com/router/api/v1";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -3305,7 +3300,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
   // Check if voice system is active
   const { data: config } = await supabase.from("vapi_config").select("*").eq("id", 1).single();
   if (!config?.is_active) {
-    return jsonResponse({ error: "Voice system is disabled" }, 503);
+    return jsonResponse(req, { error: "Voice system is disabled" }, 503);
   }
 
   // Load default active assistant
@@ -3325,7 +3320,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       .order("created_at", { ascending: true })
       .limit(1)
       .single();
-    if (!fallback) return jsonResponse({ error: "No voice assistant configured" }, 503);
+    if (!fallback) return jsonResponse(req, { error: "No voice assistant configured" }, 503);
     const fallbackPaiConfig = await loadPaiConfig(supabase);
     return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(findTool("search_spaces")), vapiToolWrapper(findTool("lookup_document"))], fallbackPaiConfig);
   }
@@ -3399,7 +3394,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
     firstMessage = firstMessage.replace("Greetings!", `Greetings ${callerName.split(" ")[0]}!`);
   }
 
-  return jsonResponse({
+  return jsonResponse(req, {
     assistant: {
       model: {
         provider: assistant.model_provider === "google" ? "google" : "openai",
@@ -3460,7 +3455,7 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
   }
   if (testMode) systemPrompt += "\n\n[TEST MODE]";
 
-  return jsonResponse({
+  return jsonResponse(req, {
     assistant: {
       model: {
         provider: assistant.model_provider === "google" ? "google" : "openai",
@@ -3510,7 +3505,7 @@ async function handleVapiToolCalls(body: any, supabase: any): Promise<Response> 
       toolCallId: tc.id,
       result: "Error: Could not identify caller. Smart home controls unavailable.",
     }));
-    return jsonResponse({ results });
+    return jsonResponse(req, { results });
   }
 
   // Load Govee API key if needed
@@ -3543,7 +3538,7 @@ async function handleVapiToolCalls(body: any, supabase: any): Promise<Response> 
     });
   }
 
-  return jsonResponse({ results });
+  return jsonResponse(req, { results });
 }
 
 // =============================================
@@ -3558,7 +3553,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   const isApiChannel = context.source === "api";
   const isAlpaclawEmailChannel = context.source === "alpaclaw-email";
   if (!message?.trim()) {
-    return jsonResponse({ error: "Message is required" }, 400);
+    return jsonResponse(req, { error: "Message is required" }, 400);
   }
 
   const authHeader = req.headers.get("Authorization");
@@ -3633,18 +3628,18 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   } else {
     // Normal auth: require user JWT
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser(token);
     if (authError || !user) {
-      return jsonResponse({ error: "Invalid token" }, 401);
+      return jsonResponse(req, { error: "Invalid token" }, 401);
     }
     const { appUser: au, hasPermission: hasPaiPerm } = await getAppUserWithPermission(supabase, user.id, "use_pai");
     if (!hasPaiPerm) {
-      return jsonResponse({ error: "Insufficient permissions" }, 403);
+      return jsonResponse(req, { error: "Insufficient permissions" }, 403);
     }
     appUser = au;
     userLevel = ROLE_LEVEL[appUser?.role] ?? 0;
@@ -3655,11 +3650,11 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   if (impersonateUserId) {
     const callerLevel = ROLE_LEVEL[appUser?.role] ?? 0;
     if (callerLevel < 3) {
-      return jsonResponse({ error: "Only admins can impersonate users" }, 403);
+      return jsonResponse(req, { error: "Only admins can impersonate users" }, 403);
     }
     const { hasPermission: canImpersonate } = await getAppUserWithPermission(supabase, (await supabase.auth.getUser(token)).data?.user?.id, "impersonate_user");
     if (!canImpersonate) {
-      return jsonResponse({ error: "Missing impersonate_user permission" }, 403);
+      return jsonResponse(req, { error: "Missing impersonate_user permission" }, 403);
     }
     const { data: targetUser } = await supabase
       .from("app_users")
@@ -3667,7 +3662,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       .eq("id", impersonateUserId)
       .single();
     if (!targetUser) {
-      return jsonResponse({ error: "Target user not found" }, 404);
+      return jsonResponse(req, { error: "Target user not found" }, 404);
     }
     console.log(`PAI impersonation: ${appUser.display_name} (${appUser.role}) → ${targetUser.display_name} (${targetUser.role})`);
     appUser = targetUser;
@@ -3879,7 +3874,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
     console.error("Spend alert check failed:", e.message)
   );
 
-  return jsonResponse({
+  return jsonResponse(req, {
     reply,
     actions_taken: actionsTaken.length ? actionsTaken : undefined,
   });
@@ -3985,7 +3980,7 @@ async function checkMonthlySpendAlert(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -4007,11 +4002,11 @@ serve(async (req) => {
       return await handleChatRequest(req, body, supabase);
     } else {
       // Unknown Vapi event type (status updates, etc.) — return empty 200
-      return jsonResponse({});
+      return jsonResponse(req, {});
     }
   } catch (error) {
     console.error("PAI error:", error.message);
-    return jsonResponse(
+    return jsonResponse(req, 
       { error: error.message || "An unexpected error occurred" },
       500
     );

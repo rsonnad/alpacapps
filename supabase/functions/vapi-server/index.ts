@@ -1,16 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: any, status = 200) {
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
+function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -25,7 +20,7 @@ function jsonResponse(data: any, status = 200) {
  */
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -41,7 +36,7 @@ serve(async (req) => {
     // Only handle assistant-request messages
     if (messageType !== "assistant-request") {
       // Forward other message types (function-call, etc.) with empty response
-      return jsonResponse({});
+      return jsonResponse(req, {});
     }
 
     // Extract caller info
@@ -61,7 +56,7 @@ serve(async (req) => {
 
     if (!config?.is_active) {
       console.log("Voice system is disabled");
-      return jsonResponse({ error: "Voice system is disabled" }, 503);
+      return jsonResponse(req, { error: "Voice system is disabled" }, 503);
     }
 
     // Load the default active assistant
@@ -85,14 +80,14 @@ serve(async (req) => {
 
       if (!fallback) {
         console.error("No active voice assistant configured");
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: "No voice assistant configured" },
           503
         );
       }
 
       const availInfo = await getSpaceAvailability(supabase);
-      return jsonResponse(buildAssistantConfig(fallback, callerPhone, null, null, null, availInfo));
+      return jsonResponse(req, buildAssistantConfig(fallback, callerPhone, null, null, null, availInfo));
     }
 
     // Try to identify the caller
@@ -145,10 +140,10 @@ serve(async (req) => {
       console.log("Test mode: added test notice to prompt");
     }
 
-    return jsonResponse(assistantConfig);
+    return jsonResponse(req, assistantConfig);
   } catch (error) {
-    console.error("Vapi server URL error:", error.message);
-    return jsonResponse({ error: error.message }, 500);
+    console.error("Vapi server URL error:", error.message, error.stack);
+    return jsonResponse(req, { error: "Internal error processing vapi request" }, 500);
   }
 });
 

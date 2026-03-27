@@ -1,11 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-hub-signature-256",
-};
+import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 
 /**
  * Verify WhatsApp webhook signature using HMAC SHA256.
@@ -78,7 +73,7 @@ async function matchPerson(
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeadersOpen });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

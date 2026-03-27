@@ -2,7 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 import { logApiUsage } from "../_shared/api-usage-log.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 const GOVEE_BASE_URL = "https://openapi.api.govee.com/router/api/v1";
 const SCENE_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -17,30 +19,24 @@ interface GoveeRequest {
   };
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     // Verify auth - require valid Supabase session
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
 
     // Verify user is staff/admin via Supabase
@@ -49,7 +45,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace("Bearer ", "");
-    const isInternalCall = token === supabaseServiceKey;
+    const isInternalCall = await timingSafeEqual(token, supabaseServiceKey);
     let userId: string | null = null;
 
     if (!isInternalCall) {
@@ -58,14 +54,14 @@ serve(async (req) => {
         error: authError,
       } = await supabase.auth.getUser(token);
       if (authError || !user) {
-        return jsonResponse({ error: "Invalid token" }, 401);
+        return jsonResponse(req, { error: "Invalid token" }, 401);
       }
 
       // Check granular permission: control_lighting
       const { appUser, hasPermission } = await getAppUserWithPermission(supabase, user.id, "control_lighting");
       userId = appUser?.id ?? null;
       if (!hasPermission) {
-        return jsonResponse({ error: "Insufficient permissions" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
     }
 
@@ -78,7 +74,7 @@ serve(async (req) => {
       .single();
     goveeApiKey = goveeConfig?.api_key || Deno.env.get("GOVEE_API_KEY") || null;
     if (!goveeApiKey) {
-      return jsonResponse({ error: "Govee API key not configured" }, 500);
+      return jsonResponse(req, { error: "Govee API key not configured" }, 500);
     }
 
     const body: GoveeRequest = await req.json();
@@ -114,7 +110,7 @@ serve(async (req) => {
 
       case "controlDevice": {
         if (!body.device || !body.capability) {
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: "Missing device or capability for controlDevice" },
             400
           );
@@ -140,7 +136,7 @@ serve(async (req) => {
 
       case "getScenes": {
         if (!body.sku || !body.device) {
-          return jsonResponse(
+          return jsonResponse(req, 
             { error: "Missing sku or device for getScenes" },
             400
           );
@@ -156,7 +152,7 @@ serve(async (req) => {
         if (cached?.fetched_at) {
           const cacheAge = Date.now() - new Date(cached.fetched_at).getTime();
           if (cacheAge < SCENE_CACHE_TTL_MS) {
-            return jsonResponse({ scenes: cached.scenes, cached: true });
+            return jsonResponse(req, { scenes: cached.scenes, cached: true });
           }
         }
 
@@ -203,7 +199,7 @@ serve(async (req) => {
           metadata: { sku: body.sku, device: body.device, scenes_count: scenes.length },
           app_user_id: userId,
         });
-        return jsonResponse({ scenes, cached: false });
+        return jsonResponse(req, { scenes, cached: false });
       }
 
       case "syncCapabilities": {
@@ -234,11 +230,11 @@ serve(async (req) => {
           metadata: { synced: updated, total: devices.length },
           app_user_id: userId,
         });
-        return jsonResponse({ synced: updated, total: devices.length });
+        return jsonResponse(req, { synced: updated, total: devices.length });
       }
 
       default:
-        return jsonResponse({ error: `Unknown action: ${action}` }, 400);
+        return jsonResponse(req, { error: `Unknown action: ${action}` }, 400);
     }
 
     const result = await goveeResponse.json();
@@ -262,15 +258,15 @@ serve(async (req) => {
       // Normalize error field so client always sees it
       const errorMsg =
         result.error || result.message || result.msg || `Govee API error ${goveeResponse.status}`;
-      return jsonResponse({ error: errorMsg, goveeStatus: goveeResponse.status }, goveeResponse.status);
+      return jsonResponse(req, { error: errorMsg, goveeStatus: goveeResponse.status }, goveeResponse.status);
     }
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Govee control error:", error.message);
-    return jsonResponse({ error: error.message }, 500);
+    console.error("Govee control error:", error.message, error.stack);
+    return jsonResponse(req, { error: "Internal error processing govee control request" }, 500);
   }
 });

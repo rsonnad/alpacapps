@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { renderTemplate, SENDER_MAP } from "../_shared/template-engine.ts";
 import { wrapEmailHtml } from "../_shared/email-brand-wrapper.ts";
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import {
   paymentMethodsBlock,
   paymentMethodsText,
@@ -2330,11 +2331,6 @@ This is an automated weekly schedule report from Alpaca Playhouse.`
   }
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
 /**
  * Fetch active payment methods from DB and format them for email templates.
  * Returns html (list items), text (plain text), and raw (array of method objects).
@@ -2542,7 +2538,7 @@ async function holdForApproval(
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -2557,7 +2553,7 @@ serve(async (req) => {
     if (!type || !to || !data) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: type, to, data" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -2629,7 +2625,7 @@ serve(async (req) => {
       console.log(`Email held for approval: type=${type}, to=${toArray.join(",")}, id=${approvalId}`);
       return new Response(
         JSON.stringify({ success: true, status: "pending_approval", approval_id: approvalId }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -2658,7 +2654,7 @@ serve(async (req) => {
       console.error("Resend API error:", result);
       return new Response(
         JSON.stringify({ error: "Failed to send email", details: result }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: response.status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -2683,14 +2679,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, id: result.id }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
 
   } catch (error) {
     console.error("Error:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

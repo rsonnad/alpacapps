@@ -11,14 +11,10 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { uploadToR2 } from '../_shared/r2-upload.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -32,7 +28,7 @@ serve(async (req) => {
     if (!file || !key) {
       return new Response(
         JSON.stringify({ error: 'Missing file or key' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -43,7 +39,7 @@ serve(async (req) => {
     if (bytes.length > 50 * 1024 * 1024) {
       return new Response(
         JSON.stringify({ error: 'File too large (max 50MB)' }),
-        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 413, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -75,22 +71,22 @@ serve(async (req) => {
       .single();
 
     if (error) {
-      console.error('DB insert failed:', error);
+      console.error('DB insert failed:', error.message, error.stack);
       return new Response(
-        JSON.stringify({ error: 'Failed to save entry', detail: error.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Failed to save entry' }),
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
       JSON.stringify({ ok: true, id: data.id, url: publicUrl }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (err) {
-    console.error('guestbook-upload error:', err);
+    console.error('guestbook-upload error:', err.message, err.stack);
     return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Internal error processing guestbook upload' }),
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

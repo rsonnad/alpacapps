@@ -10,11 +10,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface ResolveRequest {
   pending_id: string;
   person_id?: string;
@@ -38,7 +34,7 @@ function normalizeName(name: string): string {
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -62,14 +58,14 @@ Deno.serve(async (req) => {
     if (!pending_id) {
       return new Response(
         JSON.stringify({ success: false, error: 'pending_id is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (!action || !['match', 'ignore'].includes(action)) {
       return new Response(
         JSON.stringify({ success: false, error: 'action must be "match" or "ignore"' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -83,7 +79,7 @@ Deno.serve(async (req) => {
     if (pendingError || !pending) {
       return new Response(
         JSON.stringify({ success: false, error: 'Pending payment not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -94,7 +90,7 @@ Deno.serve(async (req) => {
           error: 'Pending payment already resolved',
           resolution: pending.resolution
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -106,7 +102,7 @@ Deno.serve(async (req) => {
             success: false,
             error: 'person_id and assignment_id are required for match action'
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -147,7 +143,7 @@ Deno.serve(async (req) => {
             success: false,
             error: `Failed to record payment: ${paymentError.message}`
           }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -273,7 +269,7 @@ Deno.serve(async (req) => {
           payment_id: payment.id,
           mapping_saved: save_mapping
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -300,13 +296,13 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, action: 'ignored' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
       JSON.stringify({ success: false, error: 'Invalid action' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Resolve payment error:', error);
@@ -315,7 +311,7 @@ Deno.serve(async (req) => {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

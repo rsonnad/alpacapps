@@ -33,8 +33,8 @@ const BLINK_EMAIL = process.env.BLINK_EMAIL;
 const BLINK_PASSWORD = process.env.BLINK_PASSWORD;
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '60000');
 const CRED_FILE = '.blink-cred.json';
-const STORAGE_BUCKET = 'housephotos';
-const SNAPSHOT_PATH = 'cameras/blink-latest.jpg';
+const STORAGE_BUCKET = 'camera-snapshots';
+const SNAPSHOT_PATH = 'blink-latest.jpg';
 
 // Blink API constants (matching blinkpy)
 const OAUTH_TOKEN_URL = 'https://api.oauth.blink.com/oauth/token';

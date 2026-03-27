@@ -1,12 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 const STRIPE_API_BASE = "https://api.stripe.com/v1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 interface PaymentLinkRequest {
   amount: number;          // Amount in dollars (e.g., 299.00)
@@ -21,7 +17,7 @@ interface PaymentLinkRequest {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -30,7 +26,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "Missing authorization" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -44,7 +40,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -58,7 +54,7 @@ serve(async (req) => {
     if (!appUser || !["admin", "staff"].includes(appUser.role)) {
       return new Response(
         JSON.stringify({ error: "Admin or staff role required" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -68,7 +64,7 @@ serve(async (req) => {
     if (!amount || !description) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: amount, description" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -82,7 +78,7 @@ serve(async (req) => {
     if (!stripeConfig?.secret_key || !stripeConfig.is_active) {
       return new Response(
         JSON.stringify({ error: "Stripe is not configured or inactive" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -129,7 +125,7 @@ serve(async (req) => {
       console.error("Stripe API error:", stripeResult);
       return new Response(
         JSON.stringify({ error: "Failed to create payment link", details: stripeResult.error?.message }),
-        { status: stripeResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: stripeResponse.status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -161,14 +157,14 @@ serve(async (req) => {
         amount,
         description,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
 
   } catch (error) {
     console.error("Error:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

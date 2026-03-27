@@ -12,11 +12,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface PayPalConfig {
   client_id: string;
   client_secret: string;
@@ -192,7 +188,7 @@ async function capturePayPalOrder(
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -212,14 +208,14 @@ Deno.serve(async (req) => {
     if (configError || !config) {
       return new Response(
         JSON.stringify({ success: false, error: 'PayPal configuration not found' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (!config.is_active) {
       return new Response(
         JSON.stringify({ success: false, error: 'PayPal payments are not currently enabled' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -230,7 +226,7 @@ Deno.serve(async (req) => {
       if (!amount || amount < 0.50) {
         return new Response(
           JSON.stringify({ success: false, error: 'Amount must be at least $0.50' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -267,7 +263,7 @@ Deno.serve(async (req) => {
             approve_url: '',
             message: `[TEST] Order created for $${amount.toFixed(2)}`,
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -319,7 +315,7 @@ Deno.serve(async (req) => {
           approve_url: order.approve_url,
           client_id: config.client_id, // Needed for JS SDK
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -330,7 +326,7 @@ Deno.serve(async (req) => {
       if (!order_id) {
         return new Response(
           JSON.stringify({ success: false, error: 'order_id is required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -373,7 +369,7 @@ Deno.serve(async (req) => {
 
         return new Response(
           JSON.stringify({ success: true, test_mode: true, message: '[TEST] Payment captured' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -489,7 +485,7 @@ Deno.serve(async (req) => {
             ledger_id: ledgerEntry?.id,
             payment_record_id: pr.id,
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -499,7 +495,7 @@ Deno.serve(async (req) => {
           status: capture.status,
           error: capture.status !== 'COMPLETED' ? `Payment status: ${capture.status}` : undefined,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -512,20 +508,20 @@ Deno.serve(async (req) => {
           client_id: clientId,
           test_mode: config.test_mode,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
       JSON.stringify({ success: false, error: `Unknown action: ${action}. Use create_order, capture_order, or get_config.` }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('PayPal checkout error:', error);
     return new Response(
       JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

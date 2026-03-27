@@ -1,10 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 const NOTIFY_EMAIL = 'rahulioson@gmail.com';
@@ -123,7 +118,7 @@ function partialEmail(data: Record<string, unknown>, lang: string): string {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: CORS_HEADERS });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -179,7 +174,7 @@ Deno.serve(async (req) => {
       }
 
       return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -222,20 +217,20 @@ Deno.serve(async (req) => {
       );
 
       return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     return new Response(JSON.stringify({ error: 'Unknown type' }), {
       status: 400,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (err) {
     console.error('mistiq-form error:', err);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

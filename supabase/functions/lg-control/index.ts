@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 import { logApiUsage } from "../_shared/api-usage-log.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface LgControlRequest {
   action: "getStatus" | "control" | "watch" | "unwatch" | "registerPushToken";
   applianceId?: number;
@@ -11,29 +12,23 @@ interface LgControlRequest {
   platform?: "ios" | "android";
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     // 1. Verify auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -46,13 +41,13 @@ serve(async (req) => {
       error: authError,
     } = await supabase.auth.getUser(token);
     if (authError || !user) {
-      return jsonResponse({ error: "Invalid token" }, 401);
+      return jsonResponse(req, { error: "Invalid token" }, 401);
     }
 
     // 2. Check granular permission: view_laundry
     const { appUser, hasPermission } = await getAppUserWithPermission(supabase, user.id, "view_laundry");
     if (!hasPermission) {
-      return jsonResponse({ error: "Insufficient permissions" }, 403);
+      return jsonResponse(req, { error: "Insufficient permissions" }, 403);
     }
 
     // 3. Parse request
@@ -67,7 +62,7 @@ serve(async (req) => {
         .order("display_order", { ascending: true });
 
       if (appErr) {
-        return jsonResponse({ error: appErr.message }, 500);
+        return jsonResponse(req, { error: appErr.message }, 500);
       }
 
       // Also return watcher status for this user
@@ -78,7 +73,7 @@ serve(async (req) => {
 
       const watchedIds = new Set((watchers || []).map((w: any) => w.appliance_id));
 
-      return jsonResponse({
+      return jsonResponse(req, {
         appliances: (appliances || []).map((a: any) => ({
           ...a,
           watching: watchedIds.has(a.id),
@@ -89,7 +84,7 @@ serve(async (req) => {
     // ---- CONTROL ----
     if (body.action === "control") {
       if (!body.applianceId || !body.command) {
-        return jsonResponse({ error: "Missing applianceId or command" }, 400);
+        return jsonResponse(req, { error: "Missing applianceId or command" }, 400);
       }
 
       // Load config
@@ -100,11 +95,11 @@ serve(async (req) => {
         .single();
 
       if (!config?.pat) {
-        return jsonResponse({ error: "LG ThinQ PAT not configured" }, 400);
+        return jsonResponse(req, { error: "LG ThinQ PAT not configured" }, 400);
       }
 
       if (config.test_mode) {
-        return jsonResponse({ test_mode: true, message: "No API call made" });
+        return jsonResponse(req, { test_mode: true, message: "No API call made" });
       }
 
       // Load appliance
@@ -116,13 +111,13 @@ serve(async (req) => {
         .single();
 
       if (!appliance) {
-        return jsonResponse({ error: "Appliance not found" }, 404);
+        return jsonResponse(req, { error: "Appliance not found" }, 404);
       }
 
       // Check remote control is enabled
       const state = appliance.last_state || {};
       if (!state.remoteControlEnabled) {
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: "Remote control is not enabled on this appliance. Enable it on the physical control panel." },
           400
         );
@@ -158,7 +153,7 @@ serve(async (req) => {
       if (!apiResponse.ok) {
         const errText = await apiResponse.text();
         console.error(`LG control failed: ${apiResponse.status} ${errText.substring(0, 200)}`);
-        return jsonResponse(
+        return jsonResponse(req, 
           { error: `Control command failed (${apiResponse.status})` },
           apiResponse.status
         );
@@ -176,13 +171,13 @@ serve(async (req) => {
         metadata: { command: body.command, appliance: appliance.name, device_type: appliance.device_type },
         app_user_id: appUser?.id ?? null,
       });
-      return jsonResponse({ success: true, result });
+      return jsonResponse(req, { success: true, result });
     }
 
     // ---- WATCH ----
     if (body.action === "watch") {
       if (!body.applianceId) {
-        return jsonResponse({ error: "Missing applianceId" }, 400);
+        return jsonResponse(req, { error: "Missing applianceId" }, 400);
       }
 
       const { error: watchErr } = await supabase
@@ -193,17 +188,17 @@ serve(async (req) => {
         );
 
       if (watchErr) {
-        return jsonResponse({ error: watchErr.message }, 500);
+        return jsonResponse(req, { error: watchErr.message }, 500);
       }
 
       console.log(`User ${appUser.id} watching appliance ${body.applianceId}`);
-      return jsonResponse({ watching: true });
+      return jsonResponse(req, { watching: true });
     }
 
     // ---- UNWATCH ----
     if (body.action === "unwatch") {
       if (!body.applianceId) {
-        return jsonResponse({ error: "Missing applianceId" }, 400);
+        return jsonResponse(req, { error: "Missing applianceId" }, 400);
       }
 
       await supabase
@@ -213,13 +208,13 @@ serve(async (req) => {
         .eq("appliance_id", body.applianceId);
 
       console.log(`User ${appUser.id} unwatched appliance ${body.applianceId}`);
-      return jsonResponse({ watching: false });
+      return jsonResponse(req, { watching: false });
     }
 
     // ---- REGISTER PUSH TOKEN ----
     if (body.action === "registerPushToken") {
       if (!body.pushToken || !body.platform) {
-        return jsonResponse({ error: "Missing pushToken or platform" }, 400);
+        return jsonResponse(req, { error: "Missing pushToken or platform" }, 400);
       }
 
       const { error: tokenErr } = await supabase
@@ -236,16 +231,16 @@ serve(async (req) => {
         );
 
       if (tokenErr) {
-        return jsonResponse({ error: tokenErr.message }, 500);
+        return jsonResponse(req, { error: tokenErr.message }, 500);
       }
 
       console.log(`Push token registered for user ${appUser.id} (${body.platform})`);
-      return jsonResponse({ registered: true });
+      return jsonResponse(req, { registered: true });
     }
 
-    return jsonResponse({ error: `Unknown action: ${body.action}` }, 400);
+    return jsonResponse(req, { error: `Unknown action: ${body.action}` }, 400);
   } catch (error) {
     console.error("LG control error:", error.message);
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse(req, { error: error.message }, 500);
   }
 });

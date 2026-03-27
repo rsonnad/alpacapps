@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 // Message types (same as SMS)
 type MessageType =
   | "payment_reminder"
@@ -249,16 +250,10 @@ function getPlainTextBody(type: MessageType, data: Record<string, any>): string 
   }
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -275,7 +270,7 @@ serve(async (req) => {
         JSON.stringify({ error: "Missing required fields: type, to, data" }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -283,7 +278,7 @@ serve(async (req) => {
     // Load WhatsApp config from database
     const { data: config, error: configError } = await supabase
       .from("whatsapp_config")
-      .select("*")
+      .select("access_token, phone_number_id, waba_id, phone_number, is_active, test_mode")
       .single();
 
     if (configError || !config) {
@@ -292,7 +287,7 @@ serve(async (req) => {
         JSON.stringify({ error: "WhatsApp not configured" }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -304,7 +299,7 @@ serve(async (req) => {
         JSON.stringify({ error: "WhatsApp messaging is disabled" }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -314,7 +309,7 @@ serve(async (req) => {
         JSON.stringify({ error: "WhatsApp credentials not configured" }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -350,7 +345,7 @@ serve(async (req) => {
         }),
         {
           status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -394,7 +389,7 @@ serve(async (req) => {
         JSON.stringify({ error: "Failed to send WhatsApp message", details: waResult }),
         {
           status: waResponse.status,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -440,14 +435,14 @@ serve(async (req) => {
       JSON.stringify({ success: true, id: messageId }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       }
     );
   } catch (error) {
-    console.error("Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("Error:", error.message, error.stack);
+    return new Response(JSON.stringify({ error: "Internal error processing whatsapp request" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

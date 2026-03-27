@@ -35,7 +35,37 @@ export interface ResolvedAuth {
 
 // ─── CORS ───────────────────────────────────────────────────────────
 
-export const corsHeaders = {
+/** Origins allowed to call non-webhook edge functions. */
+const ALLOWED_ORIGINS = [
+  "https://alpacaplayhouse.com",
+  "https://rsonnad.github.io",
+];
+
+/**
+ * Build CORS headers with origin whitelisting.
+ * If the request Origin is in the allowlist, reflect it back.
+ * Otherwise, default to the primary origin (prevents open wildcard).
+ * Webhook endpoints that verify via signatures should use `corsHeadersOpen` instead.
+ */
+export function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+/** Open CORS for webhook endpoints that verify via signatures (Stripe, Telnyx, etc.). */
+export const corsHeadersOpen: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+/** @deprecated Use getCorsHeaders(req) for origin-restricted CORS. */
+export const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-api-key",

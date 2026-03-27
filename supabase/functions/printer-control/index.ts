@@ -1,7 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface PrinterControlRequest {
   action:
     | "getStatus"
@@ -24,16 +26,10 @@ interface PrinterControlRequest {
   localPath?: string; // local filesystem path for uploadLocalFile
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -65,14 +61,14 @@ async function callPrinterProxy(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     // 1. Verify auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -85,12 +81,13 @@ serve(async (req) => {
     let checkPermission: (key: string) => Promise<boolean>;
 
     // Check for service role key - try both env var AND JWT role check
-    const isServiceRole = token === supabaseServiceKey || (() => {
+    let isServiceRole = await timingSafeEqual(token, supabaseServiceKey);
+    if (!isServiceRole) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.role === 'service_role';
-      } catch { return false; }
-    })();
+        isServiceRole = payload.role === 'service_role';
+      } catch { /* not a valid JWT — ignore */ }
+    }
 
     if (isServiceRole) {
       appUser = { id: "service", role: "oracle" };
@@ -101,13 +98,13 @@ serve(async (req) => {
         error: authError,
       } = await supabase.auth.getUser(token);
       if (authError || !user) {
-        return jsonResponse({ error: "Invalid token" }, 401);
+        return jsonResponse(req, { error: "Invalid token" }, 401);
       }
 
       const permResult = await getAppUserWithPermission(supabase, user.id, "view_printer");
       appUser = permResult.appUser;
       if (!permResult.hasPermission) {
-        return jsonResponse({ error: "Insufficient permissions" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
 
       checkPermission = async (key: string) => {
@@ -123,23 +120,23 @@ serve(async (req) => {
     // 3. Load config
     const { data: config } = await supabase
       .from("printer_config")
-      .select("*")
+      .select("proxy_url, proxy_secret, is_active, test_mode, check_code, last_error, last_synced_at")
       .eq("id", 1)
       .single();
 
     if (!config?.proxy_url) {
-      return jsonResponse(
+      return jsonResponse(req, 
         { error: "Printer proxy URL not configured. Add it in Appliances > Settings." },
         400,
       );
     }
 
     if (!config.is_active) {
-      return jsonResponse({ error: "Printer integration is disabled" }, 400);
+      return jsonResponse(req, { error: "Printer integration is disabled" }, 400);
     }
 
     if (config.test_mode) {
-      return jsonResponse({ test_mode: true, message: "Test mode — no API call made" });
+      return jsonResponse(req, { test_mode: true, message: "Test mode — no API call made" });
     }
 
     const proxyUrl = config.proxy_url;
@@ -150,7 +147,7 @@ serve(async (req) => {
     if (body.printerId) {
       const { data } = await supabase
         .from("printer_devices")
-        .select("*")
+        .select("id, name, lan_ip, tcp_port, serial_number, machine_type, firmware_version, display_order")
         .eq("id", body.printerId)
         .eq("is_active", true)
         .single();
@@ -159,7 +156,7 @@ serve(async (req) => {
       // Default to first active printer
       const { data } = await supabase
         .from("printer_devices")
-        .select("*")
+        .select("id, name, lan_ip, tcp_port, serial_number, machine_type, firmware_version, display_order")
         .eq("is_active", true)
         .order("display_order", { ascending: true })
         .limit(1)
@@ -168,7 +165,7 @@ serve(async (req) => {
     }
 
     if (!printer) {
-      return jsonResponse({ error: "No active printer found" }, 404);
+      return jsonResponse(req, { error: "No active printer found" }, 404);
     }
 
     const printerIp = printer.lan_ip;
@@ -188,7 +185,7 @@ serve(async (req) => {
           .from("printer_config")
           .update({ last_error: err.message, updated_at: now })
           .eq("id", 1);
-        return jsonResponse({ error: `Failed to reach printer: ${err.message}` }, 502);
+        return jsonResponse(req, { error: "Failed to reach printer" }, 502);
       }
 
       // Cache state in printer_devices
@@ -225,7 +222,7 @@ serve(async (req) => {
         .then(() => {})
         .catch(() => {});
 
-      return jsonResponse({ state: result, printerId: printer.id });
+      return jsonResponse(req, { state: result, printerId: printer.id });
     }
 
     // ---- CONTROL ACTIONS (require control_printer permission) ----
@@ -241,14 +238,14 @@ serve(async (req) => {
 
     if (controlActions.includes(body.action)) {
       if (!(await checkPermission("control_printer"))) {
-        return jsonResponse({ error: "Insufficient permissions to control printer" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions to control printer" }, 403);
       }
     }
 
     // ---- START PRINT ----
     if (body.action === "startPrint") {
       if (!body.filename) {
-        return jsonResponse({ error: "Missing filename" }, 400);
+        return jsonResponse(req, { error: "Missing filename" }, 400);
       }
 
       const result = await callPrinterProxy(proxyUrl, proxySecret, "control", {
@@ -258,7 +255,7 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "startPrint", printer, appUser);
-      return jsonResponse({ success: true, result });
+      return jsonResponse(req, { success: true, result });
     }
 
     // ---- PAUSE PRINT ----
@@ -270,7 +267,7 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "pausePrint", printer, appUser);
-      return jsonResponse({ success: true, result });
+      return jsonResponse(req, { success: true, result });
     }
 
     // ---- RESUME PRINT ----
@@ -282,7 +279,7 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "resumePrint", printer, appUser);
-      return jsonResponse({ success: true, result });
+      return jsonResponse(req, { success: true, result });
     }
 
     // ---- CANCEL PRINT ----
@@ -294,7 +291,7 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "cancelPrint", printer, appUser);
-      return jsonResponse({ success: true, result });
+      return jsonResponse(req, { success: true, result });
     }
 
     // ---- SET TEMPERATURE ----
@@ -312,7 +309,7 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "setTemperature", printer, appUser);
-      return jsonResponse({ success: true, target, tempC, result });
+      return jsonResponse(req, { success: true, target, tempC, result });
     }
 
     // ---- TOGGLE LIGHT ----
@@ -329,7 +326,7 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "toggleLight", printer, appUser);
-      return jsonResponse({ success: true, on, result });
+      return jsonResponse(req, { success: true, on, result });
     }
 
     // ---- HOME AXES ----
@@ -341,7 +338,7 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "homeAxes", printer, appUser);
-      return jsonResponse({ success: true, result });
+      return jsonResponse(req, { success: true, result });
     }
 
     // ---- LIST FILES ----
@@ -353,17 +350,17 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_status_poll", "listFiles", printer, appUser);
-      return jsonResponse({ files: parseFileList(result.response), raw: result });
+      return jsonResponse(req, { files: parseFileList(result.response), raw: result });
     }
 
     // ---- UPLOAD FILE (base64 gcode from client) ----
     if (body.action === "uploadFile") {
       if (!(await checkPermission("control_printer"))) {
-        return jsonResponse({ error: "Insufficient permissions to upload files" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions to upload files" }, 403);
       }
 
       if (!body.filename || !body.gcode) {
-        return jsonResponse({ error: "Missing filename or gcode (base64)" }, 400);
+        return jsonResponse(req, { error: "Missing filename or gcode (base64)" }, 400);
       }
 
       const result = await callPrinterProxy(proxyUrl, proxySecret, "upload", {
@@ -375,17 +372,17 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "uploadFile", printer, appUser);
-      return jsonResponse({ success: true, result });
+      return jsonResponse(req, { success: true, result });
     }
 
     // ---- UPLOAD LOCAL FILE (file already on Alpaca Mac) ----
     if (body.action === "uploadLocalFile") {
       if (!(await checkPermission("control_printer"))) {
-        return jsonResponse({ error: "Insufficient permissions to upload files" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions to upload files" }, 403);
       }
 
       if (!body.localPath) {
-        return jsonResponse({ error: "Missing localPath" }, 400);
+        return jsonResponse(req, { error: "Missing localPath" }, 400);
       }
 
       const result = await callPrinterProxy(proxyUrl, proxySecret, "upload-local", {
@@ -396,13 +393,13 @@ serve(async (req) => {
       });
 
       logUsage(supabase, "printer_control", "uploadLocalFile", printer, appUser);
-      return jsonResponse({ success: true, result });
+      return jsonResponse(req, { success: true, result });
     }
 
-    return jsonResponse({ error: `Unknown action: ${body.action}` }, 400);
+    return jsonResponse(req, { error: `Unknown action: ${body.action}` }, 400);
   } catch (error) {
-    console.error("Printer control error:", error.message);
-    return jsonResponse({ error: error.message }, 500);
+    console.error("Printer control error:", error.message, error.stack);
+    return jsonResponse(req, { error: "Internal error processing printer control request" }, 500);
   }
 });
 

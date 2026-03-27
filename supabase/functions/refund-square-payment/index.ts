@@ -10,11 +10,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface RefundRequest {
   square_payment_id: string;  // Square's payment ID (from Square API)
   amount_cents: number;       // Amount in cents to refund
@@ -33,7 +29,7 @@ interface SquareConfig {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -49,7 +45,7 @@ Deno.serve(async (req) => {
     if (!square_payment_id || !amount_cents) {
       return new Response(
         JSON.stringify({ success: false, error: 'square_payment_id and amount_cents are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -63,7 +59,7 @@ Deno.serve(async (req) => {
       console.error('Failed to load Square config:', configError);
       return new Response(
         JSON.stringify({ success: false, error: 'Square configuration not found' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -110,7 +106,7 @@ Deno.serve(async (req) => {
           error: errorMessage,
           details: squareResult.errors
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -179,14 +175,14 @@ Deno.serve(async (req) => {
         amount: refundAmountDollars,
         status: refund.status
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error processing refund:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

@@ -29,11 +29,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 
 interface PayPalWebhookEvent {
   id: string;
@@ -64,7 +60,7 @@ async function verifyWebhook(
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeadersOpen });
   }
 
   try {
@@ -109,7 +105,7 @@ Deno.serve(async (req) => {
     await notifyUnknownEvent(event);
     return new Response(
       JSON.stringify({ received: true, event_type: event.event_type }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -117,7 +113,7 @@ Deno.serve(async (req) => {
     // Always return 200 to prevent PayPal from retrying
     return new Response(
       JSON.stringify({ received: true, error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
   }
 });
@@ -636,6 +632,6 @@ async function notifyUnknownEvent(event: PayPalWebhookEvent) {
 function jsonResponse(data: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' },
   });
 }

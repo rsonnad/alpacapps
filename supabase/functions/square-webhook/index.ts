@@ -20,11 +20,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-square-hmacsha256-signature'
-};
+import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 
 const PAYMENTS_EMAIL = 'payments@alpacaplayhouse.com';
 
@@ -217,7 +213,7 @@ async function sendPaymentStatusEmail(
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeadersOpen });
   }
 
   // Read raw body BEFORE parsing (required for signature verification)
@@ -239,7 +235,7 @@ Deno.serve(async (req) => {
       console.error('Square config not found:', configError);
       return new Response(
         JSON.stringify({ error: 'Square config not found' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -258,7 +254,7 @@ Deno.serve(async (req) => {
         console.error('Square webhook signature verification failed');
         return new Response(
           JSON.stringify({ error: 'Webhook signature verification failed' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
         );
       }
       console.log('Square webhook signature verified');
@@ -558,7 +554,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ received: true, type: event.type }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -571,7 +567,7 @@ Deno.serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' }
       }
     );
   }

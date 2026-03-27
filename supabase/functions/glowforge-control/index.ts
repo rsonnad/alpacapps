@@ -1,22 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface GlowforgeControlRequest {
   action: "getStatus";
   machineId?: string;
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -166,14 +162,14 @@ async function fetchMachines(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     // 1. Verify auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse(req, { error: "Unauthorized" }, 401);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -184,7 +180,7 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     let appUser: any = null;
 
-    if (token === supabaseServiceKey) {
+    if (await timingSafeEqual(token, supabaseServiceKey)) {
       appUser = { id: "service", role: "oracle" };
     } else {
       const {
@@ -192,7 +188,7 @@ serve(async (req) => {
         error: authError,
       } = await supabase.auth.getUser(token);
       if (authError || !user) {
-        return jsonResponse({ error: "Invalid token" }, 401);
+        return jsonResponse(req, { error: "Invalid token" }, 401);
       }
 
       const permResult = await getAppUserWithPermission(
@@ -202,7 +198,7 @@ serve(async (req) => {
       );
       appUser = permResult.appUser;
       if (!permResult.hasPermission) {
-        return jsonResponse({ error: "Insufficient permissions" }, 403);
+        return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
     }
 
@@ -212,19 +208,19 @@ serve(async (req) => {
     // 3. Load config
     const { data: config } = await supabase
       .from("glowforge_config")
-      .select("*")
+      .select("is_active, test_mode, session_cookies, session_expires_at")
       .eq("id", 1)
       .single();
 
     if (!config?.is_active) {
-      return jsonResponse(
+      return jsonResponse(req, 
         { error: "Glowforge integration is disabled" },
         400,
       );
     }
 
     if (config.test_mode) {
-      return jsonResponse({
+      return jsonResponse(req, {
         test_mode: true,
         message: "Test mode — no API call made",
       });
@@ -234,7 +230,7 @@ serve(async (req) => {
     const gfEmail = Deno.env.get("GLOWFORGE_EMAIL");
     const gfPassword = Deno.env.get("GLOWFORGE_PASSWORD");
     if (!gfEmail || !gfPassword) {
-      return jsonResponse(
+      return jsonResponse(req, 
         {
           error:
             "Glowforge credentials not configured. Set GLOWFORGE_EMAIL and GLOWFORGE_PASSWORD secrets.",
@@ -277,8 +273,8 @@ serve(async (req) => {
               updated_at: new Date().toISOString(),
             })
             .eq("id", 1);
-          return jsonResponse(
-            { error: `Glowforge login failed: ${err.message}` },
+          return jsonResponse(req, 
+            { error: "Glowforge login failed" },
             502,
           );
         }
@@ -316,8 +312,8 @@ serve(async (req) => {
               updated_at: new Date().toISOString(),
             })
             .eq("id", 1);
-          return jsonResponse(
-            { error: `Glowforge API failed: ${retryErr.message}` },
+          return jsonResponse(req,
+            { error: "Glowforge API failed after re-authentication" },
             502,
           );
         }
@@ -387,12 +383,12 @@ serve(async (req) => {
         .then(() => {})
         .catch(() => {});
 
-      return jsonResponse({ machines, count: machines.length });
+      return jsonResponse(req, { machines, count: machines.length });
     }
 
-    return jsonResponse({ error: `Unknown action: ${body.action}` }, 400);
+    return jsonResponse(req, { error: `Unknown action: ${body.action}` }, 400);
   } catch (error) {
-    console.error("Glowforge control error:", error.message);
-    return jsonResponse({ error: error.message }, 500);
+    console.error("Glowforge control error:", error.message, error.stack);
+    return jsonResponse(req, { error: "Internal error processing glowforge control request" }, 500);
   }
 });

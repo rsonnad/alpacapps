@@ -20,7 +20,7 @@ serve(async (req) => {
     // Read config
     const { data: config, error } = await supabase
       .from("nest_config")
-      .select("*")
+      .select("google_client_id, google_client_secret, refresh_token")
       .single();
 
     if (error || !config) {
@@ -91,9 +91,9 @@ serve(async (req) => {
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (err) {
-    console.error("Nest token refresh error:", err.message);
+    console.error("Nest token refresh error:", err.message, err.stack);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: "Internal error refreshing nest token" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }

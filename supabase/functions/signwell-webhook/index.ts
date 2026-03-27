@@ -8,11 +8,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 
 interface SignWellWebhookPayload {
   event: string;
@@ -31,7 +27,7 @@ interface SignWellWebhookPayload {
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeadersOpen });
   }
 
   try {
@@ -48,7 +44,7 @@ Deno.serve(async (req) => {
       console.log(`Ignoring event: ${payload.event}`);
       return new Response(
         JSON.stringify({ message: 'Event ignored', event: payload.event }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -115,7 +111,7 @@ Deno.serve(async (req) => {
       console.error('No matching application/request found for document:', documentId);
       return new Response(
         JSON.stringify({ error: 'Document not found in system' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -129,7 +125,7 @@ Deno.serve(async (req) => {
       console.error('SignWell config not found');
       return new Response(
         JSON.stringify({ error: 'SignWell not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -191,14 +187,14 @@ Deno.serve(async (req) => {
     // Should never reach here
     return new Response(
       JSON.stringify({ error: 'Unknown document type' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Webhook processing error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
   }
 });
@@ -351,7 +347,7 @@ async function processRentalAgreement(
       applicationId: application.id,
       signedPdfUrl,
     }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
   );
 }
 
@@ -465,7 +461,7 @@ async function processEventAgreement(
       eventRequestId: eventRequest.id,
       signedPdfUrl,
     }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
   );
 }
 

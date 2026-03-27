@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { decode as base64Decode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, telnyx-signature-ed25519, telnyx-timestamp",
-};
+import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 
 /**
  * Verify Telnyx webhook signature using Ed25519 public key.
@@ -73,7 +69,7 @@ function normalizePhone(phone: string): string[] {
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeadersOpen });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

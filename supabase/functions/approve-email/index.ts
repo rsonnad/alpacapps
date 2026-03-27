@@ -11,6 +11,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 const CONFIRM_PAGE = "https://alpacaplayhouse.com/admin/email-confirm.html";
@@ -18,9 +19,7 @@ const RESULT_PAGE = "https://alpacaplayhouse.com/admin/email-approved.html";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, OPTIONS" },
-    });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {

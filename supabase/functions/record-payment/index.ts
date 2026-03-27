@@ -12,11 +12,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { parsePaymentString } from './payment-parser.ts';
 import { matchTenant } from './tenant-matcher.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface PaymentRequest {
   name?: string;
   payment_string: string;
@@ -27,7 +23,7 @@ interface PaymentRequest {
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -44,7 +40,7 @@ Deno.serve(async (req) => {
     if (!payment_string) {
       return new Response(
         JSON.stringify({ success: false, error: 'payment_string is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -66,7 +62,7 @@ Deno.serve(async (req) => {
             method: parsed.method
           }
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -149,7 +145,7 @@ Deno.serve(async (req) => {
               name: matchResult.person_name
             }
           }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -263,7 +259,7 @@ Deno.serve(async (req) => {
             method: parsed.method
           }
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -309,7 +305,7 @@ Deno.serve(async (req) => {
         suggestions: matchResult.suggestions,
         reasoning: matchResult.reasoning
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Payment processing error:', error);
@@ -318,7 +314,7 @@ Deno.serve(async (req) => {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

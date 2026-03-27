@@ -10,11 +10,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface W9SubmitRequest {
   token: string;
   legal_name: string;
@@ -60,7 +56,7 @@ async function encryptTIN(tin: string, hexKey: string): Promise<{ encrypted: str
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -86,21 +82,21 @@ Deno.serve(async (req) => {
     if (tokenError || !tokenRecord) {
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid or already-used token' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (new Date(tokenRecord.expires_at) < new Date()) {
       return new Response(
         JSON.stringify({ success: false, error: 'This link has expired. Please request a new one.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (tokenRecord.token_type !== 'w9_submission') {
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid token type' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -108,7 +104,7 @@ Deno.serve(async (req) => {
     if (!appUserId) {
       return new Response(
         JSON.stringify({ success: false, error: 'Token is not linked to an associate' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -141,7 +137,7 @@ Deno.serve(async (req) => {
     if (errors.length > 0) {
       return new Response(
         JSON.stringify({ success: false, error: errors.join('; ') }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -259,7 +255,7 @@ Deno.serve(async (req) => {
         tin_masked: `***-**-${tinLastFour}`,
         message: 'W-9 form submitted successfully.',
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -269,7 +265,7 @@ Deno.serve(async (req) => {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

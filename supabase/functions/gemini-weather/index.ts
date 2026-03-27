@@ -1,13 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -21,7 +17,7 @@ serve(async (req) => {
     if (!contents?.length) {
       return new Response(
         JSON.stringify({ error: "contents required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -42,19 +38,19 @@ serve(async (req) => {
       console.error("Gemini error:", JSON.stringify(err));
       return new Response(
         JSON.stringify({ error: err?.error?.message || "Gemini API error" }),
-        { status: geminiResp.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: geminiResp.status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     const data = await geminiResp.json();
     return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error:", error.message, error.stack);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Internal error processing weather request" }),
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

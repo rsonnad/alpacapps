@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 // SMS template types
 type SmsType =
   | "payment_reminder"
@@ -67,15 +68,10 @@ function getSmsBody(type: SmsType, data: Record<string, any>): string {
   }
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -90,21 +86,21 @@ serve(async (req) => {
     if (!type || !to || !data) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: type, to, data" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     // Load Telnyx config from database
     const { data: config, error: configError } = await supabase
       .from("telnyx_config")
-      .select("*")
+      .select("api_key, messaging_profile_id, phone_number, is_active, test_mode")
       .single();
 
     if (configError || !config) {
       console.error("Telnyx config not found:", configError);
       return new Response(
         JSON.stringify({ error: "Telnyx not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -113,14 +109,14 @@ serve(async (req) => {
     if (!telnyxConfig.is_active) {
       return new Response(
         JSON.stringify({ error: "Telnyx SMS is disabled" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     if (!telnyxConfig.phone_number) {
       return new Response(
         JSON.stringify({ error: "Telnyx phone number not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -130,7 +126,7 @@ serve(async (req) => {
     if (!messageBody) {
       return new Response(
         JSON.stringify({ error: "Empty message body" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -152,7 +148,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, id: `TEST_${Date.now()}`, test_mode: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -200,7 +196,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ error: "Failed to send SMS", details: telnyxResult }),
-        { status: telnyxResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: telnyxResponse.status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -233,14 +229,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, id: messageId }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error:", error.message, error.stack);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Internal error processing SMS request" }),
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

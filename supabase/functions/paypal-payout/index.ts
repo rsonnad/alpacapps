@@ -11,11 +11,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface PayoutRequest {
   associate_id: string;
   amount: number;           // Amount in dollars (e.g., 150.00)
@@ -122,7 +118,7 @@ async function sendPayPalPayout(
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -139,7 +135,7 @@ Deno.serve(async (req) => {
     if (!associate_id || !amount || amount <= 0) {
       return new Response(
         JSON.stringify({ success: false, error: 'associate_id and positive amount are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -152,14 +148,14 @@ Deno.serve(async (req) => {
     if (configError || !config) {
       return new Response(
         JSON.stringify({ success: false, error: 'PayPal configuration not found' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (!config.is_active) {
       return new Response(
         JSON.stringify({ success: false, error: 'PayPal is not active. Enable it in Settings.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -173,7 +169,7 @@ Deno.serve(async (req) => {
     if (assocError || !associate) {
       return new Response(
         JSON.stringify({ success: false, error: 'Associate not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -181,7 +177,7 @@ Deno.serve(async (req) => {
     if (associate.identity_verification_status !== 'verified') {
       return new Response(
         JSON.stringify({ success: false, error: 'Identity verification required before payout. The associate must upload and verify their ID first.' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -190,7 +186,7 @@ Deno.serve(async (req) => {
     if (!paypalEmail) {
       return new Response(
         JSON.stringify({ success: false, error: 'No PayPal email configured for this associate. Update their payment info first.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -270,7 +266,7 @@ Deno.serve(async (req) => {
           ledger_id: ledgerEntry?.id,
           message: `[TEST] Would have sent $${amount.toFixed(2)} to ${paypalEmail}`,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -381,7 +377,7 @@ Deno.serve(async (req) => {
         batch_id: result.batch_id,
         message: `Sent $${amount.toFixed(2)} to ${paypalEmail} via PayPal`,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -392,7 +388,7 @@ Deno.serve(async (req) => {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

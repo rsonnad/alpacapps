@@ -11,11 +11,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
+import { getCorsHeaders } from "../_shared/api-helpers.ts";
 // Map URL slugs to space names
 const SLUG_TO_NAME: Record<string, string> = {
   'spartan-fishbowl': 'Spartan Fishbowl',
@@ -43,7 +39,7 @@ const SLUG_TO_NAME: Record<string, string> = {
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -53,7 +49,7 @@ serve(async (req) => {
     if (!spaceSlug) {
       return new Response('Missing space parameter', {
         status: 400,
-        headers: corsHeaders
+        headers: getCorsHeaders(req)
       });
     }
 
@@ -61,7 +57,7 @@ serve(async (req) => {
     if (!spaceName) {
       return new Response(`Unknown space: ${spaceSlug}`, {
         status: 404,
-        headers: corsHeaders
+        headers: getCorsHeaders(req)
       });
     }
 
@@ -80,7 +76,7 @@ serve(async (req) => {
     if (spaceError || !space) {
       return new Response(`Space not found: ${spaceName}`, {
         status: 404,
-        headers: corsHeaders
+        headers: getCorsHeaders(req)
       });
     }
 
@@ -112,7 +108,7 @@ serve(async (req) => {
       console.error('Error fetching assignments:', assignmentsError);
       return new Response('Error fetching assignments', {
         status: 500,
-        headers: corsHeaders
+        headers: getCorsHeaders(req)
       });
     }
 
@@ -152,7 +148,7 @@ serve(async (req) => {
 
     return new Response(icalContent, {
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         'Content-Type': 'text/calendar; charset=utf-8',
         'Content-Disposition': `attachment; filename="${spaceSlug}.ics"`,
       },
@@ -164,7 +160,7 @@ serve(async (req) => {
       JSON.stringify({ error: err.message }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     );
   }
