@@ -1,12 +1,12 @@
 {
-  "version": "v260327.03 3:43a",
-  "release": 1049,
-  "sha": "2d38ab1ab",
-  "fullSha": "2d38ab1ab2d8ea494be26f9bf7c60277fd0bda02",
+  "version": "v260327.04 3:59a",
+  "release": 1050,
+  "sha": "8732e5434",
+  "fullSha": "8732e5434e6d4c6858ef0d8c2d3050e564ae64a8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 08:43:54+00",
-  "commits": [{"sha":"2d38ab1ab","message":"feat: add comprehensive code review prompt + enhance inventory page","author":"Paca"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-27 08:59:07+00",
+  "commits": [{"sha":"8732e5434","message":"fix: add 8s timeout to Sonos API call in devices page","author":"Paca"}]
 }
