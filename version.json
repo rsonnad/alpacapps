@@ -1,12 +1,12 @@
 {
-  "version": "v260327.31 3:22p",
-  "release": 1077,
-  "sha": "7513be944",
-  "fullSha": "7513be9449916085bbb9cc89d3943ed5c9b70459",
+  "version": "v260327.32 3:30p",
+  "release": 1078,
+  "sha": "618a257ad",
+  "fullSha": "618a257ad87c33f0b62ca14f527353c076955a36",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 20:22:58+00",
-  "commits": [{"sha":"7513be944","message":"fix: point UniFi popup to /network/default/dashboard","author":"Claude"}]
+  "pushedAt": "2026-03-27 20:30:59+00",
+  "commits": [{"sha":"618a257ad","message":"feat: add Backup Now button + show full paths as copyable location names","author":"Paca"}]
 }
