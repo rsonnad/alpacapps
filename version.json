@@ -1,12 +1,12 @@
 {
-  "version": "v260327.10 12:01p",
-  "release": 1056,
-  "sha": "b986af697",
-  "fullSha": "b986af69765a8e33945c57545460e38532421803",
+  "version": "v260327.11 12:07p",
+  "release": 1057,
+  "sha": "001762ddd",
+  "fullSha": "001762ddd267ed626c14020b4e4211bde46003aa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 17:01:33+00",
-  "commits": [{"sha":"b986af697","message":"Add device testing page for field walkthrough + space assignment","author":"Paca"}]
+  "pushedAt": "2026-03-27 17:07:20+00",
+  "commits": [{"sha":"001762ddd","message":"feat: add HAOS backups + schedule display to devcontrol backup page","author":"Paca"}]
 }
