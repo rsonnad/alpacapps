@@ -1,12 +1,12 @@
 {
-  "version": "v260327.38 4:48p",
-  "release": 1084,
-  "sha": "70d422dd5",
-  "fullSha": "70d422dd56136fca3e1baed581d707deb1f556c7",
+  "version": "v260327.39 6:36p",
+  "release": 1085,
+  "sha": "3dd0ce592",
+  "fullSha": "3dd0ce5920ce6ce05ee24d813fdf6bd22c6ce801",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 21:48:42+00",
-  "commits": [{"sha":"70d422dd5","message":"feat: add current state summary card to strip light tab","author":"Rahul"}]
+  "pushedAt": "2026-03-27 23:36:57+00",
+  "commits": [{"sha":"3dd0ce592","message":"feat: log backup files to DB, show real filenames in Backups section","author":"Paca"}]
 }
