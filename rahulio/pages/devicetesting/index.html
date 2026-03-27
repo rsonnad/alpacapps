@@ -146,8 +146,7 @@
   <div class="tab" data-tab="assign">🏠 Spaces</div>
 </div>
 <div class="poll-bar">
-  <span id="versionBadge" style="font-size:10px;color:var(--muted);font-weight:600">—</span>
-  <span style="color:var(--border)">|</span>
+  <span id="versionBadge" style="font-size:11px;color:var(--accent);font-weight:700;background:var(--bg);padding:1px 6px;border-radius:4px">loading…</span>
   <span class="poll-text" id="pollStatus">Loading...</span>
   <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">↻ Refresh</button>
 </div>
@@ -354,11 +353,16 @@ document.addEventListener('keydown', e => {
 
 // ============ VERSION ============
 async function loadVersion() {
+  const el = document.getElementById('versionBadge');
   try {
     const r = await fetch('/version.json?_=' + Date.now());
+    if (!r.ok) { el.textContent = 'v?.??'; return; }
     const v = await r.json();
-    document.getElementById('versionBadge').textContent = v.version || '—';
-  } catch { /* silent */ }
+    el.textContent = v.version || 'v?.??';
+  } catch (e) {
+    el.textContent = 'v-err';
+    console.warn('[version]', e);
+  }
 }
 
 // ============ INIT ============
@@ -428,13 +432,15 @@ function render() {
 
 // --- TRIAGE ---
 function renderTriage() {
-  const unavail = allDevices.filter(d => getDeviceStatus(d) !== 'online' && !d.is_group);
+  const confirmed = allDevices.filter(d => getDeviceStatus(d) === 'unavailable' && !d.is_group);
+  const untested = allDevices.filter(d => getDeviceStatus(d) === 'untested' && !d.is_group);
   const done = Object.keys(triageResults).length;
+  const unavail = confirmed; // only show confirmed-unavailable in triage list
 
   document.getElementById('triageStats').innerHTML = `
-    <div class="stat"><div class="stat-num offline">${unavail.length}</div><div class="stat-label">Offline</div></div>
+    <div class="stat"><div class="stat-num offline">${confirmed.length}</div><div class="stat-label">Offline</div></div>
+    <div class="stat"><div class="stat-num total">${untested.length}</div><div class="stat-label">Untested</div></div>
     <div class="stat"><div class="stat-num online">${done}</div><div class="stat-label">Triaged</div></div>
-    <div class="stat"><div class="stat-num total">${unavail.length - done}</div><div class="stat-label">Remaining</div></div>
   `;
 
   // Group by inferred location
