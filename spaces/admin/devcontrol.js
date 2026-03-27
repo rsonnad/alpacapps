@@ -911,18 +911,10 @@ async function loadBackups() {
     ${rest.length ? `<button class="dc-bk-more-btn" onclick="var b=document.getElementById('${moreId}');var s=b.style.display==='none';b.style.display=s?'':'none';this.textContent=s?'show less':'+ ${rest.length} more'">+ ${rest.length} more</button>` : ''}`;
   }
 
-  // RVAULT20: one row per service per backup run
-  const rvaultSvcs = [
-    { key: 'supabase', label: 'Supabase DB',   folder: 'db'     },
-    { key: 'r2',       label: 'Cloudflare R2',  folder: 'r2'     },
-    { key: 'd1',       label: 'Cloudflare D1',  folder: 'd1'     },
-    { key: 'github',   label: 'GitHub Repo',    folder: 'github' },
-  ];
-  const rvaultRows = [];
-  logs.filter(l => l.backup_type === 'full-to-rvault').forEach(l => {
-    const det = l.details || {};
-    rvaultSvcs.forEach(svc => {
-      const s = det[svc.key];
+  // Build per-service rows from backup_logs for a given svc key
+  function rvaultRowsFor(key, folder) {
+    return logs.filter(l => l.backup_type === 'full-to-rvault').map(l => {
+      const s = (l.details || {})[key];
       const statusBadge = !s ? badge('no data','#aaa','#f5f5f5') :
         s.status === 'success' ? badge('success','#2e7d32','#e8f5e9') :
         badge('error','#c62828','#ffebee');
@@ -931,18 +923,17 @@ async function loadBackups() {
       if (detail && typeof detail === 'string') detailStr = esc(detail);
       else if (detail?.files != null) detailStr = `${detail.files} files`;
       else if (detail?.commits != null) detailStr = `${detail.commits} commits`;
-      const size = detail?.size || (svc.key === 'supabase' && det.total_size ? det.total_size : '') || '—';
-      const folder = `/Volumes/RVAULT20/backups/alpacapps/${svc.folder}/`;
-      rvaultRows.push(`<tr>
+      const size = esc(detail?.size || (key === 'supabase' && (l.details||{}).total_size ? (l.details||{}).total_size : '') || '—');
+      const folderPath = `/Volumes/RVAULT20/backups/alpacapps/${folder}/`;
+      return `<tr>
         <td style="white-space:nowrap">${esc(fmtShort(l.created_at))}</td>
-        <td style="font-weight:500">${esc(svc.label)}</td>
         <td>${statusBadge}</td>
         <td style="color:var(--text-muted,#888)">${detailStr}</td>
-        <td>${esc(size)}</td>
-        <td><a href="file://${folder}" style="font-size:0.75rem;color:var(--accent,#b8a88a)" title="${folder}">📂 open folder</a></td>
-      </tr>`);
+        <td>${size}</td>
+        <td><a href="file://${folderPath}" style="font-size:0.75rem;color:var(--accent,#b8a88a)" title="${folderPath}">📂 open</a></td>
+      </tr>`;
     });
-  });
+  }
 
   // HAOS: one row per backup snapshot
   const haosRows = haosBackups.map(b => {
@@ -964,7 +955,6 @@ async function loadBackups() {
     </tr>`;
   });
 
-  // Helper to build one full service block (service → schedule → backups stacked)
   function serviceBlock(dotClass, name, desc, meta, freq, next, backupsHtml) {
     return `<div class="dc-bk-service">
       <div class="dc-bk-section">
@@ -992,34 +982,66 @@ async function loadBackups() {
     </div>`;
   }
 
+  function link(href, label) {
+    return `<a href="${href}" target="_blank" style="color:var(--accent,#b8a88a);text-decoration:none;font-size:0.75rem;">${label}</a>`;
+  }
+
+  const instCols = ['When','Status','Detail','Size','Location'];
+
   panel.innerHTML = `
     <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Backups</h2>
     <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.5rem;">Automated backups across infrastructure services.</p>
 
     <div class="dc-bk-list">
-      ${serviceBlock(
-        'active', 'RVAULT20',
-        'Supabase DB &nbsp;·&nbsp; Cloudflare R2 &nbsp;·&nbsp; Cloudflare D1 &nbsp;·&nbsp; GitHub repo',
-        '/Volumes/RVAULT20/backups/alpacapps/ &nbsp;·&nbsp; Cron on Almaca &nbsp;·&nbsp; 12 DB dumps, 12 D1 exports, full R2, bare Git',
+
+      ${serviceBlock('active', 'Supabase DB',
+        'Full database dump of the AlpacApps Supabase project — all tables, data, schemas, and RLS policies',
+        `/Volumes/RVAULT20/backups/alpacapps/db/ &nbsp;·&nbsp; 12 rolling dumps &nbsp;·&nbsp; Cron on Almaca
+         &nbsp;·&nbsp; ${link('https://supabase.com/dashboard/project/aphrrfprbixmhissnjfn','Supabase dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(['When','Service','Status','Detail','Size','Location'], rvaultRows, 'rvault')
+        instanceTable(instCols, rvaultRowsFor('supabase','db'), 'supabase')
+      )}
+
+      ${serviceBlock('active', 'Cloudflare R2',
+        'Full mirror of the alpacapps R2 bucket — uploaded images, attachments, and media files',
+        `/Volumes/RVAULT20/backups/alpacapps/r2/ &nbsp;·&nbsp; Full mirror retained &nbsp;·&nbsp; Cron on Almaca
+         &nbsp;·&nbsp; ${link('https://dash.cloudflare.com','Cloudflare dashboard ↗')}`,
+        'Every Monday at 1:00 AM CT', nextRvault,
+        instanceTable(instCols, rvaultRowsFor('r2','r2'), 'r2')
+      )}
+
+      ${serviceBlock('active', 'Cloudflare D1',
+        'Export of the claude-sessions D1 database — all Claude conversation session records',
+        `/Volumes/RVAULT20/backups/alpacapps/d1/ &nbsp;·&nbsp; 12 rolling exports &nbsp;·&nbsp; Cron on Almaca
+         &nbsp;·&nbsp; ${link('https://dash.cloudflare.com','Cloudflare dashboard ↗')}`,
+        'Every Monday at 1:00 AM CT', nextRvault,
+        instanceTable(instCols, rvaultRowsFor('d1','d1'), 'd1')
+      )}
+
+      ${serviceBlock('active', 'GitHub Repo',
+        'Bare mirror of the rsonnad/alpacapps repository — all branches, tags, and full commit history',
+        `/Volumes/RVAULT20/backups/alpacapps/github/ &nbsp;·&nbsp; Cron on Almaca
+         &nbsp;·&nbsp; ${link('https://github.com/rsonnad/alpacapps','github.com/rsonnad/alpacapps ↗')}`,
+        'Every Monday at 1:00 AM CT', nextRvault,
+        instanceTable(instCols, rvaultRowsFor('github','github'), 'github')
       )}
 
       ${serviceBlock(
         haosBackups.length ? 'active' : 'pending', 'Home Assistant',
-        'HAOS snapshots &nbsp;·&nbsp; configs, automations, add-ons',
-        'HAOS VM (192.168.1.39) &nbsp;·&nbsp; synced to Supabase &nbsp;·&nbsp; Cron on Alpuca (192.168.1.200)',
+        'Application-level snapshots — automations, integrations, add-on configs, entity registry, and history',
+        `HAOS VM (192.168.1.39) → synced to Supabase &nbsp;·&nbsp; Cron on Alpuca (192.168.1.200)
+         &nbsp;·&nbsp; ${link('http://192.168.1.39:8123','HA UI ↗ (LAN only)')}`,
         'Daily at 2:00 AM CT', nextHaosApp,
         instanceTable(['When','Name','Type','Size','Contents','Exists'], haosRows, 'haos')
       )}
 
-      ${serviceBlock(
-        'active', 'HAOS VM Image',
-        'Raw QEMU disk image of the Home Assistant virtual machine',
-        '/Volumes/RVAULT20/backups/haos/ &nbsp;·&nbsp; Cron on Alpuca &nbsp;·&nbsp; 7-day retention &nbsp;·&nbsp; haos_generic-aarch64.img',
+      ${serviceBlock('active', 'HAOS VM Image',
+        'Raw QEMU disk image of the entire Home Assistant OS virtual machine — bootable full system recovery',
+        `/Volumes/RVAULT20/backups/haos/ &nbsp;·&nbsp; 7-day retention &nbsp;·&nbsp; haos_generic-aarch64.img &nbsp;·&nbsp; Cron on Alpuca`,
         'Daily at 3:17 AM CT', nextHaosVm,
         `<span class="dc-bk-none">Raw disk copy — no per-instance tracking in database</span>`
       )}
+
     </div>`;
 }
 
