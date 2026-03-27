@@ -136,6 +136,28 @@
     .color-swatch:active { transform: scale(0.9); }
     .color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px rgba(0,0,0,0.2); }
 
+    /* Strip control rows */
+    .ctrl-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .ctrl-row label { font-size: 12px; font-weight: 600; color: var(--muted); min-width: 60px; }
+    .ctrl-row input[type=range] { flex: 1; min-width: 100px; accent-color: var(--accent); }
+    .ctrl-row .val { font-size: 12px; font-weight: 700; min-width: 40px; text-align: right; }
+    .toggle-btn { padding: 6px 14px; border-radius: 6px; border: 1.5px solid var(--border); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; background: #fff; }
+    .toggle-btn:active { transform: scale(0.95); }
+    .toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .music-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; margin-bottom: 12px; }
+    .music-btn { background: var(--card); border: 2px solid var(--border); border-radius: 8px; padding: 10px 6px; text-align: center; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); }
+    .music-btn:active { transform: scale(0.95); }
+    .music-btn.active { border-color: #e040fb; background: linear-gradient(135deg, #fce4ec, #f3e5f5); }
+    .music-btn .music-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+    .segment-strip { display: flex; gap: 2px; margin-bottom: 12px; border-radius: 8px; overflow: hidden; }
+    .segment-cell { flex: 1; height: 40px; cursor: pointer; transition: all 0.15s; position: relative; }
+    .segment-cell:hover { transform: scaleY(1.15); z-index: 1; }
+    .segment-cell.selected { box-shadow: 0 0 0 2px var(--text); z-index: 2; }
+    .color-picker-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .color-picker-row input[type=color] { width: 44px; height: 36px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; padding: 2px; }
+    .section-card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
     /* Loading */
     .loading { text-align: center; padding: 40px; color: var(--muted); }
     .loading .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
@@ -195,21 +217,78 @@
   <div class="tab-content" id="tab-strip">
     <div class="ha-status" id="stripStatus">Loading strip light...</div>
 
-    <!-- Power + Brightness -->
-    <div class="strip-controls">
-      <button class="strip-power off" id="stripPower" onclick="toggleStripPower()">⏻ OFF</button>
-      <label>Brightness</label>
-      <input type="range" id="stripBrightness" min="1" max="100" value="78" oninput="setStripBrightness(this.value)">
-      <span id="brightnessVal" style="font-size:13px;font-weight:600;min-width:35px">78%</span>
+    <!-- Power + Brightness + Gradient -->
+    <div class="section-card">
+      <div class="strip-controls">
+        <button class="strip-power off" id="stripPower" onclick="toggleStripPower()">⏻ OFF</button>
+        <button class="toggle-btn" id="gradientBtn" onclick="toggleGradient()">Gradient</button>
+      </div>
+      <div class="ctrl-row">
+        <label>Brightness</label>
+        <input type="range" id="stripBrightness" min="1" max="100" value="78" oninput="setStripBrightness(this.value)">
+        <span class="val" id="brightnessVal">78%</span>
+      </div>
+      <div class="ctrl-row">
+        <label>Color Temp</label>
+        <input type="range" id="colorTemp" min="2000" max="9000" value="4500" oninput="setColorTemp(this.value)">
+        <span class="val" id="colorTempVal">4500K</span>
+      </div>
     </div>
 
     <!-- Scenes -->
-    <div class="location-header">🎬 Light Scenes</div>
-    <div class="effects-grid" id="scenesGrid"><div class="loading"><div class="spinner"></div>Loading scenes...</div></div>
+    <div class="section-card">
+      <div class="section-title">🎬 Light Scenes</div>
+      <div class="effects-grid" id="scenesGrid"><div class="loading"><div class="spinner"></div>Loading scenes...</div></div>
+    </div>
 
-    <!-- Solid Colors -->
-    <div class="location-header">🎨 Solid Colors</div>
-    <div class="color-row" id="solidColors"></div>
+    <!-- Solid Colors + Custom Picker -->
+    <div class="section-card">
+      <div class="section-title">🎨 Solid Colors</div>
+      <div class="color-row" id="solidColors"></div>
+      <div class="color-picker-row">
+        <input type="color" id="customColor" value="#ff6600" onchange="applyCustomColor(this.value)">
+        <span style="font-size:12px;color:var(--muted)">Custom color — pick any color</span>
+      </div>
+    </div>
+
+    <!-- Per-Segment Control -->
+    <div class="section-card">
+      <div class="section-title">🌈 Segment Control <span style="font-weight:400;font-size:11px;text-transform:none">(15 segments — tap to select, then pick color)</span></div>
+      <div class="segment-strip" id="segmentStrip"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="toggle-btn" onclick="selectAllSegments()">Select All</button>
+        <button class="toggle-btn" onclick="clearSegmentSelection()">Clear</button>
+        <button class="toggle-btn" onclick="applyRainbow()">🌈 Rainbow</button>
+        <input type="color" id="segmentColor" value="#ff0000" onchange="applySegmentColor(this.value)">
+      </div>
+      <div class="ctrl-row">
+        <label>Seg Bright</label>
+        <input type="range" id="segBrightness" min="0" max="100" value="100" oninput="setSegmentBrightness(this.value)">
+        <span class="val" id="segBrightVal">100%</span>
+      </div>
+    </div>
+
+    <!-- Music Mode -->
+    <div class="section-card">
+      <div class="section-title">🎵 Music Mode</div>
+      <div class="music-grid" id="musicGrid"></div>
+      <div class="ctrl-row">
+        <label>Sensitivity</label>
+        <input type="range" id="musicSensitivity" min="0" max="100" value="50" oninput="setMusicSensitivity(this.value)">
+        <span class="val" id="musicSensVal">50%</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button class="toggle-btn" id="musicAutoColor" onclick="toggleMusicAutoColor()">Auto Color</button>
+        <input type="color" id="musicColor" value="#ff00ff" style="width:36px;height:28px;border-radius:6px;border:1.5px solid var(--border);cursor:pointer">
+        <span style="font-size:11px;color:var(--muted)">Manual color (when auto off)</span>
+      </div>
+    </div>
+
+    <!-- Snapshot -->
+    <div class="section-card" id="snapshotSection" style="display:none">
+      <div class="section-title">📸 Saved Snapshots</div>
+      <div id="snapshotList"></div>
+    </div>
   </div>
 
   <!-- SPACE ASSIGNMENT TAB -->
@@ -847,6 +926,12 @@ const STRIP_SKU = 'H619E';
 let stripScenes = [];
 let currentSceneName = null;
 let stripIsOn = false;
+let gradientOn = false;
+let activeMusicMode = null;
+let musicAutoColor = true;
+let selectedSegments = new Set();
+let segmentColors = Array(15).fill('#888888');
+let snapshots = [];
 
 const SCENE_ICONS = {
   'Sunrise': '🌅', 'Sunset': '🌇', 'Afternoon': '☀️', 'Candlelight': '🕯️',
@@ -903,11 +988,29 @@ async function stripControl(capability) {
   return goveeApi('controlDevice', { device: STRIP_DEVICE, sku: STRIP_SKU, capability });
 }
 
+const MUSIC_MODES = [
+  { name: 'Energic', value: 1, icon: '⚡' },
+  { name: 'Rhythm', value: 2, icon: '🥁' },
+  { name: 'Spectrum', value: 3, icon: '🌊' },
+  { name: 'Rolling', value: 4, icon: '🎢' },
+  { name: 'Separation', value: 5, icon: '🔀' },
+  { name: 'Hopping', value: 6, icon: '🐇' },
+  { name: 'PianoKeys', value: 7, icon: '🎹' },
+  { name: 'Fountain', value: 8, icon: '⛲' },
+  { name: 'DayAndNight', value: 9, icon: '🌗' },
+  { name: 'Sprouting', value: 10, icon: '🌱' },
+  { name: 'Shiny', value: 11, icon: '✨' },
+];
+
 async function initStrip() {
   const statusEl = document.getElementById('stripStatus');
   try {
-    // Fetch current state
-    const state = await goveeApi('getDeviceState', { device: STRIP_DEVICE, sku: STRIP_SKU });
+    // Fetch current state + scenes in parallel
+    const [state, scenesData] = await Promise.all([
+      goveeApi('getDeviceState', { device: STRIP_DEVICE, sku: STRIP_SKU }),
+      goveeApi('getScenes', { device: STRIP_DEVICE, sku: STRIP_SKU }),
+    ]);
+
     const caps = state?.payload?.capabilities || [];
     for (const c of caps) {
       if (c.instance === 'powerSwitch') stripIsOn = c.state?.value === 1;
@@ -916,15 +1019,26 @@ async function initStrip() {
         document.getElementById('stripBrightness').value = b;
         document.getElementById('brightnessVal').textContent = b + '%';
       }
+      if (c.instance === 'colorTemperatureK' && c.state?.value) {
+        document.getElementById('colorTemp').value = c.state.value;
+        document.getElementById('colorTempVal').textContent = c.state.value + 'K';
+      }
+      if (c.instance === 'colorRgb' && c.state?.value) {
+        const rgb = c.state.value;
+        const hex = '#' + rgb.toString(16).padStart(6, '0');
+        document.getElementById('customColor').value = hex;
+      }
+      if (c.instance === 'gradientToggle') {
+        gradientOn = c.state?.value === 1;
+      }
     }
+
+    stripScenes = scenesData?.scenes || [];
     updatePowerBtn();
 
-    // Fetch scenes
-    const scenesData = await goveeApi('getScenes', { device: STRIP_DEVICE, sku: STRIP_SKU });
-    stripScenes = scenesData?.scenes || [];
-
     statusEl.className = 'ha-status connected';
-    statusEl.textContent = `✅ Connected — ${stripScenes.length} scenes available`;
+    const capCount = [stripScenes.length + ' scenes', '11 music modes', '15 segments', 'color temp'].join(' · ');
+    statusEl.textContent = `✅ Connected — ${capCount}`;
     renderStripUI();
   } catch (e) {
     statusEl.className = 'ha-status error';
@@ -936,6 +1050,8 @@ function updatePowerBtn() {
   const btn = document.getElementById('stripPower');
   btn.className = stripIsOn ? 'strip-power on' : 'strip-power off';
   btn.textContent = stripIsOn ? '⏻ ON' : '⏻ OFF';
+  const gBtn = document.getElementById('gradientBtn');
+  if (gBtn) gBtn.className = 'toggle-btn' + (gradientOn ? ' active' : '');
 }
 
 function renderStripUI() {
@@ -959,6 +1075,24 @@ function renderStripUI() {
   document.getElementById('solidColors').innerHTML = SOLID_COLORS.map(c =>
     `<div class="color-swatch" style="background:${c.hex}" title="${c.name}" onclick="setSolidColor(${c.r},${c.g},${c.b})"></div>`
   ).join('');
+
+  // Segment strip
+  const segStrip = document.getElementById('segmentStrip');
+  segStrip.innerHTML = segmentColors.map((c, i) =>
+    `<div class="segment-cell ${selectedSegments.has(i) ? 'selected' : ''}" style="background:${c}" onclick="toggleSegment(${i})" title="Segment ${i+1}"></div>`
+  ).join('');
+
+  // Music modes
+  const musicGrid = document.getElementById('musicGrid');
+  musicGrid.innerHTML = MUSIC_MODES.map(m =>
+    `<div class="music-btn ${activeMusicMode === m.value ? 'active' : ''}" onclick="setMusicMode(${m.value})">
+      <span class="music-icon">${m.icon}</span>${m.name}
+    </div>`
+  ).join('');
+
+  // Music auto color btn
+  const acBtn = document.getElementById('musicAutoColor');
+  if (acBtn) acBtn.className = 'toggle-btn' + (musicAutoColor ? ' active' : '');
 }
 
 window.setScene = async function(name) {
@@ -1015,19 +1149,212 @@ window.setStripBrightness = function(val) {
 
 window.setSolidColor = async function(r, g, b) {
   currentSceneName = null;
+  activeMusicMode = null;
   renderStripUI();
   try {
+    const rgbInt = (r << 16) | (g << 8) | b;
     await stripControl({
       type: 'devices.capabilities.color_setting',
       instance: 'colorRgb',
-      value: { r, g, b }
+      value: rgbInt
     });
     stripIsOn = true;
     updatePowerBtn();
-    showToast(`Color set to RGB(${r},${g},${b})`, 'success');
+    document.getElementById('customColor').value = '#' + rgbInt.toString(16).padStart(6, '0');
+    showToast(`Color set`, 'success');
   } catch (e) {
     showToast(`Error: ${e.message}`, 'error');
   }
+};
+
+// --- Color Temperature ---
+window.setColorTemp = function(val) {
+  document.getElementById('colorTempVal').textContent = val + 'K';
+  clearTimeout(window._tempTimer);
+  window._tempTimer = setTimeout(async () => {
+    try {
+      currentSceneName = null;
+      activeMusicMode = null;
+      renderStripUI();
+      await stripControl({
+        type: 'devices.capabilities.color_setting',
+        instance: 'colorTemperatureK',
+        value: parseInt(val)
+      });
+    } catch (e) {
+      showToast(`Temp error: ${e.message}`, 'error');
+    }
+  }, 400);
+};
+
+// --- Custom Color Picker ---
+window.applyCustomColor = function(hex) {
+  const r = parseInt(hex.substr(1,2), 16);
+  const g = parseInt(hex.substr(3,2), 16);
+  const b = parseInt(hex.substr(5,2), 16);
+  setSolidColor(r, g, b);
+};
+
+// --- Gradient Toggle ---
+window.toggleGradient = async function() {
+  gradientOn = !gradientOn;
+  updatePowerBtn();
+  try {
+    await stripControl({
+      type: 'devices.capabilities.toggle',
+      instance: 'gradientToggle',
+      value: gradientOn ? 1 : 0
+    });
+    showToast(`Gradient ${gradientOn ? 'ON' : 'OFF'}`, 'success');
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
+  }
+};
+
+// --- Segment Controls ---
+window.toggleSegment = function(i) {
+  if (selectedSegments.has(i)) selectedSegments.delete(i);
+  else selectedSegments.add(i);
+  renderStripUI();
+};
+
+window.selectAllSegments = function() {
+  for (let i = 0; i < 15; i++) selectedSegments.add(i);
+  renderStripUI();
+};
+
+window.clearSegmentSelection = function() {
+  selectedSegments.clear();
+  renderStripUI();
+};
+
+window.applySegmentColor = async function(hex) {
+  if (selectedSegments.size === 0) { showToast('Select segments first', 'error'); return; }
+  const r = parseInt(hex.substr(1,2), 16);
+  const g = parseInt(hex.substr(3,2), 16);
+  const b = parseInt(hex.substr(5,2), 16);
+  const rgbInt = (r << 16) | (g << 8) | b;
+  const segs = [...selectedSegments];
+  // Update local colors
+  segs.forEach(i => segmentColors[i] = hex);
+  renderStripUI();
+  try {
+    await stripControl({
+      type: 'devices.capabilities.segment_color_setting',
+      instance: 'segmentedColorRgb',
+      value: { segment: segs, rgb: rgbInt }
+    });
+    stripIsOn = true;
+    updatePowerBtn();
+    showToast(`${segs.length} segment${segs.length > 1 ? 's' : ''} colored`, 'success');
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
+  }
+};
+
+window.setSegmentBrightness = function(val) {
+  document.getElementById('segBrightVal').textContent = val + '%';
+  clearTimeout(window._segBrightTimer);
+  window._segBrightTimer = setTimeout(async () => {
+    if (selectedSegments.size === 0) { showToast('Select segments first', 'error'); return; }
+    try {
+      await stripControl({
+        type: 'devices.capabilities.segment_color_setting',
+        instance: 'segmentedBrightness',
+        value: { segment: [...selectedSegments], brightness: parseInt(val) }
+      });
+    } catch (e) {
+      showToast(`Error: ${e.message}`, 'error');
+    }
+  }, 400);
+};
+
+window.applyRainbow = async function() {
+  const hues = Array.from({length: 15}, (_, i) => i * 24); // 0-336 degrees
+  showToast('Applying rainbow...', '');
+  for (let i = 0; i < 15; i++) {
+    const h = hues[i] / 360;
+    const [r, g, b] = hslToRgb(h, 1, 0.5);
+    segmentColors[i] = '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+  }
+  renderStripUI();
+  try {
+    // Send all 15 segments — batch by color to reduce API calls
+    for (let i = 0; i < 15; i++) {
+      const hex = segmentColors[i];
+      const r = parseInt(hex.substr(1,2), 16);
+      const g = parseInt(hex.substr(3,2), 16);
+      const b = parseInt(hex.substr(5,2), 16);
+      await stripControl({
+        type: 'devices.capabilities.segment_color_setting',
+        instance: 'segmentedColorRgb',
+        value: { segment: [i], rgb: (r << 16) | (g << 8) | b }
+      });
+    }
+    stripIsOn = true;
+    updatePowerBtn();
+    showToast('Rainbow applied!', 'success');
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
+  }
+};
+
+function hslToRgb(h, s, l) {
+  let r, g, b;
+  if (s === 0) { r = g = b = l; }
+  else {
+    const hue2rgb = (p, q, t) => { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1/6) return p + (q - p) * 6 * t; if (t < 1/2) return q; if (t < 2/3) return p + (q - p) * (2/3 - t) * 6; return p; };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
+// --- Music Mode ---
+window.setMusicMode = async function(mode) {
+  activeMusicMode = mode;
+  currentSceneName = null;
+  renderStripUI();
+  const sensitivity = parseInt(document.getElementById('musicSensitivity').value);
+  const value = { musicMode: mode, sensitivity, autoColor: musicAutoColor ? 1 : 0 };
+  if (!musicAutoColor) {
+    const hex = document.getElementById('musicColor').value;
+    const r = parseInt(hex.substr(1,2), 16);
+    const g = parseInt(hex.substr(3,2), 16);
+    const b = parseInt(hex.substr(5,2), 16);
+    value.rgb = (r << 16) | (g << 8) | b;
+  }
+  try {
+    await stripControl({
+      type: 'devices.capabilities.music_setting',
+      instance: 'musicMode',
+      value
+    });
+    stripIsOn = true;
+    updatePowerBtn();
+    const modeName = MUSIC_MODES.find(m => m.value === mode)?.name || mode;
+    showToast(`Music: ${modeName}`, 'success');
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
+  }
+};
+
+window.setMusicSensitivity = function(val) {
+  document.getElementById('musicSensVal').textContent = val + '%';
+  // Re-apply if music mode active
+  if (activeMusicMode) {
+    clearTimeout(window._musicSensTimer);
+    window._musicSensTimer = setTimeout(() => setMusicMode(activeMusicMode), 500);
+  }
+};
+
+window.toggleMusicAutoColor = function() {
+  musicAutoColor = !musicAutoColor;
+  renderStripUI();
+  if (activeMusicMode) setMusicMode(activeMusicMode);
 };
 
 function showToast(msg, type = '') {
