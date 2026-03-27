@@ -1,12 +1,12 @@
 {
-  "version": "v260327.18 2:25p",
-  "release": 1064,
-  "sha": "e736c4925",
-  "fullSha": "e736c492561257d2ed3e0d9cdbee77bf447fa0e7",
+  "version": "v260327.19 2:26p",
+  "release": 1065,
+  "sha": "539250441",
+  "fullSha": "539250441947c884dd442983a6465e63310b1d36",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 19:25:20+00",
-  "commits": [{"sha":"e736c4925","message":"feat: expand alpaca facts from 30 to 58 with history, genetics, Peru, science","author":"Claude"}]
+  "pushedAt": "2026-03-27 19:26:54+00",
+  "commits": [{"sha":"539250441","message":"fix: start alpaca facts at random index and merge DB facts with fallbacks","author":"Claude"}]
 }
