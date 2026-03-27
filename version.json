@@ -1,12 +1,12 @@
 {
-  "version": "v260327.11 12:07p",
-  "release": 1057,
-  "sha": "001762ddd",
-  "fullSha": "001762ddd267ed626c14020b4e4211bde46003aa",
+  "version": "v260327.12 12:14p",
+  "release": 1058,
+  "sha": "b711d0703",
+  "fullSha": "b711d07031e5faee96d190388aec32df273a5e2c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 17:07:20+00",
-  "commits": [{"sha":"001762ddd","message":"feat: add HAOS backups + schedule display to devcontrol backup page","author":"Paca"}]
+  "pushedAt": "2026-03-27 17:14:39+00",
+  "commits": [{"sha":"b711d0703","message":"fix: replace broken UniFi iframe with custom network dashboard + fix video thumbnails","author":"Claude"}]
 }
