@@ -1,12 +1,12 @@
 {
-  "version": "v260327.32 3:30p",
-  "release": 1078,
-  "sha": "618a257ad",
-  "fullSha": "618a257ad87c33f0b62ca14f527353c076955a36",
+  "version": "v260327.33 3:33p",
+  "release": 1079,
+  "sha": "f5da9005d",
+  "fullSha": "f5da9005d4869ec8aef1d40e3684e0e5209052f7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 20:30:59+00",
-  "commits": [{"sha":"618a257ad","message":"feat: add Backup Now button + show full paths as copyable location names","author":"Paca"}]
+  "pushedAt": "2026-03-27 20:33:25+00",
+  "commits": [{"sha":"f5da9005d","message":"docs: add hallway kiosk tablet section to HOMEAUTOMATION.md","author":"Claude"}]
 }
