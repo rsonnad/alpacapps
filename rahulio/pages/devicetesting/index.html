@@ -193,38 +193,23 @@
 
   <!-- STRIP LIGHT TAB -->
   <div class="tab-content" id="tab-strip">
-    <div class="ha-status" id="haStatus">Connecting to Home Assistant...</div>
+    <div class="ha-status" id="stripStatus">Loading strip light...</div>
 
     <!-- Power + Brightness -->
     <div class="strip-controls">
       <button class="strip-power off" id="stripPower" onclick="toggleStripPower()">⏻ OFF</button>
       <label>Brightness</label>
-      <input type="range" id="stripBrightness" min="1" max="255" value="200" oninput="setStripBrightness(this.value)">
+      <input type="range" id="stripBrightness" min="1" max="100" value="78" oninput="setStripBrightness(this.value)">
       <span id="brightnessVal" style="font-size:13px;font-weight:600;min-width:35px">78%</span>
     </div>
 
-    <!-- Ambient & Mood -->
-    <div class="location-header">🌅 Ambient & Mood</div>
-    <div class="effects-grid" id="effectsAmbient"></div>
-
-    <!-- Dynamic & Colorful -->
-    <div class="location-header">✨ Dynamic & Colorful</div>
-    <div class="effects-grid" id="effectsDynamic"></div>
-
-    <!-- Calm & Sleep -->
-    <div class="location-header">🌙 Calm & Sleep</div>
-    <div class="effects-grid" id="effectsCalm"></div>
+    <!-- Scenes -->
+    <div class="location-header">🎬 Light Scenes</div>
+    <div class="effects-grid" id="scenesGrid"><div class="loading"><div class="spinner"></div>Loading scenes...</div></div>
 
     <!-- Solid Colors -->
     <div class="location-header">🎨 Solid Colors</div>
     <div class="color-row" id="solidColors"></div>
-
-    <!-- Segment Control -->
-    <div class="location-header">🔧 Per-Segment Rainbow</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="test-btn" style="padding:8px 16px;font-size:13px" onclick="rainbowSegments()">🌈 Apply Rainbow</button>
-      <button class="test-btn" style="padding:8px 16px;font-size:13px" onclick="clearEffect()">✖ Clear Effect (solid white)</button>
-    </div>
   </div>
 
   <!-- SPACE ASSIGNMENT TAB -->
@@ -502,7 +487,7 @@ function setupTabs() {
       document.getElementById('tab-' + t.dataset.tab).classList.add('active');
       if (t.dataset.tab === 'strip' && !haInitDone) {
         haInitDone = true;
-        haAuth().then(() => renderEffects());
+        initStrip();
       }
     });
   });
@@ -856,189 +841,193 @@ function timeAgo(date) {
 
 window.testDevice = testDevice;
 
-// ============ HAOS STRIP LIGHT CONTROL ============
-const HA_URL = 'http://192.168.1.39:8123';
-const HA_ENTITY = 'light.livingroom_strip_light';
-let haToken = null;
-let currentEffect = null;
-let stripState = 'off';
+// ============ STRIP LIGHT CONTROL (via Govee API) ============
+const STRIP_DEVICE = '3A:CF:D4:AD:FC:06:C8:5C';
+const STRIP_SKU = 'H619E';
+let stripScenes = [];
+let currentSceneName = null;
+let stripIsOn = false;
 
-const EFFECTS = {
-  ambient: [
-    { name: 'Sunrise', icon: '🌅', gradient: 'linear-gradient(135deg, #ff6b35, #ffd700)' },
-    { name: 'Sunset', icon: '🌇', gradient: 'linear-gradient(135deg, #ff4500, #8b008b)' },
-    { name: 'Afternoon', icon: '☀️', gradient: 'linear-gradient(135deg, #ffd700, #fffacd)' },
-    { name: 'Candlelight', icon: '🕯️', gradient: 'linear-gradient(135deg, #ff8c00, #ffd700)' },
-    { name: 'Romantic', icon: '💕', gradient: 'linear-gradient(135deg, #ff69b4, #ff1493)' },
-    { name: 'Reading', icon: '📖', gradient: 'linear-gradient(135deg, #fffaf0, #faebd7)' },
-  ],
-  dynamic: [
-    { name: 'Aurora-B', icon: '🌌', gradient: 'linear-gradient(135deg, #00ff87, #60efff, #b366ff)' },
-    { name: 'Universe-B', icon: '🪐', gradient: 'linear-gradient(135deg, #1a0533, #4a0e8f, #00d4ff)' },
-    { name: 'Fire-C', icon: '🔥', gradient: 'linear-gradient(135deg, #ff0000, #ff6600, #ffcc00)' },
-    { name: 'Crossing', icon: '🌊', gradient: 'linear-gradient(135deg, #0077be, #00bfff, #00ff7f)' },
-    { name: 'Halloween-A', icon: '🎃', gradient: 'linear-gradient(135deg, #ff6600, #800080, #000)' },
-    { name: 'Breathe', icon: '💨', gradient: 'linear-gradient(135deg, #87ceeb, #fff, #87ceeb)' },
-    { name: 'Sweet', icon: '🍬', gradient: 'linear-gradient(135deg, #ff69b4, #dda0dd, #87ceeb)' },
-  ],
-  calm: [
-    { name: 'Moonlight-A', icon: '🌙', gradient: 'linear-gradient(135deg, #191970, #4169e1)' },
-    { name: 'Moonlight-B', icon: '🌑', gradient: 'linear-gradient(135deg, #0d1b2a, #1b2838)' },
-    { name: 'Night-A', icon: '🌃', gradient: 'linear-gradient(135deg, #0a0a2a, #1a1a4a)' },
-    { name: 'Leisure-A', icon: '🛋️', gradient: 'linear-gradient(135deg, #e8d5b7, #c9a96e)' },
-    { name: 'Quiet-A', icon: '🤫', gradient: 'linear-gradient(135deg, #2c3e50, #34495e)' },
-    { name: 'Sleep-A', icon: '😴', gradient: 'linear-gradient(135deg, #1a0a2e, #2d1b69)' },
-    { name: 'Sleep-B', icon: '💤', gradient: 'linear-gradient(135deg, #0d0221, #150535)' },
-    { name: 'Longing', icon: '🥺', gradient: 'linear-gradient(135deg, #4a2c6e, #7b4f9e)' },
-    { name: 'Soothing-A', icon: '🧘', gradient: 'linear-gradient(135deg, #2e8b57, #3cb371)' },
-    { name: 'Soothing-B', icon: '🍃', gradient: 'linear-gradient(135deg, #006400, #228b22)' },
-  ]
+const SCENE_ICONS = {
+  'Sunrise': '🌅', 'Sunset': '🌇', 'Afternoon': '☀️', 'Candlelight': '🕯️',
+  'Romantic': '💕', 'Reading': '📖', 'Aurora-B': '🌌', 'Universe-B': '🪐',
+  'Fire-C': '🔥', 'Crossing': '🌊', 'Halloween-A': '🎃', 'Breathe': '💨',
+  'Sweet': '🍬', 'Moonlight-A': '🌙', 'Moonlight-B': '🌑', 'Night-A': '🌃',
+  'Leisure-A': '🛋️', 'Quiet-A': '🤫', 'Sleep-A': '😴', 'Sleep-B': '💤',
+  'Longing': '🥺', 'Soothing-A': '🧘', 'Soothing-B': '🍃',
 };
 
+const SCENE_GRADIENTS = {
+  'Sunrise': 'linear-gradient(135deg, #ff6b35, #ffd700)',
+  'Sunset': 'linear-gradient(135deg, #ff4500, #8b008b)',
+  'Afternoon': 'linear-gradient(135deg, #ffd700, #fffacd)',
+  'Candlelight': 'linear-gradient(135deg, #ff8c00, #ffd700)',
+  'Romantic': 'linear-gradient(135deg, #ff69b4, #ff1493)',
+  'Reading': 'linear-gradient(135deg, #fffaf0, #faebd7)',
+  'Aurora-B': 'linear-gradient(135deg, #00ff87, #60efff, #b366ff)',
+  'Universe-B': 'linear-gradient(135deg, #1a0533, #4a0e8f, #00d4ff)',
+  'Fire-C': 'linear-gradient(135deg, #ff0000, #ff6600, #ffcc00)',
+  'Crossing': 'linear-gradient(135deg, #0077be, #00bfff, #00ff7f)',
+  'Halloween-A': 'linear-gradient(135deg, #ff6600, #800080, #000)',
+  'Breathe': 'linear-gradient(135deg, #87ceeb, #fff, #87ceeb)',
+  'Sweet': 'linear-gradient(135deg, #ff69b4, #dda0dd, #87ceeb)',
+  'Moonlight-A': 'linear-gradient(135deg, #191970, #4169e1)',
+  'Moonlight-B': 'linear-gradient(135deg, #0d1b2a, #1b2838)',
+  'Night-A': 'linear-gradient(135deg, #0a0a2a, #1a1a4a)',
+  'Leisure-A': 'linear-gradient(135deg, #e8d5b7, #c9a96e)',
+  'Quiet-A': 'linear-gradient(135deg, #2c3e50, #34495e)',
+  'Sleep-A': 'linear-gradient(135deg, #1a0a2e, #2d1b69)',
+  'Sleep-B': 'linear-gradient(135deg, #0d0221, #150535)',
+  'Longing': 'linear-gradient(135deg, #4a2c6e, #7b4f9e)',
+  'Soothing-A': 'linear-gradient(135deg, #2e8b57, #3cb371)',
+  'Soothing-B': 'linear-gradient(135deg, #006400, #228b22)',
+};
+
+const DARK_SCENES = ['Moonlight-A','Moonlight-B','Night-A','Universe-B','Sleep-A','Sleep-B','Quiet-A','Halloween-A'];
+
 const SOLID_COLORS = [
-  { name: 'White', rgb: [255,255,255], hex: '#ffffff' },
-  { name: 'Warm', rgb: [255,200,120], hex: '#ffc878' },
-  { name: 'Red', rgb: [255,0,0], hex: '#ff0000' },
-  { name: 'Orange', rgb: [255,120,0], hex: '#ff7800' },
-  { name: 'Yellow', rgb: [255,255,0], hex: '#ffff00' },
-  { name: 'Green', rgb: [0,255,0], hex: '#00ff00' },
-  { name: 'Cyan', rgb: [0,255,255], hex: '#00ffff' },
-  { name: 'Blue', rgb: [0,0,255], hex: '#0000ff' },
-  { name: 'Purple', rgb: [128,0,255], hex: '#8000ff' },
-  { name: 'Pink', rgb: [255,0,180], hex: '#ff00b4' },
-  { name: 'Magenta', rgb: [255,0,255], hex: '#ff00ff' },
+  { name: 'White', r: 255, g: 255, b: 255, hex: '#ffffff' },
+  { name: 'Warm', r: 255, g: 200, b: 120, hex: '#ffc878' },
+  { name: 'Red', r: 255, g: 0, b: 0, hex: '#ff0000' },
+  { name: 'Orange', r: 255, g: 120, b: 0, hex: '#ff7800' },
+  { name: 'Yellow', r: 255, g: 255, b: 0, hex: '#ffff00' },
+  { name: 'Green', r: 0, g: 255, b: 0, hex: '#00ff00' },
+  { name: 'Cyan', r: 0, g: 255, b: 255, hex: '#00ffff' },
+  { name: 'Blue', r: 0, g: 0, b: 255, hex: '#0000ff' },
+  { name: 'Purple', r: 128, g: 0, b: 255, hex: '#8000ff' },
+  { name: 'Pink', r: 255, g: 0, b: 180, hex: '#ff00b4' },
+  { name: 'Magenta', r: 255, g: 0, b: 255, hex: '#ff00ff' },
 ];
 
-async function haAuth() {
+async function stripControl(capability) {
+  return goveeApi('controlDevice', { device: STRIP_DEVICE, sku: STRIP_SKU, capability });
+}
+
+async function initStrip() {
+  const statusEl = document.getElementById('stripStatus');
   try {
-    const flowRes = await fetch(`${HA_URL}/auth/login_flow`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: 'http://homeassistant.local/', handler: ['homeassistant', null], redirect_uri: 'http://homeassistant.local/' })
-    });
-    const { flow_id } = await flowRes.json();
-    const codeRes = await fetch(`${HA_URL}/auth/login_flow/${flow_id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: 'http://homeassistant.local/', username: 'alpacaadmin', password: 'playhouse' })
-    });
-    const { result } = await codeRes.json();
-    const tokenRes = await fetch(`${HA_URL}/auth/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `grant_type=authorization_code&client_id=http://homeassistant.local/&code=${result}`
-    });
-    const { access_token } = await tokenRes.json();
-    haToken = access_token;
-    const statusEl = document.getElementById('haStatus');
+    // Fetch current state
+    const state = await goveeApi('getDeviceState', { device: STRIP_DEVICE, sku: STRIP_SKU });
+    const caps = state?.payload?.capabilities || [];
+    for (const c of caps) {
+      if (c.instance === 'powerSwitch') stripIsOn = c.state?.value === 1;
+      if (c.instance === 'brightness') {
+        const b = c.state?.value || 78;
+        document.getElementById('stripBrightness').value = b;
+        document.getElementById('brightnessVal').textContent = b + '%';
+      }
+    }
+    updatePowerBtn();
+
+    // Fetch scenes
+    const scenesData = await goveeApi('getScenes', { device: STRIP_DEVICE, sku: STRIP_SKU });
+    stripScenes = scenesData?.scenes || [];
+
     statusEl.className = 'ha-status connected';
-    statusEl.textContent = '✅ Connected to Home Assistant (192.168.1.39)';
-    await refreshStripState();
-    return true;
+    statusEl.textContent = `✅ Connected — ${stripScenes.length} scenes available`;
+    renderStripUI();
   } catch (e) {
-    const statusEl = document.getElementById('haStatus');
     statusEl.className = 'ha-status error';
-    statusEl.textContent = `❌ Cannot reach Home Assistant — are you on the LAN? (${e.message})`;
-    return false;
+    statusEl.textContent = `❌ ${e.message}`;
   }
 }
 
-async function haCall(service, data) {
-  const res = await fetch(`${HA_URL}/api/services/${service}`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${haToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  if (res.status === 401) { await haAuth(); return haCall(service, data); }
-  return res;
+function updatePowerBtn() {
+  const btn = document.getElementById('stripPower');
+  btn.className = stripIsOn ? 'strip-power on' : 'strip-power off';
+  btn.textContent = stripIsOn ? '⏻ ON' : '⏻ OFF';
 }
 
-async function refreshStripState() {
-  const res = await fetch(`${HA_URL}/api/states/${HA_ENTITY}`, {
-    headers: { 'Authorization': `Bearer ${haToken}` }
-  });
-  const state = await res.json();
-  stripState = state.state;
-  currentEffect = state.attributes?.effect || null;
-  const brightness = state.attributes?.brightness || 0;
+function renderStripUI() {
+  // Scenes grid
+  const grid = document.getElementById('scenesGrid');
+  grid.innerHTML = stripScenes.map(s => {
+    const icon = SCENE_ICONS[s.name] || '🎬';
+    const gradient = SCENE_GRADIENTS[s.name] || 'linear-gradient(135deg, var(--bg), var(--card))';
+    const isDark = DARK_SCENES.includes(s.name);
+    const isActive = currentSceneName === s.name;
+    const displayName = s.name.replace(/-[A-Z]$/, '');
+    return `<div class="effect-btn ${isActive ? 'active' : ''}"
+         style="background:${gradient};color:${isDark ? '#fff' : 'var(--text)'}"
+         onclick="setScene('${s.name}')">
+      <span class="effect-icon">${icon}</span>
+      <span class="effect-name">${displayName}</span>
+    </div>`;
+  }).join('');
 
-  const powerBtn = document.getElementById('stripPower');
-  if (stripState === 'on') {
-    powerBtn.className = 'strip-power on';
-    powerBtn.textContent = '⏻ ON';
-  } else {
-    powerBtn.className = 'strip-power off';
-    powerBtn.textContent = '⏻ OFF';
-  }
-  document.getElementById('stripBrightness').value = brightness;
-  document.getElementById('brightnessVal').textContent = Math.round(brightness / 255 * 100) + '%';
-  renderEffects();
-}
-
-function renderEffects() {
-  for (const [group, effects] of Object.entries(EFFECTS)) {
-    const container = document.getElementById('effects' + group.charAt(0).toUpperCase() + group.slice(1));
-    container.innerHTML = effects.map(e => `
-      <div class="effect-btn ${currentEffect === e.name ? 'active' : ''}"
-           style="background:${e.gradient};color:${['Moonlight-A','Moonlight-B','Night-A','Universe-B','Sleep-A','Sleep-B','Quiet-A','Halloween-A'].includes(e.name) ? '#fff' : 'var(--text)'}"
-           onclick="setEffect('${e.name}')">
-        <span class="effect-icon">${e.icon}</span>
-        <span class="effect-name">${e.name.replace(/-[A-Z]$/, '')}</span>
-      </div>
-    `).join('');
-  }
-
-  const colorRow = document.getElementById('solidColors');
-  colorRow.innerHTML = SOLID_COLORS.map(c =>
-    `<div class="color-swatch" style="background:${c.hex}" title="${c.name}" onclick="setSolidColor([${c.rgb}])"></div>`
+  // Solid colors
+  document.getElementById('solidColors').innerHTML = SOLID_COLORS.map(c =>
+    `<div class="color-swatch" style="background:${c.hex}" title="${c.name}" onclick="setSolidColor(${c.r},${c.g},${c.b})"></div>`
   ).join('');
 }
 
-window.setEffect = async function(name) {
-  currentEffect = name;
-  renderEffects();
+window.setScene = async function(name) {
+  const scene = stripScenes.find(s => s.name === name);
+  if (!scene) return;
+  currentSceneName = name;
+  renderStripUI();
   showToast(`Setting ${name}...`);
-  await haCall('light/turn_on', { entity_id: HA_ENTITY, effect: name, brightness: parseInt(document.getElementById('stripBrightness').value) });
-  showToast(`${name} active! ✨`, 'success');
+  try {
+    await stripControl({
+      type: 'devices.capabilities.dynamic_scene',
+      instance: 'lightScene',
+      value: scene.value
+    });
+    stripIsOn = true;
+    updatePowerBtn();
+    showToast(`${name} active!`, 'success');
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
+  }
 };
 
 window.toggleStripPower = async function() {
-  const service = stripState === 'on' ? 'light/turn_off' : 'light/turn_on';
-  await haCall(service, { entity_id: HA_ENTITY });
-  await refreshStripState();
-  showToast(stripState === 'on' ? 'Strip ON' : 'Strip OFF', 'success');
+  const newState = stripIsOn ? 0 : 1;
+  try {
+    await stripControl({
+      type: 'devices.capabilities.on_off',
+      instance: 'powerSwitch',
+      value: newState
+    });
+    stripIsOn = !stripIsOn;
+    updatePowerBtn();
+    showToast(stripIsOn ? 'Strip ON' : 'Strip OFF', 'success');
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
+  }
 };
 
-window.setStripBrightness = async function(val) {
-  document.getElementById('brightnessVal').textContent = Math.round(val / 255 * 100) + '%';
+window.setStripBrightness = function(val) {
+  document.getElementById('brightnessVal').textContent = val + '%';
   clearTimeout(window._brightTimer);
   window._brightTimer = setTimeout(async () => {
-    await haCall('light/turn_on', { entity_id: HA_ENTITY, brightness: parseInt(val) });
-  }, 300);
+    try {
+      await stripControl({
+        type: 'devices.capabilities.range',
+        instance: 'brightness',
+        value: parseInt(val)
+      });
+    } catch (e) {
+      showToast(`Brightness error: ${e.message}`, 'error');
+    }
+  }, 400);
 };
 
-window.setSolidColor = async function(rgb) {
-  currentEffect = null;
-  renderEffects();
-  await haCall('light/turn_on', { entity_id: HA_ENTITY, rgb_color: rgb, brightness: parseInt(document.getElementById('stripBrightness').value) });
-  showToast(`Set to RGB(${rgb.join(',')})`, 'success');
-};
-
-window.rainbowSegments = async function() {
-  const colors = [[255,0,0],[255,80,0],[255,160,0],[255,255,0],[128,255,0],[0,255,0],[0,255,128],[0,255,255],[0,128,255],[0,0,255],[80,0,255],[160,0,255],[255,0,255],[255,0,128],[255,0,60]];
-  const brightness = parseInt(document.getElementById('stripBrightness').value);
-  showToast('Applying rainbow to 15 segments...', '');
-  await Promise.all(colors.map((c, i) =>
-    haCall('light/turn_on', { entity_id: `light.livingroom_strip_light_segment_${i+1}`, rgb_color: c, brightness })
-  ));
-  showToast('Rainbow applied! 🌈', 'success');
-};
-
-window.clearEffect = async function() {
-  currentEffect = null;
-  renderEffects();
-  await haCall('light/turn_on', { entity_id: HA_ENTITY, rgb_color: [255,255,255], brightness: parseInt(document.getElementById('stripBrightness').value) });
-  showToast('Cleared to solid white', 'success');
+window.setSolidColor = async function(r, g, b) {
+  currentSceneName = null;
+  renderStripUI();
+  try {
+    await stripControl({
+      type: 'devices.capabilities.color_setting',
+      instance: 'colorRgb',
+      value: { r, g, b }
+    });
+    stripIsOn = true;
+    updatePowerBtn();
+    showToast(`Color set to RGB(${r},${g},${b})`, 'success');
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
+  }
 };
 
 function showToast(msg, type = '') {
