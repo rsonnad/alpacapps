@@ -1,12 +1,12 @@
 {
-  "version": "v260327.05 4:09a",
-  "release": 1051,
-  "sha": "47b73f6eb",
-  "fullSha": "47b73f6eb04949d395d1c78de65ce9de8775f267",
+  "version": "v260327.06 11:23a",
+  "release": 1052,
+  "sha": "31f2bf70d",
+  "fullSha": "31f2bf70db728f0f8674a50efdefbe88e2ff62f0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 09:09:20+00",
-  "commits": [{"sha":"47b73f6eb","message":"feat: add group-level checkboxes to permissions modal","author":"Rahul"}]
+  "pushedAt": "2026-03-27 16:23:34+00",
+  "commits": [{"sha":"31f2bf70d","message":"fix: only show tasks assigned to the user, not all unassigned tasks (#92)","author":"Rahul"}]
 }
