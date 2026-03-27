@@ -109,12 +109,43 @@
   </div>
 
   <!-- Rotation Overlays -->
-  <!-- 1. Network Dashboard (UniFi iframe) -->
+  <!-- 1. Network Health Dashboard (custom, replaces broken UniFi iframe) -->
   <div class="rotation-overlay" id="networkOverlay" style="display:none">
-    <iframe class="rotation-iframe" id="networkIframe"
-            src="about:blank"
-            allow="autoplay"
-            sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+    <div class="net-dashboard">
+      <div class="net-dash-header">
+        <span class="net-dash-icon">&#9678;</span>
+        <h2 class="net-dash-title">Network Health</h2>
+      </div>
+      <div class="net-dash-grid">
+        <!-- Internet Status -->
+        <div class="net-dash-card">
+          <div class="net-dash-card-label">Internet</div>
+          <div class="net-dash-card-value" id="netStatusValue">Checking...</div>
+          <div class="net-dash-card-sub" id="netStatusSub"></div>
+        </div>
+        <!-- Latency -->
+        <div class="net-dash-card">
+          <div class="net-dash-card-label">Latency</div>
+          <div class="net-dash-card-value" id="netLatencyValue">--</div>
+          <div class="net-dash-card-sub" id="netLatencySub"></div>
+        </div>
+        <!-- Connection -->
+        <div class="net-dash-card">
+          <div class="net-dash-card-label">Connection</div>
+          <div class="net-dash-card-value" id="netConnValue">--</div>
+          <div class="net-dash-card-sub" id="netConnSub"></div>
+        </div>
+        <!-- Supabase API -->
+        <div class="net-dash-card">
+          <div class="net-dash-card-label">Supabase API</div>
+          <div class="net-dash-card-value" id="netApiValue">Checking...</div>
+          <div class="net-dash-card-sub" id="netApiSub"></div>
+        </div>
+      </div>
+      <div class="net-dash-footer">
+        <a href="https://192.168.1.1" target="_blank" class="net-dash-unifi-link">Open UniFi Console &#8594;</a>
+      </div>
+    </div>
     <div class="rotation-label">Network Health</div>
   </div>
 

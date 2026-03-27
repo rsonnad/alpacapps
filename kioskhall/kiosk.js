@@ -252,8 +252,7 @@ async function loadGuestbook() {
       let mediaHtml = '';
       if (entry.video_url) {
         mediaHtml = `<div class="guestbook-entry-media">
-          <video class="guestbook-thumb" src="${escapeHtml(entry.video_url)}"
-                 poster="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png"
+          <video class="guestbook-thumb" src="${escapeHtml(entry.video_url)}#t=0.5"
                  controls playsinline preload="metadata"></video>
         </div>`;
       } else if (entry.audio_url) {
@@ -583,20 +582,102 @@ async function checkVersion() {
 }
 
 // =============================================
+// NETWORK HEALTH DASHBOARD
+// =============================================
+async function refreshNetworkDashboard() {
+  // 1. Internet connectivity + latency (ping Supabase health endpoint)
+  const statusEl = document.getElementById('netStatusValue');
+  const statusSub = document.getElementById('netStatusSub');
+  const latencyEl = document.getElementById('netLatencyValue');
+  const latencySub = document.getElementById('netLatencySub');
+  const connEl = document.getElementById('netConnValue');
+  const connSub = document.getElementById('netConnSub');
+  const apiEl = document.getElementById('netApiValue');
+  const apiSub = document.getElementById('netApiSub');
+
+  // Internet check via Supabase health
+  try {
+    const t0 = performance.now();
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(5000),
+    });
+    const latencyMs = Math.round(performance.now() - t0);
+
+    if (resp.ok || resp.status === 401) {
+      statusEl.textContent = 'Online';
+      statusEl.className = 'net-dash-card-value status-good';
+      statusSub.textContent = 'Internet connected';
+
+      latencyEl.textContent = `${latencyMs}ms`;
+      latencyEl.className = 'net-dash-card-value ' + (latencyMs < 200 ? 'status-good' : latencyMs < 500 ? 'status-warn' : 'status-bad');
+      latencySub.textContent = latencyMs < 200 ? 'Excellent' : latencyMs < 500 ? 'Fair' : 'Slow';
+    } else {
+      statusEl.textContent = 'Degraded';
+      statusEl.className = 'net-dash-card-value status-warn';
+      statusSub.textContent = `HTTP ${resp.status}`;
+      latencyEl.textContent = `${latencyMs}ms`;
+      latencyEl.className = 'net-dash-card-value status-warn';
+      latencySub.textContent = '';
+    }
+  } catch (err) {
+    statusEl.textContent = 'Offline';
+    statusEl.className = 'net-dash-card-value status-bad';
+    statusSub.textContent = 'No internet connection';
+    latencyEl.textContent = '--';
+    latencyEl.className = 'net-dash-card-value status-bad';
+    latencySub.textContent = 'Unreachable';
+  }
+
+  // 2. Connection info from navigator.connection
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (conn) {
+    const type = conn.effectiveType ? conn.effectiveType.toUpperCase() : conn.type || 'Unknown';
+    connEl.textContent = type;
+    connEl.className = 'net-dash-card-value ' + (type === '4G' || type === 'WIFI' ? 'status-good' : type === '3G' ? 'status-warn' : '');
+    const parts = [];
+    if (conn.downlink) parts.push(`${conn.downlink} Mbps down`);
+    if (conn.rtt) parts.push(`${conn.rtt}ms RTT`);
+    connSub.textContent = parts.join(' \u2022 ') || conn.type || '';
+  } else {
+    connEl.textContent = 'WiFi';
+    connEl.className = 'net-dash-card-value status-good';
+    connSub.textContent = '';
+  }
+
+  // 3. Supabase API check (actual query)
+  try {
+    const t0 = performance.now();
+    const { data, error } = await supabase.from('guestbook_entries').select('id').limit(1);
+    const ms = Math.round(performance.now() - t0);
+    if (!error) {
+      apiEl.textContent = 'Healthy';
+      apiEl.className = 'net-dash-card-value status-good';
+      apiSub.textContent = `${ms}ms response`;
+    } else {
+      apiEl.textContent = 'Error';
+      apiEl.className = 'net-dash-card-value status-warn';
+      apiSub.textContent = error.message?.slice(0, 40) || '';
+    }
+  } catch (_) {
+    apiEl.textContent = 'Down';
+    apiEl.className = 'net-dash-card-value status-bad';
+    apiSub.textContent = 'Cannot reach API';
+  }
+}
+
+// =============================================
 // 3-VIEW ROTATION: Network (15s) → Slideshow (15s) → Kiosk (15s)
 // Tap any overlay to dismiss → 2 min kiosk before resuming
 // =============================================
 const ROTATION_SECONDS = 15;          // each view shows for 15s
 const TAP_DISMISS_SECONDS = 120;      // 2 min kiosk after user taps
-const UNIFI_DASHBOARD_URL = 'https://192.168.1.1/network/default/dashboard';
-
 // Views cycle: KIOSK → NETWORK → SLIDESHOW → KIOSK → ...
 const ROTATION_VIEWS = ['kiosk', 'network', 'slideshow'];
 let rotationTimer = null;
 let rotationIndex = 0;  // start at kiosk
 let slideshowImages = [];
 let slideshowIndex = 0;
-let networkIframeLoaded = false;
 
 async function loadSlideshowImages() {
   try {
@@ -631,12 +712,7 @@ function showView(viewName) {
   }, 800);
 
   if (viewName === 'network') {
-    // Load iframe on first use
-    if (!networkIframeLoaded) {
-      const iframe = document.getElementById('networkIframe');
-      iframe.src = UNIFI_DASHBOARD_URL;
-      networkIframeLoaded = true;
-    }
+    refreshNetworkDashboard();
     networkOverlay.style.display = '';
     requestAnimationFrame(() => {
       requestAnimationFrame(() => networkOverlay.classList.add('visible'));
