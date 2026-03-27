@@ -115,6 +115,27 @@
     .toast.success { background: var(--success); }
     .toast.error { background: var(--error); }
 
+    /* Strip effects */
+    .effects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 16px; }
+    .effect-btn { background: var(--card); border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); }
+    .effect-btn:active { transform: scale(0.95); }
+    .effect-btn.active { border-color: var(--accent); background: linear-gradient(135deg, #fff5eb, #fff); box-shadow: 0 0 0 2px rgba(212,136,58,0.3); }
+    .effect-btn .effect-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+    .effect-btn .effect-name { display: block; }
+    .strip-controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .strip-controls label { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .strip-controls input[type=range] { flex: 1; min-width: 120px; accent-color: var(--accent); }
+    .strip-power { padding: 8px 16px; border-radius: 8px; border: 2px solid var(--border); font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .strip-power.on { background: var(--success); color: #fff; border-color: var(--success); }
+    .strip-power.off { background: var(--error); color: #fff; border-color: var(--error); }
+    .ha-status { font-size: 12px; padding: 6px 12px; border-radius: 6px; margin-bottom: 12px; }
+    .ha-status.connected { background: #e6f4e0; color: var(--success); }
+    .ha-status.error { background: #fce6e6; color: var(--error); }
+    .color-row { display: flex; gap: 6px; margin-bottom: 12px; }
+    .color-swatch { width: 36px; height: 36px; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: all 0.15s; }
+    .color-swatch:active { transform: scale(0.9); }
+    .color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px rgba(0,0,0,0.2); }
+
     /* Loading */
     .loading { text-align: center; padding: 40px; color: var(--muted); }
     .loading .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
@@ -146,6 +167,7 @@
   <div class="tab active" data-tab="triage">⚠️ Triage</div>
   <div class="tab" data-tab="all">📋 All Devices</div>
   <div class="tab" data-tab="assign">🏠 Spaces</div>
+  <div class="tab" data-tab="strip">🌈 Strip</div>
 </div>
 <div class="poll-bar">
   <span id="versionBadge" style="font-size:11px;color:var(--accent);font-weight:700;background:var(--bg);padding:1px 6px;border-radius:4px">loading…</span>
@@ -167,6 +189,42 @@
     <div class="stats" id="allStats"></div>
     <div class="filter-bar" id="filterBar"></div>
     <div id="allList"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+  </div>
+
+  <!-- STRIP LIGHT TAB -->
+  <div class="tab-content" id="tab-strip">
+    <div class="ha-status" id="haStatus">Connecting to Home Assistant...</div>
+
+    <!-- Power + Brightness -->
+    <div class="strip-controls">
+      <button class="strip-power off" id="stripPower" onclick="toggleStripPower()">⏻ OFF</button>
+      <label>Brightness</label>
+      <input type="range" id="stripBrightness" min="1" max="255" value="200" oninput="setStripBrightness(this.value)">
+      <span id="brightnessVal" style="font-size:13px;font-weight:600;min-width:35px">78%</span>
+    </div>
+
+    <!-- Ambient & Mood -->
+    <div class="location-header">🌅 Ambient & Mood</div>
+    <div class="effects-grid" id="effectsAmbient"></div>
+
+    <!-- Dynamic & Colorful -->
+    <div class="location-header">✨ Dynamic & Colorful</div>
+    <div class="effects-grid" id="effectsDynamic"></div>
+
+    <!-- Calm & Sleep -->
+    <div class="location-header">🌙 Calm & Sleep</div>
+    <div class="effects-grid" id="effectsCalm"></div>
+
+    <!-- Solid Colors -->
+    <div class="location-header">🎨 Solid Colors</div>
+    <div class="color-row" id="solidColors"></div>
+
+    <!-- Segment Control -->
+    <div class="location-header">🔧 Per-Segment Rainbow</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="test-btn" style="padding:8px 16px;font-size:13px" onclick="rainbowSegments()">🌈 Apply Rainbow</button>
+      <button class="test-btn" style="padding:8px 16px;font-size:13px" onclick="clearEffect()">✖ Clear Effect (solid white)</button>
+    </div>
   </div>
 
   <!-- SPACE ASSIGNMENT TAB -->
@@ -434,6 +492,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   startPolling();
 });
 
+let haInitDone = false;
 function setupTabs() {
   document.querySelectorAll('.tab').forEach(t => {
     t.addEventListener('click', () => {
@@ -441,6 +500,10 @@ function setupTabs() {
       document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
       document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+      if (t.dataset.tab === 'strip' && !haInitDone) {
+        haInitDone = true;
+        haAuth().then(() => renderEffects());
+      }
     });
   });
 }
@@ -792,6 +855,191 @@ function timeAgo(date) {
 }
 
 window.testDevice = testDevice;
+
+// ============ HAOS STRIP LIGHT CONTROL ============
+const HA_URL = 'http://192.168.1.39:8123';
+const HA_ENTITY = 'light.livingroom_strip_light';
+let haToken = null;
+let currentEffect = null;
+let stripState = 'off';
+
+const EFFECTS = {
+  ambient: [
+    { name: 'Sunrise', icon: '🌅', gradient: 'linear-gradient(135deg, #ff6b35, #ffd700)' },
+    { name: 'Sunset', icon: '🌇', gradient: 'linear-gradient(135deg, #ff4500, #8b008b)' },
+    { name: 'Afternoon', icon: '☀️', gradient: 'linear-gradient(135deg, #ffd700, #fffacd)' },
+    { name: 'Candlelight', icon: '🕯️', gradient: 'linear-gradient(135deg, #ff8c00, #ffd700)' },
+    { name: 'Romantic', icon: '💕', gradient: 'linear-gradient(135deg, #ff69b4, #ff1493)' },
+    { name: 'Reading', icon: '📖', gradient: 'linear-gradient(135deg, #fffaf0, #faebd7)' },
+  ],
+  dynamic: [
+    { name: 'Aurora-B', icon: '🌌', gradient: 'linear-gradient(135deg, #00ff87, #60efff, #b366ff)' },
+    { name: 'Universe-B', icon: '🪐', gradient: 'linear-gradient(135deg, #1a0533, #4a0e8f, #00d4ff)' },
+    { name: 'Fire-C', icon: '🔥', gradient: 'linear-gradient(135deg, #ff0000, #ff6600, #ffcc00)' },
+    { name: 'Crossing', icon: '🌊', gradient: 'linear-gradient(135deg, #0077be, #00bfff, #00ff7f)' },
+    { name: 'Halloween-A', icon: '🎃', gradient: 'linear-gradient(135deg, #ff6600, #800080, #000)' },
+    { name: 'Breathe', icon: '💨', gradient: 'linear-gradient(135deg, #87ceeb, #fff, #87ceeb)' },
+    { name: 'Sweet', icon: '🍬', gradient: 'linear-gradient(135deg, #ff69b4, #dda0dd, #87ceeb)' },
+  ],
+  calm: [
+    { name: 'Moonlight-A', icon: '🌙', gradient: 'linear-gradient(135deg, #191970, #4169e1)' },
+    { name: 'Moonlight-B', icon: '🌑', gradient: 'linear-gradient(135deg, #0d1b2a, #1b2838)' },
+    { name: 'Night-A', icon: '🌃', gradient: 'linear-gradient(135deg, #0a0a2a, #1a1a4a)' },
+    { name: 'Leisure-A', icon: '🛋️', gradient: 'linear-gradient(135deg, #e8d5b7, #c9a96e)' },
+    { name: 'Quiet-A', icon: '🤫', gradient: 'linear-gradient(135deg, #2c3e50, #34495e)' },
+    { name: 'Sleep-A', icon: '😴', gradient: 'linear-gradient(135deg, #1a0a2e, #2d1b69)' },
+    { name: 'Sleep-B', icon: '💤', gradient: 'linear-gradient(135deg, #0d0221, #150535)' },
+    { name: 'Longing', icon: '🥺', gradient: 'linear-gradient(135deg, #4a2c6e, #7b4f9e)' },
+    { name: 'Soothing-A', icon: '🧘', gradient: 'linear-gradient(135deg, #2e8b57, #3cb371)' },
+    { name: 'Soothing-B', icon: '🍃', gradient: 'linear-gradient(135deg, #006400, #228b22)' },
+  ]
+};
+
+const SOLID_COLORS = [
+  { name: 'White', rgb: [255,255,255], hex: '#ffffff' },
+  { name: 'Warm', rgb: [255,200,120], hex: '#ffc878' },
+  { name: 'Red', rgb: [255,0,0], hex: '#ff0000' },
+  { name: 'Orange', rgb: [255,120,0], hex: '#ff7800' },
+  { name: 'Yellow', rgb: [255,255,0], hex: '#ffff00' },
+  { name: 'Green', rgb: [0,255,0], hex: '#00ff00' },
+  { name: 'Cyan', rgb: [0,255,255], hex: '#00ffff' },
+  { name: 'Blue', rgb: [0,0,255], hex: '#0000ff' },
+  { name: 'Purple', rgb: [128,0,255], hex: '#8000ff' },
+  { name: 'Pink', rgb: [255,0,180], hex: '#ff00b4' },
+  { name: 'Magenta', rgb: [255,0,255], hex: '#ff00ff' },
+];
+
+async function haAuth() {
+  try {
+    const flowRes = await fetch(`${HA_URL}/auth/login_flow`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: 'http://homeassistant.local/', handler: ['homeassistant', null], redirect_uri: 'http://homeassistant.local/' })
+    });
+    const { flow_id } = await flowRes.json();
+    const codeRes = await fetch(`${HA_URL}/auth/login_flow/${flow_id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: 'http://homeassistant.local/', username: 'alpacaadmin', password: 'playhouse' })
+    });
+    const { result } = await codeRes.json();
+    const tokenRes = await fetch(`${HA_URL}/auth/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=authorization_code&client_id=http://homeassistant.local/&code=${result}`
+    });
+    const { access_token } = await tokenRes.json();
+    haToken = access_token;
+    const statusEl = document.getElementById('haStatus');
+    statusEl.className = 'ha-status connected';
+    statusEl.textContent = '✅ Connected to Home Assistant (192.168.1.39)';
+    await refreshStripState();
+    return true;
+  } catch (e) {
+    const statusEl = document.getElementById('haStatus');
+    statusEl.className = 'ha-status error';
+    statusEl.textContent = `❌ Cannot reach Home Assistant — are you on the LAN? (${e.message})`;
+    return false;
+  }
+}
+
+async function haCall(service, data) {
+  const res = await fetch(`${HA_URL}/api/services/${service}`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${haToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (res.status === 401) { await haAuth(); return haCall(service, data); }
+  return res;
+}
+
+async function refreshStripState() {
+  const res = await fetch(`${HA_URL}/api/states/${HA_ENTITY}`, {
+    headers: { 'Authorization': `Bearer ${haToken}` }
+  });
+  const state = await res.json();
+  stripState = state.state;
+  currentEffect = state.attributes?.effect || null;
+  const brightness = state.attributes?.brightness || 0;
+
+  const powerBtn = document.getElementById('stripPower');
+  if (stripState === 'on') {
+    powerBtn.className = 'strip-power on';
+    powerBtn.textContent = '⏻ ON';
+  } else {
+    powerBtn.className = 'strip-power off';
+    powerBtn.textContent = '⏻ OFF';
+  }
+  document.getElementById('stripBrightness').value = brightness;
+  document.getElementById('brightnessVal').textContent = Math.round(brightness / 255 * 100) + '%';
+  renderEffects();
+}
+
+function renderEffects() {
+  for (const [group, effects] of Object.entries(EFFECTS)) {
+    const container = document.getElementById('effects' + group.charAt(0).toUpperCase() + group.slice(1));
+    container.innerHTML = effects.map(e => `
+      <div class="effect-btn ${currentEffect === e.name ? 'active' : ''}"
+           style="background:${e.gradient};color:${['Moonlight-A','Moonlight-B','Night-A','Universe-B','Sleep-A','Sleep-B','Quiet-A','Halloween-A'].includes(e.name) ? '#fff' : 'var(--text)'}"
+           onclick="setEffect('${e.name}')">
+        <span class="effect-icon">${e.icon}</span>
+        <span class="effect-name">${e.name.replace(/-[A-Z]$/, '')}</span>
+      </div>
+    `).join('');
+  }
+
+  const colorRow = document.getElementById('solidColors');
+  colorRow.innerHTML = SOLID_COLORS.map(c =>
+    `<div class="color-swatch" style="background:${c.hex}" title="${c.name}" onclick="setSolidColor([${c.rgb}])"></div>`
+  ).join('');
+}
+
+window.setEffect = async function(name) {
+  currentEffect = name;
+  renderEffects();
+  showToast(`Setting ${name}...`);
+  await haCall('light/turn_on', { entity_id: HA_ENTITY, effect: name, brightness: parseInt(document.getElementById('stripBrightness').value) });
+  showToast(`${name} active! ✨`, 'success');
+};
+
+window.toggleStripPower = async function() {
+  const service = stripState === 'on' ? 'light/turn_off' : 'light/turn_on';
+  await haCall(service, { entity_id: HA_ENTITY });
+  await refreshStripState();
+  showToast(stripState === 'on' ? 'Strip ON' : 'Strip OFF', 'success');
+};
+
+window.setStripBrightness = async function(val) {
+  document.getElementById('brightnessVal').textContent = Math.round(val / 255 * 100) + '%';
+  clearTimeout(window._brightTimer);
+  window._brightTimer = setTimeout(async () => {
+    await haCall('light/turn_on', { entity_id: HA_ENTITY, brightness: parseInt(val) });
+  }, 300);
+};
+
+window.setSolidColor = async function(rgb) {
+  currentEffect = null;
+  renderEffects();
+  await haCall('light/turn_on', { entity_id: HA_ENTITY, rgb_color: rgb, brightness: parseInt(document.getElementById('stripBrightness').value) });
+  showToast(`Set to RGB(${rgb.join(',')})`, 'success');
+};
+
+window.rainbowSegments = async function() {
+  const colors = [[255,0,0],[255,80,0],[255,160,0],[255,255,0],[128,255,0],[0,255,0],[0,255,128],[0,255,255],[0,128,255],[0,0,255],[80,0,255],[160,0,255],[255,0,255],[255,0,128],[255,0,60]];
+  const brightness = parseInt(document.getElementById('stripBrightness').value);
+  showToast('Applying rainbow to 15 segments...', '');
+  await Promise.all(colors.map((c, i) =>
+    haCall('light/turn_on', { entity_id: `light.livingroom_strip_light_segment_${i+1}`, rgb_color: c, brightness })
+  ));
+  showToast('Rainbow applied! 🌈', 'success');
+};
+
+window.clearEffect = async function() {
+  currentEffect = null;
+  renderEffects();
+  await haCall('light/turn_on', { entity_id: HA_ENTITY, rgb_color: [255,255,255], brightness: parseInt(document.getElementById('stripBrightness').value) });
+  showToast('Cleared to solid white', 'success');
+};
 
 function showToast(msg, type = '') {
   const t = document.getElementById('toast');
