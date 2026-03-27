@@ -61,6 +61,13 @@
     .status-badge.s-unavailable { background: #fce6e6; color: var(--error); }
     .status-badge.s-unknown { background: var(--bg); color: var(--muted); }
 
+    /* Per-device test button */
+    .device-status-col { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .test-btn { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 5px; border: 1px solid var(--border); background: #fff; cursor: pointer; color: var(--accent); white-space: nowrap; transition: all 0.15s; }
+    .test-btn:active { transform: scale(0.95); }
+    .test-btn.testing { color: var(--muted); border-color: var(--muted); pointer-events: none; }
+    .test-btn.testing::after { content: ''; display: inline-block; width: 8px; height: 8px; border: 1.5px solid var(--muted); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; margin-left: 4px; vertical-align: middle; }
+
     /* Triage section */
     .triage-card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 8px; box-shadow: var(--shadow); }
     .triage-card .device-name { font-size: 15px; margin-bottom: 4px; }
@@ -107,6 +114,13 @@
     .loading .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* Poll status bar */
+    .poll-bar { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 11px; color: var(--muted); background: var(--card); border-bottom: 1px solid var(--border); }
+    .poll-bar .poll-text { flex: 1; }
+    .poll-bar .refresh-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; color: var(--accent); font-weight: 600; }
+    .poll-bar .refresh-btn:active { opacity: 0.7; }
+    .poll-bar .refresh-btn.spinning { animation: spin 0.8s linear infinite; }
+
     /* Filter */
     .filter-bar { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
     .filter-chip { white-space: nowrap; font-size: 12px; padding: 5px 10px; border-radius: 14px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-weight: 500; }
@@ -124,6 +138,10 @@
   <div class="tab active" data-tab="triage">⚠️ Triage</div>
   <div class="tab" data-tab="all">📋 All Devices</div>
   <div class="tab" data-tab="assign">🏠 Spaces</div>
+</div>
+<div class="poll-bar">
+  <span class="poll-text" id="pollStatus">Loading...</span>
+  <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">↻ Refresh</button>
 </div>
 
 <div class="content">
@@ -164,12 +182,148 @@ let allDevices = [];
 let allSpaces = [];
 let pendingChanges = {};  // id -> { field: value }
 let triageResults = {};   // id -> { status, notes }
+let liveStatus = {};      // device_id -> { online, on, checked }
+
+const GOVEE_CONTROL_URL = `${SUPABASE_URL}/functions/v1/govee-control`;
+
+// ============ GOVEE API ============
+async function goveeApi(action, params = {}) {
+  let { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const now = Math.floor(Date.now() / 1000);
+    if (!session.expires_at || session.expires_at - now < 60) {
+      const { data } = await sb.auth.refreshSession();
+      session = data.session;
+    }
+  } else {
+    const { data } = await sb.auth.refreshSession();
+    session = data.session;
+  }
+  const token = session?.access_token;
+  if (!token) throw new Error('Not signed in — sign in on the main app first');
+
+  const res = await fetch(GOVEE_CONTROL_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ action, ...params }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.message || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function testDevice(deviceId, sku) {
+  const cardEl = document.querySelector(`[data-device-id="${deviceId}"]`);
+  const btn = cardEl?.querySelector('.test-btn');
+  if (btn) { btn.classList.add('testing'); btn.textContent = 'Testing'; }
+
+  try {
+    const result = await goveeApi('getDeviceState', { device: deviceId, sku });
+    const caps = result?.payload?.capabilities || [];
+    const state = { online: true, on: null, checked: new Date() };
+
+    for (const cap of caps) {
+      if (cap.instance === 'online' && cap.state?.value === false) state.online = false;
+      if (cap.instance === 'powerSwitch') state.on = cap.state?.value === 1;
+    }
+
+    liveStatus[deviceId] = state;
+
+    // Also update the local allDevices array so renders pick it up
+    const dev = allDevices.find(d => d.device_id === deviceId);
+    if (dev) dev.online = state.online;
+
+    render();
+    const label = state.online ? (state.on ? 'Online + ON' : 'Online (off)') : 'Unavailable';
+    showToast(`${dev?.name || deviceId}: ${label}`, state.online ? 'success' : 'error');
+  } catch (e) {
+    liveStatus[deviceId] = { online: false, error: e.message, checked: new Date() };
+    const dev = allDevices.find(d => d.device_id === deviceId);
+    showToast(`${dev?.name || deviceId}: ${e.message}`, 'error');
+    render();
+  }
+}
+
+// ============ POLLING ============
+const POLL_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+let pollTimer = null;
+let lastPollTime = null;
+
+function updatePollStatus(msg) {
+  const el = document.getElementById('pollStatus');
+  if (msg) { el.textContent = msg; return; }
+  if (!lastPollTime) return;
+  const timeStr = lastPollTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  el.textContent = `Last updated: ${timeStr} · auto-refreshes every 10 min`;
+}
+
+async function refreshData() {
+  await loadData();
+  lastPollTime = new Date();
+  render();
+  updatePollStatus();
+}
+
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(async () => {
+    try { await refreshData(); } catch (e) { console.warn('[poll] refresh failed', e); }
+  }, POLL_INTERVAL_MS);
+
+  document.addEventListener('visibilitychange', handleVisibility);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  document.removeEventListener('visibilitychange', handleVisibility);
+}
+
+function handleVisibility() {
+  if (document.hidden) {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  } else {
+    // Refresh immediately on return, then resume interval
+    refreshData().catch(() => {});
+    pollTimer = setInterval(async () => {
+      try { await refreshData(); } catch (e) { console.warn('[poll] refresh failed', e); }
+    }, POLL_INTERVAL_MS);
+  }
+}
+
+window.manualRefresh = async function() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  updatePollStatus('Refreshing...');
+  try {
+    await refreshData();
+    // Reset poll timer so next auto-refresh is a full interval from now
+    if (pollTimer) { clearInterval(pollTimer); }
+    pollTimer = setInterval(async () => {
+      try { await refreshData(); } catch (e) { console.warn('[poll] refresh failed', e); }
+    }, POLL_INTERVAL_MS);
+  } catch (e) {
+    updatePollStatus('Refresh failed — will retry');
+  } finally {
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+  }
+};
 
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', async () => {
   setupTabs();
   await loadData();
+  lastPollTime = new Date();
   render();
+  updatePollStatus();
+  startPolling();
 });
 
 function setupTabs() {
@@ -193,21 +347,11 @@ async function loadData() {
   document.getElementById('totalBadge').textContent = allDevices.length + ' devices';
 }
 
-// ============ INFER HA STATUS ============
-// Map HA state from the device list we already have
-const HA_UNAVAILABLE = new Set([
-  'dog house roof', 'far back fence lights', 'LED garag String Light',
-  'livingroom strip light', 'north back fence light', 'Sauna Stick Lights',
-  'sauna tree String', 'shower flood', 'Spartan Bigbed 1', 'Spartan Bigbed 2',
-  'Spartan Bigbed 3', 'Spartan Bigbed 4', 'Spartan Lilbed 1', 'Spartan Lilbed 2',
-  'Spartan Main 1', 'Spartan Main 2', 'Spartan Main 3', 'Spartan Main 4',
-  'Spartan Main 5', 'Spartan Main 6', 'Stairway', 'TreDeco Projector'
-]);
-
+// ============ DEVICE STATUS ============
 function getDeviceStatus(dev) {
-  if (HA_UNAVAILABLE.has(dev.name)) return 'unavailable';
-  if (dev.online === false) return 'off';
-  return 'online';
+  if (dev.online === true) return 'online';
+  if (dev.online === false) return 'unavailable';
+  return 'unknown'; // null / not yet checked
 }
 
 function statusIcon(status) {
@@ -235,7 +379,7 @@ function render() {
 
 // --- TRIAGE ---
 function renderTriage() {
-  const unavail = allDevices.filter(d => HA_UNAVAILABLE.has(d.name) && !d.is_group);
+  const unavail = allDevices.filter(d => getDeviceStatus(d) !== 'online' && !d.is_group);
   const done = Object.keys(triageResults).length;
 
   document.getElementById('triageStats').innerHTML = `
@@ -258,10 +402,15 @@ function renderTriage() {
     for (const d of devs) {
       const tr = triageResults[d.id] || {};
       const hasStatus = tr.status ? 'has-status' : '';
+      const live = liveStatus[d.device_id];
+      const liveNote = live ? (live.online ? '🟢 Responded — online' : '🔴 No response') : '';
       html += `
-        <div class="triage-card ${hasStatus}" data-id="${d.id}">
-          <div class="device-name">${deviceTypeIcon(d)} ${d.name}</div>
-          <div class="device-meta">${d.sku} · ${d.device_type || 'Unknown type'} · ${d.area || ''}</div>
+        <div class="triage-card ${hasStatus}" data-id="${d.id}" data-device-id="${d.device_id}">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="device-name" style="flex:1">${deviceTypeIcon(d)} ${d.name}</div>
+            <button class="test-btn" onclick="testDevice('${d.device_id}','${d.sku}')">Test</button>
+          </div>
+          <div class="device-meta">${d.sku} · ${d.device_type || 'Unknown type'} · ${d.area || ''}${liveNote ? ` · ${liveNote}` : ''}</div>
           <div class="triage-actions">
             <button class="triage-btn working ${tr.status === 'working' ? 'selected' : ''}" onclick="setTriage('${d.id}','working')">✅ Working</button>
             <button class="triage-btn powered-off ${tr.status === 'powered-off' ? 'selected' : ''}" onclick="setTriage('${d.id}','powered-off')">🔌 Powered Off</button>
@@ -318,7 +467,7 @@ function renderAll() {
   const nonGroups = allDevices.filter(d => !d.is_group);
   const groups = allDevices.filter(d => d.is_group);
   const online = nonGroups.filter(d => getDeviceStatus(d) === 'online').length;
-  const offline = nonGroups.filter(d => getDeviceStatus(d) === 'unavailable').length;
+  const offline = nonGroups.filter(d => getDeviceStatus(d) !== 'online').length;
 
   document.getElementById('allStats').innerHTML = `
     <div class="stat"><div class="stat-num total">${nonGroups.length}</div><div class="stat-label">Devices</div></div>
@@ -341,7 +490,7 @@ window.filterDevices = function(filter, el) {
   el.classList.add('active');
   let devs = allDevices.filter(d => !d.is_group);
   if (filter === 'Online') devs = devs.filter(d => getDeviceStatus(d) === 'online');
-  else if (filter === 'Offline') devs = devs.filter(d => getDeviceStatus(d) === 'unavailable');
+  else if (filter === 'Offline') devs = devs.filter(d => getDeviceStatus(d) !== 'online');
   else if (filter === 'No Space') devs = devs.filter(d => !d.space_id);
   renderDeviceList(devs, 'allList');
 };
@@ -360,17 +509,24 @@ function renderDeviceList(devs, containerId) {
     for (const d of items) {
       const status = getDeviceStatus(d);
       const spaceName = d.space_id ? (allSpaces.find(s => s.id === d.space_id)?.name || '?') : '';
+      const live = liveStatus[d.device_id];
+      const checkedAgo = live?.checked ? timeAgo(live.checked) : '';
+      const liveLabel = live ? (live.online ? (live.on ? 'ON' : 'off') : 'unavail') : '';
       html += `
-        <div class="device-card ${status}">
+        <div class="device-card ${status}" data-device-id="${d.device_id}">
           <div class="device-icon">${deviceTypeIcon(d)}</div>
           <div class="device-info">
             <div class="device-name">${d.name}</div>
             <div class="device-meta">
               <span class="device-sku">${d.sku}</span> ${d.device_type || ''}
               ${spaceName ? ` · 🏠 ${spaceName}` : ''}
+              ${checkedAgo ? ` · tested ${checkedAgo}` : ''}
             </div>
           </div>
-          <div class="status-badge s-${status}">${statusIcon(status)} ${status}</div>
+          <div class="device-status-col">
+            <div class="status-badge s-${status}">${statusIcon(status)} ${status}${liveLabel ? ` (${liveLabel})` : ''}</div>
+            ${!d.is_group ? `<button class="test-btn" onclick="testDevice('${d.device_id}','${d.sku}')">Test</button>` : ''}
+          </div>
         </div>`;
     }
     html += '</div>';
@@ -512,6 +668,16 @@ window.saveChanges = async function() {
     btn.disabled = false;
   }
 };
+
+function timeAgo(date) {
+  const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (secs < 60) return 'just now';
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  return `${Math.floor(mins / 60)}h ago`;
+}
+
+window.testDevice = testDevice;
 
 function showToast(msg, type = '') {
   const t = document.getElementById('toast');
