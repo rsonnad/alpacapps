@@ -1,12 +1,12 @@
 {
-  "version": "v260327.22 2:32p",
-  "release": 1068,
-  "sha": "1ee624989",
-  "fullSha": "1ee624989555bf8201fbd6d122c5dfcfd0e493ce",
+  "version": "v260327.23 2:33p",
+  "release": 1069,
+  "sha": "8750709ea",
+  "fullSha": "8750709ea8f2e005236d959793519ac557f8c5ca",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 19:32:10+00",
-  "commits": [{"sha":"1ee624989","message":"fix: fetch version.json directly instead of relying on version-info.js","author":"Claude"}]
+  "pushedAt": "2026-03-27 19:33:33+00",
+  "commits": [{"sha":"8750709ea","message":"fix: move version badge to poll bar where it's visible","author":"Claude"}]
 }
