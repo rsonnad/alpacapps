@@ -65,7 +65,7 @@ class ProjectService {
       .from('tasks')
       .select('id, title, assigned_name, space:space_id(name)')
       .in('status', ['open', 'in_progress'])
-      .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+      .eq('assigned_to', userId)
       .order('priority', { ascending: true, nullsFirst: false })
       .order('title');
     if (error) throw error;
