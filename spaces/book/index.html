@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <title>Book a Space - Alpaca Playhouse Austin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Site-wide Navigation Bar */
+    .site-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 2rem;
+      background: #2d3024;
+      color: white;
+    }
+
+    .site-nav__logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: white;
+    }
+
+    .site-nav__icon {
+      height: 32px;
+      width: auto;
+    }
+
+    .site-nav__wordmark {
+      height: 18px;
+      width: auto;
+    }
+
+    .site-nav__logo span {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .site-nav__links {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 1.5rem;
+    }
+
+    .site-nav__links a {
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .site-nav__links a:hover,
+    .site-nav__links a.active {
+      color: white;
+    }
+
+    .site-nav__toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .site-nav__toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: white;
+      margin: 5px 0;
+    }
+
+    /* Mobile Site Navigation */
+    .site-nav-mobile {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #2d3024;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .site-nav-mobile.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .site-nav-mobile__close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+    }
+
+    .site-nav-mobile__links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: center;
+    }
+
+    .site-nav-mobile__links li {
+      margin: 1.25rem 0;
+    }
+
+    .site-nav-mobile__links a {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 1.5rem;
+      color: white;
+      text-decoration: none;
+    }
+
+    .site-nav-mobile__links a.active {
+      color: var(--accent);
+    }
+
+    @media (max-width: 900px) {
+      .site-nav__links {
+        display: none;
+      }
+
+      .site-nav__toggle {
+        display: block;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .site-nav {
+        padding: 0.75rem 1rem;
+      }
+
+      .site-nav__logo span {
+        font-size: 0.95rem;
+      }
+
+      .site-nav__icon {
+        height: 28px;
+      }
+
+      .site-nav__wordmark {
+        display: none;
+      }
+    }
+
+    :root {
+      --bg: #f6f5f0;
+      --bg-card: #ffffff;
+      --text: #374151;
+      --text-muted: #7a7d8c;
+      --border: #d1d5db;
+      --accent: #6b7f5e;
+      --accent-dark: #2d3024;
+      --accent-light: #e8efe4;
+      --error: #dc2626;
+      --error-light: #fef2f2;
+      --success: #16a34a;
+      --success-light: #f0fdf4;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(45,49,66,0.06), 0 1px 2px rgba(45,49,66,0.08);
+      --shadow-lg: 0 4px 12px rgba(45,49,66,0.08), 0 2px 4px rgba(45,49,66,0.06);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 2rem;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .form-container {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .form-section {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e8e9ed;
+    }
+
+    .form-section:last-of-type {
+      border-bottom: none;
+    }
+
+    .form-section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .form-group label .required {
+      color: var(--error);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: #fafaf8;
+      transition: border-color 0.15s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-card);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-group .hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .form-actions {
+      padding: 1.5rem;
+      background: #fafaf8;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-submit {
+      padding: 0.75rem 2rem;
+      background: var(--accent-dark);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-submit:hover {
+      background: #3a4230;
+    }
+
+    .btn-submit:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .btn-verify {
+      padding: 0.75rem 2rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      width: 100%;
+    }
+
+    .btn-verify:hover {
+      background: #5a6e4e;
+    }
+
+    .btn-verify:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Resident info bar */
+    .resident-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--success-light);
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .resident-info .check-icon {
+      color: var(--success);
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .resident-info .name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .resident-info .change-link {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Not found message */
+    .not-found-msg {
+      padding: 1rem;
+      background: var(--error-light);
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      color: var(--error);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .not-found-msg a {
+      color: var(--error);
+      font-weight: 600;
+    }
+
+    /* Space option with thumbnail */
+    .space-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Success message */
+    .success-message {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .success-message .icon {
+      font-size: 3.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .success-message h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--success);
+    }
+
+    .success-message > p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      max-width: 450px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .success-message a.btn-primary {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: var(--radius);
+      font-weight: 500;
+      transition: background 0.15s ease;
+    }
+
+    .success-message a.btn-primary:hover {
+      background: #5a6e4e;
+    }
+
+    /* Summary in success */
+    .booking-summary {
+      background: #fafaf8;
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .booking-summary h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e8e9ed;
+      font-size: 0.9rem;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    .summary-row .label {
+      color: var(--text-muted);
+    }
+
+    .summary-row .value {
+      font-weight: 500;
+      color: var(--text);
+      text-align: right;
+    }
+
+    /* Loading state */
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      color: white;
+      font-weight: 500;
+      font-size: 0.9rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      max-width: 90vw;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error {
+      background: var(--error);
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    /* Pending badge */
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #92400e;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Site-wide Navigation -->
+  <nav class="site-nav">
+    <a href="/" class="site-nav__logo">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse Austin" class="site-nav__icon">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse Austin" class="site-nav__wordmark">
+    </a>
+    <ul class="site-nav__links">
+      <li><a href="/visiting/">Visiting</a></li>
+      <li><a href="/spaces/">Rentals</a></li>
+      <li><a href="/spaces/hostevent/">Events</a></li>
+      <li><a href="/community/">Community</a></li>
+      <li><a href="/photos/">Photos</a></li>
+      <li><a href="/contact/">Contact</a></li>
+    </ul>
+    <button class="site-nav__toggle" id="siteNavToggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile Site Navigation -->
+  <div class="site-nav-mobile" id="siteNavMobile">
+    <button class="site-nav-mobile__close" id="siteNavMobileClose">&times;</button>
+    <ul class="site-nav-mobile__links">
+      <li><a href="/visiting/">Visiting</a></li>
+      <li><a href="/spaces/">Rentals</a></li>
+      <li><a href="/spaces/hostevent/">Events</a></li>
+      <li><a href="/community/">Community</a></li>
+      <li><a href="/photos/">Photos</a></li>
+      <li><a href="/contact/">Contact</a></li>
+    </ul>
+  </div>
+
+  <header>
+    <h1>Book a Space</h1>
+    <p>Reserve an event space or amenity at Alpaca Playhouse</p>
+  </header>
+
+  <main>
+    <div class="form-container" id="formContainer">
+
+      <!-- Step 1: Verify Resident -->
+      <div class="form-section" id="step1">
+        <h2>Step 1: Verify Resident</h2>
+        <div class="form-group full-width">
+          <label for="email">Your email address <span class="required">*</span></label>
+          <input type="email" id="email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div id="notFoundMsg" class="not-found-msg hidden" style="margin-top: 1rem;">
+          This form is for current residents. To join our community, please <a href="/spaces/apply/">apply here</a>.
+        </div>
+        <div style="margin-top: 1rem;">
+          <button type="button" class="btn-verify" id="verifyBtn" onclick="verifyResident()">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Book a Space -->
+      <div class="form-section hidden" id="step2">
+        <div class="resident-info" id="residentInfo">
+          <span class="check-icon">&#10003;</span>
+          <span class="name" id="residentName"></span>
+          <span class="change-link" onclick="resetToStep1()">Change</span>
+        </div>
+        <h2>Step 2: Book a Space</h2>
+        <form id="bookingForm" onsubmit="submitBooking(event)">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="space_id">Space <span class="required">*</span></label>
+              <select id="space_id" required>
+                <option value="">Select a space...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="booking_date">Date <span class="required">*</span></label>
+              <input type="date" id="booking_date" required>
+            </div>
+            <div class="form-group">
+              <!-- spacer for grid alignment -->
+            </div>
+            <div class="form-group">
+              <label for="start_time">Start Time <span class="required">*</span></label>
+              <input type="time" id="start_time" required>
+            </div>
+            <div class="form-group">
+              <label for="end_time">End Time <span class="required">*</span></label>
+              <input type="time" id="end_time" required>
+            </div>
+            <div class="form-group full-width">
+              <label for="title">What's this for? <span class="required">*</span></label>
+              <input type="text" id="title" placeholder="e.g. Birthday dinner, Movie night, Workshop" required>
+            </div>
+            <div class="form-group full-width">
+              <label for="notes">Notes <span class="hint">(optional)</span></label>
+              <textarea id="notes" placeholder="Any additional details or requests..."></textarea>
+            </div>
+          </div>
+          <div class="form-actions" style="padding: 1.5rem 0 0 0; background: transparent;">
+            <button type="submit" class="btn-submit" id="submitBtn">Submit Reservation Request</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success State -->
+      <div class="form-section hidden" id="successState">
+        <div class="success-message">
+          <div class="icon">&#127881;</div>
+          <h2>Request Submitted!</h2>
+          <p>Your reservation request has been submitted! You'll hear back from us soon.</p>
+          <span class="status-badge">Pending Approval</span>
+          <div class="booking-summary" id="bookingSummary"></div>
+          <a href="/spaces/" class="btn-primary">Browse Spaces</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+
+    let verifiedPerson = null;
+    let spacesData = [];
+
+    // Escape HTML to prevent XSS
+    function esc(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    // Toast notification
+    function showToast(message, type = 'error') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + type;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    // Set min date to today
+    function initDateField() {
+      const dateInput = document.getElementById('booking_date');
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.setAttribute('min', today);
+    }
+
+    // Step 1: Verify resident by email
+    async function verifyResident() {
+      const emailInput = document.getElementById('email');
+      const email = emailInput.value.trim().toLowerCase();
+      const notFoundMsg = document.getElementById('notFoundMsg');
+      const verifyBtn = document.getElementById('verifyBtn');
+
+      notFoundMsg.classList.add('hidden');
+
+      if (!email) {
+        showToast('Please enter your email address.');
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Checking...';
+
+      try {
+        // Look up person by email
+        const personRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/people?email=eq.${encodeURIComponent(email)}&select=id,first_name,last_name`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!personRes.ok) throw new Error('Failed to look up resident.');
+        const people = await personRes.json();
+
+        if (people.length === 0) {
+          notFoundMsg.classList.remove('hidden');
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Continue';
+          return;
+        }
+
+        const person = people[0];
+
+        // Check for active assignment
+        const today = new Date().toISOString().split('T')[0];
+        const assignRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/assignments?person_id=eq.${person.id}&status=eq.active&start_date=lte.${today}&select=id,end_date`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!assignRes.ok) throw new Error('Failed to verify residency.');
+        const assignments = await assignRes.json();
+
+        // Filter: end_date is null or >= today
+        const activeAssignment = assignments.find(a => !a.end_date || a.end_date >= today);
+
+        if (!activeAssignment) {
+          notFoundMsg.classList.remove('hidden');
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Continue';
+          return;
+        }
+
+        // Resident verified
+        verifiedPerson = person;
+        document.getElementById('residentName').textContent = esc(person.first_name + ' ' + person.last_name);
+
+        // Load spaces and show step 2
+        await loadSpaces();
+        initDateField();
+
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+
+      } catch (err) {
+        showToast(err.message || 'Something went wrong. Please try again.');
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Continue';
+      }
+    }
+
+    // Load bookable spaces
+    async function loadSpaces() {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/spaces?is_archived=eq.false&can_be_event=eq.true&select=id,name,thumbnail_url&order=name`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!res.ok) throw new Error('Failed to load spaces.');
+        spacesData = await res.json();
+
+        const select = document.getElementById('space_id');
+        spacesData.forEach(space => {
+          const opt = document.createElement('option');
+          opt.value = space.id;
+          opt.textContent = space.name;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        showToast('Could not load spaces. Please refresh the page.');
+      }
+    }
+
+    // Reset to step 1
+    function resetToStep1() {
+      verifiedPerson = null;
+      document.getElementById('step1').classList.remove('hidden');
+      document.getElementById('step2').classList.add('hidden');
+      document.getElementById('notFoundMsg').classList.add('hidden');
+      document.getElementById('email').value = '';
+      document.getElementById('email').focus();
+    }
+
+    // Submit booking
+    async function submitBooking(e) {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submitBtn');
+      const spaceId = document.getElementById('space_id').value;
+      const bookingDate = document.getElementById('booking_date').value;
+      const startTime = document.getElementById('start_time').value;
+      const endTime = document.getElementById('end_time').value;
+      const title = document.getElementById('title').value.trim();
+      const notes = document.getElementById('notes').value.trim();
+
+      // Validation
+      if (!spaceId || !bookingDate || !startTime || !endTime || !title) {
+        showToast('Please fill in all required fields.');
+        return;
+      }
+
+      if (endTime <= startTime) {
+        showToast('End time must be after start time.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        const startAt = `${bookingDate}T${startTime}:00`;
+        const endAt = `${bookingDate}T${endTime}:00`;
+
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/space_reservations`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            person_id: verifiedPerson.id,
+            space_id: parseInt(spaceId),
+            title: title,
+            start_at: startAt,
+            end_at: endAt,
+            notes: notes || null,
+            status: 'pending'
+          })
+        });
+
+        if (!res.ok) {
+          const errBody = await res.text();
+          throw new Error('Failed to submit reservation. ' + (errBody || ''));
+        }
+
+        // Show success
+        const spaceName = spacesData.find(s => s.id === parseInt(spaceId))?.name || 'Unknown';
+        const dateFormatted = new Date(bookingDate + 'T12:00:00').toLocaleDateString('en-US', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+
+        function formatTime(t) {
+          const [h, m] = t.split(':');
+          const d = new Date(2000, 0, 1, parseInt(h), parseInt(m));
+          return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        document.getElementById('bookingSummary').innerHTML = `
+          <h3>Reservation Details</h3>
+          <div class="summary-row"><span class="label">Resident</span><span class="value">${esc(verifiedPerson.first_name + ' ' + verifiedPerson.last_name)}</span></div>
+          <div class="summary-row"><span class="label">Space</span><span class="value">${esc(spaceName)}</span></div>
+          <div class="summary-row"><span class="label">Date</span><span class="value">${esc(dateFormatted)}</span></div>
+          <div class="summary-row"><span class="label">Time</span><span class="value">${esc(formatTime(startTime))} &ndash; ${esc(formatTime(endTime))}</span></div>
+          <div class="summary-row"><span class="label">Purpose</span><span class="value">${esc(title)}</span></div>
+          ${notes ? `<div class="summary-row"><span class="label">Notes</span><span class="value">${esc(notes)}</span></div>` : ''}
+        `;
+
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('successState').classList.remove('hidden');
+        showToast('Reservation request submitted!', 'success');
+
+      } catch (err) {
+        showToast(err.message || 'Something went wrong. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Reservation Request';
+      }
+    }
+
+    // Allow Enter key in email field to trigger verify
+    document.getElementById('email').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        verifyResident();
+      }
+    });
+
+    // Mobile nav toggle
+    document.getElementById('siteNavToggle').addEventListener('click', () => {
+      document.getElementById('siteNavMobile').classList.add('open');
+    });
+    document.getElementById('siteNavMobileClose').addEventListener('click', () => {
+      document.getElementById('siteNavMobile').classList.remove('open');
+    });
+  </script>
+</body>
+</html>
