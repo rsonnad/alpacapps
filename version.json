@@ -1,12 +1,12 @@
 {
-  "version": "v260327.12 12:14p",
-  "release": 1058,
-  "sha": "b711d0703",
-  "fullSha": "b711d07031e5faee96d190388aec32df273a5e2c",
+  "version": "v260327.13 12:44p",
+  "release": 1059,
+  "sha": "70f5fb19e",
+  "fullSha": "70f5fb19ea22601f6102cd5d1d586abdeb6d2f62",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 17:14:39+00",
-  "commits": [{"sha":"b711d0703","message":"fix: replace broken UniFi iframe with custom network dashboard + fix video thumbnails","author":"Claude"}]
+  "pushedAt": "2026-03-27 17:44:55+00",
+  "commits": [{"sha":"70f5fb19e","message":"fix: custom video thumbnails with duration badge and tap-to-play lightbox","author":"Claude"}]
 }
