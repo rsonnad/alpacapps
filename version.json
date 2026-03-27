@@ -1,12 +1,12 @@
 {
-  "version": "v260327.07 11:45a",
-  "release": 1053,
-  "sha": "18a33ef33",
-  "fullSha": "18a33ef334f9ff84719cad929a78141c31c14765",
+  "version": "v260327.08 11:48a",
+  "release": 1054,
+  "sha": "d7210e1ac",
+  "fullSha": "d7210e1ac7048ddfc7b02718170aec751d885144",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 16:45:35+00",
-  "commits": [{"sha":"18a33ef33","message":"feat: add resident space reservation system (quick-book)","author":"Paca"}]
+  "pushedAt": "2026-03-27 16:48:55+00",
+  "commits": [{"sha":"d7210e1ac","message":"feat: add cloud spend tokens reference guide","author":"Rahul"}]
 }

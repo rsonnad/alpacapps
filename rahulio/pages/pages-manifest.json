@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-03-27T16:46:21.725Z",
+  "generatedAt": "2026-03-27T16:49:38.592Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "cloudtokens/index.html",
+      "title": "Cloud Spend Tokens — Read-Only Access Setup Guide",
+      "section": null,
+      "modifiedAt": "2026-03-27T16:48:48.000Z"
+    },
     {
       "path": "WarsawPilot/index.html",
       "title": "Three Pillars — The IRL Social Network",
@@ -34,12 +40,6 @@
       "title": "Set Up Your New Machine — CalliApp",
       "section": null,
       "modifiedAt": "2026-03-26T16:13:07.000Z"
-    },
-    {
-      "path": "cloudtokens/index.html",
-      "title": "Cloud Spend Tokens — Read-Only Access Setup Guide",
-      "section": null,
-      "modifiedAt": "2026-03-27T00:00:00.000Z"
     },
     {
       "path": "donate.html",
