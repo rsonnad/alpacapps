@@ -126,6 +126,8 @@
     .poll-bar .refresh-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; color: var(--accent); font-weight: 600; }
     .poll-bar .refresh-btn:active { opacity: 0.7; }
     .poll-bar .refresh-btn.spinning { animation: spin 0.8s linear infinite; }
+    .poll-bar .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .test-progress { font-size: 11px; color: var(--accent); font-weight: 600; white-space: nowrap; }
 
     /* Filter */
     .filter-bar { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
@@ -148,6 +150,7 @@
 <div class="poll-bar">
   <span id="versionBadge" style="font-size:11px;color:var(--accent);font-weight:700;background:var(--bg);padding:1px 6px;border-radius:4px">loading…</span>
   <span class="poll-text" id="pollStatus">Loading...</span>
+  <button class="refresh-btn" id="testAllBtn" onclick="testAllDevices()">Test All</button>
   <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">↻ Refresh</button>
 </div>
 <div class="auth-bar" id="authBar">Checking auth...</div>
@@ -260,6 +263,62 @@ async function testDevice(deviceId, sku) {
     render();
   }
 }
+
+// ============ TEST ALL ============
+let testAllRunning = false;
+
+async function testAllDevices() {
+  if (testAllRunning) return;
+  if (!isSignedIn) { showToast('Sign in first to use Test All', 'error'); return; }
+
+  const devices = allDevices.filter(d => !d.is_group && d.device_id);
+  const btn = document.getElementById('testAllBtn');
+  const pollText = document.getElementById('pollStatus');
+  testAllRunning = true;
+  btn.disabled = true;
+  btn.textContent = 'Testing…';
+
+  let done = 0, online = 0, unavail = 0, errors = 0;
+
+  for (const d of devices) {
+    done++;
+    pollText.textContent = `Testing ${done}/${devices.length}: ${d.name}`;
+
+    try {
+      const result = await goveeApi('getDeviceState', { device: d.device_id, sku: d.sku });
+      const caps = result?.payload?.capabilities || [];
+      const state = { online: true, on: null, checked: new Date() };
+
+      for (const cap of caps) {
+        if (cap.instance === 'online' && cap.state?.value === false) state.online = false;
+        if (cap.instance === 'powerSwitch') state.on = cap.state?.value === 1;
+      }
+
+      liveStatus[d.device_id] = state;
+      d.online = state.online;
+      if (state.online) online++; else unavail++;
+    } catch (e) {
+      liveStatus[d.device_id] = { online: false, error: e.message, checked: new Date() };
+      errors++;
+    }
+
+    // Re-render every 5 devices to show progress
+    if (done % 5 === 0 || done === devices.length) render();
+
+    // Small delay to avoid Govee API rate limits
+    if (done < devices.length) await new Promise(r => setTimeout(r, 300));
+  }
+
+  testAllRunning = false;
+  btn.disabled = false;
+  btn.textContent = 'Test All';
+  lastPollTime = new Date();
+  render();
+  updatePollStatus();
+  showToast(`Done: ${online} online, ${unavail} unavailable, ${errors} errors`, 'success');
+}
+
+window.testAllDevices = testAllDevices;
 
 // ============ POLLING ============
 const POLL_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
