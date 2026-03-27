@@ -1,12 +1,12 @@
 {
-  "version": "v260327.01 1:12a",
-  "release": 1047,
-  "sha": "76551bb31",
-  "fullSha": "76551bb31d2789fe6665003cf55fb1b8dc0969d3",
+  "version": "v260327.02 2:09a",
+  "release": 1048,
+  "sha": "b43c58130",
+  "fullSha": "b43c58130b2d4c10ff85c6dad159017844ff3d20",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 06:12:00+00",
-  "commits": [{"sha":"76551bb31","message":"feat: add tablet setup instructions page to kiosk hall","author":"Rahul"}]
+  "machine": "runnervm46oaq",
+  "pushedAt": "2026-03-27 07:09:23+00",
+  "commits": [{"sha":"6f0ac871c","message":"feat: add 3-view kiosk rotation (network → slideshow → kiosk)","author":"Rahul"},{"sha":"b43c58130","message":"Merge remote-tracking branch 'origin/stoic-kowalevski'","author":"Rahul"}]
 }
