@@ -87,7 +87,7 @@ Tailscale connects remote servers to Alpuca and the entire LAN. All machines use
 
 **Configuration:**
 - Alpuca: `tailscale set --advertise-routes=192.168.1.0/24`
-- DO Droplet: `tailscale up --accept-routes`
+- Hostinger VPS: `tailscale up --accept-routes` (DO droplet decommissioned)
 - Almaca: IP forwarding enabled (`net.inet.ip.forwarding=1` in `/etc/sysctl.conf`)
 - Tailscale Admin: Subnet route approved for `alpacaopenmac`
 
@@ -444,6 +444,89 @@ launchctl load ~/Library/LaunchAgents/com.sonos.httpapi.plist
 # View logs
 tail -f ~/node-sonos-http-api/logs/stdout.log
 ```
+
+## Hallway Kiosk Tablet
+
+Samsung Galaxy Tab A9 (SM-X210) wall-mounted in the hallway. Runs the kiosk display at `alpacaplayhouse.com/kioskhall/`.
+
+### Device Info
+
+| Field | Value |
+|-------|-------|
+| **Model** | Samsung SM-X210 (Galaxy Tab A9) |
+| **ADB Serial** | `R95Y301R05A` |
+| **LAN IP** | DHCP (check UniFi for current IP) |
+| **Tailscale IP** | `100.103.110.7` |
+| **Kiosk App** | Fully Kiosk Browser |
+| **Kiosk API Port** | `2323` (password: `alpaca2323`) |
+| **Kiosk Settings Password** | `1234` |
+| **Kiosk App Package** | `com.alpacaplayhouse.kiosk` |
+| **WiFi Network** | Black Rock City |
+
+### Kiosk Display Rotation
+
+The kiosk rotates through 3 views every 15 seconds:
+
+1. **Guestbook UX** — main kiosk view (guestbook, occupants, events, alpaca facts)
+2. **UniFi Console** — opens `https://192.168.1.1/network/default/dashboard` in a popup window
+3. **Slideshow** — AI-generated alpaca imagery from Supabase
+
+### Remote Control via Fully Kiosk Browser API
+
+From any machine on the LAN or Tailscale network:
+
+```bash
+# Load a URL on the tablet
+curl "http://100.103.110.7:2323/?cmd=loadUrl&url=https%3A%2F%2Falpacaplayhouse.com%2Fkioskhall%2F&password=alpaca2323"
+
+# Load UniFi dashboard
+curl "http://100.103.110.7:2323/?cmd=loadUrl&url=https%3A%2F%2F192.168.1.1%2Fnetwork%2Fdefault%2Fdashboard&password=alpaca2323"
+
+# Get device info (battery, IP, screen state)
+curl "http://100.103.110.7:2323/?cmd=getDeviceInfo&password=alpaca2323"
+
+# Wake screen
+curl "http://100.103.110.7:2323/?cmd=screenOn&password=alpaca2323"
+
+# Restart kiosk app
+curl "http://100.103.110.7:2323/?cmd=restartApp&password=alpaca2323"
+```
+
+### Remote Control via ADB (Wireless Debugging)
+
+ADB wireless debugging must be enabled on the tablet (Developer Options → Wireless Debugging).
+
+```bash
+# Connect (from M4 MacBook Air or any machine with ADB on the same network)
+adb connect 100.103.110.7:5555
+
+# Open a URL in the browser
+adb shell am start -a android.intent.action.VIEW -d 'https://192.168.1.1/network/default/dashboard'
+
+# Persist kiosk settings across OS updates
+adb shell dumpsys deviceidle whitelist +com.tailscale.ipn
+adb shell cmd appops set com.tailscale.ipn RUN_IN_BACKGROUND allow
+adb shell settings put global auto_update 0
+adb shell pm disable-user --user 0 com.sec.android.soagent
+adb shell pm disable-user --user 0 com.sec.android.app.samsungapps
+```
+
+### Exiting Kiosk Mode
+
+Triple-tap the bottom-right corner of the screen. Password: `1234`.
+
+### After OS Updates
+
+Samsung OS updates reset developer options, Tailscale battery settings, and can change the tablet's IP. After an update:
+
+1. Re-enable Developer Options → Wireless Debugging
+2. Set Tailscale battery optimization to Unrestricted (Settings → Apps → Tailscale → Battery)
+3. Re-run ADB commands above to persist settings
+4. Full setup instructions: `alpacaplayhouse.com/kioskhall/setup.html`
+
+### UniFi Console Login
+
+The kiosk popup shows the UniFi dashboard. Log in once on the tablet with the `alpacaauto` account and check "Remember me" — the session persists for ~24 hours. Password is in `HOMEAUTOMATION.local.md` (gitignored).
 
 ## Sonos System
 
