@@ -1,12 +1,12 @@
 {
-  "version": "v260327.36 4:21p",
-  "release": 1082,
-  "sha": "03212a9b2",
-  "fullSha": "03212a9b28ab57e33192a1801c8c1a24103e9fa8",
+  "version": "v260327.37 4:35p",
+  "release": 1083,
+  "sha": "8518f497a",
+  "fullSha": "8518f497a3d4f43d833758fdbb682be9abbbaffb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 21:21:09+00",
-  "commits": [{"sha":"03212a9b2","message":"fix: rewrite strip tab to use Govee cloud API instead of HAOS","author":"Rahul"}]
+  "pushedAt": "2026-03-27 21:35:51+00",
+  "commits": [{"sha":"8518f497a","message":"feat: add full strip light controls — music modes, segments, color temp","author":"Rahul"}]
 }
