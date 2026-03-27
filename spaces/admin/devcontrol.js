@@ -857,15 +857,17 @@ async function loadBackups() {
   const panel = document.getElementById('dc-panel-backups');
   panel.innerHTML = '<div class="dc-empty">Loading backup logs...</div>';
 
-  const [rvaultResult, haosResult, triggersResult] = await Promise.allSettled([
+  const [rvaultResult, haosResult, triggersResult, filesResult] = await Promise.allSettled([
     supabase.from('backup_logs').select('*').order('created_at', { ascending: false }).limit(50),
     supabase.from('haos_backups').select('*').order('date', { ascending: false }).limit(50),
     supabase.from('backup_triggers').select('*').eq('status', 'pending').order('requested_at', { ascending: false }),
+    supabase.from('backup_files').select('*').order('backup_date', { ascending: false }).limit(100),
   ]);
 
   const logs = rvaultResult.status === 'fulfilled' && !rvaultResult.value.error ? rvaultResult.value.data || [] : [];
   const haosBackups = haosResult.status === 'fulfilled' && !haosResult.value.error ? haosResult.value.data || [] : [];
   const pendingTriggers = triggersResult.status === 'fulfilled' && !triggersResult.value.error ? triggersResult.value.data || [] : [];
+  const backupFiles = filesResult.status === 'fulfilled' && !filesResult.value.error ? filesResult.value.data || [] : [];
 
   const lastSyncMs = haosBackups.length ? Math.max(...haosBackups.map(b => new Date(b.synced_at).getTime())) : 0;
   function haosStillExists(b) {
@@ -913,8 +915,34 @@ async function loadBackups() {
     ${rest.length ? `<button class="dc-bk-more-btn" onclick="var b=document.getElementById('${moreId}');var s=b.style.display==='none';b.style.display=s?'':'none';this.textContent=s?'show less':'+ ${rest.length} more'">+ ${rest.length} more</button>` : ''}`;
   }
 
-  // Build per-service rows from backup_logs for a given svc key
-  function rvaultRowsFor(key, folder) {
+  // Format bytes to human-readable
+  function fmtBytes(bytes) {
+    if (!bytes && bytes !== 0) return '—';
+    if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`;
+    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
+    if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${bytes} B`;
+  }
+
+  // Build rows for a service — uses backup_files table if populated, else falls back to backup_logs
+  function rvaultRowsFor(key, folder, svcKey) {
+    const svcFiles = backupFiles.filter(f => f.service === svcKey);
+
+    // If we have file records from backup_files, show those
+    if (svcFiles.length) {
+      return svcFiles.map(f => {
+        const copyPath = f.filepath || `/Volumes/RVAULT20/backups/alpacapps/${folder}/`;
+        return `<tr>
+          <td style="white-space:nowrap">${esc(fmtShort(f.backup_date))}</td>
+          <td>${badge('exists','#2e7d32','#e8f5e9')}</td>
+          <td style="font-weight:500">${esc(f.filename)}</td>
+          <td>${esc(fmtBytes(f.size_bytes))}</td>
+          <td><button class="dc-bk-copy-path" onclick="navigator.clipboard.writeText('${esc(copyPath)}');showToast('Path copied — paste in Finder ⌘⇧G')" title="${esc(copyPath)}">📋 ${esc(copyPath)}</button></td>
+        </tr>`;
+      });
+    }
+
+    // Fallback: use backup_logs details
     return logs.filter(l => l.backup_type === 'full-to-rvault').map(l => {
       const s = (l.details || {})[key];
       const statusBadge = !s ? badge('no data','#aaa','#f5f5f5') :
@@ -932,7 +960,7 @@ async function loadBackups() {
         <td>${statusBadge}</td>
         <td style="color:var(--text-muted,#888)">${detailStr}</td>
         <td>${size}</td>
-        <td><button class="dc-bk-copy-path" onclick="navigator.clipboard.writeText('${folderPath}');showToast('Path copied — paste in Finder → Go → Go to Folder')" title="${folderPath}">📋 ${folderPath}</button></td>
+        <td><button class="dc-bk-copy-path" onclick="navigator.clipboard.writeText('${folderPath}');showToast('Path copied — paste in Finder ⌘⇧G')" title="${folderPath}">📋 ${folderPath}</button></td>
       </tr>`;
     });
   }
@@ -1031,7 +1059,12 @@ async function loadBackups() {
     return `<a href="${href}" target="_blank" style="color:var(--accent,#b8a88a);text-decoration:none;font-size:0.75rem;">${label}</a>`;
   }
 
-  const instCols = ['When','Status','Detail','Size','Location'];
+  // Choose columns based on whether we have file-level records
+  function rvaultCols(svcKey) {
+    return backupFiles.some(f => f.service === svcKey)
+      ? ['When','Status','Filename','Size','Path']
+      : ['When','Status','Detail','Size','Location'];
+  }
 
   panel.innerHTML = `
     <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Backups</h2>
@@ -1044,7 +1077,7 @@ async function loadBackups() {
         `/Volumes/RVAULT20/backups/alpacapps/db/ &nbsp;·&nbsp; 12 rolling dumps &nbsp;·&nbsp; Cron on Almaca
          &nbsp;·&nbsp; ${link('https://supabase.com/dashboard/project/aphrrfprbixmhissnjfn','Supabase dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(instCols, rvaultRowsFor('supabase','db'), 'supabase'),
+        instanceTable(rvaultCols('supabase-db'), rvaultRowsFor('supabase','db','supabase-db'), 'supabase'),
         'supabase-db'
       )}
 
@@ -1053,7 +1086,7 @@ async function loadBackups() {
         `/Volumes/RVAULT20/backups/alpacapps/r2/ &nbsp;·&nbsp; Full mirror retained &nbsp;·&nbsp; Cron on Almaca
          &nbsp;·&nbsp; ${link('https://dash.cloudflare.com','Cloudflare dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(instCols, rvaultRowsFor('r2','r2'), 'r2'),
+        instanceTable(rvaultCols('cloudflare-r2'), rvaultRowsFor('r2','r2','cloudflare-r2'), 'r2'),
         'cloudflare-r2'
       )}
 
@@ -1062,7 +1095,7 @@ async function loadBackups() {
         `/Volumes/RVAULT20/backups/alpacapps/d1/ &nbsp;·&nbsp; 12 rolling exports &nbsp;·&nbsp; Cron on Almaca
          &nbsp;·&nbsp; ${link('https://dash.cloudflare.com','Cloudflare dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(instCols, rvaultRowsFor('d1','d1'), 'd1'),
+        instanceTable(rvaultCols('cloudflare-d1'), rvaultRowsFor('d1','d1','cloudflare-d1'), 'd1'),
         'cloudflare-d1'
       )}
 
@@ -1071,7 +1104,7 @@ async function loadBackups() {
         `/Volumes/RVAULT20/backups/alpacapps/github/ &nbsp;·&nbsp; Cron on Almaca
          &nbsp;·&nbsp; ${link('https://github.com/rsonnad/alpacapps','github.com/rsonnad/alpacapps ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(instCols, rvaultRowsFor('github','github'), 'github'),
+        instanceTable(rvaultCols('github-repo'), rvaultRowsFor('github','github','github-repo'), 'github'),
         'github-repo'
       )}
 
