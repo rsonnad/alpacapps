@@ -1,12 +1,12 @@
 {
-  "version": "v260327.17 2:23p",
-  "release": 1063,
-  "sha": "028e7bbfb",
-  "fullSha": "028e7bbfb6ed01e676ff6b2e36c2ad598e899267",
+  "version": "v260327.18 2:25p",
+  "release": 1064,
+  "sha": "e736c4925",
+  "fullSha": "e736c492561257d2ed3e0d9cdbee77bf447fa0e7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 19:23:31+00",
-  "commits": [{"sha":"028e7bbfb","message":"fix: share auth session for Test buttons, show untested instead of unknown","author":"Claude"}]
+  "pushedAt": "2026-03-27 19:25:20+00",
+  "commits": [{"sha":"e736c4925","message":"feat: expand alpaca facts from 30 to 58 with history, genetics, Peru, science","author":"Claude"}]
 }
