@@ -148,6 +148,59 @@
           </div>
         </div>
 
+        <!-- How It All Connects — collapsible explainer -->
+        <details class="inv-details" style="margin-bottom: 1.5rem; border-color: var(--accent, #b8a88a);">
+          <summary style="font-weight: 600; color: var(--accent-dark, #7a6e56);">
+            <span>How It All Connects</span>
+            <span class="inv-summary-meta">Architecture overview for humans and AI sessions</span>
+          </summary>
+          <div class="inv-details-body" style="line-height: 1.8;">
+
+            <p style="margin-bottom: 1rem; color: #374151;">AlpacApps is a property management + smart home control platform. There is no traditional server — static HTML/JS is served from GitHub Pages, and all business logic lives in Supabase edge functions or runs as background services on a Mac Mini.</p>
+
+            <dt>The Request Path</dt>
+            <dd>Browser loads static pages from GitHub Pages &rarr; JS calls Supabase (auth + data) &rarr; Edge functions call external APIs (Stripe, Nest, Tesla, etc.) &rarr; Responses flow back to the browser. No middleware, no Node server, no SSR.</dd>
+
+            <dt>Who Can Do What (5 Access Levels)</dt>
+            <dd>
+              <strong>Public (0):</strong> View spaces, events, submit contact forms<br>
+              <strong>Resident (1):</strong> See own bookings, control assigned devices, house WiFi/door codes<br>
+              <strong>Staff (2):</strong> CRUD people/spaces, send notifications, create payment links, all devices<br>
+              <strong>Admin (3):</strong> Everything + all credentials, manage users, edit PAI config<br>
+              <strong>Oracle (4):</strong> Service-to-service only (edge function internal calls)
+            </dd>
+
+            <dt>How Credentials Flow</dt>
+            <dd>
+              <strong>Client side:</strong> Public Supabase anon key (safe to expose) + user JWT in localStorage<br>
+              <strong>Edge functions:</strong> Service role key via <code>Deno.env.get()</code> — never exposed to browser<br>
+              <strong>Device configs:</strong> API keys stored in DB config tables (<code>govee_config</code>, <code>nest_config</code>, etc.)<br>
+              <strong>Operator tools:</strong> Bitwarden vault for SSH passwords, API tokens — used by scripts, not app code
+            </dd>
+
+            <dt>Smart Home Control Chain</dt>
+            <dd>Browser &rarr; Edge function (auth check + permission validation) &rarr; Device API (Govee Cloud, Nest SDM, Tesla Fleet, etc.) or local proxy (WiZ Proxy, Sonos HTTP API on Alpuca Mac). Home Assistant acts as a unified hub for WiZ bulbs, Sonos, and TP-Link switches.</dd>
+
+            <dt>PAI (AI Assistant) — 5 Channels</dt>
+            <dd>
+              <strong>Web chat</strong> (JWT auth) &bull; <strong>Discord</strong> (maps discord_id to app_user) &bull; <strong>Email</strong> (Resend webhook, sender lookup) &bull; <strong>Voice</strong> (Vapi, phone number lookup) &bull; <strong>API</strong> (service key)<br>
+              Each channel resolves to a user level, which scopes what devices PAI can control and what data it can access. PAI uses Gemini 2.5 Pro with ~25 function-calling tools, each gated by <code>userLevel</code>.
+            </dd>
+
+            <dt>Background Services</dt>
+            <dd>15 LaunchAgents on Alpuca Mac handle local device proxies (Sonos, WiZ, cameras), file syncs (rclone to RVAULT20), and monitoring (UPSense). 6 cron jobs handle backups and Google Drive syncs. 3 pg_cron jobs inside Supabase handle Sonos schedules and token refreshes.</dd>
+
+            <dt>Data Storage</dt>
+            <dd>
+              <strong>Supabase PostgreSQL:</strong> 70+ tables — core entities, payments, smart home configs, AI prompts<br>
+              <strong>Supabase Storage:</strong> Photos, documents, camera snapshots<br>
+              <strong>Cloudflare R2:</strong> Leases, legal documents<br>
+              <strong>RVAULT20:</strong> Google Drive mirrors, Tesla dashcam, repo backups (local USB drive)
+            </dd>
+
+          </div>
+        </details>
+
         <!-- Subtabs -->
         <div class="inv-subtabs" id="invSubtabs">
           <button class="inv-subtab active" data-tab="dashboard">Dashboard</button>
