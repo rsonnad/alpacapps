@@ -216,18 +216,24 @@ function formatTime(timeStr) {
 // =============================================
 const FACT_ROTATE_INTERVAL = 20_000; // 20s per fact
 let allFacts = [...FALLBACK_FACTS];
-let currentFactIndex = 0;
+let currentFactIndex = Math.floor(Math.random() * FALLBACK_FACTS.length);
 
 async function loadFacts() {
-  // Try to fetch recent facts from DB
+  // Try to fetch recent facts from DB and merge with fallbacks
   try {
     const { data } = await supabase
       .from('kiosk_facts')
       .select('fact_text')
       .order('generated_date', { ascending: false })
-      .limit(10);
+      .limit(20);
     if (data && data.length > 0) {
-      allFacts = data.map(d => d.fact_text);
+      const dbFacts = data.map(d => d.fact_text);
+      // Merge DB facts (at front) with fallbacks, deduplicating
+      const merged = [...dbFacts];
+      for (const f of FALLBACK_FACTS) {
+        if (!merged.includes(f)) merged.push(f);
+      }
+      allFacts = merged;
     }
   } catch (_) { /* use fallback array */ }
 
@@ -241,7 +247,6 @@ async function loadFacts() {
       const { fact } = await resp.json();
       if (fact && !allFacts.includes(fact)) {
         allFacts.unshift(fact); // add to front
-        if (allFacts.length > 10) allFacts.length = 10;
       }
     }
   } catch (_) { /* ignore */ }
