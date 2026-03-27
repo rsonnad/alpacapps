@@ -1,12 +1,12 @@
 {
-  "version": "v260327.24 2:36p",
-  "release": 1070,
-  "sha": "5a6c9e1d7",
-  "fullSha": "5a6c9e1d7e95d7b36414da6f3e68b422d6881fd8",
+  "version": "v260327.25 2:39p",
+  "release": 1071,
+  "sha": "2ffc44d1d",
+  "fullSha": "2ffc44d1d3acb02bbef55bb6ae72bd012445c1b6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 19:36:45+00",
-  "commits": [{"sha":"5a6c9e1d7","message":"fix: make version badge prominent, only show confirmed-offline in triage","author":"Claude"}]
+  "pushedAt": "2026-03-27 19:39:45+00",
+  "commits": [{"sha":"2ffc44d1d","message":"feat: add Test All button to sweep every device via Govee API","author":"Claude"}]
 }
