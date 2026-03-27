@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Spend Tokens — Read-Only Access Setup Guide</title>
+  <meta property="og:title" content="Cloud Spend Tokens — Read-Only Access Setup Guide">
+  <meta property="og:description" content="Step-by-step guide to creating read-only tokens for evaluating cloud provider spend across AWS, Google Cloud, Azure, and more.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/cloudtokens/">
+  <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --surface2: #f5f1ec;
+      --border: #e0d8cf;
+      --border-light: #ede8e2;
+      --text: #1a1a1a;
+      --text-soft: #3d3d3d;
+      --text-dim: #6b6b6b;
+      --text-muted: #9a9a9a;
+      --amber: #d4883a;
+      --amber-soft: rgba(212, 136, 58, 0.08);
+      --amber-border: rgba(212, 136, 58, 0.25);
+      --blue: #2563eb;
+      --blue-soft: rgba(37, 99, 235, 0.06);
+      --blue-border: rgba(37, 99, 235, 0.18);
+      --green: #16a34a;
+      --green-soft: rgba(22, 163, 74, 0.07);
+      --green-border: rgba(22, 163, 74, 0.22);
+      --purple: #7c3aed;
+      --purple-soft: rgba(124, 58, 237, 0.07);
+      --purple-border: rgba(124, 58, 237, 0.20);
+      --red: #dc2626;
+      --red-soft: rgba(220, 38, 38, 0.06);
+      --red-border: rgba(220, 38, 38, 0.18);
+      --orange: #ea580c;
+      --orange-soft: rgba(234, 88, 12, 0.06);
+      --orange-border: rgba(234, 88, 12, 0.20);
+      --teal: #0d9488;
+      --teal-soft: rgba(13, 148, 136, 0.07);
+      --teal-border: rgba(13, 148, 136, 0.20);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 4rem 1.5rem 2.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, #f0f4ff 0%, #e8f0fe 30%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+    .hero .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+    .hero .badge {
+      display: inline-block;
+      background: var(--blue-soft);
+      color: var(--blue);
+      border: 1px solid var(--blue-border);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Safety Banner ── */
+    .safety-banner {
+      background: var(--green-soft);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .safety-banner h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+    .safety-banner ul {
+      list-style: none;
+      font-size: 0.9rem;
+      color: var(--text-soft);
+    }
+    .safety-banner li {
+      padding: 0.2rem 0;
+      padding-left: 1.4rem;
+      position: relative;
+    }
+    .safety-banner li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    /* ── Table of Contents ── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow);
+    }
+    .toc h2 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem 1.5rem;
+    }
+    @media (max-width: 500px) {
+      .toc-grid { grid-template-columns: 1fr; }
+    }
+    .toc a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      padding: 0.35rem 0;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .toc a:hover { color: var(--blue); }
+    .toc .provider-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Provider Section ── */
+    .provider {
+      margin-bottom: 2.5rem;
+      scroll-margin-top: 2rem;
+    }
+    .provider-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--border-light);
+    }
+    .provider-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+    }
+    .provider-header h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .provider-header .difficulty {
+      margin-left: auto;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    /* ── Token Type Box ── */
+    .token-type {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.88rem;
+    }
+    .token-type strong {
+      color: var(--text);
+    }
+    .token-type .label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    /* ── Steps ── */
+    .steps {
+      counter-reset: step;
+      list-style: none;
+    }
+    .step {
+      counter-increment: step;
+      position: relative;
+      padding: 0.85rem 0 0.85rem 3.5rem;
+      border-left: 2px solid var(--border-light);
+      margin-left: 1rem;
+    }
+    .step:last-child {
+      border-left-color: transparent;
+    }
+    .step::before {
+      content: counter(step);
+      position: absolute;
+      left: -14px;
+      top: 0.85rem;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step p {
+      font-size: 0.92rem;
+      color: var(--text-soft);
+      margin-bottom: 0.3rem;
+    }
+    .step .action {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .step .detail {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+    .step .nav-path {
+      display: inline-block;
+      background: var(--surface2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      color: var(--text-soft);
+      margin: 0.25rem 0;
+      word-break: break-all;
+    }
+
+    /* ── Roles list ── */
+    .roles {
+      list-style: none;
+      margin: 0.5rem 0;
+    }
+    .roles li {
+      font-size: 0.85rem;
+      padding: 0.25rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-soft);
+    }
+    .roles li::before {
+      content: '+';
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    /* ── Warning / Tip callout ── */
+    .callout {
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin: 0.75rem 0;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .callout-warn {
+      background: var(--orange-soft);
+      border: 1px solid var(--orange-border);
+      color: var(--text-soft);
+    }
+    .callout-tip {
+      background: var(--blue-soft);
+      border: 1px solid var(--blue-border);
+      color: var(--text-soft);
+    }
+    .callout-label {
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    .callout-warn .callout-label { color: var(--orange); }
+    .callout-tip .callout-label { color: var(--blue); }
+
+    /* ── Console link button ── */
+    .console-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--blue);
+      text-decoration: none;
+      margin-top: 0.5rem;
+      transition: all 0.15s;
+      box-shadow: var(--shadow);
+    }
+    .console-link:hover {
+      border-color: var(--blue-border);
+      background: var(--blue-soft);
+    }
+    .console-link::after {
+      content: '\2197';
+      font-size: 0.9rem;
+    }
+
+    /* ── Other Providers Table ── */
+    .other-providers {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .other-providers th {
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .other-providers td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+      color: var(--text-soft);
+    }
+    .other-providers tr:hover td {
+      background: var(--surface2);
+    }
+    .other-providers a {
+      color: var(--blue);
+      font-weight: 500;
+    }
+    .other-providers .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+    }
+
+    /* ── Best Practices ── */
+    .best-practices {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .best-practices h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .bp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 550px) {
+      .bp-grid { grid-template-columns: 1fr; }
+    }
+    .bp-card {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .bp-card h4 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .bp-card p {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* ── Colors per provider ── */
+    .aws { --pcolor: #ff9900; }
+    .gcp { --pcolor: #4285f4; }
+    .azure { --pcolor: #0078d4; }
+    .aws .provider-icon { background: #232f3e; }
+    .gcp .provider-icon { background: #4285f4; }
+    .azure .provider-icon { background: #0078d4; }
+    .aws .step::before { background: #ff9900; }
+    .gcp .step::before { background: #4285f4; }
+    .azure .step::before { background: #0078d4; }
+    .aws .difficulty { background: var(--orange-soft); color: var(--orange); border: 1px solid var(--orange-border); }
+    .gcp .difficulty { background: var(--blue-soft); color: var(--blue); border: 1px solid var(--blue-border); }
+    .azure .difficulty { background: var(--purple-soft); color: var(--purple); border: 1px solid var(--purple-border); }
+  </style>
+</head>
+<body>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="badge">Reference Guide</div>
+    <h1>Cloud Spend Tokens</h1>
+    <p class="subtitle">How to create read-only tokens for evaluating spend across cloud providers. Follow each step exactly — no admin access is granted.</p>
+  </section>
+
+  <div class="container">
+
+    <!-- ── Safety Banner ── -->
+    <div class="safety-banner">
+      <h3>What these tokens can do</h3>
+      <ul>
+        <li>View billing data, invoices, and cost breakdowns</li>
+        <li>Read resource lists (servers, databases, storage) — <strong>no changes</strong></li>
+        <li>Export cost reports for analysis</li>
+        <li>These tokens <strong>cannot</strong> create, modify, or delete anything</li>
+      </ul>
+    </div>
+
+    <!-- ── TOC ── -->
+    <nav class="toc">
+      <h2>Jump to Provider</h2>
+      <div class="toc-grid">
+        <a href="#aws"><span class="provider-dot" style="background:#ff9900"></span>Amazon Web Services</a>
+        <a href="#gcp"><span class="provider-dot" style="background:#4285f4"></span>Google Cloud</a>
+        <a href="#azure"><span class="provider-dot" style="background:#0078d4"></span>Microsoft Azure</a>
+        <a href="#others"><span class="provider-dot" style="background:#6b6b6b"></span>Other Providers</a>
+        <a href="#best-practices"><span class="provider-dot" style="background:#16a34a"></span>Best Practices</a>
+      </div>
+    </nav>
+
+    <!-- ══════════════════════════════════════════
+         AWS
+         ══════════════════════════════════════════ -->
+    <section class="provider aws" id="aws">
+      <div class="provider-header">
+        <div class="provider-icon">AWS</div>
+        <h2>Amazon Web Services</h2>
+        <span class="difficulty">5 steps</span>
+      </div>
+
+      <div class="token-type">
+        <span class="label">What you're creating</span>
+        <strong>IAM User Access Key</strong> — a key pair (Access Key ID + Secret) attached to a user that can only read billing data.
+      </div>
+
+      <div class="callout callout-warn">
+        <span class="callout-label">Do this first</span>
+        Someone with root account access must enable IAM billing access: <strong>Account Settings &rarr; IAM User and Role Access to Billing Information &rarr; Activate</strong>. Without this, the token won't see any billing data.
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <p class="action">Open the IAM console</p>
+          <p class="detail">Search "IAM" in the AWS console search bar, or use the link below.</p>
+          <a href="https://console.aws.amazon.com/iam/" target="_blank" rel="noopener" class="console-link">Open AWS IAM Console</a>
+        </li>
+        <li class="step">
+          <p class="action">Create a new user</p>
+          <p class="detail">Click <strong>Users</strong> in the left sidebar &rarr; <strong>Create user</strong>. Name it something like <code>billing-readonly</code>. Do <strong>not</strong> check "Provide user access to the AWS Management Console".</p>
+        </li>
+        <li class="step">
+          <p class="action">Attach read-only policies</p>
+          <p class="detail">On the permissions step, choose <strong>Attach policies directly</strong>, then search for and select these three policies:</p>
+          <ul class="roles">
+            <li>ViewOnlyAccess</li>
+            <li>AWSBillingReadOnlyAccess</li>
+            <li>CostOptimizationHubReadOnlyAccess</li>
+          </ul>
+        </li>
+        <li class="step">
+          <p class="action">Create an access key</p>
+          <p class="detail">After the user is created, click on the user &rarr; <strong>Security credentials</strong> tab &rarr; <strong>Create access key</strong>. Select use case: <strong>Third-party service</strong>.</p>
+        </li>
+        <li class="step">
+          <p class="action">Save both values</p>
+          <p class="detail">Copy the <strong>Access Key ID</strong> and <strong>Secret Access Key</strong>. The secret is only shown once. Store both in a password manager immediately.</p>
+        </li>
+      </ol>
+
+      <div class="callout callout-tip">
+        <span class="callout-label">Tip</span>
+        For org-wide visibility across multiple AWS accounts, use AWS Organizations and grant the user the <code>AWSOrganizationsReadOnlyAccess</code> policy too.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         GCP
+         ══════════════════════════════════════════ -->
+    <section class="provider gcp" id="gcp">
+      <div class="provider-header">
+        <div class="provider-icon">GC</div>
+        <h2>Google Cloud</h2>
+        <span class="difficulty">4 steps</span>
+      </div>
+
+      <div class="token-type">
+        <span class="label">What you're creating</span>
+        <strong>Service Account Key (JSON file)</strong> — a downloadable credentials file for a non-human account that can only read billing data.
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <p class="action">Open Service Accounts</p>
+          <p class="detail">Go to <strong>IAM & Admin &rarr; Service Accounts</strong> in the Google Cloud Console.</p>
+          <a href="https://console.cloud.google.com/iam-admin/serviceaccounts" target="_blank" rel="noopener" class="console-link">Open GCP Service Accounts</a>
+        </li>
+        <li class="step">
+          <p class="action">Create a service account</p>
+          <p class="detail">Click <strong>Create Service Account</strong>. Name it something like <code>billing-reader</code>. Add a description like "Read-only access for spend evaluation".</p>
+        </li>
+        <li class="step">
+          <p class="action">Assign roles</p>
+          <p class="detail">On the "Grant this service account access" step, add these roles:</p>
+          <ul class="roles">
+            <li>Billing Account Viewer</li>
+            <li>Viewer (basic role)</li>
+          </ul>
+          <p class="detail" style="margin-top: 0.4rem;">For org-wide billing, grant these at the <strong>Billing Account</strong> level (not project level) — go to Billing &rarr; Account Management &rarr; add the service account there.</p>
+        </li>
+        <li class="step">
+          <p class="action">Download the JSON key</p>
+          <p class="detail">Click on the new service account &rarr; <strong>Keys</strong> tab &rarr; <strong>Add Key &rarr; Create New Key &rarr; JSON</strong>. A file downloads — this is your token. Store it securely.</p>
+        </li>
+      </ol>
+
+      <div class="callout callout-warn">
+        <span class="callout-label">Important</span>
+        The JSON key file is the entire credential — anyone with this file has the permissions you assigned. Treat it like a password.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         Azure
+         ══════════════════════════════════════════ -->
+    <section class="provider azure" id="azure">
+      <div class="provider-header">
+        <div class="provider-icon">Az</div>
+        <h2>Microsoft Azure</h2>
+        <span class="difficulty">5 steps</span>
+      </div>
+
+      <div class="token-type">
+        <span class="label">What you're creating</span>
+        <strong>App Registration + Client Secret</strong> — a three-part credential (Tenant ID, Client ID, Client Secret) for an app identity with read-only billing access.
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <p class="action">Register a new application</p>
+          <p class="detail">Go to <strong>Microsoft Entra ID &rarr; App Registrations &rarr; New Registration</strong>. Name it <code>billing-reader</code>. Leave redirect URI blank.</p>
+          <a href="https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps" target="_blank" rel="noopener" class="console-link">Open Azure App Registrations</a>
+        </li>
+        <li class="step">
+          <p class="action">Note the Tenant ID and Client ID</p>
+          <p class="detail">On the app's overview page, copy the <strong>Application (client) ID</strong> and <strong>Directory (tenant) ID</strong>. You'll need both.</p>
+        </li>
+        <li class="step">
+          <p class="action">Create a client secret</p>
+          <p class="detail">Go to <strong>Certificates & Secrets &rarr; New Client Secret</strong>. Set an expiry (recommended: 12 months). Copy the <strong>Value</strong> immediately — it's only shown once.</p>
+        </li>
+        <li class="step">
+          <p class="action">Assign read-only roles</p>
+          <p class="detail">Go to <strong>Subscriptions &rarr; your subscription &rarr; Access control (IAM) &rarr; Add role assignment</strong>. Add both:</p>
+          <ul class="roles">
+            <li>Reader</li>
+            <li>Cost Management Reader</li>
+          </ul>
+          <p class="detail" style="margin-top: 0.4rem;">Search for your app name (<code>billing-reader</code>) in the members step.</p>
+        </li>
+        <li class="step">
+          <p class="action">Save your three values</p>
+          <p class="detail">You need all three to authenticate: <strong>Tenant ID</strong>, <strong>Client ID</strong>, and <strong>Client Secret</strong>. Store in a password manager.</p>
+        </li>
+      </ol>
+
+      <div class="callout callout-tip">
+        <span class="callout-label">For org-wide access</span>
+        Assign the roles at the <strong>Management Group</strong> level instead of individual subscriptions to see costs across all subscriptions.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         Other Providers
+         ══════════════════════════════════════════ -->
+    <section class="provider" id="others">
+      <div class="provider-header">
+        <div class="provider-icon" style="background: #4b5563;">+</div>
+        <h2>Other Providers</h2>
+      </div>
+
+      <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1rem;">These providers have simpler token creation — usually one page with a "Read Only" toggle.</p>
+
+      <div style="overflow-x: auto;">
+        <table class="other-providers">
+          <thead>
+            <tr>
+              <th>Provider</th>
+              <th>Token Type</th>
+              <th>Key Setting</th>
+              <th>Console Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>DigitalOcean</strong></td>
+              <td class="mono">Personal Access Token</td>
+              <td>Select <strong>Read</strong> scope only</td>
+              <td><a href="https://cloud.digitalocean.com/account/api/tokens" target="_blank" rel="noopener">API Tokens</a></td>
+            </tr>
+            <tr>
+              <td><strong>Cloudflare</strong></td>
+              <td class="mono">API Token</td>
+              <td>Use "Read all resources" template</td>
+              <td><a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">API Tokens</a></td>
+            </tr>
+            <tr>
+              <td><strong>Vercel</strong></td>
+              <td class="mono">Access Token</td>
+              <td>Full read scope (no billing-only option)</td>
+              <td><a href="https://vercel.com/account/tokens" target="_blank" rel="noopener">Account Tokens</a></td>
+            </tr>
+            <tr>
+              <td><strong>Heroku</strong></td>
+              <td class="mono">API Key</td>
+              <td>Account-level; use <code>/account</code> and <code>/invoices</code> endpoints</td>
+              <td><a href="https://dashboard.heroku.com/account" target="_blank" rel="noopener">Account Settings</a></td>
+            </tr>
+            <tr>
+              <td><strong>Hetzner</strong></td>
+              <td class="mono">API Token</td>
+              <td>Toggle <strong>Read Only</strong> when creating</td>
+              <td><a href="https://console.hetzner.cloud" target="_blank" rel="noopener">Hetzner Console</a></td>
+            </tr>
+            <tr>
+              <td><strong>Linode / Akamai</strong></td>
+              <td class="mono">Personal Access Token</td>
+              <td>Set all scopes to <strong>Read Only</strong></td>
+              <td><a href="https://cloud.linode.com/profile/tokens" target="_blank" rel="noopener">API Tokens</a></td>
+            </tr>
+            <tr>
+              <td><strong>Oracle Cloud</strong></td>
+              <td class="mono">API Signing Key</td>
+              <td>Add user to <code>CostReaders</code> group</td>
+              <td><a href="https://cloud.oracle.com" target="_blank" rel="noopener">Cloud Console</a></td>
+            </tr>
+            <tr>
+              <td><strong>Fly.io</strong></td>
+              <td class="mono">Auth Token</td>
+              <td>Run <code>fly tokens create readonly</code></td>
+              <td>CLI only</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         Best Practices
+         ══════════════════════════════════════════ -->
+    <section class="best-practices" id="best-practices">
+      <h2>Best Practices</h2>
+      <div class="bp-grid">
+        <div class="bp-card">
+          <h4>Use service accounts, not personal</h4>
+          <p>If someone leaves the team, a personal token dies with their account. Service accounts survive offboarding.</p>
+        </div>
+        <div class="bp-card">
+          <h4>Rotate every 90 days</h4>
+          <p>Set a calendar reminder. Old tokens are a liability even if they're read-only.</p>
+        </div>
+        <div class="bp-card">
+          <h4>Store in a password manager</h4>
+          <p>Never in Slack, email, or shared docs. Use Bitwarden, 1Password, or AWS Secrets Manager.</p>
+        </div>
+        <div class="bp-card">
+          <h4>Minimum scope always</h4>
+          <p>Only grant billing + basic read access. Don't use admin keys "because it's easier".</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="footer">
+    <p>Cloud Spend Tokens Guide &mdash; For internal use</p>
+  </footer>
+
+</body>
+</html>
