@@ -59,7 +59,13 @@
     .status-badge.s-on { background: #e6f4e0; color: var(--success); }
     .status-badge.s-off { background: #fef3e0; color: var(--warning); }
     .status-badge.s-unavailable { background: #fce6e6; color: var(--error); }
+    .status-badge.s-untested { background: var(--bg); color: var(--muted); }
     .status-badge.s-unknown { background: var(--bg); color: var(--muted); }
+
+    /* Auth bar */
+    .auth-bar { padding: 8px 12px; background: #fef3e0; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--warning); display: flex; align-items: center; gap: 8px; }
+    .auth-bar a { color: var(--accent); font-weight: 600; text-decoration: underline; cursor: pointer; }
+    .auth-bar.signed-in { background: #e6f4e0; color: var(--success); }
 
     /* Per-device test button */
     .device-status-col { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
@@ -144,6 +150,7 @@
   <span class="poll-text" id="pollStatus">Loading...</span>
   <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">↻ Refresh</button>
 </div>
+<div class="auth-bar" id="authBar">Checking auth...</div>
 
 <div class="content">
   <!-- TRIAGE TAB -->
@@ -178,7 +185,9 @@
 <script>
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, storageKey: 'genalpaca-auth' }
+});
 
 let allDevices = [];
 let allSpaces = [];
@@ -318,10 +327,29 @@ window.manualRefresh = async function() {
   }
 };
 
+// ============ AUTH ============
+let isSignedIn = false;
+
+async function checkAuth() {
+  const bar = document.getElementById('authBar');
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      isSignedIn = true;
+      bar.className = 'auth-bar signed-in';
+      bar.innerHTML = `Signed in as ${session.user.email} · Test buttons active`;
+    } else {
+      bar.innerHTML = `Not signed in · <a href="/spaces/index.html">Sign in on main app</a> to enable Test buttons`;
+    }
+  } catch {
+    bar.innerHTML = `Auth check failed · <a href="/spaces/index.html">Sign in on main app</a> to enable Test buttons`;
+  }
+}
+
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', async () => {
   setupTabs();
-  await loadData();
+  await Promise.all([loadData(), checkAuth()]);
   lastPollTime = new Date();
   render();
   updatePollStatus();
@@ -351,13 +379,17 @@ async function loadData() {
 
 // ============ DEVICE STATUS ============
 function getDeviceStatus(dev) {
+  // Check live test result first
+  const live = liveStatus[dev.device_id];
+  if (live) return live.online ? 'online' : 'unavailable';
+  // DB field
   if (dev.online === true) return 'online';
   if (dev.online === false) return 'unavailable';
-  return 'unknown'; // null / not yet checked
+  return 'untested'; // null — never queried
 }
 
 function statusIcon(status) {
-  return { online: '🟢', off: '🟡', unavailable: '🔴', unknown: '⚪' }[status] || '⚪';
+  return { online: '🟢', off: '🟡', unavailable: '🔴', untested: '⚪' }[status] || '⚪';
 }
 
 function deviceTypeIcon(dev) {
