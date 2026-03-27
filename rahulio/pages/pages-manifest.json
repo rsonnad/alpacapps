@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-03-27T16:57:05.961Z",
+  "generatedAt": "2026-03-27T17:02:20.649Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "devicetesting/index.html",
+      "title": "Device Testing — Alpaca Playhouse",
+      "section": null,
+      "modifiedAt": "2026-03-27T17:01:33.000Z"
+    },
     {
       "path": "cloudtokens/index.html",
       "title": "Cloud Spend Tokens — Read-Only Access Setup Guide",

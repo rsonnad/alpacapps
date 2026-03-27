@@ -1,12 +1,12 @@
 {
-  "version": "v260327.09 11:56a",
-  "release": 1055,
-  "sha": "90a9f23f9",
-  "fullSha": "90a9f23f90e9be88009108ba9f83d1609cef1961",
+  "version": "v260327.10 12:01p",
+  "release": 1056,
+  "sha": "b986af697",
+  "fullSha": "b986af69765a8e33945c57545460e38532421803",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 16:56:12+00",
-  "commits": [{"sha":"90a9f23f9","message":"security: CORS origin restriction + camera bucket hardening","author":"Paca"}]
+  "pushedAt": "2026-03-27 17:01:33+00",
+  "commits": [{"sha":"b986af697","message":"Add device testing page for field walkthrough + space assignment","author":"Paca"}]
 }
