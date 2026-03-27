@@ -217,6 +217,19 @@
   <div class="tab-content" id="tab-strip">
     <div class="ha-status" id="stripStatus">Loading strip light...</div>
 
+    <!-- Current State Summary -->
+    <div class="section-card" id="stripSummaryCard" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div id="summaryColorSwatch" style="width:32px;height:32px;border-radius:8px;border:2px solid var(--border);flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700" id="summaryTitle">Strip Light</div>
+          <div style="font-size:12px;color:var(--muted)" id="summaryDetail">—</div>
+        </div>
+        <div id="summaryPowerBadge" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px">OFF</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--muted)" id="summaryChips"></div>
+    </div>
+
     <!-- Power + Brightness + Gradient -->
     <div class="section-card">
       <div class="strip-controls">
@@ -1040,6 +1053,7 @@ async function initStrip() {
     const capCount = [stripScenes.length + ' scenes', '11 music modes', '15 segments', 'color temp'].join(' · ');
     statusEl.textContent = `✅ Connected — ${capCount}`;
     renderStripUI();
+    updateSummary();
   } catch (e) {
     statusEl.className = 'ha-status error';
     statusEl.textContent = `❌ ${e.message}`;
@@ -1052,6 +1066,61 @@ function updatePowerBtn() {
   btn.textContent = stripIsOn ? '⏻ ON' : '⏻ OFF';
   const gBtn = document.getElementById('gradientBtn');
   if (gBtn) gBtn.className = 'toggle-btn' + (gradientOn ? ' active' : '');
+  updateSummary();
+}
+
+function updateSummary() {
+  const card = document.getElementById('stripSummaryCard');
+  card.style.display = '';
+  const swatch = document.getElementById('summaryColorSwatch');
+  const title = document.getElementById('summaryTitle');
+  const detail = document.getElementById('summaryDetail');
+  const badge = document.getElementById('summaryPowerBadge');
+  const chips = document.getElementById('summaryChips');
+
+  // Power badge
+  badge.textContent = stripIsOn ? 'ON' : 'OFF';
+  badge.style.background = stripIsOn ? 'var(--success)' : 'var(--error)';
+  badge.style.color = '#fff';
+
+  // Current color swatch
+  const hex = document.getElementById('customColor').value;
+  swatch.style.background = hex;
+
+  // What mode is active?
+  let mode = 'Solid color';
+  let modeDetail = hex.toUpperCase();
+  if (currentSceneName) {
+    mode = 'Scene';
+    const icon = SCENE_ICONS[currentSceneName] || '🎬';
+    modeDetail = `${icon} ${currentSceneName}`;
+    const grad = SCENE_GRADIENTS[currentSceneName];
+    if (grad) swatch.style.background = grad;
+  } else if (activeMusicMode) {
+    const m = MUSIC_MODES.find(x => x.value === activeMusicMode);
+    mode = 'Music Mode';
+    modeDetail = `${m?.icon || '🎵'} ${m?.name || activeMusicMode}`;
+    swatch.style.background = 'linear-gradient(135deg, #e040fb, #7c4dff)';
+  }
+
+  title.textContent = mode;
+  detail.textContent = modeDetail;
+
+  // Chips
+  const brightness = document.getElementById('stripBrightness').value;
+  const colorTempVal = document.getElementById('colorTemp').value;
+  const parts = [];
+  parts.push(`🔆 ${brightness}%`);
+  if (gradientOn) parts.push('🌈 Gradient');
+  if (colorTempVal && parseInt(colorTempVal) > 0) parts.push(`🌡️ ${colorTempVal}K`);
+  if (activeMusicMode) {
+    const sens = document.getElementById('musicSensitivity').value;
+    parts.push(`🎤 Sens ${sens}%`);
+    parts.push(musicAutoColor ? '🎨 Auto' : '🎨 Manual');
+  }
+  chips.innerHTML = parts.map(p =>
+    `<span style="background:var(--bg);padding:2px 8px;border-radius:10px;white-space:nowrap">${p}</span>`
+  ).join('');
 }
 
 function renderStripUI() {
@@ -1162,6 +1231,7 @@ window.setSolidColor = async function(r, g, b) {
     updatePowerBtn();
     document.getElementById('customColor').value = '#' + rgbInt.toString(16).padStart(6, '0');
     showToast(`Color set`, 'success');
+    updateSummary();
   } catch (e) {
     showToast(`Error: ${e.message}`, 'error');
   }
@@ -1176,6 +1246,7 @@ window.setColorTemp = function(val) {
       currentSceneName = null;
       activeMusicMode = null;
       renderStripUI();
+      updateSummary();
       await stripControl({
         type: 'devices.capabilities.color_setting',
         instance: 'colorTemperatureK',
@@ -1337,6 +1408,7 @@ window.setMusicMode = async function(mode) {
     updatePowerBtn();
     const modeName = MUSIC_MODES.find(m => m.value === mode)?.name || mode;
     showToast(`Music: ${modeName}`, 'success');
+    updateSummary();
   } catch (e) {
     showToast(`Error: ${e.message}`, 'error');
   }
