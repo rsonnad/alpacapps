@@ -1,12 +1,12 @@
 {
-  "version": "v260327.13 12:44p",
-  "release": 1059,
-  "sha": "70f5fb19e",
-  "fullSha": "70f5fb19ea22601f6102cd5d1d586abdeb6d2f62",
+  "version": "v260327.14 2:16p",
+  "release": 1060,
+  "sha": "818d02ade",
+  "fullSha": "818d02ade776dc405d0998b899879f9392906dcb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 17:44:55+00",
-  "commits": [{"sha":"70f5fb19e","message":"fix: custom video thumbnails with duration badge and tap-to-play lightbox","author":"Claude"}]
+  "pushedAt": "2026-03-27 19:16:43+00",
+  "commits": [{"sha":"db231b5a3","message":"fix: remove hardcoded unavailable list, add 10-min polling to device testing","author":"Claude"},{"sha":"99ad22044","message":"feat: add per-device Test button that checks live Govee API status","author":"Claude"},{"sha":"818d02ade","message":"Merge branch 'claude/fix-strip-light-unavailable-ArMcj'","author":"Claude"}]
 }
