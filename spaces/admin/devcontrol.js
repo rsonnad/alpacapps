@@ -857,13 +857,15 @@ async function loadBackups() {
   const panel = document.getElementById('dc-panel-backups');
   panel.innerHTML = '<div class="dc-empty">Loading backup logs...</div>';
 
-  const [rvaultResult, haosResult] = await Promise.allSettled([
+  const [rvaultResult, haosResult, triggersResult] = await Promise.allSettled([
     supabase.from('backup_logs').select('*').order('created_at', { ascending: false }).limit(50),
     supabase.from('haos_backups').select('*').order('date', { ascending: false }).limit(50),
+    supabase.from('backup_triggers').select('*').eq('status', 'pending').order('requested_at', { ascending: false }),
   ]);
 
   const logs = rvaultResult.status === 'fulfilled' && !rvaultResult.value.error ? rvaultResult.value.data || [] : [];
   const haosBackups = haosResult.status === 'fulfilled' && !haosResult.value.error ? haosResult.value.data || [] : [];
+  const pendingTriggers = triggersResult.status === 'fulfilled' && !triggersResult.value.error ? triggersResult.value.data || [] : [];
 
   const lastSyncMs = haosBackups.length ? Math.max(...haosBackups.map(b => new Date(b.synced_at).getTime())) : 0;
   function haosStillExists(b) {
@@ -930,7 +932,7 @@ async function loadBackups() {
         <td>${statusBadge}</td>
         <td style="color:var(--text-muted,#888)">${detailStr}</td>
         <td>${size}</td>
-        <td><span class="dc-bk-path" onclick="navigator.clipboard.writeText('${folderPath}');showToast('Path copied')" title="Click to copy">${folderPath}</span></td>
+        <td><button class="dc-bk-copy-path" onclick="navigator.clipboard.writeText('${folderPath}');showToast('Path copied — paste in Finder → Go → Go to Folder')" title="${folderPath}">📋 ${folderPath}</button></td>
       </tr>`;
     });
   }
@@ -956,7 +958,7 @@ async function loadBackups() {
     </tr>`;
   });
 
-  // Backup Now: insert a trigger row into backup_triggers, show toast
+  // Backup Now: insert trigger, update schedule area to show pending
   window.dcBackupNow = async function(service) {
     const btn = event.target.closest('button');
     btn.disabled = true;
@@ -968,9 +970,16 @@ async function loadBackups() {
         status: 'pending',
       });
       if (error) throw error;
-      showToast(`Backup requested for ${service}. Will run on next cron poll.`);
+      showToast(`Backup requested for ${service}`);
       btn.textContent = 'Requested ✓';
-      setTimeout(() => { btn.disabled = false; btn.textContent = 'Backup Now'; }, 5000);
+      // Update the schedule section to show the pending request
+      const schedEl = document.getElementById(`dc-bk-sched-${service}`);
+      if (schedEl) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        schedEl.insertAdjacentHTML('beforeend',
+          `<div class="dc-bk-sched-pending">⏳ Manual backup requested at ${timeStr} — pending</div>`);
+      }
     } catch (e) {
       showToast(`Trigger failed: ${e.message}`);
       btn.disabled = false;
@@ -979,6 +988,11 @@ async function loadBackups() {
   };
 
   function serviceBlock(dotClass, name, desc, meta, freq, next, backupsHtml, svcKey) {
+    const pending = pendingTriggers.filter(t => t.service === svcKey);
+    const pendingHtml = pending.map(t => {
+      const when = new Date(t.requested_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      return `<div class="dc-bk-sched-pending">⏳ Manual backup requested at ${when} — pending</div>`;
+    }).join('');
     return `<div class="dc-bk-service">
       <div class="dc-bk-section">
         <div class="dc-bk-section-label">Service</div>
@@ -989,18 +1003,21 @@ async function loadBackups() {
               <div class="dc-bk-svc-desc">${desc}</div>
               <div class="dc-bk-svc-meta">${meta}</div>
             </div>
-            <button class="dc-bk-now-btn" onclick="dcBackupNow('${svcKey}')">Backup Now</button>
+            <button class="dc-bk-now-btn" onclick="dcBackupNow('${svcKey}')"${pending.length ? ' disabled' : ''}>
+              ${pending.length ? 'Requested ✓' : 'Backup Now'}
+            </button>
           </div>
         </div>
       </div>
       <div class="dc-bk-section">
         <div class="dc-bk-section-label">Schedule</div>
-        <div class="dc-bk-section-body">
+        <div class="dc-bk-section-body" id="dc-bk-sched-${svcKey}">
           <div class="dc-bk-sched-line">
             <span class="dc-bk-sched-freq">${esc(freq)}</span>
             <span class="dc-bk-sched-next">Next: ${esc(fmtScheduleDate(next))}</span>
             <span class="dc-bk-sched-countdown">${esc(timeUntil(next))}</span>
           </div>
+          ${pendingHtml}
         </div>
       </div>
       <div class="dc-bk-section">

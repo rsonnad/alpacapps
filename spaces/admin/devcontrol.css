@@ -282,14 +282,25 @@
 }
 .dc-bk-now-btn:hover { background: var(--accent, #b8a88a); color: #fff; }
 .dc-bk-now-btn:disabled { opacity: 0.5; cursor: default; }
-.dc-bk-path {
+.dc-bk-copy-path {
   font-family: 'SF Mono', 'Fira Code', monospace;
   font-size: 0.6875rem;
   color: var(--text-muted, #888);
   cursor: pointer;
-  border-bottom: 1px dashed var(--border, #e2e0db);
+  background: var(--bg-subtle, #faf9f6);
+  border: 1px solid var(--border, #e2e0db);
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  transition: border-color 0.15s;
 }
-.dc-bk-path:hover { color: var(--accent, #b8a88a); }
+.dc-bk-copy-path:hover { border-color: var(--accent, #b8a88a); color: var(--accent, #b8a88a); }
+.dc-bk-sched-pending {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: #e65100;
+  font-weight: 500;
+}
 
 /* Releases */
 .dc-release-group-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.75rem; margin-top: 1.5rem; }
