@@ -1,12 +1,12 @@
 {
-  "version": "v260327.20 2:28p",
-  "release": 1066,
-  "sha": "8ab75b845",
-  "fullSha": "8ab75b8455b3684a2099d26cf0c465690e0f2a86",
+  "version": "v260327.21 2:30p",
+  "release": 1067,
+  "sha": "8907c7535",
+  "fullSha": "8907c7535a84cb5c40d3cc971e099ce1d45fd1fc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 19:28:37+00",
-  "commits": [{"sha":"8ab75b845","message":"feat: F4 key triggers hard reload on device testing page","author":"Claude"}]
+  "pushedAt": "2026-03-27 19:30:01+00",
+  "commits": [{"sha":"8907c7535","message":"fix: make version badge visible in dark header","author":"Claude"}]
 }
