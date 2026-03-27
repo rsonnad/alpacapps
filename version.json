@@ -1,12 +1,12 @@
 {
-  "version": "v260327.29 3:12p",
-  "release": 1075,
-  "sha": "5820730e3",
-  "fullSha": "5820730e314af5a1bda8d36870ba65f3dfb3ac73",
+  "version": "v260327.30 3:16p",
+  "release": 1076,
+  "sha": "93778cf79",
+  "fullSha": "93778cf795e70969fc1d00f375e7c519c6048bd1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 20:12:37+00",
-  "commits": [{"sha":"5820730e3","message":"feat: rotate UniFi console as popup window (15s browser, 15s slideshow, 15s kiosk)","author":"Claude"}]
+  "pushedAt": "2026-03-27 20:16:58+00",
+  "commits": [{"sha":"93778cf79","message":"refactor: one service block per backup service, with data descriptions and remote URLs","author":"Paca"}]
 }
