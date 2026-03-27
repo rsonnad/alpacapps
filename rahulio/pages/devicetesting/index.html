@@ -346,6 +346,11 @@ async function checkAuth() {
   }
 }
 
+// F4 = hard reload
+document.addEventListener('keydown', e => {
+  if (e.key === 'F4') { e.preventDefault(); location.reload(true); }
+});
+
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', async () => {
   setupTabs();
