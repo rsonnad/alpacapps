@@ -1287,7 +1287,10 @@ async function showPermissionsModal(userId) {
   let html = '';
   let isFirstSection = true;
   for (const section of PERM_SUPER_SECTIONS) {
-    html += `<div class="perm-super-section">${section.label}</div>`;
+    html += `<div class="perm-super-section">
+      <label class="perm-section-check"><input type="checkbox" data-section="${section.label}" onchange="toggleSectionPerms(this, '${section.label}')"></label>
+      ${section.label}
+    </div>`;
     if (isFirstSection) {
       html += `<div class="perm-col-headers">
         <span class="pch-check"></span>
@@ -1306,8 +1309,9 @@ async function showPermissionsModal(userId) {
       if (groupPerms.length === 0 && !adminPerm) continue;
       const totalCount = groupPerms.length + (adminPerm ? 1 : 0);
 
-      html += `<div class="perm-group">`;
+      html += `<div class="perm-group" data-section="${section.label}">`;
       html += `<div class="perm-group-header" style="background:${group.headerBg};color:${group.headerColor};">
+        <label class="perm-group-check"><input type="checkbox" data-group="${group.id}" onchange="toggleGroupPerms(this, '${group.id}')"></label>
         <span class="pg-icon">${group.icon}</span> ${group.label}
         <span class="pg-count">${totalCount}</span>
       </div>`;
@@ -1323,6 +1327,7 @@ async function showPermissionsModal(userId) {
   }
 
   document.getElementById('permissionCategories').innerHTML = html;
+  syncGroupCheckboxes();
   // Snapshot initial state for dirty detection
   permModalInitialOverrides = new Map(permModalOverrides);
   updateSaveButtonState();
@@ -1368,7 +1373,87 @@ function togglePermOverride(checkbox, key, isRoleDefault) {
     permModalOverrides.delete(key);
     row.className = indentClass.trim();
   }
+  syncGroupCheckboxes();
   updateSaveButtonState();
+}
+
+// Toggle all permissions within a perm-group (e.g. Lighting, Music)
+function toggleGroupPerms(groupCheckbox, groupId) {
+  const checked = groupCheckbox.checked;
+  const group = groupCheckbox.closest('.perm-group');
+  if (!group) return;
+  const rows = group.querySelectorAll('.perm-table tr[data-key]');
+  rows.forEach(row => {
+    const cb = row.querySelector('input[type="checkbox"]');
+    if (!cb || cb.checked === checked) return;
+    cb.checked = checked;
+    const key = row.dataset.key;
+    const isRoleDefault = row.dataset.roleDefault === 'true';
+    togglePermOverride(cb, key, isRoleDefault);
+  });
+  syncGroupCheckboxes();
+  updateSaveButtonState();
+}
+
+// Toggle all permissions within a super-section (e.g. Resident, Staff)
+function toggleSectionPerms(sectionCheckbox, sectionLabel) {
+  const checked = sectionCheckbox.checked;
+  const groups = document.querySelectorAll(`.perm-group[data-section="${sectionLabel}"]`);
+  groups.forEach(group => {
+    const rows = group.querySelectorAll('.perm-table tr[data-key]');
+    rows.forEach(row => {
+      const cb = row.querySelector('input[type="checkbox"]');
+      if (!cb || cb.checked === checked) return;
+      cb.checked = checked;
+      const key = row.dataset.key;
+      const isRoleDefault = row.dataset.roleDefault === 'true';
+      // Apply override logic inline (avoid recursive sync calls)
+      const indentClass = row.classList.contains('pt-indent') ? ' pt-indent' : '';
+      if (isRoleDefault && checked) {
+        permModalOverrides.delete(key);
+        row.className = indentClass.trim();
+      } else if (isRoleDefault && !checked) {
+        permModalOverrides.set(key, false);
+        row.className = ('perm-revoked' + indentClass).trim();
+      } else if (!isRoleDefault && checked) {
+        permModalOverrides.set(key, true);
+        row.className = ('perm-granted' + indentClass).trim();
+      } else {
+        permModalOverrides.delete(key);
+        row.className = indentClass.trim();
+      }
+    });
+  });
+  syncGroupCheckboxes();
+  updateSaveButtonState();
+}
+
+// Sync group & section checkboxes to reflect child checkbox states
+function syncGroupCheckboxes() {
+  // Sync each group checkbox
+  document.querySelectorAll('.perm-group-header input[data-group]').forEach(gcb => {
+    const group = gcb.closest('.perm-group');
+    if (!group) return;
+    const cbs = group.querySelectorAll('.perm-table input[type="checkbox"]');
+    const total = cbs.length;
+    const checked = [...cbs].filter(c => c.checked).length;
+    gcb.checked = total > 0 && checked === total;
+    gcb.indeterminate = checked > 0 && checked < total;
+  });
+  // Sync each section checkbox
+  document.querySelectorAll('.perm-super-section input[data-section]').forEach(scb => {
+    const sectionLabel = scb.dataset.section;
+    const groups = document.querySelectorAll(`.perm-group[data-section="${sectionLabel}"]`);
+    let total = 0, checked = 0;
+    groups.forEach(g => {
+      g.querySelectorAll('.perm-table input[type="checkbox"]').forEach(cb => {
+        total++;
+        if (cb.checked) checked++;
+      });
+    });
+    scb.checked = total > 0 && checked === total;
+    scb.indeterminate = checked > 0 && checked < total;
+  });
 }
 
 function closePermissionsModal() {
@@ -1444,5 +1529,7 @@ window.unlinkPerson = unlinkPerson;
 window.showPermissionsModal = showPermissionsModal;
 window.closePermissionsModal = closePermissionsModal;
 window.togglePermOverride = togglePermOverride;
+window.toggleGroupPerms = toggleGroupPerms;
+window.toggleSectionPerms = toggleSectionPerms;
 window.resetPermissions = resetPermissions;
 window.savePermissions = savePermissions;

@@ -584,13 +584,18 @@
       font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
       padding: 0.55rem 0.75rem; color: #333; background: #eaeaea;
       border-top: 2px solid #ccc; border-bottom: 1px solid #ccc;
+      display: flex; align-items: center; gap: 0.5rem;
     }
+    .perm-section-check { display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+    .perm-section-check input[type="checkbox"] { margin: 0; cursor: pointer; width: 15px; height: 15px; accent-color: #555; }
     .perm-group { margin-bottom: 0; }
     .perm-group-header {
       font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
       padding: 0.4rem 0.75rem; border-bottom: 1px solid rgba(0,0,0,0.08);
       display: flex; align-items: center; gap: 0.4rem;
     }
+    .perm-group-check { display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+    .perm-group-check input[type="checkbox"] { margin: 0; cursor: pointer; width: 14px; height: 14px; }
     .perm-group-header .pg-icon { font-size: 0.85rem; opacity: 0.7; }
     .perm-group-header .pg-count { font-size: 0.6rem; font-weight: 400; opacity: 0.5; margin-left: auto; }
 
