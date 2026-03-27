@@ -1,12 +1,12 @@
 {
-  "version": "v260327.06 11:23a",
-  "release": 1052,
-  "sha": "31f2bf70d",
-  "fullSha": "31f2bf70db728f0f8674a50efdefbe88e2ff62f0",
+  "version": "v260327.07 11:45a",
+  "release": 1053,
+  "sha": "18a33ef33",
+  "fullSha": "18a33ef334f9ff84719cad929a78141c31c14765",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 16:23:34+00",
-  "commits": [{"sha":"31f2bf70d","message":"fix: only show tasks assigned to the user, not all unassigned tasks (#92)","author":"Rahul"}]
+  "pushedAt": "2026-03-27 16:45:35+00",
+  "commits": [{"sha":"18a33ef33","message":"feat: add resident space reservation system (quick-book)","author":"Paca"}]
 }
