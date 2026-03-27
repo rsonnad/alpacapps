@@ -108,10 +108,20 @@
     </footer>
   </div>
 
-  <!-- Art Screensaver Overlay -->
-  <div class="art-screensaver" id="artScreensaver" style="display:none">
-    <img class="art-screensaver-img" id="artImage" alt="">
-    <div class="art-screensaver-caption" id="artCaption"></div>
+  <!-- Rotation Overlays -->
+  <!-- 1. Network Dashboard (UniFi iframe) -->
+  <div class="rotation-overlay" id="networkOverlay" style="display:none">
+    <iframe class="rotation-iframe" id="networkIframe"
+            src="about:blank"
+            allow="autoplay"
+            sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+    <div class="rotation-label">Network Health</div>
+  </div>
+
+  <!-- 2. Image Slideshow (Alpaca imagery) -->
+  <div class="rotation-overlay" id="slideshowOverlay" style="display:none">
+    <img class="rotation-slideshow-img" id="slideshowImage" alt="">
+    <div class="rotation-label" id="slideshowCaption"></div>
   </div>
 
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
