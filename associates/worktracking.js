@@ -602,7 +602,7 @@ async function showClockInSummary() {
       .from('tasks')
       .select('id, title, priority, status, space:space_id(name)')
       .in('status', ['open', 'in_progress'])
-      .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+      .eq('assigned_to', userId)
       .order('priority', { ascending: true, nullsFirst: false })
       .limit(10);
 
@@ -634,7 +634,7 @@ async function sendClockInEmail() {
     .from('tasks')
     .select('id, title, priority, status, space:space_id(name), notes')
     .in('status', ['open', 'in_progress'])
-    .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+    .eq('assigned_to', userId)
     .order('priority', { ascending: true, nullsFirst: false })
     .limit(20);
 
@@ -1928,7 +1928,7 @@ async function refreshTasksList() {
       .from('tasks')
       .select('id, title, notes, description, priority, status, location_label, assigned_name, space:space_id(id, name)')
       .in('status', ['open', 'in_progress'])
-      .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+      .eq('assigned_to', userId)
       .order('priority', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false });
 
