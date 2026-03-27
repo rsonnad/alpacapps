@@ -137,7 +137,7 @@
 
 <div class="header">
   <h1>🦙 Device Testing</h1>
-  <span class="aap-header__version" style="font-size:11px;opacity:0.8;color:#fff">—</span>
+  <span id="versionBadge" style="font-size:11px;opacity:0.7;color:#ccc">—</span>
   <span class="badge" id="totalBadge">—</span>
 </div>
 
@@ -351,10 +351,19 @@ document.addEventListener('keydown', e => {
   if (e.key === 'F4') { e.preventDefault(); location.reload(true); }
 });
 
+// ============ VERSION ============
+async function loadVersion() {
+  try {
+    const r = await fetch('/version.json?_=' + Date.now());
+    const v = await r.json();
+    document.getElementById('versionBadge').textContent = v.version || '—';
+  } catch { /* silent */ }
+}
+
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', async () => {
   setupTabs();
-  await Promise.all([loadData(), checkAuth()]);
+  await Promise.all([loadData(), checkAuth(), loadVersion()]);
   lastPollTime = new Date();
   render();
   updatePollStatus();
