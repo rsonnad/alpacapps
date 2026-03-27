@@ -1,12 +1,12 @@
 {
-  "version": "v260327.30 3:16p",
-  "release": 1076,
-  "sha": "93778cf79",
-  "fullSha": "93778cf795e70969fc1d00f375e7c519c6048bd1",
+  "version": "v260327.31 3:22p",
+  "release": 1077,
+  "sha": "7513be944",
+  "fullSha": "7513be9449916085bbb9cc89d3943ed5c9b70459",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 20:16:58+00",
-  "commits": [{"sha":"93778cf79","message":"refactor: one service block per backup service, with data descriptions and remote URLs","author":"Paca"}]
+  "pushedAt": "2026-03-27 20:22:58+00",
+  "commits": [{"sha":"7513be944","message":"fix: point UniFi popup to /network/default/dashboard","author":"Claude"}]
 }
