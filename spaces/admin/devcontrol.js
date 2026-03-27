@@ -865,7 +865,6 @@ async function loadBackups() {
   const logs = rvaultResult.status === 'fulfilled' && !rvaultResult.value.error ? rvaultResult.value.data || [] : [];
   const haosBackups = haosResult.status === 'fulfilled' && !haosResult.value.error ? haosResult.value.data || [] : [];
 
-  // Determine which HAOS backups still exist on the HAOS server (present in last sync run)
   const lastSyncMs = haosBackups.length ? Math.max(...haosBackups.map(b => new Date(b.synced_at).getTime())) : 0;
   function haosStillExists(b) {
     return lastSyncMs > 0 && (lastSyncMs - new Date(b.synced_at).getTime()) < 86400000;
@@ -883,7 +882,10 @@ async function loadBackups() {
            new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   }
 
-  // Schedule next-run helpers
+  function badge(label, color, bg) {
+    return `<span class="dc-bk-badge" style="color:${color};background:${bg}">${esc(label)}</span>`;
+  }
+
   const nextRvault = getNextOccurrence(1, 1, 0);
   const nextHaosApp = (() => {
     const now = new Date(); const t = new Date(now); t.setHours(2, 0, 0, 0);
@@ -894,144 +896,131 @@ async function loadBackups() {
     return now >= t ? new Date(t.getTime() + 86400000) : t;
   })();
 
-  function scheduleCell(freq, next) {
-    return `<div class="dc-bk-freq">${esc(freq)}</div>
-            <div class="dc-bk-next">Next: ${esc(fmtScheduleDate(next))}</div>
-            <div class="dc-bk-countdown">${esc(timeUntil(next))}</div>`;
-  }
-
-  // Render a list of instance HTML rows with collapse for >3
-  function renderInstances(items, id) {
-    if (!items.length) return `<span class="dc-bk-none">No instances recorded</span>`;
-    const first3 = items.slice(0, 3);
-    const rest = items.slice(3);
+  // Build an instance table with optional row collapse beyond first 3
+  function instanceTable(headers, rows, id) {
+    if (!rows.length) return `<span class="dc-bk-none">No instances recorded</span>`;
+    const thead = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>`;
+    const first3 = rows.slice(0, 3);
+    const rest = rows.slice(3);
     const moreId = `dc-bk-more-${id}`;
-    return `<div class="dc-bk-inst-list">
-      ${first3.join('')}
-      ${rest.length ? `
-        <div id="${moreId}" style="display:none;flex-direction:column;gap:0.5rem">${rest.join('')}</div>
-        <button class="dc-bk-more-btn" onclick="var w=document.getElementById('${moreId}');var s=w.style.display==='none';w.style.display=s?'flex':'none';w.style.flexDirection='column';w.style.gap='0.5rem';this.textContent=s?'show less':'+ ${rest.length} more'">+ ${rest.length} more</button>
-      ` : ''}
-    </div>`;
+    return `<table class="dc-bk-inst-table">
+      ${thead}
+      <tbody>${first3.join('')}</tbody>
+      ${rest.length ? `<tbody id="${moreId}" style="display:none">${rest.join('')}</tbody>` : ''}
+    </table>
+    ${rest.length ? `<button class="dc-bk-more-btn" onclick="var b=document.getElementById('${moreId}');var s=b.style.display==='none';b.style.display=s?'':'none';this.textContent=s?'show less':'+ ${rest.length} more'">+ ${rest.length} more</button>` : ''}`;
   }
 
-  // Build RVAULT20 instances (from backup_logs)
-  const rvaultInstances = logs.filter(l => l.backup_type === 'full-to-rvault').map(l => {
+  // RVAULT20: one row per service per backup run
+  const rvaultSvcs = [
+    { key: 'supabase', label: 'Supabase DB',   folder: 'db'     },
+    { key: 'r2',       label: 'Cloudflare R2',  folder: 'r2'     },
+    { key: 'd1',       label: 'Cloudflare D1',  folder: 'd1'     },
+    { key: 'github',   label: 'GitHub Repo',    folder: 'github' },
+  ];
+  const rvaultRows = [];
+  logs.filter(l => l.backup_type === 'full-to-rvault').forEach(l => {
     const det = l.details || {};
-    const ok = l.status === 'success';
-    const statusStyle = ok ? 'color:#2e7d32;background:#e8f5e9' : 'color:#c62828;background:#ffebee';
-    const meta = [l.duration_seconds ? fmtDuration(l.duration_seconds) : '', det.total_size || ''].filter(Boolean).join(' · ');
-    const svcs = ['supabase','r2','d1','github'].map(k => {
-      const s = det[k]; if (!s) return null;
-      const c = s.status === 'success' ? '#2e7d32' : '#c62828';
-      return `<span style="color:${c};font-size:0.6875rem;">${s.status === 'success' ? '✓' : '✗'} ${{supabase:'DB',r2:'R2',d1:'D1',github:'Git'}[k]}</span>`;
-    }).filter(Boolean).join('<span style="color:#ddd;margin:0 2px">·</span>');
-    return `<div class="dc-bk-instance">
-      <span class="dc-bk-inst-date">${esc(fmtShort(l.created_at))}</span>
-      <span class="dc-bk-inst-badge" style="${statusStyle}">${esc(l.status)}</span>
-      ${meta ? `<span class="dc-bk-inst-meta">${esc(meta)}</span>` : ''}
-      ${svcs ? `<span style="display:flex;gap:0.25rem;align-items:center;">${svcs}</span>` : ''}
-    </div>`;
+    rvaultSvcs.forEach(svc => {
+      const s = det[svc.key];
+      const statusBadge = !s ? badge('no data','#aaa','#f5f5f5') :
+        s.status === 'success' ? badge('success','#2e7d32','#e8f5e9') :
+        badge('error','#c62828','#ffebee');
+      const detail = s?.detail;
+      let detailStr = '—';
+      if (detail && typeof detail === 'string') detailStr = esc(detail);
+      else if (detail?.files != null) detailStr = `${detail.files} files`;
+      else if (detail?.commits != null) detailStr = `${detail.commits} commits`;
+      const size = detail?.size || (svc.key === 'supabase' && det.total_size ? det.total_size : '') || '—';
+      const folder = `/Volumes/RVAULT20/backups/alpacapps/${svc.folder}/`;
+      rvaultRows.push(`<tr>
+        <td style="white-space:nowrap">${esc(fmtShort(l.created_at))}</td>
+        <td style="font-weight:500">${esc(svc.label)}</td>
+        <td>${statusBadge}</td>
+        <td style="color:var(--text-muted,#888)">${detailStr}</td>
+        <td>${esc(size)}</td>
+        <td><a href="file://${folder}" style="font-size:0.75rem;color:var(--accent,#b8a88a)" title="${folder}">📂 open folder</a></td>
+      </tr>`);
+    });
   });
 
-  // Build Home Assistant instances (from haos_backups)
-  const haosInstances = haosBackups.map(b => {
+  // HAOS: one row per backup snapshot
+  const haosRows = haosBackups.map(b => {
     const exists = haosStillExists(b);
-    const existsStyle = exists ? 'color:#2e7d32;background:#e8f5e9' : 'color:#888;background:#f0ede8';
-    const existsLabel = exists ? 'on HAOS' : 'deleted';
-    const typeStyle = b.type === 'full' ? 'color:#2e7d32;background:#e8f5e9' : 'color:#1565c0;background:#e3f2fd';
+    const existsBadge = exists ? badge('on HAOS','#2e7d32','#e8f5e9') : badge('deleted','#888','#f0ede8');
+    const typeBadge = b.type === 'full' ? badge('full','#2e7d32','#e8f5e9') : badge(b.type || '—','#1565c0','#e3f2fd');
     const content = b.content || {};
     const parts = [];
     if (content.homeassistant) parts.push('HA Core');
     if (content.addons?.length) parts.push(`${content.addons.length} add-ons`);
     if (content.folders?.length) parts.push(`${content.folders.length} folders`);
-    return `<div class="dc-bk-instance">
-      <span class="dc-bk-inst-date">${esc(fmtShort(b.date))}</span>
-      <span class="dc-bk-inst-badge" style="${typeStyle}">${esc(b.type || '—')}</span>
-      <span class="dc-bk-inst-meta">${esc(fmtSize(b.size_mb))}</span>
-      <span class="dc-bk-inst-badge" style="${existsStyle}">${existsLabel}</span>
-      <span class="dc-bk-inst-meta" style="color:var(--text,#1a1a1a)">${esc(b.name || b.slug || '')}</span>
-      ${parts.length ? `<span class="dc-bk-inst-meta">${esc(parts.join(', '))}</span>` : ''}
-    </div>`;
+    return `<tr>
+      <td style="white-space:nowrap">${esc(fmtShort(b.date))}</td>
+      <td class="dc-bk-name-col">${esc(b.name || b.slug || '—')}</td>
+      <td>${typeBadge}</td>
+      <td>${esc(fmtSize(b.size_mb))}</td>
+      <td style="color:var(--text-muted,#888)">${esc(parts.join(', ') || '—')}</td>
+      <td>${existsBadge}</td>
+    </tr>`;
   });
+
+  // Helper to build one full service block (service → schedule → backups stacked)
+  function serviceBlock(dotClass, name, desc, meta, freq, next, backupsHtml) {
+    return `<div class="dc-bk-service">
+      <div class="dc-bk-section">
+        <div class="dc-bk-section-label">Service</div>
+        <div class="dc-bk-section-body">
+          <div class="dc-bk-svc-name"><span class="dc-schedule-dot ${dotClass}"></span> ${esc(name)}</div>
+          <div class="dc-bk-svc-desc">${desc}</div>
+          <div class="dc-bk-svc-meta">${meta}</div>
+        </div>
+      </div>
+      <div class="dc-bk-section">
+        <div class="dc-bk-section-label">Schedule</div>
+        <div class="dc-bk-section-body">
+          <div class="dc-bk-sched-line">
+            <span class="dc-bk-sched-freq">${esc(freq)}</span>
+            <span class="dc-bk-sched-next">Next: ${esc(fmtScheduleDate(next))}</span>
+            <span class="dc-bk-sched-countdown">${esc(timeUntil(next))}</span>
+          </div>
+        </div>
+      </div>
+      <div class="dc-bk-section">
+        <div class="dc-bk-section-label">Backups</div>
+        <div class="dc-bk-section-body">${backupsHtml}</div>
+      </div>
+    </div>`;
+  }
 
   panel.innerHTML = `
     <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Backups</h2>
     <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.5rem;">Automated backups across infrastructure services.</p>
 
-    <div class="dc-bk-table">
-      <div class="dc-bk-header">
-        <div class="dc-bk-th">Service</div>
-        <div class="dc-bk-th">Schedule</div>
-        <div class="dc-bk-th">Backup Instances</div>
-      </div>
+    <div class="dc-bk-list">
+      ${serviceBlock(
+        'active', 'RVAULT20',
+        'Supabase DB &nbsp;·&nbsp; Cloudflare R2 &nbsp;·&nbsp; Cloudflare D1 &nbsp;·&nbsp; GitHub repo',
+        '/Volumes/RVAULT20/backups/alpacapps/ &nbsp;·&nbsp; Cron on Almaca &nbsp;·&nbsp; 12 DB dumps, 12 D1 exports, full R2, bare Git',
+        'Every Monday at 1:00 AM CT', nextRvault,
+        instanceTable(['When','Service','Status','Detail','Size','Location'], rvaultRows, 'rvault')
+      )}
 
-      <!-- RVAULT20 -->
-      <div class="dc-bk-row">
-        <div class="dc-bk-cell">
-          <div class="dc-bk-svc-name"><span class="dc-schedule-dot active"></span> RVAULT20</div>
-          <div class="dc-bk-svc-desc">Supabase DB · Cloudflare R2 · Cloudflare D1 · GitHub repo</div>
-          <div class="dc-bk-svc-meta">📦 /Volumes/RVAULT20/backups/alpacapps/<br>Cron on Almaca · 12 DB dumps, 12 D1 exports, full R2 mirror, bare Git</div>
-        </div>
-        <div class="dc-bk-cell">${scheduleCell('Every Monday at 1:00 AM CT', nextRvault)}</div>
-        <div class="dc-bk-cell">${renderInstances(rvaultInstances, 'rvault')}</div>
-      </div>
+      ${serviceBlock(
+        haosBackups.length ? 'active' : 'pending', 'Home Assistant',
+        'HAOS snapshots &nbsp;·&nbsp; configs, automations, add-ons',
+        'HAOS VM (192.168.1.39) &nbsp;·&nbsp; synced to Supabase &nbsp;·&nbsp; Cron on Alpuca (192.168.1.200)',
+        'Daily at 2:00 AM CT', nextHaosApp,
+        instanceTable(['When','Name','Type','Size','Contents','Exists'], haosRows, 'haos')
+      )}
 
-      <!-- Home Assistant -->
-      <div class="dc-bk-row">
-        <div class="dc-bk-cell">
-          <div class="dc-bk-svc-name"><span class="dc-schedule-dot ${haosBackups.length ? 'active' : 'pending'}"></span> Home Assistant</div>
-          <div class="dc-bk-svc-desc">HAOS full snapshot (configs, automations, add-ons)</div>
-          <div class="dc-bk-svc-meta">📦 HAOS VM (192.168.1.39) + synced to Supabase<br>Cron on Alpuca (192.168.1.200)</div>
-        </div>
-        <div class="dc-bk-cell">${scheduleCell('Daily at 2:00 AM CT', nextHaosApp)}</div>
-        <div class="dc-bk-cell">${renderInstances(haosInstances, 'haos')}</div>
-      </div>
-
-      <!-- HAOS VM Image -->
-      <div class="dc-bk-row">
-        <div class="dc-bk-cell">
-          <div class="dc-bk-svc-name"><span class="dc-schedule-dot active"></span> HAOS VM Image</div>
-          <div class="dc-bk-svc-desc">Raw QEMU disk image of the HAOS VM</div>
-          <div class="dc-bk-svc-meta">📦 /Volumes/RVAULT20/backups/haos/ (7-day retention)<br>Cron on Alpuca · haos_generic-aarch64.img</div>
-        </div>
-        <div class="dc-bk-cell">${scheduleCell('Daily at 3:17 AM CT', nextHaosVm)}</div>
-        <div class="dc-bk-cell" style="display:flex;align-items:center;">
-          <span class="dc-bk-none">Raw disk copy — no instance tracking</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- RVAULT20 Activity Log -->
-    <h3 class="dc-section-header">RVAULT20 Activity Log</h3>
-    ${!logs.length ? '<div class="dc-empty">No backup logs yet.</div>' : `
-      <div class="dc-table-wrap">
-        <table class="dc-table">
-          <thead><tr><th>Date</th><th>Status</th><th>Duration</th><th>Services</th><th>Size</th></tr></thead>
-          <tbody>
-            ${logs.map((l) => {
-              const det = l.details || {};
-              const statusCls = l.status === 'success' ? 'color:#2e7d32;background:#e8f5e9' : l.status === 'error' ? 'color:#c62828;background:#ffebee' : '';
-              const shortDate = new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-              const svcNames = { supabase: 'DB', r2: 'R2', d1: 'D1', github: 'Git' };
-              const svcHtml = ['supabase','r2','d1','github'].map(k => {
-                const s = det[k];
-                if (!s) return `<span style="color:var(--text-muted,#ccc);">${svcNames[k]}</span>`;
-                const c = s.status === 'success' ? '#2e7d32' : s.status === 'error' ? '#c62828' : '#e65100';
-                const icon = s.status === 'success' ? '✓' : '✗';
-                return `<span style="color:${c};">${icon} ${svcNames[k]}</span>`;
-              }).join('<span style="color:var(--border,#e2e0db);margin:0 0.25rem;">|</span>');
-              return `<tr>
-                <td style="white-space:nowrap">${esc(shortDate)}</td>
-                <td><span style="font-size:0.75rem;padding:2px 8px;border-radius:999px;${statusCls}">${esc(l.status)}</span></td>
-                <td>${fmtDuration(l.duration_seconds)}</td>
-                <td style="font-size:0.75rem;">${svcHtml}</td>
-                <td style="font-size:0.75rem;">${det.total_size || '—'}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`}`;
+      ${serviceBlock(
+        'active', 'HAOS VM Image',
+        'Raw QEMU disk image of the Home Assistant virtual machine',
+        '/Volumes/RVAULT20/backups/haos/ &nbsp;·&nbsp; Cron on Alpuca &nbsp;·&nbsp; 7-day retention &nbsp;·&nbsp; haos_generic-aarch64.img',
+        'Daily at 3:17 AM CT', nextHaosVm,
+        `<span class="dc-bk-none">Raw disk copy — no per-instance tracking in database</span>`
+      )}
+    </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════
