@@ -104,11 +104,12 @@ Alpuca (Mac mini M4) (Mac16,10), 24 GB RAM, 256 GB SSD, macOS 26.3.1 (Tahoe). He
 - **Tailscale Hostname:** `alpuca`
 - **Tailscale Account:** `alpacaautomatic@gmail.com`
 - **User:** `alpuca` (admin, auto-login)
-- **SSH:** `ssh paca@192.168.1.200` (Remote Login enabled)
+- **SSH:** `ssh paca@192.168.1.200` (key auth — preferred, password in BW may be stale)
 - **VNC:** `vnc://192.168.1.200` (Screen Sharing enabled, port 5900)
 - **Chrome Remote Desktop:** Installed (fallback remote access)
+- **Bitwarden:** "Alpuca — Primary Home Server (Mac mini M4)"
 
-> **Note:** SSH user is `paca` (short alias), macOS user is `alpuca`. Both work.
+> **Note:** SSH user is `paca` (short alias), macOS user is `alpuca`. Both work. **Key-based SSH is preferred** — the password in Bitwarden may be out of date.
 
 ### Bulletproof Configuration
 
@@ -200,6 +201,132 @@ docker ps -a
 
 # VNC from another Mac on the LAN
 open vnc://192.168.1.200
+```
+
+---
+
+## Home Assistant OS (HAOS) — on Alpuca VM
+
+HAOS runs as a QEMU VM on Alpuca. It's the central hub for light control, voice assistants, and device integrations.
+
+### Access
+
+| What | Value |
+|------|-------|
+| **VM Host** | Alpuca (192.168.1.200) |
+| **VM IP** | 192.168.1.39 (bridged on en0) |
+| **Web UI** | http://192.168.1.39:8123 |
+| **Login** | alpacaadmin / playhouse |
+| **Bitwarden** | "192.168.1.39" (web login) + "Home Assistant — IoT Hub" (API keys) |
+| **Timezone** | America/Chicago |
+| **VM start** | `sudo ~/homeassistant-vm/start-ha.sh` (auto-starts via LaunchDaemon) |
+
+### API Access (from Alpuca via SSH)
+
+HAOS uses OAuth2 login flow. The `ha-cmd.sh` script on Alpuca handles auth automatically with a 25-minute cached token.
+
+```bash
+# Quick service call via SSH
+ssh paca@192.168.1.200 "~/ha-cmd.sh light/turn_off '{\"entity_id\":\"light.living_room_lights\"}'"
+ssh paca@192.168.1.200 "~/ha-cmd.sh light/turn_on '{\"entity_id\":\"light.living_room_lights\",\"brightness\":50}'"
+
+# Interactive — use the alpuca wrapper
+alpuca ha light/turn_off '{"entity_id":"light.living_room_lights"}'
+```
+
+### Nabu Casa (Cloud — Alexa/Google Integration)
+
+Nabu Casa is active and bridges HAOS to Alexa and Google Assistant.
+
+- **Alexa integration:** Enabled, 181 entities exposed, state reporting ON
+- **Google Assistant:** Enabled
+- **Expose new entities:** Auto-expose ON (non-security devices)
+- **Config:** HAOS → Settings → Voice Assistants
+
+### Alexa Voice Control
+
+**Working rooms (via Nabu Casa → HAOS → WiZ):**
+- Master Pasture ceiling lights — "Alexa, set ceiling lights to 20%"
+
+**Known issue — Living Room:**
+Alexa says "something went wrong with Living 1, Living 2 and 3 more" because too many entities are exposed (strip light + 15 segments + WiZ group). Fix: In HAOS → Settings → Voice Assistants → Alexa → Expose tab, turn OFF the individual `livingroom_strip_light_segment_*` entities. Only expose `light.living_room_lights` (the WiZ group).
+
+**Living Room entities in HAOS:**
+
+| Entity | Friendly Name | Type | Expose to Alexa? |
+|--------|--------------|------|------------------|
+| `light.living_room_lights` | Living Room Lights | WiZ group | YES |
+| `light.livingroom_strip_light` | livingroom strip light | Govee strip | YES (optional) |
+| `light.livingroom_strip_light_segment_1` through `_15` | Segments 1-15 | Govee segments | NO — turn off |
+
+### WiZ Bulbs in HAOS (16 discovered)
+
+All WiZ RGBW Tunable bulbs are auto-discovered. Named by MAC suffix (e.g., `light.wiz_rgbw_tunable_81cce4`).
+
+### OREIN / Master Bathroom (Matter — commissioned via iPhone HA app)
+
+| Entity | Friendly Name |
+|--------|--------------|
+| `light.master_bathroom_lights` | Master Bathroom Lights (group) |
+| `light.smart_rgbtw_bulb` | Master Bathroom Tub |
+| `light.smart_rgbtw_bulb_2` | Master Bathroom Shower |
+| `light.smart_rgbtw_bulb_3` | Master Bathroom Frig |
+| `light.smart_rgbtw_bulb_4` | Master Bathroom Closet |
+| `light.smart_rgbtw_bulb_5` | Master Bathroom Toilet |
+
+### Matter Limitation
+
+HAOS runs in a QEMU VM → cannot do mDNS multicast → Matter commissioning fails. Existing OREIN bulbs were commissioned via iPhone HA app QR scan (which bypasses the VM limitation). New Matter devices require the same workaround or native (non-VM) HAOS.
+
+---
+
+## Secrets Quick Reference
+
+All secrets are in **Bitwarden** (DevOps-alpacapps vault). Use `~/bin/bw-unlock` to authenticate.
+
+```bash
+# Unlock Bitwarden (once per session)
+export BW_SESSION=$(~/bin/bw-unlock)
+```
+
+### Home Automation Secrets
+
+| Secret | Bitwarden Item | Retrieval |
+|--------|---------------|-----------|
+| **HAOS web login** | "192.168.1.39" | `alpacaadmin` / `playhouse` |
+| **HAOS API tokens** | "Home Assistant — IoT Hub" | Stored as Supabase secrets (write-only) |
+| **Alpuca SSH** | "Alpuca — Primary Home Server" | Key auth: `ssh paca@192.168.1.200` |
+| **Almaca SSH** | "Alpaca Mac — Local Machine" | Key auth: `ssh alpaca@192.168.1.74` |
+| **UDM Pro SSH (root)** | inline | `sshpass -p 'StillForest160%auto' ssh root@192.168.1.1` |
+| **UDM Pro API** | "UniFi Dream Machine Pro" | `alpacaauto` / `StillForest160!auto` (READ-ONLY) |
+| **Govee API key** | Supabase secret `GOVEE_API_KEY` | Set via `supabase secrets set` |
+| **Sonos proxy** | Supabase secret `SONOS_PROXY_SECRET` | Used by edge functions |
+| **Supabase Mgmt API** | "Supabase — AlpacApps Project" → `Management API Token` | `sbp_3e69...` |
+
+### Supabase Secrets (edge function env vars)
+
+These are write-only from the Management API (cannot read back plaintext). Update with:
+
+```bash
+SUPABASE_ACCESS_TOKEN=sbp_3e69... npx supabase secrets set HA_TOKEN=eyJhb... --project-ref aphrrfprbixmhissnjfn
+```
+
+**Home automation secrets stored:** `HA_BASE_URL`, `HA_TOKEN`, `WIZ_PROXY_URL`, `WIZ_PROXY_TOKEN`, `GOVEE_API_KEY`, `SONOS_PROXY_URL`, `SONOS_PROXY_SECRET`
+
+### SSH Quick Reference
+
+```bash
+# Alpuca (key auth — preferred)
+ssh paca@192.168.1.200
+
+# Almaca (key auth — preferred)
+ssh alpaca@192.168.1.74
+
+# Hostinger VPS (password-only — key auth broken)
+sshpass -p "$(bw get password 'Hostinger VPS — OpenClaw Server')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224
+
+# UDM Pro (root, for firewall/iptables)
+sshpass -p 'StillForest160%auto' ssh -o StrictHostKeyChecking=no root@192.168.1.1
 ```
 
 ---
