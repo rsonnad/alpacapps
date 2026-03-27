@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Device Testing — Alpaca Playhouse</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    :root {
+      --bg: #f6f5f0; --card: #fff; --text: #2a1f23; --muted: #7d6f74;
+      --accent: #d4883a; --success: #3a9c2e; --warning: #c9882a; --error: #a83a3a;
+      --border: #e5e0da; --radius: 10px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding-bottom: env(safe-area-inset-bottom, 20px); }
+
+    /* Header */
+    .header { position: sticky; top: 0; z-index: 50; background: var(--text); color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+    .header h1 { font-size: 17px; font-weight: 600; flex: 1; }
+    .header .badge { background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 49px; z-index: 40; }
+    .tab { flex: 1; text-align: center; padding: 10px 4px; font-size: 13px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
+    .tab.active { color: var(--accent); border-color: var(--accent); }
+
+    /* Content */
+    .content { padding: 12px; max-width: 600px; margin: 0 auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Stats bar */
+    .stats { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .stat { background: var(--card); border-radius: var(--radius); padding: 8px 12px; flex: 1; min-width: 70px; text-align: center; box-shadow: var(--shadow); }
+    .stat-num { font-size: 22px; font-weight: 700; }
+    .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .stat-num.online { color: var(--success); }
+    .stat-num.offline { color: var(--error); }
+    .stat-num.total { color: var(--accent); }
+
+    /* Device cards */
+    .location-group { margin-bottom: 16px; }
+    .location-header { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 0; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .location-header .count { font-size: 11px; background: var(--border); border-radius: 8px; padding: 1px 6px; }
+
+    .device-card { background: var(--card); border-radius: var(--radius); padding: 12px; margin-bottom: 6px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px; transition: all 0.15s; }
+    .device-card.unavailable { border-left: 3px solid var(--error); }
+    .device-card.online { border-left: 3px solid var(--success); }
+    .device-card.off { border-left: 3px solid var(--warning); }
+
+    .device-icon { font-size: 20px; width: 32px; text-align: center; flex-shrink: 0; }
+    .device-info { flex: 1; min-width: 0; }
+    .device-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .device-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .device-sku { font-size: 10px; color: var(--muted); background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+
+    .status-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
+    .status-badge.s-on { background: #e6f4e0; color: var(--success); }
+    .status-badge.s-off { background: #fef3e0; color: var(--warning); }
+    .status-badge.s-unavailable { background: #fce6e6; color: var(--error); }
+    .status-badge.s-unknown { background: var(--bg); color: var(--muted); }
+
+    /* Triage section */
+    .triage-card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 8px; box-shadow: var(--shadow); }
+    .triage-card .device-name { font-size: 15px; margin-bottom: 4px; }
+    .triage-card .device-meta { margin-bottom: 10px; }
+    .triage-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .triage-btn { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; transition: all 0.15s; }
+    .triage-btn:active { transform: scale(0.96); }
+    .triage-btn.working { border-color: var(--success); color: var(--success); }
+    .triage-btn.working.selected { background: var(--success); color: #fff; }
+    .triage-btn.powered-off { border-color: var(--warning); color: var(--warning); }
+    .triage-btn.powered-off.selected { background: var(--warning); color: #fff; }
+    .triage-btn.dead { border-color: var(--error); color: var(--error); }
+    .triage-btn.dead.selected { background: var(--error); color: #fff; }
+    .triage-btn.skip { border-color: var(--muted); color: var(--muted); }
+    .triage-btn.skip.selected { background: var(--muted); color: #fff; }
+    .triage-notes { width: 100%; margin-top: 8px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; resize: none; font-family: inherit; display: none; }
+    .triage-card.has-status .triage-notes { display: block; }
+
+    /* Space assignment */
+    .space-select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: #fff; margin-top: 8px; font-family: inherit; }
+    .space-select.assigned { border-color: var(--success); background: #f5faf3; }
+
+    /* Assignment tab */
+    .assign-group { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
+    .assign-group-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+    .assign-children { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .assign-child { padding: 2px 6px; background: var(--bg); border-radius: 4px; display: inline-block; margin: 1px 0; }
+
+    /* Save bar */
+    .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--text); color: #fff; padding: 12px 16px; display: none; align-items: center; gap: 10px; z-index: 60; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+    .save-bar.visible { display: flex; }
+    .save-bar .changes { flex: 1; font-size: 13px; }
+    .save-btn { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .save-btn:active { opacity: 0.8; }
+
+    /* Toast */
+    .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 100; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--error); }
+
+    /* Loading */
+    .loading { text-align: center; padding: 40px; color: var(--muted); }
+    .loading .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Filter */
+    .filter-bar { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+    .filter-chip { white-space: nowrap; font-size: 12px; padding: 5px 10px; border-radius: 14px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-weight: 500; }
+    .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🦙 Device Testing</h1>
+  <span class="badge" id="totalBadge">—</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="triage">⚠️ Triage</div>
+  <div class="tab" data-tab="all">📋 All Devices</div>
+  <div class="tab" data-tab="assign">🏠 Spaces</div>
+</div>
+
+<div class="content">
+  <!-- TRIAGE TAB -->
+  <div class="tab-content active" id="tab-triage">
+    <div class="stats" id="triageStats"></div>
+    <div id="triageList"><div class="loading"><div class="spinner"></div>Loading devices...</div></div>
+  </div>
+
+  <!-- ALL DEVICES TAB -->
+  <div class="tab-content" id="tab-all">
+    <div class="stats" id="allStats"></div>
+    <div class="filter-bar" id="filterBar"></div>
+    <div id="allList"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+  </div>
+
+  <!-- SPACE ASSIGNMENT TAB -->
+  <div class="tab-content" id="tab-assign">
+    <div class="stats" id="assignStats"></div>
+    <div id="assignList"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+  </div>
+</div>
+
+<div class="save-bar" id="saveBar">
+  <div class="changes" id="changeCount">0 changes</div>
+  <button class="save-btn" id="saveBtn" onclick="saveChanges()">Save</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let allDevices = [];
+let allSpaces = [];
+let pendingChanges = {};  // id -> { field: value }
+let triageResults = {};   // id -> { status, notes }
+
+// ============ INIT ============
+document.addEventListener('DOMContentLoaded', async () => {
+  setupTabs();
+  await loadData();
+  render();
+});
+
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+    });
+  });
+}
+
+async function loadData() {
+  const [devRes, spaceRes] = await Promise.all([
+    sb.from('govee_devices').select('*').order('name'),
+    sb.from('spaces').select('id, name, type').eq('is_archived', false).order('name')
+  ]);
+  allDevices = devRes.data || [];
+  allSpaces = spaceRes.data || [];
+  document.getElementById('totalBadge').textContent = allDevices.length + ' devices';
+}
+
+// ============ INFER HA STATUS ============
+// Map HA state from the device list we already have
+const HA_UNAVAILABLE = new Set([
+  'dog house roof', 'far back fence lights', 'LED garag String Light',
+  'livingroom strip light', 'north back fence light', 'Sauna Stick Lights',
+  'sauna tree String', 'shower flood', 'Spartan Bigbed 1', 'Spartan Bigbed 2',
+  'Spartan Bigbed 3', 'Spartan Bigbed 4', 'Spartan Lilbed 1', 'Spartan Lilbed 2',
+  'Spartan Main 1', 'Spartan Main 2', 'Spartan Main 3', 'Spartan Main 4',
+  'Spartan Main 5', 'Spartan Main 6', 'Stairway', 'TreDeco Projector'
+]);
+
+function getDeviceStatus(dev) {
+  if (HA_UNAVAILABLE.has(dev.name)) return 'unavailable';
+  if (dev.online === false) return 'off';
+  return 'online';
+}
+
+function statusIcon(status) {
+  return { online: '🟢', off: '🟡', unavailable: '🔴', unknown: '⚪' }[status] || '⚪';
+}
+
+function deviceTypeIcon(dev) {
+  const t = (dev.device_type || '').toLowerCase();
+  if (t.includes('flood')) return '💡';
+  if (t.includes('strip')) return '🌈';
+  if (t.includes('string')) return '✨';
+  if (t.includes('pathway')) return '🚶';
+  if (t.includes('projector')) return '🎆';
+  if (t.includes('group')) return '📦';
+  if (dev.is_group) return '📦';
+  return '💡';
+}
+
+// ============ RENDER ============
+function render() {
+  renderTriage();
+  renderAll();
+  renderAssign();
+}
+
+// --- TRIAGE ---
+function renderTriage() {
+  const unavail = allDevices.filter(d => HA_UNAVAILABLE.has(d.name) && !d.is_group);
+  const done = Object.keys(triageResults).length;
+
+  document.getElementById('triageStats').innerHTML = `
+    <div class="stat"><div class="stat-num offline">${unavail.length}</div><div class="stat-label">Offline</div></div>
+    <div class="stat"><div class="stat-num online">${done}</div><div class="stat-label">Triaged</div></div>
+    <div class="stat"><div class="stat-num total">${unavail.length - done}</div><div class="stat-label">Remaining</div></div>
+  `;
+
+  // Group by inferred location
+  const groups = {};
+  unavail.forEach(d => {
+    const loc = inferLocation(d.name);
+    if (!groups[loc]) groups[loc] = [];
+    groups[loc].push(d);
+  });
+
+  let html = '';
+  for (const [loc, devs] of Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]))) {
+    html += `<div class="location-group"><div class="location-header">📍 ${loc} <span class="count">${devs.length}</span></div>`;
+    for (const d of devs) {
+      const tr = triageResults[d.id] || {};
+      const hasStatus = tr.status ? 'has-status' : '';
+      html += `
+        <div class="triage-card ${hasStatus}" data-id="${d.id}">
+          <div class="device-name">${deviceTypeIcon(d)} ${d.name}</div>
+          <div class="device-meta">${d.sku} · ${d.device_type || 'Unknown type'} · ${d.area || ''}</div>
+          <div class="triage-actions">
+            <button class="triage-btn working ${tr.status === 'working' ? 'selected' : ''}" onclick="setTriage('${d.id}','working')">✅ Working</button>
+            <button class="triage-btn powered-off ${tr.status === 'powered-off' ? 'selected' : ''}" onclick="setTriage('${d.id}','powered-off')">🔌 Powered Off</button>
+            <button class="triage-btn dead ${tr.status === 'dead' ? 'selected' : ''}" onclick="setTriage('${d.id}','dead')">💀 Dead</button>
+            <button class="triage-btn skip ${tr.status === 'skip' ? 'selected' : ''}" onclick="setTriage('${d.id}','skip')">⏭️ Skip</button>
+          </div>
+          <textarea class="triage-notes" placeholder="Notes (optional)..." rows="2"
+            oninput="setTriageNotes('${d.id}', this.value)">${tr.notes || ''}</textarea>
+        </div>`;
+    }
+    html += '</div>';
+  }
+  document.getElementById('triageList').innerHTML = html || '<div class="loading">All devices triaged! 🎉</div>';
+}
+
+function inferLocation(name) {
+  const n = name.toLowerCase();
+  if (n.includes('spartan')) return 'Spartan Trailer';
+  if (n.includes('sauna')) return 'Sauna';
+  if (n.includes('garage') || n.includes('garag')) return 'Garage Mahal';
+  if (n.includes('living')) return 'Living Room';
+  if (n.includes('kitchen')) return 'Kitchen';
+  if (n.includes('outhouse')) return 'Outhouse';
+  if (n.includes('dog house')) return 'Dog House';
+  if (n.includes('fence')) return 'Back Yard';
+  if (n.includes('shower') || n.includes('flood')) return 'Spathroom';
+  if (n.includes('stair')) return 'Main House';
+  if (n.includes('cabin')) return 'Cabinearo';
+  if (n.includes('pond')) return 'Pond';
+  if (n.includes('patio')) return 'Back Yard Dining';
+  if (n.includes('balcony') || n.includes('skyloft')) return 'Skyloft';
+  if (n.includes('front')) return 'Front Yard';
+  if (n.includes('master') || n.includes('pasture')) return 'Master Pasture Suite';
+  if (n.includes('nook')) return 'Kitchen';
+  if (n.includes('projector') || n.includes('tredeco')) return 'Outdoor';
+  return 'Unassigned';
+}
+
+window.setTriage = function(id, status) {
+  if (!triageResults[id]) triageResults[id] = {};
+  triageResults[id].status = status;
+  addPendingChange(id, 'triage', status);
+  renderTriage();
+};
+
+window.setTriageNotes = function(id, notes) {
+  if (!triageResults[id]) triageResults[id] = {};
+  triageResults[id].notes = notes;
+  addPendingChange(id, 'notes', notes);
+};
+
+// --- ALL DEVICES ---
+function renderAll() {
+  const nonGroups = allDevices.filter(d => !d.is_group);
+  const groups = allDevices.filter(d => d.is_group);
+  const online = nonGroups.filter(d => getDeviceStatus(d) === 'online').length;
+  const offline = nonGroups.filter(d => getDeviceStatus(d) === 'unavailable').length;
+
+  document.getElementById('allStats').innerHTML = `
+    <div class="stat"><div class="stat-num total">${nonGroups.length}</div><div class="stat-label">Devices</div></div>
+    <div class="stat"><div class="stat-num online">${online}</div><div class="stat-label">Online</div></div>
+    <div class="stat"><div class="stat-num offline">${offline}</div><div class="stat-label">Offline</div></div>
+    <div class="stat"><div class="stat-num">${groups.length}</div><div class="stat-label">Groups</div></div>
+  `;
+
+  // Filter chips
+  const filters = ['All', 'Online', 'Offline', 'No Space'];
+  document.getElementById('filterBar').innerHTML = filters.map((f, i) =>
+    `<div class="filter-chip ${i === 0 ? 'active' : ''}" onclick="filterDevices('${f}', this)">${f}</div>`
+  ).join('');
+
+  renderDeviceList(nonGroups, 'allList');
+}
+
+window.filterDevices = function(filter, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  let devs = allDevices.filter(d => !d.is_group);
+  if (filter === 'Online') devs = devs.filter(d => getDeviceStatus(d) === 'online');
+  else if (filter === 'Offline') devs = devs.filter(d => getDeviceStatus(d) === 'unavailable');
+  else if (filter === 'No Space') devs = devs.filter(d => !d.space_id);
+  renderDeviceList(devs, 'allList');
+};
+
+function renderDeviceList(devs, containerId) {
+  const grouped = {};
+  devs.forEach(d => {
+    const loc = inferLocation(d.name);
+    if (!grouped[loc]) grouped[loc] = [];
+    grouped[loc].push(d);
+  });
+
+  let html = '';
+  for (const [loc, items] of Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]))) {
+    html += `<div class="location-group"><div class="location-header">📍 ${loc} <span class="count">${items.length}</span></div>`;
+    for (const d of items) {
+      const status = getDeviceStatus(d);
+      const spaceName = d.space_id ? (allSpaces.find(s => s.id === d.space_id)?.name || '?') : '';
+      html += `
+        <div class="device-card ${status}">
+          <div class="device-icon">${deviceTypeIcon(d)}</div>
+          <div class="device-info">
+            <div class="device-name">${d.name}</div>
+            <div class="device-meta">
+              <span class="device-sku">${d.sku}</span> ${d.device_type || ''}
+              ${spaceName ? ` · 🏠 ${spaceName}` : ''}
+            </div>
+          </div>
+          <div class="status-badge s-${status}">${statusIcon(status)} ${status}</div>
+        </div>`;
+    }
+    html += '</div>';
+  }
+  document.getElementById(containerId).innerHTML = html || '<div class="loading">No devices match filter</div>';
+}
+
+// --- SPACE ASSIGNMENT ---
+function renderAssign() {
+  const withSpace = allDevices.filter(d => d.space_id).length;
+  const without = allDevices.filter(d => !d.space_id).length;
+
+  document.getElementById('assignStats').innerHTML = `
+    <div class="stat"><div class="stat-num online">${withSpace}</div><div class="stat-label">Assigned</div></div>
+    <div class="stat"><div class="stat-num offline">${without}</div><div class="stat-label">Unassigned</div></div>
+    <div class="stat"><div class="stat-num total">${allSpaces.length}</div><div class="stat-label">Spaces</div></div>
+  `;
+
+  // Show groups first (assigning a group can cascade to children)
+  const groups = allDevices.filter(d => d.is_group).sort((a, b) => a.name.localeCompare(b.name));
+  const ungrouped = allDevices.filter(d => !d.is_group && !d.parent_group_id).sort((a, b) => a.name.localeCompare(b.name));
+
+  let html = '<div class="location-header">📦 Device Groups</div>';
+  for (const g of groups) {
+    const children = allDevices.filter(d => d.parent_group_id === g.device_id);
+    const currentSpace = pendingChanges[g.id]?.space_id ?? g.space_id ?? '';
+    html += `
+      <div class="assign-group">
+        <div class="assign-group-name">${g.name}</div>
+        <div class="assign-children">${children.length} member${children.length !== 1 ? 's' : ''}: ${children.map(c => `<span class="assign-child">${c.name}</span>`).join(' ')}</div>
+        <select class="space-select ${currentSpace ? 'assigned' : ''}" onchange="assignGroupSpace('${g.id}', '${g.device_id}', this.value)">
+          <option value="">— Select space —</option>
+          ${allSpaces.map(s => `<option value="${s.id}" ${currentSpace === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+        </select>
+      </div>`;
+  }
+
+  html += '<div class="location-header" style="margin-top: 16px">💡 Individual Devices</div>';
+  for (const d of ungrouped) {
+    const currentSpace = pendingChanges[d.id]?.space_id ?? d.space_id ?? '';
+    const status = getDeviceStatus(d);
+    html += `
+      <div class="assign-group">
+        <div class="assign-group-name">${statusIcon(status)} ${d.name}</div>
+        <div class="assign-children">${d.sku} · ${d.device_type || ''}</div>
+        <select class="space-select ${currentSpace ? 'assigned' : ''}" onchange="assignSpace('${d.id}', this.value)">
+          <option value="">— Select space —</option>
+          ${allSpaces.map(s => `<option value="${s.id}" ${currentSpace === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+        </select>
+      </div>`;
+  }
+
+  document.getElementById('assignList').innerHTML = html;
+}
+
+window.assignSpace = function(id, spaceId) {
+  addPendingChange(id, 'space_id', spaceId || null);
+  // Update local data for immediate visual feedback
+  const dev = allDevices.find(d => d.id === id);
+  if (dev) dev.space_id = spaceId || null;
+  renderAssign();
+};
+
+window.assignGroupSpace = function(groupId, groupDeviceId, spaceId) {
+  // Assign to group
+  addPendingChange(groupId, 'space_id', spaceId || null);
+  const group = allDevices.find(d => d.id === groupId);
+  if (group) group.space_id = spaceId || null;
+
+  // Cascade to children
+  const children = allDevices.filter(d => d.parent_group_id === groupDeviceId);
+  children.forEach(c => {
+    addPendingChange(c.id, 'space_id', spaceId || null);
+    c.space_id = spaceId || null;
+  });
+
+  showToast(`Assigned ${group?.name} + ${children.length} children`, 'success');
+  renderAssign();
+};
+
+// ============ PERSISTENCE ============
+function addPendingChange(id, field, value) {
+  if (!pendingChanges[id]) pendingChanges[id] = {};
+  pendingChanges[id][field] = value;
+  updateSaveBar();
+}
+
+function updateSaveBar() {
+  const count = Object.keys(pendingChanges).length;
+  const bar = document.getElementById('saveBar');
+  document.getElementById('changeCount').textContent = `${count} change${count !== 1 ? 's' : ''}`;
+  bar.classList.toggle('visible', count > 0);
+}
+
+window.saveChanges = async function() {
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  try {
+    const updates = [];
+    for (const [id, changes] of Object.entries(pendingChanges)) {
+      const updateData = { updated_at: new Date().toISOString() };
+
+      if (changes.space_id !== undefined) {
+        updateData.space_id = changes.space_id;
+      }
+      if (changes.notes !== undefined) {
+        updateData.notes = changes.notes;
+      }
+      if (changes.triage) {
+        // Map triage status to is_active
+        if (changes.triage === 'dead') {
+          updateData.is_active = false;
+          updateData.notes = (changes.notes || '') + ' [Triage: dead/removed]';
+        } else if (changes.triage === 'working') {
+          updateData.is_active = true;
+          updateData.notes = (changes.notes || '') + ' [Triage: working]';
+        } else if (changes.triage === 'powered-off') {
+          updateData.notes = (changes.notes || '') + ' [Triage: powered off - needs power]';
+        }
+      }
+
+      updates.push(sb.from('govee_devices').update(updateData).eq('id', id));
+    }
+
+    await Promise.all(updates);
+    pendingChanges = {};
+    updateSaveBar();
+    showToast(`Saved ${updates.length} changes!`, 'success');
+
+    // Reload data
+    await loadData();
+    render();
+  } catch (e) {
+    showToast('Error saving: ' + e.message, 'error');
+  } finally {
+    btn.textContent = 'Save';
+    btn.disabled = false;
+  }
+};
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 2500);
+}
+</script>
+
+</body>
+</html>
