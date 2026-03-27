@@ -1,12 +1,12 @@
 {
-  "version": "v260327.15 2:20p",
-  "release": 1061,
-  "sha": "56f77e5a8",
-  "fullSha": "56f77e5a82d53924c9ef36a55ab266614d616210",
+  "version": "v260327.16 2:22p",
+  "release": 1062,
+  "sha": "36b8fb3ce",
+  "fullSha": "36b8fb3cea5ce9927ce70d2ccb36243d48990068",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 19:20:08+00",
-  "commits": [{"sha":"56f77e5a8","message":"fix: add version badge to device testing header","author":"Claude"}]
+  "pushedAt": "2026-03-27 19:22:20+00",
+  "commits": [{"sha":"36b8fb3ce","message":"docs: add HAOS, Nabu Casa/Alexa, and secrets reference to HOMEAUTOMATION.md","author":"Rahul"}]
 }
