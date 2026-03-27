@@ -667,7 +667,7 @@ async function checkVersion() {
 // =============================================
 // NETWORK HEALTH — open UniFi console in popup window
 // =============================================
-const UNIFI_CONSOLE_URL = 'https://192.168.1.1';
+const UNIFI_CONSOLE_URL = 'https://192.168.1.1/network/default/dashboard';
 const UNIFI_POPUP_SECONDS = 30;
 let unifiPopup = null;
 
