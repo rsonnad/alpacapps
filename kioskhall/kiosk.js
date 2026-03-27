@@ -252,8 +252,12 @@ async function loadGuestbook() {
       let mediaHtml = '';
       if (entry.video_url) {
         mediaHtml = `<div class="guestbook-entry-media">
-          <video class="guestbook-thumb" src="${escapeHtml(entry.video_url)}#t=0.5"
-                 controls playsinline preload="metadata"></video>
+          <div class="video-thumb-wrap" data-video-url="${escapeHtml(entry.video_url)}">
+            <video class="guestbook-thumb" src="${escapeHtml(entry.video_url)}#t=0.5"
+                   playsinline preload="metadata" muted></video>
+            <div class="video-play-btn">&#9654;</div>
+            <span class="video-duration">--:--</span>
+          </div>
         </div>`;
       } else if (entry.audio_url) {
         mediaHtml = `<div class="guestbook-entry-media">
@@ -275,9 +279,46 @@ async function loadGuestbook() {
         ${mediaHtml}
       </div>`;
     }).join('');
+
+    // Read video durations from metadata and wire up play-on-tap
+    container.querySelectorAll('.video-thumb-wrap').forEach(wrap => {
+      const video = wrap.querySelector('video');
+      const durationEl = wrap.querySelector('.video-duration');
+      video.addEventListener('loadedmetadata', () => {
+        const dur = video.duration;
+        if (dur && isFinite(dur)) {
+          const m = Math.floor(dur / 60);
+          const s = Math.floor(dur % 60).toString().padStart(2, '0');
+          durationEl.textContent = `${m}:${s}`;
+        }
+      });
+      wrap.addEventListener('click', () => {
+        openVideoPlayer(wrap.dataset.videoUrl);
+      });
+    });
   } catch (err) {
     console.error('Failed to load guestbook:', err);
   }
+}
+
+function openVideoPlayer(url) {
+  let overlay = document.getElementById('videoPlayerOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'videoPlayerOverlay';
+    overlay.className = 'video-player-overlay';
+    overlay.innerHTML = `<video id="videoPlayerEl" class="video-player-el" controls autoplay playsinline></video>`;
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.querySelector('video').pause();
+        overlay.style.display = 'none';
+      }
+    });
+    document.body.appendChild(overlay);
+  }
+  const videoEl = overlay.querySelector('video');
+  videoEl.src = url;
+  overlay.style.display = '';
 }
 
 function timeAgo(date) {
