@@ -930,7 +930,7 @@ async function loadBackups() {
         <td>${statusBadge}</td>
         <td style="color:var(--text-muted,#888)">${detailStr}</td>
         <td>${size}</td>
-        <td><a href="file://${folderPath}" style="font-size:0.75rem;color:var(--accent,#b8a88a)" title="${folderPath}">📂 open</a></td>
+        <td><span class="dc-bk-path" onclick="navigator.clipboard.writeText('${folderPath}');showToast('Path copied')" title="Click to copy">${folderPath}</span></td>
       </tr>`;
     });
   }
@@ -951,18 +951,46 @@ async function loadBackups() {
       <td>${typeBadge}</td>
       <td>${esc(fmtSize(b.size_mb))}</td>
       <td style="color:var(--text-muted,#888)">${esc(parts.join(', ') || '—')}</td>
+      <td><span class="dc-bk-path" style="font-size:0.6875rem">HAOS VM + Supabase</span></td>
       <td>${existsBadge}</td>
     </tr>`;
   });
 
-  function serviceBlock(dotClass, name, desc, meta, freq, next, backupsHtml) {
+  // Backup Now: insert a trigger row into backup_triggers, show toast
+  window.dcBackupNow = async function(service) {
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+    btn.textContent = 'Requesting…';
+    try {
+      const { error } = await supabase.from('backup_triggers').insert({
+        service,
+        requested_at: new Date().toISOString(),
+        status: 'pending',
+      });
+      if (error) throw error;
+      showToast(`Backup requested for ${service}. Will run on next cron poll.`);
+      btn.textContent = 'Requested ✓';
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'Backup Now'; }, 5000);
+    } catch (e) {
+      showToast(`Trigger failed: ${e.message}`);
+      btn.disabled = false;
+      btn.textContent = 'Backup Now';
+    }
+  };
+
+  function serviceBlock(dotClass, name, desc, meta, freq, next, backupsHtml, svcKey) {
     return `<div class="dc-bk-service">
       <div class="dc-bk-section">
         <div class="dc-bk-section-label">Service</div>
         <div class="dc-bk-section-body">
-          <div class="dc-bk-svc-name"><span class="dc-schedule-dot ${dotClass}"></span> ${esc(name)}</div>
-          <div class="dc-bk-svc-desc">${desc}</div>
-          <div class="dc-bk-svc-meta">${meta}</div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div class="dc-bk-svc-name"><span class="dc-schedule-dot ${dotClass}"></span> ${esc(name)}</div>
+              <div class="dc-bk-svc-desc">${desc}</div>
+              <div class="dc-bk-svc-meta">${meta}</div>
+            </div>
+            <button class="dc-bk-now-btn" onclick="dcBackupNow('${svcKey}')">Backup Now</button>
+          </div>
         </div>
       </div>
       <div class="dc-bk-section">
@@ -999,7 +1027,8 @@ async function loadBackups() {
         `/Volumes/RVAULT20/backups/alpacapps/db/ &nbsp;·&nbsp; 12 rolling dumps &nbsp;·&nbsp; Cron on Almaca
          &nbsp;·&nbsp; ${link('https://supabase.com/dashboard/project/aphrrfprbixmhissnjfn','Supabase dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(instCols, rvaultRowsFor('supabase','db'), 'supabase')
+        instanceTable(instCols, rvaultRowsFor('supabase','db'), 'supabase'),
+        'supabase-db'
       )}
 
       ${serviceBlock('active', 'Cloudflare R2',
@@ -1007,7 +1036,8 @@ async function loadBackups() {
         `/Volumes/RVAULT20/backups/alpacapps/r2/ &nbsp;·&nbsp; Full mirror retained &nbsp;·&nbsp; Cron on Almaca
          &nbsp;·&nbsp; ${link('https://dash.cloudflare.com','Cloudflare dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(instCols, rvaultRowsFor('r2','r2'), 'r2')
+        instanceTable(instCols, rvaultRowsFor('r2','r2'), 'r2'),
+        'cloudflare-r2'
       )}
 
       ${serviceBlock('active', 'Cloudflare D1',
@@ -1015,7 +1045,8 @@ async function loadBackups() {
         `/Volumes/RVAULT20/backups/alpacapps/d1/ &nbsp;·&nbsp; 12 rolling exports &nbsp;·&nbsp; Cron on Almaca
          &nbsp;·&nbsp; ${link('https://dash.cloudflare.com','Cloudflare dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(instCols, rvaultRowsFor('d1','d1'), 'd1')
+        instanceTable(instCols, rvaultRowsFor('d1','d1'), 'd1'),
+        'cloudflare-d1'
       )}
 
       ${serviceBlock('active', 'GitHub Repo',
@@ -1023,7 +1054,8 @@ async function loadBackups() {
         `/Volumes/RVAULT20/backups/alpacapps/github/ &nbsp;·&nbsp; Cron on Almaca
          &nbsp;·&nbsp; ${link('https://github.com/rsonnad/alpacapps','github.com/rsonnad/alpacapps ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
-        instanceTable(instCols, rvaultRowsFor('github','github'), 'github')
+        instanceTable(instCols, rvaultRowsFor('github','github'), 'github'),
+        'github-repo'
       )}
 
       ${serviceBlock(
@@ -1032,14 +1064,16 @@ async function loadBackups() {
         `HAOS VM (192.168.1.39) → synced to Supabase &nbsp;·&nbsp; Cron on Alpuca (192.168.1.200)
          &nbsp;·&nbsp; ${link('http://192.168.1.39:8123','HA UI ↗ (LAN only)')}`,
         'Daily at 2:00 AM CT', nextHaosApp,
-        instanceTable(['When','Name','Type','Size','Contents','Exists'], haosRows, 'haos')
+        instanceTable(['When','Name','Type','Size','Contents','Location','Exists'], haosRows, 'haos'),
+        'home-assistant'
       )}
 
       ${serviceBlock('active', 'HAOS VM Image',
         'Raw QEMU disk image of the entire Home Assistant OS virtual machine — bootable full system recovery',
         `/Volumes/RVAULT20/backups/haos/ &nbsp;·&nbsp; 7-day retention &nbsp;·&nbsp; haos_generic-aarch64.img &nbsp;·&nbsp; Cron on Alpuca`,
         'Daily at 3:17 AM CT', nextHaosVm,
-        `<span class="dc-bk-none">Raw disk copy — no per-instance tracking in database</span>`
+        `<span class="dc-bk-none">Raw disk copy — no per-instance tracking in database</span>`,
+        'haos-vm-image'
       )}
 
     </div>`;
