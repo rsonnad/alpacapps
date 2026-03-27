@@ -1,12 +1,12 @@
 {
-  "version": "v260327.21 2:30p",
-  "release": 1067,
-  "sha": "8907c7535",
-  "fullSha": "8907c7535a84cb5c40d3cc971e099ce1d45fd1fc",
+  "version": "v260327.22 2:32p",
+  "release": 1068,
+  "sha": "1ee624989",
+  "fullSha": "1ee624989555bf8201fbd6d122c5dfcfd0e493ce",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 19:30:01+00",
-  "commits": [{"sha":"8907c7535","message":"fix: make version badge visible in dark header","author":"Claude"}]
+  "pushedAt": "2026-03-27 19:32:10+00",
+  "commits": [{"sha":"1ee624989","message":"fix: fetch version.json directly instead of relying on version-info.js","author":"Claude"}]
 }
