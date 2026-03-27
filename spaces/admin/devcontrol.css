@@ -228,6 +228,24 @@
 .dc-backup-last { border-top: 1px solid #f0ede8; margin-top: 0.75rem; padding-top: 0.75rem; font-size: 0.8125rem; }
 .dc-stale-badge { font-size: 0.6875rem; padding: 0.125rem 0.5rem; border-radius: 999px; background: #fff3e0; color: #e65100; }
 
+/* Schedule cards */
+.dc-schedule-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom: 1.75rem; }
+.dc-schedule-card {
+  border: 1px solid var(--border, #e2e0db);
+  border-radius: 12px;
+  padding: 1.25rem;
+  background: var(--bg-card, #fff);
+  position: relative;
+}
+.dc-schedule-card h3 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.dc-schedule-freq { font-size: 0.8125rem; color: var(--text-muted, #888); margin: 0.25rem 0; }
+.dc-schedule-next { font-size: 1rem; font-weight: 700; margin: 0.75rem 0 0.25rem; color: var(--text, #1f1720); }
+.dc-schedule-countdown { font-size: 0.75rem; color: var(--accent, #c7956d); font-weight: 600; }
+.dc-schedule-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dc-schedule-dot.active { background: #2e7d32; }
+.dc-schedule-dot.pending { background: #e65100; }
+.dc-schedule-dot.off { background: #bdbdbd; }
+
 /* Releases */
 .dc-release-group-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.75rem; margin-top: 1.5rem; }
 .dc-release-group-label:first-child { margin-top: 0; }
