@@ -583,81 +583,108 @@ async function checkVersion() {
 }
 
 // =============================================
-// ART SCREENSAVER (alternates: 15s art, 15s GUI, repeat)
-// Tap to dismiss → 2 min GUI pause before resuming
+// 3-VIEW ROTATION: Network (15s) → Slideshow (15s) → Kiosk (15s)
+// Tap any overlay to dismiss → 2 min kiosk before resuming
 // =============================================
-const ART_DISPLAY_SECONDS = 15;       // show one image for 15s
-const GUI_PAUSE_SECONDS = 15;         // show GUI for 15s between images
-const TAP_DISMISS_SECONDS = 120;      // 2 min GUI after user taps
-let artImages = [];
-let artTimer = null;
-let artIndex = 0;
+const ROTATION_SECONDS = 15;          // each view shows for 15s
+const TAP_DISMISS_SECONDS = 120;      // 2 min kiosk after user taps
+const UNIFI_DASHBOARD_URL = 'https://192.168.1.1/network/default/dashboard';
 
-async function loadArtImages() {
+// Views cycle: KIOSK → NETWORK → SLIDESHOW → KIOSK → ...
+const ROTATION_VIEWS = ['kiosk', 'network', 'slideshow'];
+let rotationTimer = null;
+let rotationIndex = 0;  // start at kiosk
+let slideshowImages = [];
+let slideshowIndex = 0;
+let networkIframeLoaded = false;
+
+async function loadSlideshowImages() {
   try {
     const { data } = await supabase
       .from('image_gen_jobs')
       .select('result_url, metadata')
-      .eq('batch_label', 'Alpaca Mac Screensaver')
       .eq('status', 'completed')
-      .order('created_at');
+      .ilike('metadata->>prompt', '%alpaca%')
+      .order('created_at', { ascending: false })
+      .limit(50);
     if (data && data.length > 0) {
-      artImages = data.map(d => ({
+      slideshowImages = data.map(d => ({
         url: d.result_url,
-        title: d.metadata?.title || '',
+        caption: d.metadata?.title || '',
       }));
     }
-  } catch (_) { /* no art available */ }
+  } catch (_) { /* no images available */ }
 }
 
-function showNextArt() {
-  if (artImages.length === 0) return;
+function showView(viewName) {
+  const networkOverlay = document.getElementById('networkOverlay');
+  const slideshowOverlay = document.getElementById('slideshowOverlay');
 
-  const overlay = document.getElementById('artScreensaver');
-  const img = document.getElementById('artImage');
-  const caption = document.getElementById('artCaption');
+  // Hide all overlays first
+  networkOverlay.classList.remove('visible');
+  slideshowOverlay.classList.remove('visible');
 
-  // Pick next image (wraps around)
-  const art = artImages[artIndex % artImages.length];
-  artIndex++;
-
-  // Fade out, swap, fade in
-  img.classList.remove('visible');
-  caption.classList.remove('visible');
-
+  // After fade-out transition, hide display
   setTimeout(() => {
-    overlay.style.display = '';
-    img.src = art.url;
-    caption.textContent = art.title;
-    const reveal = () => {
-      img.classList.add('visible');
-      setTimeout(() => caption.classList.add('visible'), 600);
-    };
-    img.onload = reveal;
-    if (img.complete) reveal();
+    if (viewName !== 'network') networkOverlay.style.display = 'none';
+    if (viewName !== 'slideshow') slideshowOverlay.style.display = 'none';
+  }, 800);
 
-    // After 15s, hide art and show GUI for 15s, then show next art
-    artTimer = setTimeout(() => {
-      hideArt();
-      artTimer = setTimeout(showNextArt, GUI_PAUSE_SECONDS * 1000);
-    }, ART_DISPLAY_SECONDS * 1000);
-  }, 300);
+  if (viewName === 'network') {
+    // Load iframe on first use
+    if (!networkIframeLoaded) {
+      const iframe = document.getElementById('networkIframe');
+      iframe.src = UNIFI_DASHBOARD_URL;
+      networkIframeLoaded = true;
+    }
+    networkOverlay.style.display = '';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => networkOverlay.classList.add('visible'));
+    });
+  } else if (viewName === 'slideshow') {
+    if (slideshowImages.length === 0) {
+      // Skip slideshow if no images, advance to next view
+      scheduleNextView();
+      return;
+    }
+    const img = document.getElementById('slideshowImage');
+    const caption = document.getElementById('slideshowCaption');
+    const slide = slideshowImages[slideshowIndex % slideshowImages.length];
+    slideshowIndex++;
+    img.src = slide.url;
+    caption.textContent = slide.caption;
+    slideshowOverlay.style.display = '';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => slideshowOverlay.classList.add('visible'));
+    });
+  }
+  // viewName === 'kiosk' → both overlays hidden, main content visible
 }
 
-function hideArt() {
-  const overlay = document.getElementById('artScreensaver');
-  const img = document.getElementById('artImage');
-  const caption = document.getElementById('artCaption');
-  img.classList.remove('visible');
-  caption.classList.remove('visible');
-  setTimeout(() => { overlay.style.display = 'none'; }, 800);
+function advanceRotation() {
+  rotationIndex = (rotationIndex + 1) % ROTATION_VIEWS.length;
+  const view = ROTATION_VIEWS[rotationIndex];
+  showView(view);
+  scheduleNextView();
 }
 
-// Tap to dismiss → 2 min GUI before resuming art cycle
-function onArtTap() {
-  if (artTimer) clearTimeout(artTimer);
-  hideArt();
-  artTimer = setTimeout(showNextArt, TAP_DISMISS_SECONDS * 1000);
+function scheduleNextView() {
+  if (rotationTimer) clearTimeout(rotationTimer);
+  rotationTimer = setTimeout(advanceRotation, ROTATION_SECONDS * 1000);
+}
+
+function startRotation() {
+  rotationIndex = 0; // start at kiosk
+  showView('kiosk');
+  scheduleNextView();
+}
+
+// Tap overlay to dismiss → 2 min kiosk before resuming
+function onRotationTap() {
+  if (rotationTimer) clearTimeout(rotationTimer);
+  rotationIndex = 0;
+  showView('kiosk');
+  rotationTimer = setTimeout(advanceRotation, TAP_DISMISS_SECONDS * 1000);
 }
 
 // =============================================
@@ -710,19 +737,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('recorderStartStop')?.addEventListener('click', toggleRecording);
   document.getElementById('recorderCancel')?.addEventListener('click', hideRecorder);
 
-  // Art screensaver: tap to dismiss
-  document.getElementById('artScreensaver')?.addEventListener('click', onArtTap);
+  // Rotation overlays: tap to dismiss
+  document.getElementById('networkOverlay')?.addEventListener('click', onRotationTap);
+  document.getElementById('slideshowOverlay')?.addEventListener('click', onRotationTap);
 
   // Load dynamic data
   await refreshAll();
   startPolling();
 
-  // Load art images and start screensaver cycle
-  await loadArtImages();
-  if (artImages.length > 0) {
-    // Start first art after 15s of GUI
-    artTimer = setTimeout(showNextArt, GUI_PAUSE_SECONDS * 1000);
-  }
+  // Load slideshow images and start 3-view rotation
+  await loadSlideshowImages();
+  startRotation();
 
   // Visibility-based polling pause
   document.addEventListener('visibilitychange', () => {
