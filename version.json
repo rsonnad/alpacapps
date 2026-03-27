@@ -1,12 +1,12 @@
 {
-  "version": "v260327.35 3:55p",
-  "release": 1081,
-  "sha": "412797089",
-  "fullSha": "4127970896cdeebe36d6053a73653b19a46b2107",
+  "version": "v260327.36 4:21p",
+  "release": 1082,
+  "sha": "03212a9b2",
+  "fullSha": "03212a9b28ab57e33192a1801c8c1a24103e9fa8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 20:55:30+00",
-  "commits": [{"sha":"412797089","message":"fix: backup now shows pending in schedule, paths are copy-to-clipboard buttons","author":"Paca"}]
+  "pushedAt": "2026-03-27 21:21:09+00",
+  "commits": [{"sha":"03212a9b2","message":"fix: rewrite strip tab to use Govee cloud API instead of HAOS","author":"Rahul"}]
 }
