@@ -75,7 +75,6 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 - Database + Storage + Auth (Supabase) — Free
 - Parallel AI Agents (Conductor) — Free, [conductor.build](https://conductor.build)
 - Tailwind CSS v4 (utility-class styling) — Free
-- Secrets Management (Bitwarden CLI) — Free
 - AI Developer (Claude Code) — you're already here
 
 **Communication:**
@@ -120,6 +119,7 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 - [ ] Alexa skill — Free
 
 **Infrastructure:**
+- [ ] Secrets manager (Bitwarden CLI) — Free, recommended for teams
 - [ ] User login / Google Sign-In — Free
 - [ ] Object storage (Cloudflare R2) — Free, 10 GB
 - [ ] DigitalOcean Droplet (workers) — ~$12/mo
@@ -171,7 +171,7 @@ Determine which features are NOT selected. These will be pruned or hidden.
 
 **Important:** The `.claudeignore` is generated BEFORE any other setup steps, so Claude Code immediately benefits from the reduced search scope for the rest of the wizard.
 
-### Step 1c: Bitwarden Setup
+### Step 1c: Bitwarden Setup — if selected
 
 Set up Bitwarden CLI for secrets management. All credentials generated during setup go here.
 
