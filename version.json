@@ -1,12 +1,12 @@
 {
-  "version": "v260327.28 3:09p",
-  "release": 1074,
-  "sha": "0160d6fa7",
-  "fullSha": "0160d6fa77d0a2f5d7d75d3d97544ac2c2f99e62",
+  "version": "v260327.29 3:12p",
+  "release": 1075,
+  "sha": "5820730e3",
+  "fullSha": "5820730e314af5a1bda8d36870ba65f3dfb3ac73",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 20:09:34+00",
-  "commits": [{"sha":"0160d6fa7","message":"refactor: stacked service/schedule/backups layout + RVAULT per-file rows","author":"Paca"}]
+  "pushedAt": "2026-03-27 20:12:37+00",
+  "commits": [{"sha":"5820730e3","message":"feat: rotate UniFi console as popup window (15s browser, 15s slideshow, 15s kiosk)","author":"Claude"}]
 }
