@@ -580,6 +580,8 @@ async function loadContext() {
       desc: 'Smart lighting control reference for all rooms at Alpaca Playhouse. Documents WiZ, Govee, and Tuya light entities in HAOS, room-by-room entity IDs, brightness/color commands via the alpuca ha wrapper, scene definitions, and light group configurations. Loaded when controlling lights, changing colors/brightness, or debugging light entities. For non-lighting HAOS devices see HOMEAUTOMATION.md.' },
     { name: 'TESTING-GUIDE.md', path: 'docs/TESTING-GUIDE.md', category: 'docs', gh: 'docs/TESTING-GUIDE.md',
       desc: 'Testing guide with test account credentials (testuser@alpacaplayhouse.com), auth architecture overview, and testing workflows for admin pages. Documents how to authenticate as a test user, role-based access patterns, and QA checklists for verifying UI changes. Loaded when testing admin pages, debugging auth issues, or running manual QA.' },
+    { name: 'SECRETS-GUIDE.md', path: 'docs/SECRETS-GUIDE.md', category: 'docs', gh: 'docs/SECRETS-GUIDE.md',
+      desc: 'Cross-project secrets management guide using Bitwarden as the source of truth. Documents the bw-read helper script, Bitwarden CLI patterns (bw unlock, bw list items), secret naming conventions, how to store and retrieve API keys/tokens/passwords, and the DevOps-alpacapps vault organization. Replicable across all projects (alpacapps, finleg, portsie, etc.). Loaded when managing secrets, setting up new API keys, or debugging credential access.' },
   ];
 
   const SYSTEM_PROMPT_TOKENS = 8000;
@@ -782,6 +784,9 @@ async function loadContext() {
                   </li>
                   <li>${tag('LIGHTINGAUTOMATION.md', 'load for lights')}</li>
                   <li>${tag('TESTING-GUIDE.md', 'load for testing')}</li>
+                  <li>${tag('SECRETS-GUIDE.md', 'load for secrets/Bitwarden')}
+                    <ul><li>${tag('CREDENTIALS.md', 'actual credentials')}</li></ul>
+                  </li>
                 </ul>
               </li>
               <li>${tag('CLAUDE.local.md', 'local overrides')}</li>
