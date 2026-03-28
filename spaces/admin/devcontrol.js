@@ -857,16 +857,18 @@ async function loadBackups() {
   const panel = document.getElementById('dc-panel-backups');
   panel.innerHTML = '<div class="dc-empty">Loading backup logs...</div>';
 
-  const [rvaultResult, haosResult, triggersResult, filesResult] = await Promise.allSettled([
+  const [rvaultResult, haosResult, triggersResult, recentTriggersResult, filesResult] = await Promise.allSettled([
     supabase.from('backup_logs').select('*').order('created_at', { ascending: false }).limit(50),
     supabase.from('haos_backups').select('*').order('date', { ascending: false }).limit(50),
-    supabase.from('backup_triggers').select('*').eq('status', 'pending').order('requested_at', { ascending: false }),
+    supabase.from('backup_triggers').select('*').in('status', ['pending', 'running']).order('requested_at', { ascending: false }),
+    supabase.from('backup_triggers').select('*').in('status', ['completed', 'failed']).order('completed_at', { ascending: false }).limit(20),
     supabase.from('backup_files').select('*').order('backup_date', { ascending: false }).limit(100),
   ]);
 
   const logs = rvaultResult.status === 'fulfilled' && !rvaultResult.value.error ? rvaultResult.value.data || [] : [];
   const haosBackups = haosResult.status === 'fulfilled' && !haosResult.value.error ? haosResult.value.data || [] : [];
-  const pendingTriggers = triggersResult.status === 'fulfilled' && !triggersResult.value.error ? triggersResult.value.data || [] : [];
+  const activeTriggers = triggersResult.status === 'fulfilled' && !triggersResult.value.error ? triggersResult.value.data || [] : [];
+  const recentTriggers = recentTriggersResult.status === 'fulfilled' && !recentTriggersResult.value.error ? recentTriggersResult.value.data || [] : [];
   const backupFiles = filesResult.status === 'fulfilled' && !filesResult.value.error ? filesResult.value.data || [] : [];
 
   const lastSyncMs = haosBackups.length ? Math.max(...haosBackups.map(b => new Date(b.synced_at).getTime())) : 0;
@@ -1006,7 +1008,7 @@ async function loadBackups() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
         schedEl.insertAdjacentHTML('beforeend',
-          `<div class="dc-bk-sched-pending">⏳ Manual backup requested at ${timeStr} — pending</div>`);
+          `<div class="dc-bk-sched-pending">⏳ Backup requested at ${timeStr} — will start within 5 minutes</div>`);
       }
     } catch (e) {
       showToast(`Trigger failed: ${e.message}`);
@@ -1016,10 +1018,22 @@ async function loadBackups() {
   };
 
   function serviceBlock(dotClass, name, desc, meta, freq, next, backupsHtml, svcKey) {
-    const pending = pendingTriggers.filter(t => t.service === svcKey);
-    const pendingHtml = pending.map(t => {
+    const active = activeTriggers.filter(t => t.service === svcKey);
+    const recent = recentTriggers.filter(t => t.service === svcKey).slice(0, 3);
+    const triggerHtml = active.map(t => {
       const when = new Date(t.requested_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-      return `<div class="dc-bk-sched-pending">⏳ Manual backup requested at ${when} — pending</div>`;
+      if (t.status === 'running') {
+        const startedWhen = t.started_at ? new Date(t.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : when;
+        return `<div class="dc-bk-sched-pending" style="color:#e65100">🔄 Backup running since ${startedWhen}</div>`;
+      }
+      return `<div class="dc-bk-sched-pending">⏳ Backup requested at ${when} — will start within 5 minutes</div>`;
+    }).join('') + recent.map(t => {
+      const when = t.completed_at ? new Date(t.completed_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—';
+      const resultDetail = t.result?.error || t.result?.size || t.result?.satisfied_by || '';
+      if (t.status === 'completed') {
+        return `<div class="dc-bk-sched-pending" style="color:#2e7d32">✅ Manual backup completed at ${when}${resultDetail ? ` — ${esc(resultDetail)}` : ''}</div>`;
+      }
+      return `<div class="dc-bk-sched-pending" style="color:#c62828">❌ Manual backup failed at ${when}${resultDetail ? ` — ${esc(resultDetail)}` : ''}</div>`;
     }).join('');
     return `<div class="dc-bk-service">
       <div class="dc-bk-section">
@@ -1031,8 +1045,8 @@ async function loadBackups() {
               <div class="dc-bk-svc-desc">${desc}</div>
               <div class="dc-bk-svc-meta">${meta}</div>
             </div>
-            <button class="dc-bk-now-btn" onclick="dcBackupNow('${svcKey}')"${pending.length ? ' disabled' : ''}>
-              ${pending.length ? 'Requested ✓' : 'Backup Now'}
+            <button class="dc-bk-now-btn" onclick="dcBackupNow('${svcKey}')"${active.length ? ' disabled' : ''}>
+              ${active.length ? (active[0].status === 'running' ? 'Running…' : 'Requested ✓') : 'Backup Now'}
             </button>
           </div>
         </div>
@@ -1045,7 +1059,7 @@ async function loadBackups() {
             <span class="dc-bk-sched-next">Next: ${esc(fmtScheduleDate(next))}</span>
             <span class="dc-bk-sched-countdown">${esc(timeUntil(next))}</span>
           </div>
-          ${pendingHtml}
+          ${triggerHtml}
         </div>
       </div>
       <div class="dc-bk-section">

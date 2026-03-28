@@ -355,4 +355,15 @@ if [ -n "$SUPABASE_KEY" ]; then
     -H "Content-Type: application/json" \
     -d "{\"source\":\"alpaca-mac\",\"backup_type\":\"full-to-rvault\",\"status\":\"$OVERALL\",\"duration_seconds\":$DURATION,\"details\":$DETAILS_JSON}" \
     >/dev/null 2>&1 || echo "$LOG_PREFIX Warning: failed to log backup to Supabase"
+
+  # Clear any pending manual triggers — the weekly run satisfies them
+  for svc in supabase-db cloudflare-r2 cloudflare-d1 github-repo; do
+    curl -sf "$SUPABASE_URL/rest/v1/backup_triggers?status=eq.pending&service=eq.$svc" \
+      -X PATCH \
+      -H "apikey: $SUPABASE_KEY" \
+      -H "Authorization: Bearer $SUPABASE_KEY" \
+      -H "Content-Type: application/json" \
+      -d "{\"status\":\"completed\",\"completed_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"result\":{\"satisfied_by\":\"weekly-run\"}}" \
+      >/dev/null 2>&1
+  done
 fi
