@@ -1,12 +1,12 @@
 {
-  "version": "v260328.09 12:42a",
-  "release": 1116,
-  "sha": "a82a71e4f",
-  "fullSha": "a82a71e4fbb5794fd9934e9b02603d41d88df0d9",
+  "version": "v260328.10 12:51a",
+  "release": 1117,
+  "sha": "2e4601b7d",
+  "fullSha": "2e4601b7df79421fd764a1c3c565cf48d691cd10",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 05:42:58+00",
-  "commits": [{"sha":"a82a71e4f","message":"fix: devdocs page auth — call initAuth() before checking role","author":"Rahul"}]
+  "pushedAt": "2026-03-28 05:51:29+00",
+  "commits": [{"sha":"2e4601b7d","message":"fix: add missing Supabase vendor script to lighting devices page","author":"Paca"}]
 }
