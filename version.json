@@ -1,12 +1,12 @@
 {
-  "version": "v260327.57 11:19p",
-  "release": 1103,
-  "sha": "5daea2aa3",
-  "fullSha": "5daea2aa3be5695f09b3484a030769f42da35ecd",
+  "version": "v260327.58 11:28p",
+  "release": 1104,
+  "sha": "db69742fa",
+  "fullSha": "db69742faa47c9bd912c59c040b085901eb21524",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 04:19:57+00",
-  "commits": [{"sha":"5daea2aa3","message":"feat: interactive context tree with expandable .md files + keyword search","author":"Paca"}]
+  "pushedAt": "2026-03-28 04:28:14+00",
+  "commits": [{"sha":"db69742fa","message":"docs: add local AI setup guide for Atomic Chat + Ollama","author":"Paca"}]
 }
