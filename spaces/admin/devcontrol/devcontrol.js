@@ -711,7 +711,7 @@ async function loadContext() {
       }
     } catch {}
 
-    // Fallback: raw markdown
+    // Fallback: render markdown inline
     try {
       const res = await fetch(`${RAW_BASE}/main/${ghPath}`);
       if (!res.ok) throw new Error(`${res.status}`);
@@ -719,9 +719,10 @@ async function loadContext() {
       window._ctxRawCache = window._ctxRawCache || {};
       window._ctxRawCache[ghPath] = text;
       const lines = text.split('\n');
-      const preview = lines.slice(0, 120).join('\n');
-      const truncated = lines.length > 120;
-      const html = `<pre class="dc-file-content">${esc(preview)}${truncated ? `\n\n<span style="color:var(--text-muted,#888);font-style:italic;">... ${lines.length - 120} more lines — <a href="https://github.com/${GH_OWNER}/${GH_REPO}/blob/main/${ghPath}" target="_blank" style="color:var(--accent,#b8a88a);">view full file on GitHub</a></span>` : ''}</pre>`;
+      const preview = lines.slice(0, 150).join('\n');
+      const truncated = lines.length > 150;
+      const truncNote = truncated ? `<p style="color:var(--text-muted,#888);font-size:0.7rem;font-style:italic;padding:0 1rem 0.5rem;">... ${lines.length - 150} more lines — <a href="https://github.com/${GH_OWNER}/${GH_REPO}/blob/main/${ghPath}" target="_blank" style="color:var(--accent,#b8a88a);">view full file on GitHub</a></p>` : '';
+      const html = renderMd(preview) + truncNote;
       contentCache[ghPath] = html;
       previewDiv.innerHTML = html;
     } catch (err) {
