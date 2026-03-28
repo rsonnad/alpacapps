@@ -1,12 +1,12 @@
 {
-  "version": "v260327.48 9:41p",
-  "release": 1094,
-  "sha": "b9e848d92",
-  "fullSha": "b9e848d928a17caa33232d342afff3b6760a9b13",
+  "version": "v260327.50 10:08p",
+  "release": 1096,
+  "sha": "70fc4c770",
+  "fullSha": "70fc4c770437003330fec9937402dac60a570ddf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 02:41:51+00",
-  "commits": [{"sha":"b9e848d92","message":"docs: add LIGHTINGAUTOMATION.md to CLAUDE.md on-demand context list","author":"Rahul"}]
+  "pushedAt": "2026-03-28 03:08:45+00",
+  "commits": [{"sha":"70fc4c770","message":"feat: rename lighting directory, add music mode + strip controls","author":"Rahul"}]
 }
