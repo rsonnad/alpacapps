@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Docs — AlpacApps</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/styles/site.css">
+    <link rel="stylesheet" href="/styles/tailwind.out.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #faf9f6;
+            color: #1c1618;
+            min-height: 100vh;
+            padding: 2rem 1.5rem 4rem;
+        }
+        .container { max-width: 720px; margin: 0 auto; }
+        .header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem; }
+        h1 { font-size: 1.75rem; font-weight: 700; color: #1c1618; }
+        .back-link { font-size: 0.85rem; color: #8a7f76; text-decoration: none; }
+        .back-link:hover { color: #d4883a; }
+        .subtitle { font-size: 0.85rem; color: #8a7f76; margin-bottom: 1.5rem; }
+        .search-box {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: #fff; border: 1px solid #e8e4df; border-radius: 8px;
+            padding: 0.6rem 0.75rem; margin-bottom: 1.25rem;
+        }
+        .search-box svg { color: #8a7f76; flex-shrink: 0; }
+        .search-box input {
+            flex: 1; border: none; outline: none; background: none;
+            font-size: 0.9rem; color: #1c1618;
+        }
+        .search-box input::placeholder { color: #b5aea6; }
+        .search-count { font-size: 0.75rem; color: #8a7f76; white-space: nowrap; }
+        .section-label {
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.06em; color: #8a7f76; margin: 1.5rem 0 0.5rem;
+        }
+        .docs-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+        .docs-list li a {
+            display: block; padding: 0.75rem 1rem;
+            background: #fff; border: 1px solid #e8e4df; border-radius: 8px;
+            text-decoration: none; color: #1c1618;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .docs-list li a:hover {
+            border-color: #d4883a;
+            box-shadow: 0 2px 8px rgba(212, 136, 58, 0.12);
+        }
+        .doc-title { font-weight: 600; font-size: 0.95rem; }
+        .doc-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 0.15rem; }
+        .doc-desc { font-size: 0.8rem; color: #8a7f76; flex: 1; }
+        .doc-file { font-size: 0.7rem; color: #b5aea6; font-family: monospace; white-space: nowrap; margin-left: 1rem; }
+        .auth-wall {
+            text-align: center; padding: 4rem 1rem;
+            color: #8a7f76; font-size: 0.95rem;
+        }
+        .hidden { display: none !important; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <span data-site-version style="display:none;"></span>
+    <div id="siteHeader"></div>
+
+    <div id="authWall" class="auth-wall">
+        <p>Checking access...</p>
+    </div>
+
+    <div id="mainContent" class="container hidden">
+        <div class="header">
+            <h1>Dev Docs</h1>
+            <a href="/spaces/admin/devcontrol.html" class="back-link">DevControl</a>
+        </div>
+        <p class="subtitle" id="docsMeta"></p>
+
+        <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" placeholder="Filter docs...">
+            <span class="search-count" id="searchCount"></span>
+        </div>
+
+        <div id="docsRoot"></div>
+    </div>
+
+    <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+    <script type="module" src="/shared/version-info.js"></script>
+    <script type="module">
+        import { supabase } from '/shared/supabase.js';
+        import { getAuthState } from '/shared/auth.js';
+
+        const DOCS = [
+            // — Core Reference —
+            { file: 'SCHEMA.md', title: 'Database Schema Reference', section: 'Core Reference' },
+            { file: 'PATTERNS.md', title: 'Common Patterns & Conventions', section: 'Core Reference' },
+            { file: 'KEY-FILES.md', title: 'Key Files Reference', section: 'Core Reference' },
+            { file: 'DEPLOY.md', title: 'Deployment Workflow', section: 'Core Reference' },
+            { file: 'INTEGRATIONS.md', title: 'External Systems & API Cost Accounting', section: 'Core Reference' },
+            { file: 'CHANGELOG.md', title: 'Recent Changes Changelog', section: 'Core Reference' },
+            { file: 'CREDENTIALS.md', title: 'Credentials & Access (gitignored)', section: 'Core Reference' },
+            { file: 'SECRETS-GUIDE.md', title: 'Secrets Management Guide', section: 'Core Reference' },
+            { file: 'TESTING-GUIDE.md', title: 'Testing Guide', section: 'Core Reference' },
+            { file: 'CLAUDE-TEMPLATE.md', title: 'CLAUDE.md Templates', section: 'Core Reference' },
+            // — Home & Devices —
+            { file: 'HOMEAUTOMATION.md', title: 'Home Automation — Alpaca Playhouse', section: 'Home & Devices' },
+            { file: 'LIGHTINGAUTOMATION.md', title: 'Lighting Automation — Alpaca Playhouse', section: 'Home & Devices' },
+            { file: 'home-assistant-lighting-design.md', title: 'Home Assistant Unified Lighting Design', section: 'Home & Devices' },
+            { file: 'alexa-master-pasture-skill.md', title: 'Alexa Master Pasture Lighting Skill', section: 'Home & Devices' },
+            { file: 'music-assistant-alpaca-mac-setup.md', title: 'Music Assistant on Almaca — Setup', section: 'Home & Devices' },
+            { file: 'music-assistant-api-mapping.md', title: 'Music Assistant API Mapping', section: 'Home & Devices' },
+            { file: 'MUSIC-ASSISTANT-EVALUATION.md', title: 'Music Assistant as Sonos Controller — Eval', section: 'Home & Devices' },
+            // — Infrastructure —
+            { file: 'LOCAL-AI-SETUP.md', title: 'Local AI Setup Guide (Ollama + Atomic Chat)', section: 'Infrastructure' },
+            { file: 'OPEN-BRAIN-SETUP.md', title: 'Open Brain — Supabase Setup', section: 'Infrastructure' },
+            { file: 'OPENCLAW_SAFE_PARTITIONED.md', title: 'OpenClaw: Safe Environment & Partitioned', section: 'Infrastructure' },
+            { file: 'alpaca-mac-media-tools.md', title: 'Alpuca — Media & Video Tools Reference', section: 'Infrastructure' },
+            { file: 'slack-alpaclaw-reinstall.md', title: 'Slack Alpaclaw Reinstall & Troubleshoot', section: 'Infrastructure' },
+            { file: 'AWS_VS_DIGITALOCEAN_COMPARISON.md', title: 'AWS vs DigitalOcean Comparison', section: 'Infrastructure' },
+            // — CAD & Property —
+            { file: 'CAD.md', title: 'CAD & Site Plan System — Tool Reference', section: 'CAD & Property' },
+            { file: 'CAD-SITE-PLANS.md', title: 'CAD & Site Plan — Setup & Usage', section: 'CAD & Property' },
+            { file: 'CAD-RENDER-PIPELINE.md', title: '3D Property Render Pipeline', section: 'CAD & Property' },
+            // — Planning —
+            { file: 'DEMO_MODE_FEATURE_PLAN.md', title: 'Demo Mode Feature Plan', section: 'Planning' },
+            { file: 'MULTI_TENANCY_EFFORT_ASSESSMENT.md', title: 'Multi-Tenancy Effort Assessment', section: 'Planning' },
+        ];
+
+        const SECTIONS = ['Core Reference', 'Home & Devices', 'Infrastructure', 'CAD & Property', 'Planning'];
+
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        function render(filter = '') {
+            const root = document.getElementById('docsRoot');
+            const q = filter.toLowerCase();
+            const filtered = q ? DOCS.filter(d => d.title.toLowerCase().includes(q) || d.file.toLowerCase().includes(q)) : DOCS;
+
+            document.getElementById('searchCount').textContent = q ? `${filtered.length} / ${DOCS.length}` : `${DOCS.length} docs`;
+
+            let html = '';
+            for (const section of SECTIONS) {
+                const items = filtered.filter(d => d.section === section);
+                if (!items.length) continue;
+                html += `<div class="section-label">${esc(section)}</div><ul class="docs-list">`;
+                for (const d of items) {
+                    html += `<li><a href="${esc(d.file)}" target="_blank">
+                        <div class="doc-title">${esc(d.title)}</div>
+                        <div class="doc-meta">
+                            <span class="doc-desc"></span>
+                            <span class="doc-file">${esc(d.file)}</span>
+                        </div>
+                    </a></li>`;
+                }
+                html += '</ul>';
+            }
+            root.innerHTML = html || '<p style="color:#8a7f76;padding:2rem 0;">No matching docs.</p>';
+        }
+
+        async function init() {
+            const wall = document.getElementById('authWall');
+            const main = document.getElementById('mainContent');
+
+            try {
+                const auth = await getAuthState(supabase);
+                const role = auth?.appUser?.role;
+                const ALLOWED = ['admin', 'staff', 'associate'];
+                if (!role || !ALLOWED.includes(role)) {
+                    wall.innerHTML = '<p>Access restricted to associates and above.</p><p style="margin-top:1rem;"><a href="/login/" style="color:#d4883a;">Sign in</a></p>';
+                    return;
+                }
+                wall.classList.add('hidden');
+                main.classList.remove('hidden');
+                document.getElementById('docsMeta').textContent = `${DOCS.length} internal development documents`;
+                render();
+
+                document.getElementById('searchInput').addEventListener('input', (e) => render(e.target.value));
+            } catch (err) {
+                wall.innerHTML = '<p>Authentication error. <a href="/login/" style="color:#d4883a;">Sign in</a></p>';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

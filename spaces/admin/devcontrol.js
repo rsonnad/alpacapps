@@ -87,6 +87,7 @@ function loadOverview() {
     { tab: 'context', label: 'Context Window', desc: 'What files load into Claude\'s context and how much space they use', icon: '<path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>' },
     { tab: 'backups', label: 'Backups', desc: 'Database and file storage backup status', icon: '<path d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>' },
     { tab: 'planlist', label: 'PlanList', desc: 'Development todo items, checklists, and project tasks', icon: '<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>' },
+    { tab: '_devdocs', label: 'Dev Docs', desc: 'Internal development documentation — schema, patterns, credentials, guides', icon: '<path d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6V7.5Z"/>' },
   ];
 
   const panel = document.getElementById('dc-panel-overview');
@@ -103,7 +104,15 @@ function loadOverview() {
     </div>`;
 
   panel.querySelectorAll('[data-goto]').forEach((card) => {
-    card.addEventListener('click', () => switchTab(card.dataset.goto));
+    card.addEventListener('click', () => {
+      const target = card.dataset.goto;
+      if (target.startsWith('_')) {
+        // External link cards
+        if (target === '_devdocs') window.location.href = '/devdocs/';
+      } else {
+        switchTab(target);
+      }
+    });
   });
 }
 
@@ -657,6 +666,15 @@ async function loadContext() {
   for (const f of items) fileByName[f.name] = f;
 
   // Shared expand/collapse for any file node
+  // Load docs-viewer.css once for rendered HTML companions
+  if (!document.getElementById('docs-viewer-css')) {
+    const link = document.createElement('link');
+    link.id = 'docs-viewer-css';
+    link.rel = 'stylesheet';
+    link.href = '/devdocs/rendered/docs-viewer.css';
+    document.head.appendChild(link);
+  }
+
   window._toggleCtxNode = async function(el) {
     const ghPath = el.getAttribute('data-gh');
     const contentDiv = el.nextElementSibling;
@@ -674,11 +692,30 @@ async function loadContext() {
     if (contentCache[ghPath]) { contentDiv.querySelector('.dc-file-preview').innerHTML = contentCache[ghPath]; return; }
     const previewDiv = contentDiv.querySelector('.dc-file-preview');
     previewDiv.innerHTML = '<div class="dc-empty" style="padding:0.75rem;">Loading...</div>';
+
+    // Try rendered HTML companion first, then fall back to raw markdown
+    const mdName = ghPath.split('/').pop();
+    const htmlName = mdName.replace('.md', '.html');
+    const renderedUrl = `/devdocs/rendered/${htmlName}`;
+    try {
+      const renderedRes = await fetch(renderedUrl);
+      if (renderedRes.ok) {
+        const html = await renderedRes.text();
+        contentCache[ghPath] = html;
+        previewDiv.innerHTML = html;
+        // Also fetch raw for search cache
+        fetch(`${RAW_BASE}/main/${ghPath}`).then(r => r.ok ? r.text() : '').then(t => {
+          if (t) { window._ctxRawCache = window._ctxRawCache || {}; window._ctxRawCache[ghPath] = t; }
+        }).catch(() => {});
+        return;
+      }
+    } catch {}
+
+    // Fallback: raw markdown
     try {
       const res = await fetch(`${RAW_BASE}/main/${ghPath}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const text = await res.text();
-      // Store raw text for search
       window._ctxRawCache = window._ctxRawCache || {};
       window._ctxRawCache[ghPath] = text;
       const lines = text.split('\n');
