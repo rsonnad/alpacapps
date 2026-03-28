@@ -1,12 +1,12 @@
 {
-  "version": "v260328.14 2:30p",
-  "release": 1121,
-  "sha": "c3fe43ad1",
-  "fullSha": "c3fe43ad1bb18b68e5bd15e59d4c95d775fdda21",
+  "version": "v260328.16 3:27p",
+  "release": 1123,
+  "sha": "510941b12",
+  "fullSha": "510941b12e7a43a866fa472eb48f14957b382747",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 19:30:37+00",
-  "commits": [{"sha":"c3fe43ad1","message":"docs: simplify lighting commands for on-alpuca execution","author":"Rahul"}]
+  "pushedAt": "2026-03-28 20:27:48+00",
+  "commits": [{"sha":"510941b12","message":"docs: update LOCAL-AI-SETUP with msty.app and Gemma 3 models","author":"Rahul"}]
 }
