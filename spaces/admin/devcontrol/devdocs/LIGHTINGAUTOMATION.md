@@ -45,7 +45,9 @@ FROM lighting_devices WHERE is_active ORDER BY room, socket_number;
 
 ### Living Room
 
-**Entities:** `light.living_room_lights` (5 WiZ + 1 Matter group), `light.livingroom_strip_light` (Govee LED strip)
+**Entities:** `light.living_room_lights` (4 WiZ ceiling + 1 WiZ Printer Nook), `light.livingroom_strip_light` (Govee LED strip)
+
+Individual: `light.wiz_rgbw_tunable_81d231` (#1), `_816330` (#2), `_8206c2` (#3), `_819eee` (#4), `_81ab69` (Printer Nook)
 
 ```bash
 # Soft white
@@ -188,7 +190,7 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 
 | Room | Entity | Bulbs | Brand |
 |------|--------|-------|-------|
-| Living Room | `light.living_room_lights` | 5 WiZ + 1 Matter | WiZ/Leedarson |
+| Living Room | `light.living_room_lights` | 4 WiZ ceiling + 1 WiZ nook | WiZ |
 | Living Room strip | `light.livingroom_strip_light` | 15-segment LED | Govee |
 | Master Bathroom | `light.master_bathroom_lights` | 5 | OREIN Matter |
 | Skyloft Ceiling | `light.skyloft_lights` | 5 (6th offline) | WiZ BR30 |
