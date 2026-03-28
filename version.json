@@ -1,12 +1,12 @@
 {
-  "version": "v260327.60 11:56p",
-  "release": 1106,
-  "sha": "ece4874cd",
-  "fullSha": "ece4874cd424ee2f5d12781e9d2afa5835575900",
+  "version": "v260327.61 11:59p",
+  "release": 1107,
+  "sha": "98826e8a5",
+  "fullSha": "98826e8a5588ca310614d032a12353162246a2ec",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 04:56:04+00",
-  "commits": [{"sha":"ece4874cd","message":"feat: rich HTML doc companions with syntax highlighting + collapsible sections","author":"Paca"}]
+  "pushedAt": "2026-03-28 04:59:34+00",
+  "commits": [{"sha":"98826e8a5","message":"feat: unify device location tracking via spaces table","author":"Paca"}]
 }
