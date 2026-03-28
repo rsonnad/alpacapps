@@ -1,12 +1,12 @@
 {
-  "version": "v260327.61 11:59p",
-  "release": 1107,
-  "sha": "98826e8a5",
-  "fullSha": "98826e8a5588ca310614d032a12353162246a2ec",
+  "version": "v260328.03 12:10a",
+  "release": 1110,
+  "sha": "5489ecf9a",
+  "fullSha": "5489ecf9afc6fd4a4c40f604024b2b40cfbef91d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 04:59:34+00",
-  "commits": [{"sha":"98826e8a5","message":"feat: unify device location tracking via spaces table","author":"Paca"}]
+  "pushedAt": "2026-03-28 05:10:29+00",
+  "commits": [{"sha":"5489ecf9a","message":"feat: hierarchical context file tree + scale down preview headings","author":"Paca"}]
 }
