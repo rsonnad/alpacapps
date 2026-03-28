@@ -11,6 +11,7 @@
 > - `docs/CAD.md` — **load for:** 3D modeling, Blender, QGIS, CAD tool reference
 > - `docs/CAD-SITE-PLANS.md` — **load for:** site plan workflows, GIS data sources, permit drawings
 > - `docs/CAD-RENDER-PIPELINE.md` — **load for:** 3D property rendering, photorealistic render pipeline, on-site data collection tasks
+> - `docs/LIGHTINGAUTOMATION.md` — **load for:** controlling lights, changing light colors/brightness, light entities, WiZ/HAOS/Govee/Tuya light control
 
 ## Mandatory Behaviors
 
