@@ -90,7 +90,7 @@
     <script type="module" src="/shared/version-info.js"></script>
     <script type="module">
         import { supabase } from '/shared/supabase.js';
-        import { getAuthState } from '/shared/auth.js';
+        import { initAuth, getAuthState } from '/shared/auth.js';
 
         const DOCS = [
             // — Core Reference —
@@ -163,7 +163,8 @@
             const main = document.getElementById('mainContent');
 
             try {
-                const auth = await getAuthState(supabase);
+                await initAuth();
+                const auth = getAuthState();
                 const role = auth?.appUser?.role;
                 const ALLOWED = ['admin', 'staff', 'associate'];
                 if (!role || !ALLOWED.includes(role)) {
