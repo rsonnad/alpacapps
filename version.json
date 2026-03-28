@@ -1,12 +1,12 @@
 {
-  "version": "v260328.07 12:25a",
-  "release": 1114,
-  "sha": "8277446d7",
-  "fullSha": "8277446d7a4f0c06249d96df86d6c806b84bf561",
+  "version": "v260328.08 12:40a",
+  "release": 1115,
+  "sha": "778d2cf7c",
+  "fullSha": "778d2cf7c53c89c4dd6bf36a757298328836bf4c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 05:25:38+00",
-  "commits": [{"sha":"8277446d7","message":"fix: correct GitHub raw paths for devdocs in context window tracker","author":"Paca"}]
+  "pushedAt": "2026-03-28 05:40:56+00",
+  "commits": [{"sha":"778d2cf7c","message":"docs: add scheduled tasks migration prompt for Alpuca Claude Desktop","author":"Rahul"}]
 }
