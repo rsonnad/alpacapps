@@ -36,6 +36,58 @@
 
 ---
 
+## 0. Alpuca SSH Access
+
+**Machine:** Alpuca — Mac mini M4, `192.168.1.200`, user `alpuca`
+
+### Key-based SSH (preferred)
+
+The `~/.ssh/id_ed25519` key (comment: `claude-dev-machine`) is already in Alpuca's `authorized_keys`.
+
+```bash
+ssh alpuca@192.168.1.200
+```
+
+No password, no sshpass needed.
+
+### Adding a new machine's key
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub alpuca@192.168.1.200
+# or manually:
+ssh alpuca@192.168.1.200 "echo 'YOUR_PUBKEY' >> ~/.ssh/authorized_keys"
+```
+
+### Password auth fallback (if no key available)
+
+Password is in Bitwarden → `"Alpuca — Primary Home Server (Mac mini M4)"`:
+
+```bash
+sshpass -p "$(bw get password 'Alpuca — Primary Home Server (Mac mini M4)')" \
+  ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no \
+  -o StrictHostKeyChecking=no alpuca@192.168.1.200
+```
+
+### Quick wrapper (`~/bin/alpuca` on your local Mac)
+
+```bash
+alpuca ssh                    # Interactive shell on Alpuca
+alpuca monitor-off            # Sleep display
+alpuca monitor-on             # Wake display
+alpuca mb-off                 # Master bathroom lights off
+alpuca mb-on [brightness]     # Master bathroom lights on (0–255)
+alpuca ha <endpoint> '<json>' # Raw Home Assistant service call
+```
+
+### Screen Sharing / VNC
+
+**Use RealVNC Viewer** (free) — not macOS Screen Sharing.app. macOS Screen Sharing forces ARD mode (always prompts for username+password via a SecureToken-gated path). RealVNC Viewer uses standard VNC protocol which reads the VNC-only password.
+
+- Connect to: `192.168.1.200`
+- Password: `alpaca` (no username field)
+
+---
+
 ## 1. Home Assistant OS — VM Setup
 
 ### Current Host: Alpuca (Mac Mini M4)
@@ -48,7 +100,7 @@
 | **Login** | `alpacaadmin` / `playhouse` |
 | **Host Machine** | Alpuca — Mac mini M4 (Apple Silicon), 24 GB RAM |
 | **Host IP** | `192.168.1.200` |
-| **Host SSH** | `ssh paca@192.168.1.200` |
+| **Host SSH** | `ssh alpuca@192.168.1.200` (key auth — see §0 below) |
 | **Hypervisor** | Raw QEMU with `vmnet-bridged` on en1 (NOT UTM — UTM can't do bridged networking in QEMU mode) |
 | **Start Script** | `sudo ~/homeassistant-vm/start-ha.sh` |
 | **Auto-start** | LaunchDaemon at `/Library/LaunchDaemons/com.alpacapps.homeassistant-vm.plist` |
