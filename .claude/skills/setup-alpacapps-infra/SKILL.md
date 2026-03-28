@@ -121,7 +121,7 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 **Infrastructure:**
 - [ ] User login / Google Sign-In — Free
 - [ ] Object storage (Cloudflare R2) — Free, 10 GB (uses Cloudflare token from core setup)
-- [ ] DigitalOcean Droplet (workers) — ~$12/mo
+- [ ] Hostinger VPS (workers, OpenClaw, background tasks) — ~$5–12/mo
 - [ ] Oracle Cloud ARM (free tier) — Always Free
 
 After the user confirms their feature set:
@@ -351,7 +351,7 @@ For each selected service, follow the detailed instructions in the appropriate r
 
 ### Step 11: Server Setup — if selected
 
-- **DigitalOcean** → `references/server-setup.md` → "DigitalOcean"
+- **Hostinger VPS** → `references/server-setup.md` → "Hostinger" (recommended for workers, OpenClaw, background tasks)
 - **Oracle Cloud** → `references/server-setup.md` → "Oracle Cloud"
 
 If any device features are enabled that need background workers (vehicles, laundry, cameras), also set up the workers:

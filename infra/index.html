@@ -1200,17 +1200,17 @@
           <input type="checkbox" data-svc="workers" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#0080FF" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">Background Workers</span><span class="calc-svc__desc">Automated bug fixes, pollers, AI image gen on a cloud VM</span></span>
-          <span class="cost-badge cost-payg" style="margin-left:auto;">$12&ndash;32/mo</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Background Workers</span><span class="calc-svc__desc">Automated pollers, AI image gen, OpenClaw on a VPS</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">$5&ndash;12/mo</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
-          <p>Always-on cloud VM for background tasks that can&rsquo;t run in the browser or in serverless edge functions.</p>
+          <p>Always-on cloud VPS for background tasks that can&rsquo;t run in the browser or in serverless edge functions.</p>
           <ul>
-            <li><strong>What runs here:</strong> Device pollers (Tesla, LG, cameras), automated bug fixer (Claude Code on a schedule), AI image generation, and webhook processors.</li>
-            <li><strong>Options:</strong> DigitalOcean ($12&ndash;32/mo) or Oracle Cloud (free ARM tier &mdash; always free, 4 vCPU, 24 GB RAM).</li>
-            <li><strong>When you need it:</strong> Only if you have smart home devices, vehicles, or other integrations that need continuous background polling. Most projects don&rsquo;t need this.</li>
+            <li><strong>What runs here:</strong> Device pollers (Tesla, LG, cameras), OpenClaw (3D printer/laser cutter proxy), AI image generation, automated bug fixer, and webhook processors.</li>
+            <li><strong>Options:</strong> Hostinger VPS ($5&ndash;12/mo, recommended) or Oracle Cloud (free ARM tier &mdash; always free, 4 vCPU, 24 GB RAM).</li>
+            <li><strong>When you need it:</strong> Only if you have smart home devices, vehicles, maker tools, or other integrations that need continuous background polling. Most projects don&rsquo;t need this.</li>
           </ul>
-          <p><a href="https://www.digitalocean.com" target="_blank">Go to DigitalOcean &rarr;</a></p>
+          <p><a href="https://www.hostinger.com/vps-hosting" target="_blank">Go to Hostinger &rarr;</a></p>
         </details>
       </div>
 
@@ -1583,7 +1583,7 @@ function recalcCost() {
     'cloudflare-d1': { basic: 0, complicated: 0, hyper: 0 },
     'open-brain':  { basic: 0, complicated: 0, hyper: 0 },
     'gstack':      { basic: 0, complicated: 0, hyper: 0 },
-    'workers':     { basic: 0, complicated: 144, hyper: 384 },
+    'workers':     { basic: 0, complicated: 60, hyper: 144 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
     'android':     { basic: 25, complicated: 25, hyper: 25 },
@@ -1596,7 +1596,7 @@ function recalcCost() {
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
     'open-brain': 'Open Brain (session dashboard)',
-    'gstack': 'gstack (QA & skills)', 'workers': 'Background Workers (cloud VM)', 'domain': 'Custom domain',
+    'gstack': 'gstack (QA & skills)', 'workers': 'Background Workers (Hostinger VPS)', 'domain': 'Custom domain',
     'iphone': 'iPhone App (Apple Developer)', 'android': 'Android App (Google Play)',
     'homeserver': 'Home Server (used Mac)'
   };
@@ -1613,7 +1613,7 @@ function recalcCost() {
     'iphone':   { basic: 'Apple Developer Program ($99/yr)', complicated: 'Apple Developer Program ($99/yr)', hyper: 'Apple Developer Program ($99/yr)' },
     'android':  { basic: 'Google Play Console ($25 one-time)', complicated: 'Google Play Console ($25 one-time)', hyper: 'Google Play Console ($25 one-time)' },
     'homeserver': { basic: 'Used Mac Mini or MacBook (~$150 one-time)', complicated: 'Used Mac Mini or MacBook (~$150 one-time)', hyper: 'Used Mac Mini or MacBook (~$150 one-time)' },
-    'workers': { complicated: '$12/mo VM for bug fixer, pollers, image gen', hyper: '$32/mo VM for heavy workers + Claude Code automation' }
+    'workers': { complicated: '$5/mo Hostinger VPS for pollers, image gen, OpenClaw', hyper: '$12/mo Hostinger VPS for heavy workers + Claude Code automation' }
   };
 
   var selected = ['github', 'supabase', 'cloudflare', 'claude'];
