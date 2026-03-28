@@ -1,7 +1,8 @@
 # Lighting Automation — Alpaca Playhouse
 
 > Reference for all smart light devices, control commands, entity names, and backends.
-> For HAOS setup, SSH access, and non-lighting devices see `docs/HOMEAUTOMATION.md`.
+> For HAOS setup, SSH access, and non-lighting devices see `devdocs/HOMEAUTOMATION.md`.
+> **Per-bulb inventory lives in Supabase** (`lighting_devices`, `lighting_groups`, `lighting_group_targets`) — query DB for current state.
 
 ---
 
@@ -9,16 +10,22 @@
 
 All light control goes through **HAOS** (Home Assistant OS at `192.168.1.39:8123`) via SSH to Alpuca.
 
-**⚠️ `~/bin/alpuca ha` is broken** — its password SSH auth fails. Use direct SSH with key auth:
+Use **password SSH** (tested working 2026-03-27):
 
 ```bash
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no -o ConnectTimeout=5 alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" \
+  ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no \
+  -o StrictHostKeyChecking=no -o ConnectTimeout=10 alpuca@192.168.1.200 \
   "~/ha-cmd.sh '<domain/service>' '<json>'"
 ```
 
-`~/ha-cmd.sh` on Alpuca handles HAOS auth (`alpacaadmin`/`playhouse`) with 25-min token caching.
+`~/ha-cmd.sh` on Alpuca handles HAOS auth (`alpacaadmin`/`playhouse`) with 25-min token caching. The long-lived HA API token (if needed directly) is in `devdocs/HOMEAUTOMATION.md` §1.
 
-The long-lived HA API token (if needed directly) is in `docs/HOMEAUTOMATION.md` §1.
+**DB query for current inventory:**
+```sql
+SELECT room, device_name, ha_entity_id, device_brand, protocol
+FROM lighting_devices WHERE is_active ORDER BY room, socket_number;
+```
 
 ---
 
@@ -32,15 +39,15 @@ The long-lived HA API token (if needed directly) is in `docs/HOMEAUTOMATION.md` 
 
 ```bash
 # Soft white (2700K) — default scene
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
   "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"],\"color_temp_kelvin\":2700,\"brightness\":200}'"
 
 # RGB color (example: warm amber)
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
   "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"],\"rgb_color\":[255,147,41],\"brightness\":200}'"
 
 # Turn off
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
   "~/ha-cmd.sh 'light/turn_off' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"]}'"
 ```
 
@@ -55,7 +62,7 @@ ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChe
 ~/bin/alpuca mb-on 200         # brightness 0–255
 
 # Custom color/temp via SSH
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
   "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":\"light.master_bathroom_lights\",\"color_temp_kelvin\":3000,\"brightness\":180}'"
 ```
 
@@ -68,7 +75,7 @@ Individual bulb entities: `light.smart_rgbtw_bulb` (Tub), `_2` (Shower), `_3` (F
 **Entity:** `light.skyloft_lights` (5 WiZ BR30 bulbs; 6th bulb not yet on WiFi)
 
 ```bash
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
   "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":\"light.skyloft_lights\",\"color_temp_kelvin\":3000,\"brightness\":200}'"
 ```
 
@@ -79,7 +86,7 @@ ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChe
 **Entities:** `light.smart_rgbtw_bulb_10`, `light.smart_rgbtw_bulb_11` (2 OREIN Matter bulbs)
 
 ```bash
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
   "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.smart_rgbtw_bulb_10\",\"light.smart_rgbtw_bulb_11\"],\"color_temp_kelvin\":3000,\"brightness\":200}'"
 ```
 
@@ -90,7 +97,7 @@ ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChe
 **Entity:** `light.kitchen_lights` (5 WiZ bulbs + 2 Leedarson Matter bulbs)
 
 ```bash
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
   "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":\"light.kitchen_lights\",\"color_temp_kelvin\":4000,\"brightness\":255}'"
 ```
 
@@ -104,7 +111,7 @@ ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChe
 | Nook | `light.nook` | TP-Link HS220 dimmer |
 
 ```bash
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
   "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":\"light.nook\",\"brightness\":150}'"
 ```
 
@@ -157,20 +164,11 @@ All lights below are controlled via `~/ha-cmd.sh` on Alpuca:
 | Nook | `light.nook` | 1 | TP-Link HS220 |
 | Stair Landing | `switch.stair_landing` | — | TP-Link HS210 |
 
-### WiZ Proxy (legacy — Almaca port 8902)
+### WiZ Proxy — DEPRECATED
 
-WiZ bulbs are also reachable directly via the WiZ Proxy on Almaca. This is the legacy path — all WiZ bulbs are now in HAOS. Use HAOS commands above instead. Proxy will be deprecated once stable.
+All WiZ bulbs are now in HAOS. Do not use the WiZ Proxy for new control. Use HAOS commands above.
 
-**Proxy auth token:** `ba3497a6a682aa51b5706918d766c4fddeda38c7d4ef2045ea373b025befe063`
-**LAN:** `http://192.168.1.74:8902` · **Tunnel:** `https://cam.alpacaplayhouse.com`
-
-```bash
-# Direct WiZ group command (bypass HAOS)
-curl -s -X POST http://192.168.1.74:8902/group/temperature \
-  -H "Authorization: Bearer ba3497a6a682aa51b5706918d766c4fddeda38c7d4ef2045ea373b025befe063" \
-  -H "Content-Type: application/json" \
-  -d '{"ips":["192.168.1.106","192.168.1.138"],"temp":2700,"dimming":80}'
-```
+> Legacy proxy ran on Almaca (192.168.1.74:8902), tunnelled via `cam.alpacaplayhouse.com`. Kept for reference only.
 
 ### Govee (~63 devices — cloud only)
 
@@ -194,29 +192,16 @@ Controlled via SmartLife app or Tuya Cloud API. Not yet in HAOS.
 
 ---
 
-## WiZ Bulb Entity Map (16 discovered in HAOS)
+## WiZ Bulb Entity Map
 
-| Entity ID | Room (TBD) |
-|-----------|------------|
-| `light.wiz_rgbw_tunable_81ab69` | — |
-| `light.wiz_rgbw_tunable_8175e4` | — |
-| `light.wiz_rgbw_tunable_81bc74` | — |
-| `light.wiz_rgbw_tunable_81d231` | Living Room (group member) |
-| `light.wiz_rgbw_tunable_816330` | Living Room (group member) |
-| `light.wiz_rgbw_tunable_8173f0` | — |
-| `light.wiz_rgbw_tunable_816dcc` | — |
-| `light.wiz_rgbw_tunable_81df16` | — |
-| `light.wiz_rgbw_tunable_819eee` | Living Room (group member) |
-| `light.wiz_rgbw_tunable_816499` | — |
-| `light.wiz_rgbw_tunable_8206c2` | Living Room (group member) |
-| `light.wiz_rgbw_tunable_8151af` | — |
-| `light.wiz_rgbw_tunable_81cce4` | — |
-| `light.wiz_rgbw_tunable_819f3e` | — |
-| `light.wiz_rgbw_tunable_81570d` | — |
-| `light.wiz_rgbw_tunable_819307` | — |
-| `light.wiz_rgbw_tunable_81ab69` | Living Room (group member) |
+Individual entity IDs and room assignments are stored in `lighting_devices` table. Query for current state:
 
-**10 WiZ bulbs not yet discovered** in HAOS: Master Pasture (4), Kitchen (6, 1 offline)
+```sql
+SELECT ha_entity_id, device_name, room, mac_address, ip_address
+FROM lighting_devices WHERE device_brand = 'WiZ' AND is_active ORDER BY room, socket_number;
+```
+
+Live entity IDs seen in HAOS (2026-03-27): `light.wiz_rgbww_tunable_09b70b`, `light.wiz_rgbw_tunable_816499`, `light.wiz_rgbw_tunable_81df16`, `light.wiz_rgbw_tunable_819f3e`, `light.wiz_rgbw_tunable_816dcc`, `light.wiz_rgbw_tunable_81570d`, `light.wiz_rgbw_tunable_819eee`, `light.wiz_rgbw_tunable_819307`, `light.wiz_rgbw_tunable_8173f0`, `light.wiz_rgbww_tunable_09ffc8`, `light.wiz_rgbw_tunable_8175e4`, `light.wiz_rgbw_tunable_8206c2`, `light.wiz_rgbw_tunable_81bc74`, `light.wiz_rgbww_tunable_0a6817`, `light.wiz_rgbw_tunable_81d231`, `light.wiz_rgbw_tunable_81cce4` + Skyloft BR30s.
 
 ---
 
@@ -231,9 +216,9 @@ Controlled via SmartLife app or Tuya Cloud API. Not yet in HAOS.
 - After factory reset, bulbs enter pairing mode for only 2–3s before reconnecting to AiDot cloud
 - Fix: block MACs from internet via UDM → factory reset → commission via HA Matter add-on
 
-**`alpuca ha` wrapper not working:**
-- Uses password SSH auth which is currently broken on Alpuca
-- Use direct `ssh -o PubkeyAuthentication=yes ... alpuca@192.168.1.200` instead
+**SSH to Alpuca not working:**
+- Use `sshpass` with password from Bitwarden (see §How to Run Commands above)
+- Password SSH confirmed working 2026-03-27; key auth may or may not work depending on config
 
 ---
 

@@ -11,19 +11,22 @@ Scope includes:
 
 ---
 
-## Current State (What Exists Today)
+## Current State (as of 2026-03-27)
 
 ### Implemented
-- Resident lighting UI is Govee-only (`residents/lighting.js`, `shared/services/lighting-data.js`).
-- `govee-control` edge function controls Govee Cloud API.
-- `scripts/wiz-proxy/server.js` provides HTTP -> WiZ UDP control.
-- `alexa-room-control` edge function already supports room-based WiZ + Govee control.
-- DB table `alexa_room_targets` already stores room mappings with `wiz_ips` and `govee_group_ids`.
+- **HAOS is live** on Alpuca (192.168.1.200), running at `192.168.1.39:8123`. All WiZ, OREIN Matter, Leedarson Matter, and TP-Link lights are controllable via HAOS.
+- **WiZ Proxy is deprecated** — all WiZ bulbs now in HAOS. `scripts/wiz-proxy/server.js` remains but is no longer the control path.
+- **DB tables live**: `lighting_devices` (per-bulb inventory), `lighting_groups` (room groups), `lighting_group_targets` (backend mappings). Seeded with all known rooms. `lighting_devices` has per-bulb HA entity IDs, MAC addresses, brands.
+- `govee-control` edge function still controls Govee (~63 devices) via cloud API — not yet in HAOS.
+- Tuya/SmartLife (~32 devices) still cloud-only via SmartLife app — not yet in HAOS.
+- Current command path: SSH to Alpuca → `~/ha-cmd.sh` → HAOS REST API. See `devdocs/LIGHTINGAUTOMATION.md`.
 
-### Not implemented yet
-- No Home Assistant runtime integration in edge functions.
-- No Matter control path in app backend.
-- No unified room/group abstraction in resident UI across multiple backends.
+### Not yet implemented
+- No `home-assistant-control` edge function — app/PAI cannot call HA without SSH.
+- No unified resident lighting UI — `residents/lighting.js` still Govee-only.
+- Govee and Tuya devices not yet in HAOS (cloud-only).
+- `shared/services/unified-lighting-data.js` not yet created.
+- PAI still uses direct vendor tool paths, not a unified group-based tool.
 
 ---
 
@@ -61,40 +64,26 @@ This is the best fit because user intent is room-first, not device-ID-first.
 
 ## Data Design
 
-## New tables
+## Tables (all exist in Supabase as of 2026-03-27)
 
-### `lighting_groups`
-- `id` uuid pk
-- `key` text unique (`kitchen`, `living_room`, etc.)
-- `name` text
-- `area` text
-- `display_order` int
-- `is_active` bool
-- `created_at`, `updated_at`
+### `lighting_devices` ✅ live
+Per-bulb inventory: `device_name`, `room`, `ha_entity_id`, `device_brand`, `device_model`, `protocol`, `mac_address`, `ip_address`, `matter_setup_code`, `matter_qr_url`, `is_active`.
 
-### `lighting_group_targets`
-- `id` uuid pk
-- `group_id` uuid fk -> `lighting_groups.id`
-- `backend` text check in (`home_assistant`, `wiz_proxy`, `govee_cloud`)
-- `target_id` text (for HA: `light.kitchen_ceiling`; for fallback: group/device key)
-- `metadata` jsonb (optional brightness/color limits, transition defaults)
-- `is_active` bool
-- `created_at`, `updated_at`
+### `lighting_groups` ✅ live
+Room groups: `key` (`kitchen`, `living_room`, etc.), `name`, `area`, `display_order`, `space_id`, `is_active`.
 
-### `home_assistant_entities` (optional cache table)
-- `entity_id` text pk
-- `domain` text
-- `friendly_name` text
-- `area_name` text
-- `capabilities` jsonb
-- `is_active` bool
-- `last_seen_at` timestamptz
-- `updated_at` timestamptz
+### `lighting_group_targets` ✅ live
+- `group_id` fk → `lighting_groups`
+- `backend` text: `home_assistant` | `govee_cloud` | `tuya_cloud` | `wiz_proxy` (deprecated)
+- `target_id` (HA entity ID, Govee group ID, Tuya device ID)
+- `metadata` jsonb, `mac_address`, `is_active`
 
-## Existing table reuse
+### `home_assistant_entities` — not yet created
+Optional entity cache table — still in future scope.
 
-- `alexa_room_targets` can be migration input but should not be long-term canonical model.
-- `govee_devices` remains useful during transition.
+### Legacy tables (keep during transition)
+- `alexa_room_targets` — not canonical; `lighting_groups` supersedes it
+- `govee_devices` — still used by `govee-control` edge fn; migrate to `lighting_devices` eventually
 
 ---
 
@@ -156,33 +145,33 @@ This keeps PAI prompt/API stable while infrastructure changes underneath.
 
 ## Rollout Plan
 
-### Phase 0: Discovery + mapping
-- Stand up HA inventory export.
-- Map current rooms to HA entities.
-- Confirm all Linkind + Govee Matter bulbs are in HA and controllable.
+### Phase 0: Discovery + mapping ✅ DONE
+- HAOS live, all rooms mapped to HA entities.
+- `lighting_devices`, `lighting_groups`, `lighting_group_targets` tables created and seeded.
 
-### Phase 1: Backend gateway
-- Implement `home-assistant-control` with read-only actions first.
-- Add `set_power` and `set_brightness`.
-- Add command audit logging (table or existing error log pattern).
+### Phase 1: Backend gateway — IN PROGRESS
+- `home-assistant-control` edge function **not yet built**.
+- Current workaround: SSH to Alpuca → `ha-cmd.sh` directly.
+- Next: implement edge function with `set_power`, `set_brightness`, `set_color`, `activate_scene`.
+- Add command audit logging.
 
-### Phase 2: Room abstraction
-- Create `lighting_groups` + `lighting_group_targets`.
-- Seed from known rooms (`kitchen`, `living_room`, `master_pasture`).
-- Implement fallback routing for any missing HA entities.
+### Phase 2: Room abstraction ✅ DONE
+- `lighting_groups` + `lighting_group_targets` created and seeded.
+- Backends: `home_assistant`, `govee_cloud`, `tuya_cloud` (wiz_proxy deprecated).
 
-### Phase 3: Resident UI migration
-- Move resident lighting page to unified service.
-- Verify group actions, state polling, and scene activation.
+### Phase 3: Resident UI migration — TODO
+- Move `residents/lighting.js` from Govee-only to `unified-lighting-data.js`.
+- Render by `lighting_groups` not vendor tables.
+- Add partial-failure status badges.
 
-### Phase 4: PAI migration
-- Point PAI light control to unified backend.
-- Validate natural-language room control end-to-end.
+### Phase 4: PAI migration — TODO
+- Add unified `control_lights` tool pointing to `home-assistant-control` edge fn.
+- Retire per-vendor PAI tool paths.
 
-### Phase 5: Decommission old paths
-- Remove direct Govee-first assumptions from lighting UI.
-- Keep `wiz-proxy` only if still needed as temporary adapter.
-- Retain `alexa-room-control` only if still actively used.
+### Phase 5: Decommission old paths — TODO
+- Remove WiZ Proxy (`scripts/wiz-proxy/`) once edge fn is stable.
+- Migrate `govee_devices` references to `lighting_devices`.
+- Evaluate whether `alexa-room-control` is still needed.
 
 ---
 

@@ -108,7 +108,7 @@ function loadOverview() {
       const target = card.dataset.goto;
       if (target.startsWith('_')) {
         // External link cards
-        if (target === '_devdocs') window.location.href = '/devdocs/';
+        if (target === '_devdocs') window.location.href = '/spaces/admin/devcontrol/devdocs/';
       } else {
         switchTab(target);
       }

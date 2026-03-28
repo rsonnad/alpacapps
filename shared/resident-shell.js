@@ -278,7 +278,7 @@ function renderContextSwitcher(authState) {
     { perm: 'view_hours', href: 'worktracking.html' },
     { perm: 'view_faq', href: 'faq.html' },
     { perm: 'view_voice', href: 'voice.html' },
-    { perm: 'view_todo', href: 'devcontrol.html#planlist' },
+    { perm: 'view_todo', href: 'devcontrol/#planlist' },
     { perm: 'view_appdev', href: 'appdev.html' },
   ];
   const ADMIN_TAB_MAP = [

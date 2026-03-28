@@ -1,15 +1,15 @@
 # Secrets Management Guide
 
-> Cross-project guide for managing secrets with 1Password as source of truth.
+> Cross-project guide for managing secrets with Bitwarden as source of truth.
 > Replicable across all projects (alpacapps, finleg, portsie, etc.)
 
 ## Architecture: 4-Tier Model
 
 ```
-1Password Vaults (source of truth)
-    ↓ op:// references
+Bitwarden Vaults (source of truth)
+    ↓ bw-read references
 Local Config Files (CREDENTIALS.md, .mcp.json, memory/)
-    ↓ op read / env injection
+    ↓ bw-read / env injection
 Supabase Env Vars (runtime secrets for edge functions)
     ↓ RLS / service role
 DB Row-Level Secrets (per-account tokens in config tables)
@@ -23,10 +23,6 @@ DB Row-Level Secrets (per-account tokens in config tables)
 |---------|---------|----------|
 | `DevOps-{project}` | `DevOps-alpacapps` | API keys, OAuth, bot tokens, server access for one project |
 | `DevOps-shared` | `DevOps-shared` | Cross-project infra (Cloudflare, R2, domain registrars) |
-| `{Person} Financial` | `Rahul Financial` | Banks, cards, loans, investments |
-| `{Person} General` | `Rahul General` | Utilities, insurance, shopping, govt, medical |
-| `{Business} Internet` | `Alpaca Internet` | Business web accounts (Airbnb, VRBO, social media) |
-| `Family Tax` | `Family Tax` | SSNs, security Q&A, identity info |
 
 ## Item Structure
 
@@ -69,28 +65,25 @@ Sections:
 In `CREDENTIALS.md` and memory files, replace plaintext secrets with:
 
 ```markdown
-- **API Key:** `op read "op://DevOps-alpacapps/Service Name/Section/Field"`
+- **API Key:** `bw-read "Service Name" "Field"`
 ```
 
 In shell commands:
 ```bash
 # Inline substitution
-curl -H "Authorization: Bearer $(op read 'op://DevOps-alpacapps/Supabase/API Keys/Management API Token')"
-
-# Password file generation
-op read "op://DevOps-alpacapps/Hostinger VPS/SSH/Password" > ~/.ssh/service.pass && chmod 600 ~/.ssh/service.pass
+curl -H "Authorization: Bearer $(bw-read "Supabase — AlpacApps Project" "Management API Token")"
 
 # sshpass integration
-sshpass -p "$(op read 'op://DevOps-alpacapps/Hostinger VPS/SSH/Password')" ssh root@host
+sshpass -p "$(bw-read "Hostinger VPS — OpenClaw Server")" ssh root@host
 ```
 
 ## Setting Up a New Project
 
-1. **Create vault:** `DevOps-{project}` in 1Password
+1. **Create folder:** `DevOps-{project}` in Bitwarden
 2. **Add items:** Follow the structure patterns above
-3. **Create CREDENTIALS.md:** Use `op://` references (never plaintext)
-4. **Supabase secrets:** `supabase secrets set KEY=$(op read 'op://...')`
-5. **MCP config:** Reference via env vars or `op://` in `.mcp.json`
+3. **Create CREDENTIALS.md:** Use `bw-read` references (never plaintext)
+4. **Supabase secrets:** `supabase secrets set KEY=$(bw-read "Item" "Field")`
+5. **MCP config:** Reference via env vars in `.mcp.json`
 
 ## Tag Taxonomy
 
@@ -110,8 +103,8 @@ sshpass -p "$(op read 'op://DevOps-alpacapps/Hostinger VPS/SSH/Password')" ssh r
 
 When rotating secrets:
 1. Generate new secret in the service dashboard
-2. Update 1Password item (old value goes to password history automatically)
+2. Update Bitwarden item
 3. Update Supabase env vars: `supabase secrets set KEY=new_value`
 4. Restart affected edge functions: `supabase functions deploy <name>`
 5. Verify with a test request
-6. No need to update CREDENTIALS.md — `op://` references stay the same
+6. No need to update CREDENTIALS.md — `bw-read` references stay the same

@@ -98,13 +98,13 @@ const PAGES = [
   '/spaces/admin/passwords.html',
   '/spaces/admin/media.html',
   '/spaces/admin/inventory.html',
-  '/spaces/admin/devcontrol.html',
+  '/spaces/admin/devcontrol/',
   '/spaces/admin/settings.html',
   // Infra
   '/infra/',
   '/infra/setup-guide.html',
   // Dev docs
-  '/devdocs/',
+  '/spaces/admin/devcontrol/devdocs/',
   // Kiosk
   '/kioskhall/',
 ];
