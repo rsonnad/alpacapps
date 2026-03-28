@@ -1,12 +1,12 @@
 {
-  "version": "v260327.52 10:24p",
-  "release": 1098,
-  "sha": "08d7ffef4",
-  "fullSha": "08d7ffef40dad04991f62641bd8aaa4a63b65cc8",
+  "version": "v260327.53 10:37p",
+  "release": 1099,
+  "sha": "6f2c086b9",
+  "fullSha": "6f2c086b930a5b2bde83276e1239139fe13b746b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 03:24:33+00",
-  "commits": [{"sha":"08d7ffef4","message":"feat: add backup trigger polling on Almaca + show failure reasons in UI","author":"Paca"}]
+  "pushedAt": "2026-03-28 03:37:58+00",
+  "commits": [{"sha":"6f2c086b9","message":"docs: add testing guide with test account and auth architecture","author":"Paca"}]
 }
