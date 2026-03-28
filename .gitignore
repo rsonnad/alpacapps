@@ -53,4 +53,6 @@ pai-discord/node_modules/
 
 # Gmail OAuth credentials (secret)
 scripts/gmail-credentials.json
+# Google OAuth client secrets
+scripts/client_secret_*.json
 .gstack/
