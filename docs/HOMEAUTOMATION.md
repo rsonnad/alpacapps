@@ -496,27 +496,61 @@ sudo launchctl list | grep homeassistant
 
 ## 11. Quick Reference Commands
 
-### Control lights via API
+### How to run HA commands (via SSH to Alpuca)
+
+**⚠️ `~/bin/alpuca ha` shorthand is broken** — password SSH fails. Use direct SSH with key auth:
+
 ```bash
-export HA_TOKEN="eyJhbGci..."  # Use the long-lived token
+SSH="ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no -o ConnectTimeout=5 alpuca@192.168.1.200"
+```
 
+`~/ha-cmd.sh` on Alpuca handles auth to HAOS (`alpacaadmin`/`playhouse` at `192.168.1.39:8123`) with token caching.
+
+---
+
+### Living Room lights
+
+**Entities:**
+- `light.living_room_lights` — 5 WiZ bulbs + 1 Matter bulb (group)
+- `light.livingroom_strip_light` — Govee LED strip (15 segments)
+
+```bash
+# Soft white (2700K)
+ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"],\"color_temp_kelvin\":2700,\"brightness\":200}'"
+
+# Set RGB color (example: warm amber)
+ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"],\"rgb_color\":[255,147,41],\"brightness\":200}'"
+
+# Turn off
+ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
+  "~/ha-cmd.sh 'light/turn_off' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"]}'"
+```
+
+**Color temp presets:** 2700K (soft white) · 3000K (warm) · 4000K (neutral) · 5000K (bright) · 6500K (daylight)
+
+---
+
+### Master Bathroom lights
+
+```bash
+~/bin/alpuca mb-off
+~/bin/alpuca mb-on 200   # brightness 0-255
+```
+
+Entity: `light.master_bathroom_lights` (5 OREIN Matter bulbs)
+
+---
+
+### Control lights via HAOS API directly (if SSH to Alpuca available)
+
+```bash
 # Turn on all WiZ lights
-curl -s -X POST http://192.168.1.39:8123/api/services/light/turn_on \
-  -H "Authorization: Bearer $HA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"entity_id": "all"}'
-
-# Set a specific light to warm white at 50% brightness
-curl -s -X POST http://192.168.1.39:8123/api/services/light/turn_on \
-  -H "Authorization: Bearer $HA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"entity_id": "light.wiz_rgbw_tunable_81ab69", "brightness": 128, "color_temp_kelvin": 3000}'
+ssh alpuca@192.168.1.200 "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\": \"all\"}'"
 
 # Turn off stair landing switch
-curl -s -X POST http://192.168.1.39:8123/api/services/switch/turn_off \
-  -H "Authorization: Bearer $HA_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"entity_id": "switch.stair_landing"}'
+ssh alpuca@192.168.1.200 "~/ha-cmd.sh 'switch/turn_off' '{\"entity_id\": \"switch.stair_landing\"}'"
 ```
 
 ### Sonos control via API
