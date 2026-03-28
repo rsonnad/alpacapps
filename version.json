@@ -1,12 +1,12 @@
 {
-  "version": "v260327.46 9:37p",
-  "release": 1092,
-  "sha": "865cafb79",
-  "fullSha": "865cafb796aaa07414ac0137fa353122712acc40",
+  "version": "v260327.48 9:41p",
+  "release": 1094,
+  "sha": "b9e848d92",
+  "fullSha": "b9e848d928a17caa33232d342afff3b6760a9b13",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 02:37:08+00",
-  "commits": [{"sha":"865cafb79","message":"docs: add living room light control commands to HOMEAUTOMATION.md","author":"Rahul"}]
+  "pushedAt": "2026-03-28 02:41:51+00",
+  "commits": [{"sha":"b9e848d92","message":"docs: add LIGHTINGAUTOMATION.md to CLAUDE.md on-demand context list","author":"Rahul"}]
 }
