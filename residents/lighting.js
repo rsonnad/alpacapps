@@ -59,12 +59,49 @@ const SEGMENT_ZONES = {
 
 function getSegmentZones(sku, segmentCount) {
   if (SEGMENT_ZONES[sku]) return SEGMENT_ZONES[sku];
-  // For non-mapped devices, just show "All" — individual segments are too many to display
+  // Strip lights with many segments get individual segment grid
+  if (segmentCount > 2) return null; // signal to use strip grid instead
   const all = Array.from({ length: segmentCount }, (_, i) => i);
   return [
     { name: 'All', segments: all, description: 'All segments' },
   ];
 }
+
+// Music mode definitions (from Govee API)
+const MUSIC_MODES = [
+  { name: 'Energic', value: 0, icon: '⚡' },
+  { name: 'Rhythm', value: 1, icon: '🥁' },
+  { name: 'Spectrum', value: 2, icon: '🌊' },
+  { name: 'Rolling', value: 3, icon: '🎢' },
+  { name: 'Separation', value: 4, icon: '🔀' },
+  { name: 'Hopping', value: 5, icon: '🐇' },
+  { name: 'PianoKeys', value: 6, icon: '🎹' },
+  { name: 'Fountain', value: 7, icon: '⛲' },
+  { name: 'DayAndNight', value: 8, icon: '🌗' },
+  { name: 'Sprouting', value: 9, icon: '🌱' },
+  { name: 'Shiny', value: 10, icon: '✨' },
+];
+
+// Scene visual gradients for enhanced chips
+const SCENE_GRADIENTS = {
+  'Sunrise': 'linear-gradient(135deg, #ff6b35, #ffd700)',
+  'Sunset': 'linear-gradient(135deg, #ff4500, #8b008b)',
+  'Afternoon': 'linear-gradient(135deg, #ffd700, #fffacd)',
+  'Candlelight': 'linear-gradient(135deg, #ff8c00, #ffd700)',
+  'Romantic': 'linear-gradient(135deg, #ff69b4, #ff1493)',
+  'Reading': 'linear-gradient(135deg, #fffaf0, #faebd7)',
+  'Aurora-B': 'linear-gradient(135deg, #00ff87, #60efff, #b366ff)',
+  'Universe-B': 'linear-gradient(135deg, #1a0533, #4a0e8f, #00d4ff)',
+  'Fire-C': 'linear-gradient(135deg, #ff0000, #ff6600, #ffcc00)',
+  'Crossing': 'linear-gradient(135deg, #0077be, #00bfff, #00ff7f)',
+  'Halloween-A': 'linear-gradient(135deg, #ff6600, #800080, #000)',
+  'Breathe': 'linear-gradient(135deg, #87ceeb, #fff, #87ceeb)',
+  'Sweet': 'linear-gradient(135deg, #ff69b4, #dda0dd, #87ceeb)',
+  'Moonlight-A': 'linear-gradient(135deg, #191970, #4169e1)',
+  'Sleep-A': 'linear-gradient(135deg, #1a0a2e, #2d1b69)',
+  'Soothing-A': 'linear-gradient(135deg, #2e8b57, #3cb371)',
+};
+const DARK_SCENES = ['Moonlight-A','Moonlight-B','Night-A','Universe-B','Sleep-A','Sleep-B','Quiet-A','Halloween-A'];
 
 // =============================================
 // STATE
@@ -229,6 +266,12 @@ async function loadGroupsFromDB() {
           const caps = c.capabilities || [];
           const hasSegments = caps.some(cap => cap.instance === 'segmentedColorRgb');
           const hasScenes = caps.some(cap => cap.instance === 'lightScene');
+          const hasMusicMode = caps.some(cap => cap.instance === 'musicMode');
+          const hasGradientToggle = caps.some(cap => cap.instance === 'gradientToggle');
+          // Extract music mode options from capability if present
+          const musicCap = caps.find(cap => cap.instance === 'musicMode');
+          const musicModeOptions = musicCap?.parameters?.fields
+            ?.find(f => f.fieldName === 'musicMode')?.options || [];
           return {
             deviceId: c.device_id,
             name: c.name,
@@ -237,6 +280,9 @@ async function loadGroupsFromDB() {
             segmentCount: segmentCountMap[c.sku] || 0,
             hasSegments,
             hasScenes,
+            hasMusicMode,
+            hasGradientToggle,
+            musicModeOptions,
           };
         }),
       };
@@ -876,6 +922,108 @@ async function activateGroupScene(groupId, sceneValue, sceneName) {
 }
 
 // =============================================
+// MUSIC MODE & GRADIENT CONTROLS
+// =============================================
+async function setMusicMode(deviceId, sku, modeValue, sensitivity = 80, autoColor = true, rgb = null) {
+  try {
+    const fields = [
+      { fieldName: 'musicMode', value: modeValue },
+      { fieldName: 'sensitivity', value: sensitivity },
+      { fieldName: 'autoColor', value: autoColor ? 1 : 0 },
+    ];
+    if (!autoColor && rgb != null) {
+      fields.push({ fieldName: 'rgb', value: rgb });
+    }
+
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku,
+      capability: {
+        type: 'devices.capabilities.music_setting',
+        instance: 'musicMode',
+        value: fields.reduce((obj, f) => { obj[f.fieldName] = f.value; return obj; }, {}),
+      },
+    });
+
+    const modeName = MUSIC_MODES.find(m => m.value === modeValue)?.name || `Mode ${modeValue}`;
+    showToast(`Music: ${modeName}`, 'success', 2000);
+  } catch (err) {
+    showToast(`Music mode failed: ${err.message}`, 'error');
+  }
+}
+
+async function toggleGradient(deviceId, sku, on) {
+  try {
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku,
+      capability: {
+        type: 'devices.capabilities.toggle',
+        instance: 'gradientToggle',
+        value: on ? 1 : 0,
+      },
+    });
+    showToast(`Gradient ${on ? 'on' : 'off'}`, 'success', 1500);
+  } catch (err) {
+    showToast(`Gradient failed: ${err.message}`, 'error');
+  }
+}
+
+async function setStripSegmentColors(deviceId, sku, segments, hexColor) {
+  const rgb = hexToRgbInt(hexColor);
+  try {
+    await goveeApi('controlDevice', {
+      device: deviceId,
+      sku,
+      capability: {
+        type: 'devices.capabilities.segment_color_setting',
+        instance: 'segmentedColorRgb',
+        value: { segment: segments, rgb },
+      },
+    });
+  } catch (err) {
+    showToast(`Segment color failed: ${err.message}`, 'error');
+  }
+}
+
+async function applyRainbow(deviceId, sku, segmentCount) {
+  const colors = [];
+  for (let i = 0; i < segmentCount; i++) {
+    const hue = Math.round((i / segmentCount) * 360);
+    colors.push(hslToRgbInt(hue, 100, 50));
+  }
+  // Send each segment individually (API may not support batch)
+  for (let i = 0; i < segmentCount; i++) {
+    try {
+      await goveeApi('controlDevice', {
+        device: deviceId,
+        sku,
+        capability: {
+          type: 'devices.capabilities.segment_color_setting',
+          instance: 'segmentedColorRgb',
+          value: { segment: [i], rgb: colors[i] },
+        },
+      });
+    } catch (err) {
+      // Continue with remaining segments
+    }
+    if (segmentCount > 5) await sleep(100);
+  }
+  showToast('Rainbow applied', 'success', 2000);
+}
+
+function hslToRgbInt(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const r = Math.round(f(0) * 255);
+  const g = Math.round(f(8) * 255);
+  const b = Math.round(f(4) * 255);
+  return (r << 16) | (g << 8) | b;
+}
+
+// =============================================
 // DEVICE STATE LOADING
 // =============================================
 async function refreshDeviceState(deviceId, sku) {
@@ -1245,11 +1393,23 @@ function renderChildDevice(child) {
         data-action="scene-expand" data-device="${child.deviceId}" data-sku="${child.sku}">&#9733;</button>`
     : '';
 
+  const musicBtn = child.hasMusicMode
+    ? `<button class="child-extra-btn" title="Music mode"
+        data-action="music-expand" data-device="${child.deviceId}" data-sku="${child.sku}">&#9835;</button>`
+    : '';
+
+  const gradientBtn = child.hasGradientToggle
+    ? `<button class="child-extra-btn" title="Toggle gradient"
+        data-action="gradient-toggle" data-device="${child.deviceId}" data-sku="${child.sku}">&#8776;</button>`
+    : '';
+
+  const hasExpanded = child.hasSegments || child.hasScenes || child.hasMusicMode;
   // Segment controls start expanded so dual-color Ring/Main is immediately visible
-  const expandedHtml = (child.hasSegments || child.hasScenes)
+  const expandedHtml = hasExpanded
     ? `<div class="child-device-row__expanded${child.hasSegments ? '' : ' hidden'}" data-expanded-for="${child.deviceId}">
         ${child.hasSegments ? renderSegmentControls(child) : ''}
         ${child.hasScenes ? renderSceneSelector(child) : ''}
+        ${child.hasMusicMode ? renderMusicModePanel(child) : ''}
       </div>`
     : '';
 
@@ -1274,6 +1434,8 @@ function renderChildDevice(child) {
           style="background: #FFD4A3;"></button>
         ${segmentBtn}
         ${sceneBtn}
+        ${musicBtn}
+        ${gradientBtn}
       </div>
       ${expandedHtml}
     </div>
@@ -1282,6 +1444,14 @@ function renderChildDevice(child) {
 
 function renderSegmentControls(child) {
   const zones = getSegmentZones(child.sku, child.segmentCount);
+
+  // Strip grid mode for devices with many segments (no predefined zone mapping)
+  if (!zones && child.segmentCount > 2) {
+    return renderStripSegmentGrid(child);
+  }
+
+  if (!zones) return '';
+
   return `
     <div class="segment-controls" data-segment-panel="${child.deviceId}">
       <div class="segment-zone-list">
@@ -1311,6 +1481,44 @@ function renderSegmentControls(child) {
   `;
 }
 
+function renderStripSegmentGrid(child) {
+  const count = child.segmentCount;
+  const segBtns = Array.from({ length: count }, (_, i) =>
+    `<button class="strip-seg-btn" data-action="strip-seg-select" data-seg="${i}"
+       data-device="${child.deviceId}" title="Segment ${i + 1}"
+       style="background:#888">${i + 1}</button>`
+  ).join('');
+
+  return `
+    <div class="strip-grid-controls" data-strip-panel="${child.deviceId}">
+      <div class="strip-grid-controls__label">
+        <span>Segments (${count})</span>
+        <div class="strip-grid-controls__actions">
+          <button class="btn-tiny" data-action="strip-select-all" data-device="${child.deviceId}" data-count="${count}">Select All</button>
+          <button class="btn-tiny" data-action="strip-clear" data-device="${child.deviceId}">Clear</button>
+          <button class="btn-tiny btn-rainbow" data-action="strip-rainbow" data-device="${child.deviceId}" data-sku="${child.sku}" data-count="${count}">🌈 Rainbow</button>
+        </div>
+      </div>
+      <div class="strip-seg-grid" data-strip-grid="${child.deviceId}">
+        ${segBtns}
+      </div>
+      <div class="strip-grid-color-row">
+        <input type="color" value="#FF6600" data-strip-color="${child.deviceId}">
+        <button class="btn-tiny" data-action="strip-apply-color" data-device="${child.deviceId}" data-sku="${child.sku}">Apply to Selected</button>
+        <div class="color-presets">
+          ${COLOR_PRESETS.map(p => `
+            <button class="color-preset color-preset-tiny" title="${p.name}"
+              style="background:${p.hex}"
+              data-action="strip-color-preset" data-device="${child.deviceId}"
+              data-sku="${child.sku}" data-hex="${p.hex}">
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderSceneSelector(child) {
   return `
     <div class="scene-selector" data-scene-panel="${child.deviceId}">
@@ -1320,6 +1528,40 @@ function renderSceneSelector(child) {
           data-action="scene-search" data-device="${child.deviceId}">
         <div class="scene-list" data-scene-list="${child.deviceId}">
           <span class="text-muted" style="font-size:0.75rem;">Loading scenes...</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderMusicModePanel(child) {
+  // Use device-specific modes if available, otherwise fall back to defaults
+  const modes = child.musicModeOptions.length > 0
+    ? child.musicModeOptions.map(o => {
+        const def = MUSIC_MODES.find(m => m.name === o.name || m.value === o.value);
+        return { name: o.name, value: o.value, icon: def?.icon || '🎵' };
+      })
+    : MUSIC_MODES;
+
+  return `
+    <div class="music-mode-panel" data-music-panel="${child.deviceId}">
+      <div class="music-mode-panel__label">Music Mode</div>
+      <div class="music-mode-grid">
+        ${modes.map(m => `
+          <button class="music-mode-btn" data-action="activate-music"
+            data-device="${child.deviceId}" data-sku="${child.sku}"
+            data-mode="${m.value}" title="${m.name}">
+            <span class="music-mode-btn__icon">${m.icon}</span>
+            <span class="music-mode-btn__name">${m.name}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="music-mode-controls">
+        <div class="music-sensitivity">
+          <label>Sensitivity</label>
+          <input type="range" min="0" max="100" value="80"
+            data-action="music-sensitivity" data-device="${child.deviceId}" data-sku="${child.sku}">
+          <span data-music-sens-label="${child.deviceId}">80%</span>
         </div>
       </div>
     </div>
@@ -1805,7 +2047,123 @@ function setupEventListeners() {
       groupSceneChip.classList.add('active');
       return;
     }
+
+    // Music mode expand/collapse
+    const musicExpand = e.target.closest('[data-action="music-expand"]');
+    if (musicExpand) {
+      const deviceId = musicExpand.dataset.device;
+      const expandedPanel = container.querySelector(`[data-expanded-for="${deviceId}"]`);
+      if (expandedPanel) {
+        const isHidden = expandedPanel.classList.toggle('hidden');
+        musicExpand.classList.toggle('active', !isHidden);
+      }
+      return;
+    }
+
+    // Activate music mode
+    const musicBtn = e.target.closest('[data-action="activate-music"]');
+    if (musicBtn) {
+      const { device, sku, mode } = musicBtn.dataset;
+      const sensitivityInput = container.querySelector(`input[data-action="music-sensitivity"][data-device="${device}"]`);
+      const sensitivity = sensitivityInput ? parseInt(sensitivityInput.value) : 80;
+      setMusicMode(device, sku, parseInt(mode), sensitivity);
+      // Highlight active
+      musicBtn.closest('.music-mode-grid')?.querySelectorAll('.music-mode-btn')
+        .forEach(b => b.classList.remove('active'));
+      musicBtn.classList.add('active');
+      return;
+    }
+
+    // Gradient toggle
+    const gradientToggleBtn = e.target.closest('[data-action="gradient-toggle"]');
+    if (gradientToggleBtn) {
+      const { device, sku } = gradientToggleBtn.dataset;
+      const isActive = gradientToggleBtn.classList.toggle('active');
+      toggleGradient(device, sku, isActive);
+      return;
+    }
+
+    // Strip segment select
+    const stripSegBtn = e.target.closest('[data-action="strip-seg-select"]');
+    if (stripSegBtn) {
+      stripSegBtn.classList.toggle('selected');
+      return;
+    }
+
+    // Strip select all
+    const stripSelectAll = e.target.closest('[data-action="strip-select-all"]');
+    if (stripSelectAll) {
+      const deviceId = stripSelectAll.dataset.device;
+      container.querySelectorAll(`.strip-seg-btn[data-device="${deviceId}"]`)
+        .forEach(b => b.classList.add('selected'));
+      return;
+    }
+
+    // Strip clear selection
+    const stripClear = e.target.closest('[data-action="strip-clear"]');
+    if (stripClear) {
+      const deviceId = stripClear.dataset.device;
+      container.querySelectorAll(`.strip-seg-btn[data-device="${deviceId}"]`)
+        .forEach(b => b.classList.remove('selected'));
+      return;
+    }
+
+    // Strip rainbow
+    const stripRainbow = e.target.closest('[data-action="strip-rainbow"]');
+    if (stripRainbow) {
+      const { device, sku, count } = stripRainbow.dataset;
+      applyRainbow(device, sku, parseInt(count));
+      return;
+    }
+
+    // Strip apply color to selected segments
+    const stripApply = e.target.closest('[data-action="strip-apply-color"]');
+    if (stripApply) {
+      const { device, sku } = stripApply.dataset;
+      const colorInput = container.querySelector(`[data-strip-color="${device}"]`);
+      const hex = colorInput?.value || '#FF6600';
+      const selected = [...container.querySelectorAll(`.strip-seg-btn[data-device="${device}"].selected`)]
+        .map(b => parseInt(b.dataset.seg));
+      if (selected.length === 0) {
+        showToast('Select segments first', 'info', 1500);
+        return;
+      }
+      setStripSegmentColors(device, sku, selected, hex);
+      // Update button backgrounds
+      selected.forEach(seg => {
+        const btn = container.querySelector(`.strip-seg-btn[data-device="${device}"][data-seg="${seg}"]`);
+        if (btn) btn.style.background = hex;
+      });
+      return;
+    }
+
+    // Strip color preset
+    const stripPreset = e.target.closest('[data-action="strip-color-preset"]');
+    if (stripPreset) {
+      const { device, sku, hex } = stripPreset.dataset;
+      const colorInput = container.querySelector(`[data-strip-color="${device}"]`);
+      if (colorInput) colorInput.value = hex;
+      const selected = [...container.querySelectorAll(`.strip-seg-btn[data-device="${device}"].selected`)]
+        .map(b => parseInt(b.dataset.seg));
+      if (selected.length > 0) {
+        setStripSegmentColors(device, sku, selected, hex);
+        selected.forEach(seg => {
+          const btn = container.querySelector(`.strip-seg-btn[data-device="${device}"][data-seg="${seg}"]`);
+          if (btn) btn.style.background = hex;
+        });
+      }
+      return;
+    }
   });
+
+  // Music sensitivity label update
+  container?.addEventListener('input', (e) => {
+    const { action, device } = e.target.dataset;
+    if (action === 'music-sensitivity' && device) {
+      const label = container.querySelector(`[data-music-sens-label="${device}"]`);
+      if (label) label.textContent = `${e.target.value}%`;
+    }
+  }, true); // use capture to not interfere with existing input handler
 
   // All Off button
   document.getElementById('allOffBtn')?.addEventListener('click', () => {
