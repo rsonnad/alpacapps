@@ -5,7 +5,7 @@
 
 ---
 
-Read https://alpacaplayhouse.com/infra/upgrade-guide.md and upgrade my project to the latest template.
+Read https://alpacaplayhouse.com/infra/infra-upgrade-guide.md and upgrade my project to the latest template.
 
 Here's what I need you to do:
 
@@ -19,12 +19,12 @@ Here's what I need you to do:
 
    Infrastructure files:
    - shared/update-checker.js (auto-update notifications)
-   - infra/upgrade-guide.md (this upgrade guide for future use)
+   - infra/infra-upgrade-guide.md (this upgrade guide for future use)
    - docs/SECRETS-BITWARDEN.md (Bitwarden CLI patterns)
    - docs/CLAUDE-TEMPLATE.md (CLAUDE.md template system)
    - docs/LOCAL-AI-SETUP.md (local AI with msty + Gemma 3 + Ollama)
    - docs/TESTING-GUIDE.md (test accounts and QA workflows)
-   - docs/UPGRADE-PROMPT.md (this file — for future upgrades)
+   - infra/infra-upgrade-prompt.md (this file — for future upgrades)
 
    Updated infrastructure pages:
    - infra/index.html (new Upgrade section with 3 upgrade options + architecture diagram)
@@ -41,12 +41,12 @@ Here's what I need you to do:
 
    Also add the upgrade reference block after the first-time setup note:
    > **Upgrading from the template?**
-   > Read `infra/upgrade-guide.md` for step-by-step instructions to sync new features from
+   > Read `infra/infra-upgrade-guide.md` for step-by-step instructions to sync new features from
    > the alpacapps-infra template repo. Machine-readable feature index: `infra/updates.json`
 
    And add to Quick Refs:
    - **Template repo:** https://github.com/rsonnad/alpacapps-infra
-   - **Upgrade guide:** `infra/upgrade-guide.md`
+   - **Upgrade guide:** `infra/infra-upgrade-guide.md`
 
 5. Check for new shared/ files I'm missing:
    git diff --name-only HEAD infra-upstream/main -- shared/
