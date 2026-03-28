@@ -1,12 +1,12 @@
 {
-  "version": "v260327.40 7:59p",
-  "release": 1086,
-  "sha": "957a533f7",
-  "fullSha": "957a533f790b2f26e7329c333f7f9014671ae364",
+  "version": "v260327.41 8:04p",
+  "release": 1087,
+  "sha": "adcb0058d",
+  "fullSha": "adcb0058d602895c5f06585e0ee88cbfc107756c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 00:59:06+00",
-  "commits": [{"sha":"957a533f7","message":"feat: add 32 SmartLife/Tuya devices to unified lighting system","author":"Rahul"}]
+  "pushedAt": "2026-03-28 01:04:56+00",
+  "commits": [{"sha":"adcb0058d","message":"feat: expandable device inventory with per-device details on lighting page","author":"Rahul"}]
 }
