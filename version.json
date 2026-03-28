@@ -1,12 +1,12 @@
 {
-  "version": "v260328.20 3:58p",
-  "release": 1127,
-  "sha": "cbedf711a",
-  "fullSha": "cbedf711a9facd354bbe03a6833e4c4f22734539",
+  "version": "v260328.21 4:06p",
+  "release": 1128,
+  "sha": "6286453b1",
+  "fullSha": "6286453b10598ffcb58f46442884322396ac29a1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 20:58:27+00",
-  "commits": [{"sha":"cbedf711a","message":"refactor: replace Conductor with Cloudflare in setup wizard core, move Conductor to optional","author":"Rahul"}]
+  "pushedAt": "2026-03-28 21:06:08+00",
+  "commits": [{"sha":"6286453b1","message":"refactor: replace Conductor with Cloudflare in infra setup pages","author":"Rahul"}]
 }
