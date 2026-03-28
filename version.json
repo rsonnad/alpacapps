@@ -1,12 +1,12 @@
 {
-  "version": "v260327.53 10:37p",
-  "release": 1099,
-  "sha": "6f2c086b9",
-  "fullSha": "6f2c086b930a5b2bde83276e1239139fe13b746b",
+  "version": "v260327.54 10:43p",
+  "release": 1100,
+  "sha": "5f127d85e",
+  "fullSha": "5f127d85ebce91c279c3c80b07f3feb0a08976ea",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 03:37:58+00",
-  "commits": [{"sha":"6f2c086b9","message":"docs: add testing guide with test account and auth architecture","author":"Paca"}]
+  "pushedAt": "2026-03-28 03:43:52+00",
+  "commits": [{"sha":"5f127d85e","message":"fix: blue pending triggers, reverse-chrono sort, dim failures after success","author":"Paca"}]
 }
