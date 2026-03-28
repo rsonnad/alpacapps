@@ -1356,6 +1356,18 @@ function setupEventListeners() {
     e.target.value = '';
   });
 
+  // Tasks tab — quick photo buttons
+  document.getElementById('tasksCameraInput').addEventListener('change', (e) => {
+    if (e.target.files[0]) handlePhotoUpload(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.getElementById('tasksFileInput').addEventListener('change', (e) => {
+    for (const file of Array.from(e.target.files)) {
+      handlePhotoUpload(file);
+    }
+    e.target.value = '';
+  });
+
   // History filters
   document.getElementById('historyPeriod').addEventListener('change', refreshHistory);
   document.getElementById('historyStatus').addEventListener('change', refreshHistory);
