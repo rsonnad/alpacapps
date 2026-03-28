@@ -1008,7 +1008,7 @@ async function loadBackups() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
         schedEl.insertAdjacentHTML('beforeend',
-          `<div class="dc-bk-sched-pending">⏳ Backup requested at ${timeStr} — poller runs every 5 min (requires RVAULT20 mounted)</div>`);
+          `<div class="dc-bk-sched-pending" style="color:#1565c0">⏳ Backup requested at ${timeStr} — poller runs every 5 min</div>`);
       }
     } catch (e) {
       showToast(`Trigger failed: ${e.message}`);
@@ -1020,20 +1020,29 @@ async function loadBackups() {
   function serviceBlock(dotClass, name, desc, meta, freq, next, backupsHtml, svcKey) {
     const active = activeTriggers.filter(t => t.service === svcKey);
     const recent = recentTriggers.filter(t => t.service === svcKey).slice(0, 3);
-    const triggerHtml = active.map(t => {
-      const when = new Date(t.requested_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    // Combine active + recent triggers, sort reverse-chronologically
+    const allTriggers = [...active, ...recent].sort((a, b) => {
+      const da = new Date(a.completed_at || a.requested_at).getTime();
+      const db = new Date(b.completed_at || b.requested_at).getTime();
+      return db - da;
+    }).slice(0, 5);
+    // Check if any success exists (to dim earlier failures)
+    const hasSuccess = allTriggers.some(t => t.status === 'completed');
+    const triggerHtml = allTriggers.map(t => {
+      const when = new Date(t.completed_at || t.requested_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const resultDetail = t.notes || '';
       if (t.status === 'running') {
-        const startedWhen = t.started_at ? new Date(t.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : when;
-        return `<div class="dc-bk-sched-pending" style="color:#e65100">🔄 Backup running since ${startedWhen}</div>`;
+        return `<div class="dc-bk-sched-pending" style="color:#e65100">🔄 Backup running since ${when}</div>`;
       }
-      return `<div class="dc-bk-sched-pending">⏳ Backup requested at ${when} — will start within 5 minutes</div>`;
-    }).join('') + recent.map(t => {
-      const when = t.completed_at ? new Date(t.completed_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—';
-      const resultDetail = t.notes || t.result?.error || t.result?.size || t.result?.satisfied_by || '';
+      if (t.status === 'pending') {
+        return `<div class="dc-bk-sched-pending" style="color:#1565c0">⏳ Backup requested at ${when} — poller runs every 5 min</div>`;
+      }
       if (t.status === 'completed') {
         return `<div class="dc-bk-sched-pending" style="color:#2e7d32">✅ Manual backup completed at ${when}${resultDetail ? ` — ${esc(resultDetail)}` : ''}</div>`;
       }
-      return `<div class="dc-bk-sched-pending" style="color:#c62828">❌ Manual backup failed at ${when}${resultDetail ? ` — ${esc(resultDetail)}` : ''}</div>`;
+      // Failed — dim if a success exists after it
+      const dimStyle = hasSuccess ? 'color:#b0a090;font-size:0.6875rem;opacity:0.7' : 'color:#c62828';
+      return `<div class="dc-bk-sched-pending" style="${dimStyle}">❌ Manual backup failed at ${when}${resultDetail ? ` — ${esc(resultDetail)}` : ''}</div>`;
     }).join('');
     return `<div class="dc-bk-service">
       <div class="dc-bk-section">
