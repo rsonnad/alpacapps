@@ -1,12 +1,12 @@
 {
-  "version": "v260327.50 10:08p",
-  "release": 1096,
-  "sha": "70fc4c770",
-  "fullSha": "70fc4c770437003330fec9937402dac60a570ddf",
+  "version": "v260327.51 10:22p",
+  "release": 1097,
+  "sha": "5d27851d5",
+  "fullSha": "5d27851d5fb78b4e29e53541894f0a8f77ad9f10",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 03:08:45+00",
-  "commits": [{"sha":"70fc4c770","message":"feat: rename lighting directory, add music mode + strip controls","author":"Rahul"}]
+  "pushedAt": "2026-03-28 03:22:10+00",
+  "commits": [{"sha":"5d27851d5","message":"feat: track HAOS VM image backups in DB, display history on DevControl","author":"Paca"}]
 }
