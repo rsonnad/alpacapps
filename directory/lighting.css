@@ -1,0 +1,306 @@
+/**
+ * Lighting Directory Styles
+ * Sortable table view for all smart lighting devices
+ */
+
+/* =============================================
+   CONTAINER
+   ============================================= */
+
+.ld-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+/* =============================================
+   SUMMARY BAR
+   ============================================= */
+
+.ld-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.ld-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.ld-counts {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--aap-text-muted);
+}
+
+.ld-count-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ld-count-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ld-count-dot--online { background: #22c55e; }
+.ld-count-dot--offline { background: #ef4444; }
+.ld-count-dot--unknown { background: #9ca3af; }
+
+/* =============================================
+   FILTERS
+   ============================================= */
+
+.ld-filters {
+  background: var(--aap-bg);
+  border: 1px solid var(--aap-border);
+  border-radius: var(--aap-radius);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.ld-search {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--aap-border);
+  border-radius: var(--aap-radius);
+  font-size: 0.85rem;
+  background: var(--aap-bg);
+  color: var(--aap-text);
+  margin-bottom: 0.5rem;
+  outline: none;
+  transition: border-color var(--aap-transition);
+}
+
+.ld-search:focus {
+  border-color: var(--aap-accent);
+}
+
+.ld-filter-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ld-select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--aap-border);
+  border-radius: var(--aap-radius);
+  font-size: 0.8rem;
+  background: var(--aap-bg);
+  color: var(--aap-text);
+  cursor: pointer;
+  outline: none;
+}
+
+.ld-select:focus {
+  border-color: var(--aap-accent);
+}
+
+.ld-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--aap-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* =============================================
+   TABLE
+   ============================================= */
+
+.ld-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--aap-border);
+  border-radius: var(--aap-radius);
+  background: var(--aap-bg);
+}
+
+.ld-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.ld-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.ld-table th {
+  background: var(--aap-bg-muted);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--aap-text-muted);
+  border-bottom: 2px solid var(--aap-border);
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--aap-transition);
+}
+
+.ld-table th:hover {
+  color: var(--aap-text);
+}
+
+.ld-table th.ld-sorted-asc::after {
+  content: ' \25B2';
+  font-size: 0.6rem;
+}
+
+.ld-table th.ld-sorted-desc::after {
+  content: ' \25BC';
+  font-size: 0.6rem;
+}
+
+.ld-th-status {
+  width: 28px;
+  min-width: 28px;
+}
+
+.ld-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--aap-border);
+  color: var(--aap-text);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ld-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.ld-table tbody tr.ld-row-inactive {
+  opacity: 0.45;
+}
+
+.ld-table tbody tr.ld-row-group {
+  background: #fefce8;
+}
+
+/* Status dot in table */
+.ld-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.ld-status-dot--online { background: #22c55e; }
+.ld-status-dot--offline { background: #ef4444; }
+.ld-status-dot--unknown { background: #d1d5db; }
+
+/* Brand badges */
+.ld-brand {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ld-brand--govee { background: #22c55e; color: #fff; }
+.ld-brand--wiz { background: #3b82f6; color: #fff; }
+.ld-brand--tuya { background: #f59e0b; color: #fff; }
+.ld-brand--hue { background: #8b5cf6; color: #fff; }
+.ld-brand--other { background: var(--aap-bg-muted); color: var(--aap-text-muted); }
+
+/* Protocol badges */
+.ld-proto {
+  font-size: 0.65rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 3px;
+  background: var(--aap-bg-muted);
+  color: var(--aap-text-muted);
+}
+
+/* Matter badge */
+.ld-matter {
+  font-size: 0.65rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 3px;
+}
+
+.ld-matter--yes { background: #dbeafe; color: #1e40af; }
+.ld-matter--no { background: var(--aap-bg-muted); color: var(--aap-text-muted); }
+
+/* Group badge */
+.ld-group-badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: #fef3c7;
+  color: #92400e;
+  text-transform: uppercase;
+}
+
+/* Monospace for technical values */
+.ld-mono {
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 0.72rem;
+  color: var(--aap-text-muted);
+}
+
+/* =============================================
+   FOOTER INFO
+   ============================================= */
+
+.ld-footer-info {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--aap-text-muted);
+  text-align: center;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .ld-container {
+    padding: 1rem 0.5rem 2rem;
+  }
+
+  .ld-summary {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .ld-filter-row {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .ld-select {
+    width: 100%;
+  }
+
+  .ld-table {
+    font-size: 0.72rem;
+  }
+
+  .ld-table th,
+  .ld-table td {
+    padding: 0.35rem 0.4rem;
+  }
+}
