@@ -1,12 +1,12 @@
 {
-  "version": "v260328.08 12:40a",
-  "release": 1115,
-  "sha": "778d2cf7c",
-  "fullSha": "778d2cf7c53c89c4dd6bf36a757298328836bf4c",
+  "version": "v260328.09 12:42a",
+  "release": 1116,
+  "sha": "a82a71e4f",
+  "fullSha": "a82a71e4fbb5794fd9934e9b02603d41d88df0d9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 05:40:56+00",
-  "commits": [{"sha":"778d2cf7c","message":"docs: add scheduled tasks migration prompt for Alpuca Claude Desktop","author":"Rahul"}]
+  "pushedAt": "2026-03-28 05:42:58+00",
+  "commits": [{"sha":"a82a71e4f","message":"fix: devdocs page auth — call initAuth() before checking role","author":"Rahul"}]
 }
