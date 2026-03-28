@@ -1,12 +1,12 @@
 {
-  "version": "v260327.56 10:48p",
-  "release": 1102,
-  "sha": "61b5fae58",
-  "fullSha": "61b5fae583182fb01b536106700f9d28fb66f75d",
+  "version": "v260327.57 11:19p",
+  "release": 1103,
+  "sha": "5daea2aa3",
+  "fullSha": "5daea2aa3be5695f09b3484a030769f42da35ecd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 03:48:52+00",
-  "commits": [{"sha":"61b5fae58","message":"feat: add SECRETS-GUIDE.md to context tab and on-demand pointers","author":"Paca"}]
+  "pushedAt": "2026-03-28 04:19:57+00",
+  "commits": [{"sha":"5daea2aa3","message":"feat: interactive context tree with expandable .md files + keyword search","author":"Paca"}]
 }
