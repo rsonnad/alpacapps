@@ -1000,7 +1000,7 @@ async function loadBackups() {
         status: 'pending',
       });
       if (error) throw error;
-      showToast(`Backup requested for ${service}`);
+      showToast(`Backup requested for ${service} — poller checks every 5 min`);
       btn.textContent = 'Requested ✓';
       // Update the schedule section to show the pending request
       const schedEl = document.getElementById(`dc-bk-sched-${service}`);
@@ -1008,7 +1008,7 @@ async function loadBackups() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
         schedEl.insertAdjacentHTML('beforeend',
-          `<div class="dc-bk-sched-pending">⏳ Backup requested at ${timeStr} — will start within 5 minutes</div>`);
+          `<div class="dc-bk-sched-pending">⏳ Backup requested at ${timeStr} — poller runs every 5 min (requires RVAULT20 mounted)</div>`);
       }
     } catch (e) {
       showToast(`Trigger failed: ${e.message}`);
@@ -1029,7 +1029,7 @@ async function loadBackups() {
       return `<div class="dc-bk-sched-pending">⏳ Backup requested at ${when} — will start within 5 minutes</div>`;
     }).join('') + recent.map(t => {
       const when = t.completed_at ? new Date(t.completed_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—';
-      const resultDetail = t.result?.error || t.result?.size || t.result?.satisfied_by || '';
+      const resultDetail = t.notes || t.result?.error || t.result?.size || t.result?.satisfied_by || '';
       if (t.status === 'completed') {
         return `<div class="dc-bk-sched-pending" style="color:#2e7d32">✅ Manual backup completed at ${when}${resultDetail ? ` — ${esc(resultDetail)}` : ''}</div>`;
       }
