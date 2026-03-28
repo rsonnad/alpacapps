@@ -1,12 +1,12 @@
 {
-  "version": "v260328.16 3:27p",
-  "release": 1123,
-  "sha": "510941b12",
-  "fullSha": "510941b12e7a43a866fa472eb48f14957b382747",
+  "version": "v260328.17 3:34p",
+  "release": 1124,
+  "sha": "459808cb8",
+  "fullSha": "459808cb89b961be02af4b5cd4641b7b9f0eac95",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 20:27:48+00",
-  "commits": [{"sha":"510941b12","message":"docs: update LOCAL-AI-SETUP with msty.app and Gemma 3 models","author":"Rahul"}]
+  "pushedAt": "2026-03-28 20:34:31+00",
+  "commits": [{"sha":"459808cb8","message":"docs: add upgrade prompt and guide for alpacapps-infra adopters","author":"Rahul"}]
 }
