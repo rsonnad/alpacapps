@@ -105,6 +105,18 @@
     .photo-action-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
     .photo-action-hint { font-size: 0.65rem; color: #94a3b8; margin-top: 0.15rem; }
 
+    .tasks-photo-bar { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .tasks-photo-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+      padding: 0.5rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px;
+      background: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+      color: var(--text-muted); transition: border-color 0.2s, background 0.2s;
+    }
+    .tasks-photo-btn:hover { border-color: var(--accent); background: #f8fafc; }
+    .tasks-photo-btn:active { background: #f1f5f9; transform: scale(0.98); }
+    .tasks-photo-btn input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    .tasks-photo-btn span { font-size: 1.1rem; }
+
     .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.75rem; }
     .photo-thumb { border-radius: 6px; overflow: hidden; aspect-ratio: 1; cursor: pointer; position: relative; }
     .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -700,6 +712,16 @@
 
       <!-- Tasks Tab -->
       <div class="tab-content active" id="tabTasks">
+        <div class="tasks-photo-bar">
+          <label class="tasks-photo-btn">
+            <input type="file" id="tasksCameraInput" accept="image/*" capture="environment">
+            <span>📷</span> Take Photo
+          </label>
+          <label class="tasks-photo-btn">
+            <input type="file" id="tasksFileInput" multiple accept="image/*">
+            <span>🖼️</span> Upload Photo
+          </label>
+        </div>
         <div id="tasksList"><p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">Loading tasks...</p></div>
       </div>
 
