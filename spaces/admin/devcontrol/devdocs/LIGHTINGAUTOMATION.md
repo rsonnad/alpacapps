@@ -97,7 +97,9 @@ Individual: `light.smart_rgbtw_bulb` (Tub), `_2` (Shower), `_3` (Frig), `_4` (Cl
 
 ### Kitchen
 
-**Entity:** `light.kitchen_lights` (5 WiZ + 2 Leedarson Matter)
+**Entity:** `light.kitchen_lights` (5 WiZ + 1 Leedarson Matter + 4 Govee BR30 H6013)
+
+Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `light.kitchen_ceiling_7`, `light.kitchen_ceiling_8`
 
 ```bash
 ~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.kitchen_lights","color_temp_kelvin":4000,"brightness":255}'
@@ -191,7 +193,7 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Master Bathroom | `light.master_bathroom_lights` | 5 | OREIN Matter |
 | Skyloft Ceiling | `light.skyloft_lights` | 5 (6th offline) | WiZ BR30 |
 | Skyloft Bathroom | `light.smart_rgbtw_bulb_10`, `_11` | 2 | OREIN Matter |
-| Kitchen | `light.kitchen_lights` | 5 WiZ + 2 Matter | WiZ/Leedarson |
+| Kitchen | `light.kitchen_lights` | 5 WiZ + 1 Matter + 4 Govee BR30 | WiZ/Leedarson/Govee |
 | Stairs | `light.stairs_lights` | 2 | Linkind Matter |
 | Cabin 1 | `light.cabin_1` | 1 | TP-Link KL135 |
 | Nook | `light.nook` | 1 | TP-Link HS220 |
