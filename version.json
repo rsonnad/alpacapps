@@ -1,12 +1,12 @@
 {
-  "version": "v260328.03 12:10a",
-  "release": 1110,
-  "sha": "5489ecf9a",
-  "fullSha": "5489ecf9afc6fd4a4c40f604024b2b40cfbef91d",
+  "version": "v260328.05 12:12a",
+  "release": 1112,
+  "sha": "1badcbefd",
+  "fullSha": "1badcbefd0e6ecd41f9d3e0016b444dcb5219dc2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 05:10:29+00",
-  "commits": [{"sha":"5489ecf9a","message":"feat: hierarchical context file tree + scale down preview headings","author":"Paca"}]
+  "pushedAt": "2026-03-28 05:12:55+00",
+  "commits": [{"sha":"1badcbefd","message":"feat: render markdown as formatted HTML in file previews","author":"Paca"}]
 }
