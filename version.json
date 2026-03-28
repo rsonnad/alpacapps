@@ -1,12 +1,12 @@
 {
-  "version": "v260328.12 1:04a",
-  "release": 1119,
-  "sha": "e48a2f531",
-  "fullSha": "e48a2f531ba878d18a30bb256ae371216a0bcf14",
+  "version": "v260328.13 1:57a",
+  "release": 1120,
+  "sha": "2862713f0",
+  "fullSha": "2862713f04ab1f695da8b92e5e055ee98cf2005d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 06:04:40+00",
-  "commits": [{"sha":"e48a2f531","message":"feat: devdocs page — dates, descriptions, expandable cards, reverse chrono","author":"Paca"}]
+  "pushedAt": "2026-03-28 06:57:54+00",
+  "commits": [{"sha":"2862713f0","message":"fix: devdocs — show one-line description by default, expand on click","author":"Paca"}]
 }
