@@ -1,12 +1,12 @@
 {
-  "version": "v260327.45 9:31p",
-  "release": 1091,
-  "sha": "cca987883",
-  "fullSha": "cca987883c303a59c3baf64c1b5c0f91d065dcbf",
+  "version": "v260327.46 9:37p",
+  "release": 1092,
+  "sha": "865cafb79",
+  "fullSha": "865cafb796aaa07414ac0137fa353122712acc40",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 02:31:28+00",
-  "commits": [{"sha":"17946ba11","message":"docs: add light control performance optimization guide","author":"Rahul"},{"sha":"cca987883","message":"feat: add sortable lighting directory page","author":"Rahul"}]
+  "pushedAt": "2026-03-28 02:37:08+00",
+  "commits": [{"sha":"865cafb79","message":"docs: add living room light control commands to HOMEAUTOMATION.md","author":"Rahul"}]
 }
