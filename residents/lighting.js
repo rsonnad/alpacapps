@@ -411,36 +411,82 @@ async function loadGoveeSettings() {
       badge.classList.toggle('live', !config.test_mode);
     }
 
-    // Load device counts by area
-    const { data: devices, error: devError } = await supabase
-      .from('govee_devices')
-      .select('area, is_group')
-      .eq('is_active', true);
+    // Load all devices with details
+    const [goveeResult, tuyaResult] = await Promise.all([
+      supabase.from('govee_devices')
+        .select('name, device_id, sku, area, is_group')
+        .eq('is_active', true)
+        .order('name'),
+      supabase.from('lighting_group_targets')
+        .select('target_id, metadata, is_active, lighting_groups!inner(key, name, area)')
+        .eq('backend', 'tuya_cloud')
+    ]);
 
-    if (devError) throw devError;
+    if (goveeResult.error) throw goveeResult.error;
+    const goveeDevices = goveeResult.data || [];
+    const tuyaTargets = (tuyaResult.data || []).map(t => ({
+      name: t.metadata?.name || t.target_id,
+      device_id: t.target_id,
+      sku: t.metadata?.product || 'Tuya',
+      area: t.lighting_groups?.area || 'Unknown',
+      is_group: false,
+      backend: 'tuya_cloud',
+      status: t.metadata?.status || 'unknown',
+      is_active: t.is_active
+    }));
+
+    const allDevices = [
+      ...goveeDevices.map(d => ({ ...d, backend: 'govee', status: 'active', is_active: true })),
+      ...tuyaTargets
+    ];
 
     const countEl = document.getElementById('goveeDeviceCount');
-    if (countEl) countEl.textContent = `${devices.length} devices`;
+    if (countEl) countEl.textContent = `${allDevices.length} devices`;
 
-    // Build area summary
+    // Build area accordion
     const summaryEl = document.getElementById('goveeDeviceSummary');
-    if (summaryEl && devices.length > 0) {
+    if (summaryEl && allDevices.length > 0) {
       const areas = {};
-      for (const d of devices) {
+      for (const d of allDevices) {
         const area = d.area || 'Unknown';
-        if (!areas[area]) areas[area] = { lights: 0, groups: 0 };
+        if (!areas[area]) areas[area] = { devices: [], groups: 0, lights: 0 };
         if (d.is_group) areas[area].groups++;
         else areas[area].lights++;
+        areas[area].devices.push(d);
       }
 
       summaryEl.innerHTML = Object.entries(areas)
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([area, counts]) =>
-          `<div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-light, #f0f0f0); font-size: 0.85rem;">
-            <span style="font-weight: 600;">${area}</span>
-            <span class="text-muted">${counts.lights} light${counts.lights !== 1 ? 's' : ''}${counts.groups > 0 ? ` + ${counts.groups} group${counts.groups !== 1 ? 's' : ''}` : ''}</span>
-          </div>`
-        ).join('');
+        .map(([area, info]) => {
+          const countLabel = `${info.lights} light${info.lights !== 1 ? 's' : ''}${info.groups > 0 ? ` + ${info.groups} group${info.groups !== 1 ? 's' : ''}` : ''}`;
+          const deviceRows = info.devices
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(d => {
+              const backendBadge = d.backend === 'tuya_cloud'
+                ? '<span style="background:#7c3aed;color:#fff;font-size:0.65rem;padding:1px 5px;border-radius:3px;margin-left:4px;">Tuya</span>'
+                : '<span style="background:#059669;color:#fff;font-size:0.65rem;padding:1px 5px;border-radius:3px;margin-left:4px;">Govee</span>';
+              const statusDot = d.is_active
+                ? '<span style="color:#22c55e;margin-right:4px;">●</span>'
+                : '<span style="color:#d1d5db;margin-right:4px;">●</span>';
+              const typeBadge = d.is_group
+                ? '<span style="background:#f59e0b;color:#fff;font-size:0.6rem;padding:1px 4px;border-radius:3px;margin-left:4px;">GROUP</span>'
+                : '';
+              return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.25rem 0.5rem;font-size:0.8rem;border-bottom:1px solid var(--border-light,#f5f5f5);">
+                <span>${statusDot}${d.name}${typeBadge}${backendBadge}</span>
+                <span class="text-muted" style="font-size:0.7rem;">${d.sku}</span>
+              </div>`;
+            }).join('');
+
+          return `<details style="border-bottom:1px solid var(--border-light,#e5e5e5);">
+            <summary style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;cursor:pointer;font-size:0.85rem;user-select:none;">
+              <span style="font-weight:600;">${area}</span>
+              <span class="text-muted">${countLabel}</span>
+            </summary>
+            <div style="padding:0 0 0.5rem 0;background:var(--bg-muted,#fafafa);border-radius:4px;margin-bottom:0.25rem;">
+              ${deviceRows}
+            </div>
+          </details>`;
+        }).join('');
     } else if (summaryEl) {
       summaryEl.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">No devices found.</p>';
     }
