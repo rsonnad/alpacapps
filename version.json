@@ -1,12 +1,12 @@
 {
-  "version": "v260328.13 1:57a",
-  "release": 1120,
-  "sha": "2862713f0",
-  "fullSha": "2862713f04ab1f695da8b92e5e055ee98cf2005d",
+  "version": "v260328.14 2:30p",
+  "release": 1121,
+  "sha": "c3fe43ad1",
+  "fullSha": "c3fe43ad1bb18b68e5bd15e59d4c95d775fdda21",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 06:57:54+00",
-  "commits": [{"sha":"2862713f0","message":"fix: devdocs — show one-line description by default, expand on click","author":"Paca"}]
+  "pushedAt": "2026-03-28 19:30:37+00",
+  "commits": [{"sha":"c3fe43ad1","message":"docs: simplify lighting commands for on-alpuca execution","author":"Rahul"}]
 }
