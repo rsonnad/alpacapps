@@ -1,12 +1,12 @@
 {
-  "version": "v260327.39 6:36p",
-  "release": 1085,
-  "sha": "3dd0ce592",
-  "fullSha": "3dd0ce5920ce6ce05ee24d813fdf6bd22c6ce801",
+  "version": "v260327.40 7:59p",
+  "release": 1086,
+  "sha": "957a533f7",
+  "fullSha": "957a533f790b2f26e7329c333f7f9014671ae364",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-27 23:36:57+00",
-  "commits": [{"sha":"3dd0ce592","message":"feat: log backup files to DB, show real filenames in Backups section","author":"Paca"}]
+  "pushedAt": "2026-03-28 00:59:06+00",
+  "commits": [{"sha":"957a533f7","message":"feat: add 32 SmartLife/Tuya devices to unified lighting system","author":"Rahul"}]
 }
