@@ -2,9 +2,9 @@
  * DevControl — AI development tools and activity dashboard
  * Sub-tabs: Overview, Releases, Sessions, Tokens, Context, Backups
  */
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { getAuthState } from '../../shared/auth.js';
+import { supabase } from '../../../shared/supabase.js';
+import { initAdminPage, showToast } from '../../../shared/admin-shell.js';
+import { getAuthState } from '../../../shared/auth.js';
 
 // ═══════════════════════════════════════════════════════════
 // CONFIG — project-specific values
@@ -852,6 +852,35 @@ async function loadContext() {
       </div>`;
   }
 
+  // ── Simple markdown → HTML renderer ──
+  function renderMd(src) {
+    let html = esc(src);
+    // fenced code blocks
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+      `<pre style="background:var(--bg-code,#1e1e1e);color:#d4d4d4;padding:0.75rem;border-radius:6px;overflow-x:auto;font-size:0.7rem;line-height:1.5;margin:0.5rem 0;">${code.trim()}</pre>`);
+    // inline code
+    html = html.replace(/`([^`]+)`/g, '<code style="background:var(--bg-subtle,#f0efe9);padding:0.1rem 0.3rem;border-radius:3px;font-size:0.7rem;">$1</code>');
+    // headings
+    html = html.replace(/^#### (.+)$/gm, '<h4 style="font-size:0.75rem;margin:0.4rem 0 0.15rem;font-weight:600;">$1</h4>');
+    html = html.replace(/^### (.+)$/gm, '<h3 style="font-size:0.8rem;margin:0.5rem 0 0.2rem;font-weight:600;">$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2 style="font-size:0.85rem;margin:0.6rem 0 0.25rem;font-weight:600;">$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1 style="font-size:0.95rem;margin:0.75rem 0 0.3rem;font-weight:700;">$1</h1>');
+    // bold & italic
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // blockquotes
+    html = html.replace(/^&gt; (.+)$/gm, '<blockquote style="border-left:3px solid var(--border,#ddd);padding-left:0.75rem;margin:0.3rem 0;color:var(--text-muted,#888);font-size:0.73rem;">$1</blockquote>');
+    // unordered lists
+    html = html.replace(/^- (.+)$/gm, '<li style="font-size:0.75rem;margin-left:1.25rem;list-style:disc;">$1</li>');
+    // horizontal rule
+    html = html.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border,#ddd);margin:0.5rem 0;">');
+    // links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--accent,#b8a88a);">$1</a>');
+    // paragraphs — wrap remaining lines
+    html = html.replace(/\n\n/g, '</p><p style="font-size:0.75rem;line-height:1.55;margin:0.3rem 0;">');
+    return `<div style="padding:0.75rem 1rem;font-size:0.75rem;line-height:1.55;"><p style="font-size:0.75rem;line-height:1.55;margin:0.3rem 0;">${html}</p></div>`;
+  }
+
   // ── All Project .md Files — searchable reference ──
   let allMdFiles = null; // lazy loaded
   const allMdCache = {}; // path → raw text
@@ -934,6 +963,25 @@ async function loadContext() {
       const previewDiv = expandRow.querySelector('.dc-file-preview');
       if (allMdCache[ghPath]) { previewDiv.innerHTML = allMdCache[ghPath]; return; }
       previewDiv.innerHTML = '<div class="dc-empty" style="padding:0.75rem;">Loading...</div>';
+
+      // Try rendered HTML companion first
+      const mdName = ghPath.split('/').pop();
+      const htmlName = mdName.replace('.md', '.html');
+      const renderedUrl = `/spaces/admin/devcontrol/devdocs/rendered/${htmlName}`;
+      try {
+        const renderedRes = await fetch(renderedUrl);
+        if (renderedRes.ok) {
+          const rhtml = await renderedRes.text();
+          allMdCache[ghPath] = rhtml;
+          previewDiv.innerHTML = rhtml;
+          fetch(`${RAW_BASE}/main/${ghPath}`).then(r => r.ok ? r.text() : '').then(t => {
+            if (t) { window._ctxRawCache = window._ctxRawCache || {}; window._ctxRawCache[ghPath] = t; }
+          }).catch(() => {});
+          return;
+        }
+      } catch {}
+
+      // Fallback: fetch raw markdown and render it
       try {
         const res = await fetch(`${RAW_BASE}/main/${ghPath}`);
         if (!res.ok) throw new Error(`${res.status}`);
@@ -941,9 +989,10 @@ async function loadContext() {
         window._ctxRawCache = window._ctxRawCache || {};
         window._ctxRawCache[ghPath] = text;
         const lines = text.split('\n');
-        const preview = lines.slice(0, 120).join('\n');
-        const truncated = lines.length > 120;
-        const html = `<pre class="dc-file-content">${esc(preview)}${truncated ? `\n\n<span style="color:var(--text-muted,#888);font-style:italic;">... ${lines.length - 120} more lines — <a href="https://github.com/${GH_OWNER}/${GH_REPO}/blob/main/${ghPath}" target="_blank" style="color:var(--accent,#b8a88a);">view full file on GitHub</a></span>` : ''}</pre>`;
+        const preview = lines.slice(0, 150).join('\n');
+        const truncated = lines.length > 150;
+        const truncNote = truncated ? `<p style="color:var(--text-muted,#888);font-size:0.7rem;font-style:italic;padding:0 1rem 0.5rem;">... ${lines.length - 150} more lines — <a href="https://github.com/${GH_OWNER}/${GH_REPO}/blob/main/${ghPath}" target="_blank" style="color:var(--accent,#b8a88a);">view full file on GitHub</a></p>` : '';
+        const html = renderMd(preview) + truncNote;
         allMdCache[ghPath] = html;
         previewDiv.innerHTML = html;
       } catch (err) {
