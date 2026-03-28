@@ -1,12 +1,12 @@
 {
-  "version": "v260328.06 12:20a",
-  "release": 1113,
-  "sha": "dd9b557f9",
-  "fullSha": "dd9b557f90cd8aceb994a8fc34c6cfe775437e7b",
+  "version": "v260328.07 12:25a",
+  "release": 1114,
+  "sha": "8277446d7",
+  "fullSha": "8277446d7a4f0c06249d96df86d6c806b84bf561",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 05:20:35+00",
-  "commits": [{"sha":"dd9b557f9","message":"chore: accumulated fixes — gitignore Capacitor paths, kiosk XSS fix, deps, minor copy edits","author":"Paca"}]
+  "pushedAt": "2026-03-28 05:25:38+00",
+  "commits": [{"sha":"8277446d7","message":"fix: correct GitHub raw paths for devdocs in context window tracker","author":"Paca"}]
 }
