@@ -1,12 +1,12 @@
 {
-  "version": "v260328.05 12:12a",
-  "release": 1112,
-  "sha": "1badcbefd",
-  "fullSha": "1badcbefd0e6ecd41f9d3e0016b444dcb5219dc2",
+  "version": "v260328.06 12:20a",
+  "release": 1113,
+  "sha": "dd9b557f9",
+  "fullSha": "dd9b557f90cd8aceb994a8fc34c6cfe775437e7b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 05:12:55+00",
-  "commits": [{"sha":"1badcbefd","message":"feat: render markdown as formatted HTML in file previews","author":"Paca"}]
+  "pushedAt": "2026-03-28 05:20:35+00",
+  "commits": [{"sha":"dd9b557f9","message":"chore: accumulated fixes — gitignore Capacitor paths, kiosk XSS fix, deps, minor copy edits","author":"Paca"}]
 }
