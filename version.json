@@ -1,12 +1,12 @@
 {
-  "version": "v260327.51 10:22p",
-  "release": 1097,
-  "sha": "5d27851d5",
-  "fullSha": "5d27851d5fb78b4e29e53541894f0a8f77ad9f10",
+  "version": "v260327.52 10:24p",
+  "release": 1098,
+  "sha": "08d7ffef4",
+  "fullSha": "08d7ffef40dad04991f62641bd8aaa4a63b65cc8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 03:22:10+00",
-  "commits": [{"sha":"5d27851d5","message":"feat: track HAOS VM image backups in DB, display history on DevControl","author":"Paca"}]
+  "pushedAt": "2026-03-28 03:24:33+00",
+  "commits": [{"sha":"08d7ffef4","message":"feat: add backup trigger polling on Almaca + show failure reasons in UI","author":"Paca"}]
 }
