@@ -1,12 +1,12 @@
 {
-  "version": "v260328.11 12:57a",
-  "release": 1118,
-  "sha": "f03944b20",
-  "fullSha": "f03944b204bfd44882b9ea19f5a2575f8a91eb7c",
+  "version": "v260328.12 1:04a",
+  "release": 1119,
+  "sha": "e48a2f531",
+  "fullSha": "e48a2f531ba878d18a30bb256ae371216a0bcf14",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 05:57:58+00",
-  "commits": [{"sha":"f03944b20","message":"docs: add M4 MacBook Air prompt for kiosk tablet UniFi setup","author":"Claude"}]
+  "pushedAt": "2026-03-28 06:04:40+00",
+  "commits": [{"sha":"e48a2f531","message":"feat: devdocs page — dates, descriptions, expandable cards, reverse chrono","author":"Paca"}]
 }
