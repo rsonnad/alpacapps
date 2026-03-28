@@ -582,6 +582,14 @@ async function loadContext() {
       desc: 'Testing guide with test account credentials (testuser@alpacaplayhouse.com), auth architecture overview, and testing workflows for admin pages. Documents how to authenticate as a test user, role-based access patterns, and QA checklists for verifying UI changes. Loaded when testing admin pages, debugging auth issues, or running manual QA.' },
     { name: 'SECRETS-GUIDE.md', path: 'docs/SECRETS-GUIDE.md', category: 'docs', gh: 'docs/SECRETS-GUIDE.md',
       desc: 'Cross-project secrets management guide using Bitwarden as the source of truth. Documents the bw-read helper script, Bitwarden CLI patterns (bw unlock, bw list items), secret naming conventions, how to store and retrieve API keys/tokens/passwords, and the DevOps-alpacapps vault organization. Replicable across all projects (alpacapps, finleg, portsie, etc.). Loaded when managing secrets, setting up new API keys, or debugging credential access.' },
+    { name: 'ARCHITECTURE.md', path: 'ARCHITECTURE.md', category: 'docs', gh: 'ARCHITECTURE.md',
+      desc: 'Comprehensive system architecture documentation. Covers the full AlpacApps stack — browser-only frontend, GitHub Pages hosting, Supabase backend (auth, storage, realtime, edge functions), module boundaries (spaces, residents, jackie, rahulio, community), shared utilities, and data flow patterns. Essential for understanding how components connect and where to make changes.' },
+    { name: 'API.md', path: 'API.md', category: 'docs', gh: 'API.md',
+      desc: 'Centralized REST API reference. Documents the single permissioned endpoint that handles all entity CRUD operations, request/response formats, authentication flow, RLS policy enforcement, and edge function signatures. Loaded when building or debugging API calls, edge functions, or REST endpoints.' },
+    { name: 'PRODUCTDESIGN.md', path: 'PRODUCTDESIGN.md', category: 'docs', gh: 'PRODUCTDESIGN.md',
+      desc: 'Product design decisions and the "why" behind how AlpacApps is built. Covers financial reasoning, user experience philosophy, business model choices, and design tradeoffs. Documents pricing strategy, feature prioritization rationale, and UX principles. Read alongside ARCHITECTURE.md for the full picture.' },
+    { name: 'home-assistant-lighting-design.md', path: 'docs/home-assistant-lighting-design.md', category: 'docs', gh: 'docs/home-assistant-lighting-design.md',
+      desc: 'HAOS unified lighting architecture (canonical design doc). Documents the target state for all smart lighting control through Home Assistant, WiZ Proxy deprecation plan, entity naming conventions, automation templates, and room-by-room migration status. Loaded alongside LIGHTINGAUTOMATION.md for lighting architecture work.' },
   ];
 
   const SYSTEM_PROMPT_TOKENS = 8000;
@@ -644,171 +652,307 @@ async function loadContext() {
   // Cache for fetched file contents
   const contentCache = {};
 
-  function renderFileTable(files, label, sublabel) {
-    const total = files.reduce((s, f) => s + f.tokens, 0);
-    const tableId = label.replace(/\s+/g, '-').toLowerCase();
-    return `
-      <h3 class="dc-section-header">${esc(label)}</h3>
-      ${sublabel ? `<p class="dc-section-sub">${esc(sublabel)}</p>` : ''}
-      <div class="dc-table-wrap">
-        <table class="dc-table" id="ctx-table-${tableId}">
-          <thead><tr><th>File</th><th>Description</th><th class="text-right">Tokens</th><th class="text-right">% of Window</th></tr></thead>
-          <tbody>
-            ${files.sort((a, b) => b.tokens - a.tokens).map((f, idx) => {
-              const expandId = `ctx-expand-${tableId}-${idx}`;
-              const canExpand = !!f.gh;
-              return `
-              <tr class="${canExpand ? 'dc-expandable-row' : ''}" ${canExpand ? `data-gh="${esc(f.gh)}" data-expand-id="${expandId}" onclick="window._toggleContextRow(this)"` : ''} style="${canExpand ? 'cursor:pointer;' : ''}">
-                <td>
-                  ${canExpand ? `<span class="dc-expand-arrow" style="display:inline-block;width:12px;margin-right:4px;font-size:0.6rem;color:var(--text-muted,#888);transition:transform 0.15s;">&#9654;</span>` : `<span style="display:inline-block;width:16px;"></span>`}
-                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CAT[f.category]?.bar || '#999'};margin-right:6px;vertical-align:middle;"></span><span class="mono">${esc(f.name)}</span>
-                </td>
-                <td style="color:var(--text-muted,#888);font-size:0.75rem;">
-                  <span class="dc-desc-truncated" style="display:inline;" onclick="event.stopPropagation();this.style.display='none';this.nextElementSibling.style.display='inline';">${esc(f.desc.length > 60 ? f.desc.slice(0, 60) + '...' : f.desc)}${f.desc.length > 60 ? ' <span style="color:var(--accent,#b8a88a);cursor:pointer;font-weight:500;">&#9660;</span>' : ''}</span>
-                  <span class="dc-desc-full" style="display:${f.desc.length > 60 ? 'none' : 'inline'};" onclick="event.stopPropagation();if(${f.desc.length > 60}){this.style.display='none';this.previousElementSibling.style.display='inline';}">${esc(f.desc)}${f.desc.length > 60 ? ' <span style="color:var(--accent,#b8a88a);cursor:pointer;font-weight:500;">&#9650;</span>' : ''}</span>
-                </td>
-                <td class="text-right tabular" style="font-weight:500;">${fmtTok(f.tokens)}</td>
-                <td class="text-right tabular" style="font-size:0.75rem;color:var(--text-muted,#888);">${((f.tokens / CONTEXT_WINDOW) * 100).toFixed(2)}%</td>
-              </tr>
-              <tr id="${expandId}" class="dc-expand-content" style="display:none;">
-                <td colspan="4" style="padding:0;">
-                  <div class="dc-file-preview"><div class="dc-empty" style="padding:1rem;">Click to load content...</div></div>
-                </td>
-              </tr>`;
-            }).join('')}
-            <tr class="total-row"><td style="font-weight:600;">Total</td><td></td><td class="text-right tabular" style="font-weight:700;">${fmtTok(total)}</td><td class="text-right tabular" style="font-size:0.75rem;font-weight:600;">${((total / CONTEXT_WINDOW) * 100).toFixed(1)}%</td></tr>
-          </tbody>
-        </table>
-      </div>`;
-  }
+  // Lookup helper: find a CONTEXT_FILES entry by name
+  const fileByName = {};
+  for (const f of items) fileByName[f.name] = f;
 
-  // Toggle expand/collapse for context file rows
-  window._toggleContextRow = async function(tr) {
-    const expandId = tr.getAttribute('data-expand-id');
-    const ghPath = tr.getAttribute('data-gh');
-    const expandRow = document.getElementById(expandId);
-    const arrow = tr.querySelector('.dc-expand-arrow');
-    if (!expandRow) return;
-
-    const isOpen = expandRow.style.display !== 'none';
+  // Shared expand/collapse for any file node
+  window._toggleCtxNode = async function(el) {
+    const ghPath = el.getAttribute('data-gh');
+    const contentDiv = el.nextElementSibling;
+    if (!contentDiv || !contentDiv.classList.contains('dc-ctx-content')) return;
+    const arrow = el.querySelector('.dc-ctx-arrow');
+    const isOpen = contentDiv.style.display !== 'none';
     if (isOpen) {
-      expandRow.style.display = 'none';
+      contentDiv.style.display = 'none';
       if (arrow) arrow.style.transform = 'rotate(0deg)';
       return;
     }
-
-    expandRow.style.display = '';
+    contentDiv.style.display = '';
     if (arrow) arrow.style.transform = 'rotate(90deg)';
-
-    const previewDiv = expandRow.querySelector('.dc-file-preview');
-    if (contentCache[ghPath]) {
-      previewDiv.innerHTML = contentCache[ghPath];
-      return;
-    }
-
-    previewDiv.innerHTML = '<div class="dc-empty" style="padding:1rem;">Loading...</div>';
+    if (!ghPath) return;
+    if (contentCache[ghPath]) { contentDiv.querySelector('.dc-file-preview').innerHTML = contentCache[ghPath]; return; }
+    const previewDiv = contentDiv.querySelector('.dc-file-preview');
+    previewDiv.innerHTML = '<div class="dc-empty" style="padding:0.75rem;">Loading...</div>';
     try {
       const res = await fetch(`${RAW_BASE}/main/${ghPath}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const text = await res.text();
+      // Store raw text for search
+      window._ctxRawCache = window._ctxRawCache || {};
+      window._ctxRawCache[ghPath] = text;
       const lines = text.split('\n');
-      const preview = lines.slice(0, 80).join('\n');
-      const truncated = lines.length > 80;
-      const html = `<pre class="dc-file-content">${esc(preview)}${truncated ? `\n\n<span style="color:var(--text-muted,#888);font-style:italic;">... ${lines.length - 80} more lines — <a href="https://github.com/${GH_OWNER}/${GH_REPO}/blob/main/${ghPath}" target="_blank" style="color:var(--accent,#b8a88a);">view full file on GitHub</a></span>` : ''}</pre>`;
+      const preview = lines.slice(0, 120).join('\n');
+      const truncated = lines.length > 120;
+      const html = `<pre class="dc-file-content">${esc(preview)}${truncated ? `\n\n<span style="color:var(--text-muted,#888);font-style:italic;">... ${lines.length - 120} more lines — <a href="https://github.com/${GH_OWNER}/${GH_REPO}/blob/main/${ghPath}" target="_blank" style="color:var(--accent,#b8a88a);">view full file on GitHub</a></span>` : ''}</pre>`;
       contentCache[ghPath] = html;
       previewDiv.innerHTML = html;
     } catch (err) {
-      previewDiv.innerHTML = `<div class="dc-empty" style="padding:1rem;color:#c62828;">Failed to load: ${esc(err.message)}</div>`;
+      previewDiv.innerHTML = `<div class="dc-empty" style="padding:0.75rem;color:#c62828;">Failed to load: ${esc(err.message)}</div>`;
     }
   };
 
-  function renderDocReferenceMap() {
+  // Build a tree node for a single file
+  function treeNode(name, hint) {
+    const f = fileByName[name];
     const catColors = { instructions: '#3b82f6', memory: '#8b5cf6', system: '#6b7280', docs: '#d97706' };
-    function nodeColor(name) {
-      const f = CONTEXT_FILES.find(f => f.name === name);
-      return f ? (catColors[f.category] || '#d97706') : '#999';
-    }
-
-    function tag(name, hint) {
-      const c = nodeColor(name);
-      const hintSpan = hint ? `<span style="color:var(--text-muted,#999);font-weight:400;margin-left:0.375rem;font-size:0.6875rem;">${hint}</span>` : '';
-      return `<span style="display:inline-flex;align-items:center;gap:0.25rem;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};flex-shrink:0;"></span><span style="font-weight:600;font-size:0.8125rem;">${name}</span>${hintSpan}</span>`;
-    }
-
-    // Tree structure: each node can have children with relationship labels
-    const treeHTML = `
-      <div class="dc-ref-tree">
-        <style>
-          .dc-ref-tree { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 0.8125rem; }
-          .dc-ref-tree ul { list-style: none; margin: 0; padding-left: 1.5rem; }
-          .dc-ref-tree > ul { padding-left: 0; }
-          .dc-ref-tree li { position: relative; padding: 0.25rem 0; }
-          .dc-ref-tree li::before { content: ''; position: absolute; left: -1rem; top: 0; bottom: 0.75rem; width: 1px; border-left: 1px solid var(--border, #ddd); }
-          .dc-ref-tree li::after { content: ''; position: absolute; left: -1rem; top: 0.9rem; width: 0.75rem; height: 1px; border-bottom: 1px solid var(--border, #ddd); }
-          .dc-ref-tree li:last-child::before { bottom: auto; height: 0.9rem; }
-          .dc-ref-tree > ul > li::before, .dc-ref-tree > ul > li::after { display: none; }
-          .dc-ref-tree .dc-tree-group { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #aaa); margin-top: 0.75rem; margin-bottom: 0.125rem; }
-          .dc-ref-tree .dc-tree-group:first-child { margin-top: 0; }
-        </style>
-        <ul>
-          <li>
-            <div class="dc-tree-group">Always Loaded</div>
-            <ul>
-              <li>${tag('Global CLAUDE.md', 'user-level rules')}</li>
-              <li>
-                ${tag('Project CLAUDE.md', 'project directives — on-demand loader')}
-                <ul>
-                  <li>${tag('SCHEMA.md', 'load for queries')}
-                    <ul><li>${tag('INTEGRATIONS.md', 'table ↔ API mapping')}</li></ul>
-                  </li>
-                  <li>${tag('PATTERNS.md', 'load for UI code')}
-                    <ul><li>${tag('KEY-FILES.md', 'component locations')}</li></ul>
-                  </li>
-                  <li>${tag('KEY-FILES.md', 'load for file search')}</li>
-                  <li>${tag('DEPLOY.md', 'load for deploys')}
-                    <ul><li>${tag('CHANGELOG.md', 'version history')}</li></ul>
-                  </li>
-                  <li>${tag('INTEGRATIONS.md', 'load for APIs')}</li>
-                  <li>${tag('CHANGELOG.md', 'load for history')}</li>
-                  <li>${tag('CAD.md', 'load for 3D/CAD')}
-                    <ul><li>${tag('CAD-SITE-PLANS.md', 'tool ref → workflow')}
-                      <ul><li>${tag('INTEGRATIONS.md', 'Supabase/edge fns')}</li></ul>
-                    </li></ul>
-                  </li>
-                  <li>${tag('CAD-SITE-PLANS.md', 'load for site plans')}</li>
-                  <li>${tag('CAD-RENDER-PIPELINE.md', 'load for 3D renders')}
-                    <ul><li>${tag('CAD.md', 'tool dependencies')}</li></ul>
-                  </li>
-                  <li>${tag('HOMEAUTOMATION.md', 'load for smart home')}
-                    <ul><li>${tag('LIGHTINGAUTOMATION.md', 'lighting subset')}</li></ul>
-                  </li>
-                  <li>${tag('LIGHTINGAUTOMATION.md', 'load for lights')}</li>
-                  <li>${tag('TESTING-GUIDE.md', 'load for testing')}</li>
-                  <li>${tag('SECRETS-GUIDE.md', 'load for secrets/Bitwarden')}
-                    <ul><li>${tag('CREDENTIALS.md', 'actual credentials')}</li></ul>
-                  </li>
-                </ul>
-              </li>
-              <li>${tag('CLAUDE.local.md', 'local overrides')}</li>
-              <li>
-                ${tag('MEMORY.md', 'persistent memory index')}
-                <ul>
-                  <li>${tag('SCHEMA.md', 'data lookup routing')}</li>
-                  <li>${tag('INTEGRATIONS.md', 'service access refs')}</li>
-                </ul>
-              </li>
-              <li>${tag('System prompt', 'Claude context')}</li>
-            </ul>
-          </li>
-        </ul>
-      </div>`;
+    const color = f ? (catColors[f.category] || '#d97706') : '#999';
+    const tokens = f ? f.tokens : 0;
+    const ghAttr = f && f.gh ? `data-gh="${esc(f.gh)}"` : '';
+    const canExpand = f && f.gh;
+    const hintSpan = hint ? `<span style="color:var(--text-muted,#999);font-weight:400;margin-left:0.375rem;font-size:0.6875rem;">${hint}</span>` : '';
+    const tokPill = tokens ? `<span style="font-size:0.65rem;color:var(--text-muted,#aaa);margin-left:0.5rem;font-variant-numeric:tabular-nums;">${fmtTok(tokens)}</span>` : '';
 
     return `
-      <h3 class="dc-section-header" style="margin-top:1.5rem;">Document Reference Map</h3>
-      <p class="dc-section-sub">How context documents reference and depend on each other</p>
-      <div class="dc-table-wrap" style="padding:1.25rem;overflow-x:auto;">
-        ${treeHTML}
+      <div class="dc-ctx-node${canExpand ? ' dc-ctx-clickable' : ''}" ${ghAttr} ${canExpand ? 'onclick="window._toggleCtxNode(this)"' : ''}>
+        ${canExpand ? '<span class="dc-ctx-arrow">&#9654;</span>' : '<span style="display:inline-block;width:14px;"></span>'}
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+        <span class="mono" style="font-weight:600;font-size:0.8125rem;">${esc(name)}</span>${tokPill}${hintSpan}
+      </div>
+      ${canExpand ? `<div class="dc-ctx-content" style="display:none;"><div class="dc-file-preview" style="margin:0.25rem 0 0.5rem 1.5rem;"><div class="dc-empty" style="padding:0.5rem;font-size:0.75rem;">Click to load...</div></div></div>` : ''}`;
+  }
+
+  function renderContextTree() {
+    return `
+      <style>
+        .dc-ctx-tree { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 0.8125rem; }
+        .dc-ctx-tree .dc-ctx-group { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #aaa); margin: 1.25rem 0 0.375rem; padding-bottom: 0.25rem; border-bottom: 1px solid var(--border, #e2e0db); }
+        .dc-ctx-tree .dc-ctx-group:first-child { margin-top: 0; }
+        .dc-ctx-tree .dc-ctx-section { margin-left: 0; padding: 0; }
+        .dc-ctx-tree .dc-ctx-item { position: relative; padding: 0.125rem 0 0.125rem 1.25rem; }
+        .dc-ctx-tree .dc-ctx-item::before { content: ''; position: absolute; left: 0.25rem; top: 0; bottom: 0; width: 1px; border-left: 1px solid var(--border, #ddd); }
+        .dc-ctx-tree .dc-ctx-item::after { content: ''; position: absolute; left: 0.25rem; top: 0.85rem; width: 0.65rem; height: 1px; border-bottom: 1px solid var(--border, #ddd); }
+        .dc-ctx-tree .dc-ctx-item:last-child::before { height: 0.85rem; }
+        .dc-ctx-tree .dc-ctx-node { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.4rem; border-radius: 6px; }
+        .dc-ctx-clickable { cursor: pointer; transition: background 0.1s; }
+        .dc-ctx-clickable:hover { background: var(--bg-subtle, #f5f4f0); }
+        .dc-ctx-arrow { display: inline-block; width: 14px; font-size: 0.55rem; color: var(--text-muted, #888); transition: transform 0.15s; flex-shrink: 0; }
+        .dc-ctx-content { overflow: hidden; }
+        .dc-ctx-content .dc-file-preview { max-height: 600px; overflow: auto; border: 1px solid var(--border, #e2e0db); border-radius: 8px; background: var(--bg-subtle, #faf9f6); }
+        .dc-ctx-content .dc-file-content { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.7rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; padding: 1rem; margin: 0; }
+        .dc-ctx-sub { margin-left: 1.25rem; }
+        .dc-ctx-sub .dc-ctx-item { padding-left: 1.25rem; }
+        .dc-ctx-sub .dc-ctx-item::before { left: 0.25rem; }
+        .dc-ctx-sub .dc-ctx-item::after { left: 0.25rem; }
+      </style>
+      <div class="dc-ctx-tree">
+
+        <div class="dc-ctx-group">Always Loaded</div>
+        <div class="dc-ctx-section">
+          <div class="dc-ctx-item">${treeNode('System prompt', 'Claude built-in context')}</div>
+          <div class="dc-ctx-item">${treeNode('Global CLAUDE.md', 'user-level rules, all projects')}</div>
+          <div class="dc-ctx-item">
+            ${treeNode('Project CLAUDE.md', 'project directives — triggers on-demand loading')}
+          </div>
+          <div class="dc-ctx-item">${treeNode('CLAUDE.local.md', 'local overrides, not in git')}</div>
+          <div class="dc-ctx-item">${treeNode('MEMORY.md', 'persistent memory index')}</div>
+        </div>
+
+        <div class="dc-ctx-group">Database & API</div>
+        <div class="dc-ctx-section">
+          <div class="dc-ctx-item">${treeNode('SCHEMA.md', 'load for queries, tables, debugging data')}</div>
+          <div class="dc-ctx-item">${treeNode('API.md', 'load for REST endpoints, edge functions')}</div>
+          <div class="dc-ctx-item">${treeNode('CREDENTIALS.md', 'load for SQL, SSH, API keys')}</div>
+          <div class="dc-ctx-item">${treeNode('SECRETS-GUIDE.md', 'load for Bitwarden, secret management')}</div>
+        </div>
+
+        <div class="dc-ctx-group">Architecture & Design</div>
+        <div class="dc-ctx-section">
+          <div class="dc-ctx-item">${treeNode('ARCHITECTURE.md', 'load for system architecture, component relationships')}</div>
+          <div class="dc-ctx-item">${treeNode('PRODUCTDESIGN.md', 'load for product decisions, UX philosophy')}</div>
+          <div class="dc-ctx-item">${treeNode('PATTERNS.md', 'load for UI code, Tailwind tokens, components')}</div>
+          <div class="dc-ctx-item">${treeNode('KEY-FILES.md', 'load for file search, project structure')}</div>
+        </div>
+
+        <div class="dc-ctx-group">Deploy & Ops</div>
+        <div class="dc-ctx-section">
+          <div class="dc-ctx-item">${treeNode('DEPLOY.md', 'load for pushing, deploying, version questions')}</div>
+          <div class="dc-ctx-item">${treeNode('INTEGRATIONS.md', 'load for external APIs, vendor setup')}</div>
+          <div class="dc-ctx-item">${treeNode('CHANGELOG.md', 'load for recent changes, migration context')}</div>
+          <div class="dc-ctx-item">${treeNode('TESTING-GUIDE.md', 'load for test accounts, QA workflows')}</div>
+        </div>
+
+        <div class="dc-ctx-group">Smart Home</div>
+        <div class="dc-ctx-section">
+          <div class="dc-ctx-item">
+            ${treeNode('HOMEAUTOMATION.md', 'load for HAOS, devices, automations')}
+            <div class="dc-ctx-sub">
+              <div class="dc-ctx-item">${treeNode('LIGHTINGAUTOMATION.md', 'lighting subset — entities, commands')}</div>
+              <div class="dc-ctx-item">${treeNode('home-assistant-lighting-design.md', 'canonical lighting architecture')}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dc-ctx-group">CAD & Property</div>
+        <div class="dc-ctx-section">
+          <div class="dc-ctx-item">
+            ${treeNode('CAD.md', 'load for Blender, QGIS, 3D modeling')}
+            <div class="dc-ctx-sub">
+              <div class="dc-ctx-item">${treeNode('CAD-SITE-PLANS.md', 'site plan workflows, GIS data')}</div>
+              <div class="dc-ctx-item">${treeNode('CAD-RENDER-PIPELINE.md', '3D renders, on-site data collection')}</div>
+            </div>
+          </div>
+        </div>
+
       </div>`;
+  }
+
+  // ── All Project .md Files — searchable reference ──
+  let allMdFiles = null; // lazy loaded
+  const allMdCache = {}; // path → raw text
+
+  function renderAllFilesSection() {
+    return `
+      <h3 class="dc-section-header" style="margin-top:2rem;">All Project .md Files</h3>
+      <p class="dc-section-sub">Every markdown file in the repo — searchable by keyword</p>
+      <div class="dc-filters" style="margin-bottom:0.75rem;">
+        <input type="text" id="dc-ctx-search" placeholder="Search across all .md files...">
+        <button class="dc-btn-primary" id="dc-ctx-search-go">Search</button>
+        <button class="dc-btn-secondary" id="dc-ctx-search-clear">Clear</button>
+      </div>
+      <div id="dc-ctx-all-files"><div class="dc-empty" style="padding:1.5rem;">Loading file index...</div></div>`;
+  }
+
+  async function initAllFilesSearch(panel) {
+    const container = panel.querySelector('#dc-ctx-all-files');
+    const searchInput = panel.querySelector('#dc-ctx-search');
+    const searchBtn = panel.querySelector('#dc-ctx-search-go');
+    const clearBtn = panel.querySelector('#dc-ctx-search-clear');
+    if (!container || !searchInput) return;
+
+    // Fetch file tree from GitHub API
+    if (!allMdFiles) {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/git/trees/main?recursive=1`);
+        if (!res.ok) throw new Error(`${res.status}`);
+        const data = await res.json();
+        allMdFiles = (data.tree || [])
+          .filter(f => f.type === 'blob' && f.path.endsWith('.md') && !f.path.startsWith('mistiq/') && !f.path.startsWith('node_modules/') && !f.path.startsWith('.claude/'))
+          .map(f => f.path)
+          .sort();
+      } catch (err) {
+        container.innerHTML = `<div class="dc-empty" style="color:#c62828;">Failed to load file index: ${esc(err.message)}</div>`;
+        return;
+      }
+    }
+
+    function renderFileList(files, highlights) {
+      if (files.length === 0) return '<div class="dc-empty" style="padding:1rem;">No matching files found.</div>';
+      return `<div class="dc-table-wrap"><table class="dc-table">
+        <thead><tr><th>File</th><th>Path</th>${highlights ? '<th>Matches</th>' : ''}</tr></thead>
+        <tbody>${files.map((fpath, idx) => {
+          const name = fpath.split('/').pop();
+          const isContext = items.some(i => i.gh === fpath);
+          const contextBadge = isContext ? '<span style="font-size:0.6rem;background:#e8f0e8;color:#3a6b3a;padding:0.1rem 0.35rem;border-radius:4px;margin-left:0.35rem;font-weight:600;">IN CONTEXT</span>' : '';
+          const matchSnippets = highlights && highlights[fpath] ? highlights[fpath] : '';
+          const expandId = `allmd-${idx}`;
+          return `
+            <tr class="dc-expandable-row" data-gh="${esc(fpath)}" data-expand-id="${expandId}" onclick="window._toggleAllMdRow(this)" style="cursor:pointer;">
+              <td><span class="dc-expand-arrow" style="display:inline-block;width:12px;margin-right:4px;font-size:0.6rem;color:var(--text-muted,#888);transition:transform 0.15s;">&#9654;</span><span class="mono" style="font-weight:500;">${esc(name)}</span>${contextBadge}</td>
+              <td style="color:var(--text-muted,#888);font-size:0.75rem;">${esc(fpath)}</td>
+              ${highlights ? `<td style="font-size:0.7rem;color:var(--text-muted,#888);max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${matchSnippets}</td>` : ''}
+            </tr>
+            <tr id="${expandId}" class="dc-expand-content" style="display:none;">
+              <td colspan="${highlights ? 3 : 2}" style="padding:0;">
+                <div class="dc-file-preview" style="max-height:500px;overflow:auto;"><div class="dc-empty" style="padding:0.75rem;font-size:0.75rem;">Click to load...</div></div>
+              </td>
+            </tr>`;
+        }).join('')}
+        </tbody></table></div>
+        <p style="font-size:0.7rem;color:var(--text-muted,#aaa);margin-top:0.5rem;">${files.length} file${files.length !== 1 ? 's' : ''}</p>`;
+    }
+
+    // Show full list initially
+    container.innerHTML = renderFileList(allMdFiles);
+
+    // Expand handler for all-md rows
+    window._toggleAllMdRow = async function(tr) {
+      const expandId = tr.getAttribute('data-expand-id');
+      const ghPath = tr.getAttribute('data-gh');
+      const expandRow = document.getElementById(expandId);
+      const arrow = tr.querySelector('.dc-expand-arrow');
+      if (!expandRow) return;
+      const isOpen = expandRow.style.display !== 'none';
+      if (isOpen) { expandRow.style.display = 'none'; if (arrow) arrow.style.transform = 'rotate(0deg)'; return; }
+      expandRow.style.display = '';
+      if (arrow) arrow.style.transform = 'rotate(90deg)';
+      const previewDiv = expandRow.querySelector('.dc-file-preview');
+      if (allMdCache[ghPath]) { previewDiv.innerHTML = allMdCache[ghPath]; return; }
+      previewDiv.innerHTML = '<div class="dc-empty" style="padding:0.75rem;">Loading...</div>';
+      try {
+        const res = await fetch(`${RAW_BASE}/main/${ghPath}`);
+        if (!res.ok) throw new Error(`${res.status}`);
+        const text = await res.text();
+        window._ctxRawCache = window._ctxRawCache || {};
+        window._ctxRawCache[ghPath] = text;
+        const lines = text.split('\n');
+        const preview = lines.slice(0, 120).join('\n');
+        const truncated = lines.length > 120;
+        const html = `<pre class="dc-file-content">${esc(preview)}${truncated ? `\n\n<span style="color:var(--text-muted,#888);font-style:italic;">... ${lines.length - 120} more lines — <a href="https://github.com/${GH_OWNER}/${GH_REPO}/blob/main/${ghPath}" target="_blank" style="color:var(--accent,#b8a88a);">view full file on GitHub</a></span>` : ''}</pre>`;
+        allMdCache[ghPath] = html;
+        previewDiv.innerHTML = html;
+      } catch (err) {
+        previewDiv.innerHTML = `<div class="dc-empty" style="padding:0.75rem;color:#c62828;">Failed: ${esc(err.message)}</div>`;
+      }
+    };
+
+    // Search handler
+    async function doSearch() {
+      const query = searchInput.value.trim().toLowerCase();
+      if (!query) { container.innerHTML = renderFileList(allMdFiles); return; }
+      container.innerHTML = '<div class="dc-empty" style="padding:1.5rem;">Searching...</div>';
+
+      // Fetch all files that aren't cached yet (batch fetch)
+      const toFetch = allMdFiles.filter(p => !window._ctxRawCache?.[p]);
+      window._ctxRawCache = window._ctxRawCache || {};
+      if (toFetch.length > 0) {
+        const batchSize = 10;
+        for (let i = 0; i < toFetch.length; i += batchSize) {
+          const batch = toFetch.slice(i, i + batchSize);
+          await Promise.all(batch.map(async (p) => {
+            try {
+              const res = await fetch(`${RAW_BASE}/main/${p}`);
+              if (res.ok) window._ctxRawCache[p] = await res.text();
+            } catch {}
+          }));
+          container.querySelector('.dc-empty').textContent = `Searching... (${Math.min(i + batchSize, toFetch.length)}/${toFetch.length} files loaded)`;
+        }
+      }
+
+      // Search across all cached content
+      const matchingFiles = [];
+      const highlights = {};
+      const terms = query.split(/\s+/);
+      for (const fpath of allMdFiles) {
+        const text = window._ctxRawCache[fpath];
+        if (!text) continue;
+        const lower = text.toLowerCase();
+        if (terms.every(t => lower.includes(t))) {
+          matchingFiles.push(fpath);
+          // Find first matching line for snippet
+          const lines = text.split('\n');
+          const snippets = [];
+          for (let i = 0; i < lines.length && snippets.length < 3; i++) {
+            const ll = lines[i].toLowerCase();
+            if (terms.some(t => ll.includes(t))) {
+              const lineNum = i + 1;
+              let snip = lines[i].trim().slice(0, 80);
+              // Bold the matching terms
+              for (const t of terms) {
+                snip = snip.replace(new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<strong style="color:var(--text,#1a1a1a);">$1</strong>');
+              }
+              snippets.push(`<span style="color:var(--text-muted,#aaa);">L${lineNum}:</span> ${snip}`);
+            }
+          }
+          highlights[fpath] = snippets.join('<br>');
+        }
+      }
+      container.innerHTML = renderFileList(matchingFiles, highlights);
+    }
+
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+    clearBtn.addEventListener('click', () => { searchInput.value = ''; container.innerHTML = renderFileList(allMdFiles); });
   }
 
   panel.innerHTML = `
@@ -840,9 +984,16 @@ async function loadContext() {
       <div class="dc-stat"><div class="dc-stat-value" style="color:#7c3aed">${fmtTok(CONTEXT_WINDOW - alwaysTokens)}</div><div class="dc-stat-label">Remaining for Chat</div><div class="dc-stat-sub">${(100 - parseFloat(alwaysPct)).toFixed(1)}%</div></div>
     </div>
 
-    ${renderFileTable(alwaysLoaded, 'Always Loaded at Startup')}
-    ${renderFileTable(onDemand, 'On-Demand Docs', 'Loaded when the task matches \u2014 not always in context')}
-    ${renderDocReferenceMap()}`;
+    <h3 class="dc-section-header">Context File Tree</h3>
+    <p class="dc-section-sub">Click any file to expand and read its contents. Grouped by how Claude Code loads them.</p>
+    <div class="dc-table-wrap" style="padding:1.25rem 1.25rem 0.75rem;overflow-x:auto;">
+      ${renderContextTree()}
+    </div>
+
+    ${renderAllFilesSection()}`;
+
+  // Initialize the search section after innerHTML is set
+  initAllFilesSearch(panel);
 }
 
 // ═══════════════════════════════════════════════════════════

@@ -15,6 +15,10 @@
 > - `docs/LIGHTINGAUTOMATION.md` — **load for:** controlling lights, changing light colors/brightness, light entities, WiZ/HAOS/Govee/Tuya light control
 > - `docs/TESTING-GUIDE.md` — **load for:** test account credentials, auth testing, QA workflows, admin page testing
 > - `docs/SECRETS-GUIDE.md` — **load for:** Bitwarden CLI, secrets management, bw-read helper, API key storage, credential access patterns
+> - `ARCHITECTURE.md` — **load for:** system architecture, component relationships, module boundaries, data flow
+> - `API.md` — **load for:** REST endpoints, edge functions, API calls, request/response formats
+> - `PRODUCTDESIGN.md` — **load for:** product decisions, UX philosophy, business model, feature prioritization
+> - `docs/home-assistant-lighting-design.md` — **load for:** HAOS lighting architecture, entity naming, automation templates, migration status
 
 ## Mandatory Behaviors
 
