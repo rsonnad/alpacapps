@@ -1,12 +1,12 @@
 {
-  "version": "v260327.41 8:04p",
-  "release": 1087,
-  "sha": "adcb0058d",
-  "fullSha": "adcb0058d602895c5f06585e0ee88cbfc107756c",
+  "version": "v260327.42 8:34p",
+  "release": 1088,
+  "sha": "0c480a915",
+  "fullSha": "0c480a915201ddb2070e754c8520cd6497ecfa9d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 01:04:56+00",
-  "commits": [{"sha":"adcb0058d","message":"feat: expandable device inventory with per-device details on lighting page","author":"Rahul"}]
+  "pushedAt": "2026-03-28 01:34:21+00",
+  "commits": [{"sha":"0c480a915","message":"docs: add Alpuca SSH key auth and VNC instructions to HOMEAUTOMATION.md","author":"Rahul"}]
 }
