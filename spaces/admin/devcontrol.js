@@ -1136,7 +1136,7 @@ async function loadBackups() {
         'Raw QEMU disk image of the entire Home Assistant OS virtual machine — bootable full system recovery',
         `/Volumes/RVAULT20/backups/haos/ &nbsp;·&nbsp; 7-day retention &nbsp;·&nbsp; haos_generic-aarch64.img &nbsp;·&nbsp; Cron on Alpuca`,
         'Daily at 3:17 AM CT', nextHaosVm,
-        `<span class="dc-bk-none">Raw disk copy — no per-instance tracking in database</span>`,
+        instanceTable(rvaultCols('haos-vm-image'), rvaultRowsFor('haos-vm','haos','haos-vm-image'), 'haos-vm'),
         'haos-vm-image'
       )}
 
