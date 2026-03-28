@@ -1,12 +1,12 @@
 {
-  "version": "v260327.54 10:43p",
-  "release": 1100,
-  "sha": "5f127d85e",
-  "fullSha": "5f127d85ebce91c279c3c80b07f3feb0a08976ea",
+  "version": "v260327.56 10:48p",
+  "release": 1102,
+  "sha": "61b5fae58",
+  "fullSha": "61b5fae583182fb01b536106700f9d28fb66f75d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 03:43:52+00",
-  "commits": [{"sha":"5f127d85e","message":"fix: blue pending triggers, reverse-chrono sort, dim failures after success","author":"Paca"}]
+  "pushedAt": "2026-03-28 03:48:52+00",
+  "commits": [{"sha":"61b5fae58","message":"feat: add SECRETS-GUIDE.md to context tab and on-demand pointers","author":"Paca"}]
 }
