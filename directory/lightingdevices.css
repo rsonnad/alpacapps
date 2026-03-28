@@ -254,6 +254,15 @@
   text-transform: uppercase;
 }
 
+.ld-socket {
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
 /* Monospace for technical values */
 .ld-mono {
   font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;

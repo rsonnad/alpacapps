@@ -57,8 +57,8 @@ function getOnlineStatus(device) {
 
 async function loadDevices() {
   const [goveeRes, lightingRes, modelsRes] = await Promise.all([
-    supabase.from('govee_devices').select('*').order('area').order('display_order').order('name'),
-    supabase.from('lighting_devices').select('*').order('room').order('socket_number').order('device_name'),
+    supabase.from('govee_devices').select('*, space:spaces!space_id(id, name, parent_id)').order('area').order('display_order').order('name'),
+    supabase.from('lighting_devices').select('*, space:spaces!space_id(id, name, parent_id)').order('room').order('socket_number').order('device_name'),
     supabase.from('govee_models').select('*'),
   ]);
 
@@ -75,11 +75,12 @@ async function loadDevices() {
   if (goveeRes.data) {
     for (const g of goveeRes.data) {
       const model = modelMap[g.sku];
+      const spaceName = g.space?.name || g.area || '';
       devices.push({
         _source: 'govee',
         _id: g.id,
         name: g.name || '',
-        room: g.area || '',
+        room: spaceName,
         brand: 'Govee',
         model: model?.model_name || g.sku || '',
         sku: g.sku || '',
@@ -98,6 +99,7 @@ async function loadDevices() {
         parent_group_id: g.parent_group_id,
         space_id: g.space_id,
         ha_entity_id: '',
+        socket_label: g.socket_label || '',
       });
     }
   }
@@ -105,11 +107,12 @@ async function loadDevices() {
   // Normalize lighting_devices
   if (lightingRes.data) {
     for (const l of lightingRes.data) {
+      const spaceName = l.space?.name || l.room || '';
       devices.push({
         _source: 'lighting',
         _id: l.id,
         name: l.device_name || '',
-        room: l.room || '',
+        room: spaceName,
         brand: l.device_brand || '',
         model: l.device_model || '',
         sku: l.sku || '',
@@ -126,8 +129,9 @@ async function loadDevices() {
         notes: l.notes || '',
         updated_at: l.updated_at || l.created_at || '',
         parent_group_id: null,
-        space_id: null,
+        space_id: l.space_id,
         ha_entity_id: l.ha_entity_id || '',
+        socket_label: l.socket_label || '',
       });
     }
   }
@@ -157,7 +161,7 @@ function getFiltered() {
       if (s !== status) return false;
     }
     if (search) {
-      const haystack = [d.name, d.room, d.brand, d.model, d.sku, d.protocol, d.form_factor, d.device_type, d.ip, d.mac, d.ha_entity_id, d.notes].join(' ').toLowerCase();
+      const haystack = [d.name, d.room, d.brand, d.model, d.sku, d.protocol, d.form_factor, d.device_type, d.ip, d.mac, d.ha_entity_id, d.notes, d.socket_label].join(' ').toLowerCase();
       if (!haystack.includes(search)) return false;
     }
     return true;
@@ -234,7 +238,7 @@ function renderFilters() {
     brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
 
   const roomSel = document.getElementById('filterRoom');
-  roomSel.innerHTML = '<option value="">All Rooms</option>' +
+  roomSel.innerHTML = '<option value="">All Spaces</option>' +
     rooms.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
 
   const protoSel = document.getElementById('filterProtocol');
@@ -295,7 +299,7 @@ function renderTable() {
     return `<tr class="${rowClass}" title="${esc(d.notes || '')}">
       <td><span class="ld-status-dot ld-status-dot--${status}" title="${status}"></span></td>
       <td>${esc(d.name)}${d.is_group ? ' <span class="ld-group-badge">GROUP</span>' : ''}</td>
-      <td>${esc(d.room)}</td>
+      <td>${esc(d.room)}${d.socket_label ? ` <span class="ld-socket">${esc(d.socket_label)}</span>` : ''}</td>
       <td><span class="ld-brand ${brandClass(d.brand)}">${esc(d.brand)}</span></td>
       <td title="${esc(d.sku)}">${esc(d.model || d.sku)}</td>
       <td><span class="ld-proto">${esc(formatProtocol(d.protocol))}</span></td>
