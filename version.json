@@ -1,12 +1,12 @@
 {
-  "version": "v260328.18 3:46p",
-  "release": 1125,
-  "sha": "81cc0063f",
-  "fullSha": "81cc0063f24357def9b912e326c72e9bec522ccc",
+  "version": "v260328.19 3:47p",
+  "release": 1126,
+  "sha": "d14b11ae8",
+  "fullSha": "d14b11ae8a39e1608aecfa214698d4af3b380d30",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 20:46:21+00",
-  "commits": [{"sha":"81cc0063f","message":"docs: update living room + kitchen bulb counts after socket mapping","author":"Rahul"}]
+  "pushedAt": "2026-03-28 20:47:34+00",
+  "commits": [{"sha":"d14b11ae8","message":"refactor: consolidate upgrade files into /infra/ with infra- prefix","author":"Rahul"}]
 }
