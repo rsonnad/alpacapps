@@ -204,34 +204,9 @@ HAOS successfully migrated from Rahul M4 Airtop to Alpuca (Mac mini M4).
 
 ### 4.1 WiZ Bulbs (16 discovered / 26 expected)
 
-All WiZ RGBW Tunable bulbs communicate via UDP port 38899. They are auto-discovered by HA.
+WiZ RGBW Tunable bulbs communicate via UDP port 38899, auto-discovered by HA. 16 entities currently in HAOS; 10 more expected (Master Pasture ×4, Kitchen ×6).
 
-| Entity ID | Friendly Name | State | Room (TBD) |
-|-----------|---------------|-------|------------|
-| `light.wiz_rgbw_tunable_81ab69` | WiZ RGBW Tunable 81AB69 | on | — |
-| `light.wiz_rgbw_tunable_8175e4` | WiZ RGBW Tunable 8175E4 | on | — |
-| `light.wiz_rgbw_tunable_81bc74` | WiZ RGBW Tunable 81BC74 | on | — |
-| `light.wiz_rgbw_tunable_81d231` | WiZ RGBW Tunable 81D231 | on | — |
-| `light.wiz_rgbw_tunable_816330` | WiZ RGBW Tunable 816330 | on | — |
-| `light.wiz_rgbw_tunable_8173f0` | WiZ RGBW Tunable 8173F0 | on | — |
-| `light.wiz_rgbw_tunable_816dcc` | WiZ RGBW Tunable 816DCC | on | — |
-| `light.wiz_rgbw_tunable_81df16` | WiZ RGBW Tunable 81DF16 | on | — |
-| `light.wiz_rgbw_tunable_819eee` | WiZ RGBW Tunable 819EEE | on | — |
-| `light.wiz_rgbw_tunable_816499` | WiZ RGBW Tunable 816499 | on | — |
-| `light.wiz_rgbw_tunable_8206c2` | WiZ RGBW Tunable 8206C2 | on | — |
-| `light.wiz_rgbw_tunable_8151af` | WiZ RGBW Tunable 8151AF | on | — |
-| `light.wiz_rgbw_tunable_81cce4` | WiZ RGBW Tunable 81CCE4 | on | — |
-| `light.wiz_rgbw_tunable_819f3e` | WiZ RGBW Tunable 819F3E | on | — |
-| `light.wiz_rgbw_tunable_81570d` | WiZ RGBW Tunable 81570D | on | — |
-| `light.wiz_rgbw_tunable_819307` | WiZ RGBW Tunable 819307 | on | — |
-
-**10 missing WiZ bulbs** — known locations:
-- Master Pasture ceiling: 4 bulbs
-- Kitchen: 6 bulbs (5 responding on old proxy, 1 offline)
-- Living Room: 2 bulbs
-- 4 unassigned IPs: .10, .120, .142, .212
-
-**WiZ Proxy (legacy):** Still running on Almaca port 8902, tunneled via `cam.alpacaplayhouse.com`. Will be deprecated once all bulbs are in HAOS.
+> **Full entity list, room assignments, and control commands → `docs/LIGHTINGAUTOMATION.md`**
 
 ### 4.2 Sonos Speakers (9 speakers, 22 entities)
 
@@ -264,19 +239,11 @@ curl http://192.168.1.200:5005/{Room}/{play|pause|stop}
 | Nook HS220 | 192.168.1.101 | Dimmer switch | `light.nook` |
 | Stair Landing HS210 | 192.168.1.230 | 3-way switch | `switch.stair_landing` |
 
-Cabin 1 provides power consumption sensors: current (2.8W), today, this month, total.
+> **Light control commands → `docs/LIGHTINGAUTOMATION.md`**
 
-### 4.4 Govee Lights — NOT YET IN HAOS (57 devices in Supabase)
+### 4.4 Govee Lights — NOT YET IN HAOS (~63 devices)
 
-Govee devices are controlled via Govee Cloud API through a Supabase edge function (`govee-control`). Need HACS Govee LAN integration for local control in HA.
-
-| Area | Count | Types |
-|------|-------|-------|
-| Garage Mahal | 18 | Light bars (13 + 3 R-series + 1 group + 1 individual) |
-| Spartan | 16 | Light bars (14), strip, wall light, 4 group controllers (Cedar Chamber, Fishbowl, Spartan Tea Lounge) |
-| Outhouse | 7 | Light bars (6 + 1 group controller) |
-| Outdoor | 12 | String lights, fence lights, floodlights, pathway lights |
-| Interior | 5 | Strip lights, star projector, LED strips |
+Controlled via `govee-control` Supabase edge function. Full area breakdown and control info → `docs/LIGHTINGAUTOMATION.md`
 
 ### 4.5 Nest Thermostats — NOT YET IN HAOS (3 in Supabase)
 
@@ -330,23 +297,11 @@ Needs HACS integration: `Tesla Custom Integration` — requires Tesla auth token
 
 **UDM Credentials:** `alpacaauto` / `StillForest160!auto`
 
-### 4.9 OREIN/AiDot Matter Bulbs — BLOCKED (5 bulbs)
+### 4.9 OREIN/AiDot Matter Bulbs
 
-Master Bathroom ceiling lights. These are Matter-over-WiFi but commissioning is blocked:
+Master Bathroom and Skyloft Bathroom bulbs. Now commissioned and working via HAOS.
 
-| IP | MAC |
-|----|-----|
-| 192.168.1.31 | 50:78:7d:64:fc:1c |
-| 192.168.1.98 | 50:78:7d:b3:30:14 |
-| 192.168.1.102 | 50:78:7d:7b:67:80 |
-| 192.168.1.159 | 50:78:7d:b3:32:6c |
-| 192.168.1.187 | 3c:84:27:73:94:80 |
-
-**Pairing code:** `31346312534` (passcode `20542615`, short disc `12`)
-
-**Problem:** After factory reset, bulbs enter Matter commissioning for only 2-3 seconds before reconnecting to AiDot cloud.
-
-**Resolution:** Block MACs from internet via UDM web UI → factory reset → bulbs stay in pairing mode → commission via HA Matter add-on.
+> **Entity names, control commands, and commissioning notes → `docs/LIGHTINGAUTOMATION.md`**
 
 ### 4.10 Other Devices
 
@@ -477,10 +432,9 @@ sudo launchctl list | grep homeassistant
 ```
 
 ### WiZ bulbs not discovering
-- Bulbs use UDP broadcast on port 38899
-- HAOS VM must be on the same subnet (bridged networking)
-- Check: `nmap -sU -p 38899 192.168.1.0/24` from a machine on the LAN
-- If bulbs are on a different VLAN, they won't be discovered
+- Bulbs use UDP broadcast on port 38899 — HAOS VM must be on same subnet (bridged networking)
+- `nmap -sU -p 38899 192.168.1.0/24` to scan for bulbs
+- See `docs/LIGHTINGAUTOMATION.md` for full troubleshooting
 
 ### Can't connect to HAOS
 - Verify VM IP: `arp -a | grep 192.168.1.39`
@@ -496,62 +450,7 @@ sudo launchctl list | grep homeassistant
 
 ## 11. Quick Reference Commands
 
-### How to run HA commands (via SSH to Alpuca)
-
-**⚠️ `~/bin/alpuca ha` shorthand is broken** — password SSH fails. Use direct SSH with key auth:
-
-```bash
-SSH="ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no -o ConnectTimeout=5 alpuca@192.168.1.200"
-```
-
-`~/ha-cmd.sh` on Alpuca handles auth to HAOS (`alpacaadmin`/`playhouse` at `192.168.1.39:8123`) with token caching.
-
----
-
-### Living Room lights
-
-**Entities:**
-- `light.living_room_lights` — 5 WiZ bulbs + 1 Matter bulb (group)
-- `light.livingroom_strip_light` — Govee LED strip (15 segments)
-
-```bash
-# Soft white (2700K)
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"],\"color_temp_kelvin\":2700,\"brightness\":200}'"
-
-# Set RGB color (example: warm amber)
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"],\"rgb_color\":[255,147,41],\"brightness\":200}'"
-
-# Turn off
-ssh -o PubkeyAuthentication=yes -o PasswordAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_off' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"]}'"
-```
-
-**Color temp presets:** 2700K (soft white) · 3000K (warm) · 4000K (neutral) · 5000K (bright) · 6500K (daylight)
-
----
-
-### Master Bathroom lights
-
-```bash
-~/bin/alpuca mb-off
-~/bin/alpuca mb-on 200   # brightness 0-255
-```
-
-Entity: `light.master_bathroom_lights` (5 OREIN Matter bulbs)
-
----
-
-### Control lights via HAOS API directly (if SSH to Alpuca available)
-
-```bash
-# Turn on all WiZ lights
-ssh alpuca@192.168.1.200 "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\": \"all\"}'"
-
-# Turn off stair landing switch
-ssh alpuca@192.168.1.200 "~/ha-cmd.sh 'switch/turn_off' '{\"entity_id\": \"switch.stair_landing\"}'"
-```
+> **For all lighting commands → `docs/LIGHTINGAUTOMATION.md`**
 
 ### Sonos control via API
 ```bash
