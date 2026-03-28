@@ -1,0 +1,123 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "pai bot",
+      "intents": [
+        {
+          "name": "TurnLightsOnIntent",
+          "slots": [
+            {
+              "name": "room",
+              "type": "ROOM_NAME"
+            }
+          ],
+          "samples": [
+            "turn {room} lights on",
+            "turn on {room} lights",
+            "lights on in {room}",
+            "turn lights on in {room}",
+            "turn the lights on",
+            "lights on"
+          ]
+        },
+        {
+          "name": "TurnLightsOffIntent",
+          "slots": [
+            {
+              "name": "room",
+              "type": "ROOM_NAME"
+            }
+          ],
+          "samples": [
+            "turn {room} lights off",
+            "turn off {room} lights",
+            "lights off in {room}",
+            "turn lights off in {room}",
+            "turn the lights off",
+            "lights off"
+          ]
+        },
+        {
+          "name": "SetBrightnessIntent",
+          "slots": [
+            {
+              "name": "room",
+              "type": "ROOM_NAME"
+            },
+            {
+              "name": "brightness",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "set {room} lights to {brightness} percent",
+            "set {room} light brightness to {brightness}",
+            "dim {room} lights to {brightness}",
+            "set lights to {brightness} percent",
+            "set brightness to {brightness}"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        }
+      ],
+      "types": [
+        {
+          "name": "ROOM_NAME",
+          "values": [
+            {
+              "name": {
+                "value": "master pasture",
+                "synonyms": [
+                  "masture pasture",
+                  "master bedroom",
+                  "pasture bedroom"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "living room",
+                "synonyms": [
+                  "livingroom"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "kitchen",
+                "synonyms": [
+                  "main kitchen"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "bathroom",
+                "synonyms": [
+                  "master bathroom",
+                  "master bath",
+                  "toilet",
+                  "tub"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
