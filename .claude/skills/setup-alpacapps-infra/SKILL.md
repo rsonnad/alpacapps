@@ -73,7 +73,7 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 **Always included (core):**
 - Website + Admin Dashboard (GitHub Pages) — Free
 - Database + Storage + Auth (Supabase) — Free
-- Parallel AI Agents (Conductor) — Free, [conductor.build](https://conductor.build)
+- Cloudflare (domain management + D1 session logging) — Free
 - Tailwind CSS v4 (utility-class styling) — Free
 - AI Developer (Claude Code) — you're already here
 
@@ -120,7 +120,7 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 
 **Infrastructure:**
 - [ ] User login / Google Sign-In — Free
-- [ ] Object storage (Cloudflare R2) — Free, 10 GB
+- [ ] Object storage (Cloudflare R2) — Free, 10 GB (uses Cloudflare token from core setup)
 - [ ] DigitalOcean Droplet (workers) — ~$12/mo
 - [ ] Oracle Cloud ARM (free tier) — Always Free
 
@@ -235,15 +235,86 @@ See `references/core-services.md` → "Supabase" for detailed steps.
 7. Link CLI, create domain-specific tables with RLS, create storage buckets
 8. Validate everything: tables, RLS, secrets, edge functions
 
-### Step 3b: Conductor
+### Step 3b: Cloudflare (Domain Management + D1 Session Logging)
 
-Set up Conductor for parallel AI coding agents.
+Set up Cloudflare for DNS/domain management and D1 database for session logging.
+
+**Prerequisites — ask the user for TWO things:**
+1. **Cloudflare email** — the email on their Cloudflare account
+2. **Global API Key** — copy from https://dash.cloudflare.com/profile/api-tokens → "Global API Key" → "View". This is a single key that already exists on every account — no token creation needed. It gives Claude full access to manage DNS, D1, R2, Workers, and create scoped tokens.
+
+Store both in `docs/CREDENTIALS.md`.
+
+**Auth pattern** — Global API Key uses two headers (not Bearer):
+```bash
+-H "X-Auth-Email: <EMAIL>" -H "X-Auth-Key: <GLOBAL_API_KEY>"
+```
 
 **Steps:**
-1. Tell the user to download Conductor from [conductor.build](https://conductor.build) if not already installed
-2. Explain that Conductor lets them run multiple Claude Code agents in parallel — each in its own workspace with its own branch
-3. Suggest creating separate workspaces for independent tasks (e.g., frontend, backend, tests)
-4. Note in `CLAUDE.md` that Conductor is available for parallel agent workflows
+1. **Validate the key** immediately:
+   ```bash
+   curl -s -H "X-Auth-Email: <EMAIL>" -H "X-Auth-Key: <KEY>" \
+     "https://api.cloudflare.com/client/v4/user"
+   ```
+   Must return the user's account details. If not, ask for corrected credentials.
+
+2. **Get account ID** from the user response (or list accounts):
+   ```bash
+   curl -s -H "X-Auth-Email: <EMAIL>" -H "X-Auth-Key: <KEY>" \
+     "https://api.cloudflare.com/client/v4/accounts"
+   ```
+   Extract `account_id`. Store in `docs/CREDENTIALS.md`.
+
+3. **Create a scoped API token** for ongoing use (least-privilege for day-to-day ops):
+   ```bash
+   curl -s -X POST -H "X-Auth-Email: <EMAIL>" -H "X-Auth-Key: <KEY>" \
+     -H "Content-Type: application/json" \
+     "https://api.cloudflare.com/client/v4/user/tokens" \
+     -d '{
+       "name": "<PROJECT>-claude-token",
+       "policies": [
+         {"effect":"allow","resources":{"com.cloudflare.api.account.<ACCOUNT_ID>":"*"},"permission_groups":[
+           {"id":"<DNS_WRITE_GROUP_ID>"},
+           {"id":"<D1_WRITE_GROUP_ID>"},
+           {"id":"<R2_WRITE_GROUP_ID>"},
+           {"id":"<WORKERS_WRITE_GROUP_ID>"}
+         ]}
+       ]
+     }'
+   ```
+   First fetch permission group IDs via `GET /user/tokens/permission_groups`. Store the created token in `docs/CREDENTIALS.md` as the primary working token. Keep the Global API Key as a fallback only.
+
+4. **List zones** to confirm domain access:
+   ```bash
+   curl -s -H "Authorization: Bearer <SCOPED_TOKEN>" \
+     "https://api.cloudflare.com/client/v4/zones?name=<DOMAIN>"
+   ```
+   Extract the `zone_id`. Store in `docs/CREDENTIALS.md`.
+
+5. **DNS management** — Cloudflare becomes the authoritative DNS manager. Verify existing records, set up any needed A/CNAME records for GitHub Pages custom domain (if applicable).
+
+6. **Create D1 database** for session logging:
+   ```bash
+   curl -s -X POST -H "Authorization: Bearer <SCOPED_TOKEN>" -H "Content-Type: application/json" \
+     -d '{"name":"<PROJECT>-sessions"}' \
+     "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/d1/database"
+   ```
+   Store the `database_id` in `docs/CREDENTIALS.md`.
+
+7. **Create session logging schema** in D1 (via Workers or API):
+   - `sessions` table: id, user_id, started_at, ended_at, metadata (JSON)
+   - `session_events` table: id, session_id, event_type, payload (JSON), created_at
+
+8. **R2 bucket setup** (if R2 was selected as a feature):
+   ```bash
+   curl -s -X PUT -H "Authorization: Bearer <SCOPED_TOKEN>" \
+     "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/r2/buckets" \
+     -d '{"name":"<PROJECT>-media"}'
+   ```
+
+9. **Note in `CLAUDE.md`** that Cloudflare manages domains, DNS, and D1 session logging.
+10. **Append** Cloudflare credentials (email, global key, scoped token, account_id, zone_id, D1 database_id) to `docs/CREDENTIALS.md`, service config to `docs/INTEGRATIONS.md`.
+11. **Commit and push.**
 
 ### Step 4: Google Sign-In (OAuth) — if selected
 
@@ -295,6 +366,20 @@ If yes, follow `references/mobile-setup.md` for:
 2. Feature-aware tab configuration
 3. Platform setup (iOS/Android)
 4. OTA updates via Capgo (optional)
+
+### Step 11c: Conductor (Advanced, Optional) — if requested
+
+Set up Conductor for parallel AI coding agents.
+
+**Only offer this step if the user asks for it or is an advanced user familiar with multi-agent workflows.**
+
+Ask: "Would you like to set up Conductor for running multiple Claude Code agents in parallel?"
+
+If yes:
+1. Tell the user to download Conductor from [conductor.build](https://conductor.build) if not already installed
+2. Explain that Conductor lets them run multiple Claude Code agents in parallel — each in its own workspace with its own branch
+3. Suggest creating separate workspaces for independent tasks (e.g., frontend, backend, tests)
+4. Note in `CLAUDE.md` that Conductor is available for parallel agent workflows
 
 ### Step 12: Claude Code Permissions
 
