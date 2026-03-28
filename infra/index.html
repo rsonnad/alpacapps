@@ -788,45 +788,32 @@
           <span class="guided-item-desc">Your AI developer that writes and deploys code</span>
         </div>
       </div>
-      <div class="guided-item" style="border-color: var(--claude-border); background: var(--claude-bg);">
-        <div class="guided-item-icon" style="color: #5a4a7a;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/></svg>
+      <div class="guided-item" style="border-color: #f48120; background: #fff8f0;">
+        <div class="guided-item-icon" style="color: #f48120;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 17l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
         </div>
         <div>
-          <strong>Conductor</strong> <span style="font-size:0.68rem;background:#f0e6ff;color:#5a4a7a;padding:0.1rem 0.4rem;border-radius:4px;font-weight:600;vertical-align:middle;">macOS only</span>
-          <span class="guided-item-desc">Parallel AI agents &mdash; your dev hub after setup</span>
+          <strong>Cloudflare</strong>
+          <span class="guided-item-desc">Domain management + D1 session logging</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- STEP 4: Switchover to Conductor -->
-  <div class="setup-step" style="border-color: var(--claude-border); border-width: 2px;">
+  <!-- STEP 4: Cloudflare -->
+  <div class="setup-step" style="border-color: #f48120; border-width: 2px;">
     <h2>
       <span class="step-num">4</span>
-      <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#7c6a9a" stroke-width="2"/><path d="M8 12l3 3 5-6" stroke="#7c6a9a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Switch to Conductor
-      <span class="step-time">5 min</span>
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#f48120" stroke-width="2" stroke-linejoin="round"/><path d="M2 17l10 5 10-5" stroke="#f48120" stroke-width="2" stroke-linejoin="round"/><path d="M2 12l10 5 10-5" stroke="#f48120" stroke-width="2" stroke-linejoin="round"/></svg>
+      Get your Cloudflare key
+      <span class="step-time">2 min</span>
     </h2>
-    <p>Once Claude helps you install <strong>Conductor</strong>, you&rsquo;ll switch from Claude Desktop to Conductor for the rest of setup and all future development.</p>
-    <div style="display: flex; align-items: center; gap: 1.5rem; margin: 1rem 0; padding: 1rem 1.25rem; background: var(--claude-bg); border-radius: 8px; border: 1px solid rgba(124,106,154,0.2);">
-      <div style="text-align: center; flex-shrink: 0;">
-        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600;">Before</div>
-        <div style="font-weight: 700; color: #D97706; font-size: 1rem; margin-top: 0.25rem;">Claude Desktop</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">Single conversation</div>
-      </div>
-      <div style="font-size: 1.5rem; color: var(--claude-border);">&rarr;</div>
-      <div style="text-align: center; flex-shrink: 0;">
-        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600;">After</div>
-        <div style="font-weight: 700; color: #5a4a7a; font-size: 1rem; margin-top: 0.25rem;">Conductor</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">Parallel AI agents</div>
-      </div>
-    </div>
-    <p style="font-size: 0.88rem; color: var(--text-muted);">Conductor runs multiple Claude Code agents in parallel &mdash; each task gets its own workspace. Code pushes to GitHub and your site updates automatically.</p>
-    <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.75rem; background: #f0e6ff; border: 1px solid #d4c4f0; border-radius: 6px; font-size: 0.78rem; font-weight: 600; color: #5a4a7a; margin-top: 0.25rem;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 12h16M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      macOS only (for now)
-    </div>
+    <p>Cloudflare manages your domain&rsquo;s DNS and provides a D1 database for session logging. You only need two things:</p>
+    <ol style="margin: 1rem 0;">
+      <li><strong>Your Cloudflare email</strong> &mdash; the one on your account</li>
+      <li><strong>Global API Key</strong> &mdash; go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">Profile &rarr; API Tokens</a>, find &ldquo;Global API Key&rdquo;, click &ldquo;View&rdquo;</li>
+    </ol>
+    <p style="font-size: 0.88rem; color: var(--text-muted);">That&rsquo;s it. Claude uses this key once to create a scoped project token with only the permissions your project needs &mdash; then uses that for all ongoing operations.</p>
   </div>
 
   <!-- What you'll have -->
@@ -844,7 +831,7 @@
       <li>A <code>CLAUDE.md</code> file so Claude Code knows your project inside and out</li>
       <li>Version tracking and CI/CD built in</li>
     </ul>
-    <p>From there, just open <strong>Conductor</strong> and tell it what you want to build. Each task gets its own workspace with a dedicated AI agent.</p>
+    <p>From there, just open <strong>Claude Code</strong> and tell it what you want to build. It handles all the code, commits, and deploys.</p>
   </div>
 
   <!-- Profile overview -->
@@ -900,7 +887,7 @@
           <span>Website + Hosting</span>
           <span>Tailwind CSS v4</span>
         </div>
-        <div class="layer-services">Supabase &bull; GitHub Pages &bull; Conductor &bull; Tailwind &bull; Free</div>
+        <div class="layer-services">Supabase &bull; GitHub Pages &bull; Cloudflare &bull; Tailwind &bull; Free</div>
       </div>
     </div>
     <div class="stack-sidebar">
@@ -959,20 +946,21 @@
 
       <div class="svc-row">
         <label class="calc-svc calc-svc--core calc-svc--locked">
-          <input type="checkbox" checked disabled data-svc="conductor">
+          <input type="checkbox" checked disabled data-svc="cloudflare">
           <span class="calc-svc__check">&check;</span>
-          <span class="svc-icon"><img src="https://conductor.build/favicon.ico" alt="Conductor" style="border-radius:4px;"></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">Conductor</span><span class="calc-svc__desc">Parallel AI coding agents &mdash; <strong>macOS only</strong></span></span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/cloudflare/F38020" alt="Cloudflare"></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare</span><span class="calc-svc__desc">Domain management + D1 session logging</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
-          <p>Mac app that manages multiple Claude Code agents running in parallel. Instead of one agent doing one thing at a time, Conductor lets you tackle several tasks simultaneously.</p>
+          <p>Cloudflare manages your domain&rsquo;s DNS and provides a D1 serverless database for session logging. Claude sets everything up using your Global API Key.</p>
           <ul>
-            <li><strong>How it works:</strong> Create a workspace for each task (e.g., &ldquo;add payments page,&rdquo; &ldquo;fix login bug,&rdquo; &ldquo;write tests&rdquo;). Each gets its own Claude Code agent and git branch.</li>
-            <li><strong>Why it matters:</strong> Setup that takes 90 minutes sequentially can finish in 30 minutes with parallel workspaces. Ongoing development is faster too.</li>
-            <li><strong>No conflicts:</strong> Each workspace is isolated &mdash; agents never step on each other&rsquo;s code.</li>
+            <li><strong>DNS management:</strong> Authoritative DNS for your domain. Claude configures records for GitHub Pages, custom domains, and any other services.</li>
+            <li><strong>D1 database:</strong> Serverless SQLite for logging Claude Code sessions &mdash; tracks what was built, when, and by which agent.</li>
+            <li><strong>R2 storage:</strong> If you need object storage (images, files), Claude creates an R2 bucket using the same Cloudflare token.</li>
+            <li><strong>Setup:</strong> Just provide your Cloudflare email and Global API Key. Claude creates a scoped project token automatically.</li>
           </ul>
-          <p><a href="https://conductor.build" target="_blank">Go to Conductor &rarr;</a></p>
+          <p><a href="https://dash.cloudflare.com" target="_blank">Go to Cloudflare &rarr;</a></p>
         </details>
       </div>
 
@@ -988,7 +976,7 @@
           <p>AI-powered developer by Anthropic that writes, tests, and deploys your code. It reads your project&rsquo;s <code>CLAUDE.md</code> file to understand your codebase, conventions, and architecture.</p>
           <ul>
             <li><strong>What it does:</strong> Writes HTML/CSS/JS, creates database tables, deploys edge functions, configures services, commits and pushes to GitHub &mdash; all from natural language instructions.</li>
-            <li><strong>How you use it:</strong> Through Conductor. You describe what you want in plain English; Claude Code handles the implementation.</li>
+            <li><strong>How you use it:</strong> Describe what you want in plain English; Claude Code handles the implementation, commits, and deploys.</li>
             <li><strong>Plans:</strong> Free tier (daily limits), Pro ($20/mo, recommended), Max ($100/mo for heavy building), Max+ ($200/mo for intensive development).</li>
           </ul>
           <p><a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Go to Claude Code &rarr;</a></p>
@@ -1582,7 +1570,7 @@ function recalcCost() {
   var svcCosts = {
     'github':      { basic: 0, complicated: 0, hyper: 0 },
     'supabase':    { basic: 0, complicated: 0, hyper: 300 },
-    'conductor':   { basic: 0, complicated: 0, hyper: 0 },
+    'cloudflare':  { basic: 0, complicated: 0, hyper: 0 },
     'claude':      { basic: 0, complicated: 320, hyper: 2400 },
     'google-auth': { basic: 0, complicated: 0, hyper: 0 },
     'resend':      { basic: 0, complicated: 0, hyper: 0 },
@@ -1603,7 +1591,7 @@ function recalcCost() {
   };
 
   var svcLabels = {
-    'github': 'GitHub Pages', 'supabase': 'Supabase', 'conductor': 'Conductor', 'claude': 'Claude Code',
+    'github': 'GitHub Pages', 'supabase': 'Supabase', 'cloudflare': 'Cloudflare', 'claude': 'Claude Code',
     'google-auth': 'Google Sign-In', 'resend': 'Resend (email)', 'telnyx': 'Telnyx (SMS)',
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
@@ -1628,7 +1616,7 @@ function recalcCost() {
     'workers': { complicated: '$12/mo VM for bug fixer, pollers, image gen', hyper: '$32/mo VM for heavy workers + Claude Code automation' }
   };
 
-  var selected = ['github', 'supabase', 'conductor', 'claude'];
+  var selected = ['github', 'supabase', 'cloudflare', 'claude'];
   document.querySelectorAll('#calc-services input[data-svc]:not(:disabled)').forEach(function(cb) {
     if (cb.checked) selected.push(cb.dataset.svc);
   });

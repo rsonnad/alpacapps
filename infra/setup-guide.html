@@ -192,7 +192,7 @@
     <strong>Instructions for Claude Chat</strong>
     <p>Walk the user through each numbered step below in order. Do not skip ahead.</p>
     <p><strong>Checkpoint rule:</strong> Do not move to Step N+1 until every item in Step N is explicitly confirmed by the user. If the user says they've already completed something, still confirm it — ask them to verify (run a command, paste a screenshot, or state the result). "I already did that" requires a quick proof before proceeding.</p>
-    <p><strong>Screenshot dependency:</strong> Step 2 includes setting up one-click screenshots. This is required infrastructure, not optional — all subsequent steps depend on the user being able to paste screenshots for you to verify their progress. Do not skip or deprioritize it.</p>
+    <p><strong>Screenshot dependency:</strong> Ask users to paste screenshots at each step so you can verify they're on the right page and guide them to the correct buttons and fields.</p>
     <p><strong>Screenshot verification:</strong> At each step that requires the user to interact with a website or application (GitHub, Supabase, Google Cloud, Cloudflare, etc.), ask them to paste a screenshot so you can verify they're on the right page and guide them to the correct buttons and fields.</p>
     <p><strong>Adapting to the user:</strong> Adapt commands and instructions to their OS (Mac, Windows, Linux). If they've already completed a full step (e.g., "I already have a Supabase project"), confirm the key details you'll need (project ref, password, etc.) and move on — but still follow step order.</p>
   </div>
@@ -212,7 +212,7 @@
         <ul>
           <li><strong>GitHub Pages</strong> (hosting) &mdash; Free, always included</li>
           <li><strong>Supabase</strong> (database, auth, storage, edge functions) &mdash; Free, always included</li>
-          <li><strong>Conductor</strong> (parallel AI coding agents, Mac app) &mdash; Free, always included</li>
+          <li><strong>Cloudflare</strong> (domain management + D1 session logging) &mdash; Free, always included</li>
           <li><strong>Google Sign-In</strong> (OAuth user login) &mdash; Free</li>
           <li><strong>Resend</strong> (transactional email) &mdash; Free, 3,000 emails/month</li>
           <li><strong>Telnyx</strong> (SMS notifications) &mdash; ~$0.004/SMS + $1/mo phone number</li>
@@ -220,8 +220,7 @@
           <li><strong>Stripe</strong> (ACH &amp; card payments, Connect payouts) &mdash; 0.8%&ndash;2.9% per transaction</li>
           <li><strong>SignWell</strong> (e-signatures) &mdash; Free, 3&ndash;25 docs/month</li>
           <li><strong>Google Gemini</strong> (AI features) &mdash; Free API</li>
-          <li><strong>Cloudflare R2</strong> (object storage) &mdash; Free 10 GB, zero egress fees</li>
-          <li><strong>Cloudflare D1</strong> (session archive) &mdash; Free, auto-saves Claude Code transcripts</li>
+          <li><strong>Cloudflare R2</strong> (object storage) &mdash; Free 10 GB, zero egress fees (uses Cloudflare token from core)</li>
           <li><strong>gstack</strong> (QA &amp; developer skills) &mdash; Free, open-source headless browser + Claude Code skills for code review, shipping, QA testing</li>
         </ul>
       </li>
@@ -261,14 +260,13 @@
     </ul>
     <p>Then authenticate: <code>gh auth login</code> (follow prompts, choose HTTPS, authenticate via browser).</p>
 
-    <h3>Claude Code (required for Conductor)</h3>
-    <p>Claude Code is the AI developer engine that powers Conductor. Check if the Claude desktop app is installed:</p>
+    <h3>Claude Code</h3>
+    <p>Claude Code is the AI developer that handles all terminal work, database setup, and code generation. Check if the Claude desktop app is installed:</p>
     <ol>
       <li>If not installed, sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank">claude.ai</a> (Pro $20/mo recommended &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank">free week here</a>)</li>
       <li>Download the <a href="https://claude.ai/download" target="_blank">Claude desktop app</a></li>
       <li>Open the app and verify Claude Code is accessible (click the <strong>Code</strong> tab)</li>
     </ol>
-    <p>They won&rsquo;t use Claude Code directly &mdash; Conductor manages it for them. They just need it installed.</p>
   </div>
 
   <!-- Step 3 -->
@@ -345,8 +343,8 @@ cd REPO-NAME</code></pre>
 
     <div class="validate">Ask the user to share their project ref (the random string) and confirm they have their database password saved. You'll need both for the next step.</div>
 
-    <h3>What you'll need for the next step</h3>
-    <p>Record these two values &mdash; you'll paste them into Conductor in the next step:</p>
+    <h3>What you'll need for the setup wizard</h3>
+    <p>Record these two values &mdash; you'll paste them into Claude Code in Step 6:</p>
     <ul>
       <li><strong>Project ref:</strong> the random string from the URL (e.g., <code>abcdefghijklm</code>)</li>
       <li><strong>Database password:</strong> the password you set during project creation</li>
@@ -355,29 +353,53 @@ cd REPO-NAME</code></pre>
 
   <!-- Step 5 -->
   <div class="guide-step">
-    <h2><span class="step-num">5</span> Install Conductor and run the setup wizard</h2>
+    <h2><span class="step-num">5</span> Set up Cloudflare</h2>
 
-    <p>Conductor is a Mac app that runs Claude Code agents in parallel. Instead of working in Claude Code directly, you&rsquo;ll manage everything from Conductor &mdash; each task gets its own workspace with a dedicated agent.</p>
+    <p>Cloudflare manages your domain&rsquo;s DNS and provides a D1 database for session logging. You only need to provide two things &mdash; Claude handles the rest.</p>
 
-    <h3>Install Conductor</h3>
+    <h3>Get your Cloudflare Global API Key</h3>
     <ol>
-      <li>Download from <a href="https://conductor.build">conductor.build</a></li>
-      <li>Open Conductor and point it at the project folder you cloned in Step 3</li>
-      <li>Create a new workspace (name it &ldquo;setup&rdquo;)</li>
+      <li>Sign up or log in at <a href="https://dash.cloudflare.com">dash.cloudflare.com</a></li>
+      <li>Go to <a href="https://dash.cloudflare.com/profile/api-tokens">Profile &rarr; API Tokens</a></li>
+      <li>Find <strong>"Global API Key"</strong> and click <strong>"View"</strong></li>
+      <li>Copy the key &mdash; this is all Claude needs to manage DNS, D1, R2, and Workers for you</li>
     </ol>
 
-    <div class="callout" style="border-color: var(--text-muted); background: #f5f5f5;">
-      <strong>Prerequisites:</strong> Conductor requires Claude Code to be installed (Step 2). If you haven&rsquo;t installed it yet, do that first.
+    <div class="callout warning">
+      <strong>Why the Global API Key?</strong>
+      It already exists on every Cloudflare account &mdash; no token creation wizard needed. Claude will use it once to create a scoped project token with only the permissions your project needs, then use that scoped token for all ongoing operations.
     </div>
 
-    <h3>Run the setup wizard</h3>
-    <p>In the Conductor workspace, if on the <strong>Max plan</strong> ($100/mo), type:</p>
-    <pre><code>/setup-alpacapps-infra</code></pre>
+    <div class="validate">Ask the user to confirm they have their Cloudflare email and Global API Key. You'll need both for the setup wizard.</div>
 
-    <p>If on the <strong>Pro plan</strong> ($20/mo) or lower (slash commands require Max), paste this prompt instead:</p>
+    <h3>What you'll need for the next step</h3>
+    <p>Record these values &mdash; you'll paste them into Claude Code in the next step:</p>
+    <ul>
+      <li><strong>Cloudflare email:</strong> the email on your Cloudflare account</li>
+      <li><strong>Cloudflare Global API Key:</strong> from the step above</li>
+      <li><strong>Domain name:</strong> if you have one you want to use (optional &mdash; you can add one later)</li>
+    </ul>
+  </div>
+
+  <!-- Step 6 -->
+  <div class="guide-step">
+    <h2><span class="step-num">6</span> Run the setup wizard in Claude Code</h2>
+
+    <p>Open Claude Code in your project folder and let it handle all the technical setup.</p>
+
+    <h3>Open Claude Code</h3>
+    <ol>
+      <li>Open the Claude desktop app (or terminal)</li>
+      <li>Navigate to your project folder from Step 3</li>
+      <li>If on the <strong>Max plan</strong> ($100/mo), type: <code>/setup-alpacapps-infra</code></li>
+    </ol>
+
+    <p>If on the <strong>Pro plan</strong> ($20/mo) or lower, paste this prompt instead:</p>
     <pre><code>Set up my AlpacApps project. I chose the [PROFILE] profile and want these services: [LIST].
 My Supabase project ref is: [REF]
 My database password is: [PASSWORD]
+My Cloudflare email is: [EMAIL]
+My Cloudflare Global API Key is: [CF_KEY]
 
 Follow the setup wizard in .claude/skills/setup-alpacapps-infra/SKILL.md to configure everything.
 Handle all terminal work — CLI installs, database setup, edge functions, git pushes.
@@ -389,33 +411,42 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
       <li><code>[LIST]</code> &mdash; the services they selected in Step 1</li>
       <li><code>[REF]</code> &mdash; Supabase project ref from Step 4</li>
       <li><code>[PASSWORD]</code> &mdash; database password from Step 4</li>
+      <li><code>[EMAIL]</code> &mdash; Cloudflare account email from Step 5</li>
+      <li><code>[CF_KEY]</code> &mdash; Global API Key from Step 5</li>
     </ul>
 
     <h3>What the wizard does</h3>
-    <p>The agent in your Conductor workspace will automatically:</p>
+    <p>Claude Code will automatically:</p>
     <ol>
       <li>Install and configure the Supabase CLI</li>
       <li>Link your Supabase project and fetch API keys</li>
       <li>Create database tables with Row Level Security</li>
       <li>Set up storage buckets</li>
       <li>Deploy edge functions</li>
+      <li>Validate your Cloudflare key and create a scoped project token</li>
+      <li>Set up DNS and D1 session logging database</li>
       <li>Configure each optional service you selected (asking you for API keys as needed)</li>
       <li>Generate your CLAUDE.md and documentation files</li>
       <li>Commit and push everything to GitHub</li>
     </ol>
 
     <h3>Going forward</h3>
-    <p>After setup, Conductor is how you build everything. Create a new workspace for each task:</p>
+    <p>After setup, Claude Code is how you build everything. Just describe what you want:</p>
     <ul>
-      <li><strong>&ldquo;Add payments page&rdquo;</strong> &mdash; one workspace</li>
-      <li><strong>&ldquo;Fix login bug&rdquo;</strong> &mdash; another workspace, runs in parallel</li>
-      <li><strong>&ldquo;Write tests&rdquo;</strong> &mdash; a third workspace, all at the same time</li>
+      <li><strong>&ldquo;Add a payments page&rdquo;</strong></li>
+      <li><strong>&ldquo;Fix the login bug&rdquo;</strong></li>
+      <li><strong>&ldquo;Write tests for the booking flow&rdquo;</strong></li>
     </ul>
-    <p>Each workspace gets its own git branch so agents never conflict.</p>
+    <p>Claude Code handles the code, commits, and deploys.</p>
 
     <div class="callout success">
       <strong>You're done!</strong>
-      Once the setup wizard finishes, your site is live on GitHub Pages with a fully configured Supabase backend. Start building by creating new Conductor workspaces and telling them what you want &mdash; the agents handle the code.
+      Once the setup wizard finishes, your site is live on GitHub Pages with a fully configured Supabase backend and Cloudflare managing your domain. Start building by telling Claude Code what you want &mdash; it handles the rest.
+    </div>
+
+    <div class="callout" style="border-color: var(--text-muted); background: #f5f5f5;">
+      <strong>Advanced: Conductor (parallel agents)</strong>
+      <p style="margin-bottom:0">Want to run multiple Claude Code agents in parallel? Download <a href="https://conductor.build">Conductor</a> &mdash; it lets you create separate workspaces that each run their own agent on their own git branch. Great for tackling multiple tasks simultaneously.</p>
     </div>
   </div>
 
@@ -479,50 +510,12 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     </ul>
 
     <h3>Cloudflare R2 (Storage)</h3>
+    <p>Uses the Cloudflare Global API Key you provided in Step 5 &mdash; no additional credentials needed.</p>
     <ul>
-      <li>Sign up: <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a></li>
-      <li>Create R2 bucket, enable Public Development URL</li>
-      <li>Create API token with Object Read &amp; Write permissions</li>
-      <li>User provides: Account ID, Access Key ID, Secret Access Key, bucket name</li>
+      <li>The setup wizard creates the R2 bucket automatically</li>
+      <li>Free 10 GB storage with zero egress fees</li>
+      <li>If you skipped Cloudflare in Step 5, sign up at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a> and provide your Global API Key</li>
     </ul>
-
-    <h3>Cloudflare D1 &mdash; Session Archive (Claude Code transcripts)</h3>
-    <p>Automatically saves every Claude Code session (project, model, duration, transcript summary) to a serverless SQLite database via Cloudflare D1. Sessions are captured in real-time using a <code>Stop</code> hook that fires on every agent response.</p>
-    <ol>
-      <li><strong>Install Wrangler CLI:</strong> <code>npm install -g wrangler</code>, then <code>wrangler login</code></li>
-      <li><strong>Create D1 database:</strong>
-        <pre><code>npx wrangler d1 create claude-sessions</code></pre>
-        Copy the <code>database_id</code> from the output.
-      </li>
-      <li><strong>Configure:</strong> Edit <code>cloudflare/claude-sessions/wrangler.jsonc</code> &mdash; paste your <code>database_id</code>. Edit <code>src/index.js</code> &mdash; set a unique <code>AUTH_TOKEN</code>.</li>
-      <li><strong>Deploy schema + Worker:</strong>
-        <pre><code>cd cloudflare/claude-sessions
-npx wrangler d1 execute claude-sessions --file=schema.sql --remote
-npx wrangler deploy</code></pre>
-        Note the Worker URL (e.g. <code>https://claude-sessions.your-subdomain.workers.dev</code>).
-      </li>
-      <li><strong>Install the hook:</strong>
-        <pre><code>cp cloudflare/claude-sessions/hooks/save-session.sh ~/.claude/hooks/
-chmod +x ~/.claude/hooks/save-session.sh</code></pre>
-        Edit the script: set <code>WORKER_URL</code> and <code>AUTH_TOKEN</code> to match your Worker.
-      </li>
-      <li><strong>Register the hook</strong> in <code>~/.claude/settings.json</code>:
-        <pre><code>"hooks": {
-  "Stop": [{
-    "hooks": [{
-      "type": "command",
-      "command": "$HOME/.claude/hooks/save-session.sh",
-      "timeout": 15
-    }]
-  }]
-}</code></pre>
-        <strong>Important:</strong> Use the <code>Stop</code> event, NOT <code>SessionEnd</code>. The <code>SessionEnd</code> event does not fire for worktree/subagent sessions. <code>Stop</code> fires on every agent response and includes built-in rate-limiting (5-minute cooldown per session).
-      </li>
-      <li><strong>Verify:</strong> Start a new Claude Code session, send a message, then check:
-        <pre><code>curl -H "Authorization: Bearer YOUR_TOKEN" https://YOUR_WORKER_URL/sessions</code></pre>
-      </li>
-    </ol>
-    <p><strong>Note:</strong> Running sessions won't pick up new <code>settings.json</code> hooks &mdash; only sessions started after the config change will auto-save. To backfill existing sessions, use the Worker's <code>POST /sessions</code> endpoint.</p>
   </div>
 
   <!-- gstack -->
