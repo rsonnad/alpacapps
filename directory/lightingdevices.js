@@ -56,10 +56,13 @@ function getOnlineStatus(device) {
 // =============================================
 
 async function loadDevices() {
-  const [goveeRes, lightingRes, modelsRes] = await Promise.all([
-    supabase.from('govee_devices').select('*, space:spaces!space_id(id, name, parent_id)').order('area').order('display_order').order('name'),
-    supabase.from('lighting_devices').select('*, space:spaces!space_id(id, name, parent_id)').order('room').order('socket_number').order('device_name'),
+  const goveeColumns = 'id,device_id,sku,name,area,device_type,is_group,online,last_state,is_active,notes,created_at,updated_at,parent_group_id,display_order,space_id,socket_label,capabilities';
+  const lightingColumns = 'id,device_name,socket_label,room,socket_number,ha_entity_id,device_brand,device_model,protocol,matter_support,mac_address,ip_address,sku,form_factor,notes,is_active,created_at,updated_at,space_id';
+  const [goveeRes, lightingRes, modelsRes, spacesRes] = await Promise.all([
+    supabase.from('govee_devices').select(goveeColumns).order('area').order('display_order').order('name'),
+    supabase.from('lighting_devices').select(lightingColumns).order('room').order('socket_number').order('device_name'),
     supabase.from('govee_models').select('*'),
+    supabase.from('spaces').select('id, name, parent_id').eq('is_archived', false),
   ]);
 
   const modelMap = {};
@@ -69,13 +72,21 @@ async function loadDevices() {
     }
   }
 
+  // Build space lookup by ID
+  const spaceMap = {};
+  if (spacesRes.data) {
+    for (const s of spacesRes.data) {
+      spaceMap[s.id] = s.name;
+    }
+  }
+
   const devices = [];
 
   // Normalize govee_devices
   if (goveeRes.data) {
     for (const g of goveeRes.data) {
       const model = modelMap[g.sku];
-      const spaceName = g.space?.name || g.area || '';
+      const spaceName = (g.space_id && spaceMap[g.space_id]) || g.area || '';
       devices.push({
         _source: 'govee',
         _id: g.id,
@@ -107,7 +118,7 @@ async function loadDevices() {
   // Normalize lighting_devices
   if (lightingRes.data) {
     for (const l of lightingRes.data) {
-      const spaceName = l.space?.name || l.room || '';
+      const spaceName = (l.space_id && spaceMap[l.space_id]) || l.room || '';
       devices.push({
         _source: 'lighting',
         _id: l.id,
