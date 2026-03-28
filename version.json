@@ -1,12 +1,12 @@
 {
-  "version": "v260327.44 9:04p",
-  "release": 1090,
-  "sha": "6b6a290d2",
-  "fullSha": "6b6a290d238a41c374dbd69520cd0175207761f1",
+  "version": "v260327.45 9:31p",
+  "release": 1091,
+  "sha": "cca987883",
+  "fullSha": "cca987883c303a59c3baf64c1b5c0f91d065dcbf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-28 02:04:03+00",
-  "commits": [{"sha":"6b6a290d2","message":"chore: gitignore Google OAuth client secret files","author":"Rahul"}]
+  "pushedAt": "2026-03-28 02:31:28+00",
+  "commits": [{"sha":"17946ba11","message":"docs: add light control performance optimization guide","author":"Rahul"},{"sha":"cca987883","message":"feat: add sortable lighting directory page","author":"Rahul"}]
 }
