@@ -8,6 +8,12 @@
 import { supabase, SUPABASE_URL } from '../shared/supabase.js';
 
 const POLL_INTERVAL = 60_000;        // 60s data refresh
+
+/** Escape HTML to prevent XSS in innerHTML contexts */
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 const VERSION_CHECK_INTERVAL = 300_000; // 5min version check
 const AUSTIN_TZ = 'America/Chicago';
 const MAX_RECORD_SECONDS = 60;
@@ -287,8 +293,8 @@ async function loadGuestbook() {
 
     container.innerHTML = data.map(entry => {
       const ago = timeAgo(new Date(entry.created_at));
-      const name = entry.guest_name || 'Anonymous';
-      const type = entry.media_type || 'text';
+      const name = escapeHtml(entry.guest_name) || 'Anonymous';
+      const type = escapeHtml(entry.media_type) || 'text';
       const badge = type !== 'text' ? `<span class="entry-type-badge">${type}</span>` : '';
 
       let mediaHtml = '';
@@ -800,11 +806,6 @@ async function refreshAll() {
 function startPolling() {
   if (pollTimer) clearInterval(pollTimer);
   pollTimer = setInterval(refreshAll, POLL_INTERVAL);
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

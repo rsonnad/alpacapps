@@ -158,6 +158,7 @@
 
             <p style="margin-bottom: 1rem; color: #374151;">AlpacApps is a property management + smart home control platform. There is no traditional server — static HTML/JS is served from GitHub Pages, and all business logic lives in Supabase edge functions or runs as background services on a Mac Mini.</p>
 
+            <dl>
             <dt>The Request Path</dt>
             <dd>Browser loads static pages from GitHub Pages &rarr; JS calls Supabase (auth + data) &rarr; Edge functions call external APIs (Stripe, Nest, Tesla, etc.) &rarr; Responses flow back to the browser. No middleware, no Node server, no SSR.</dd>
 
@@ -197,6 +198,7 @@
               <strong>Cloudflare R2:</strong> Leases, legal documents<br>
               <strong>RVAULT20:</strong> Google Drive mirrors, Tesla dashcam, repo backups (local USB drive)
             </dd>
+            </dl>
 
           </div>
         </details>

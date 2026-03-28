@@ -24,26 +24,25 @@ node_modules/
 .idea/
 .vscode/
 # Mobile app (Capacitor)
-mobile/node_modules/
 mobile/www/
-mobile/build/
-mobile/ios/App/Pods/
-mobile/android/.gradle/
-mobile/android/app/build/
-mobile/android/build/
-mobile/android/local.properties
+ios/App/Pods/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+dist/
 
 # Signing keys (never commit)
 *.keystore
 *.jks
 *.p12
 *.mobileprovision
-mobile/fastlane/google-play-key.json
+fastlane/google-play-key.json
 
 # Fastlane temp files
-mobile/fastlane/report.xml
-mobile/fastlane/screenshots/
-mobile/fastlane/test_output/
+fastlane/report.xml
+fastlane/screenshots/
+fastlane/test_output/
 
 # Dev/testing
 dev/testing/node_modules/
