@@ -572,6 +572,14 @@ async function loadContext() {
       desc: 'CAD and 3D modeling tool reference for the property site plan system. Documents installed software on Alpuca (192.168.1.200): Blender 4.5.7 (3D modeling, rendering, Grease Pencil drafting), QGIS 4.0.0 (GIS parcel data, map composition), LibreCAD 2.x (2D DXF drafting), GDAL 3.12.0 (format conversion). Lists Blender add-ons (Bonsai/BlenderBIM, BlenderGIS, CAD Sketcher, Archipack, MeasureIt-ARCH), GIS data sources for Bastrop County, and quick-start workflows for site plans, 2D drafting, and headless rendering.' },
     { name: 'CAD-SITE-PLANS.md', path: 'docs/CAD-SITE-PLANS.md', category: 'docs', gh: 'docs/CAD-SITE-PLANS.md',
       desc: 'End-to-end site plan generation guide for 160 Still Forest Drive, Cedar Creek TX (Bastrop County). Covers the two-machine pipeline (Almaca design workstation + Hostinger VPS automation backend), all deliverables (county permit sheets, 3D renders, interactive maps, automated permit packets), step-by-step workflows (QGIS base map → Blender 3D scene → BlenderBIM permit sheets → presentation renders → packet assembly), GIS data sources (TNRIS, USGS 3DEP LiDAR, FEMA flood, TCEQ environmental), and AlpacApps integration plans (live property map, on-demand render API, automated permit packet generation).' },
+    { name: 'CAD-RENDER-PIPELINE.md', path: 'docs/CAD-RENDER-PIPELINE.md', category: 'docs', gh: 'docs/CAD-RENDER-PIPELINE.md',
+      desc: '3D property rendering pipeline for 160 Still Forest Drive. Covers photorealistic render workflow using Blender 4.5 + add-ons, QGIS 4.0, and GDAL on Alpuca (192.168.1.200). Documents on-site data collection tasks (drone photography, LiDAR scanning, reference photos), scene assembly, material libraries, lighting rigs, and render output formats. Loaded when working on 3D property renders or on-site data collection tasks.' },
+    { name: 'HOMEAUTOMATION.md', path: 'docs/HOMEAUTOMATION.md', category: 'docs', gh: 'docs/HOMEAUTOMATION.md',
+      desc: 'Comprehensive smart home reference for Alpaca Playhouse. Documents all Home Assistant (HAOS) setup on 192.168.1.39, device integrations (Nest thermostats, Tesla vehicles, UniFi cameras/sensors, LG appliances, Sonos speakers), MQTT/Zigbee/WiFi device management, automation rules, Paca Mac Mini migration plans, and SSH access patterns via the alpuca wrapper script. Loaded when controlling devices, debugging automations, or managing smart home infrastructure.' },
+    { name: 'LIGHTINGAUTOMATION.md', path: 'docs/LIGHTINGAUTOMATION.md', category: 'docs', gh: 'docs/LIGHTINGAUTOMATION.md',
+      desc: 'Smart lighting control reference for all rooms at Alpaca Playhouse. Documents WiZ, Govee, and Tuya light entities in HAOS, room-by-room entity IDs, brightness/color commands via the alpuca ha wrapper, scene definitions, and light group configurations. Loaded when controlling lights, changing colors/brightness, or debugging light entities. For non-lighting HAOS devices see HOMEAUTOMATION.md.' },
+    { name: 'TESTING-GUIDE.md', path: 'docs/TESTING-GUIDE.md', category: 'docs', gh: 'docs/TESTING-GUIDE.md',
+      desc: 'Testing guide with test account credentials (testuser@alpacaplayhouse.com), auth architecture overview, and testing workflows for admin pages. Documents how to authenticate as a test user, role-based access patterns, and QA checklists for verifying UI changes. Loaded when testing admin pages, debugging auth issues, or running manual QA.' },
   ];
 
   const SYSTEM_PROMPT_TOKENS = 8000;
@@ -653,7 +661,10 @@ async function loadContext() {
                   ${canExpand ? `<span class="dc-expand-arrow" style="display:inline-block;width:12px;margin-right:4px;font-size:0.6rem;color:var(--text-muted,#888);transition:transform 0.15s;">&#9654;</span>` : `<span style="display:inline-block;width:16px;"></span>`}
                   <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CAT[f.category]?.bar || '#999'};margin-right:6px;vertical-align:middle;"></span><span class="mono">${esc(f.name)}</span>
                 </td>
-                <td style="color:var(--text-muted,#888);font-size:0.75rem;">${esc(f.desc)}</td>
+                <td style="color:var(--text-muted,#888);font-size:0.75rem;">
+                  <span class="dc-desc-truncated" style="display:inline;" onclick="event.stopPropagation();this.style.display='none';this.nextElementSibling.style.display='inline';">${esc(f.desc.length > 60 ? f.desc.slice(0, 60) + '...' : f.desc)}${f.desc.length > 60 ? ' <span style="color:var(--accent,#b8a88a);cursor:pointer;font-weight:500;">&#9660;</span>' : ''}</span>
+                  <span class="dc-desc-full" style="display:${f.desc.length > 60 ? 'none' : 'inline'};" onclick="event.stopPropagation();if(${f.desc.length > 60}){this.style.display='none';this.previousElementSibling.style.display='inline';}">${esc(f.desc)}${f.desc.length > 60 ? ' <span style="color:var(--accent,#b8a88a);cursor:pointer;font-weight:500;">&#9650;</span>' : ''}</span>
+                </td>
                 <td class="text-right tabular" style="font-weight:500;">${fmtTok(f.tokens)}</td>
                 <td class="text-right tabular" style="font-size:0.75rem;color:var(--text-muted,#888);">${((f.tokens / CONTEXT_WINDOW) * 100).toFixed(2)}%</td>
               </tr>
@@ -763,6 +774,14 @@ async function loadContext() {
                     </li></ul>
                   </li>
                   <li>${tag('CAD-SITE-PLANS.md', 'load for site plans')}</li>
+                  <li>${tag('CAD-RENDER-PIPELINE.md', 'load for 3D renders')}
+                    <ul><li>${tag('CAD.md', 'tool dependencies')}</li></ul>
+                  </li>
+                  <li>${tag('HOMEAUTOMATION.md', 'load for smart home')}
+                    <ul><li>${tag('LIGHTINGAUTOMATION.md', 'lighting subset')}</li></ul>
+                  </li>
+                  <li>${tag('LIGHTINGAUTOMATION.md', 'load for lights')}</li>
+                  <li>${tag('TESTING-GUIDE.md', 'load for testing')}</li>
                 </ul>
               </li>
               <li>${tag('CLAUDE.local.md', 'local overrides')}</li>
