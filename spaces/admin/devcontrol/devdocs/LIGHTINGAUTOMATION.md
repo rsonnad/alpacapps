@@ -8,18 +8,27 @@
 
 ## How to Run Commands
 
-All light control goes through **HAOS** (Home Assistant OS at `192.168.1.39:8123`) via SSH to Alpuca.
+All HAOS light control uses `~/ha-cmd.sh` on Alpuca (Mac mini at 192.168.1.200).
 
-Use **password SSH** (tested working 2026-03-27):
+### On Alpuca (remote-control, Claude Desktop, or SSH'd in) — FASTEST
 
 ```bash
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" \
-  ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no \
-  -o StrictHostKeyChecking=no -o ConnectTimeout=10 alpuca@192.168.1.200 \
-  "~/ha-cmd.sh '<domain/service>' '<json>'"
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.living_room_lights"}'
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.kitchen_lights","color_temp_kelvin":4000,"brightness":255}'
 ```
 
-`~/ha-cmd.sh` on Alpuca handles HAOS auth (`alpacaadmin`/`playhouse`) with 25-min token caching. The long-lived HA API token (if needed directly) is in `devdocs/HOMEAUTOMATION.md` §1.
+### From another machine (laptop, Hostinger)
+
+```bash
+ssh -o StrictHostKeyChecking=no paca@192.168.1.200 \
+  "~/ha-cmd.sh 'light/turn_off' '{\"entity_id\":\"light.living_room_lights\"}'"
+```
+
+> **Cloud environments** (claude.ai/code "Default Cloud Environment") cannot reach 192.168.x.x. Use a remote-control session on Alpuca instead.
+
+### How `ha-cmd.sh` works
+
+Handles HAOS auth (`alpacaadmin`/`playhouse`) with 25-min token caching. Calls `http://192.168.1.39:8123/api/services/<domain/service>`. Long-lived HA API token in `devdocs/HOMEAUTOMATION.md` §1.
 
 **DB query for current inventory:**
 ```sql
@@ -31,24 +40,22 @@ FROM lighting_devices WHERE is_active ORDER BY room, socket_number;
 
 ## Room Command Reference
 
+> All commands below use `~/ha-cmd.sh` directly (assumes running on Alpuca).
+> From another machine, wrap with: `ssh -o StrictHostKeyChecking=no paca@192.168.1.200 "~/ha-cmd.sh '...' '{...}'"` (escape inner quotes).
+
 ### Living Room
 
-**Entities:**
-- `light.living_room_lights` — 5 WiZ bulbs + 1 Matter bulb (group)
-- `light.livingroom_strip_light` — Govee LED strip (15 segments)
+**Entities:** `light.living_room_lights` (5 WiZ + 1 Matter group), `light.livingroom_strip_light` (Govee LED strip)
 
 ```bash
-# Soft white (2700K) — default scene
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"],\"color_temp_kelvin\":2700,\"brightness\":200}'"
+# Soft white
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":["light.living_room_lights","light.livingroom_strip_light"],"color_temp_kelvin":2700,"brightness":200}'
 
-# RGB color (example: warm amber)
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"],\"rgb_color\":[255,147,41],\"brightness\":200}'"
+# RGB color (warm amber)
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":["light.living_room_lights","light.livingroom_strip_light"],"rgb_color":[255,147,41],"brightness":200}'
 
-# Turn off
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_off' '{\"entity_id\":[\"light.living_room_lights\",\"light.livingroom_strip_light\"]}'"
+# Off
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":["light.living_room_lights","light.livingroom_strip_light"]}'
 ```
 
 ---
@@ -58,62 +65,91 @@ sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o Pr
 **Entity:** `light.master_bathroom_lights` (5 OREIN Matter bulbs)
 
 ```bash
-~/bin/alpuca mb-off
-~/bin/alpuca mb-on 200         # brightness 0–255
-
-# Custom color/temp via SSH
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":\"light.master_bathroom_lights\",\"color_temp_kelvin\":3000,\"brightness\":180}'"
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.master_bathroom_lights","color_temp_kelvin":3000,"brightness":180}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.master_bathroom_lights"}'
 ```
 
-Individual bulb entities: `light.smart_rgbtw_bulb` (Tub), `_2` (Shower), `_3` (Frig), `_4` (Closet), `_5` (Toilet)
+Individual: `light.smart_rgbtw_bulb` (Tub), `_2` (Shower), `_3` (Frig), `_4` (Closet), `_5` (Toilet)
 
 ---
 
 ### Skyloft Ceiling
 
-**Entity:** `light.skyloft_lights` (5 WiZ BR30 bulbs; 6th bulb not yet on WiFi)
+**Entity:** `light.skyloft_lights` (5 WiZ BR30 bulbs; 6th offline)
 
 ```bash
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":\"light.skyloft_lights\",\"color_temp_kelvin\":3000,\"brightness\":200}'"
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.skyloft_lights","color_temp_kelvin":3000,"brightness":200}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.skyloft_lights"}'
 ```
 
 ---
 
 ### Skyloft Bathroom
 
-**Entities:** `light.smart_rgbtw_bulb_10`, `light.smart_rgbtw_bulb_11` (2 OREIN Matter bulbs)
+**Entities:** `light.smart_rgbtw_bulb_10`, `light.smart_rgbtw_bulb_11` (2 OREIN Matter)
 
 ```bash
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":[\"light.smart_rgbtw_bulb_10\",\"light.smart_rgbtw_bulb_11\"],\"color_temp_kelvin\":3000,\"brightness\":200}'"
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":["light.smart_rgbtw_bulb_10","light.smart_rgbtw_bulb_11"],"color_temp_kelvin":3000,"brightness":200}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":["light.smart_rgbtw_bulb_10","light.smart_rgbtw_bulb_11"]}'
 ```
 
 ---
 
 ### Kitchen
 
-**Entity:** `light.kitchen_lights` (5 WiZ bulbs + 2 Leedarson Matter bulbs)
+**Entity:** `light.kitchen_lights` (5 WiZ + 1 Leedarson Matter + 4 Govee BR30 H6013)
+
+Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `light.kitchen_ceiling_7`, `light.kitchen_ceiling_8`
 
 ```bash
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":\"light.kitchen_lights\",\"color_temp_kelvin\":4000,\"brightness\":255}'"
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.kitchen_lights","color_temp_kelvin":4000,"brightness":255}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.kitchen_lights"}'
 ```
 
 ---
 
-### Other TP-Link lights
+### Stairs
+
+**Entity:** `light.stairs_lights` (2 Linkind Matter bulbs)
+
+```bash
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.stairs_lights","color_temp_kelvin":3000,"brightness":200}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.stairs_lights"}'
+```
+
+Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom)
+
+---
+
+### Other Lights
 
 | Room | Entity | Type |
 |------|--------|------|
-| Cabin 1 | `light.cabin_1` | TP-Link KL135 smart plug |
+| Cabin 1 | `light.cabin_1` | TP-Link KL135 |
 | Nook | `light.nook` | TP-Link HS220 dimmer |
+| Stair Landing | `switch.stair_landing` | TP-Link HS210 |
 
 ```bash
-sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no alpuca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_on' '{\"entity_id\":\"light.nook\",\"brightness\":150}'"
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.nook","brightness":150}'
+~/ha-cmd.sh 'switch/turn_on' '{"entity_id":"switch.stair_landing"}'
 ```
+
+---
+
+## Quick Entity Cheat Sheet
+
+| Room | Entity | Turn off |
+|------|--------|----------|
+| Living Room | `light.living_room_lights` | `~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.living_room_lights"}'` |
+| Living Strip | `light.livingroom_strip_light` | same pattern |
+| Master Bath | `light.master_bathroom_lights` | same pattern |
+| Skyloft Ceil | `light.skyloft_lights` | same pattern |
+| Skyloft Bath | `light.smart_rgbtw_bulb_10`, `_11` | use array |
+| Kitchen | `light.kitchen_lights` | same pattern |
+| Stairs | `light.stairs_lights` | same pattern |
+| Cabin 1 | `light.cabin_1` | same pattern |
+| Nook | `light.nook` | same pattern |
+| Stair Landing | `switch.stair_landing` | use `switch/turn_off` |
 
 ---
 
@@ -142,15 +178,13 @@ sshpass -p "$(bw-read 'Alpuca — Primary Home Server (Mac mini M4)')" ssh -o Pr
 | Pink | [255, 105, 180] |
 | Cyan | [0, 255, 255] |
 
-`brightness`: 0–255. Both `color_temp_kelvin` and `rgb_color` turn the light on if it's off.
+`brightness`: 0-255. Both `color_temp_kelvin` and `rgb_color` turn the light on if off.
 
 ---
 
 ## Device Inventory by Backend
 
-### HAOS (via SSH to Alpuca)
-
-All lights below are controlled via `~/ha-cmd.sh` on Alpuca:
+### HAOS (via `~/ha-cmd.sh` on Alpuca)
 
 | Room | Entity | Bulbs | Brand |
 |------|--------|-------|-------|
@@ -159,16 +193,15 @@ All lights below are controlled via `~/ha-cmd.sh` on Alpuca:
 | Master Bathroom | `light.master_bathroom_lights` | 5 | OREIN Matter |
 | Skyloft Ceiling | `light.skyloft_lights` | 5 (6th offline) | WiZ BR30 |
 | Skyloft Bathroom | `light.smart_rgbtw_bulb_10`, `_11` | 2 | OREIN Matter |
-| Kitchen | `light.kitchen_lights` | 5 WiZ + 2 Matter | WiZ/Leedarson |
+| Kitchen | `light.kitchen_lights` | 5 WiZ + 1 Matter + 4 Govee BR30 | WiZ/Leedarson/Govee |
+| Stairs | `light.stairs_lights` | 2 | Linkind Matter |
 | Cabin 1 | `light.cabin_1` | 1 | TP-Link KL135 |
 | Nook | `light.nook` | 1 | TP-Link HS220 |
-| Stair Landing | `switch.stair_landing` | — | TP-Link HS210 |
+| Stair Landing | `switch.stair_landing` | - | TP-Link HS210 |
 
 ### WiZ Proxy — DEPRECATED
 
-All WiZ bulbs are now in HAOS. Do not use the WiZ Proxy for new control. Use HAOS commands above.
-
-> Legacy proxy ran on Almaca (192.168.1.74:8902), tunnelled via `cam.alpacaplayhouse.com`. Kept for reference only.
+All WiZ bulbs are now in HAOS. Do not use the WiZ Proxy for new control.
 
 ### Govee (~63 devices — cloud only)
 
@@ -192,19 +225,6 @@ Controlled via SmartLife app or Tuya Cloud API. Not yet in HAOS.
 
 ---
 
-## WiZ Bulb Entity Map
-
-Individual entity IDs and room assignments are stored in `lighting_devices` table. Query for current state:
-
-```sql
-SELECT ha_entity_id, device_name, room, mac_address, ip_address
-FROM lighting_devices WHERE device_brand = 'WiZ' AND is_active ORDER BY room, socket_number;
-```
-
-Live entity IDs seen in HAOS (2026-03-27): `light.wiz_rgbww_tunable_09b70b`, `light.wiz_rgbw_tunable_816499`, `light.wiz_rgbw_tunable_81df16`, `light.wiz_rgbw_tunable_819f3e`, `light.wiz_rgbw_tunable_816dcc`, `light.wiz_rgbw_tunable_81570d`, `light.wiz_rgbw_tunable_819eee`, `light.wiz_rgbw_tunable_819307`, `light.wiz_rgbw_tunable_8173f0`, `light.wiz_rgbww_tunable_09ffc8`, `light.wiz_rgbw_tunable_8175e4`, `light.wiz_rgbw_tunable_8206c2`, `light.wiz_rgbw_tunable_81bc74`, `light.wiz_rgbww_tunable_0a6817`, `light.wiz_rgbw_tunable_81d231`, `light.wiz_rgbw_tunable_81cce4` + Skyloft BR30s.
-
----
-
 ## Troubleshooting
 
 **WiZ bulbs not discovering in HAOS:**
@@ -213,18 +233,18 @@ Live entity IDs seen in HAOS (2026-03-27): `light.wiz_rgbww_tunable_09b70b`, `li
 - `nmap -sU -p 38899 192.168.1.0/24` to find them
 
 **OREIN/Matter bulbs blocked (new commissioning):**
-- After factory reset, bulbs enter pairing mode for only 2–3s before reconnecting to AiDot cloud
-- Fix: block MACs from internet via UDM → factory reset → commission via HA Matter add-on
+- After factory reset, bulbs enter pairing mode for only 2-3s before reconnecting to AiDot cloud
+- Fix: block MACs from internet via UDM, factory reset, commission via HA Matter add-on
 
 **SSH to Alpuca not working:**
-- Use `sshpass` with password from Bitwarden (see §How to Run Commands above)
-- Password SSH confirmed working 2026-03-27; key auth may or may not work depending on config
+- Key auth: `ssh paca@192.168.1.200` (preferred, tested working)
+- If key auth fails, check `~/.ssh/authorized_keys` on Alpuca
 
 ---
 
 ## Planned / Future
 
-- Add `tuya_cloud` backend to `home-assistant-control` edge function (see `docs/guides/light-control-performance.md`)
+- Add `tuya_cloud` backend to `home-assistant-control` edge function
 - HACS Govee LAN integration — local control without cloud
 - Map remaining WiZ entity IDs to rooms
 - 6th Skyloft WiZ BR30 bulb needs WiFi pairing via WiZ app
