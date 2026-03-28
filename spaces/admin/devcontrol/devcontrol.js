@@ -750,85 +750,103 @@ async function loadContext() {
   }
 
   function renderContextTree() {
+    // folder toggle handler
+    window._toggleFolder = function(el) {
+      const children = el.closest('.dc-ctx-item').querySelector('.dc-ctx-children');
+      if (!children) return;
+      const open = children.style.display !== 'none';
+      children.style.display = open ? 'none' : 'block';
+      const arrow = el.querySelector('.dc-ctx-folder-arrow');
+      if (arrow) arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+    };
+
+    function folder(name, children, open = true) {
+      return `
+        <div class="dc-ctx-item">
+          <div class="dc-ctx-folder dc-ctx-clickable" onclick="window._toggleFolder(this)">
+            <span class="dc-ctx-folder-arrow" style="transform:${open ? 'rotate(90deg)' : 'rotate(0deg)'}">&#9654;</span>
+            <span style="font-size:0.75rem;">&#128193;</span>
+            <span class="mono" style="font-weight:600;font-size:0.8125rem;">${esc(name)}</span>
+          </div>
+          <div class="dc-ctx-children" style="display:${open ? 'block' : 'none'};">
+            ${children}
+          </div>
+        </div>`;
+    }
+
+    function leaf(name, hint) {
+      return `<div class="dc-ctx-item">${treeNode(name, hint)}</div>`;
+    }
+
     return `
       <style>
         .dc-ctx-tree { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 0.8125rem; }
         .dc-ctx-tree .dc-ctx-group { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #aaa); margin: 1.25rem 0 0.375rem; padding-bottom: 0.25rem; border-bottom: 1px solid var(--border, #e2e0db); }
         .dc-ctx-tree .dc-ctx-group:first-child { margin-top: 0; }
-        .dc-ctx-tree .dc-ctx-section { margin-left: 0; padding: 0; }
         .dc-ctx-tree .dc-ctx-item { position: relative; padding: 0.125rem 0 0.125rem 1.25rem; }
         .dc-ctx-tree .dc-ctx-item::before { content: ''; position: absolute; left: 0.25rem; top: 0; bottom: 0; width: 1px; border-left: 1px solid var(--border, #ddd); }
         .dc-ctx-tree .dc-ctx-item::after { content: ''; position: absolute; left: 0.25rem; top: 0.85rem; width: 0.65rem; height: 1px; border-bottom: 1px solid var(--border, #ddd); }
         .dc-ctx-tree .dc-ctx-item:last-child::before { height: 0.85rem; }
         .dc-ctx-tree .dc-ctx-node { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.4rem; border-radius: 6px; }
+        .dc-ctx-tree .dc-ctx-folder { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.4rem; border-radius: 6px; }
+        .dc-ctx-tree .dc-ctx-folder-arrow { display: inline-block; width: 14px; font-size: 0.55rem; color: var(--text-muted, #888); transition: transform 0.15s; flex-shrink: 0; }
         .dc-ctx-clickable { cursor: pointer; transition: background 0.1s; }
         .dc-ctx-clickable:hover { background: var(--bg-subtle, #f5f4f0); }
         .dc-ctx-arrow { display: inline-block; width: 14px; font-size: 0.55rem; color: var(--text-muted, #888); transition: transform 0.15s; flex-shrink: 0; }
         .dc-ctx-content { overflow: hidden; }
         .dc-ctx-content .dc-file-preview { max-height: 600px; overflow: auto; border: 1px solid var(--border, #e2e0db); border-radius: 8px; background: var(--bg-subtle, #faf9f6); }
+        .dc-ctx-content .dc-file-preview h1 { font-size: 0.95rem; margin: 0.5rem 0 0.25rem; }
+        .dc-ctx-content .dc-file-preview h2 { font-size: 0.85rem; margin: 0.4rem 0 0.2rem; }
+        .dc-ctx-content .dc-file-preview h3 { font-size: 0.8rem; margin: 0.3rem 0 0.15rem; }
+        .dc-ctx-content .dc-file-preview h4, .dc-ctx-content .dc-file-preview h5, .dc-ctx-content .dc-file-preview h6 { font-size: 0.75rem; margin: 0.25rem 0 0.1rem; }
+        .dc-ctx-content .dc-file-preview p, .dc-ctx-content .dc-file-preview li, .dc-ctx-content .dc-file-preview td { font-size: 0.75rem; line-height: 1.5; }
+        .dc-ctx-content .dc-file-preview blockquote { font-size: 0.73rem; }
         .dc-ctx-content .dc-file-content { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.7rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; padding: 1rem; margin: 0; }
-        .dc-ctx-sub { margin-left: 1.25rem; }
-        .dc-ctx-sub .dc-ctx-item { padding-left: 1.25rem; }
-        .dc-ctx-sub .dc-ctx-item::before { left: 0.25rem; }
-        .dc-ctx-sub .dc-ctx-item::after { left: 0.25rem; }
+        .dc-ctx-tree .dc-ctx-children { margin-left: 0; }
       </style>
       <div class="dc-ctx-tree">
 
         <div class="dc-ctx-group">Always Loaded</div>
-        <div class="dc-ctx-section">
-          <div class="dc-ctx-item">${treeNode('System prompt', 'Claude built-in context')}</div>
-          <div class="dc-ctx-item">${treeNode('Global CLAUDE.md', 'user-level rules, all projects')}</div>
-          <div class="dc-ctx-item">
-            ${treeNode('Project CLAUDE.md', 'project directives — triggers on-demand loading')}
-          </div>
-          <div class="dc-ctx-item">${treeNode('CLAUDE.local.md', 'local overrides, not in git')}</div>
-          <div class="dc-ctx-item">${treeNode('MEMORY.md', 'persistent memory index')}</div>
+        <div style="padding:0;">
+          ${leaf('System prompt', 'Claude built-in context')}
+          ${folder('~/.claude/', leaf('Global CLAUDE.md', 'user-level rules, all projects'))}
+          ${leaf('Project CLAUDE.md', 'project directives — triggers on-demand loading')}
+          ${leaf('CLAUDE.local.md', 'local overrides, not in git')}
+          ${folder('memory/', leaf('MEMORY.md', 'persistent memory index'))}
         </div>
 
-        <div class="dc-ctx-group">Database & API</div>
-        <div class="dc-ctx-section">
-          <div class="dc-ctx-item">${treeNode('SCHEMA.md', 'load for queries, tables, debugging data')}</div>
-          <div class="dc-ctx-item">${treeNode('API.md', 'load for REST endpoints, edge functions')}</div>
-          <div class="dc-ctx-item">${treeNode('CREDENTIALS.md', 'load for SQL, SSH, API keys')}</div>
-          <div class="dc-ctx-item">${treeNode('SECRETS-GUIDE.md', 'load for Bitwarden, secret management')}</div>
-        </div>
-
-        <div class="dc-ctx-group">Architecture & Design</div>
-        <div class="dc-ctx-section">
-          <div class="dc-ctx-item">${treeNode('ARCHITECTURE.md', 'load for system architecture, component relationships')}</div>
-          <div class="dc-ctx-item">${treeNode('PRODUCTDESIGN.md', 'load for product decisions, UX philosophy')}</div>
-          <div class="dc-ctx-item">${treeNode('PATTERNS.md', 'load for UI code, Tailwind tokens, components')}</div>
-          <div class="dc-ctx-item">${treeNode('KEY-FILES.md', 'load for file search, project structure')}</div>
-        </div>
-
-        <div class="dc-ctx-group">Deploy & Ops</div>
-        <div class="dc-ctx-section">
-          <div class="dc-ctx-item">${treeNode('DEPLOY.md', 'load for pushing, deploying, version questions')}</div>
-          <div class="dc-ctx-item">${treeNode('INTEGRATIONS.md', 'load for external APIs, vendor setup')}</div>
-          <div class="dc-ctx-item">${treeNode('CHANGELOG.md', 'load for recent changes, migration context')}</div>
-          <div class="dc-ctx-item">${treeNode('TESTING-GUIDE.md', 'load for test accounts, QA workflows')}</div>
-        </div>
-
-        <div class="dc-ctx-group">Smart Home</div>
-        <div class="dc-ctx-section">
-          <div class="dc-ctx-item">
-            ${treeNode('HOMEAUTOMATION.md', 'load for HAOS, devices, automations')}
-            <div class="dc-ctx-sub">
-              <div class="dc-ctx-item">${treeNode('LIGHTINGAUTOMATION.md', 'lighting subset — entities, commands')}</div>
-              <div class="dc-ctx-item">${treeNode('home-assistant-lighting-design.md', 'canonical lighting architecture')}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="dc-ctx-group">CAD & Property</div>
-        <div class="dc-ctx-section">
-          <div class="dc-ctx-item">
-            ${treeNode('CAD.md', 'load for Blender, QGIS, 3D modeling')}
-            <div class="dc-ctx-sub">
-              <div class="dc-ctx-item">${treeNode('CAD-SITE-PLANS.md', 'site plan workflows, GIS data')}</div>
-              <div class="dc-ctx-item">${treeNode('CAD-RENDER-PIPELINE.md', '3D renders, on-site data collection')}</div>
-            </div>
-          </div>
+        <div class="dc-ctx-group">On-Demand Docs</div>
+        <div style="padding:0;">
+          ${leaf('ARCHITECTURE.md', 'system architecture, component relationships')}
+          ${leaf('API.md', 'REST endpoints, edge functions')}
+          ${leaf('PRODUCTDESIGN.md', 'product decisions, UX philosophy')}
+          ${folder('devdocs/', [
+            folder('schema & data', [
+              leaf('SCHEMA.md', 'queries, tables, debugging data'),
+              leaf('CREDENTIALS.md', 'SQL, SSH, API keys'),
+              leaf('SECRETS-GUIDE.md', 'Bitwarden, secret management'),
+            ].join(''), true),
+            folder('architecture & patterns', [
+              leaf('PATTERNS.md', 'UI code, Tailwind tokens, components'),
+              leaf('KEY-FILES.md', 'file search, project structure'),
+            ].join(''), true),
+            folder('deploy & ops', [
+              leaf('DEPLOY.md', 'pushing, deploying, version questions'),
+              leaf('INTEGRATIONS.md', 'external APIs, vendor setup'),
+              leaf('CHANGELOG.md', 'recent changes, migration context'),
+              leaf('TESTING-GUIDE.md', 'test accounts, QA workflows'),
+            ].join(''), true),
+            folder('smart home', [
+              leaf('HOMEAUTOMATION.md', 'HAOS, devices, automations'),
+              leaf('LIGHTINGAUTOMATION.md', 'lighting entities, commands'),
+              leaf('home-assistant-lighting-design.md', 'canonical lighting architecture'),
+            ].join(''), true),
+            folder('CAD & property', [
+              leaf('CAD.md', 'Blender, QGIS, 3D modeling'),
+              leaf('CAD-SITE-PLANS.md', 'site plan workflows, GIS data'),
+              leaf('CAD-RENDER-PIPELINE.md', '3D renders, on-site data collection'),
+            ].join(''), false),
+          ].join(''), true)}
         </div>
 
       </div>`;
