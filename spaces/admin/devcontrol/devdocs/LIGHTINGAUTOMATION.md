@@ -272,10 +272,10 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 
 ### Outhouse
 
-**Entities:** `light.outhouse_all` (all 6 Govee H601F bars), `light.outhouse_ceiling` (4 main bars), `light.outhouse_stalls` (2 stall bars)
+**Entities:** `light.outhouse_all` (all 7 Govee H601F bars), `light.outhouse_ceiling` (5: 4 main + changing room), `light.outhouse_stalls` (2 stall bars)
 
 ```bash
-# All 6 bars
+# All 7 bars
 ~/lights.sh outhouse red
 ~/lights.sh outhouse off
 
@@ -292,6 +292,7 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 | 2 | Outhouse Main 2 | outhousemain2 | `light.outhousemain2` | 12:DC:DC:B4:D9:4C:A4:84 |
 | 3 | Outhouse Main 3 | outhousemain3 | `light.outhousemain3` | 13:BC:DC:B4:D9:4D:47:D4 |
 | 4 | Outhouse Main 4 | outhousemain4 | `light.outhousemain4` | 43:F2:DC:B4:D9:4D:1C:DC |
+| C | Outhouse Changing | outhouse changing | `light.outhouse_changing` | — |
 | S-L | Outhouse Stall Left | outhouse stall left | `light.outhouse_stall_left` | 4B:F5:DC:B4:D9:59:28:10 |
 | S-R | Outhouse Stall Right | outhouse stall right | `light.outhouse_stall_right` | 1E:D4:DC:B4:D9:5A:11:34 |
 
@@ -302,7 +303,57 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 ~/ha-cmd.sh 'light/turn_on' '{"entity_id":["light.h600b","light.h600b_2"],"color_temp_kelvin":2700,"brightness":255}'
 ```
 
-> All 6 bars are Govee H601F (7-segment RGBIC). Sink lights are Govee H600B. All controlled via HAOS Govee integration (not cloud API).
+> All 7 bars are Govee H601F (7-segment RGBIC). Sink lights are Govee H600B. All controlled via HAOS Govee integration (not cloud API).
+
+---
+
+### Spartan Trailer
+
+Three spaces with 12 Govee H601F bars total, plus 2 strip lights.
+
+**Entities:**
+- `light.spartan_all` (all 12 bars)
+- `light.spartan_tea_lounge` (6 bars — Tea Lounge / main living area)
+- `light.spartan_fishbowl` (2 bars — Fishbowl / small bedroom)
+- `light.spartan_cedar_chamber` (4 bars — Cedar Chamber / big bedroom)
+
+```bash
+# All 12 bars
+~/lights.sh spartan red
+~/lights.sh spartan off
+
+# Individual rooms
+~/lights.sh tea-lounge warm 80%
+~/lights.sh fishbowl blue
+~/lights.sh cedar purple 80%
+
+# Sub-groups (via ha-cmd.sh)
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.spartan_tea_lounge","rgb_color":[255,180,100],"brightness":200}'
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.spartan_cedar_chamber","rgb_color":[128,0,255],"brightness":200}'
+```
+
+**Layout:**
+
+| Space | Pos | Govee Name | HAOS Entity |
+|-------|-----|-----------|-------------|
+| Tea Lounge | 1 | Spartan Main 1 | `light.spartan_main_1` |
+| Tea Lounge | 2 | Spartan Main 2 | `light.spartan_main_2` |
+| Tea Lounge | 3 | Spartan Main 3 | `light.spartan_main_3` |
+| Tea Lounge | 4 | Spartan Main 4 | `light.spartan_main_4` |
+| Tea Lounge | 5 | Spartan Main 5 | `light.spartan_main_5` |
+| Tea Lounge | 6 | Spartan Main 6 | `light.spartan_main_6` |
+| Fishbowl | 1 | Spartan Lilbed 1 | `light.spartan_lilbed_1` |
+| Fishbowl | 2 | Spartan Lilbed 2 | `light.spartan_lilbed_2` |
+| Cedar Chamber | 1 | Spartan Bigbed 1 | `light.spartan_bigbed_1` |
+| Cedar Chamber | 2 | Spartan Bigbed 2 | `light.spartan_bigbed_2` |
+| Cedar Chamber | 3 | Spartan Bigbed 3 | `light.spartan_bigbed_3` |
+| Cedar Chamber | 4 | Spartan Bigbed 4 | `light.spartan_bigbed_4` |
+
+**Strip lights** (not in room groups, controlled separately):
+- `light.spartan_roof` — 15-segment RGBIC strip (roof)
+- `light.spartan_updown_wall` — 15-segment RGBIC strip (wall)
+
+> All 12 bars are Govee H601F (7-segment RGBIC). Controlled via HAOS Govee integration (not cloud API).
 
 ---
 
@@ -357,6 +408,10 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Outhouse All | `light.outhouse_all` | `~/lights.sh outhouse off` |
 | Outhouse Ceiling | `light.outhouse_ceiling` | same pattern |
 | Outhouse Stalls | `light.outhouse_stalls` | same pattern |
+| Spartan All | `light.spartan_all` | `~/lights.sh spartan off` |
+| Tea Lounge | `light.spartan_tea_lounge` | `~/lights.sh tea-lounge off` |
+| Fishbowl | `light.spartan_fishbowl` | `~/lights.sh fishbowl off` |
+| Cedar Chamber | `light.spartan_cedar_chamber` | `~/lights.sh cedar off` |
 | Stair Landing | `switch.stair_landing` | use `switch/turn_off` |
 
 ---
@@ -412,9 +467,13 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Garage Ceiling | `light.garage_ceiling` | 12 | Govee H601F (via HACS) |
 | Garage DJ | `light.garage_dj` | 4 | Govee H601F (via HACS) |
 | Garage Opener | `light.garage_opener_1`, `_2` | 2 | (already provisioned) |
-| Outhouse All | `light.outhouse_all` | 6 | Govee H601F (via HACS) |
-| Outhouse Ceiling | `light.outhouse_ceiling` | 4 | Govee H601F (via HACS) |
+| Outhouse All | `light.outhouse_all` | 7 | Govee H601F (via HACS) |
+| Outhouse Ceiling | `light.outhouse_ceiling` | 5 | Govee H601F (via HACS) |
 | Outhouse Stalls | `light.outhouse_stalls` | 2 | Govee H601F (via HACS) |
+| Spartan All | `light.spartan_all` | 12 | Govee H601F (via HACS) |
+| Spartan Tea Lounge | `light.spartan_tea_lounge` | 6 | Govee H601F (via HACS) |
+| Spartan Fishbowl | `light.spartan_fishbowl` | 2 | Govee H601F (via HACS) |
+| Spartan Cedar Chamber | `light.spartan_cedar_chamber` | 4 | Govee H601F (via HACS) |
 | Stair Landing | `switch.stair_landing` | - | TP-Link HS210 |
 
 ### WiZ Proxy — DEPRECATED
@@ -425,15 +484,15 @@ All WiZ bulbs are now in HAOS. Do not use the WiZ Proxy for new control.
 
 Controlled via Govee cloud API. Groups accessible through `lights.sh`, HTTP API, and `home-assistant-control` edge function.
 
-> **Garage Mahal** and **Outhouse** moved to HAOS (via Govee HACS integration) for reliable group control. `lights.sh` routes both through HAOS.
+> **Garage Mahal**, **Outhouse**, and **Spartan** (Cedar, Fishbowl, Tea Lounge) moved to HAOS (via Govee HACS integration) for reliable group control. `lights.sh` routes all through HAOS.
 
 | Area | Room key | Backend | Count | Types |
 |------|----------|---------|-------|-------|
 | Garage Mahal | `garage` | HAOS (Govee integration) | 16 H601F | Light bars — see Garage Mahal section |
-| Outhouse | `outhouse` | HAOS (Govee integration) | 6 H601F | Light bars — see Outhouse section |
-| Spartan Cedar | `cedar` | Govee Cloud (12001251) | 4 H601F | Light bars |
-| Spartan Fishbowl | `fishbowl` | Govee Cloud (12411702) | 4 H601F/A | Light bars |
-| Spartan Lounge | `tea-lounge` | Govee Cloud (12411623) | 4 H601A | Light bars |
+| Outhouse | `outhouse` | HAOS (Govee integration) | 7 H601F | Light bars — see Outhouse section |
+| Spartan Cedar | `cedar` | HAOS (Govee integration) | 4 H601F | Light bars — see Spartan section |
+| Spartan Fishbowl | `fishbowl` | HAOS (Govee integration) | 2 H601F | Light bars — see Spartan section |
+| Spartan Lounge | `tea-lounge` | HAOS (Govee integration) | 6 H601F | Light bars — see Spartan section |
 | Outdoor | — | Govee Cloud | 12 | String lights, fence, floods, pathway |
 | Interior | — | Govee Cloud | 5 | LED strips, star projector |
 
@@ -541,4 +600,4 @@ Govee devices use the **Govee Home** Alexa skill (separate from HAOS/Nabu Casa).
 - HACS Govee LAN integration — local control without cloud (fallback for API outages)
 - Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft, Garage Mahal)
 - Add outdoor Govee groups (string lights, fence, floods) to `lights.sh` once needed
-- Migrate Spartan (Cedar, Fishbowl, Tea Lounge) to HAOS Govee integration (same as Garage Mahal/Outhouse)
+- ~~Migrate Spartan (Cedar, Fishbowl, Tea Lounge) to HAOS Govee integration~~ ✅ Done 2026-03-29
