@@ -309,10 +309,10 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 
 ### Spartan Trailer
 
-Three spaces with 12 Govee H601F bars total, plus 2 strip lights.
+Three spaces with 12 Govee H601F bars total, plus 2 strip lights and 2 porch lights.
 
 **Entities:**
-- `light.spartan_all` (all 12 bars)
+- `light.spartan_all` (12 bars + roof strip = 13 entities)
 - `light.spartan_tea_lounge` (6 bars — Tea Lounge / main living area)
 - `light.spartan_fishbowl` (2 bars — Fishbowl / small bedroom)
 - `light.spartan_cedar_chamber` (4 bars — Cedar Chamber / big bedroom)
@@ -349,11 +349,15 @@ Three spaces with 12 Govee H601F bars total, plus 2 strip lights.
 | Cedar Chamber | 3 | Spartan Bigbed 3 | `light.spartan_bigbed_3` |
 | Cedar Chamber | 4 | Spartan Bigbed 4 | `light.spartan_bigbed_4` |
 
-**Strip lights** (not in room groups, controlled separately):
-- `light.spartan_roof` — 15-segment RGBIC strip (roof)
+**Strip lights** (roof is in spartan_all group; wall controlled separately):
+- `light.spartan_roof` — 15-segment RGBIC strip (roof) — in `spartan_all` group
 - `light.spartan_updown_wall` — 15-segment RGBIC strip (wall)
 
-> All 12 bars are Govee H601F (7-segment RGBIC). Controlled via HAOS Govee integration (not cloud API).
+**Porch lights** (controlled separately, not in room groups):
+- `light.spartan_porch_right` — 15-segment RGBIC strip
+- `light.spartan_porch_left` — 15-segment RGBIC strip (pending WiFi pairing)
+
+> All 12 bars are Govee H601F (7-segment RGBIC). Strip/porch lights are Govee H6061. All controlled via HAOS Govee integration (not cloud API).
 
 ---
 
@@ -470,7 +474,7 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Outhouse All | `light.outhouse_all` | 7 | Govee H601F (via HACS) |
 | Outhouse Ceiling | `light.outhouse_ceiling` | 5 | Govee H601F (via HACS) |
 | Outhouse Stalls | `light.outhouse_stalls` | 2 | Govee H601F (via HACS) |
-| Spartan All | `light.spartan_all` | 12 | Govee H601F (via HACS) |
+| Spartan All | `light.spartan_all` | 13 | Govee H601F + roof strip (via HACS) |
 | Spartan Tea Lounge | `light.spartan_tea_lounge` | 6 | Govee H601F (via HACS) |
 | Spartan Fishbowl | `light.spartan_fishbowl` | 2 | Govee H601F (via HACS) |
 | Spartan Cedar Chamber | `light.spartan_cedar_chamber` | 4 | Govee H601F (via HACS) |
