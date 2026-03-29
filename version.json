@@ -1,12 +1,12 @@
 {
-  "version": "v260329.05 1:15a",
-  "release": 1142,
-  "sha": "c65ee01bc",
-  "fullSha": "c65ee01bcba8b5f07d580cf9e4a130b5e871f886",
+  "version": "v260329.06 1:34a",
+  "release": 1143,
+  "sha": "f067a5102",
+  "fullSha": "f067a51021e3d2599046f201a153c34b6bd1caf8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 06:15:34+00",
-  "commits": [{"sha":"c65ee01bc","message":"feat: risk evaluation + approval gate for claude@ email tasks","author":"Rahul"}]
+  "pushedAt": "2026-03-29 06:34:04+00",
+  "commits": [{"sha":"ba2b6bc9e","message":"feat: migrate Outhouse lights from Govee Cloud to HAOS","author":"Rahul"},{"sha":"f067a5102","message":"Merge branch 'zealous-ardinghelli'","author":"Rahul"}]
 }
