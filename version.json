@@ -1,12 +1,12 @@
 {
-  "version": "v260329.14 1:35p",
-  "release": 1151,
-  "sha": "165598e22",
-  "fullSha": "165598e22a4ef02d5585adbdf502fde5ab67d6f0",
+  "version": "v260329.15 1:41p",
+  "release": 1152,
+  "sha": "c59087c03",
+  "fullSha": "c59087c03a0c5d635cadb37cc6709675a65e9b19",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 18:35:45+00",
-  "commits": [{"sha":"165598e22","message":"fix: strengthen parking clause — vigorous management, $100 lot penalty (#95)","author":"Rahul"}]
+  "pushedAt": "2026-03-29 18:41:07+00",
+  "commits": [{"sha":"c59087c03","message":"feat: save event staff to people table on agreement signing (#96)","author":"Rahul"}]
 }
