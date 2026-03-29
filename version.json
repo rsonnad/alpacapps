@@ -1,12 +1,12 @@
 {
-  "version": "v260329.01 12:09a",
-  "release": 1138,
-  "sha": "e3d382c88",
-  "fullSha": "e3d382c885b785a94e0bc674c24aa16f4ff4a354",
+  "version": "v260329.02 12:27a",
+  "release": 1139,
+  "sha": "a29fe76f1",
+  "fullSha": "a29fe76f16d9c17cb67b364f8ae81a60e5754b2e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 05:09:08+00",
-  "commits": [{"sha":"e3d382c88","message":"feat: map Garage Mahal 16 bars to physical positions, migrate to HAOS control","author":"Rahul"}]
+  "pushedAt": "2026-03-29 05:27:40+00",
+  "commits": [{"sha":"a29fe76f1","message":"fix: make garage HAOS groups persistent, update entity refs to light.* format","author":"Rahul"}]
 }
