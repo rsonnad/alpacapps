@@ -24,7 +24,7 @@ On Alpuca or via SSH. No entity IDs needed.
 ssh paca@192.168.1.200 "~/lights.sh kitchen,living red"
 ```
 
-**Rooms:** `kitchen`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `all`
+**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `all`
 **Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, or `NNNNk` (e.g. `2700k`)
 **Brightness:** Optional percentage, e.g. `50%`. Default is 100%.
 
@@ -161,6 +161,21 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 
 ---
 
+### Kitchen Nook
+
+**Entities:** `light.smart_rgbtw_bulb_12` (Kitchen Nook 1), `light.smart_rgbtw_bulb_13` (Kitchen Nook 2), `light.smart_rgbtw_bulb_14` (Kitchen Nook 3) — 3 Linkind Matter RGBTW bulbs
+
+```bash
+# All 3 nook bulbs
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":["light.smart_rgbtw_bulb_12","light.smart_rgbtw_bulb_13","light.smart_rgbtw_bulb_14"],"color_temp_kelvin":3000,"brightness":200}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":["light.smart_rgbtw_bulb_12","light.smart_rgbtw_bulb_13","light.smart_rgbtw_bulb_14"]}'
+
+# Or use lights.sh
+~/lights.sh kitchen-nook warm 80%
+```
+
+---
+
 ### Stairs
 
 **Entity:** `light.stairs_lights` (2 Linkind Matter bulbs)
@@ -199,6 +214,7 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Skyloft Ceil | `light.skyloft_lights` | same pattern |
 | Skyloft Bath | `light.smart_rgbtw_bulb_10`, `_11` | use array |
 | Kitchen | `light.kitchen_lights` | same pattern |
+| Kitchen Nook | `light.smart_rgbtw_bulb_12`, `_13`, `_14` | use array |
 | Stairs | `light.stairs_lights` | same pattern |
 | Cabin 1 | `light.cabin_1` | same pattern |
 | Nook | `light.nook` | same pattern |
@@ -247,6 +263,7 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Skyloft Ceiling | `light.skyloft_lights` | 5 (6th offline) | WiZ BR30 |
 | Skyloft Bathroom | `light.smart_rgbtw_bulb_10`, `_11` | 2 | OREIN Matter |
 | Kitchen | `light.kitchen_lights` | 5 WiZ + 1 Matter + 4 Govee BR30 | WiZ/Leedarson/Govee |
+| Kitchen Nook | `light.smart_rgbtw_bulb_12`, `_13`, `_14` | 3 | Linkind Matter |
 | Stairs | `light.stairs_lights` | 2 | Linkind Matter |
 | Cabin 1 | `light.cabin_1` | 1 | TP-Link KL135 |
 | Nook | `light.nook` | 1 | TP-Link HS220 |
