@@ -295,7 +295,14 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 | S-L | Outhouse Stall Left | outhouse stall left | `light.outhouse_stall_left` | 4B:F5:DC:B4:D9:59:28:10 |
 | S-R | Outhouse Stall Right | outhouse stall right | `light.outhouse_stall_right` | 1E:D4:DC:B4:D9:5A:11:34 |
 
-> All 6 bars are Govee H601F (7-segment RGBIC). Controlled via HAOS Govee integration (not cloud API) for reliable group control.
+**Sink lights:** `light.outhouse_sink_lights` (group), `light.h600b` (Sink Left), `light.h600b_2` (Sink Right) — 2 Govee H600B strip lights
+
+```bash
+# Sink lights — soft white
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":["light.h600b","light.h600b_2"],"color_temp_kelvin":2700,"brightness":255}'
+```
+
+> All 6 bars are Govee H601F (7-segment RGBIC). Sink lights are Govee H600B. All controlled via HAOS Govee integration (not cloud API).
 
 ---
 
