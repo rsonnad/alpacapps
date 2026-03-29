@@ -24,7 +24,7 @@ On Alpuca or via SSH. No entity IDs needed.
 ssh paca@192.168.1.200 "~/lights.sh kitchen,living red"
 ```
 
-**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `all`
+**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `garage`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
 **Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, or `NNNNk` (e.g. `2700k`)
 **Brightness:** Optional percentage, e.g. `50%`. Default is 100%.
 
@@ -326,17 +326,31 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 
 All WiZ bulbs are now in HAOS. Do not use the WiZ Proxy for new control.
 
-### Govee (~63 devices — cloud only)
+### Govee (~63 devices — cloud API via `lights.sh` + HTTP API)
 
-Controlled via `govee-control` Supabase edge function. Not yet in HAOS.
+Controlled via Govee cloud API. Groups accessible through `lights.sh`, HTTP API, and `home-assistant-control` edge function.
 
-| Area | Count | Types |
-|------|-------|-------|
-| Garage Mahal | 18 | Light bars (R-series + standard) |
-| Spartan | 16 | Light bars, strip, wall light |
-| Outhouse | 7 | Light bars |
-| Outdoor | 12 | String lights, fence, floods, pathway |
-| Interior | 5 | LED strips, star projector |
+| Area | Room key | Govee Group ID | Count | Types |
+|------|----------|----------------|-------|-------|
+| Garage Mahal | `garage` | 13452517 | 16 H601F | Light bars (R-series + standard) |
+| Outhouse | `outhouse` | 13166268 | 6 H601F | Light bars |
+| Spartan Cedar | `cedar` | 12001251 | 4 H601F | Light bars |
+| Spartan Fishbowl | `fishbowl` | 12411702 | 4 H601F/A | Light bars |
+| Spartan Lounge | `tea-lounge` | 12411623 | 4 H601A | Light bars |
+| Outdoor | — | — | 12 | String lights, fence, floods, pathway |
+| Interior | — | — | 5 | LED strips, star projector |
+
+**Govee CLI examples:**
+```bash
+~/lights.sh garage red
+~/lights.sh outhouse blue 50%
+~/lights.sh spartan purple          # all 3 Spartan rooms
+~/lights.sh cedar,fishbowl off
+```
+
+**Govee API key:** stored at `~/.govee-api-key` on Alpuca and in `govee_config` table (id=1).
+
+**Alexa:** Enable the **Govee Home** Alexa skill. Groups from the Govee app (Garage Mahal, Outhouse, etc.) will appear as Alexa devices.
 
 ### Tuya/SmartLife (~32 devices — cloud only)
 
@@ -411,5 +425,12 @@ When an Echo device and lights are in the same Alexa room, "Alexa, turn on light
 
 - Fix Skyloft Bar GU10 LocalTuya connection — port 6668 stays closed. May need Tuya Cloud integration instead of LocalTuya
 - Add `tuya_cloud` backend to `home-assistant-control` edge function
+<<<<<<< HEAD
 - HACS Govee LAN integration — local control without cloud
 - Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft)
+=======
+- HACS Govee LAN integration — local control without cloud (fallback for API outages)
+- Map remaining WiZ entity IDs to rooms
+- 6th Skyloft WiZ BR30 bulb needs WiFi pairing via WiZ app
+- Add outdoor Govee groups (string lights, fence, floods) to `lights.sh` once needed
+>>>>>>> 6035024d9 (feat: add Govee Garage Mahal, Outhouse, and Spartan rooms to unified lighting system)
