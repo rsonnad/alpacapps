@@ -24,8 +24,8 @@ On Alpuca or via SSH. No entity IDs needed.
 ssh paca@192.168.1.200 "~/lights.sh kitchen,living red"
 ```
 
-**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `garage`, `garage-ceiling`, `garage-dj`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
-**Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, or `NNNNk` (e.g. `2700k`)
+**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `garage`, `garage-ceiling`, `garage-dj`, `garage-dj-strip`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
+**Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, `NNNNk` (e.g. `2700k`), or `#RRGGBB` hex
 **Brightness:** Optional percentage, e.g. `50%`. Default is 100%.
 
 ### 2. Light API — HTTP endpoint (for cloud, mobile apps, edge functions)
@@ -374,6 +374,38 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 
 ---
 
+### Garage Mahal
+
+**HAOS groups:** `light.garage_all` (all garage lights), `light.garage_ceiling` (ceiling bars), `light.garage_dj` (DJ area bars)
+
+**Garage DJ Strip:** Enbrighten Vibe Neon Rope Light 24ft (model 58088, Tuya protocol v3.4)
+- HAOS entity: `light.garage_dj_strip` (LocalTuya — currently unavailable due to QEMU VM networking)
+- **Control via lights.sh** (bypasses HAOS, uses tinytuya directly):
+  - Tuya device ID: `eb6d4495b4b05cfde8dnf3`
+  - IP: `192.168.1.105`, MAC: `10:5a:17:c6:2d:d5`
+  - 15 RGB segments (DP104), brightness (DP106), power (DP20)
+- Web UI: controlled via `light_api` backend in `home-assistant-control` edge function
+
+```bash
+# Via lights.sh
+~/lights.sh garage-dj-strip red
+~/lights.sh garage-dj-strip "#FF00FF" 50%
+~/lights.sh garage-dj-strip off
+
+# Via Light API
+curl -X POST https://lights.alpacaplayhouse.com/lights \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"rooms":"garage-dj-strip","color":"purple","brightness":"60%"}'
+
+# Garage opener lights (2 individual Govee bars)
+~/lights.sh garage-opener red
+```
+
+**lights.sh rooms:** `garage` / `garage-mahal` (all), `garage-ceiling` / `gc`, `garage-dj` / `gdj`, `garage-dj-strip` / `gstrip` / `dj-strip`, `garage-opener` / `gopener`
+
+---
+
 ### Other Lights
 
 | Room | Entity | Type |
@@ -417,6 +449,8 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Fishbowl | `light.spartan_fishbowl` | `~/lights.sh fishbowl off` |
 | Cedar Chamber | `light.spartan_cedar_chamber` | `~/lights.sh cedar off` |
 | Stair Landing | `switch.stair_landing` | use `switch/turn_off` |
+| Garage DJ Strip | `light.garage_dj_strip` (Tuya) | `~/lights.sh garage-dj-strip off` |
+| Garage All | `light.garage_all` | `~/lights.sh garage off` |
 
 ---
 
@@ -479,6 +513,15 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Spartan Fishbowl | `light.spartan_fishbowl` | 2 | Govee H601F (via HACS) |
 | Spartan Cedar Chamber | `light.spartan_cedar_chamber` | 4 | Govee H601F (via HACS) |
 | Stair Landing | `switch.stair_landing` | - | TP-Link HS210 |
+| Garage DJ Strip | `light.garage_dj_strip` | 1 (24ft neon rope, 15 segments) | Enbrighten (Jasco) 58088 / Tuya v3.4 |
+
+### Tuya Local (via `~/lights.sh` on Alpuca — tinytuya)
+
+LocalTuya HAOS entities are unavailable (QEMU VM networking limitation). Controlled via `lights.sh` → `tuya-light.sh` → tinytuya directly from host.
+
+| Room | Device | Tuya ID | IP | DPs |
+|------|--------|---------|----|-----|
+| Garage DJ Strip | Enbrighten Vibe Neon 24ft | `eb6d4495b4b05cfde8dnf3` | 192.168.1.105 | DP20 power, DP104 color (15 segs), DP106 brightness |
 
 ### WiZ Proxy — DEPRECATED
 

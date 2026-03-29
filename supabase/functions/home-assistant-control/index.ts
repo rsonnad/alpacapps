@@ -133,6 +133,36 @@ async function callGoveeControl(
   return result;
 }
 
+async function callLightApi(
+  lightApiUrl: string,
+  lightApiToken: string,
+  room: string,
+  color: string,
+  brightness?: number,
+) {
+  const body: Record<string, string> = { rooms: room, color };
+  if (typeof brightness === "number") {
+    body.brightness = `${clampInt(brightness, 1, 100)}%`;
+  }
+  const resp = await fetch(`${lightApiUrl.replace(/\/+$/, "")}/lights`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${lightApiToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const text = await resp.text();
+  if (!resp.ok) {
+    throw new Error(`light-api failed (${resp.status}): ${text}`);
+  }
+  return { ok: true, response: text };
+}
+
+function rgbToHexColor(r: number, g: number, b: number): string {
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
 async function callGoveeState(
   supabaseUrl: string,
   serviceRoleKey: string,
@@ -236,6 +266,8 @@ serve(async (req) => {
     const haToken = Deno.env.get("HA_TOKEN") || Deno.env.get("HOME_ASSISTANT_TOKEN") || "";
     const wizProxyUrl = Deno.env.get("WIZ_PROXY_URL") || "";
     const wizProxyToken = Deno.env.get("WIZ_PROXY_TOKEN") || "";
+    const lightApiUrl = Deno.env.get("LIGHT_API_URL") || "";
+    const lightApiToken = Deno.env.get("LIGHT_API_TOKEN") || "";
     const useFallbacks = haConfig?.use_fallbacks !== false;
     const testMode = haConfig?.test_mode === true;
     const haActive = haConfig?.is_active !== false;
@@ -340,6 +372,14 @@ serve(async (req) => {
               state: isOn ? "on" : "off",
               brightness: bri ?? null,
             });
+          } else if (t.backend === "light_api") {
+            // Light API devices don't support state queries yet
+            perTarget.push({
+              backend: t.backend,
+              target_id: t.target_id,
+              state: "unknown",
+              note: "Light API state not yet supported",
+            });
           } else {
             perTarget.push({
               backend: t.backend,
@@ -369,6 +409,7 @@ serve(async (req) => {
     const haTargets = targets.filter((t: any) => t.backend === "home_assistant");
     const wizTargets = targets.filter((t: any) => t.backend === "wiz_proxy");
     const goveeTargets = targets.filter((t: any) => t.backend === "govee_cloud");
+    const lightApiTargets = targets.filter((t: any) => t.backend === "light_api");
     const results: any[] = [];
 
     if (testMode) {
@@ -490,6 +531,25 @@ serve(async (req) => {
         }
       }
       results.push({ backend: "govee_cloud", ok: true, count: goveeTargets.length });
+    }
+
+    if (lightApiTargets.length) {
+      if (!lightApiUrl || !lightApiToken) {
+        throw new Error("Light API targets exist but LIGHT_API_URL/LIGHT_API_TOKEN not configured");
+      }
+      for (const t of lightApiTargets) {
+        const room = t.metadata?.light_api_room || t.target_id;
+        if (body.action === "set_power") {
+          await callLightApi(lightApiUrl, lightApiToken, room, body.on ? "on" : "off");
+        } else if (body.action === "set_brightness") {
+          const brightness = clampInt(Number(body.brightness || 0), 1, 100);
+          await callLightApi(lightApiUrl, lightApiToken, room, "on", brightness);
+        } else if (body.action === "set_color") {
+          if (!body.hex_color) throw new Error("hex_color is required for set_color");
+          await callLightApi(lightApiUrl, lightApiToken, room, body.hex_color);
+        }
+      }
+      results.push({ backend: "light_api", ok: true, count: lightApiTargets.length });
     }
 
     return jsonResponse(req, {
