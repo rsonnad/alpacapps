@@ -1,12 +1,12 @@
 {
-  "version": "v260328.24 10:19p",
-  "release": 1131,
-  "sha": "acd760436",
-  "fullSha": "acd7604369580021898f46ad436750dd2cf7dac1",
+  "version": "v260328.25 10:47p",
+  "release": 1132,
+  "sha": "e65aa8ae9",
+  "fullSha": "e65aa8ae97b5266e9cd3a7d23d5cb0cb3bb958ac",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 03:19:03+00",
-  "commits": [{"sha":"acd760436","message":"docs: add kitchen nook (3 Linkind Matter bulbs) to lighting automation","author":"Rahul"}]
+  "pushedAt": "2026-03-29 03:47:33+00",
+  "commits": [{"sha":"e65aa8ae9","message":"feat: add view_devcontrol permission for granular DevControl access","author":"Rahul"}]
 }
