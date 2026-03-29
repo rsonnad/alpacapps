@@ -1263,24 +1263,17 @@ async function handleClaudeTaskEmail(
 
   console.log(`Claude task email from ${senderEmail}: subject="${subject}"`);
 
-  // SECURITY: Only residents+ can trigger Claude tasks (not random public)
+  // Look up sender in app_users
   const { data: senderUser } = await supabase
     .from("app_users")
     .select("id, email, role, display_name")
     .ilike("email", senderEmail)
     .maybeSingle();
 
-  const allowedRoles = ["resident", "associate", "staff", "admin", "superadmin"];
-  if (!senderUser || !allowedRoles.includes(senderUser.role)) {
-    console.warn(`BLOCKED: ${senderEmail} (role=${senderUser?.role || "none"}) — not authorized for Claude tasks`);
-    await supabase
-      .from("inbound_emails")
-      .update({ route_action: "blocked_unauthorized", special_logic_type: "claude" })
-      .eq("id", emailRecord.id);
-    return;
-  }
-
-  const isAdmin = ["admin", "superadmin"].includes(senderUser.role);
+  const knownRoles = ["resident", "associate", "staff", "admin", "superadmin"];
+  const isKnownUser = senderUser && knownRoles.includes(senderUser.role);
+  const isAdmin = isKnownUser && ["admin", "superadmin"].includes(senderUser.role);
+  const senderRole = senderUser?.role || "unknown";
   const emailContent = bodyText || bodyHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
   // RISK EVALUATION via Gemini — same pattern as feature builder
@@ -1290,7 +1283,7 @@ async function handleClaudeTaskEmail(
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
   if (geminiApiKey) {
     try {
-      const evalPrompt = `You are a security evaluator for a home automation system. A user (role: ${senderUser.role}) sent an email requesting an action be executed via Claude Code CLI on a Mac Mini server.
+      const evalPrompt = `You are a security evaluator for a home automation system. A user (role: ${senderRole}) sent an email requesting an action be executed via Claude Code CLI on a Mac Mini server.
 
 EVALUATE this request for risk. The CLI has access to: SSH, file system, git, Supabase DB, home automation (lights, music, thermostats), backup drives.
 
@@ -1341,8 +1334,13 @@ Guidelines:
     }
   }
 
-  // Admins bypass review — their tasks always auto-execute
+  // Admins bypass review; unknown senders always need review
   if (isAdmin) riskDecision = "auto_execute";
+  if (!isKnownUser) {
+    riskDecision = "needs_review";
+    riskAssessment.reason = `Unknown sender (${senderEmail}) — requires admin approval`;
+    riskAssessment.unknown_sender = true;
+  }
 
   const taskStatus = riskDecision === "auto_execute" ? "pending" : "review";
 
