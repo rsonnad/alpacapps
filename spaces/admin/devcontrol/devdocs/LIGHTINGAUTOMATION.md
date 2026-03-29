@@ -24,7 +24,7 @@ On Alpuca or via SSH. No entity IDs needed.
 ssh paca@192.168.1.200 "~/lights.sh kitchen,living red"
 ```
 
-**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `garage`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
+**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `garage`, `garage-ceiling`, `garage-dj`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
 **Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, or `NNNNk` (e.g. `2700k`)
 **Brightness:** Optional percentage, e.g. `50%`. Default is 100%.
 
@@ -226,6 +226,50 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 
 ---
 
+### Garage Mahal
+
+**Entities:** `group.garage_all` (all 16 Govee H601F bars), `group.garage_ceiling` (12 ceiling bars), `group.garage_dj` (4 DJ booth bars)
+
+```bash
+# All 16 bars
+~/lights.sh garage red
+~/lights.sh garage off
+
+# Sub-groups
+~/lights.sh garage-ceiling blue 80%
+~/lights.sh garage-dj purple
+
+# Opener lights (separate)
+~/lights.sh garage-opener on
+```
+
+**Layout (4 rows × 4 columns, numbered left-to-right, front-to-back):**
+
+| Pos | Physical Name | Govee Name | HAOS Entity | MAC |
+|-----|--------------|------------|-------------|-----|
+| 1 | Garage Ceiling 1 | Garage Mahal 12 | `light.garage_mahal_12` | 32:EF:DC:B4:D9:5A:07:7C |
+| 2 | Garage Ceiling 2 | Garage Mahal 11 | `light.garage_mahal_11` | 8C:4B:DC:B4:D9:5A:06:C8 |
+| 3 | Garage Ceiling 3 | Garage Mahal 10 | `light.garage_mahal_10` | 18:EB:DC:06:75:48:DC:98 |
+| 4 | Garage Ceiling 4 | Garage Mahal 13 | `light.garage_mahal_13` | 1C:90:DC:06:75:4D:C1:E8 |
+| 5 | Garage Ceiling 5 | Garage Mahal 3 | `light.garage_mahal_3` | 26:E2:DC:B4:D9:58:39:5C |
+| 6 | Garage Ceiling 6 | Garage Mahal 5 | `light.garage_mahal_5` | 2B:D0:DC:B4:D9:58:3A:C8 |
+| 7 | Garage Ceiling 7 | Garage Mahal 2 | `light.garage_mahal_2` | 0C:EC:DC:B4:D9:59:46:E8 |
+| 8 | Garage Ceiling 8 | Garage Mahal 4 | `light.garage_mahal_4` | 7F:85:98:88:E0:FB:90:F0 |
+| 9 | Garage Ceiling 9 | Garage Mahal 8 | `light.garage_mahal_8` | 0E:46:DC:B4:D9:58:24:2C |
+| 10 | Garage Ceiling 10 | Garage Mahal 6 | `light.garage_mahal_6` | C1:61:DC:B4:D9:58:1A:88 |
+| 11 | Garage Ceiling 11 | Garage Mahal 1 | `light.garage_mahal_1` | 2A:D4:DC:B4:D9:58:3A:8C |
+| 12 | Garage Ceiling 12 | Garage Mahal 7 | `light.garage_mahal_7` | 16:45:DC:B4:D9:58:48:28 |
+| DJ1 | Garage DJ 1 | Garage Mahal 9 | `light.garage_mahal_9` | D9:83:DC:B4:D9:56:91:24 |
+| DJ2 | Garage DJ 2 | Garage Mahal R3 | `light.garage_mahal_r3` | 1D:28:DC:B4:D9:56:8D:EC |
+| DJ3 | Garage DJ 3 | Garage Mahal R2 | `light.garage_mahal_r2` | 79:A5:DC:B4:D9:5A:12:14 |
+| DJ4 | Garage DJ 4 | Garage Mahal R1 | `light.garage_mahal_r1` | E9:59:DC:B4:D9:59:42:50 |
+
+**Opener lights:** `light.garage_opener_1`, `light.garage_opener_2` (separate from bars, already in HAOS)
+
+> All 16 bars are Govee H601F (7-segment RGBIC). Controlled via HAOS Govee integration (not cloud API) for reliable group control.
+
+---
+
 ### Stairs
 
 **Entity:** `light.stairs_lights` (2 Linkind Matter bulbs)
@@ -270,6 +314,10 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Stairs | `light.stairs_lights` | same pattern |
 | Cabin 1 | `light.cabin_1` | same pattern |
 | Nook | `light.nook` | same pattern |
+| Garage All | `group.garage_all` | `~/lights.sh garage off` |
+| Garage Ceiling | `group.garage_ceiling` | `~/lights.sh garage-ceiling off` |
+| Garage DJ | `group.garage_dj` | `~/lights.sh garage-dj off` |
+| Garage Opener | `light.garage_opener_1`, `_2` | `~/lights.sh garage-opener off` |
 | Stair Landing | `switch.stair_landing` | use `switch/turn_off` |
 
 ---
@@ -321,6 +369,10 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Stairs | `light.stairs_lights` | 2 | Linkind Matter |
 | Cabin 1 | `light.cabin_1` | 1 | TP-Link KL135 |
 | Nook | `light.nook` | 1 | TP-Link HS220 |
+| Garage All | `group.garage_all` | 16 | Govee H601F (via HACS) |
+| Garage Ceiling | `group.garage_ceiling` | 12 | Govee H601F (via HACS) |
+| Garage DJ | `group.garage_dj` | 4 | Govee H601F (via HACS) |
+| Garage Opener | `light.garage_opener_1`, `_2` | 2 | (already provisioned) |
 | Stair Landing | `switch.stair_landing` | - | TP-Link HS210 |
 
 ### WiZ Proxy — DEPRECATED
@@ -331,15 +383,17 @@ All WiZ bulbs are now in HAOS. Do not use the WiZ Proxy for new control.
 
 Controlled via Govee cloud API. Groups accessible through `lights.sh`, HTTP API, and `home-assistant-control` edge function.
 
-| Area | Room key | Govee Group ID | Count | Types |
-|------|----------|----------------|-------|-------|
-| Garage Mahal | `garage` | 13452517 | 16 H601F | Light bars (R-series + standard) |
-| Outhouse | `outhouse` | 13166268 | 6 H601F | Light bars |
-| Spartan Cedar | `cedar` | 12001251 | 4 H601F | Light bars |
-| Spartan Fishbowl | `fishbowl` | 12411702 | 4 H601F/A | Light bars |
-| Spartan Lounge | `tea-lounge` | 12411623 | 4 H601A | Light bars |
-| Outdoor | — | — | 12 | String lights, fence, floods, pathway |
-| Interior | — | — | 5 | LED strips, star projector |
+> **Garage Mahal** moved to HAOS (via Govee HACS integration) for reliable group control. The 16 bars still use Govee cloud as a fallback but `lights.sh` routes through HAOS.
+
+| Area | Room key | Backend | Count | Types |
+|------|----------|---------|-------|-------|
+| Garage Mahal | `garage` | HAOS (Govee integration) | 16 H601F | Light bars — see Garage Mahal section |
+| Outhouse | `outhouse` | Govee Cloud (13166268) | 6 H601F | Light bars |
+| Spartan Cedar | `cedar` | Govee Cloud (12001251) | 4 H601F | Light bars |
+| Spartan Fishbowl | `fishbowl` | Govee Cloud (12411702) | 4 H601F/A | Light bars |
+| Spartan Lounge | `tea-lounge` | Govee Cloud (12411623) | 4 H601A | Light bars |
+| Outdoor | — | Govee Cloud | 12 | String lights, fence, floods, pathway |
+| Interior | — | Govee Cloud | 5 | LED strips, star projector |
 
 **Govee CLI examples:**
 ```bash
@@ -443,5 +497,7 @@ Govee devices use the **Govee Home** Alexa skill (separate from HAOS/Nabu Casa).
 - Fix Skyloft Bar GU10 LocalTuya connection — port 6668 stays closed. May need Tuya Cloud integration instead of LocalTuya
 - Add `tuya_cloud` backend to `home-assistant-control` edge function
 - HACS Govee LAN integration — local control without cloud (fallback for API outages)
-- Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft)
+- Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft, Garage Mahal)
+- Make HAOS garage groups persistent (add to `configuration.yaml` or use helpers)
 - Add outdoor Govee groups (string lights, fence, floods) to `lights.sh` once needed
+- Migrate Outhouse + Spartan to HAOS Govee integration (same as Garage Mahal)
