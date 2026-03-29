@@ -21,7 +21,7 @@ const STAFF_PERMISSION_KEYS = [
   'view_purchases', 'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev', 'view_inventory',
 ];
 const ADMIN_PERMISSION_KEYS = [
-  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'view_testdev', 'view_openclaw',
+  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'view_testdev', 'view_openclaw', 'view_devcontrol',
 ];
 
 // Compact SVG icons for tabs (16x16, stroke-based)
@@ -85,7 +85,8 @@ export const ALL_ADMIN_TABS = [
   { id: 'testdev', label: 'Test Dev', href: 'testdev.html', permission: 'view_settings', section: 'admin' },
   { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin', feature: 'pai' },
   { id: 'openclaw', label: 'AlpaClaw', href: 'alpaclaw.html', permission: 'view_openclaw', section: 'admin', feature: 'pai' },
-  // DevControl is a top-level nav item (in context switcher), not an admin sub-tab
+  // DevControl is a top-level nav item (in context switcher), not an admin sub-tab — but listed here for permission sync
+  { id: 'devcontrol', label: 'DevControl', href: '/spaces/admin/devcontrol/', permission: 'view_devcontrol', section: 'admin' },
 ];
 
 // =============================================
@@ -292,7 +293,8 @@ async function renderContextSwitcher(userRole, activeSection = 'staff') {
   }
   if (hasStaffPerms) tabs.push({ id: 'staff', label: 'Staff', href: staffHref });
   if (hasAdminPerms) tabs.push({ id: 'admin', label: 'Admin', href: adminHref });
-  if (hasAdminPerms) tabs.push({ id: 'devcontrol', label: 'DevControl', href: '/spaces/admin/devcontrol/' });
+  const hasDevControlPerm = hasPermission('view_devcontrol');
+  if (hasDevControlPerm) tabs.push({ id: 'devcontrol', label: 'DevControl', href: '/spaces/admin/devcontrol/' });
 
   // Hide if only one tab (nothing to switch between)
   if (tabs.length <= 1) {
@@ -300,7 +302,7 @@ async function renderContextSwitcher(userRole, activeSection = 'staff') {
     return;
   }
 
-  const safeSection = activeSection === 'devcontrol' ? 'devcontrol' : (hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff');
+  const safeSection = activeSection === 'devcontrol' && hasDevControlPerm ? 'devcontrol' : (hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff');
   switcher.innerHTML = tabs.map(tab => {
     const isActive = tab.id === safeSection || (tab.id === 'resident' && safeSection === 'resident');
     const activeClass = isActive ? ' active' : '';
@@ -589,7 +591,8 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
 
       const userIsAdmin = ['admin', 'oracle'].includes(state.appUser.role);
       const isDemo = state.appUser.role === 'demo';
-      const resolvedSection = section === 'devcontrol' && userIsAdmin ? 'devcontrol' : (section === 'admin' && userIsAdmin ? 'admin' : 'staff');
+      const hasDevControlAccess = state.hasPermission?.('view_devcontrol') || userIsAdmin;
+      const resolvedSection = section === 'devcontrol' && hasDevControlAccess ? 'devcontrol' : (section === 'admin' && userIsAdmin ? 'admin' : 'staff');
 
       // Sync tab permissions to DB — if new perms were created, refresh user's permission set
       const synced = await syncTabPermissions();

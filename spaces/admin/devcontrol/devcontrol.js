@@ -1808,7 +1808,8 @@ async function loadPlanList() {
 document.addEventListener('DOMContentLoaded', async () => {
   await initAdminPage({
     activeTab: 'devcontrol',
-    requiredRole: 'admin',
+    requiredRole: 'staff',
+    requiredPermission: 'view_devcontrol',
     section: 'devcontrol',
     onReady: () => { renderDevControlTabs(); initSubtabs(); },
   });
