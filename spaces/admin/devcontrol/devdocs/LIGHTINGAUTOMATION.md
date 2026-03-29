@@ -228,7 +228,7 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 
 ### Garage Mahal
 
-**Entities:** `group.garage_all` (all 16 Govee H601F bars), `group.garage_ceiling` (12 ceiling bars), `group.garage_dj` (4 DJ booth bars)
+**Entities:** `light.garage_all` (all 16 Govee H601F bars), `light.garage_ceiling` (12 ceiling bars), `light.garage_dj` (4 DJ booth bars)
 
 ```bash
 # All 16 bars
@@ -314,9 +314,9 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Stairs | `light.stairs_lights` | same pattern |
 | Cabin 1 | `light.cabin_1` | same pattern |
 | Nook | `light.nook` | same pattern |
-| Garage All | `group.garage_all` | `~/lights.sh garage off` |
-| Garage Ceiling | `group.garage_ceiling` | `~/lights.sh garage-ceiling off` |
-| Garage DJ | `group.garage_dj` | `~/lights.sh garage-dj off` |
+| Garage All | `light.garage_all` | `~/lights.sh garage off` |
+| Garage Ceiling | `light.garage_ceiling` | `~/lights.sh garage-ceiling off` |
+| Garage DJ | `light.garage_dj` | `~/lights.sh garage-dj off` |
 | Garage Opener | `light.garage_opener_1`, `_2` | `~/lights.sh garage-opener off` |
 | Stair Landing | `switch.stair_landing` | use `switch/turn_off` |
 
@@ -369,9 +369,9 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Stairs | `light.stairs_lights` | 2 | Linkind Matter |
 | Cabin 1 | `light.cabin_1` | 1 | TP-Link KL135 |
 | Nook | `light.nook` | 1 | TP-Link HS220 |
-| Garage All | `group.garage_all` | 16 | Govee H601F (via HACS) |
-| Garage Ceiling | `group.garage_ceiling` | 12 | Govee H601F (via HACS) |
-| Garage DJ | `group.garage_dj` | 4 | Govee H601F (via HACS) |
+| Garage All | `light.garage_all` | 16 | Govee H601F (via HACS) |
+| Garage Ceiling | `light.garage_ceiling` | 12 | Govee H601F (via HACS) |
+| Garage DJ | `light.garage_dj` | 4 | Govee H601F (via HACS) |
 | Garage Opener | `light.garage_opener_1`, `_2` | 2 | (already provisioned) |
 | Stair Landing | `switch.stair_landing` | - | TP-Link HS210 |
 
@@ -498,6 +498,5 @@ Govee devices use the **Govee Home** Alexa skill (separate from HAOS/Nabu Casa).
 - Add `tuya_cloud` backend to `home-assistant-control` edge function
 - HACS Govee LAN integration — local control without cloud (fallback for API outages)
 - Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft, Garage Mahal)
-- Make HAOS garage groups persistent (add to `configuration.yaml` or use helpers)
 - Add outdoor Govee groups (string lights, fence, floods) to `lights.sh` once needed
 - Migrate Outhouse + Spartan to HAOS Govee integration (same as Garage Mahal)
