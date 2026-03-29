@@ -48,8 +48,12 @@ WHERE group_id = (SELECT id FROM lighting_groups WHERE key = 'spartan_lounge')
 -- light.spartan_tea_lounge     (unique_id: spartan_tea_lounge_lights)     → spartan_main_1-6
 -- light.spartan_fishbowl       (unique_id: spartan_fishbowl_lights)       → spartan_lilbed_1-2
 -- light.spartan_cedar_chamber  (unique_id: spartan_cedar_chamber_lights)  → spartan_bigbed_1-4
--- light.spartan_all            (unique_id: spartan_all_lights)            → all 12 bars
+-- light.spartan_all            (unique_id: spartan_all_lights)            → 12 bars + roof strip
 
--- Also in HAOS but NOT in groups (strip lights, controlled separately):
--- light.spartan_roof           (15-segment RGBIC strip)
--- light.spartan_updown_wall    (15-segment RGBIC strip)
+-- 4. Additional Spartan devices (strip lights + porch)
+INSERT INTO lighting_devices (device_name, room, ha_entity_id, device_brand, device_model, protocol, form_factor, is_active)
+VALUES
+  ('Spartan Roof Strip',       'Spartan Trailer', 'light.spartan_roof',        'Govee', 'H6061', 'wifi_govee', 'led_strip', true),
+  ('Spartan UpDown Wall Strip','Spartan Trailer', 'light.spartan_updown_wall', 'Govee', 'H6061', 'wifi_govee', 'led_strip', true),
+  ('Spartan Porch Right',      'Spartan Trailer', 'light.spartan_porch_right', 'Govee', 'H6061', 'wifi_govee', 'led_strip', true);
+-- Spartan Porch Left: pending WiFi pairing → light.spartan_porch_left
