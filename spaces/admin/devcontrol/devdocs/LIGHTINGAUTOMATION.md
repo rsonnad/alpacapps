@@ -270,6 +270,35 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 
 ---
 
+### Outhouse
+
+**Entities:** `light.outhouse_all` (all 6 Govee H601F bars), `light.outhouse_ceiling` (4 main bars), `light.outhouse_stalls` (2 stall bars)
+
+```bash
+# All 6 bars
+~/lights.sh outhouse red
+~/lights.sh outhouse off
+
+# Sub-groups (via ha-cmd.sh)
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.outhouse_ceiling","rgb_color":[0,0,255],"brightness":200}'
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.outhouse_stalls","rgb_color":[255,0,255],"brightness":200}'
+```
+
+**Layout:**
+
+| Pos | Physical Name | Govee Name | HAOS Entity | MAC |
+|-----|--------------|------------|-------------|-----|
+| 1 | Outhouse Main 1 | outhousemain1 | `light.outhousemain1` | 73:E5:DC:B4:D9:4D:29:88 |
+| 2 | Outhouse Main 2 | outhousemain2 | `light.outhousemain2` | 12:DC:DC:B4:D9:4C:A4:84 |
+| 3 | Outhouse Main 3 | outhousemain3 | `light.outhousemain3` | 13:BC:DC:B4:D9:4D:47:D4 |
+| 4 | Outhouse Main 4 | outhousemain4 | `light.outhousemain4` | 43:F2:DC:B4:D9:4D:1C:DC |
+| S-L | Outhouse Stall Left | outhouse stall left | `light.outhouse_stall_left` | 4B:F5:DC:B4:D9:59:28:10 |
+| S-R | Outhouse Stall Right | outhouse stall right | `light.outhouse_stall_right` | 1E:D4:DC:B4:D9:5A:11:34 |
+
+> All 6 bars are Govee H601F (7-segment RGBIC). Controlled via HAOS Govee integration (not cloud API) for reliable group control.
+
+---
+
 ### Stairs
 
 **Entity:** `light.stairs_lights` (2 Linkind Matter bulbs)
@@ -318,6 +347,9 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Garage Ceiling | `light.garage_ceiling` | `~/lights.sh garage-ceiling off` |
 | Garage DJ | `light.garage_dj` | `~/lights.sh garage-dj off` |
 | Garage Opener | `light.garage_opener_1`, `_2` | `~/lights.sh garage-opener off` |
+| Outhouse All | `light.outhouse_all` | `~/lights.sh outhouse off` |
+| Outhouse Ceiling | `light.outhouse_ceiling` | same pattern |
+| Outhouse Stalls | `light.outhouse_stalls` | same pattern |
 | Stair Landing | `switch.stair_landing` | use `switch/turn_off` |
 
 ---
@@ -373,6 +405,9 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Garage Ceiling | `light.garage_ceiling` | 12 | Govee H601F (via HACS) |
 | Garage DJ | `light.garage_dj` | 4 | Govee H601F (via HACS) |
 | Garage Opener | `light.garage_opener_1`, `_2` | 2 | (already provisioned) |
+| Outhouse All | `light.outhouse_all` | 6 | Govee H601F (via HACS) |
+| Outhouse Ceiling | `light.outhouse_ceiling` | 4 | Govee H601F (via HACS) |
+| Outhouse Stalls | `light.outhouse_stalls` | 2 | Govee H601F (via HACS) |
 | Stair Landing | `switch.stair_landing` | - | TP-Link HS210 |
 
 ### WiZ Proxy — DEPRECATED
@@ -383,12 +418,12 @@ All WiZ bulbs are now in HAOS. Do not use the WiZ Proxy for new control.
 
 Controlled via Govee cloud API. Groups accessible through `lights.sh`, HTTP API, and `home-assistant-control` edge function.
 
-> **Garage Mahal** moved to HAOS (via Govee HACS integration) for reliable group control. The 16 bars still use Govee cloud as a fallback but `lights.sh` routes through HAOS.
+> **Garage Mahal** and **Outhouse** moved to HAOS (via Govee HACS integration) for reliable group control. `lights.sh` routes both through HAOS.
 
 | Area | Room key | Backend | Count | Types |
 |------|----------|---------|-------|-------|
 | Garage Mahal | `garage` | HAOS (Govee integration) | 16 H601F | Light bars — see Garage Mahal section |
-| Outhouse | `outhouse` | Govee Cloud (13166268) | 6 H601F | Light bars |
+| Outhouse | `outhouse` | HAOS (Govee integration) | 6 H601F | Light bars — see Outhouse section |
 | Spartan Cedar | `cedar` | Govee Cloud (12001251) | 4 H601F | Light bars |
 | Spartan Fishbowl | `fishbowl` | Govee Cloud (12411702) | 4 H601F/A | Light bars |
 | Spartan Lounge | `tea-lounge` | Govee Cloud (12411623) | 4 H601A | Light bars |
@@ -499,4 +534,4 @@ Govee devices use the **Govee Home** Alexa skill (separate from HAOS/Nabu Casa).
 - HACS Govee LAN integration — local control without cloud (fallback for API outages)
 - Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft, Garage Mahal)
 - Add outdoor Govee groups (string lights, fence, floods) to `lights.sh` once needed
-- Migrate Outhouse + Spartan to HAOS Govee integration (same as Garage Mahal)
+- Migrate Spartan (Cedar, Fishbowl, Tea Lounge) to HAOS Govee integration (same as Garage Mahal/Outhouse)
