@@ -1,12 +1,12 @@
 {
-  "version": "v260328.28 11:04p",
-  "release": 1135,
-  "sha": "bd0856fd7",
-  "fullSha": "bd0856fd7eacca64e9c8f5a054dd7937fd12f61d",
+  "version": "v260328.30 11:24p",
+  "release": 1137,
+  "sha": "09758ffe3",
+  "fullSha": "09758ffe392a8f3cc3a6d07d59c0f5c23d915135",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 04:04:50+00",
-  "commits": [{"sha":"bd0856fd7","message":"docs: add Govee Alexa skill setup to lighting automation guide","author":"Rahul"}]
+  "pushedAt": "2026-03-29 04:24:10+00",
+  "commits": [{"sha":"09758ffe3","message":"fix: resolve merge conflict in LIGHTINGAUTOMATION.md planned/future section","author":"Rahul"}]
 }
