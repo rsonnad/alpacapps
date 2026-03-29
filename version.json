@@ -1,12 +1,12 @@
 {
-  "version": "v260329.02 12:27a",
-  "release": 1139,
-  "sha": "a29fe76f1",
-  "fullSha": "a29fe76f16d9c17cb67b364f8ae81a60e5754b2e",
+  "version": "v260329.03 1:02a",
+  "release": 1140,
+  "sha": "2575e833f",
+  "fullSha": "2575e833f2e1a7e35d411cd87e961b1aad86039c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 05:27:40+00",
-  "commits": [{"sha":"a29fe76f1","message":"fix: make garage HAOS groups persistent, update entity refs to light.* format","author":"Rahul"}]
+  "pushedAt": "2026-03-29 06:02:19+00",
+  "commits": [{"sha":"2575e833f","message":"feat: email→Claude Code pipeline on Alpuca","author":"Rahul"}]
 }
