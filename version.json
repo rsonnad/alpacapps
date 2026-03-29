@@ -1,12 +1,12 @@
 {
-  "version": "v260329.13 1:34p",
-  "release": 1150,
-  "sha": "c1b2c6605",
-  "fullSha": "c1b2c66058ff20473f224ab8460a53159d4ec342",
+  "version": "v260329.14 1:35p",
+  "release": 1151,
+  "sha": "165598e22",
+  "fullSha": "165598e22a4ef02d5585adbdf502fde5ab67d6f0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 18:34:34+00",
-  "commits": [{"sha":"c1b2c6605","message":"fix: update Tommy Hall agreement — deposit, legal, waiver fee (#94)","author":"Rahul"}]
+  "pushedAt": "2026-03-29 18:35:45+00",
+  "commits": [{"sha":"165598e22","message":"fix: strengthen parking clause — vigorous management, $100 lot penalty (#95)","author":"Rahul"}]
 }
