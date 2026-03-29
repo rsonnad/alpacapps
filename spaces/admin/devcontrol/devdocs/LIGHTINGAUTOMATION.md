@@ -8,27 +8,77 @@
 
 ## How to Run Commands
 
-All HAOS light control uses `~/ha-cmd.sh` on Alpuca (Mac mini at 192.168.1.200).
+Three ways to control lights, from simplest to lowest-level:
 
-### On Alpuca (remote-control, Claude Desktop, or SSH'd in) — FASTEST
+### 1. `lights.sh` — Human-friendly CLI (recommended)
+
+On Alpuca or via SSH. No entity IDs needed.
+
+```bash
+# On Alpuca directly
+~/lights.sh kitchen,living red
+~/lights.sh all off
+~/lights.sh skyloft 2700k 50%
+
+# From another LAN machine
+ssh paca@192.168.1.200 "~/lights.sh kitchen,living red"
+```
+
+**Rooms:** `kitchen`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `all`
+**Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, or `NNNNk` (e.g. `2700k`)
+**Brightness:** Optional percentage, e.g. `50%`. Default is 100%.
+
+### 2. Light API — HTTP endpoint (for cloud, mobile apps, edge functions)
+
+Public URL via Cloudflare Tunnel. Works from anywhere — cloud services, mobile apps, PAI agent.
+
+- **URL:** `https://lights.alpacaplayhouse.com`
+- **Auth:** Bearer token (stored in Bitwarden: "Light API — Alpuca")
+- **LAN URL:** `http://192.168.1.200:8100` (no tunnel, faster)
+
+```bash
+# Control lights
+curl -X POST https://lights.alpacaplayhouse.com/lights \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"rooms":"kitchen,living","color":"red","brightness":"50%"}'
+
+# Health check (no auth)
+curl https://lights.alpacaplayhouse.com/health
+
+# List rooms/colors (auth required)
+curl -H "Authorization: Bearer <token>" https://lights.alpacaplayhouse.com/lights/rooms
+curl -H "Authorization: Bearer <token>" https://lights.alpacaplayhouse.com/lights/colors
+```
+
+**Response:** `{"status":"ok","rooms":"kitchen,living","color":"red","brightness":"50%"}`
+
+**Service:** Python HTTP server at `~/light-api/server.py` on Alpuca, port 8100.
+**LaunchAgent:** `com.alpacapps.light-api` (auto-start, keep-alive).
+**Token file:** `~/light-api/.token` on Alpuca.
+**Logs:** `/tmp/light-api.log`, `/tmp/light-api.err`
+
+### 3. `ha-cmd.sh` — Raw HAOS service calls (low-level)
+
+For entity-level control when `lights.sh` doesn't cover it (e.g. individual bulbs, non-light entities).
 
 ```bash
 ~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.living_room_lights"}'
 ~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.kitchen_lights","color_temp_kelvin":4000,"brightness":255}'
 ```
 
-### From another machine (laptop, Hostinger)
+Uses a long-lived HAOS API token (expires 2036). Token in `devdocs/HOMEAUTOMATION.md` §1.
 
-```bash
-ssh -o StrictHostKeyChecking=no paca@192.168.1.200 \
-  "~/ha-cmd.sh 'light/turn_off' '{\"entity_id\":\"light.living_room_lights\"}'"
-```
+### Access matrix
 
-> **Cloud environments** (claude.ai/code "Default Cloud Environment") cannot reach 192.168.x.x. Use a remote-control session on Alpuca instead.
-
-### How `ha-cmd.sh` works
-
-Handles HAOS auth (`alpacaadmin`/`playhouse`) with 25-min token caching. Calls `http://192.168.1.39:8123/api/services/<domain/service>`. Long-lived HA API token in `devdocs/HOMEAUTOMATION.md` §1.
+| Caller | Use | Latency |
+|--------|-----|---------|
+| Claude Code (LAN) | `ssh paca@... "~/lights.sh ..."` | ~0.7s |
+| Claude Desktop (Alpuca) | `~/lights.sh ...` | ~0.5s |
+| PAI agent / edge functions | `POST https://lights.alpacaplayhouse.com/lights` | ~0.7s |
+| Mobile apps | Same HTTP API | ~0.7s |
+| Hostinger workers | Same HTTP API | ~0.7s |
+| Alexa | Native HA Alexa integration (separate) | varies |
 
 **DB query for current inventory:**
 ```sql
@@ -42,6 +92,7 @@ FROM lighting_devices WHERE is_active ORDER BY room, socket_number;
 
 > All commands below use `~/ha-cmd.sh` directly (assumes running on Alpuca).
 > From another machine, wrap with: `ssh -o StrictHostKeyChecking=no paca@192.168.1.200 "~/ha-cmd.sh '...' '{...}'"` (escape inner quotes).
+> **Prefer `~/lights.sh` or the HTTP API** for standard room+color control.
 
 ### Living Room
 
