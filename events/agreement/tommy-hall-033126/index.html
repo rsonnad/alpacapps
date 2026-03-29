@@ -199,19 +199,23 @@
 
           <hr>
 
-          <h2>Fees &amp; Deposit</h2>
+          <h2>Security Deposit</h2>
+
+          <div class="info-box info-box--green">
+            <p style="margin: 0;"><strong>There is no rental fee for this event.</strong> The venue is being offered at no cost.</p>
+          </div>
 
           <div class="fee-grid">
             <div class="fee-card">
-              <div class="fee-card__label">Reservation Deposit</div>
+              <div class="fee-card__label">Refundable Security Deposit</div>
               <div class="fee-card__amount">$500</div>
-              <div class="fee-card__note">Due now to reserve</div>
+              <div class="fee-card__note">Refundable after event</div>
             </div>
           </div>
 
           <ul>
-            <li><strong>Reservation Deposit ($500):</strong> Due at time of signing to secure the booking. This deposit is non-refundable if the event is canceled.</li>
-            <li>Additional fees (rental fee, cleaning/damage deposit) will be determined and communicated separately.</li>
+            <li><strong>Security Deposit ($500):</strong> A refundable deposit due at time of signing to secure the booking. This deposit will be returned in full after the event, provided there is no damage to the property, all cleaning requirements are met, and all agreement terms have been honored.</li>
+            <li>If damage occurs or terms are violated (including staffing no-show penalties), deductions will be made from this deposit. If charges exceed $500, Client is responsible for the excess.</li>
           </ul>
 
           <hr>
@@ -241,7 +245,7 @@
             <h3>Mandatory Guest Waiver</h3>
             <p><strong>All guests must sign the Guest Waiver of Liability</strong> before or upon arrival at the event. It is the Client's responsibility to ensure every attendee has completed the waiver. A link to the digital waiver will be provided and should be distributed to all guests in advance.</p>
             <p>Waiver link: <a href="https://alpacaplayhouse.com/waiver/" style="color: #3498db; font-weight: 600;">alpacaplayhouse.com/waiver/</a></p>
-            <p>Guests who have not signed the waiver will not be permitted to enter the property.</p>
+            <p>Guests who have not signed the waiver will not be permitted to enter the property. <strong>A $10 fee per unsigned guest</strong> will be deducted from the security deposit for any guest who enters without a signed waiver.</p>
           </div>
 
           <hr>
@@ -271,11 +275,36 @@
           <hr>
 
           <h2>Legal Terms</h2>
-          <p><strong>Warranty Disclaimer:</strong> Client acknowledges that the rental property is of a size, design, and capacity selected by Client, and that Company disclaims all warranties express or implied.</p>
-          <p><strong>Indemnification:</strong> Client voluntarily releases, indemnifies, and holds harmless Company from any and all liability, claims, and demands.</p>
-          <p><strong>Dispute Resolution:</strong> Disputes will first go to mediation in Bastrop County, TX. This Agreement is governed by Texas law.</p>
-          <p><strong>Force Majeure:</strong> Neither party is liable for failure or delay due to unforeseeable causes. Amounts paid prior to a Force Majeure Event are available for transfer to another event within 1 year.</p>
-          <p><strong>Entire Agreement:</strong> This Agreement contains the entire agreement and supersedes any prior agreements. May only be modified in writing. Electronic signatures have the same force as originals.</p>
+
+          <h3>Warranty Disclaimer</h3>
+          <p>Client acknowledges that the rental property is of a size, design, and capacity selected by Client, and that Company disclaims all warranties express or implied with respect to the rental property, including any express or implied warranties as to condition, fitness for a particular purpose or durability.</p>
+
+          <h3>Damaged or Missing Rental Items</h3>
+          <p>Damages include but are not limited to: chipped, cracked or broken items; stained and dirtied upholstery or fabric beyond normal wear and tear; loss or damage due to theft, misuse, abuse, or failure to care for items.</p>
+          <p>If Client discovers damaged or missing items prior to event start, Company must be notified immediately. Replacements will be provided if possible; otherwise fees will be refunded for those items.</p>
+          <p>Any damages after items are delivered to Client are the sole responsibility of Client, whether caused by Client, guests, venue staff, or third-party vendors.</p>
+          <p><strong>Inclement Weather:</strong> Client agrees to arrange provisions to protect items from rain or inclement conditions. Failure to plan may result in Company not placing items outdoors.</p>
+
+          <h3>Photography &amp; Branding</h3>
+          <p>Event photography will not be publicly posted without permission. The name "Alpaca Playhouse" will only be used in describing the location and not as a host of the event.</p>
+
+          <h3>Indemnification</h3>
+          <p>Client voluntarily releases, indemnifies, and holds harmless Company from any and all liability, claims, and demands of whatever kind or nature, either in law or in equity, which arise or may hereafter arise from Client's use of the rental property. Client understands that this Agreement discharges Company from any liability or claim that Client may have against Company with respect to any bodily injury, personal injury, illness, death, or property damage that may result from Client's use of the rental property. Should Company incur attorney fees to enforce this agreement, Client agrees to indemnify and hold harmless Company for all such fees and costs.</p>
+
+          <h3>Dispute Resolution &amp; Jurisdiction</h3>
+          <p>Disputes will first go to mediation in Bastrop County, TX. This Agreement is governed by Texas law, with disputes handled exclusively in Bastrop County courts.</p>
+
+          <h3>Force Majeure</h3>
+          <p>Neither party is liable for failure or delay due to unforeseeable causes (acts of God, war, pandemics, government orders, etc.). Amounts paid prior to a Force Majeure Event are available for transfer to another event within 1 year. Force Majeure cannot excuse Client's payment obligations.</p>
+
+          <h3>Additional Legal Provisions</h3>
+          <p><strong>Entire Agreement:</strong> This Agreement contains the entire agreement of the parties and supersedes any prior agreements.</p>
+          <p><strong>Amendment:</strong> May only be modified in writing, signed by all parties.</p>
+          <p><strong>Severability:</strong> Invalid provisions do not affect remaining provisions.</p>
+          <p><strong>Waiver:</strong> Failure to require strict compliance does not waive future rights.</p>
+          <p><strong>Assignability:</strong> No party may assign rights without prior written consent.</p>
+          <p><strong>Confidentiality:</strong> Both parties agree to treat terms confidentially.</p>
+          <p><strong>Counterparts &amp; Signatures:</strong> Electronic signatures have the same force as originals.</p>
 
         </div><!-- .agreement -->
 
@@ -302,7 +331,7 @@
 
           <label class="agreement-check">
             <input type="checkbox" id="agreeDeposit">
-            <span>I agree to pay the <strong>$500 reservation deposit</strong> to secure this booking.</span>
+            <span>I agree to pay the <strong>$500 refundable security deposit</strong> to secure this booking.</span>
           </label>
 
           <div class="signature-section" id="signatureSection" style="display: none;">
@@ -314,7 +343,7 @@
         </div>
 
         <button id="submitBtn" class="btn-primary" disabled>Sign Agreement</button>
-        <a id="depositBtn" class="btn-deposit" href="/pay/?amount=500&description=Event%20Reservation%20Deposit%20%E2%80%94%20Tommy%20Hall%20%E2%80%94%20Mar%2031%202026&name=Tommy%20Hall&payment_type=event_deposit&reference_type=event_agreement&reference_id=tommy-hall-033126">Pay $500 Reservation Deposit</a>
+        <a id="depositBtn" class="btn-deposit" href="/pay/?amount=500&description=Event%20Security%20Deposit%20%E2%80%94%20Tommy%20Hall%20%E2%80%94%20Mar%2031%202026&name=Tommy%20Hall&payment_type=event_deposit&reference_type=event_agreement&reference_id=tommy-hall-033126">Pay $500 Security Deposit</a>
       </div>
 
       <!-- Success state -->
@@ -347,7 +376,7 @@
         </div>
 
         <p style="margin-top: 1.5rem; font-weight: 600;">Next step: Pay the $500 reservation deposit</p>
-        <a id="depositBtnSuccess" class="btn-deposit" style="display: block; margin-top: 0.5rem;" href="/pay/?amount=500&description=Event%20Reservation%20Deposit%20%E2%80%94%20Tommy%20Hall%20%E2%80%94%20Mar%2031%202026&name=Tommy%20Hall&payment_type=event_deposit&reference_type=event_agreement&reference_id=tommy-hall-033126">Pay $500 Reservation Deposit</a>
+        <a id="depositBtnSuccess" class="btn-deposit" style="display: block; margin-top: 0.5rem;" href="/pay/?amount=500&description=Event%20Security%20Deposit%20%E2%80%94%20Tommy%20Hall%20%E2%80%94%20Mar%2031%202026&name=Tommy%20Hall&payment_type=event_deposit&reference_type=event_agreement&reference_id=tommy-hall-033126">Pay $500 Security Deposit</a>
 
         <p style="margin-top: 1.5rem; font-size: 0.85rem; color: #666;">
           Share the guest waiver with your attendees:<br>
