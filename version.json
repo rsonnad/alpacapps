@@ -1,12 +1,12 @@
 {
-  "version": "v260328.26 10:50p",
-  "release": 1133,
-  "sha": "689a783f3",
-  "fullSha": "689a783f398f804730fda21dd90f6e18a000162e",
+  "version": "v260328.28 11:04p",
+  "release": 1135,
+  "sha": "bd0856fd7",
+  "fullSha": "bd0856fd7eacca64e9c8f5a054dd7937fd12f61d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 03:50:37+00",
-  "commits": [{"sha":"689a783f3","message":"docs: complete Skyloft lighting inventory and Alexa integration in LIGHTINGAUTOMATION.md","author":"Rahul"}]
+  "pushedAt": "2026-03-29 04:04:50+00",
+  "commits": [{"sha":"bd0856fd7","message":"docs: add Govee Alexa skill setup to lighting automation guide","author":"Rahul"}]
 }
