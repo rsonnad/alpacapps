@@ -1,12 +1,12 @@
 {
-  "version": "v260329.04 1:11a",
-  "release": 1141,
-  "sha": "56568136a",
-  "fullSha": "56568136a47657a2b1a088006fca874074f6c8aa",
+  "version": "v260329.05 1:15a",
+  "release": 1142,
+  "sha": "c65ee01bc",
+  "fullSha": "c65ee01bcba8b5f07d580cf9e4a130b5e871f886",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 06:11:02+00",
-  "commits": [{"sha":"56568136a","message":"security: restrict claude@ email tasks to admin senders only","author":"Rahul"}]
+  "pushedAt": "2026-03-29 06:15:34+00",
+  "commits": [{"sha":"c65ee01bc","message":"feat: risk evaluation + approval gate for claude@ email tasks","author":"Rahul"}]
 }
