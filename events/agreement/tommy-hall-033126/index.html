@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Event Agreement — Tommy Hall — Alpaca Playhouse</title>
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: #f5f5f0;
+      color: #333;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container { max-width: 680px; margin: 2rem auto; padding: 0 1rem; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    h1 { font-size: 1.5rem; color: #2d3024; margin: 0 0 0.25rem; }
+    .subtitle { color: #666; margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.5; }
+
+    /* Agreement body */
+    .agreement { font-size: 0.88rem; line-height: 1.7; color: #444; }
+    .agreement h2 { font-size: 1.1rem; font-weight: 700; color: #2d3024; margin: 1.75rem 0 0.5rem; }
+    .agreement h3 { font-size: 0.95rem; font-weight: 700; color: #2d3024; margin: 1.25rem 0 0.4rem; }
+    .agreement p { margin-bottom: 0.6rem; }
+    .agreement ul, .agreement ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+    .agreement li { margin-bottom: 0.35rem; }
+    .agreement hr { border: none; border-top: 1px solid #e5e5e0; margin: 1.5rem 0; }
+    .agreement strong { color: #1a1a1a; }
+
+    /* Highlight boxes */
+    .info-box {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+    }
+    .info-box--amber { background: #fef9e7; border: 1px solid #f0c040; }
+    .info-box--green { background: #f0faf4; border: 1px solid #27ae60; }
+    .info-box--red { background: #fef2f2; border: 1px solid #e74c3c; }
+    .info-box--blue { background: #f0f4fa; border: 1px solid #3498db; }
+    .info-box h3 { margin-top: 0 !important; }
+    .info-box ul { margin-bottom: 0; }
+
+    /* Fee grid */
+    .fee-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .fee-card {
+      background: #faf9f7;
+      border: 1px solid #e5e5e0;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .fee-card__label { font-size: 0.7rem; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+    .fee-card__amount { font-size: 1.5rem; font-weight: 700; color: #3d8b7a; margin: 0.25rem 0; }
+    .fee-card__note { font-size: 0.75rem; color: #666; }
+
+    /* Signature */
+    .agreement-box {
+      background: #fef9e7;
+      border: 2px solid #f0c040;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .agreement-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+    }
+    .agreement-check input[type="checkbox"] {
+      width: 20px; height: 20px; margin-top: 2px;
+      flex-shrink: 0; accent-color: #3d8b7a; cursor: pointer;
+    }
+    .agreement-check span { font-size: 0.85rem; line-height: 1.45; color: #444; }
+
+    .signature-section { margin-top: 1rem; }
+    .signature-section label { font-size: 0.85rem; font-weight: 600; color: #444; display: block; margin-bottom: 0.3rem; }
+    .signature-hint { font-size: 0.78rem; color: #888; margin-bottom: 0.4rem; }
+    .signature-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 1.15rem;
+      font-style: italic;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .signature-input:focus { outline: none; border-color: #3d8b7a; border-style: solid; }
+    .signature-input.matched { border-color: #27ae60; border-style: solid; background: #f0faf4; }
+    .signature-match { font-size: 0.75rem; margin-top: 0.3rem; min-height: 1em; }
+    .signature-match.error { color: #c0392b; }
+    .signature-match.success { color: #27ae60; }
+
+    /* Buttons */
+    .btn-primary {
+      display: block; width: 100%;
+      padding: 0.85rem;
+      background: #3d8b7a; color: white;
+      border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+      text-align: center; text-decoration: none;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover { background: #2d7a6a; }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+    .btn-deposit {
+      display: none; width: 100%;
+      padding: 0.85rem;
+      background: #d4883a; color: white;
+      border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+      text-align: center; text-decoration: none;
+      margin-top: 0.75rem;
+    }
+    .btn-deposit:hover { background: #be7830; }
+
+    /* Success */
+    .success-state { display: none; text-align: center; padding: 2rem; }
+    .success-state.visible { display: block; }
+    .success-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
+    .success-state h2 { font-size: 1.4rem; color: #3d8b7a; margin-bottom: 0.5rem; }
+    .success-state p { color: #666; font-size: 0.9rem; line-height: 1.5; margin-bottom: 0.75rem; }
+    .success-details {
+      background: #e5f4f1; border-radius: 8px; padding: 1rem; margin: 1rem 0;
+      text-align: left; font-size: 0.85rem;
+    }
+    .success-details .detail-row {
+      display: flex; justify-content: space-between;
+      padding: 0.3rem 0; border-bottom: 1px solid rgba(61,139,122,0.15);
+    }
+    .success-details .detail-row:last-child { border-bottom: none; }
+    .success-details .detail-label { color: #666; }
+    .success-details .detail-value { font-weight: 600; color: #2d3024; }
+
+    .error-msg {
+      display: none; background: #fef2f2; color: #c0392b;
+      padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem;
+    }
+    .error-msg.visible { display: block; }
+
+    .questions-contact {
+      font-size: 0.8rem; color: #999; margin-top: 1.5rem; text-align: center;
+    }
+    .questions-contact a { color: #3d8b7a; text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .container { margin: 1rem auto; }
+      .card { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <span data-site-version style="display:none;"></span>
+  <div id="siteHeader"></div>
+
+  <div class="container">
+    <div class="card">
+
+      <!-- Main form state -->
+      <div id="formState">
+        <h1>Event Rental Agreement</h1>
+        <p class="subtitle">Tommy Hall &mdash; Tuesday, March 31, 2026</p>
+
+        <div class="agreement">
+
+          <p>This Rental Agreement ("Agreement") is made by and between the <strong>Revocable Trust of Subhash Sonnad</strong> (dba Alpaca Playhouse), ("Company"), and <strong>Tommy Hall</strong> ("Client" or "Renter").</p>
+
+          <hr>
+
+          <h2>Rental Venue</h2>
+          <p>Company agrees to rent to Client designated spaces at <strong>160 Still Forest Drive</strong> (aka the Austin Alpaca Playhouse). The specific included and excluded spaces are determined at the time of booking.</p>
+
+          <h2>Rental Period</h2>
+          <p>The rental period is <strong>Tuesday, March 31, 2026</strong> from <strong>8:00 PM</strong> to <strong>1:00 AM</strong> (April 1).</p>
+
+          <h2>Guest Limit</h2>
+          <p>Client agrees no more than <strong>80 people</strong> including volunteers, staff, and paid attendees will be in attendance. A <strong>$15 fee per additional person</strong> applies, and Client agrees to candidly report attendance.</p>
+
+          <hr>
+
+          <h2>Fees &amp; Deposit</h2>
+
+          <div class="fee-grid">
+            <div class="fee-card">
+              <div class="fee-card__label">Reservation Deposit</div>
+              <div class="fee-card__amount">$500</div>
+              <div class="fee-card__note">Due now to reserve</div>
+            </div>
+          </div>
+
+          <ul>
+            <li><strong>Reservation Deposit ($500):</strong> Due at time of signing to secure the booking. This deposit is non-refundable if the event is canceled.</li>
+            <li>Additional fees (rental fee, cleaning/damage deposit) will be determined and communicated separately.</li>
+          </ul>
+
+          <hr>
+
+          <h2>Staffing Requirements</h2>
+
+          <div class="info-box info-box--amber">
+            <h3>Required Staff</h3>
+            <p>Client is responsible for providing the following staff for the event:</p>
+            <ul>
+              <li><strong>Setup Crew (2 people):</strong> Must arrive by <strong>6:00 PM</strong> and be present through <strong>8:00 PM</strong> to prepare the venue for the event.</li>
+              <li><strong>Door Person (1 person):</strong> Must be stationed at the entrance from <strong>8:00 PM</strong> to <strong>11:00 PM</strong> to manage guest entry.</li>
+              <li><strong>Parking Attendant (1 person):</strong> Must manage parking from <strong>8:00 PM</strong> to <strong>11:00 PM</strong> to ensure no vehicles park in front of neighbors' houses.</li>
+            </ul>
+          </div>
+
+          <div class="info-box info-box--red">
+            <h3>Staff No-Show Penalty</h3>
+            <p>If any required staff member does not show up or arrives late, Client will be charged <strong>$75 per hour</strong> (prorated) for each hour that position is not covered. This includes partial hours. The Company will deduct these charges from deposits or invoice the Client directly.</p>
+          </div>
+
+          <hr>
+
+          <h2>Guest Waiver Requirement</h2>
+
+          <div class="info-box info-box--blue">
+            <h3>Mandatory Guest Waiver</h3>
+            <p><strong>All guests must sign the Guest Waiver of Liability</strong> before or upon arrival at the event. It is the Client's responsibility to ensure every attendee has completed the waiver. A link to the digital waiver will be provided and should be distributed to all guests in advance.</p>
+            <p>Waiver link: <a href="https://alpacaplayhouse.com/waiver/" style="color: #3498db; font-weight: 600;">alpacaplayhouse.com/waiver/</a></p>
+            <p>Guests who have not signed the waiver will not be permitted to enter the property.</p>
+          </div>
+
+          <hr>
+
+          <h2>Preparation &amp; Cleanup</h2>
+          <ul>
+            <li><strong>Cleaning Timeline:</strong> All cleaning must be complete by <strong>1:01 PM the day after</strong> the event. Cleaning not completed on time incurs a <strong>$30 + $30/hour</strong> charge.</li>
+            <li>A <strong>detailed cleaning checklist</strong> must be followed and photo-documented.</li>
+            <li>Any used <strong>linens and towels</strong> must be washed and returned to their closets.</li>
+            <li><strong>Furniture</strong> moved during the event must be returned to original locations.</li>
+          </ul>
+
+          <hr>
+
+          <h2>Client Obligations</h2>
+          <ol>
+            <li><strong>Address Privacy:</strong> Do NOT post the venue address in any distributed materials (texts, emails, social media, print). A visiting page link will be provided instead. <em>$100 fee if address is posted.</em></li>
+            <li><strong>Marketing Materials:</strong> Send links to all marketing materials to the venue WhatsApp or email.</li>
+            <li><strong>Parking Management:</strong> Manage parking to ensure no vehicles park in front of neighbors' houses. <em>$150 penalty per neighbor complaint.</em></li>
+            <li><strong>Noise Levels:</strong> Keep noise and music outside to a minimum after 9:30 PM. Doors closed when loud music plays inside. No PA speakers at high volume after 9:30 PM unless entirely inside with doors closed. <em>$100 fee per complaint.</em></li>
+            <li><strong>Propane Usage:</strong> Any propane used will be reimbursed from the damage deposit.</li>
+            <li><strong>No Alcohol or Cooking Meat Inside:</strong> No alcohol inside the house. No cooking or storing meat in the kitchen. Meat may be cooked on the back patio grill area.</li>
+            <li><strong>No RVs:</strong> No RVs parked onsite. <em>$100 fee.</em></li>
+            <li><strong>No Animals Inside:</strong> No animals brought into the house or backyard. <em>$100 fee.</em></li>
+          </ol>
+
+          <hr>
+
+          <h2>Legal Terms</h2>
+          <p><strong>Warranty Disclaimer:</strong> Client acknowledges that the rental property is of a size, design, and capacity selected by Client, and that Company disclaims all warranties express or implied.</p>
+          <p><strong>Indemnification:</strong> Client voluntarily releases, indemnifies, and holds harmless Company from any and all liability, claims, and demands.</p>
+          <p><strong>Dispute Resolution:</strong> Disputes will first go to mediation in Bastrop County, TX. This Agreement is governed by Texas law.</p>
+          <p><strong>Force Majeure:</strong> Neither party is liable for failure or delay due to unforeseeable causes. Amounts paid prior to a Force Majeure Event are available for transfer to another event within 1 year.</p>
+          <p><strong>Entire Agreement:</strong> This Agreement contains the entire agreement and supersedes any prior agreements. May only be modified in writing. Electronic signatures have the same force as originals.</p>
+
+        </div><!-- .agreement -->
+
+        <hr style="margin: 2rem 0;">
+
+        <!-- Signature Section -->
+        <div id="errorMsg" class="error-msg"></div>
+
+        <div class="agreement-box">
+          <label class="agreement-check">
+            <input type="checkbox" id="agreeTerms">
+            <span>I, <strong>Tommy Hall</strong>, have read and agree to all terms of this Event Rental Agreement, including the staffing requirements, no-show penalties ($75/hr), guest waiver requirement, and all client obligations.</span>
+          </label>
+
+          <label class="agreement-check">
+            <input type="checkbox" id="agreeWaiver">
+            <span>I understand that <strong>all guests must sign the Guest Waiver</strong> before entering the property, and it is my responsibility to distribute the waiver link and ensure compliance.</span>
+          </label>
+
+          <label class="agreement-check">
+            <input type="checkbox" id="agreeStaffing">
+            <span>I agree to provide <strong>2 setup staff (6:00 PM&ndash;8:00 PM)</strong>, <strong>1 door person (8:00 PM&ndash;11:00 PM)</strong>, and <strong>1 parking attendant (8:00 PM&ndash;11:00 PM)</strong>, and accept the <strong>$75/hour no-show penalty</strong> for any unfilled position.</span>
+          </label>
+
+          <label class="agreement-check">
+            <input type="checkbox" id="agreeDeposit">
+            <span>I agree to pay the <strong>$500 reservation deposit</strong> to secure this booking.</span>
+          </label>
+
+          <div class="signature-section" id="signatureSection" style="display: none;">
+            <label>Electronic Signature</label>
+            <p class="signature-hint">Type "Tommy Hall" to confirm your agreement</p>
+            <input type="text" id="signatureInput" class="signature-input" placeholder="Type your full name here" autocomplete="off">
+            <p id="signatureMatch" class="signature-match"></p>
+          </div>
+        </div>
+
+        <button id="submitBtn" class="btn-primary" disabled>Sign Agreement</button>
+        <a id="depositBtn" class="btn-deposit" href="/pay/?amount=500&description=Event%20Reservation%20Deposit%20%E2%80%94%20Tommy%20Hall%20%E2%80%94%20Mar%2031%202026&name=Tommy%20Hall&payment_type=event_deposit&reference_type=event_agreement&reference_id=tommy-hall-033126">Pay $500 Reservation Deposit</a>
+      </div>
+
+      <!-- Success state -->
+      <div id="successState" class="success-state">
+        <div class="success-icon">&#9989;</div>
+        <h2>Agreement Signed</h2>
+        <p>Thank you, Tommy! Your event agreement has been recorded.</p>
+
+        <div class="success-details">
+          <div class="detail-row">
+            <span class="detail-label">Client</span>
+            <span class="detail-value">Tommy Hall</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Event Date</span>
+            <span class="detail-value">March 31, 2026</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Time</span>
+            <span class="detail-value">8:00 PM &ndash; 1:00 AM</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Signed</span>
+            <span class="detail-value" id="successDate"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Confirmation</span>
+            <span class="detail-value" id="successRef"></span>
+          </div>
+        </div>
+
+        <p style="margin-top: 1.5rem; font-weight: 600;">Next step: Pay the $500 reservation deposit</p>
+        <a id="depositBtnSuccess" class="btn-deposit" style="display: block; margin-top: 0.5rem;" href="/pay/?amount=500&description=Event%20Reservation%20Deposit%20%E2%80%94%20Tommy%20Hall%20%E2%80%94%20Mar%2031%202026&name=Tommy%20Hall&payment_type=event_deposit&reference_type=event_agreement&reference_id=tommy-hall-033126">Pay $500 Reservation Deposit</a>
+
+        <p style="margin-top: 1.5rem; font-size: 0.85rem; color: #666;">
+          Share the guest waiver with your attendees:<br>
+          <a href="https://alpacaplayhouse.com/waiver/" style="color: #3d8b7a; font-weight: 600;">alpacaplayhouse.com/waiver/</a>
+        </p>
+      </div>
+
+    </div>
+
+    <p class="questions-contact">Questions? Email <a href="mailto:pai@alpacaplayhouse.com">pai@alpacaplayhouse.com</a> or text <a href="sms:+17377474737">(737) 747-4737</a></p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+
+    const CLIENT_NAME = 'Tommy Hall';
+    let isSubmitting = false;
+
+    // Elements
+    const agreeTerms = document.getElementById('agreeTerms');
+    const agreeWaiver = document.getElementById('agreeWaiver');
+    const agreeStaffing = document.getElementById('agreeStaffing');
+    const agreeDeposit = document.getElementById('agreeDeposit');
+    const signatureSection = document.getElementById('signatureSection');
+    const signatureInput = document.getElementById('signatureInput');
+    const signatureMatch = document.getElementById('signatureMatch');
+    const submitBtn = document.getElementById('submitBtn');
+    const depositBtn = document.getElementById('depositBtn');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // Check previous signing
+    const previousSign = sessionStorage.getItem('agreement_signed_tommy_hall_033126');
+    if (previousSign) {
+      try {
+        const data = JSON.parse(previousSign);
+        document.getElementById('successDate').textContent = data.signedAt;
+        document.getElementById('successRef').textContent = data.ref;
+        document.getElementById('formState').style.display = 'none';
+        document.getElementById('successState').style.display = 'block';
+        document.getElementById('successState').classList.add('visible');
+      } catch (e) { /* proceed normally */ }
+    }
+
+    function allChecked() {
+      return agreeTerms.checked && agreeWaiver.checked && agreeStaffing.checked && agreeDeposit.checked;
+    }
+
+    function validateForm() {
+      const sig = signatureInput.value.trim();
+      const nameMatch = sig.toLowerCase() === CLIENT_NAME.toLowerCase() && sig.length > 0;
+
+      submitBtn.disabled = !(allChecked() && nameMatch && !isSubmitting);
+
+      if (sig.length > 0) {
+        if (nameMatch) {
+          signatureMatch.textContent = 'Signature matches';
+          signatureMatch.className = 'signature-match success';
+          signatureInput.classList.add('matched');
+        } else {
+          signatureMatch.textContent = 'Must type "Tommy Hall" exactly';
+          signatureMatch.className = 'signature-match error';
+          signatureInput.classList.remove('matched');
+        }
+      } else {
+        signatureMatch.textContent = '';
+        signatureMatch.className = 'signature-match';
+        signatureInput.classList.remove('matched');
+      }
+    }
+
+    function checkShowSignature() {
+      signatureSection.style.display = allChecked() ? 'block' : 'none';
+      if (!allChecked()) {
+        signatureInput.value = '';
+        signatureInput.classList.remove('matched');
+        signatureMatch.textContent = '';
+      }
+      validateForm();
+    }
+
+    [agreeTerms, agreeWaiver, agreeStaffing, agreeDeposit].forEach(cb => {
+      cb.addEventListener('change', checkShowSignature);
+    });
+    signatureInput.addEventListener('input', validateForm);
+
+    submitBtn.addEventListener('click', async () => {
+      if (isSubmitting) return;
+      isSubmitting = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing...';
+      errorMsg.classList.remove('visible');
+
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/waiver_signatures`,
+          {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation',
+            },
+            body: JSON.stringify({
+              waiver_type: 'event_agreement',
+              template_version: 1,
+              signer_name: CLIENT_NAME,
+              signer_email: null,
+              signer_phone: null,
+              event_request_id: null,
+              signed_at: new Date().toISOString(),
+              user_agent: navigator.userAgent,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.message || `Server error (${response.status})`);
+        }
+
+        const [record] = await response.json();
+        const ref = record?.id?.slice(0, 8)?.toUpperCase() || 'CONFIRMED';
+        const signedAt = new Date().toLocaleString('en-US', {
+          month: 'long', day: 'numeric', year: 'numeric',
+          hour: 'numeric', minute: '2-digit',
+        });
+
+        sessionStorage.setItem('agreement_signed_tommy_hall_033126', JSON.stringify({
+          signedAt,
+          ref,
+        }));
+
+        document.getElementById('successDate').textContent = signedAt;
+        document.getElementById('successRef').textContent = ref;
+        document.getElementById('formState').style.display = 'none';
+        document.getElementById('successState').style.display = 'block';
+        document.getElementById('successState').classList.add('visible');
+        window.scrollTo(0, 0);
+
+      } catch (err) {
+        console.error('Agreement submit error:', err);
+        errorMsg.textContent = 'Something went wrong. Please try again.';
+        errorMsg.classList.add('visible');
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign Agreement';
+      }
+    });
+  </script>
+
+  <script type="module" src="/shared/version-info.js"></script>
+  <script type="module">
+    import { initPublicPage } from '/shared/public-shell.js';
+    initPublicPage({ transparent: false, light: false, activePage: '/events/' });
+  </script>
+</body>
+</html>
