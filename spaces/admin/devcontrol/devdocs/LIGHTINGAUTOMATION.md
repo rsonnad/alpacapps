@@ -396,11 +396,27 @@ When an Echo device and lights are in the same Alexa room, "Alexa, turn on light
 4. Add the light groups (e.g., "Skyloft Ceiling", "Skyloft Bathroom") to that room
 5. Now "Alexa, turn on lights" from that Echo = only that room's lights
 
-### Adding new lights to Alexa
+### Adding new HAOS lights to Alexa
 
 1. Add the light entity to HAOS (via integration or configuration.yaml group)
 2. Say "Alexa, discover devices" — Nabu Casa auto-exposes all `light` entities
 3. Assign the new device to the correct Alexa room
+
+### Govee lights on Alexa
+
+Govee devices use the **Govee Home** Alexa skill (separate from HAOS/Nabu Casa).
+
+1. Install "Govee Home" skill in Alexa app
+2. Link Govee account (same credentials as Govee app)
+3. Say "Alexa, discover devices" — all Govee groups appear (Garage Mahal, Outhouse, Cedar Chamber, Fishbowl, Spartan Tea Lounge)
+4. Assign each to the correct Alexa room
+
+| Voice command | What it does |
+|--------------|-------------|
+| "Alexa, turn on Garage Mahal" | All 16 light bars on |
+| "Alexa, turn Outhouse red" | 6 light bars → red |
+| "Alexa, set Garage Mahal to 50%" | Dim to 50% |
+| "Alexa, turn off Cedar Chamber" | Cedar Chamber off |
 
 ---
 
