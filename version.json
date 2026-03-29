@@ -1,12 +1,12 @@
 {
-  "version": "v260328.23 7:41p",
-  "release": 1130,
-  "sha": "d192bb9e6",
-  "fullSha": "d192bb9e647abdda4b287118faa1f65c00fc82c8",
+  "version": "v260328.24 10:19p",
+  "release": 1131,
+  "sha": "acd760436",
+  "fullSha": "acd7604369580021898f46ad436750dd2cf7dac1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 00:41:22+00",
-  "commits": [{"sha":"d192bb9e6","message":"docs: add lights.sh CLI and HTTP API to lighting automation docs","author":"Rahul"}]
+  "pushedAt": "2026-03-29 03:19:03+00",
+  "commits": [{"sha":"acd760436","message":"docs: add kitchen nook (3 Linkind Matter bulbs) to lighting automation","author":"Rahul"}]
 }
