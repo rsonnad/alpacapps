@@ -1,12 +1,12 @@
 {
-  "version": "v260329.07 1:45a",
-  "release": 1144,
-  "sha": "13f7c8c55",
-  "fullSha": "13f7c8c55b6bb03d0a65a45a950b21a314409e59",
+  "version": "v260329.09 2:05a",
+  "release": 1146,
+  "sha": "81dd109ce",
+  "fullSha": "81dd109ced5daccff010b03ee9f5f835228adcfa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 06:45:00+00",
-  "commits": [{"sha":"e04b28a01","message":"docs: add Outhouse H600B sink lights to LIGHTINGAUTOMATION.md","author":"Rahul"},{"sha":"13f7c8c55","message":"Merge branch 'zealous-ardinghelli'","author":"Rahul"}]
+  "pushedAt": "2026-03-29 07:05:54+00",
+  "commits": [{"sha":"81dd109ce","message":"fix: allow unknown senders to claude@ but always require approval","author":"Rahul"}]
 }
