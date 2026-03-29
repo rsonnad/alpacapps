@@ -29,6 +29,7 @@ const SPECIAL_PREFIXES: Record<string, string> = {
   "auto": "auto",
   "payments": "payments",
   "pai": "pai",
+  "claude": "claude",
   "claudero": "claudero",
   "alpaclaw": "alpaclaw",
   "guestbook": "guestbook",
@@ -237,6 +238,8 @@ async function handleSpecialLogic(
     await handleGuestbookEmail(emailRecord, supabase);
   } else if (type === "herd") {
     await handleHerdEmail(emailRecord, supabase, resendApiKey);
+  } else if (type === "claude") {
+    await handleClaudeTaskEmail(emailRecord, supabase, resendApiKey);
   }
 }
 
@@ -1237,6 +1240,89 @@ function looksLikeQuestion(subject: string, body: string): boolean {
   return questionPhrases.some((p) => combined.includes(p));
 }
 
+// =============================================
+// CLAUDE TASK EMAIL HANDLER
+// =============================================
+
+/**
+ * Handle inbound email to claude@alpacaplayhouse.com.
+ * Creates a row in claude_tasks for the Alpuca poller to pick up and run via Claude Code CLI.
+ * Also works when pai@ receives a forwarded system alert with "send this to Claude" in the body.
+ */
+async function handleClaudeTaskEmail(
+  emailRecord: any,
+  supabase: any,
+  resendApiKey: string
+): Promise<void> {
+  const subject = emailRecord.subject || "";
+  const bodyText = emailRecord.body_text || "";
+  const bodyHtml = emailRecord.body_html || "";
+  const from = emailRecord.from_address || "";
+
+  const senderEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
+
+  console.log(`Claude task email from ${senderEmail}: subject="${subject}"`);
+
+  // Build a prompt from the email content
+  const emailContent = bodyText || bodyHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+  const prompt = `You received this email (from: ${senderEmail}, subject: "${subject}"). ` +
+    `Handle the issue described. You have SSH access to Alpuca (localhost) and can run commands directly. ` +
+    `After handling, send a status email reply to ${senderEmail} via the Resend MCP tool.\n\n` +
+    `--- Email content ---\n${emailContent}\n--- End email ---`;
+
+  // Insert into claude_tasks
+  const { data, error } = await supabase
+    .from("claude_tasks")
+    .insert({
+      source: "email",
+      source_id: emailRecord.resend_email_id || emailRecord.id,
+      target_machine: "alpuca",
+      status: "pending",
+      prompt,
+      subject,
+      from_address: senderEmail,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error(`Failed to create claude_task: ${error.message}`);
+    return;
+  }
+
+  console.log(`Created claude_task ${data.id} for Alpuca pickup`);
+
+  // Update inbound_emails with route info
+  await supabase
+    .from("inbound_emails")
+    .update({
+      route_action: "claude_task",
+      special_logic_type: "claude",
+    })
+    .eq("id", emailRecord.id);
+
+  // Send acknowledgment email via Resend API
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: "PAI <pai@alpacaplayhouse.com>",
+        to: senderEmail,
+        subject: `Re: ${subject}`,
+        html: `<p>Got it — this has been queued as a Claude Code task on Alpuca (task ${data.id.slice(0, 8)}).</p>` +
+          `<p>The task poller checks every 2 minutes. You'll get a follow-up when it's handled.</p>`,
+      }),
+    });
+  } catch (e) {
+    console.error(`Failed to send ack email: ${e}`);
+  }
+}
+
 /**
  * Handle inbound email to pai@alpacaplayhouse.com.
  *
@@ -1264,6 +1350,17 @@ async function handlePaiEmail(
   const hasAttachments = attachmentsMetadata.length > 0;
 
   console.log(`PAI email from ${senderEmail}: subject="${subject}", attachments=${attachmentsMetadata.length}`);
+
+  // Check if sender wants this routed to Claude Code on Alpuca
+  const bodyLower = (bodyText || "").toLowerCase();
+  const wantsClaudeRouting = bodyLower.includes("send this to claude") ||
+    bodyLower.includes("send to claude") ||
+    bodyLower.includes("claude on alpuca") ||
+    bodyLower.includes("handle this on alpuca");
+  if (wantsClaudeRouting) {
+    console.log(`PAI email re-routed to Claude task handler (user requested Claude/Alpuca)`);
+    return handleClaudeTaskEmail(emailRecord, supabase, resendApiKey);
+  }
 
   // Check if this is a reply to one of our outbound emails (has hidden metadata)
   const { isReply: isPaiReply, meta: paiReplyMeta } = isReplyToOurEmail(subject, bodyHtml);
