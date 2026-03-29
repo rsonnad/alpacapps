@@ -1,12 +1,12 @@
 {
-  "version": "v260328.30 11:24p",
-  "release": 1137,
-  "sha": "09758ffe3",
-  "fullSha": "09758ffe392a8f3cc3a6d07d59c0f5c23d915135",
+  "version": "v260329.01 12:09a",
+  "release": 1138,
+  "sha": "e3d382c88",
+  "fullSha": "e3d382c885b785a94e0bc674c24aa16f4ff4a354",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 04:24:10+00",
-  "commits": [{"sha":"09758ffe3","message":"fix: resolve merge conflict in LIGHTINGAUTOMATION.md planned/future section","author":"Rahul"}]
+  "pushedAt": "2026-03-29 05:09:08+00",
+  "commits": [{"sha":"e3d382c88","message":"feat: map Garage Mahal 16 bars to physical positions, migrate to HAOS control","author":"Rahul"}]
 }
