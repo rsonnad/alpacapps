@@ -1263,27 +1263,88 @@ async function handleClaudeTaskEmail(
 
   console.log(`Claude task email from ${senderEmail}: subject="${subject}"`);
 
-  // SECURITY: Only admins can trigger Claude Code sessions
-  const { data: adminUsers } = await supabase
+  // SECURITY: Only residents+ can trigger Claude tasks (not random public)
+  const { data: senderUser } = await supabase
     .from("app_users")
-    .select("email")
-    .in("role", ["admin", "superadmin"]);
-  const allowedSenders = (adminUsers || []).map((u: any) => u.email.toLowerCase());
+    .select("id, email, role, display_name")
+    .ilike("email", senderEmail)
+    .maybeSingle();
 
-  if (!allowedSenders.includes(senderEmail.toLowerCase())) {
-    console.warn(`BLOCKED: ${senderEmail} is not an admin — cannot create Claude tasks`);
+  const allowedRoles = ["resident", "associate", "staff", "admin", "superadmin"];
+  if (!senderUser || !allowedRoles.includes(senderUser.role)) {
+    console.warn(`BLOCKED: ${senderEmail} (role=${senderUser?.role || "none"}) — not authorized for Claude tasks`);
     await supabase
       .from("inbound_emails")
-      .update({
-        route_action: "blocked_unauthorized",
-        special_logic_type: "claude",
-      })
+      .update({ route_action: "blocked_unauthorized", special_logic_type: "claude" })
       .eq("id", emailRecord.id);
     return;
   }
 
-  // Build a prompt from the email content
+  const isAdmin = ["admin", "superadmin"].includes(senderUser.role);
   const emailContent = bodyText || bodyHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+  // RISK EVALUATION via Gemini — same pattern as feature builder
+  let riskDecision = "needs_review"; // default to safe side
+  let riskAssessment: any = {};
+
+  const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+  if (geminiApiKey) {
+    try {
+      const evalPrompt = `You are a security evaluator for a home automation system. A user (role: ${senderUser.role}) sent an email requesting an action be executed via Claude Code CLI on a Mac Mini server.
+
+EVALUATE this request for risk. The CLI has access to: SSH, file system, git, Supabase DB, home automation (lights, music, thermostats), backup drives.
+
+Email subject: "${subject}"
+Email body: "${emailContent.substring(0, 2000)}"
+
+Respond with ONLY valid JSON:
+{
+  "decision": "auto_execute" or "needs_review",
+  "reason": "one-line explanation",
+  "risk_factors": {
+    "modifies_infrastructure": boolean,
+    "accesses_credentials": boolean,
+    "destructive_action": boolean,
+    "financial_impact": boolean,
+    "affects_other_users": boolean
+  }
+}
+
+Guidelines:
+- auto_execute: read-only queries, status checks, restarting known services (rsync, backups), light/music control, non-destructive maintenance
+- needs_review: deleting data, modifying configs, changing passwords, financial operations, anything affecting other residents, unknown/ambiguous requests`;
+
+      const gemRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: evalPrompt }] }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 500 },
+          }),
+        }
+      );
+
+      if (gemRes.ok) {
+        const gemData = await gemRes.json();
+        const rawText = gemData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          riskAssessment = JSON.parse(jsonMatch[0]);
+          riskDecision = riskAssessment.decision || "needs_review";
+          console.log(`Risk evaluation: decision=${riskDecision}, reason=${riskAssessment.reason}`);
+        }
+      }
+    } catch (e) {
+      console.warn(`Risk evaluation failed, defaulting to needs_review: ${e}`);
+    }
+  }
+
+  // Admins bypass review — their tasks always auto-execute
+  if (isAdmin) riskDecision = "auto_execute";
+
+  const taskStatus = riskDecision === "auto_execute" ? "pending" : "review";
 
   const prompt = `You received this email (from: ${senderEmail}, subject: "${subject}"). ` +
     `Handle the issue described. You have SSH access to Alpuca (localhost) and can run commands directly. ` +
@@ -1297,10 +1358,11 @@ async function handleClaudeTaskEmail(
       source: "email",
       source_id: emailRecord.resend_email_id || emailRecord.id,
       target_machine: "alpuca",
-      status: "pending",
+      status: taskStatus,
       prompt,
       subject,
       from_address: senderEmail,
+      risk_assessment: riskAssessment,
     })
     .select("id")
     .single();
@@ -1310,35 +1372,86 @@ async function handleClaudeTaskEmail(
     return;
   }
 
-  console.log(`Created claude_task ${data.id} for Alpuca pickup`);
+  console.log(`Created claude_task ${data.id} (status=${taskStatus}) for Alpuca`);
 
-  // Update inbound_emails with route info
   await supabase
     .from("inbound_emails")
-    .update({
-      route_action: "claude_task",
-      special_logic_type: "claude",
-    })
+    .update({ route_action: `claude_task_${taskStatus}`, special_logic_type: "claude" })
     .eq("id", emailRecord.id);
 
-  // Send acknowledgment email via Resend API
-  try {
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${resendApiKey}`,
-      },
-      body: JSON.stringify({
-        from: "PAI <pai@alpacaplayhouse.com>",
-        to: senderEmail,
-        subject: `Re: ${subject}`,
-        html: `<p>Got it — this has been queued as a Claude Code task on Alpuca (task ${data.id.slice(0, 8)}).</p>` +
-          `<p>The task poller checks every 2 minutes. You'll get a follow-up when it's handled.</p>`,
-      }),
-    });
-  } catch (e) {
-    console.error(`Failed to send ack email: ${e}`);
+  if (taskStatus === "review") {
+    // Send approval request to admins
+    const { data: admins } = await supabase
+      .from("app_users")
+      .select("email")
+      .in("role", ["admin", "superadmin"]);
+    const adminEmails = admins?.map((a: any) => a.email) || [];
+
+    const riskFactors = riskAssessment.risk_factors || {};
+    const flaggedFactors = Object.entries(riskFactors)
+      .filter(([_, v]) => v === true)
+      .map(([k]) => k.replace(/_/g, " "))
+      .join(", ") || "none flagged";
+
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
+        body: JSON.stringify({
+          from: "PAI <pai@alpacaplayhouse.com>",
+          to: adminEmails,
+          subject: `🔍 Claude Task Needs Review: ${subject}`,
+          html: `<h2>Claude Task Approval Required</h2>
+            <p><strong>From:</strong> ${senderUser.display_name || senderEmail} (${senderUser.role})</p>
+            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Risk:</strong> ${riskAssessment.reason || "evaluation unavailable"}</p>
+            <p><strong>Flags:</strong> ${flaggedFactors}</p>
+            <hr>
+            <p style="font-size:13px;color:#666">${emailContent.substring(0, 500)}</p>
+            <hr>
+            <p><strong>Task ID:</strong> ${data.id}</p>
+            <p>To approve, update the task status to "pending" in the database or via the admin console.</p>
+            <p><a href="https://alpacaplayhouse.com/spaces/admin/appdev.html" style="display:inline-block;padding:10px 20px;background:#22c55e;color:white;border-radius:6px;text-decoration:none">Review in Admin</a></p>`,
+        }),
+      });
+    } catch (e) {
+      console.error(`Failed to send review email: ${e}`);
+    }
+
+    // Notify sender that task is held for review
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
+        body: JSON.stringify({
+          from: "PAI <pai@alpacaplayhouse.com>",
+          to: senderEmail,
+          subject: `Re: ${subject}`,
+          html: `<p>Your request has been received but requires admin approval before execution.</p>
+            <p><strong>Reason:</strong> ${riskAssessment.reason || "Flagged for review"}</p>
+            <p>An admin has been notified and will review shortly.</p>`,
+        }),
+      });
+    } catch (e) {
+      console.error(`Failed to send held-for-review email: ${e}`);
+    }
+  } else {
+    // Auto-execute — send ack
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
+        body: JSON.stringify({
+          from: "PAI <pai@alpacaplayhouse.com>",
+          to: senderEmail,
+          subject: `Re: ${subject}`,
+          html: `<p>Got it — this has been queued as a Claude Code task on Alpuca (task ${data.id.slice(0, 8)}).</p>` +
+            `<p>The task poller checks every 2 minutes. You'll get a follow-up when it's handled.</p>`,
+        }),
+      });
+    } catch (e) {
+      console.error(`Failed to send ack email: ${e}`);
+    }
   }
 }
 

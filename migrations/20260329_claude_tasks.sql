@@ -4,12 +4,15 @@ CREATE TABLE IF NOT EXISTS claude_tasks (
   source TEXT NOT NULL DEFAULT 'email',
   source_id TEXT,                          -- e.g. resend email ID
   target_machine TEXT NOT NULL DEFAULT 'alpuca',
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'failed')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'review', 'approved', 'in_progress', 'completed', 'failed', 'rejected')),
   prompt TEXT NOT NULL,                    -- what to tell Claude
   subject TEXT,                            -- email subject or task title
   from_address TEXT,                       -- who sent it
   result TEXT,                             -- Claude's output
   error TEXT,                              -- error message if failed
+  risk_assessment JSONB,                   -- Gemini risk evaluation result
+  approved_by UUID,                        -- admin who approved (if review flow)
+  approved_at TIMESTAMPTZ,                 -- when approved
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   started_at TIMESTAMPTZ,
   completed_at TIMESTAMPTZ,
