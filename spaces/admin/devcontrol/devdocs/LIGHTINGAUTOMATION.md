@@ -128,22 +128,71 @@ Individual: `light.smart_rgbtw_bulb` (Tub), `_2` (Shower), `_3` (Frig), `_4` (Cl
 
 ### Skyloft Ceiling
 
-**Entity:** `light.skyloft_lights` (5 WiZ BR30 bulbs; 6th offline)
+**Entity:** `light.skyloft_ceiling` (6 WiZ BR30 Color bulbs)
 
 ```bash
-~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.skyloft_lights","color_temp_kelvin":3000,"brightness":200}'
-~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.skyloft_lights"}'
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.skyloft_ceiling","color_temp_kelvin":3000,"brightness":200}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.skyloft_ceiling"}'
 ```
+
+Individual bulbs (numbered by physical socket position):
+
+| Pos | Entity | Friendly Name | IP | MAC |
+|-----|--------|---------------|-----|-----|
+| 1 | `light.wiz_rgbww_tunable_08d7cb` | Skyloft Ceiling 1 | .104 | a8bb5008d7cb |
+| 2 | `light.wiz_rgbww_tunable_08d763` | Skyloft Ceiling 2 | .251 | a8bb5008d763 |
+| 3 | `light.wiz_rgbww_tunable_09ffc8` | Skyloft Ceiling 3 | .34 | a8bb5009ffc8 |
+| 4 | `light.wiz_rgbww_tunable_09b70b` | Skyloft Ceiling 4 | .245 | a8bb5009b70b |
+| 5 | `light.wiz_rgbw_tunable_8175e4` | Skyloft Ceiling 5 | .92 | a8bb508175e4 |
+| 6 | `light.wiz_rgbww_tunable_0a6817` | Skyloft Ceiling 6 | .58 | a8bb500a6817 |
+
+> Note: Bulb 5 is RGBW (not RGBWW) — slightly different WiZ model than the other 5.
 
 ---
 
 ### Skyloft Bathroom
 
-**Entities:** `light.smart_rgbtw_bulb_10`, `light.smart_rgbtw_bulb_11` (2 OREIN Matter)
+**Entity:** `light.skyloft_bathroom` (2 OREIN Matter RGBTW bulbs)
 
 ```bash
-~/ha-cmd.sh 'light/turn_on' '{"entity_id":["light.smart_rgbtw_bulb_10","light.smart_rgbtw_bulb_11"],"color_temp_kelvin":3000,"brightness":200}'
-~/ha-cmd.sh 'light/turn_off' '{"entity_id":["light.smart_rgbtw_bulb_10","light.smart_rgbtw_bulb_11"]}'
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.skyloft_bathroom","color_temp_kelvin":3000,"brightness":200}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.skyloft_bathroom"}'
+```
+
+Individual: `light.smart_rgbtw_bulb_11` (Left), `light.smart_rgbtw_bulb_10` (Right)
+
+---
+
+### Skyloft Bar
+
+**Entity:** `light.skyloft_bar` (3 Tuya/SmartLife GU10 spotlights via LocalTuya)
+
+```bash
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.skyloft_bar","color_temp_kelvin":3000,"brightness":200}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.skyloft_bar"}'
+```
+
+Individual: `light.skyloft_bar_light_1` (Left), `light.skyloft_bar_light_2` (Middle), `light.skyloft_bar_light_3` (Right)
+
+| Pos | Device ID | Local Key | MAC | LAN IP |
+|-----|-----------|-----------|-----|--------|
+| L | `ebf88bedf1475f7186vj9p` | `WgoX04Glqf43cW^2` | `18:de:50:5f:66:90` | .162 |
+| M | `eb7c2e2652329ff6cfuzvd` | `SP!'9GC5[aYY3)~t` | `18:de:50:5f:67:4c` | .211 |
+| R | `eb0a46324e9dd058fcc0ez` | `.dz~?/yR6R2W85j8` | `38:a5:c9:7c:3c:de` | .22 |
+
+Brand: Lightinginside LED-GU10-SM. Protocol: Tuya WiFi v3.3 (SmartLife app).
+
+> **Status (2026-03-28):** LocalTuya port 6668 closed even when lights are on — currently unavailable in HAOS. Controllable via SmartLife app / Tuya Cloud API.
+
+---
+
+### Skyloft — All Lights
+
+**Entity:** `light.skyloft_lights` (all 11 Skyloft lights — ceiling + bathroom + bar)
+
+```bash
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.skyloft_lights","color_temp_kelvin":3000,"brightness":200}'
+~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.skyloft_lights"}'
 ```
 
 ---
@@ -211,8 +260,10 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Living Room | `light.living_room_lights` | `~/ha-cmd.sh 'light/turn_off' '{"entity_id":"light.living_room_lights"}'` |
 | Living Strip | `light.livingroom_strip_light` | same pattern |
 | Master Bath | `light.master_bathroom_lights` | same pattern |
-| Skyloft Ceil | `light.skyloft_lights` | same pattern |
-| Skyloft Bath | `light.smart_rgbtw_bulb_10`, `_11` | use array |
+| Skyloft All | `light.skyloft_lights` | same pattern |
+| Skyloft Ceil | `light.skyloft_ceiling` | same pattern |
+| Skyloft Bath | `light.skyloft_bathroom` | same pattern |
+| Skyloft Bar | `light.skyloft_bar` | same pattern |
 | Kitchen | `light.kitchen_lights` | same pattern |
 | Kitchen Nook | `light.smart_rgbtw_bulb_12`, `_13`, `_14` | use array |
 | Stairs | `light.stairs_lights` | same pattern |
@@ -260,8 +311,10 @@ Individual: `light.smart_rgbtw_bulb_6` (Top), `light.smart_rgbtw_bulb_7` (Bottom
 | Living Room | `light.living_room_lights` | 4 WiZ ceiling + 1 WiZ nook | WiZ |
 | Living Room strip | `light.livingroom_strip_light` | 15-segment LED | Govee |
 | Master Bathroom | `light.master_bathroom_lights` | 5 | OREIN Matter |
-| Skyloft Ceiling | `light.skyloft_lights` | 5 (6th offline) | WiZ BR30 |
-| Skyloft Bathroom | `light.smart_rgbtw_bulb_10`, `_11` | 2 | OREIN Matter |
+| Skyloft All | `light.skyloft_lights` | 11 (6+2+3) | WiZ/OREIN/Tuya |
+| Skyloft Ceiling | `light.skyloft_ceiling` | 6 | WiZ BR30 Color |
+| Skyloft Bathroom | `light.skyloft_bathroom` | 2 | OREIN Matter |
+| Skyloft Bar | `light.skyloft_bar` | 3 (unavailable) | Tuya GU10 (LocalTuya) |
 | Kitchen | `light.kitchen_lights` | 5 WiZ + 1 Matter + 4 Govee BR30 | WiZ/Leedarson/Govee |
 | Kitchen Nook | `light.smart_rgbtw_bulb_12`, `_13`, `_14` | 3 | Linkind Matter |
 | Stairs | `light.stairs_lights` | 2 | Linkind Matter |
@@ -295,6 +348,48 @@ Controlled via SmartLife app or Tuya Cloud API. Not yet in HAOS.
 
 ---
 
+## Alexa Voice Control
+
+### How it works
+
+HAOS → Nabu Casa (Home Assistant Cloud) → Amazon Alexa Smart Home Skill
+
+All `light` entities in HAOS are automatically exposed to Alexa via Nabu Casa. No per-entity configuration needed.
+
+- **Nabu Casa account:** active (trial subscription)
+- **Alexa enabled:** `true` (in `.storage/cloud` on HAOS)
+- **Remote URL:** `7nwydzudzhis82jcmf1mfzezaaw3hvgu.ui.nabu.casa`
+
+### Voice commands
+
+| Command | What it does |
+|---------|-------------|
+| "Alexa, turn on Skyloft Lights" | All 11 Skyloft lights (ceiling + bathroom + bar) |
+| "Alexa, turn on Skyloft Ceiling" | 6 ceiling WiZ bulbs |
+| "Alexa, turn on Skyloft Bathroom" | 2 bathroom OREIN bulbs |
+| "Alexa, set Skyloft Ceiling to 50%" | Dim ceiling to 50% |
+| "Alexa, turn Skyloft Lights red" | Set all Skyloft lights to red |
+| "Alexa, turn on lights" | Controls lights in the Echo's assigned room |
+
+### Room-aware control ("Alexa, turn on lights")
+
+When an Echo device and lights are in the same Alexa room, "Alexa, turn on lights" (no room name) controls just that room's lights from that specific Echo.
+
+**Setup in Alexa app:**
+1. Discover devices: say "Alexa, discover devices" (or Alexa app → Devices → + → scan)
+2. Create room: Devices → + → Add Room → name it (e.g., "Skyloft")
+3. Add the Echo device in that room to the Alexa room
+4. Add the light groups (e.g., "Skyloft Ceiling", "Skyloft Bathroom") to that room
+5. Now "Alexa, turn on lights" from that Echo = only that room's lights
+
+### Adding new lights to Alexa
+
+1. Add the light entity to HAOS (via integration or configuration.yaml group)
+2. Say "Alexa, discover devices" — Nabu Casa auto-exposes all `light` entities
+3. Assign the new device to the correct Alexa room
+
+---
+
 ## Troubleshooting
 
 **WiZ bulbs not discovering in HAOS:**
@@ -314,7 +409,7 @@ Controlled via SmartLife app or Tuya Cloud API. Not yet in HAOS.
 
 ## Planned / Future
 
+- Fix Skyloft Bar GU10 LocalTuya connection — port 6668 stays closed. May need Tuya Cloud integration instead of LocalTuya
 - Add `tuya_cloud` backend to `home-assistant-control` edge function
 - HACS Govee LAN integration — local control without cloud
-- Map remaining WiZ entity IDs to rooms
-- 6th Skyloft WiZ BR30 bulb needs WiFi pairing via WiZ app
+- Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft)
