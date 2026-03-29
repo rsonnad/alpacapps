@@ -442,12 +442,6 @@ Govee devices use the **Govee Home** Alexa skill (separate from HAOS/Nabu Casa).
 
 - Fix Skyloft Bar GU10 LocalTuya connection — port 6668 stays closed. May need Tuya Cloud integration instead of LocalTuya
 - Add `tuya_cloud` backend to `home-assistant-control` edge function
-<<<<<<< HEAD
-- HACS Govee LAN integration — local control without cloud
-- Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft)
-=======
 - HACS Govee LAN integration — local control without cloud (fallback for API outages)
-- Map remaining WiZ entity IDs to rooms
-- 6th Skyloft WiZ BR30 bulb needs WiFi pairing via WiZ app
+- Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft)
 - Add outdoor Govee groups (string lights, fence, floods) to `lights.sh` once needed
->>>>>>> 6035024d9 (feat: add Govee Garage Mahal, Outhouse, and Spartan rooms to unified lighting system)
