@@ -1263,6 +1263,25 @@ async function handleClaudeTaskEmail(
 
   console.log(`Claude task email from ${senderEmail}: subject="${subject}"`);
 
+  // SECURITY: Only admins can trigger Claude Code sessions
+  const { data: adminUsers } = await supabase
+    .from("app_users")
+    .select("email")
+    .in("role", ["admin", "superadmin"]);
+  const allowedSenders = (adminUsers || []).map((u: any) => u.email.toLowerCase());
+
+  if (!allowedSenders.includes(senderEmail.toLowerCase())) {
+    console.warn(`BLOCKED: ${senderEmail} is not an admin — cannot create Claude tasks`);
+    await supabase
+      .from("inbound_emails")
+      .update({
+        route_action: "blocked_unauthorized",
+        special_logic_type: "claude",
+      })
+      .eq("id", emailRecord.id);
+    return;
+  }
+
   // Build a prompt from the email content
   const emailContent = bodyText || bodyHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
