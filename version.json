@@ -1,12 +1,12 @@
 {
-  "version": "v260329.09 2:05a",
-  "release": 1146,
-  "sha": "81dd109ce",
-  "fullSha": "81dd109ced5daccff010b03ee9f5f835228adcfa",
+  "version": "v260329.10 2:32a",
+  "release": 1147,
+  "sha": "192eb7c35",
+  "fullSha": "192eb7c353a53de8be6dcb67b3fd9c0864efd529",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-29 07:05:54+00",
-  "commits": [{"sha":"81dd109ce","message":"fix: allow unknown senders to claude@ but always require approval","author":"Rahul"}]
+  "pushedAt": "2026-03-29 07:32:30+00",
+  "commits": [{"sha":"e0ef5c8d8","message":"feat: migrate Spartan trailer lights (Cedar/Fishbowl/Tea Lounge) from Govee Cloud to HAOS","author":"Rahul"},{"sha":"581ce9af6","message":"docs: add Spartan strip/porch lights to DB, migration, and LIGHTINGAUTOMATION.md","author":"Rahul"},{"sha":"192eb7c35","message":"Merge branch 'zealous-ardinghelli'","author":"Rahul"}]
 }
