@@ -193,6 +193,16 @@ class HttpApiServer {
             }
             sendResponse(connection, status: 200, body: "{\"ok\":true,\"mode\":\"signage\"}")
 
+        case ("POST", "/mode/subtitles"):
+            let lang = queryParams["lang"] ?? "en"
+            let host = queryParams["host"] ?? "alpuca.local"
+            let port = queryParams["port"] ?? "8910"
+            let subtitleURL = "https://alpacaplayhouse.com/live-subtitles/test-client.html?wshost=\(host)&wsport=\(port)&lang=\(lang)&fullscreen=1"
+            DispatchQueue.main.async {
+                self.webViewController.loadURL(subtitleURL)
+            }
+            sendResponse(connection, status: 200, body: "{\"ok\":true,\"mode\":\"subtitles\",\"lang\":\"\(lang)\"}")
+
         case ("POST", "/say"):
             if let text = queryParams["text"] {
                 // Use the macOS `say` command for text-to-speech

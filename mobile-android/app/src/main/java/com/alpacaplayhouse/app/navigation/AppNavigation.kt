@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Icon
@@ -58,6 +59,7 @@ import kotlinx.serialization.Serializable
 @Serializable object ClimateRoute
 @Serializable object CarsRoute
 @Serializable object WorkRoute
+@Serializable object SubtitleRoute
 
 data class TabItem(
     val label: String,
@@ -71,6 +73,7 @@ private val allTabs = listOf(
     TabItem("Home", Icons.Default.Home, AssistantRoute, "home"),
     TabItem("Music", Icons.Default.MusicNote, MusicRoute, "music"),
     TabItem("Lights", Icons.Default.Lightbulb, LightsRoute, "lights"),
+    TabItem("Subtitles", Icons.Default.Subtitles, SubtitleRoute, "subtitles"),
     TabItem("Work", Icons.Default.Work, WorkRoute, "work"),
     TabItem("Climate", Icons.Default.Thermostat, ClimateRoute, "climate"),
     TabItem("Cars", Icons.Default.DirectionsCar, CarsRoute, "cars"),
@@ -188,6 +191,7 @@ fun AppNavigation() {
             composable<AssistantRoute> { AssistantScreen() }
             composable<MusicRoute> { MusicScreen() }
             composable<LightsRoute> { LightsScreen() }
+            composable<SubtitleRoute> { SubtitleScreen() }
             composable<WorkRoute> { WorkScreen() }
             composable<ClimateRoute> { ClimateScreen() }
             composable<CarsRoute> { CarsScreen() }

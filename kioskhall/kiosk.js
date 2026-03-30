@@ -898,6 +898,148 @@ function onRotationTap() {
 }
 
 // =============================================
+// LIVE SUBTITLES
+// =============================================
+const SUBTITLE_SERVER = 'ws://alpuca.local:8910';
+const SUBTITLE_STATUS_URL = 'http://alpuca.local:8910/subtitles/status';
+const SUBTITLE_MAX_SEGMENTS = 50;
+
+let subtitleWs = null;
+let subtitleSegments = [];
+let subtitleFontSize = 32;
+let subtitleAutoScroll = true;
+let subtitleReconnectDelay = 1000;
+
+function initSubtitles() {
+  // Check if subtitle server is active
+  checkSubtitleServer();
+  setInterval(checkSubtitleServer, 30_000);
+
+  // Button opens overlay
+  document.getElementById('subtitlesBtn')?.addEventListener('click', openSubtitles);
+  document.getElementById('subtitlesClose')?.addEventListener('click', closeSubtitles);
+
+  // Font size
+  document.getElementById('subtitleFontUp')?.addEventListener('click', () => {
+    subtitleFontSize = Math.min(72, subtitleFontSize + 4);
+    document.documentElement.style.setProperty('--subtitle-font-size', subtitleFontSize + 'px');
+  });
+  document.getElementById('subtitleFontDown')?.addEventListener('click', () => {
+    subtitleFontSize = Math.max(16, subtitleFontSize - 4);
+    document.documentElement.style.setProperty('--subtitle-font-size', subtitleFontSize + 'px');
+  });
+
+  // Language picker
+  document.getElementById('subtitleLangPicker')?.addEventListener('change', (e) => {
+    if (subtitleWs) subtitleWs.close();
+    subtitleSegments = [];
+    renderSubtitles();
+    connectSubtitleWs(e.target.value);
+  });
+
+  // Auto-scroll detection
+  document.getElementById('subtitleContent')?.addEventListener('scroll', () => {
+    const el = document.getElementById('subtitleContent');
+    subtitleAutoScroll = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+  });
+}
+
+async function checkSubtitleServer() {
+  try {
+    const res = await fetch(SUBTITLE_STATUS_URL, { signal: AbortSignal.timeout(3000) });
+    const data = await res.json();
+    const btn = document.getElementById('subtitlesBtn');
+    if (btn) btn.style.display = data.active ? 'flex' : 'none';
+  } catch {
+    const btn = document.getElementById('subtitlesBtn');
+    if (btn) btn.style.display = 'none';
+  }
+}
+
+function openSubtitles() {
+  document.getElementById('subtitlesOverlay').style.display = 'flex';
+  const lang = document.getElementById('subtitleLangPicker')?.value || 'en';
+  connectSubtitleWs(lang);
+}
+
+function closeSubtitles() {
+  document.getElementById('subtitlesOverlay').style.display = 'none';
+  if (subtitleWs) {
+    subtitleWs.close();
+    subtitleWs = null;
+  }
+  subtitleSegments = [];
+}
+
+function connectSubtitleWs(lang) {
+  const dot = document.getElementById('subtitleStatusDot');
+  const text = document.getElementById('subtitleStatusText');
+  if (dot) dot.className = 'subtitles-status-dot reconnecting';
+  if (text) text.textContent = 'Connecting...';
+
+  subtitleWs = new WebSocket(`${SUBTITLE_SERVER}/subtitles?lang=${lang}`);
+
+  subtitleWs.onopen = () => {
+    if (dot) dot.className = 'subtitles-status-dot connected';
+    if (text) text.textContent = `Connected (${lang})`;
+    subtitleReconnectDelay = 1000;
+  };
+
+  subtitleWs.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.type !== 'subtitle') return;
+
+    if (msg.is_partial) {
+      const idx = subtitleSegments.findIndex(s => s.id === msg.id && s.is_partial);
+      if (idx >= 0) subtitleSegments[idx] = msg;
+      else subtitleSegments.push(msg);
+    } else {
+      subtitleSegments = subtitleSegments.filter(s => !(s.id === msg.id && s.is_partial));
+      subtitleSegments.push(msg);
+    }
+    while (subtitleSegments.length > SUBTITLE_MAX_SEGMENTS) subtitleSegments.shift();
+    renderSubtitles();
+  };
+
+  subtitleWs.onclose = () => {
+    if (dot) dot.className = 'subtitles-status-dot';
+    if (text) text.textContent = `Disconnected — retrying...`;
+    // Only reconnect if overlay is still open
+    if (document.getElementById('subtitlesOverlay')?.style.display !== 'none') {
+      setTimeout(() => {
+        const currentLang = document.getElementById('subtitleLangPicker')?.value || 'en';
+        connectSubtitleWs(currentLang);
+      }, subtitleReconnectDelay);
+      subtitleReconnectDelay = Math.min(30000, subtitleReconnectDelay * 2);
+    }
+  };
+
+  subtitleWs.onerror = () => subtitleWs.close();
+}
+
+function renderSubtitles() {
+  const el = document.getElementById('subtitleContent');
+  if (!el) return;
+
+  if (subtitleSegments.length === 0) {
+    el.innerHTML = '<div class="subtitles-empty">Waiting for subtitles...</div>';
+    return;
+  }
+
+  el.innerHTML = subtitleSegments.map(seg => {
+    const cls = seg.is_partial ? 'subtitles-segment partial' : 'subtitles-segment';
+    if (seg.lang !== 'en' && seg.source_text) {
+      // Different language: original (dim) on top, translation (bright) below
+      return `<div class="${cls}"><div class="sub-original">${escapeHtml(seg.source_text)}</div><div class="sub-translation">${escapeHtml(seg.text)}</div></div>`;
+    }
+    // Same language (English): just show the text
+    return `<div class="${cls}"><div class="sub-translation">${escapeHtml(seg.text)}</div></div>`;
+  }).join('');
+
+  if (subtitleAutoScroll) el.scrollTop = el.scrollHeight;
+}
+
+// =============================================
 // REFRESH & INIT
 // =============================================
 async function refreshAll() {
@@ -962,6 +1104,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       sendHaosMessage(btn.dataset.cmd);
     });
   });
+
+  // Live Subtitles
+  initSubtitles();
 
   // Rotation overlays: tap to dismiss
   document.getElementById('slideshowOverlay')?.addEventListener('click', onRotationTap);
