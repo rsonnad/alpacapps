@@ -1,12 +1,12 @@
 {
-  "version": "v260330.11 4:14a",
-  "release": 1168,
-  "sha": "a3f403b20",
-  "fullSha": "a3f403b20cf8e946d45301f9ab32796ec16710f1",
+  "version": "v260330.13 4:18a",
+  "release": 1170,
+  "sha": "fc2d67e93",
+  "fullSha": "fc2d67e9368903b91e45b04cfc66a7da338d6ead",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 09:14:25+00",
-  "commits": [{"sha":"a3f403b20","message":"feat: add unified devices directory with control recipes","author":"Rahul"}]
+  "pushedAt": "2026-03-30 09:18:37+00",
+  "commits": [{"sha":"fc2d67e93","message":"fix: add alpaca footer images to all outbound email templates","author":"Rahul"}]
 }
