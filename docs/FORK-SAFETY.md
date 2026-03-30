@@ -31,6 +31,8 @@ They typically reinstate accounts quickly once the workflow is removed.
 Paste this into Claude Code to audit and fix any project:
 
 ```
+Read https://github.com/rsonnad/alpacapps/blob/main/docs/FORK-SAFETY.md for the full problem description and correct architecture patterns.
+
 Audit this repo's GitHub Actions workflows for GitHub TOS violations.
 
 Check every file in .github/workflows/ for:
@@ -40,12 +42,22 @@ Check every file in .github/workflows/ for:
 4. Missing fork safety guards (should have `if: github.repository == 'owner/repo'`)
 
 For each violation found:
-- Replace direct DB connections (psql) with HTTPS REST API calls (curl to Supabase REST, PostgREST, etc.)
-- Add `github.repository == 'OWNER/REPO'` to job-level `if:` conditions
+- Replace direct DB connections (psql) with HTTPS REST API calls (curl to Supabase REST/PostgREST)
+- Add `github.repository == 'OWNER/REPO'` to job-level `if:` conditions (detect owner/repo from `git remote -v`)
 - Remove `apt-get install postgresql-client` steps
 - Update env vars from DB connection strings to API URL + API key
+- Remove the sql_esc() helper if present — no more raw SQL string building
 
-Show me the changes before committing.
+After making code changes, also handle the GitHub secrets migration:
+- Detect which secrets the updated workflow needs (typically SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
+- Check existing secrets: `gh secret list`
+- If `gh` CLI is available and authenticated, set the new secrets directly:
+  - `echo "https://XXXX.supabase.co" | gh secret set SUPABASE_URL` (get the project URL from the codebase, env files, or ask the user)
+  - For the service role key: check if the user has it in their environment, Bitwarden, or Supabase dashboard — then `echo "$KEY" | gh secret set SUPABASE_SERVICE_ROLE_KEY`
+- If the old SUPABASE_DB_URL secret exists, tell the user they can remove it after verifying CI works: link them to https://github.com/{owner}/{repo}/settings/secrets/actions
+- If `gh` is not available or not authenticated, provide the direct GitHub URL for manual secret setup: https://github.com/{owner}/{repo}/settings/secrets/actions/new
+
+Commit the code changes, push, and verify the CI run passes. If CI fails, diagnose and fix.
 ```
 
 ## Architecture: Right Way vs Wrong Way
@@ -74,9 +86,11 @@ Show me the changes before committing.
 ```
 
 ### Required secrets for REST approach
-| Secret | Value | Example |
-|--------|-------|---------|
-| `SUPABASE_URL` | Project URL | `https://xxxxx.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role JWT | `eyJhbGciOiJIUzI1NiI...` |
+| Secret | Value | Where to find it |
+|--------|-------|------------------|
+| `SUPABASE_URL` | Project URL (e.g. `https://xxxxx.supabase.co`) | Supabase dashboard > Project Settings > API |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role JWT (starts with `eyJ...`) | Supabase dashboard > Project Settings > API > service_role key |
 
-You can remove `SUPABASE_DB_URL` after migrating.
+Set them at: `https://github.com/{owner}/{repo}/settings/secrets/actions/new`
+
+You can remove `SUPABASE_DB_URL` after verifying CI works with the new secrets.
