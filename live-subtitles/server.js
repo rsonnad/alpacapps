@@ -196,9 +196,25 @@ async function translateForListeners(text, sourceLang) {
   return translations;
 }
 
-// ── HTTP Server ────────────────────────────────────────────
+// ── HTTPS + HTTP Servers ──────────────────────────────────
 
-const server = http.createServer((req, res) => {
+const HTTPS_PORT = parseInt(process.env.SUBTITLE_HTTPS_PORT || '8911', 10);
+const CERT_PATH = process.env.SUBTITLE_CERT || '/tmp/subtitle-cert.pem';
+const KEY_PATH = process.env.SUBTITLE_KEY || '/tmp/subtitle-key.pem';
+
+// Try to load TLS certs for HTTPS
+let tlsOptions = null;
+try {
+  tlsOptions = {
+    key: fs.readFileSync(KEY_PATH),
+    cert: fs.readFileSync(CERT_PATH),
+  };
+  console.log('[TLS] Loaded self-signed cert — HTTPS enabled');
+} catch {
+  console.log('[TLS] No cert found — HTTPS disabled, HTTP only');
+}
+
+function handleRequest(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -270,8 +286,8 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Serve test client
-  if (url.pathname === '/' || url.pathname === '/test') {
+  // Serve event speaker client
+  if (url.pathname === '/' || url.pathname === '/eventspeaker' || url.pathname === '/test') {
     const testFile = path.join(__dirname, 'test-client.html');
     if (fs.existsSync(testFile)) {
       res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -282,53 +298,66 @@ const server = http.createServer((req, res) => {
 
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ error: 'not found' }));
-});
+}
 
-// ── WebSocket Server ───────────────────────────────────────
+const server = http.createServer(handleRequest);
 
-const wss = new WebSocketServer({ server, path: '/subtitles' });
+// ── HTTPS Server (for Web Speech API) ─────────────────────
 
-wss.on('connection', (ws, req) => {
-  const url = new URL(req.url, `http://localhost:${PORT}`);
-  const lang = url.searchParams.get('lang') || 'en';
+let httpsServer = null;
+if (tlsOptions) {
+  httpsServer = require('https').createServer(tlsOptions, handleRequest);
+}
 
-  if (!SUPPORTED_LANGS.includes(lang)) {
-    ws.close(4001, `Unsupported language: ${lang}`);
-    return;
-  }
+// ── WebSocket Servers ─────────────────────────────────────
 
-  // Register client
-  if (!clientsByLang.has(lang)) {
-    clientsByLang.set(lang, new Set());
-  }
-  clientsByLang.get(lang).add(ws);
-  console.log(`[WS] Client connected: lang=${lang} (${clientsByLang.get(lang).size} clients for ${lang})`);
+function setupWebSocket(httpServer) {
+  const wss = new WebSocketServer({ server: httpServer, path: '/subtitles' });
 
-  // Send welcome message
-  ws.send(JSON.stringify({
-    type: 'connected',
-    lang,
-    supported_languages: SUPPORTED_LANGS,
-    mock: MOCK_MODE,
-  }));
+  wss.on('connection', (ws, req) => {
+    const url = new URL(req.url, `http://localhost:${PORT}`);
+    const lang = url.searchParams.get('lang') || 'en';
 
-  // Heartbeat
-  const pingInterval = setInterval(() => {
-    if (ws.readyState === ws.OPEN) ws.ping();
-  }, 30000);
+    if (!SUPPORTED_LANGS.includes(lang)) {
+      ws.close(4001, `Unsupported language: ${lang}`);
+      return;
+    }
 
-  ws.on('close', () => {
-    clientsByLang.get(lang)?.delete(ws);
-    clearInterval(pingInterval);
-    console.log(`[WS] Client disconnected: lang=${lang}`);
+    if (!clientsByLang.has(lang)) {
+      clientsByLang.set(lang, new Set());
+    }
+    clientsByLang.get(lang).add(ws);
+    console.log(`[WS] Client connected: lang=${lang} (${clientsByLang.get(lang).size} clients for ${lang})`);
+
+    ws.send(JSON.stringify({
+      type: 'connected',
+      lang,
+      supported_languages: SUPPORTED_LANGS,
+      mock: MOCK_MODE,
+    }));
+
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === ws.OPEN) ws.ping();
+    }, 30000);
+
+    ws.on('close', () => {
+      clientsByLang.get(lang)?.delete(ws);
+      clearInterval(pingInterval);
+      console.log(`[WS] Client disconnected: lang=${lang}`);
+    });
+
+    ws.on('error', (err) => {
+      console.error(`[WS] Error: ${err.message}`);
+      clientsByLang.get(lang)?.delete(ws);
+      clearInterval(pingInterval);
+    });
   });
 
-  ws.on('error', (err) => {
-    console.error(`[WS] Error: ${err.message}`);
-    clientsByLang.get(lang)?.delete(ws);
-    clearInterval(pingInterval);
-  });
-});
+  return wss;
+}
+
+setupWebSocket(server);
+if (httpsServer) setupWebSocket(httpsServer);
 
 // ── Broadcast ──────────────────────────────────────────────
 
@@ -484,13 +513,17 @@ function startMockSTT() {
 // ── Start ──────────────────────────────────────────────────
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[Subtitles] Server listening on http://0.0.0.0:${PORT}`);
-  console.log(`[Subtitles] WebSocket: ws://localhost:${PORT}/subtitles?lang=en`);
+  console.log(`[Subtitles] HTTP server on http://0.0.0.0:${PORT}`);
+  console.log(`[Subtitles] Event Speaker: http://localhost:${PORT}/eventspeaker`);
   console.log(`[Subtitles] Status: http://localhost:${PORT}/subtitles/status`);
-  console.log(`[Subtitles] Test UI: http://localhost:${PORT}/test`);
-  console.log(`[Subtitles] Mode: ${MOCK_MODE ? 'MOCK (simulated speech)' : 'PRODUCTION (requires mic + STT)'}`);
+  console.log(`[Subtitles] Mode: ${MOCK_MODE ? 'MOCK' : 'PRODUCTION'}`);
 
-  if (MOCK_MODE) {
-    startMockSTT();
-  }
+  if (MOCK_MODE) startMockSTT();
 });
+
+if (httpsServer) {
+  httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
+    console.log(`[Subtitles] HTTPS server on https://0.0.0.0:${HTTPS_PORT}`);
+    console.log(`[Subtitles] Event Speaker (HTTPS): https://192.168.1.200:${HTTPS_PORT}/eventspeaker`);
+  });
+}
