@@ -1,12 +1,12 @@
 {
-  "version": "v260330.01 2:13a",
-  "release": 1158,
-  "sha": "1028fb74a",
-  "fullSha": "1028fb74a5f807df7cbd2073244af0b1f0e44e68",
+  "version": "v260330.02 2:48a",
+  "release": 1159,
+  "sha": "4ddc33d5a",
+  "fullSha": "4ddc33d5ad90ad9445e9bd55eb272ceb43fa9923",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 07:13:11+00",
-  "commits": [{"sha":"2f9059056","message":"feat: add live-queried machine specs to inventory — Alpuca, AlpineMac, M4 Air, Entry Tablet","author":"Rahul"},{"sha":"1028fb74a","message":"Merge remote-tracking branch 'origin/lucid-lamport'","author":"Rahul"}]
+  "pushedAt": "2026-03-30 07:48:13+00",
+  "commits": [{"sha":"4ddc33d5a","message":"feat: replace Capacitor with native mobile apps + Music/Lights/Assistant features","author":"Rahul"}]
 }
