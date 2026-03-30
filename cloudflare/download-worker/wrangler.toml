@@ -1,0 +1,12 @@
+name = "download-alpacaplayhouse"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+account_id = "9cd3a280a54ce2a5b382602f0247b577"
+
+routes = [
+  { pattern = "download.alpacaplayhouse.com/*", zone_name = "alpacaplayhouse.com" }
+]
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "alpacapps"
