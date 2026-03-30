@@ -1,12 +1,12 @@
 {
-  "version": "v260330.23 5:29a",
-  "release": 1180,
-  "sha": "8c7e8a328",
-  "fullSha": "8c7e8a32834af292640e7b8cd1a1dbba74adff0c",
+  "version": "v260330.24 5:40a",
+  "release": 1181,
+  "sha": "f9b9fafeb",
+  "fullSha": "f9b9fafebe038e9334be54a5a464d57dfc18ff9a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:29:01+00",
-  "commits": [{"sha":"31cd97527","message":"feat: add branded app icons — white alpaca head on dark green","author":"Rahul"},{"sha":"8c7e8a328","message":"Merge branch 'nice-curran'","author":"Rahul"}]
+  "pushedAt": "2026-03-30 10:40:34+00",
+  "commits": [{"sha":"cbece1e82","message":"chore: add gstack skill routing rules to CLAUDE.md","author":"Rahul"},{"sha":"c49d5b0b6","message":"feat: apply Alpaca Luxe design to all Android screens","author":"Rahul"},{"sha":"f9b9fafeb","message":"Merge branch 'suspicious-liskov'","author":"Rahul"}]
 }
