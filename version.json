@@ -1,12 +1,12 @@
 {
-  "version": "v260329.16 9:09p",
-  "release": 1153,
-  "sha": "819a3bf92",
-  "fullSha": "819a3bf9208058804cb8023ee87ed6c68a7ead60",
+  "version": "v260329.17 9:18p",
+  "release": 1154,
+  "sha": "f2592fa8c",
+  "fullSha": "f2592fa8c048273f1dfc98c8b5686b2064ddb172",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 02:09:09+00",
-  "commits": [{"sha":"819a3bf92","message":"feat: add event staff email notifications and admin signing alerts","author":"Rahul"}]
+  "pushedAt": "2026-03-30 02:18:38+00",
+  "commits": [{"sha":"f2592fa8c","message":"feat: track event staff email confirmations in people.metadata","author":"Rahul"}]
 }
