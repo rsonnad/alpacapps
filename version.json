@@ -1,12 +1,12 @@
 {
-  "version": "v260330.25 5:50a",
-  "release": 1182,
-  "sha": "6a2ff4117",
-  "fullSha": "6a2ff411785c244c935830b5f56bd67b7912c1bb",
+  "version": "v260330.26 5:51a",
+  "release": 1183,
+  "sha": "fcb860116",
+  "fullSha": "fcb860116273a4418d6358aedf324b25e28c8f8d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:50:03+00",
-  "commits": [{"sha":"6a2ff4117","message":"feat: consolidate device/lighting pages into inventory behind auth","author":"Rahul"}]
+  "pushedAt": "2026-03-30 10:51:19+00",
+  "commits": [{"sha":"fcb860116","message":"feat: add download.alpacaplayhouse.com Worker with R2 bucket binding","author":"Rahul"}]
 }
