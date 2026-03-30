@@ -24,6 +24,8 @@ const MOCK_MODE = process.argv.includes('--mock');
 const clientsByLang = new Map();
 let segmentCounter = 0;
 let isActive = false;
+let lastActivityTime = 0;
+const ACTIVITY_TIMEOUT_MS = 60_000; // isActive goes false after 60s of no input
 
 // ── Supported Languages ────────────────────────────────────
 
@@ -105,6 +107,10 @@ const server = http.createServer((req, res) => {
 
   // Health / status endpoint
   if (url.pathname === '/subtitles/status') {
+    // Auto-expire isActive after timeout (no mock, no inject for a while)
+    if (isActive && !MOCK_MODE && Date.now() - lastActivityTime > ACTIVITY_TIMEOUT_MS) {
+      isActive = false;
+    }
     const languages = [...clientsByLang.keys()].filter(l => clientsByLang.get(l).size > 0);
     const totalListeners = [...clientsByLang.values()].reduce((sum, s) => sum + s.size, 0);
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -131,6 +137,7 @@ const server = http.createServer((req, res) => {
           return;
         }
         isActive = true;
+        lastActivityTime = Date.now();
         if (is_partial) {
           broadcastPartial(text, buildMockTranslations(text, true));
         } else {
