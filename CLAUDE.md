@@ -47,6 +47,6 @@
 
 ## Quick Refs
 
-- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages | Capacitor 8
+- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages | Native mobile (Kotlin + Swift)
 - **Live:** https://alpacaplayhouse.com/
 - **Architecture:** Browser → GitHub Pages → Supabase (no server-side code)
