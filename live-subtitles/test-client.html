@@ -372,11 +372,10 @@
       emptyState.remove();
       subtitlesEl.innerHTML = segments.map(seg => {
         const cls = seg.is_partial ? 'segment partial' : 'segment';
-        if (seg.lang !== 'en' && seg.source_text) {
-          // Different language: original (dim) on top, translation (bright) below
+        // Always show both: source language on top (dim), subtitle language below (bright)
+        if (seg.source_text && seg.source_text !== seg.text) {
           return `<div class="${cls}"><div class="original">${esc(seg.source_text)}</div><div class="translation">${esc(seg.text)}</div></div>`;
         }
-        // Same language (English): just show the text normally
         return `<div class="${cls}"><div class="translation">${esc(seg.text)}</div></div>`;
       }).join('');
 
