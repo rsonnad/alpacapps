@@ -1,12 +1,12 @@
 {
-  "version": "v260330.49 4:34p",
-  "release": 1206,
-  "sha": "5c4dc2d93",
-  "fullSha": "5c4dc2d932ee672f31492e6d614228a57c57df6d",
+  "version": "v260330.50 4:54p",
+  "release": 1207,
+  "sha": "d42b34c4b",
+  "fullSha": "d42b34c4b3f33feedde7b55097cf8dd887d461bb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T21:34:07+00:00",
-  "commits": [{"sha":"5c4dc2d93","message":"Add Garage Mahal cameras + slideshow kiosk page","author":"Rahul"}]
+  "pushedAt": "2026-03-30T21:54:44+00:00",
+  "commits": [{"sha":"d42b34c4b","message":"Reorganize kiosks: /kioskhall/ → /kiosks/hall/ and /kiosks/garage/","author":"Rahul"}]
 }
