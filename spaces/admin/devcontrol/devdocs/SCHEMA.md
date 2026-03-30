@@ -410,3 +410,26 @@ photo_spaces    - DEPRECATED: migrated to media_spaces
 - `desired_departure_date` - Early exit date (tenant wants to leave early)
 - `desired_departure_listed` - Boolean, when true the early exit date is shown to consumers for availability
 
+### Unified Device System
+```
+device_control_recipes - Copy-paste control commands for any device (83 recipes)
+                        (device_table, device_id, device_name, room, action,
+                         protocol, command_template, command_notes,
+                         requires_secret, secret_field, gotchas [text[]],
+                         tags [text[]], last_verified_at, display_order, is_active)
+                        — Polymorphic: device_table + device_id point to source row
+                        — Actions: turn_on, turn_off, set_color, status, view_stream
+                        — Protocols: light_api, govee_lan, nest_sdm, lg_thinq, rtsp, tesla_api
+
+devices_unified (VIEW) - Unions all device tables into one queryable surface (105 rows)
+                        (id, device_key, name, room, domain, protocol, is_active, source_table)
+                        — Domains: lighting, climate, appliance, security, vehicle
+                        — Sources: lighting_groups, govee_devices, nest_devices,
+                                   lg_appliances, camera_streams, vehicles
+
+service_connections    - Infra connection recipes for SSH/API/S3 services
+                        (name, slug, category, host, port, protocol, auth_method,
+                         bw_item_name, bw_field_name, connect_command,
+                         common_commands [jsonb], status, gotchas [text[]], tags [text[]])
+```
+

@@ -41,6 +41,19 @@
 - **Infra hero banner:** `infra/index.html` and `docs/alpacappsinfra.html` use a full-width banner card hero (wide alpaca image on top, text below). Do NOT replace with dark full-bleed hero or side-by-side layout. Look for the `⚠️ HERO BANNER` comment.
 - **Permitting Est. Cost link:** In `jackie/pages/permittingplan/index.html`, the Est. Cost value and Estimated Total value MUST link to `cost-estimate-breakdown.html`. Do NOT remove these links. Look for `⚠️ KEEP` comments.
 
+## Device Control Protocol
+
+To control ANY device (lights, thermostats, cameras, vehicles, appliances):
+
+1. **Query `device_control_recipes`** for the device's command: `SELECT * FROM device_control_recipes WHERE device_name ILIKE '%keyword%' AND action = 'turn_on'`
+2. **For lights:** the universal command is the Light API: `curl -X POST https://lights.alpacaplayhouse.com/lights -H "Authorization: Bearer $TOKEN" -d '{"rooms":"ROOM","color":"COLOR"}'`
+3. **Token:** `bw-read "Light API — Alpuca" "password"`
+4. **All rooms list:** query `SELECT DISTINCT room FROM device_control_recipes WHERE device_table = 'lighting_groups'`
+5. **Browse all devices:** `devices_unified` VIEW unions all device tables into one queryable surface
+6. **Directory page:** https://alpacaplayhouse.com/directory/devices.html
+
+**Do NOT** read `memory/light-control.md` or `memory/light-inventory.md` — all recipes are now in the `device_control_recipes` table.
+
 ## Service Connection Protocol
 
 Before connecting to ANY external service (SSH, API, R2, Supabase, etc.):
