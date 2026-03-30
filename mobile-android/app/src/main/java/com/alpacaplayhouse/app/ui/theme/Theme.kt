@@ -5,8 +5,12 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.foundation.isSystemInDarkTheme
+
+// Provides the actual theme dark/light state to all composables (not system setting)
+val LocalIsDarkTheme = compositionLocalOf { true }
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.alpacaplayhouse.app.data.BrandConfig
@@ -97,13 +101,15 @@ private fun buildLightColorScheme() = lightColorScheme(
 
 @Composable
 fun AlpacaPlayhouseTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true, // Force dark mode — Alpaca Luxe is a dark-first design
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) buildDarkColorScheme() else buildLightColorScheme()
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+    CompositionLocalProvider(LocalIsDarkTheme provides darkTheme) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = content
+        )
+    }
 }

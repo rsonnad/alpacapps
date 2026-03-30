@@ -4,7 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.alpacaplayhouse.app.ui.theme.LocalIsDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -64,7 +64,7 @@ private val AMBIENT_PLAYLISTS = listOf(
 @Composable
 fun MusicScreen() {
     val scope = rememberCoroutineScope()
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
 
     // Filter rooms based on role — admin/staff see all, others skip private rooms
     val visibleRooms = remember {
