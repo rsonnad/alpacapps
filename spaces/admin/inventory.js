@@ -447,7 +447,7 @@ async function loadDashboard() {
     );
     const total = results.reduce((s, r) => s + (typeof r.count === 'number' ? r.count : 0), 0);
     const el = document.getElementById('statTables');
-    if (el) el.textContent = `70+ (${total.toLocaleString()} rows)`;
+    if (el) el.innerHTML = `70+<br><span style="font-size:0.6em;font-weight:400">${total.toLocaleString()} rows</span>`;
   } catch (e) {
     console.error('Dashboard stats error:', e);
   }
