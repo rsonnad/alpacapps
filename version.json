@@ -1,12 +1,12 @@
 {
-  "version": "v260329.18 10:42p",
-  "release": 1155,
-  "sha": "43ed6bf26",
-  "fullSha": "43ed6bf2638e5f25f8fc68efd349f380410d9f52",
+  "version": "v260329.19 10:50p",
+  "release": 1156,
+  "sha": "77e74f1f2",
+  "fullSha": "77e74f1f26ce505948fb3770acc4e9be8ff6ae85",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 03:42:18+00",
-  "commits": [{"sha":"0a425304b","message":"docs: add comprehensive light onboarding checklist and new rooms to LIGHTINGAUTOMATION.md","author":"Rahul"},{"sha":"43ed6bf26","message":"fix: resolve merge conflict in LIGHTINGAUTOMATION.md device inventory","author":"Rahul"}]
+  "pushedAt": "2026-03-30 03:50:42+00",
+  "commits": [{"sha":"77e74f1f2","message":"docs: add full database schema and fix column names in LIGHTINGAUTOMATION.md","author":"Rahul"}]
 }
