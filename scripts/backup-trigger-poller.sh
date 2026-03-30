@@ -127,6 +127,15 @@ for t in json.load(sys.stdin):
         DB_SIZE=$(du -h "$DUMP_FILE" | cut -f1)
         echo "$LOG_PREFIX   Done: $DUMP_FILE ($DB_SIZE)"
         RESULT_JSON="{\"size\":\"$DB_SIZE\",\"file\":\"$(basename "$DUMP_FILE")\"}"
+        # Log to backup_files so it appears in Backups table
+        DB_SIZE_BYTES=$(stat -f%z "$DUMP_FILE" 2>/dev/null || echo 0)
+        curl -sf "$SUPABASE_URL/rest/v1/backup_files" \
+          -H "apikey: $SUPABASE_KEY" \
+          -H "Authorization: Bearer $SUPABASE_KEY" \
+          -H "Content-Type: application/json" \
+          -H "Prefer: resolution=merge-duplicates" \
+          -d "{\"service\":\"supabase-db\",\"backup_date\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"filename\":\"$(basename "$DUMP_FILE")\",\"filepath\":\"$DUMP_FILE\",\"size_bytes\":$DB_SIZE_BYTES}" \
+          >/dev/null 2>&1 && echo "$LOG_PREFIX   Logged to backup_files" || echo "$LOG_PREFIX   WARN: failed to log to backup_files"
         # Prune old dumps (keep last 12)
         DUMP_COUNT=$(ls -1 "$DB_DIR"/full-*.sql.gz 2>/dev/null | wc -l | tr -d ' ')
         if [ "$DUMP_COUNT" -gt 12 ]; then

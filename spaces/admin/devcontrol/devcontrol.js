@@ -1149,7 +1149,14 @@ async function loadBackups() {
   const haosBackups = haosResult.status === 'fulfilled' && !haosResult.value.error ? haosResult.value.data || [] : [];
   const activeTriggers = triggersResult.status === 'fulfilled' && !triggersResult.value.error ? triggersResult.value.data || [] : [];
   const recentTriggers = recentTriggersResult.status === 'fulfilled' && !recentTriggersResult.value.error ? recentTriggersResult.value.data || [] : [];
-  const backupFiles = filesResult.status === 'fulfilled' && !filesResult.value.error ? filesResult.value.data || [] : [];
+  const rawBackupFiles = filesResult.status === 'fulfilled' && !filesResult.value.error ? filesResult.value.data || [] : [];
+  // Deduplicate by filename (keep first = most recent by backup_date desc)
+  const seenFilenames = new Set();
+  const backupFiles = rawBackupFiles.filter(f => {
+    if (!f.filename || seenFilenames.has(f.filename)) return false;
+    seenFilenames.add(f.filename);
+    return true;
+  });
 
   const lastSyncMs = haosBackups.length ? Math.max(...haosBackups.map(b => new Date(b.synced_at).getTime())) : 0;
   function haosStillExists(b) {
@@ -1309,7 +1316,12 @@ async function loadBackups() {
     // Check if any success exists (to dim earlier failures)
     const hasSuccess = allTriggers.some(t => t.status === 'completed');
     const triggerHtml = allTriggers.map(t => {
-      const when = new Date(t.completed_at || t.requested_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const trigDate = new Date(t.completed_at || t.requested_at);
+      const today = new Date();
+      const isToday = trigDate.toDateString() === today.toDateString();
+      const when = isToday
+        ? trigDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        : trigDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + trigDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
       const resultDetail = t.notes || '';
       if (t.status === 'running') {
         return `<div class="dc-bk-sched-pending" style="color:#e65100">🔄 Backup running since ${when}</div>`;
