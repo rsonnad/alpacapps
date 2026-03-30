@@ -1323,10 +1323,18 @@ async function loadBackups() {
         ? trigDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
         : trigDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + trigDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
       const resultDetail = t.notes || '';
+      const ageMs = Date.now() - trigDate.getTime();
+      const staleMs = 30 * 60 * 1000; // 30 minutes
       if (t.status === 'running') {
+        if (ageMs > staleMs) {
+          return `<div class="dc-bk-sched-pending" style="color:#b0a090;font-size:0.6875rem;opacity:0.7">⚠️ Backup stale — started ${when}, likely crashed</div>`;
+        }
         return `<div class="dc-bk-sched-pending" style="color:#e65100">🔄 Backup running since ${when}</div>`;
       }
       if (t.status === 'pending') {
+        if (ageMs > staleMs) {
+          return `<div class="dc-bk-sched-pending" style="color:#b0a090;font-size:0.6875rem;opacity:0.7">⚠️ Backup request stale — requested ${when}, poller may be down</div>`;
+        }
         return `<div class="dc-bk-sched-pending" style="color:#1565c0">⏳ Backup requested at ${when} — poller runs every 5 min</div>`;
       }
       if (t.status === 'completed') {
