@@ -1,7 +1,9 @@
 # Home Automation — Alpaca Playhouse
 
 > Comprehensive reference for all smart home devices, Home Assistant setup, and migration plans.
-> Last updated: 2026-03-25
+> Last updated: 2026-03-30
+>
+> **Machine specs & hardware inventory:** See [Admin Inventory](../../inventory.html) → Devices → "Computers & Kiosks" for full queried specs (chip, RAM, storage, serial, IPs) for Alpuca, AlpineMac, Entry Tablet, and dev MacBook.
 
 ---
 
