@@ -192,9 +192,12 @@ async function transcribeWithGemini(audioBase64, hintLang, targetLangs) {
     translationInstruction = `\nAlso translate the transcription into these languages: ${targetList.join(', ')}.`;
   }
 
-  const prompt = `Transcribe verbatim. ${langHint}.${translationInstruction}
-JSON only: {"source_lang":"xx","source_text":"..."${targetList.length > 0 ? ',"translations":{"xx":"..."}' : ''}}
-Silence→{"source_lang":"","source_text":""}`;
+  const prompt = `You are a live subtitle transcription system. Transcribe the spoken words in this audio exactly as spoken. ${langHint}.${translationInstruction}
+
+Return ONLY valid JSON (no markdown): {"source_lang":"xx","source_text":"the transcribed speech"${targetList.length > 0 ? ',"translations":{"en":"English text","pl":"Polish text"}' : ''}}
+
+If truly silent (no speech at all), return: {"source_lang":"","source_text":""}
+Do NOT return empty for quiet or distant speech — transcribe whatever you can hear.`;
 
   const body = JSON.stringify({
     contents: [{
@@ -203,7 +206,7 @@ Silence→{"source_lang":"","source_text":""}`;
         { text: prompt },
       ],
     }],
-    generationConfig: { temperature: 0, maxOutputTokens: 512 },
+    generationConfig: { temperature: 0.1, maxOutputTokens: 512 },
   });
 
   return new Promise((resolve) => {
@@ -384,7 +387,11 @@ function handleRequest(req, res) {
 
         // Process in background — don't block the HTTP response
         transcribeWithGemini(audio, srcLang, targetLangs).then(result => {
-          if (!result || !result.source_text) return;
+          if (!result || !result.source_text) {
+            console.log('[Transcribe] silence/empty — audio size:', audio.length, 'chars');
+            return;
+          }
+          console.log(`[Transcribe] ${result.source_lang}: "${result.source_text.substring(0, 60)}..." → ${Object.keys(result.translations).join(',')}`);
           broadcastSegment(result.source_text, result.source_lang, result.translations);
         }).catch(e => console.error('[Transcribe BG]', e.message));
       } catch (e) {

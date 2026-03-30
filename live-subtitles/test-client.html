@@ -268,13 +268,13 @@
 
       mediaRecorder.start();
 
-      // Send audio every 2 seconds for low-latency subtitles
+      // Send audio every 3 seconds — balances latency vs transcription quality
       chunkTimer = setInterval(() => {
         if (mediaRecorder && mediaRecorder.state === 'recording') {
           mediaRecorder.stop();
           mediaRecorder.start();
         }
-      }, 2000);
+      }, 3000);
     }
 
     function stopMic() {
