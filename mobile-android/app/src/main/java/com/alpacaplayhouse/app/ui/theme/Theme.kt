@@ -4,23 +4,62 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.alpacaplayhouse.app.data.BrandConfig
 
-// Brand colors — from style guide (Current Teal palette)
-val AlpacaPrimary = Color(0xFF3D8B7A)       // Teal
-val AlpacaPrimaryLight = Color(0xFF5A9E8F)  // Light teal
-val AlpacaAccent = Color(0xFFE07A5F)        // Warm salmon
-val AlpacaBackground = Color(0xFFFAF9F7)    // Warm white
-val AlpacaText = Color(0xFF2D3142)          // Dark navy
-val AlpacaMuted = Color(0xFF7A7D8C)         // Grey-blue
+// Brand colors — sourced from BrandConfig (dynamically loaded from Supabase)
+val AlpacaPrimary: Color get() = BrandConfig.current.primary
+val AlpacaPrimaryLight: Color get() = BrandConfig.current.primaryLight
+val AlpacaAccent: Color get() = BrandConfig.current.accent
+val AlpacaBackground: Color get() = BrandConfig.current.background
+val AlpacaText: Color get() = BrandConfig.current.text
+val AlpacaMuted: Color get() = BrandConfig.current.muted
 
 // Dark mode variants
-val AlpacaDarkBg = Color(0xFF1A1E2C)        // Deep navy
-val AlpacaDarkSurface = Color(0xFF252A3A)   // Lighter navy
-val AlpacaDarkSurfaceVar = Color(0xFF2F3447) // Surface variant
+val AlpacaDarkBg: Color get() = BrandConfig.current.darkBg
+val AlpacaDarkSurface: Color get() = BrandConfig.current.darkSurface
+val AlpacaDarkSurfaceVar = Color(0xFF2F3447)
 
-private val DarkColorScheme = darkColorScheme(
+// Alpaca Luxe design tokens
+object AlpacaLuxe {
+    // Glass card colors
+    val glassLight = Color.White.copy(alpha = 0.08f)
+    val glassBorder = Color.White.copy(alpha = 0.10f)
+    val glassBorderLight = Color.Black.copy(alpha = 0.06f)
+
+    val glassLightMode = Color.White.copy(alpha = 0.85f)
+    val glassBorderLightMode = Color.Black.copy(alpha = 0.08f)
+
+    // Glow colors
+    val primaryGlow: Color get() = AlpacaPrimary.copy(alpha = 0.25f)
+    val accentGlow: Color get() = AlpacaAccent.copy(alpha = 0.30f)
+
+    // Gradient: teal to dark navy (for headers)
+    val headerGradientDark: Brush
+        get() = Brush.verticalGradient(
+            colors = listOf(AlpacaPrimary.copy(alpha = 0.4f), AlpacaDarkBg)
+        )
+    val headerGradientLight: Brush
+        get() = Brush.verticalGradient(
+            colors = listOf(AlpacaPrimary.copy(alpha = 0.12f), AlpacaBackground)
+        )
+
+    // Nav bar
+    val navBarDark: Color get() = AlpacaDarkSurface.copy(alpha = 0.95f)
+    val navBarLight = Color.White.copy(alpha = 0.97f)
+    val navIndicator: Color get() = AlpacaPrimary.copy(alpha = 0.15f)
+
+    // Card corners
+    const val cardRadius = 16
+    const val cardRadiusLarge = 20
+    const val chipRadius = 12
+}
+
+private fun buildDarkColorScheme() = darkColorScheme(
     primary = AlpacaPrimary,
     onPrimary = Color.White,
     secondary = AlpacaPrimaryLight,
@@ -38,7 +77,7 @@ private val DarkColorScheme = darkColorScheme(
     onError = Color.Black,
 )
 
-private val LightColorScheme = lightColorScheme(
+private fun buildLightColorScheme() = lightColorScheme(
     primary = AlpacaPrimary,
     onPrimary = Color.White,
     secondary = AlpacaPrimaryLight,
@@ -61,7 +100,7 @@ fun AlpacaPlayhouseTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = if (darkTheme) buildDarkColorScheme() else buildLightColorScheme()
 
     MaterialTheme(
         colorScheme = colorScheme,

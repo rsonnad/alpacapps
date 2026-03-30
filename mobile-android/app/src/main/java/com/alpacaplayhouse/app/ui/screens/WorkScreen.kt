@@ -1,6 +1,8 @@
 package com.alpacaplayhouse.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +20,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,55 +55,87 @@ fun WorkScreen() {
     val isDark = isSystemInDarkTheme()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Header row with title + action button
-        Row(
+        // Gradient header area
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            AlpacaPrimary.copy(alpha = 0.3f),
+                            Color.Transparent,
+                        ),
+                    ),
+                ),
         ) {
-            Text(
-                text = "Work",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isDark) Color.White else AlpacaText,
-                modifier = Modifier.weight(1f),
-            )
-        }
+            // Header row with title
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Work",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isDark) Color.White else AlpacaText,
+                    modifier = Modifier.weight(1f),
+                )
+            }
 
-        // Sub-tabs — compact, pill-style
-        SingleChoiceSegmentedButtonRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-        ) {
-            WorkTab.entries.forEachIndexed { index, tab ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(
-                        index = index,
-                        count = WorkTab.entries.size,
-                    ),
-                    onClick = { selectedTab = tab },
-                    selected = selectedTab == tab,
-                    icon = {},
-                    colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = AlpacaPrimary,
-                        activeContentColor = Color.White,
-                        inactiveContainerColor = if (isDark) AlpacaDarkSurface else Color(0xFFF1F5F9),
-                        inactiveContentColor = if (isDark) Color.White.copy(alpha = 0.7f) else AlpacaMuted,
-                    ),
-                ) {
-                    Text(
-                        text = when (tab) {
-                            WorkTab.Tasks -> "Tasks"
-                            WorkTab.Hours -> "Hours"
-                            WorkTab.Inquiry -> "Inquiry"
-                        },
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
+            // Glass segmented tab control
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(AlpacaLuxe.chipRadius.dp))
+                    .background(
+                        if (isDark) AlpacaDarkSurface.copy(alpha = 0.6f)
+                        else Color.White.copy(alpha = 0.85f),
                     )
+                    .border(
+                        width = 1.dp,
+                        color = if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode,
+                        shape = RoundedCornerShape(AlpacaLuxe.chipRadius.dp),
+                    )
+                    .padding(4.dp),
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    WorkTab.entries.forEach { tab ->
+                        val selected = selectedTab == tab
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape((AlpacaLuxe.chipRadius - 2).dp))
+                                .then(
+                                    if (selected) Modifier.background(AlpacaPrimary)
+                                    else Modifier,
+                                )
+                                .clickable { selectedTab = tab }
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = when (tab) {
+                                    WorkTab.Tasks -> "Tasks"
+                                    WorkTab.Hours -> "Hours"
+                                    WorkTab.Inquiry -> "Inquiry"
+                                },
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = when {
+                                    selected -> Color.White
+                                    isDark -> Color.White.copy(alpha = 0.7f)
+                                    else -> AlpacaMuted
+                                },
+                            )
+                        }
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
         }
 
         when (selectedTab) {
@@ -149,37 +185,52 @@ private fun TasksPane(isDark: Boolean) {
                     "done" to "Done",
                 ).forEach { (status, label) ->
                     val selected = filterStatus == status
-                    FilterChip(
-                        selected = selected,
-                        onClick = { filterStatus = status },
-                        label = {
-                            Text(
-                                label,
-                                fontSize = 12.sp,
-                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                    Box(
+                        modifier = Modifier
+                            .height(32.dp)
+                            .clip(RoundedCornerShape(AlpacaLuxe.chipRadius.dp))
+                            .background(
+                                when {
+                                    selected -> AlpacaPrimary.copy(alpha = 0.2f)
+                                    isDark -> AlpacaDarkSurface.copy(alpha = 0.5f)
+                                    else -> Color.White.copy(alpha = 0.7f)
+                                },
                             )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = AlpacaPrimary.copy(alpha = 0.15f),
-                            selectedLabelColor = AlpacaPrimary,
-                        ),
-                        border = FilterChipDefaults.filterChipBorder(
-                            borderColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color(0xFFE2E8F0),
-                            enabled = true,
-                            selected = selected,
-                        ),
-                        modifier = Modifier.height(32.dp),
-                    )
+                            .border(
+                                width = 1.dp,
+                                color = when {
+                                    selected -> AlpacaPrimary
+                                    isDark -> AlpacaLuxe.glassBorder
+                                    else -> AlpacaLuxe.glassBorderLightMode
+                                },
+                                shape = RoundedCornerShape(AlpacaLuxe.chipRadius.dp),
+                            )
+                            .clickable { filterStatus = status }
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            label,
+                            fontSize = 12.sp,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = when {
+                                selected -> AlpacaPrimary
+                                isDark -> Color.White.copy(alpha = 0.7f)
+                                else -> AlpacaMuted
+                            },
+                        )
+                    }
                 }
             }
 
-            // Add button — top right
+            // + button — salmon accent, circle, subtle shadow
             IconButton(
                 onClick = { showCreate = true },
                 modifier = Modifier
                     .size(36.dp)
+                    .shadow(4.dp, CircleShape)
                     .clip(CircleShape)
-                    .background(AlpacaPrimary),
+                    .background(AlpacaAccent),
             ) {
                 Icon(
                     Icons.Default.Add,
@@ -302,13 +353,20 @@ private fun TaskCard(task: WorkTask, isDark: Boolean, onStatusChange: (String) -
         else -> AlpacaMuted
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isDark) AlpacaDarkSurface else Color.White,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 1.dp),
+    // Glass task card
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(AlpacaLuxe.cardRadius.dp))
+            .background(
+                if (isDark) AlpacaDarkSurface.copy(alpha = 0.5f)
+                else Color.White.copy(alpha = 0.8f),
+            )
+            .border(
+                width = 1.dp,
+                color = if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode,
+                shape = RoundedCornerShape(AlpacaLuxe.cardRadius.dp),
+            ),
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -356,25 +414,31 @@ private fun TaskCard(task: WorkTask, isDark: Boolean, onStatusChange: (String) -
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Status chip — tappable to cycle
-            Surface(
-                onClick = {
-                    val next = when (task.status) {
-                        "open" -> "in_progress"
-                        "in_progress" -> "done"
-                        else -> "open"
+            // Glass status pill — tappable to cycle
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(statusBg.copy(alpha = if (isDark) 0.6f else 0.7f))
+                    .border(
+                        width = 0.5.dp,
+                        color = statusColor.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(8.dp),
+                    )
+                    .clickable {
+                        val next = when (task.status) {
+                            "open" -> "in_progress"
+                            "in_progress" -> "done"
+                            else -> "open"
+                        }
+                        onStatusChange(next)
                     }
-                    onStatusChange(next)
-                },
-                shape = RoundedCornerShape(8.dp),
-                color = statusBg,
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
             ) {
                 Text(
                     text = statusLabel,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = statusColor,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             }
         }
@@ -473,57 +537,80 @@ private fun HoursPane(isDark: Boolean) {
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // Clock In button
+        // Clock In button — glass card wrapping
         item {
-            Button(
-                onClick = {
-                    clockingIn = true
-                    scope.launch {
-                        WorkApi.clockIn().onSuccess { entry ->
-                            entries = listOf(entry) + entries
-                        }
-                        clockingIn = false
-                    }
-                },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = AlpacaPrimary,
-                    contentColor = Color.White,
-                ),
-                enabled = !clockingIn,
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 0.dp,
-                ),
-            ) {
-                if (clockingIn) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp,
+                    .clip(RoundedCornerShape(AlpacaLuxe.cardRadius.dp))
+                    .background(
+                        if (isDark) AlpacaDarkSurface.copy(alpha = 0.5f)
+                        else Color.White.copy(alpha = 0.8f),
                     )
-                } else {
-                    Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Clock In", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    .border(
+                        width = 1.dp,
+                        color = if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode,
+                        shape = RoundedCornerShape(AlpacaLuxe.cardRadius.dp),
+                    )
+                    .padding(16.dp),
+            ) {
+                Button(
+                    onClick = {
+                        clockingIn = true
+                        scope.launch {
+                            WorkApi.clockIn().onSuccess { entry ->
+                                entries = listOf(entry) + entries
+                            }
+                            clockingIn = false
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(AlpacaLuxe.chipRadius.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AlpacaPrimary,
+                        contentColor = Color.White,
+                    ),
+                    enabled = !clockingIn,
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 0.dp,
+                    ),
+                ) {
+                    if (clockingIn) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Clock In", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    }
                 }
             }
         }
 
-        // Summary card
+        // Summary glass card
         if (entries.isNotEmpty()) {
             item {
                 val totalHours = entries.mapNotNull { it.total_hours }.sum()
                 val activeCount = entries.count { it.status == "active" }
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isDark) AlpacaDarkSurface else Color(0xFFF0FDF4),
-                    ),
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(AlpacaLuxe.cardRadius.dp))
+                        .background(
+                            if (isDark) AlpacaDarkSurface.copy(alpha = 0.5f)
+                            else Color.White.copy(alpha = 0.8f),
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode,
+                            shape = RoundedCornerShape(AlpacaLuxe.cardRadius.dp),
+                        ),
                 ) {
                     Row(
                         modifier = Modifier
@@ -604,13 +691,20 @@ private fun HoursPane(isDark: Boolean) {
             }
         } else {
             items(entries, key = { it.id }) { entry ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isDark) AlpacaDarkSurface else Color.White,
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 1.dp),
+                // Glass entry card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(AlpacaLuxe.cardRadius.dp))
+                        .background(
+                            if (isDark) AlpacaDarkSurface.copy(alpha = 0.5f)
+                            else Color.White.copy(alpha = 0.8f),
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode,
+                            shape = RoundedCornerShape(AlpacaLuxe.cardRadius.dp),
+                        ),
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -681,15 +775,21 @@ private fun InquiryPane(isDark: Boolean) {
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // Ask input
+        // Glass input card
         item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isDark) AlpacaDarkSurface else Color.White,
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 1.dp),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AlpacaLuxe.cardRadius.dp))
+                    .background(
+                        if (isDark) AlpacaDarkSurface.copy(alpha = 0.5f)
+                        else Color.White.copy(alpha = 0.8f),
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode,
+                        shape = RoundedCornerShape(AlpacaLuxe.cardRadius.dp),
+                    ),
             ) {
                 Row(
                     modifier = Modifier.padding(12.dp),
@@ -705,6 +805,7 @@ private fun InquiryPane(isDark: Boolean) {
                         textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
+                    // Salmon send button
                     IconButton(
                         onClick = {
                             if (question.isNotBlank()) {
@@ -721,10 +822,11 @@ private fun InquiryPane(isDark: Boolean) {
                         enabled = question.isNotBlank() && !submitting,
                         modifier = Modifier
                             .size(40.dp)
+                            .shadow(2.dp, CircleShape)
                             .clip(CircleShape)
                             .background(
-                                if (question.isNotBlank()) AlpacaPrimary
-                                else AlpacaPrimary.copy(alpha = 0.3f),
+                                if (question.isNotBlank()) AlpacaAccent
+                                else AlpacaAccent.copy(alpha = 0.3f),
                             ),
                     ) {
                         if (submitting) {
@@ -787,13 +889,20 @@ private fun InquiryPane(isDark: Boolean) {
             }
         } else {
             items(inquiries, key = { it.id }) { inquiry ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isDark) AlpacaDarkSurface else Color.White,
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 1.dp),
+                // Glass inquiry card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(AlpacaLuxe.cardRadius.dp))
+                        .background(
+                            if (isDark) AlpacaDarkSurface.copy(alpha = 0.5f)
+                            else Color.White.copy(alpha = 0.8f),
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode,
+                            shape = RoundedCornerShape(AlpacaLuxe.cardRadius.dp),
+                        ),
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(

@@ -1,5 +1,6 @@
 package com.alpacaplayhouse.app.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -11,6 +12,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -109,33 +112,66 @@ fun LightsScreen() {
         }
     }
 
+    // Gradient header brush
+    val headerGradient = Brush.verticalGradient(
+        colors = listOf(
+            AlpacaPrimary.copy(alpha = 0.3f),
+            Color.Transparent,
+        ),
+    )
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+        modifier = Modifier.fillMaxSize(),
     ) {
-        Text(
-            text = "Lights",
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (isDark) Color.White else AlpacaText,
-        )
+        // --- Gradient header section ---
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(headerGradient)
+                .padding(horizontal = 20.dp, vertical = 20.dp),
+        ) {
+            Column {
+                Text(
+                    text = "Lights",
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (isDark) Color.White else AlpacaText,
+                    letterSpacing = (-0.5).sp,
+                )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        statusMessage?.let { msg ->
-            Text(
-                text = msg,
-                fontSize = 13.sp,
-                color = AlpacaPrimary,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
+                statusMessage?.let { msg ->
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isDark) {
+                            AlpacaDarkSurface.copy(alpha = 0.6f)
+                        } else {
+                            Color.White.copy(alpha = 0.85f)
+                        },
+                        border = BorderStroke(
+                            0.5.dp,
+                            if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode,
+                        ),
+                    ) {
+                        Text(
+                            text = msg,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = AlpacaPrimary,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                        )
+                    }
+                }
+            }
         }
 
+        // --- Zone list ---
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-            contentPadding = PaddingValues(bottom = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
         ) {
             items(visibleZones) { zone ->
                 ZoneCard(
@@ -166,21 +202,30 @@ private fun ZoneCard(
     isDark: Boolean,
     onSceneTap: (LightScene) -> Unit,
 ) {
-    Card(
+    val glassBorder = if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode
+
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isDark) AlpacaDarkSurface else Color.White,
-        ),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 1.dp),
+        shape = RoundedCornerShape(AlpacaLuxe.cardRadius.dp),
+        color = if (isDark) {
+            AlpacaDarkSurface.copy(alpha = 0.6f)
+        } else {
+            Color.White.copy(alpha = 0.85f)
+        },
+        border = BorderStroke(0.5.dp, glassBorder),
+        tonalElevation = 0.dp,
+        shadowElevation = if (isDark) 0.dp else 2.dp,
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(18.dp)) {
             Text(
                 text = zone.name,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
                 color = if (isDark) Color.White else AlpacaText,
+                letterSpacing = (-0.3).sp,
             )
+
+            Spacer(modifier = Modifier.height(2.dp))
 
             Text(
                 text = zone.rooms.joinToString(" / "),
@@ -188,7 +233,7 @@ private fun ZoneCard(
                 color = AlpacaMuted,
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -215,17 +260,32 @@ private fun SceneButton(
     val accent = sceneAccentColor(scene)
     val isOff = scene.label == "Off"
 
+    val buttonShape = RoundedCornerShape(AlpacaLuxe.chipRadius.dp)
+
+    // Colored shadow glow for non-Off scenes
+    val glowModifier = if (!isOff) {
+        Modifier.shadow(
+            elevation = 6.dp,
+            shape = buttonShape,
+            ambientColor = accent.copy(alpha = 0.4f),
+            spotColor = accent.copy(alpha = 0.35f),
+        )
+    } else {
+        Modifier
+    }
+
     FilledTonalButton(
         onClick = onClick,
-        shape = RoundedCornerShape(10.dp),
+        modifier = glowModifier,
+        shape = buttonShape,
         colors = ButtonDefaults.filledTonalButtonColors(
             containerColor = if (isOff) {
-                if (isDark) Color(0xFF2A2D35) else Color(0xFFF1F5F9)
+                if (isDark) Color(0xFF1E2028) else Color(0xFFECEFF1)
             } else {
                 accent.copy(alpha = if (isDark) 0.3f else 0.2f)
             },
             contentColor = if (isOff) {
-                AlpacaMuted
+                AlpacaMuted.copy(alpha = 0.7f)
             } else {
                 if (isDark) Color.White else AlpacaText
             },
