@@ -1,12 +1,12 @@
 {
-  "version": "v260330.14 4:22a",
-  "release": 1171,
-  "sha": "707c9422b",
-  "fullSha": "707c9422b48899a4c5f0e1b29ca9732d1b82f68a",
+  "version": "v260330.15 4:25a",
+  "release": 1172,
+  "sha": "7ddf513a9",
+  "fullSha": "7ddf513a93f83a17b922196f6db482c7c5063436",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 09:22:51+00",
-  "commits": [{"sha":"707c9422b","message":"fix: polish app aesthetics — gradient login, shorter nav labels, Coil network dep","author":"Rahul"}]
+  "pushedAt": "2026-03-30 09:25:35+00",
+  "commits": [{"sha":"7ddf513a9","message":"feat: add prompt history with favorites and delete to Home/Assistant screen","author":"Rahul"}]
 }
