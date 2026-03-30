@@ -1,12 +1,12 @@
 {
-  "version": "v260330.41 1:46p",
-  "release": 1198,
-  "sha": "6e3c61b1c",
-  "fullSha": "6e3c61b1c102acb6f31dc36d9699589c3f90aa3c",
+  "version": "v260330.42 1:55p",
+  "release": 1199,
+  "sha": "4da46fbbf",
+  "fullSha": "4da46fbbf1c3cfe169f162e1dcedcfef8e76b2d9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T18:46:34+00:00",
-  "commits": [{"sha":"6e3c61b1c","message":"feat: add HTTPS + rename to Event Speaker for live subtitles","author":"Rahul"}]
+  "pushedAt": "2026-03-30T18:55:45+00:00",
+  "commits": [{"sha":"4da46fbbf","message":"feat: keep screen on while app is open","author":"Rahul"}]
 }
