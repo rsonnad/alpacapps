@@ -1,12 +1,12 @@
 {
-  "version": "v260330.15 4:25a",
-  "release": 1172,
-  "sha": "7ddf513a9",
-  "fullSha": "7ddf513a93f83a17b922196f6db482c7c5063436",
+  "version": "v260330.16 4:35a",
+  "release": 1173,
+  "sha": "6b02c104c",
+  "fullSha": "6b02c104c5106ae965dc8e051dd2a133d88b1bcd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 09:25:35+00",
-  "commits": [{"sha":"7ddf513a9","message":"feat: add prompt history with favorites and delete to Home/Assistant screen","author":"Rahul"}]
+  "pushedAt": "2026-03-30 09:35:32+00",
+  "commits": [{"sha":"6b02c104c","message":"feat: add live translation subtitles implementation spec","author":"Rahul"}]
 }
