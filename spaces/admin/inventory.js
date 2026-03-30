@@ -365,18 +365,259 @@ const EDGE_FUNCTION_GROUPS = {
   'Utility (8)': ['api', 'release-info', 'share-space', 'contact-form', 'guestbook-upload', 'w9-submit', 'lesson-nav', 'audit-email-compliance'],
 };
 
-const DB_TABLE_GROUPS = {
-  'Core Entities': ['spaces', 'people', 'assignments', 'assignment_spaces', 'media', 'media_spaces', 'media_tags', 'media_tag_assignments', 'app_users', 'user_invitations', 'rental_applications', 'documents', 'document_index'],
-  'Payments & Accounting': ['payments', 'ledger_entries', 'api_usage_log', 'square_config', 'stripe_config', 'signwell_config', 'payment_methods', 'pending_payments'],
-  'Communications': ['sms_messages', 'telnyx_config', 'inbound_emails', 'pending_email_approvals', 'email_type_approval_config', 'email_templates'],
-  'Smart Home': ['govee_config', 'govee_devices', 'govee_models', 'nest_config', 'nest_devices', 'thermostat_rules', 'tesla_accounts', 'vehicles', 'vehicle_drivers', 'vehicle_rentals', 'lg_config', 'lg_appliances', 'push_tokens', 'laundry_watchers', 'anova_config', 'anova_ovens', 'glowforge_config', 'glowforge_machines', 'printer_config', 'printer_devices', 'camera_streams'],
-  'Audio & Media': ['sonos_config', 'sonos_schedules', 'sonos_zones', 'spotify_config'],
-  'Property Config': ['brand_config', 'config', 'weather_config', 'r2_config'],
-  'AI & Automation': ['prompts', 'image_gen_jobs', 'faq_entries', 'pai_config', 'life_of_pai_backstory', 'pai_email_classifications'],
-  'Events': ['events', 'event_applications', 'event_templates', 'event_agreements'],
-  'Documents & Legal': ['lease_templates', 'worktrade_templates'],
-  'Admin & Audit': ['bug_reports', 'feature_requests', 'work_entries', 'password_vault', 'audit_log'],
-};
+const DB_TABLE_GROUPS = [
+  { name: 'Core Entities', icon: '🏠', color: '#b8a88a', desc: 'Spaces, people, bookings, media', tables: ['spaces', 'people', 'assignments', 'assignment_spaces', 'media', 'media_spaces', 'media_tags', 'media_tag_assignments', 'app_users', 'user_invitations', 'rental_applications', 'documents', 'document_index'] },
+  { name: 'Payments & Accounting', icon: '💳', color: '#059669', desc: 'Payments, ledger, billing config', tables: ['payments', 'ledger_entries', 'api_usage_log', 'square_config', 'stripe_config', 'signwell_config', 'payment_methods', 'pending_payments'] },
+  { name: 'Communications', icon: '💬', color: '#2563eb', desc: 'SMS, email, templates', tables: ['sms_messages', 'telnyx_config', 'inbound_emails', 'pending_email_approvals', 'email_type_approval_config', 'email_templates'] },
+  { name: 'Smart Home', icon: '🔌', color: '#7c3aed', desc: 'IoT devices, thermostats, vehicles', tables: ['govee_config', 'govee_devices', 'govee_models', 'nest_config', 'nest_devices', 'thermostat_rules', 'tesla_accounts', 'vehicles', 'vehicle_drivers', 'vehicle_rentals', 'lg_config', 'lg_appliances', 'push_tokens', 'laundry_watchers', 'anova_config', 'anova_ovens', 'glowforge_config', 'glowforge_machines', 'printer_config', 'printer_devices', 'camera_streams'] },
+  { name: 'Audio & Media', icon: '🎵', color: '#db2777', desc: 'Sonos zones, Spotify, schedules', tables: ['sonos_config', 'sonos_schedules', 'sonos_zones', 'spotify_config'] },
+  { name: 'Property Config', icon: '⚙️', color: '#6b7280', desc: 'Brand, weather, storage config', tables: ['brand_config', 'config', 'weather_config', 'r2_config'] },
+  { name: 'AI & Automation', icon: '🤖', color: '#f59e0b', desc: 'Prompts, image gen, PAI', tables: ['prompts', 'image_gen_jobs', 'faq_entries', 'pai_config', 'life_of_pai_backstory', 'pai_email_classifications'] },
+  { name: 'Events', icon: '📅', color: '#0891b2', desc: 'Events, applications, agreements', tables: ['events', 'event_applications', 'event_templates', 'event_agreements'] },
+  { name: 'Documents & Legal', icon: '📄', color: '#64748b', desc: 'Lease & work-trade templates', tables: ['lease_templates', 'worktrade_templates'] },
+  { name: 'Admin & Audit', icon: '🛡️', color: '#dc2626', desc: 'Bug reports, features, audit trail', tables: ['bug_reports', 'feature_requests', 'work_entries', 'password_vault', 'audit_log'] },
+];
+
+// ── DB Explorer state ──
+let _dbActiveGroup = null;
+let _dbActiveTable = null;
+let _dbRowCounts = {};     // { tableName: count }
+let _dbTableData = {};     // { tableName: { columns, rows, totalCount } }
+
+async function fetchTableRowCount(tableName) {
+  if (_dbRowCounts[tableName] !== undefined) return _dbRowCounts[tableName];
+  try {
+    const { count, error } = await supabase.from(tableName).select('*', { count: 'exact', head: true });
+    if (error) { _dbRowCounts[tableName] = '?'; return '?'; }
+    _dbRowCounts[tableName] = count;
+    return count;
+  } catch { _dbRowCounts[tableName] = '?'; return '?'; }
+}
+
+async function fetchTableDetail(tableName, offset = 0, limit = 25) {
+  const cacheKey = `${tableName}:${offset}`;
+  if (_dbTableData[cacheKey]) return _dbTableData[cacheKey];
+  try {
+    const [countRes, dataRes] = await Promise.all([
+      supabase.from(tableName).select('*', { count: 'exact', head: true }),
+      supabase.from(tableName).select('*').range(offset, offset + limit - 1).limit(limit),
+    ]);
+    const totalCount = countRes.count ?? '?';
+    const rows = dataRes.data || [];
+    const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+    const result = { columns, rows, totalCount, offset, limit };
+    _dbTableData[cacheKey] = result;
+    _dbRowCounts[tableName] = totalCount;
+    return result;
+  } catch (e) {
+    return { columns: [], rows: [], totalCount: '?', offset, limit, error: e.message };
+  }
+}
+
+function renderDbGroupCards() {
+  const totalTables = DB_TABLE_GROUPS.reduce((s, g) => s + g.tables.length, 0);
+  return `
+    <div class="inv-section">
+      <h3 class="inv-section-title">Database Tables <span class="inv-badge inv-badge-blue">${totalTables}</span></h3>
+      <p class="inv-section-sub">Supabase PostgreSQL tables grouped by domain. Click a group to explore tables, then click a table to inspect its schema and data.</p>
+      <div class="db-group-grid" id="dbGroupGrid">
+        ${DB_TABLE_GROUPS.map((g, i) => `
+          <div class="db-group-card${_dbActiveGroup === i ? ' active' : ''}" data-group="${i}" style="--db-accent:${g.color}">
+            <div class="db-group-icon">${g.icon}</div>
+            <div class="db-group-name">${esc(g.name)}</div>
+            <div class="db-group-meta">
+              <span>${g.tables.length} tables</span>
+              <span class="db-rows" id="dbGroupRows${i}"></span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted,#9ca3af);margin-top:0.25rem">${esc(g.desc)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div id="dbTablePanel"></div>
+    </div>`;
+}
+
+function renderDbTablePanel(groupIdx) {
+  const group = DB_TABLE_GROUPS[groupIdx];
+  if (!group) return '';
+  return `
+    <div class="db-table-panel" style="--db-accent:${group.color}">
+      <div class="db-table-panel-header">
+        <span style="font-size:1.125rem">${group.icon}</span>
+        <h4>${esc(group.name)}</h4>
+        <span class="inv-badge inv-badge-blue">${group.tables.length} tables</span>
+        <button class="db-table-panel-close" id="dbPanelClose">&times;</button>
+      </div>
+      <div class="db-search-wrap">
+        <input type="text" class="db-search" id="dbTableSearch" placeholder="Filter tables...">
+      </div>
+      <div class="db-table-list" id="dbTableList">
+        ${group.tables.map(t => `
+          <div class="db-table-item${_dbActiveTable === t ? ' active' : ''}" data-table="${esc(t)}">
+            <span class="db-table-item-name">${esc(t)}</span>
+            <span class="db-table-item-count" id="dbCount-${esc(t)}">${_dbRowCounts[t] !== undefined ? (_dbRowCounts[t] === '?' ? '—' : _dbRowCounts[t].toLocaleString() + ' rows') : '...'}</span>
+            <span class="db-table-item-arrow">›</span>
+          </div>
+        `).join('')}
+      </div>
+      <div id="dbDetailPanel"></div>
+    </div>`;
+}
+
+function renderDbDetail(tableName, data) {
+  if (data.error) return `<div class="db-detail-panel"><p style="color:#ef4444">Error: ${esc(data.error)}</p></div>`;
+  const { columns, rows, totalCount, offset, limit } = data;
+
+  const colChips = columns.map(c => {
+    const isPk = c === 'id';
+    const isFk = c.endsWith('_id') && c !== 'id';
+    const sampleVal = rows[0]?.[c];
+    const inferredType = sampleVal === null ? '' : typeof sampleVal === 'number' ? (Number.isInteger(sampleVal) ? 'int' : 'float') : typeof sampleVal === 'boolean' ? 'bool' : (typeof sampleVal === 'string' && /^\d{4}-\d{2}-\d{2}/.test(sampleVal)) ? 'timestamp' : typeof sampleVal === 'object' ? 'json' : 'text';
+    return `<div class="db-col-chip">
+      ${isPk ? '<span class="db-col-pk">PK</span>' : ''}${isFk ? '<span class="db-col-fk">FK</span>' : ''}
+      <span class="db-col-name">${esc(c)}</span>
+      <span class="db-col-type">${inferredType}</span>
+    </div>`;
+  }).join('');
+
+  const hasData = rows.length > 0;
+  const showingEnd = Math.min(offset + rows.length, typeof totalCount === 'number' ? totalCount : offset + rows.length);
+  const canPrev = offset > 0;
+  const canNext = typeof totalCount === 'number' && (offset + limit) < totalCount;
+
+  let dataTable = '';
+  if (hasData) {
+    const headerRow = columns.map(c => `<th>${esc(c)}</th>`).join('');
+    const bodyRows = rows.map(r => `<tr>${columns.map(c => {
+      const v = r[c];
+      if (v === null) return '<td class="db-null">null</td>';
+      if (typeof v === 'object') return `<td title="${esc(JSON.stringify(v))}">${esc(JSON.stringify(v).slice(0, 60))}${JSON.stringify(v).length > 60 ? '...' : ''}</td>`;
+      const s = String(v);
+      return `<td title="${esc(s)}">${esc(s.length > 80 ? s.slice(0, 80) + '...' : s)}</td>`;
+    }).join('')}</tr>`).join('');
+    dataTable = `
+      <div class="db-data-wrap">
+        <table class="db-data-table"><thead><tr>${headerRow}</tr></thead><tbody>${bodyRows}</tbody></table>
+      </div>
+      <div class="db-data-footer">
+        <span>Showing ${offset + 1}–${showingEnd} of ${typeof totalCount === 'number' ? totalCount.toLocaleString() : '?'}</span>
+        <div style="display:flex;gap:0.375rem">
+          ${canPrev ? `<button class="db-detail-btn" data-page-offset="${offset - limit}">← Prev</button>` : ''}
+          ${canNext ? `<button class="db-detail-btn" data-page-offset="${offset + limit}">Next →</button>` : ''}
+        </div>
+      </div>`;
+  } else {
+    dataTable = '<div class="db-loading">No rows in this table</div>';
+  }
+
+  return `
+    <div class="db-detail-panel">
+      <div class="db-detail-header">
+        <h5>${esc(tableName)}</h5>
+        ${badge(typeof totalCount === 'number' ? totalCount.toLocaleString() + ' rows' : '—', 'blue')}
+        ${badge(columns.length + ' columns', 'gray')}
+      </div>
+      <div style="margin-bottom:0.5rem;font-size:0.75rem;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:0.03em">Columns</div>
+      <div class="db-columns-grid">${colChips}</div>
+      <div style="margin-top:1rem;margin-bottom:0.5rem;font-size:0.75rem;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:0.03em">Data Preview</div>
+      ${dataTable}
+    </div>`;
+}
+
+function bindDbExplorerEvents() {
+  // Group card clicks
+  document.getElementById('dbGroupGrid')?.addEventListener('click', (e) => {
+    const card = e.target.closest('.db-group-card');
+    if (!card) return;
+    const idx = parseInt(card.dataset.group);
+    if (_dbActiveGroup === idx) {
+      // Toggle off
+      _dbActiveGroup = null;
+      _dbActiveTable = null;
+      card.classList.remove('active');
+      document.getElementById('dbTablePanel').innerHTML = '';
+      return;
+    }
+    _dbActiveGroup = idx;
+    _dbActiveTable = null;
+    document.querySelectorAll('.db-group-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    const panel = document.getElementById('dbTablePanel');
+    panel.innerHTML = renderDbTablePanel(idx);
+    bindDbTablePanelEvents(idx);
+    // Fetch row counts for all tables in group
+    const group = DB_TABLE_GROUPS[idx];
+    group.tables.forEach(async (t) => {
+      const count = await fetchTableRowCount(t);
+      const el = document.getElementById(`dbCount-${t}`);
+      if (el) el.textContent = count === '?' ? '—' : count.toLocaleString() + ' rows';
+    });
+  });
+
+  // Lazy-load group row totals
+  DB_TABLE_GROUPS.forEach(async (g, i) => {
+    let total = 0;
+    let allResolved = true;
+    for (const t of g.tables) {
+      const c = await fetchTableRowCount(t);
+      if (typeof c === 'number') total += c; else allResolved = false;
+    }
+    const el = document.getElementById(`dbGroupRows${i}`);
+    if (el) el.textContent = allResolved ? `${total.toLocaleString()} rows` : '';
+  });
+}
+
+function bindDbTablePanelEvents(groupIdx) {
+  // Close button
+  document.getElementById('dbPanelClose')?.addEventListener('click', () => {
+    _dbActiveGroup = null;
+    _dbActiveTable = null;
+    document.querySelectorAll('.db-group-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('dbTablePanel').innerHTML = '';
+  });
+
+  // Search filter
+  document.getElementById('dbTableSearch')?.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#dbTableList .db-table-item').forEach(item => {
+      item.style.display = !q || item.dataset.table.includes(q) ? '' : 'none';
+    });
+  });
+
+  // Table item clicks
+  document.getElementById('dbTableList')?.addEventListener('click', async (e) => {
+    const item = e.target.closest('.db-table-item');
+    if (!item) return;
+    const tableName = item.dataset.table;
+    if (_dbActiveTable === tableName) {
+      _dbActiveTable = null;
+      item.classList.remove('active');
+      document.getElementById('dbDetailPanel').innerHTML = '';
+      return;
+    }
+    _dbActiveTable = tableName;
+    document.querySelectorAll('.db-table-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    const detailEl = document.getElementById('dbDetailPanel');
+    detailEl.innerHTML = '<div class="db-loading">Loading table data...</div>';
+    const data = await fetchTableDetail(tableName, 0, 25);
+    detailEl.innerHTML = renderDbDetail(tableName, data);
+    bindDbPaginationEvents(tableName);
+  });
+}
+
+function bindDbPaginationEvents(tableName) {
+  document.getElementById('dbDetailPanel')?.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-page-offset]');
+    if (!btn) return;
+    const offset = parseInt(btn.dataset.pageOffset);
+    const detailEl = document.getElementById('dbDetailPanel');
+    detailEl.innerHTML = '<div class="db-loading">Loading...</div>';
+    const data = await fetchTableDetail(tableName, offset, 25);
+    detailEl.innerHTML = renderDbDetail(tableName, data);
+    bindDbPaginationEvents(tableName);
+  });
+}
 
 // ══════════════════════════════════════════════════════════════
 // INIT
@@ -784,10 +1025,6 @@ function loadCodebase() {
     detailsBlock(group, `${fns.length} functions`, `<p>${fns.map(f => `<code style="font-size:0.75rem;margin:0.125rem;display:inline-block;padding:0.125rem 0.375rem;background:#f3f4f6;border-radius:4px">${esc(f)}</code>`).join(' ')}</p>`)
   ).join('');
 
-  const dbSection = Object.entries(DB_TABLE_GROUPS).map(([group, tables]) =>
-    detailsBlock(group, `${tables.length} tables`, `<p>${tables.map(t => `<code style="font-size:0.75rem;margin:0.125rem;display:inline-block;padding:0.125rem 0.375rem;background:#f3f4f6;border-radius:4px">${esc(t)}</code>`).join(' ')}</p>`)
-  ).join('');
-
   el.innerHTML = `
     <div class="inv-section">
       <h3 class="inv-section-title">Repositories</h3>
@@ -798,10 +1035,7 @@ function loadCodebase() {
       <p class="inv-section-sub">Supabase Deno edge functions organized by domain.</p>
       ${fnSection}
     </div>
-    <div class="inv-section">
-      <h3 class="inv-section-title">Database Tables <span class="inv-badge inv-badge-blue">70+</span></h3>
-      <p class="inv-section-sub">Supabase PostgreSQL tables grouped by domain.</p>
-      ${dbSection}
-    </div>
+    ${renderDbGroupCards()}
   `;
+  bindDbExplorerEvents();
 }
