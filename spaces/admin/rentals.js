@@ -252,6 +252,17 @@ function renderPipelineCard(app) {
       : `<div class="rate">$${app.approved_rate}/${app.approved_rate_term === 'weekly' ? 'wk' : app.approved_rate_term === 'nightly' ? 'night' : 'mo'}</div>`)
     : '';
 
+  // Last activity line
+  const activityDate = app.last_activity_at || app.updated_at || app.created_at;
+  const activityBy = app.last_activity_by;
+  let activityLine = '';
+  if (activityDate) {
+    const d = new Date(activityDate);
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const shortDate = `${monthNames[d.getMonth()]} ${d.getDate()}`;
+    activityLine = activityBy ? `${shortDate} · ${activityBy}` : shortDate;
+  }
+
   return `
     <div class="pipeline-card" data-id="${app.id}">
       <div class="card-header">
@@ -263,11 +274,10 @@ function renderPipelineCard(app) {
         <div class="space-name">${displayName}</div>
         ${rateDisplay}
       </div>
-      ${subStatus ? `
-        <div class="card-footer">
-          <span class="sub-status">${subStatus}</span>
-        </div>
-      ` : ''}
+      <div class="card-footer">
+        ${subStatus ? `<span class="sub-status">${subStatus}</span>` : ''}
+        ${activityLine ? `<span class="last-activity">${activityLine}</span>` : ''}
+      </div>
     </div>
   `;
 }

@@ -193,6 +193,12 @@
   font-weight: 500;
 }
 
+.pipeline-card .last-activity {
+  font-size: 0.6rem;
+  color: var(--text-muted, #999);
+  margin-left: auto;
+}
+
 /* =============================================
    STATUS BADGES
    ============================================= */
