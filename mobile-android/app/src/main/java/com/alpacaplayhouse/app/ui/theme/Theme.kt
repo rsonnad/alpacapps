@@ -7,37 +7,53 @@ import androidx.compose.runtime.Composable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
 
-// Brand colors
-val AlpacaDark = Color(0xFF2E2226)
-val AlpacaLight = Color(0xFFF5F4ED)
-val AlpacaGreen = Color(0xFF2D5016)
+// Brand colors — from style guide (Current Teal palette)
+val AlpacaPrimary = Color(0xFF3D8B7A)       // Teal
+val AlpacaPrimaryLight = Color(0xFF5A9E8F)  // Light teal
+val AlpacaAccent = Color(0xFFE07A5F)        // Warm salmon
+val AlpacaBackground = Color(0xFFFAF9F7)    // Warm white
+val AlpacaText = Color(0xFF2D3142)          // Dark navy
+val AlpacaMuted = Color(0xFF7A7D8C)         // Grey-blue
+
+// Dark mode variants
+val AlpacaDarkBg = Color(0xFF1A1E2C)        // Deep navy
+val AlpacaDarkSurface = Color(0xFF252A3A)   // Lighter navy
+val AlpacaDarkSurfaceVar = Color(0xFF2F3447) // Surface variant
 
 private val DarkColorScheme = darkColorScheme(
-    primary = AlpacaGreen,
-    onPrimary = AlpacaLight,
-    secondary = AlpacaGreen,
-    background = AlpacaDark,
-    onBackground = AlpacaLight,
-    surface = Color(0xFF3A2E33),
-    onSurface = AlpacaLight,
-    surfaceVariant = Color(0xFF4A3E43),
-    onSurfaceVariant = Color(0xFFD0C9C4),
-    primaryContainer = AlpacaGreen,
-    onPrimaryContainer = AlpacaLight,
+    primary = AlpacaPrimary,
+    onPrimary = Color.White,
+    secondary = AlpacaPrimaryLight,
+    onSecondary = Color.White,
+    tertiary = AlpacaAccent,
+    background = AlpacaDarkBg,
+    onBackground = Color(0xFFE8E6E0),
+    surface = AlpacaDarkSurface,
+    onSurface = Color(0xFFE8E6E0),
+    surfaceVariant = AlpacaDarkSurfaceVar,
+    onSurfaceVariant = Color(0xFFB0ADA6),
+    primaryContainer = Color(0xFF2A6355),
+    onPrimaryContainer = Color(0xFFD0F0E8),
+    error = Color(0xFFCF6679),
+    onError = Color.Black,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = AlpacaGreen,
-    onPrimary = AlpacaLight,
-    secondary = AlpacaGreen,
-    background = AlpacaLight,
-    onBackground = AlpacaDark,
-    surface = Color(0xFFFFFFFF),
-    onSurface = AlpacaDark,
-    surfaceVariant = Color(0xFFE8E6DF),
-    onSurfaceVariant = Color(0xFF4A4A4A),
-    primaryContainer = Color(0xFF4A7A2E),
-    onPrimaryContainer = AlpacaLight,
+    primary = AlpacaPrimary,
+    onPrimary = Color.White,
+    secondary = AlpacaPrimaryLight,
+    onSecondary = Color.White,
+    tertiary = AlpacaAccent,
+    background = AlpacaBackground,
+    onBackground = AlpacaText,
+    surface = Color.White,
+    onSurface = AlpacaText,
+    surfaceVariant = Color(0xFFF0EFEA),
+    onSurfaceVariant = Color(0xFF545766),
+    primaryContainer = Color(0xFFD0F0E8),
+    onPrimaryContainer = Color(0xFF1A4A3E),
+    error = Color(0xFFB00020),
+    onError = Color.White,
 )
 
 @Composable
