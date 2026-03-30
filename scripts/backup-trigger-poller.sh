@@ -11,6 +11,9 @@
 
 set -uo pipefail
 
+# Ensure PATH includes Homebrew (cron has minimal PATH)
+export PATH="/opt/homebrew/opt/libpq/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+
 LOG_PREFIX="[$(date '+%Y-%m-%d %H:%M:%S')] [trigger-poller]"
 
 # Load env
@@ -41,7 +44,7 @@ R2_ENDPOINT="https://${R2_ACCOUNT}.r2.cloudflarestorage.com"
 R2_BUCKET="${R2_BUCKET_NAME:-alpacapps}"
 CF_API_TOKEN="${CLOUDFLARE_API_TOKEN:-}"
 D1_DATABASE_ID="${D1_DATABASE_ID:-98d0e680-8abe-4ce3-a941-70cb391adbf8}"
-AWS=/usr/local/bin/aws
+AWS=$(command -v aws 2>/dev/null || echo /opt/homebrew/bin/aws)
 GH_REPO="https://github.com/rsonnad/alpacapps.git"
 
 # ── Check for pending triggers ────────────────────────────────────────
@@ -232,15 +235,77 @@ for t in json.load(sys.stdin):
       ;;
 
     home-assistant)
-      echo "$LOG_PREFIX   Home Assistant backup — not supported via poller (runs on Alpuca)"
-      RESULT_STATUS="failed"
-      RESULT_JSON="{\"error\":\"HA backups run on Alpuca, not Almaca\"}"
+      echo "$LOG_PREFIX   Running Home Assistant backup via HAOS API..."
+      # Read HA long-lived access token
+      HA_TOKEN=""
+      if [ -f "$HOME/.ha_llat" ]; then
+        HA_TOKEN=$(head -1 "$HOME/.ha_llat")
+      fi
+      HA_HOST="${HA_HOST:-http://192.168.1.39:8123}"
+
+      if [ -z "$HA_TOKEN" ]; then
+        RESULT_STATUS="failed"
+        RESULT_JSON="{\"error\":\"No HA token in ~/.ha_llat\"}"
+      else
+        # Trigger a backup via Supervisor API (requires SSH add-on or API)
+        BACKUP_RESP=$(curl -sf -X POST "$HA_HOST/api/services/backup/create" \
+          -H "Authorization: Bearer $HA_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{}' 2>/dev/null) || true
+
+        if [ -n "$BACKUP_RESP" ]; then
+          echo "$LOG_PREFIX   HA backup triggered"
+          RESULT_JSON="{\"triggered\":true,\"note\":\"backup created via HA API\"}"
+        else
+          RESULT_STATUS="failed"
+          RESULT_JSON="{\"error\":\"HA API call failed — check HA_HOST and token\"}"
+        fi
+      fi
       ;;
 
     haos-vm-image)
-      echo "$LOG_PREFIX   HAOS VM image backup — not supported via poller (runs on Alpuca)"
-      RESULT_STATUS="failed"
-      RESULT_JSON="{\"error\":\"HAOS VM backups run on Alpuca, not Almaca\"}"
+      echo "$LOG_PREFIX   Running HAOS VM image backup..."
+      # Find the HAOS disk image (check known paths)
+      HAOS_IMG=""
+      for candidate in \
+        "$HOME/homeassistant-vm/haos_generic-aarch64-17.1.img" \
+        "$HOME/homeassistant-vm/haos_generic-aarch64.img" \
+        "$HOME/haos/haos_generic-aarch64.img"; do
+        if [ -f "$candidate" ]; then
+          HAOS_IMG="$candidate"
+          break
+        fi
+      done
+
+      HAOS_BACKUP_DIR="/Volumes/rvault20/BackupsRS/haos-vm"
+      if [ -z "$HAOS_IMG" ]; then
+        RESULT_STATUS="failed"
+        RESULT_JSON="{\"error\":\"HAOS image not found at any known path\"}"
+      elif [ ! -d "/Volumes/rvault20" ]; then
+        RESULT_STATUS="failed"
+        RESULT_JSON="{\"error\":\"rvault20 not mounted\"}"
+      else
+        mkdir -p "$HAOS_BACKUP_DIR"
+        DEST="$HAOS_BACKUP_DIR/haos-$(date +%Y-%m-%d).img"
+        echo "$LOG_PREFIX   Copying $(du -h "$HAOS_IMG" | cut -f1) image..."
+        if cp "$HAOS_IMG" "$DEST" 2>/dev/null; then
+          # Also copy EFI files
+          cp "$(dirname "$HAOS_IMG")/efi_vars.fd" "$HAOS_BACKUP_DIR/efi_vars-$(date +%Y-%m-%d).fd" 2>/dev/null || true
+          cp "$(dirname "$HAOS_IMG")/efi_code.fd" "$HAOS_BACKUP_DIR/efi_code.fd" 2>/dev/null || true
+          IMG_SIZE=$(du -h "$DEST" | cut -f1)
+          echo "$LOG_PREFIX   Done: $DEST ($IMG_SIZE)"
+          RESULT_JSON="{\"size\":\"$IMG_SIZE\",\"file\":\"$(basename "$DEST")\"}"
+          # Prune old (keep 7)
+          ls -1t "$HAOS_BACKUP_DIR"/haos-*.img 2>/dev/null | tail -n +8 | while read -r old; do
+            DATE_PART="${old##*haos-}"
+            DATE_PART="${DATE_PART%.img}"
+            rm -f "$old" "$HAOS_BACKUP_DIR/efi_vars-$DATE_PART.fd" 2>/dev/null
+          done
+        else
+          RESULT_STATUS="failed"
+          RESULT_JSON="{\"error\":\"cp failed\"}"
+        fi
+      fi
       ;;
 
     *)
