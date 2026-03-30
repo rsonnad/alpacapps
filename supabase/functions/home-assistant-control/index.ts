@@ -258,12 +258,12 @@ serve(async (req) => {
 
     const { data: haConfig } = await supabase
       .from("home_assistant_config")
-      .select("is_active, test_mode, use_fallbacks")
+      .select("is_active, test_mode, use_fallbacks, ha_base_url, ha_token")
       .eq("id", 1)
       .maybeSingle();
 
-    const haBaseUrl = Deno.env.get("HA_BASE_URL") || Deno.env.get("HOME_ASSISTANT_URL") || "";
-    const haToken = Deno.env.get("HA_TOKEN") || Deno.env.get("HOME_ASSISTANT_TOKEN") || "";
+    const haBaseUrl = Deno.env.get("HA_BASE_URL") || Deno.env.get("HOME_ASSISTANT_URL") || haConfig?.ha_base_url || "";
+    const haToken = Deno.env.get("HA_TOKEN") || Deno.env.get("HOME_ASSISTANT_TOKEN") || haConfig?.ha_token || "";
     const wizProxyUrl = Deno.env.get("WIZ_PROXY_URL") || "";
     const wizProxyToken = Deno.env.get("WIZ_PROXY_TOKEN") || "";
     const lightApiUrl = Deno.env.get("LIGHT_API_URL") || "";
