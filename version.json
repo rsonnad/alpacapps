@@ -1,12 +1,12 @@
 {
-  "version": "v260330.35 6:22a",
-  "release": 1192,
-  "sha": "ffcea6509",
-  "fullSha": "ffcea650975725c48542c8217e95037558455a9d",
+  "version": "v260330.36 11:54a",
+  "release": 1193,
+  "sha": "c340f9f3a",
+  "fullSha": "c340f9f3a892e2539f45d291cdee6671102e2318",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 11:22:37+00",
-  "commits": [{"sha":"ffcea6509","message":"fix: auto-expire subtitle active state after 60s of no input","author":"Rahul"}]
+  "pushedAt": "2026-03-30 16:54:03+00",
+  "commits": [{"sha":"c340f9f3a","message":"fix: prevent erroneous rent emails for $0 event fees and unsigned agreements","author":"Rahul"}]
 }
