@@ -1,6 +1,10 @@
 # Bump version on every push to main.
 # Runs only when the push is NOT our own bump commit ([skip ci]), so we avoid a loop.
 # Version is incremented in DB and all HTML + version.json are updated, then committed and pushed.
+#
+# FORK SAFETY: This workflow only runs on the original rsonnad/alpacapps repo.
+# If you forked this repo, this workflow will be skipped automatically.
+# You can safely delete this file from your fork.
 
 name: Bump version on push to main
 
@@ -10,7 +14,7 @@ on:
 
 jobs:
   bump:
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    if: github.repository == 'rsonnad/alpacapps' && !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest
     concurrency:
       group: version-main-sequence
