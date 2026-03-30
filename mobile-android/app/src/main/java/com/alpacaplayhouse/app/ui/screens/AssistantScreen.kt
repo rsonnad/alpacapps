@@ -2,6 +2,7 @@ package com.alpacaplayhouse.app.ui.screens
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -14,6 +15,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,8 +38,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddComment
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -63,17 +67,77 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.alpacaplayhouse.app.data.HaosApi
+import com.alpacaplayhouse.app.ui.theme.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 data class ChatMessage(
     val text: String,
     val isUser: Boolean,
     val timestamp: Long = System.currentTimeMillis(),
 )
+
+@Serializable
+data class PromptEntry(
+    val text: String,
+    val isFavorite: Boolean = false,
+    val lastUsed: Long = System.currentTimeMillis(),
+)
+
+// Simple prompt history persisted in SharedPreferences
+object PromptHistory {
+    private const val PREFS = "prompt_history"
+    private const val KEY = "prompts"
+    private val json = Json { ignoreUnknownKeys = true }
+
+    fun load(context: Context): List<PromptEntry> {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val raw = prefs.getString(KEY, null) ?: return emptyList()
+        return try { json.decodeFromString<List<PromptEntry>>(raw) } catch (_: Exception) { emptyList() }
+    }
+
+    fun save(context: Context, entries: List<PromptEntry>) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit().putString(KEY, json.encodeToString(entries)).apply()
+    }
+
+    fun addPrompt(context: Context, text: String) {
+        val entries = load(context).toMutableList()
+        // Update existing or add new
+        val idx = entries.indexOfFirst { it.text.equals(text, ignoreCase = true) }
+        if (idx >= 0) {
+            entries[idx] = entries[idx].copy(lastUsed = System.currentTimeMillis())
+        } else {
+            entries.add(0, PromptEntry(text = text))
+        }
+        // Keep max 30
+        save(context, entries.take(30))
+    }
+
+    fun toggleFavorite(context: Context, text: String) {
+        val entries = load(context).toMutableList()
+        val idx = entries.indexOfFirst { it.text.equals(text, ignoreCase = true) }
+        if (idx >= 0) {
+            entries[idx] = entries[idx].copy(isFavorite = !entries[idx].isFavorite)
+            save(context, entries)
+        }
+    }
+
+    fun delete(context: Context, text: String) {
+        val entries = load(context).toMutableList()
+        entries.removeAll { it.text.equals(text, ignoreCase = true) }
+        save(context, entries)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,19 +151,16 @@ fun AssistantScreen() {
     var isLoading by remember { mutableStateOf(false) }
     var isListening by remember { mutableStateOf(false) }
     var conversationId by remember { mutableStateOf<String?>(null) }
+    var promptEntries by remember { mutableStateOf(PromptHistory.load(context)) }
 
     val speechRecognizer = remember {
         if (SpeechRecognizer.isRecognitionAvailable(context)) {
             SpeechRecognizer.createSpeechRecognizer(context)
-        } else {
-            null
-        }
+        } else null
     }
 
     DisposableEffect(Unit) {
-        onDispose {
-            speechRecognizer?.destroy()
-        }
+        onDispose { speechRecognizer?.destroy() }
     }
 
     fun sendMessage(text: String) {
@@ -109,8 +170,11 @@ fun AssistantScreen() {
         inputText = ""
         isLoading = true
 
+        // Save to history
+        PromptHistory.addPrompt(context, text.trim())
+        promptEntries = PromptHistory.load(context)
+
         scope.launch {
-            // Scroll to bottom after adding user message
             listState.animateScrollToItem(messages.size - 1)
 
             val result = HaosApi.sendMessage(
@@ -120,9 +184,7 @@ fun AssistantScreen() {
 
             result.onSuccess { response ->
                 conversationId = response.conversationId
-                messages.add(
-                    ChatMessage(text = response.speech, isUser = false)
-                )
+                messages.add(ChatMessage(text = response.speech, isUser = false))
             }.onFailure { error ->
                 messages.add(
                     ChatMessage(
@@ -133,8 +195,6 @@ fun AssistantScreen() {
             }
 
             isLoading = false
-
-            // Scroll to bottom after adding response
             if (messages.isNotEmpty()) {
                 listState.animateScrollToItem(messages.size - 1)
             }
@@ -156,54 +216,31 @@ fun AssistantScreen() {
         }
 
         if (speechRecognizer == null) {
-            messages.add(
-                ChatMessage(
-                    text = "Speech recognition is not available on this device.",
-                    isUser = false,
-                )
-            )
+            messages.add(ChatMessage(text = "Speech recognition not available.", isUser = false))
             return
         }
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
 
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {
-                isListening = true
-            }
+            override fun onReadyForSpeech(params: Bundle?) { isListening = true }
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() {
-                isListening = false
-            }
-            override fun onError(error: Int) {
-                isListening = false
-            }
+            override fun onEndOfSpeech() { isListening = false }
+            override fun onError(error: Int) { isListening = false }
             override fun onResults(results: Bundle?) {
                 isListening = false
-                val matches = results?.getStringArrayList(
-                    SpeechRecognizer.RESULTS_RECOGNITION
-                )
-                val spokenText = matches?.firstOrNull()
-                if (!spokenText.isNullOrBlank()) {
-                    sendMessage(spokenText)
-                }
+                val spokenText = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
+                if (!spokenText.isNullOrBlank()) sendMessage(spokenText)
             }
             override fun onPartialResults(partialResults: Bundle?) {
-                val partial = partialResults?.getStringArrayList(
-                    SpeechRecognizer.RESULTS_RECOGNITION
-                )?.firstOrNull()
-                if (!partial.isNullOrBlank()) {
-                    inputText = partial
-                }
+                val partial = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
+                if (!partial.isNullOrBlank()) inputText = partial
             }
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
@@ -211,11 +248,8 @@ fun AssistantScreen() {
         speechRecognizer.startListening(intent)
     }
 
-    // Auto-scroll when messages change
     LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
-        }
+        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size - 1)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -223,10 +257,7 @@ fun AssistantScreen() {
         TopAppBar(
             title = {
                 Column {
-                    Text(
-                        "Smart Assistant",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+                    Text("Smart Assistant", style = MaterialTheme.typography.titleLarge)
                     Text(
                         "Powered by HAOS + Ollama",
                         style = MaterialTheme.typography.labelSmall,
@@ -239,10 +270,7 @@ fun AssistantScreen() {
                     conversationId = null
                     messages.clear()
                 }) {
-                    Icon(
-                        Icons.Default.AddComment,
-                        contentDescription = "New conversation",
-                    )
+                    Icon(Icons.Default.AddComment, contentDescription = "New conversation")
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -250,7 +278,7 @@ fun AssistantScreen() {
             ),
         )
 
-        // Chat messages
+        // Chat or prompt history
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -260,24 +288,81 @@ fun AssistantScreen() {
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (messages.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillParentMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Ask me anything about your home",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "\"Turn on the living room lights\"",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            )
+                // Show prompt history when no active conversation
+                val favorites = promptEntries.filter { it.isFavorite }.sortedByDescending { it.lastUsed }
+                val recent = promptEntries.filter { !it.isFavorite }.sortedByDescending { it.lastUsed }
+
+                if (favorites.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Favorites",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = AlpacaPrimary,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                        )
+                    }
+                    items(favorites, key = { "fav-${it.text}" }) { entry ->
+                        PromptChip(
+                            entry = entry,
+                            onTap = { sendMessage(entry.text) },
+                            onToggleFavorite = {
+                                PromptHistory.toggleFavorite(context, entry.text)
+                                promptEntries = PromptHistory.load(context)
+                            },
+                            onDelete = {
+                                PromptHistory.delete(context, entry.text)
+                                promptEntries = PromptHistory.load(context)
+                            },
+                        )
+                    }
+                }
+
+                if (recent.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = if (favorites.isNotEmpty()) "Recent" else "Recent Prompts",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = AlpacaMuted,
+                            modifier = Modifier.padding(top = if (favorites.isNotEmpty()) 16.dp else 8.dp, bottom = 4.dp),
+                        )
+                    }
+                    items(recent.take(15), key = { "rec-${it.text}" }) { entry ->
+                        PromptChip(
+                            entry = entry,
+                            onTap = { sendMessage(entry.text) },
+                            onToggleFavorite = {
+                                PromptHistory.toggleFavorite(context, entry.text)
+                                promptEntries = PromptHistory.load(context)
+                            },
+                            onDelete = {
+                                PromptHistory.delete(context, entry.text)
+                                promptEntries = PromptHistory.load(context)
+                            },
+                        )
+                    }
+                }
+
+                if (promptEntries.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Ask me anything about your home",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "\"Turn on the living room lights\"",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                )
+                            }
                         }
                     }
                 }
@@ -288,9 +373,7 @@ fun AssistantScreen() {
             }
 
             if (isLoading) {
-                item {
-                    TypingIndicator()
-                }
+                item { TypingIndicator() }
             }
         }
 
@@ -309,9 +392,7 @@ fun AssistantScreen() {
                     value = inputText,
                     onValueChange = { inputText = it },
                     placeholder = {
-                        Text(
-                            if (isListening) "Listening..." else "Ask something..."
-                        )
+                        Text(if (isListening) "Listening..." else "Ask something...")
                     },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
@@ -322,8 +403,6 @@ fun AssistantScreen() {
                         unfocusedIndicatorColor = Color.Transparent,
                     ),
                 )
-
-                // Send button
                 IconButton(
                     onClick = { sendMessage(inputText) },
                     enabled = inputText.isNotBlank() && !isLoading,
@@ -332,13 +411,11 @@ fun AssistantScreen() {
                         Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Send",
                         tint = if (inputText.isNotBlank() && !isLoading)
-                            MaterialTheme.colorScheme.primary
+                            AlpacaPrimary
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                     )
                 }
-
-                // Mic button
                 MicButton(
                     isListening = isListening,
                     onClick = {
@@ -356,6 +433,55 @@ fun AssistantScreen() {
 }
 
 @Composable
+private fun PromptChip(
+    entry: PromptEntry,
+    onTap: () -> Unit,
+    onToggleFavorite: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onTap),
+        shape = RoundedCornerShape(12.dp),
+        color = if (entry.isFavorite)
+            AlpacaPrimary.copy(alpha = 0.08f)
+        else
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = entry.text,
+                modifier = Modifier.weight(1f),
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            IconButton(onClick = onToggleFavorite, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    if (entry.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                    contentDescription = "Favorite",
+                    modifier = Modifier.size(18.dp),
+                    tint = if (entry.isFavorite) Color(0xFFE8A317) else AlpacaMuted,
+                )
+            }
+            IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Delete",
+                    modifier = Modifier.size(16.dp),
+                    tint = AlpacaMuted,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun ChatBubble(message: ChatMessage) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -363,13 +489,12 @@ private fun ChatBubble(message: ChatMessage) {
     ) {
         Surface(
             shape = RoundedCornerShape(
-                topStart = 16.dp,
-                topEnd = 16.dp,
+                topStart = 16.dp, topEnd = 16.dp,
                 bottomStart = if (message.isUser) 16.dp else 4.dp,
                 bottomEnd = if (message.isUser) 4.dp else 16.dp,
             ),
             color = if (message.isUser)
-                MaterialTheme.colorScheme.primaryContainer
+                AlpacaPrimary
             else
                 MaterialTheme.colorScheme.surfaceVariant,
             modifier = Modifier.widthIn(max = 300.dp),
@@ -379,7 +504,7 @@ private fun ChatBubble(message: ChatMessage) {
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (message.isUser)
-                    MaterialTheme.colorScheme.onPrimaryContainer
+                    Color.White
                 else
                     MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -391,12 +516,8 @@ private fun ChatBubble(message: ChatMessage) {
 private fun MicButton(isListening: Boolean, onClick: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "mic-pulse")
     val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0.4f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(600),
-            repeatMode = RepeatMode.Reverse,
-        ),
+        initialValue = 1f, targetValue = 0.4f,
+        animationSpec = infiniteRepeatable(animation = tween(600), repeatMode = RepeatMode.Reverse),
         label = "mic-pulse-alpha",
     )
 
@@ -413,7 +534,7 @@ private fun MicButton(isListening: Boolean, onClick: () -> Unit) {
             }
             Icon(
                 Icons.Default.Mic,
-                contentDescription = if (isListening) "Stop listening" else "Start voice input",
+                contentDescription = if (isListening) "Stop listening" else "Voice input",
                 tint = if (isListening) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -438,8 +559,7 @@ private fun TypingIndicator() {
                 val transition = rememberInfiniteTransition(label = "typing")
                 repeat(3) { index ->
                     val alpha by transition.animateFloat(
-                        initialValue = 0.3f,
-                        targetValue = 1f,
+                        initialValue = 0.3f, targetValue = 1f,
                         animationSpec = infiniteRepeatable(
                             animation = tween(500, delayMillis = index * 150),
                             repeatMode = RepeatMode.Reverse,
