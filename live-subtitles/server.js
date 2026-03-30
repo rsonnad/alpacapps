@@ -296,6 +296,20 @@ function handleRequest(req, res) {
     }
   }
 
+  // Serve APK download
+  if (url.pathname === '/apk' || url.pathname === '/alpaca-playhouse.apk') {
+    const apkFile = path.join(__dirname, 'alpaca-playhouse.apk');
+    if (fs.existsSync(apkFile)) {
+      res.writeHead(200, {
+        'Content-Type': 'application/vnd.android.package-archive',
+        'Content-Disposition': 'attachment; filename="alpaca-playhouse.apk"',
+        'Content-Length': fs.statSync(apkFile).size,
+      });
+      fs.createReadStream(apkFile).pipe(res);
+      return;
+    }
+  }
+
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ error: 'not found' }));
 }
