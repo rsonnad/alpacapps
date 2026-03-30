@@ -299,7 +299,7 @@ fun SubtitleScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp),
             ) {
-                items(segments, key = { "${it.id}_${it.isPartial}" }) { seg ->
+                items(segments) { seg ->
                     Column {
                         // Original language: dim, smaller, on top (when translated)
                         if (seg.lang != seg.sourceLang && seg.sourceText.isNotBlank()) {
