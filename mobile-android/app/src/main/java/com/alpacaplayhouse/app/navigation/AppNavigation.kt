@@ -94,13 +94,13 @@ fun AppNavigation() {
 
     // Filter tabs based on capabilities
     val visibleTabs = remember(capabilities) {
-        val caps = capabilities ?: return@remember allTabs.filter { it.key in listOf("home", "music", "lights", "work") }
+        val caps = capabilities ?: return@remember allTabs.filter { it.key in listOf("home", "music", "lights", "subtitles", "work") }
         if (caps.isAdmin) {
             allTabs // Admin sees everything
         } else {
             allTabs.filter { tab ->
                 when (tab.key) {
-                    "home", "music", "lights", "work" -> true // Always visible
+                    "home", "music", "lights", "subtitles", "work" -> true // Always visible
                     "climate" -> caps.hasThermostat
                     "cars" -> caps.hasTesla
                     else -> false
