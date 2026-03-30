@@ -20,11 +20,11 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
            │                 │                  │
            ▼                 ▼                  ▼
 ┌────────────────┐  ┌──────────────┐  ┌──────────────────────┐
-│ GitHub Pages   │  │  OpenClaw    │  │  Capacitor App       │
-│ (Web UI)       │  │  (Discord)   │  │  (Mobile SPA)        │
+│ GitHub Pages   │  │  OpenClaw    │  │  Native Mobile Apps  │
+│ (Web UI)       │  │  (Discord)   │  │  (iOS + Android)     │
 │                │  │              │  │                      │
-│ HTML/CSS/JS    │  │  DO Droplet  │  │  Native shell wraps  │
-│ No backend     │  │              │  │  same shared/ code   │
+│ HTML/CSS/JS    │  │  DO Droplet  │  │  Swift (iOS)         │
+│ No backend     │  │              │  │  Kotlin (Android)    │
 └──────┬─────────┘  └──────┬───────┘  └──────────┬───────────┘
        │                   │                     │
        └──────────┬────────┘─────────────────────┘
@@ -84,10 +84,10 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | PayPal Payouts | PayPal Payouts API | Config in `paypal_config` table |
 | Identity Verification | Claude Vision API | `verify-identity` Edge Function |
 | Airbnb Calendar Sync | Airbnb iCal | `airbnb-sync` Edge Function |
-| Mobile App (iOS) | App Store (pending) | Capacitor 8, app ID: `com.alpacaplayhouse.app` |
-| Mobile App (Android) | Play Store (pending) | Capacitor 8, same codebase as iOS |
+| Mobile App (iOS) | App Store (pending) | Native Swift/SwiftUI, app ID: `com.alpacaplayhouse.app` |
+| Mobile App (Android) | Play Store (pending) | Native Kotlin/Jetpack Compose, app ID: `com.alpacaplayhouse.app` |
 | Brave Web Search | Brave Search API | API key as Supabase secret `BRAVE_API_KEY` |
-| OTA Updates | Capgo | `@capgo/capacitor-updater` for live web asset pushes |
+| Kiosk App (Android) | Cloudflare R2 | Native Kotlin, APK at R2 `downloads/alpaca-kiosk.apk` |
 | Stripe Payments | Stripe API | Config in `stripe_config` table |
 | Square Webhook | Supabase Edge Function | `square-webhook` (payment/refund status) |
 | Stripe Webhook | Supabase Edge Function | `stripe-webhook` (payment/transfer status) |

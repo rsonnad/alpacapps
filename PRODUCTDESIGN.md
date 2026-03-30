@@ -249,16 +249,23 @@ This hierarchy maps directly to the property's real-world roles. Permissions are
 
 ## 10. Mobile App Strategy
 
-### 10.1 Capacitor Wrapping, Not Native
+### 10.1 Native Apps, Not Capacitor
 
-**Decision:** The mobile app is a Capacitor 8 wrapper around the same web code, not a native Swift/Kotlin app.
+**Decision:** The mobile apps are native — Kotlin for Android, Swift/SwiftUI for iOS. Capacitor was removed (2026-03-30).
 
 **Why:**
-- **One codebase.** Shared service modules (`shared/services/*.js`) work identically on web and mobile. A fix to the lighting data layer benefits both platforms.
-- **Speed of iteration.** OTA updates via Capgo mean code changes ship without App Store review. For a single-property app, this is more important than native performance.
-- **The UI is already mobile-first.** Resident pages are designed for phone screens. Wrapping them in a native shell adds native navigation (tab bar) and platform integrations (push notifications, biometrics) without rewriting the UI.
+- **Responsiveness matters.** The app is a control panel (lights, cameras, climate, music), not a content site. Native rendering eliminates WebView overhead for buttery 60fps interactions.
+- **Claude-coded apps eliminate the cost argument.** The traditional reason for Capacitor — one codebase, less developer time — doesn't apply when AI writes and maintains both codebases at negligible marginal cost.
+- **Direct hardware access.** Camera feeds, push notifications, and biometrics work as first-class APIs, not through JS bridge layers.
+- **Smaller, faster.** No bundled WebView, no JS parse time. Native apps start near-instantly and use less memory.
 
-### 10.2 Five Tabs, Not a Kitchen Sink
+### 10.2 Build Environment: Alpuca Only
+
+**Decision:** All mobile app builds (Android APK/AAB, iOS IPA) are done exclusively on Alpuca (Mac Studio, 192.168.1.200). Feature work and code changes can be dispatched from any machine, but the build/sign/release step always runs on Alpuca.
+
+**Why:** Consistent environment. Xcode, Android SDK, signing keys, and provisioning profiles live in one place. No "works on my machine" build failures. Alpuca has Xcode 26.4, Android SDK 35, Gradle 9.4, and Java 17.
+
+### 10.3 Five Tabs, Not a Kitchen Sink
 
 **Decision:** The mobile app has exactly five tabs: Cameras, Music, Lights, Climate, Cars.
 
