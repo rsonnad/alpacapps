@@ -1,12 +1,12 @@
 {
-  "version": "v260330.04 3:33a",
-  "release": 1161,
-  "sha": "9b87df8a0",
-  "fullSha": "9b87df8a03927e30d76c0949f0d85c629088fdb1",
+  "version": "v260330.05 3:39a",
+  "release": 1162,
+  "sha": "c42a1fefd",
+  "fullSha": "c42a1fefd25fd8237b1a901ecc1d1dc2399ae591",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 08:33:28+00",
-  "commits": [{"sha":"5e19161c2","message":"feat: replace Capacitor with native mobile app scaffolds (Kotlin + Swift)","author":"Rahul"},{"sha":"a63cde58e","message":"feat: implement Music, Lights, and HAOS Assistant for both native apps","author":"Rahul"},{"sha":"05798f297","message":"feat: add Google auth, Work tab, branding colors, and logo to both native apps","author":"Rahul"},{"sha":"9b87df8a0","message":"Merge branch 'suspicious-liskov'","author":"Rahul"}]
+  "pushedAt": "2026-03-30 08:39:22+00",
+  "commits": [{"sha":"21526a84c","message":"feat: add HAOS conversation agent chat to Hall Kiosk","author":"Rahul"},{"sha":"c42a1fefd","message":"feat: add HAOS conversation agent to Hall Kiosk","author":"Rahul"}]
 }
