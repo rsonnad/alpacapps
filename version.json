@@ -1,12 +1,12 @@
 {
-  "version": "v260329.19 10:50p",
-  "release": 1156,
-  "sha": "77e74f1f2",
-  "fullSha": "77e74f1f26ce505948fb3770acc4e9be8ff6ae85",
+  "version": "v260329.20 11:07p",
+  "release": 1157,
+  "sha": "c45bcfcb2",
+  "fullSha": "c45bcfcb2a2c61a78cfcd4d5c67054936529d574",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 03:50:42+00",
-  "commits": [{"sha":"77e74f1f2","message":"docs: add full database schema and fix column names in LIGHTINGAUTOMATION.md","author":"Rahul"}]
+  "pushedAt": "2026-03-30 04:07:10+00",
+  "commits": [{"sha":"c45bcfcb2","message":"feat: add facade, sauna, and cabins fence lights to HAOS and lights.sh","author":"Rahul"}]
 }
