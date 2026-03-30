@@ -1,12 +1,12 @@
 {
-  "version": "v260330.45 2:03p",
-  "release": 1202,
-  "sha": "d4820d719",
-  "fullSha": "d4820d71938c7cf82d7adcb073e0db283aede4dd",
+  "version": "v260330.46 2:05p",
+  "release": 1203,
+  "sha": "77f8a1e05",
+  "fullSha": "77f8a1e05d16547c87a625011c8677fa092c37db",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T19:03:17+00:00",
-  "commits": [{"sha":"d4820d719","message":"feat: replace Chrome STT with Gemini audio transcription","author":"Rahul"}]
+  "pushedAt": "2026-03-30T19:05:23+00:00",
+  "commits": [{"sha":"77f8a1e05","message":"fix: remove Speaker dropdown — Gemini auto-detects language from audio","author":"Rahul"}]
 }
