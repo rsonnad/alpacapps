@@ -1,12 +1,12 @@
 {
-  "version": "v260330.46 2:05p",
-  "release": 1203,
-  "sha": "77f8a1e05",
-  "fullSha": "77f8a1e05d16547c87a625011c8677fa092c37db",
+  "version": "v260330.48 2:14p",
+  "release": 1205,
+  "sha": "12dfccd84",
+  "fullSha": "12dfccd847be617bdaeca28e2f905cc505e8865e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T19:05:23+00:00",
-  "commits": [{"sha":"77f8a1e05","message":"fix: remove Speaker dropdown — Gemini auto-detects language from audio","author":"Rahul"}]
+  "pushedAt": "2026-03-30T19:14:31+00:00",
+  "commits": [{"sha":"12dfccd84","message":"fix: always show both languages in subtitles, remove speaker dropdown","author":"Rahul"}]
 }
