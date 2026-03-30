@@ -1,12 +1,12 @@
 {
-  "version": "v260330.51 5:21p",
-  "release": 1208,
-  "sha": "d82df86ae",
-  "fullSha": "d82df86ae29853bae0258d1365ccbd99f35669e4",
+  "version": "v260330.52 6:50p",
+  "release": 1209,
+  "sha": "3df7ea6d6",
+  "fullSha": "3df7ea6d66512da9c6cb975756274015553b2375",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T22:21:59+00:00",
-  "commits": [{"sha":"d82df86ae","message":"Simplify Garage TV to slideshow only — cameras too heavy for Pi Zero","author":"Rahul"}]
+  "pushedAt": "2026-03-30T23:50:52+00:00",
+  "commits": [{"sha":"3df7ea6d6","message":"fix: home-assistant-control reads HA config from DB as fallback","author":"Rahul"}]
 }
