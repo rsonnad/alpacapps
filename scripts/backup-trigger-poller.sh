@@ -258,30 +258,65 @@ for t in json.load(sys.stdin):
       ;;
 
     home-assistant)
-      echo "$LOG_PREFIX   Running Home Assistant backup via HAOS API..."
-      # Read HA long-lived access token
+      echo "$LOG_PREFIX   Running Home Assistant backup via WebSocket Supervisor API..."
+      # HA backup requires WebSocket → supervisor/api (HTTP API doesn't expose Supervisor)
       HA_TOKEN=""
       if [ -f "$HOME/.ha_llat" ]; then
         HA_TOKEN=$(head -1 "$HOME/.ha_llat")
       fi
-      HA_HOST="${HA_HOST:-http://192.168.1.39:8123}"
 
       if [ -z "$HA_TOKEN" ]; then
         RESULT_STATUS="failed"
         RESULT_JSON="{\"error\":\"No HA token in ~/.ha_llat\"}"
       else
-        # Trigger a backup via Supervisor API (requires SSH add-on or API)
-        BACKUP_RESP=$(curl -sf -X POST "$HA_HOST/api/services/backup/create" \
-          -H "Authorization: Bearer $HA_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{}' 2>/dev/null) || true
+        BACKUP_NAME="Manual $(date '+%Y-%m-%d %H:%M')"
+        BACKUP_RESULT=$(HA_TOKEN="$HA_TOKEN" BACKUP_NAME="$BACKUP_NAME" python3 << 'PYEOF'
+import asyncio, json, os
 
-        if [ -n "$BACKUP_RESP" ]; then
-          echo "$LOG_PREFIX   HA backup triggered"
-          RESULT_JSON="{\"triggered\":true,\"note\":\"backup created via HA API\"}"
+async def create_backup():
+    try:
+        import websockets
+    except ImportError:
+        print("ERROR: websockets not installed")
+        return
+    token = os.environ["HA_TOKEN"]
+    name = os.environ["BACKUP_NAME"]
+    try:
+        async with websockets.connect("ws://192.168.1.39:8123/api/websocket", close_timeout=300) as ws:
+            await ws.recv()  # auth_required
+            await ws.send(json.dumps({"type": "auth", "access_token": token}))
+            msg = json.loads(await ws.recv())
+            if msg["type"] != "auth_ok":
+                print(f"AUTH_FAIL: {msg}")
+                return
+            await ws.send(json.dumps({
+                "id": 1, "type": "supervisor/api",
+                "endpoint": "/backups/new/full",
+                "method": "post",
+                "data": {"name": name}
+            }))
+            msg = json.loads(await asyncio.wait_for(ws.recv(), timeout=600))
+            if msg.get("success"):
+                slug = msg["result"].get("data", {}).get("slug", "")
+                size = msg["result"].get("data", {}).get("size", "")
+                print(f"OK: {slug} ({size})")
+            else:
+                print(f"FAIL: {json.dumps(msg)}")
+    except Exception as e:
+        print(f"ERROR: {e}")
+
+asyncio.run(create_backup())
+PYEOF
+        )
+        echo "$LOG_PREFIX   Result: $BACKUP_RESULT"
+
+        if echo "$BACKUP_RESULT" | grep -q "^OK:"; then
+          SLUG=$(echo "$BACKUP_RESULT" | sed 's/^OK: //' | cut -d' ' -f1)
+          RESULT_JSON="{\"slug\":\"$SLUG\",\"name\":\"$BACKUP_NAME\"}"
         else
           RESULT_STATUS="failed"
-          RESULT_JSON="{\"error\":\"HA API call failed — check HA_HOST and token\"}"
+          ERR_MSG=$(echo "$BACKUP_RESULT" | head -1)
+          RESULT_JSON="{\"error\":\"$ERR_MSG\"}"
         fi
       fi
       ;;
