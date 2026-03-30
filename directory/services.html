@@ -2,98 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Service Connections - Alpaca Playhouse</title>
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/styles/site.css">
-  <link rel="stylesheet" href="/styles/tailwind.out.css">
-  <link rel="stylesheet" href="/directory/styles.css">
-  <link rel="stylesheet" href="/directory/lightingdevices.css">
-  <link rel="stylesheet" href="/directory/services.css">
-  <script type="module" src="/shared/version-info.js"></script>
-  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <meta http-equiv="refresh" content="0;url=/spaces/admin/inventory.html#services">
+  <title>Redirecting to Inventory — Services</title>
 </head>
 <body>
-  <span data-site-version style="display:none;">v260330.28 5:59a</span>
-  <div id="siteHeader"></div>
-
-  <!-- Directory tab bar -->
-  <div id="directoryTabs"></div>
-
-  <!-- Loading state -->
-  <div id="loadingState" class="dir-state">
-    <div class="dir-spinner"></div>
-  </div>
-
-  <!-- Main content -->
-  <div id="mainContent" class="ld-container aap-hidden">
-    <!-- Summary bar -->
-    <div class="ld-summary">
-      <h1 class="ld-title">Service Connections</h1>
-      <div class="ld-counts" id="summaryCounts"></div>
-    </div>
-
-    <!-- Filters -->
-    <div class="ld-filters">
-      <input type="text" class="ld-search" id="searchInput" placeholder="Search by name, host, protocol, tags...">
-      <div class="ld-filter-row">
-        <select class="ld-select" id="filterCategory">
-          <option value="">All Categories</option>
-        </select>
-        <select class="ld-select" id="filterStatus">
-          <option value="">All Status</option>
-          <option value="working">Working</option>
-          <option value="degraded">Degraded</option>
-          <option value="down">Down</option>
-          <option value="unknown">Unknown</option>
-          <option value="decommissioned">Decommissioned</option>
-        </select>
-        <select class="ld-select" id="filterProtocol">
-          <option value="">All Protocols</option>
-        </select>
-        <label class="ld-checkbox-label">
-          <input type="checkbox" id="filterActive" checked> Active only
-        </label>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="ld-table-wrap">
-      <table class="ld-table" id="servicesTable">
-        <thead>
-          <tr>
-            <th data-sort="status" class="ld-th-status"></th>
-            <th data-sort="name">Name</th>
-            <th data-sort="category">Category</th>
-            <th data-sort="host">Host</th>
-            <th data-sort="protocol">Protocol</th>
-            <th data-sort="auth_method">Auth</th>
-            <th data-sort="bw_item_name">Credential</th>
-            <th data-sort="tags">Tags</th>
-            <th data-sort="last_tested_at">Tested</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-
-    <!-- Detail panel (slide-out on row click) -->
-    <div class="sc-detail aap-hidden" id="detailPanel">
-      <button class="sc-detail-close" id="detailClose">&times;</button>
-      <div id="detailContent"></div>
-    </div>
-
-    <div class="ld-footer-info" id="footerInfo"></div>
-  </div>
-
-  <!-- Footer -->
-  <div id="siteFooter"></div>
-
-  <script type="module">
-    import { renderDirectoryTabs } from '/directory/directory-tabs.js';
-    renderDirectoryTabs();
-  </script>
-  <script type="module" src="/directory/services.js"></script>
+  <p>Redirecting to <a href="/spaces/admin/inventory.html#services">Inventory → Services</a>...</p>
 </body>
 </html>

@@ -475,8 +475,12 @@ function loadSoftware() {
   `).join('')}</div>`;
 }
 
+let _servicesCache = null;
+
 async function loadServices() {
   const el = document.getElementById('servicesContent');
+  el.innerHTML = '<p style="padding:1rem;color:var(--text-muted)">Loading services...</p>';
+
   const agentRows = SERVICES_AGENTS.map(s => [
     `<strong>${esc(s.name)}</strong>`,
     s.port ? `<code>${s.port}</code>` : '<span style="color:#9ca3af">—</span>',
@@ -494,18 +498,48 @@ async function loadServices() {
   try {
     const { data, error } = await supabase.from('service_connections').select('*').order('display_order').order('name');
     if (error) throw error;
+    _servicesCache = data || [];
     const statusColors = { working: 'green', degraded: 'amber', down: 'red', unknown: 'gray', decommissioned: 'gray' };
-    const connRows = (data || []).map(s => [
-      `<strong>${esc(s.name)}</strong>`,
-      badge(s.status || 'unknown', statusColors[s.status] || 'gray'),
-      s.host ? `<code style="font-size:0.7rem">${esc(s.host)}${s.port ? ':' + s.port : ''}</code>` : '—',
-      esc(s.protocol || ''),
-      esc(s.category || ''),
-    ]);
+    const catColors = { server: 'blue', api: 'purple', storage: 'green', database: 'amber', iot: 'purple', network: 'blue' };
+    const statusCounts = {};
+    for (const s of _servicesCache) statusCounts[s.status] = (statusCounts[s.status] || 0) + 1;
+    const statusSummary = ['working', 'degraded', 'down', 'unknown', 'decommissioned']
+      .filter(st => statusCounts[st])
+      .map(st => `${badge(statusCounts[st] + ' ' + st, statusColors[st])}`)
+      .join(' ');
+
+    // Build categories and protocols for filters
+    const categories = [...new Set(_servicesCache.map(s => s.category).filter(Boolean))].sort();
+    const protocols = [...new Set(_servicesCache.map(s => s.protocol).filter(Boolean))].sort();
+
     connectionsHtml = `<div class="inv-section">
-      <h3 class="inv-section-title">Service Connections <span class="inv-badge inv-badge-blue">${(data||[]).length}</span></h3>
-      <p class="inv-section-sub">SSH, API, and infrastructure connection recipes — live from database.</p>
-      ${tableHtml(['Service', 'Status', 'Host', 'Protocol', 'Category'], connRows)}
+      <h3 class="inv-section-title">Service Connections <span class="inv-badge inv-badge-blue">${_servicesCache.length}</span></h3>
+      <div style="margin-bottom:0.75rem">${statusSummary}</div>
+      <div class="inv-device-filters">
+        <input type="text" class="inv-device-search" id="invServiceSearch" placeholder="Search services...">
+        <select class="inv-device-select" id="invServiceCategory"><option value="">All Categories</option>${categories.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
+        <select class="inv-device-select" id="invServiceStatus"><option value="">All Status</option><option value="working">Working</option><option value="degraded">Degraded</option><option value="down">Down</option><option value="decommissioned">Decommissioned</option></select>
+      </div>
+      <div class="inv-table-wrap"><table class="inv-table" id="invServiceTable">
+        <thead><tr><th></th><th>Name</th><th>Category</th><th>Host</th><th>Protocol</th><th>Auth</th><th>Tags</th></tr></thead>
+        <tbody>${_servicesCache.map(s => {
+          const tags = (s.tags || []).slice(0, 3).map(t => `<span class="inv-tag" style="margin-top:0">${esc(t)}</span>`).join(' ');
+          const authLabels = { key: 'SSH Key', password: 'Password', token: 'Token', s3_keys: 'S3 Keys', none: 'None' };
+          return `<tr data-slug="${esc(s.slug)}" data-category="${esc(s.category || '')}" data-status="${esc(s.status || '')}" data-search="${esc([s.name, s.host, s.protocol, s.category, (s.tags||[]).join(' '), s.notes].join(' ').toLowerCase())}" style="cursor:pointer">
+            <td>${badge(s.status || '?', statusColors[s.status] || 'gray')}</td>
+            <td><strong>${esc(s.name)}</strong></td>
+            <td>${badge(s.category || '', catColors[s.category] || 'gray')}</td>
+            <td>${s.host ? `<code style="font-size:0.7rem">${esc(s.host)}${s.port ? ':' + s.port : ''}</code>` : '—'}</td>
+            <td>${esc(s.protocol || '')}</td>
+            <td>${esc(authLabels[s.auth_method] || s.auth_method || '')}</td>
+            <td>${tags}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>
+      <div id="invServiceDetail" style="display:none;margin-top:1rem;background:white;border:1px solid var(--border-color,#e5e7eb);border-radius:8px;padding:1.25rem;position:relative;">
+        <button onclick="document.getElementById('invServiceDetail').style.display='none'" style="position:absolute;top:0.5rem;right:0.75rem;background:none;border:none;font-size:1.25rem;cursor:pointer;color:var(--text-muted)">&times;</button>
+        <div id="invServiceDetailContent"></div>
+      </div>
     </div>`;
   } catch (e) { connectionsHtml = `<p style="color:#ef4444">Error: ${esc(e.message)}</p>`; }
 
@@ -527,6 +561,53 @@ async function loadServices() {
         ['Daily', '<code>event-payment-reminder</code>', 'Payment reminders for events'],
       ])}
     </div>`;
+
+  // Service connection filters
+  const searchEl = document.getElementById('invServiceSearch');
+  const catEl = document.getElementById('invServiceCategory');
+  const statusEl = document.getElementById('invServiceStatus');
+  const filterServiceRows = () => {
+    const q = (searchEl?.value || '').toLowerCase();
+    const cat = catEl?.value || '';
+    const st = statusEl?.value || '';
+    document.querySelectorAll('#invServiceTable tbody tr').forEach(row => {
+      const matchSearch = !q || (row.dataset.search || '').includes(q);
+      const matchCat = !cat || row.dataset.category === cat;
+      const matchStatus = !st || row.dataset.status === st;
+      row.style.display = (matchSearch && matchCat && matchStatus) ? '' : 'none';
+    });
+  };
+  searchEl?.addEventListener('input', filterServiceRows);
+  catEl?.addEventListener('change', filterServiceRows);
+  statusEl?.addEventListener('change', filterServiceRows);
+
+  // Row click → detail panel
+  document.getElementById('invServiceTable')?.addEventListener('click', (e) => {
+    const row = e.target.closest('tr[data-slug]');
+    if (!row || !_servicesCache) return;
+    const svc = _servicesCache.find(s => s.slug === row.dataset.slug);
+    if (!svc) return;
+    const detail = document.getElementById('invServiceDetail');
+    const content = document.getElementById('invServiceDetailContent');
+    const gotchas = (svc.gotchas || []);
+    const tags = (svc.tags || []);
+    let cmds = [];
+    try { cmds = typeof svc.common_commands === 'string' ? JSON.parse(svc.common_commands) : (svc.common_commands || []); } catch { cmds = []; }
+
+    content.innerHTML = `
+      <h3 style="margin:0 0 0.25rem;font-size:1.1rem;font-weight:700">${esc(svc.name)}</h3>
+      <div style="font-size:0.75rem;margin-bottom:1rem">${badge(svc.status || '?', {working:'green',degraded:'amber',down:'red'}[svc.status]||'gray')} ${svc.category ? badge(svc.category, 'blue') : ''}</div>
+      ${svc.host ? `<div style="font-size:0.8rem;margin-bottom:0.25rem"><strong>Host:</strong> <code>${esc(svc.host)}${svc.port ? ':' + svc.port : ''}</code></div>` : ''}
+      ${svc.protocol ? `<div style="font-size:0.8rem;margin-bottom:0.25rem"><strong>Protocol:</strong> ${esc(svc.protocol)}</div>` : ''}
+      ${svc.bw_item_name ? `<div style="font-size:0.8rem;margin-bottom:0.25rem"><strong>Credential:</strong> ${esc(svc.bw_item_name)}${svc.bw_field_name ? ' → ' + esc(svc.bw_field_name) : ''}</div>` : ''}
+      ${svc.connect_command ? `<div style="margin:0.75rem 0"><div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.25rem">Connect Command</div><pre style="background:#1e1e2e;color:#cdd6f4;padding:0.75rem;border-radius:6px;font-size:0.72rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all">${esc(svc.connect_command)}</pre></div>` : ''}
+      ${cmds.length ? `<div style="margin:0.75rem 0"><div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.25rem">Common Commands</div>${cmds.map(c => `<div style="background:var(--bg-muted,#f5f4ef);border:1px solid var(--border-color,#e5e7eb);border-radius:6px;padding:0.5rem 0.75rem;margin-bottom:0.35rem"><div style="font-size:0.7rem;font-weight:600;color:var(--text-muted)">${esc(c.label)}</div><code style="font-size:0.7rem">${esc(c.command)}</code></div>`).join('')}</div>` : ''}
+      ${gotchas.length ? `<div style="margin:0.75rem 0"><div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.25rem">Gotchas</div>${gotchas.map(g => `<div style="font-size:0.78rem;margin-bottom:0.25rem">⚠ ${esc(g)}</div>`).join('')}</div>` : ''}
+      ${svc.notes ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.5rem">${esc(svc.notes)}</div>` : ''}
+      ${tags.length ? `<div style="margin-top:0.5rem">${tags.map(t => `<span class="inv-tag">${esc(t)}</span>`).join(' ')}</div>` : ''}
+    `;
+    detail.style.display = '';
+  });
 }
 
 function loadCloud() {
