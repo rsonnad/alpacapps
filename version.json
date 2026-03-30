@@ -1,12 +1,12 @@
 {
-  "version": "v260330.21 5:14a",
-  "release": 1178,
-  "sha": "9e01e429b",
-  "fullSha": "9e01e429b9a57c695726cce6d3bb1a6f38f58a06",
+  "version": "v260330.22 5:19a",
+  "release": 1179,
+  "sha": "d203864ef",
+  "fullSha": "d203864efb25693f4756866780b2cd96f8c02b4e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:14:32+00",
-  "commits": [{"sha":"9e01e429b","message":"feat: add directory tab bar connecting Lighting, All Devices, Services pages","author":"Rahul"}]
+  "pushedAt": "2026-03-30 10:19:11+00",
+  "commits": [{"sha":"089ac4452","message":"feat: redesign resident devices page as hybrid table with group headers","author":"Rahul"},{"sha":"d203864ef","message":"resolve merge conflicts from upstream","author":"Rahul"}]
 }
