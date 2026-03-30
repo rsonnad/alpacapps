@@ -18,6 +18,11 @@ struct ContentView: View {
                     Label("Lights", systemImage: "lightbulb.fill")
                 }
 
+            WorkView()
+                .tabItem {
+                    Label("Work", systemImage: "briefcase.fill")
+                }
+
             ClimateView()
                 .tabItem {
                     Label("Climate", systemImage: "thermometer.medium")
@@ -28,7 +33,7 @@ struct ContentView: View {
                     Label("Cars", systemImage: "car.fill")
                 }
         }
-        .tint(AppTheme.accent)
+        .tint(AppTheme.primary)
     }
 }
 

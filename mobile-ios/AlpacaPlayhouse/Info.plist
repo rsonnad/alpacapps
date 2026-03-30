@@ -34,6 +34,17 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.alpacaplayhouse.app</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.alpacaplayhouse.app</string>
+		</dict>
+	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Alpaca Playhouse connects to local smart home devices for music and lighting control.</string>
 	<key>NSCameraUsageDescription</key>
