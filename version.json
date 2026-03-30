@@ -1,12 +1,12 @@
 {
-  "version": "v260330.50 4:54p",
-  "release": 1207,
-  "sha": "d42b34c4b",
-  "fullSha": "d42b34c4b3f33feedde7b55097cf8dd887d461bb",
+  "version": "v260330.51 5:21p",
+  "release": 1208,
+  "sha": "d82df86ae",
+  "fullSha": "d82df86ae29853bae0258d1365ccbd99f35669e4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T21:54:44+00:00",
-  "commits": [{"sha":"d42b34c4b","message":"Reorganize kiosks: /kioskhall/ → /kiosks/hall/ and /kiosks/garage/","author":"Rahul"}]
+  "pushedAt": "2026-03-30T22:21:59+00:00",
+  "commits": [{"sha":"d82df86ae","message":"Simplify Garage TV to slideshow only — cameras too heavy for Pi Zero","author":"Rahul"}]
 }
