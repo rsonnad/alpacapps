@@ -374,7 +374,10 @@
       }).join('');
 
       segCount.textContent = `${segments.filter(s => !s.is_partial).length} segments`;
-      if (autoScroll) subtitlesEl.scrollTop = subtitlesEl.scrollHeight;
+      // Always force scroll to bottom with a small delay to ensure DOM is updated
+      requestAnimationFrame(() => {
+        subtitlesEl.scrollTop = subtitlesEl.scrollHeight + 200;
+      });
     }
 
     function esc(s) {
