@@ -1,12 +1,12 @@
 {
-  "version": "v260330.20 5:10a",
-  "release": 1177,
-  "sha": "4f10bc6b7",
-  "fullSha": "4f10bc6b7b88fc83bab7814fc294d4f6f71eeab8",
+  "version": "v260330.21 5:14a",
+  "release": 1178,
+  "sha": "9e01e429b",
+  "fullSha": "9e01e429b9a57c695726cce6d3bb1a6f38f58a06",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:10:43+00",
-  "commits": [{"sha":"d6948bfbf","message":"feat: implement live subtitles system with server, mobile apps, and kiosk integration","author":"Rahul"},{"sha":"4f10bc6b7","message":"Merge branch 'nice-curran'","author":"Rahul"}]
+  "pushedAt": "2026-03-30 10:14:32+00",
+  "commits": [{"sha":"9e01e429b","message":"feat: add directory tab bar connecting Lighting, All Devices, Services pages","author":"Rahul"}]
 }
