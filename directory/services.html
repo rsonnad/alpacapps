@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Connections - Alpaca Playhouse</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <link rel="stylesheet" href="/directory/styles.css">
+  <link rel="stylesheet" href="/directory/services.css">
+  <script type="module" src="/shared/version-info.js"></script>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+</head>
+<body>
+  <span data-site-version style="display:none;"></span>
+  <div id="siteHeader"></div>
+
+  <!-- Loading state -->
+  <div id="loadingState" class="dir-state">
+    <div class="dir-spinner"></div>
+  </div>
+
+  <!-- Main content -->
+  <div id="mainContent" class="sc-container aap-hidden">
+    <!-- Summary bar -->
+    <div class="sc-summary">
+      <h1 class="sc-title">Service Connections</h1>
+      <div class="sc-counts" id="summaryCounts"></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="sc-filters">
+      <input type="text" class="sc-search" id="searchInput" placeholder="Search by name, host, protocol, tags...">
+      <div class="sc-filter-row">
+        <select class="sc-select" id="filterCategory">
+          <option value="">All Categories</option>
+        </select>
+        <select class="sc-select" id="filterStatus">
+          <option value="">All Status</option>
+          <option value="working">Working</option>
+          <option value="degraded">Degraded</option>
+          <option value="down">Down</option>
+          <option value="unknown">Unknown</option>
+          <option value="decommissioned">Decommissioned</option>
+        </select>
+        <select class="sc-select" id="filterProtocol">
+          <option value="">All Protocols</option>
+        </select>
+        <label class="sc-checkbox-label">
+          <input type="checkbox" id="filterActive" checked> Active only
+        </label>
+      </div>
+    </div>
+
+    <!-- Cards view -->
+    <div class="sc-cards" id="cardsContainer"></div>
+
+    <!-- Detail panel (hidden by default) -->
+    <div class="sc-detail aap-hidden" id="detailPanel">
+      <button class="sc-detail-close" id="detailClose">&times;</button>
+      <div id="detailContent"></div>
+    </div>
+
+    <div class="sc-footer-info" id="footerInfo"></div>
+  </div>
+
+  <!-- Footer -->
+  <div id="siteFooter"></div>
+
+  <script type="module" src="/directory/services.js"></script>
+</body>
+</html>

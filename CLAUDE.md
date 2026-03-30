@@ -41,6 +41,19 @@
 - **Infra hero banner:** `infra/index.html` and `docs/alpacappsinfra.html` use a full-width banner card hero (wide alpaca image on top, text below). Do NOT replace with dark full-bleed hero or side-by-side layout. Look for the `⚠️ HERO BANNER` comment.
 - **Permitting Est. Cost link:** In `jackie/pages/permittingplan/index.html`, the Est. Cost value and Estimated Total value MUST link to `cost-estimate-breakdown.html`. Do NOT remove these links. Look for `⚠️ KEEP` comments.
 
+## Service Connection Protocol
+
+Before connecting to ANY external service (SSH, API, R2, Supabase, etc.):
+
+1. **Check `memory/service-access.md`** for a verified copy-paste recipe — use it exactly
+2. **If no recipe:** check `docs/CREDENTIALS.md` for credential references
+3. **Build command** using `bw-read "ExactItemName" "ExactFieldName"` — never guess item names
+4. **If `bw-read` fails:** run `bw list items --search "keyword"` to find the correct item name, then update docs
+5. **After first success with a new service:** add the working recipe to `memory/service-access.md`
+6. **After session with connection failures:** run `/connectivity-audit` to update docs
+
+**NEVER:** guess Bitwarden field names, try multiple auth methods without diagnosing, use hardcoded credentials, or skip documenting a newly-discovered connection recipe.
+
 ## First-Time Setup
 
 - Run `/plugin install typescript-lsp@claude-plugins-official` once (LSP env var is set via `.claude/settings.json`)
