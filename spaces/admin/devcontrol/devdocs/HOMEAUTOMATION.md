@@ -1,9 +1,11 @@
 # Home Automation — Alpaca Playhouse
 
 > Comprehensive reference for all smart home devices, Home Assistant setup, and migration plans.
-> Last updated: 2026-03-29
+> Last updated: 2026-03-30
 >
 > **Lighting?** All lighting control commands, entity names, room groups, Tuya/Govee/WiZ credentials, and troubleshooting live in **`LIGHTINGAUTOMATION.md`**. Per-bulb inventory (IPs, MACs, sockets) is in Supabase tables: `lighting_devices`, `lighting_groups`, `lighting_group_targets`, `home_assistant_entities`.
+>
+> **Machine specs & hardware inventory:** See [Admin Inventory](../../inventory.html) → Devices → "Computers & Kiosks" for full queried specs (chip, RAM, storage, serial, IPs) for Alpuca, AlpineMac, Entry Tablet, and dev MacBook.
 
 ---
 

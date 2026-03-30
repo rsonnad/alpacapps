@@ -30,13 +30,30 @@ function tableHtml(headers, rows) {
 const INFRASTRUCTURE = [
   {
     name: 'Alpuca Mac Mini M4',
-    meta: '192.168.1.200 · M4 · 24 GB RAM',
+    meta: '192.168.1.200 · Apple M4 (10-core) · 24 GB LPDDR5 · 256 GB SSD',
     body: `<p>Primary host machine running all local services, VMs, cron jobs, and file syncs. Serves as the on-premise hub connecting cloud services to physical devices.</p>
       <dl>
-        <dt>SSH</dt><dd><code>ssh paca@192.168.1.200</code></dd>
-        <dt>OS</dt><dd>macOS (Apple Silicon)</dd>
-        <dt>Key Roles</dt><dd>Home Assistant VM host, rclone sync, media processing (ffmpeg), Docker (Colima), Cloudflare Tunnel endpoint, all LaunchAgent services</dd>
-        <dt>Logs</dt><dd><code>/Users/alpuca/logs/</code> — finleg-backup, alpacapps-backup, gdrive-sync, up-sense-monitor</dd>
+        <dt>Model</dt><dd>Mac mini (Mac16,10) — Model Z1CF0001ELL/A</dd>
+        <dt>Chip</dt><dd>Apple M4 — 10 cores (4P + 6E), 10-core GPU (Metal 4)</dd>
+        <dt>Memory</dt><dd>24 GB LPDDR5 (Hynix)</dd>
+        <dt>Storage</dt><dd>APPLE SSD AP0256Z — 245 GB APFS, 60 GB free (18% used)</dd>
+        <dt>Display</dt><dd>Samsung LS32D80xU — 3840×2160 4K @ 60 Hz (UI scaled 1920×1080)</dd>
+        <dt>OS</dt><dd>macOS 26.4 (Build 25E246) — Apple Silicon</dd>
+        <dt>Firmware</dt><dd>18000.101.7</dd>
+        <dt>Hostname</dt><dd>Alpuca.local</dd>
+        <dt>Network</dt><dd>Ethernet en0 (DHCP) — MAC d0:11:e5:af:d9:4c</dd>
+        <dt>SSH</dt><dd><code>ssh paca@192.168.1.200</code> (key auth only, password disabled)</dd>
+        <dt>Serial</dt><dd>C9F44FC69D</dd>
+        <dt>Uptime</dt><dd>Queried 2026-03-30: 2 days, 23h — load avg 2.0</dd>
+        <dt>Runtimes</dt><dd>Node.js v20.20.1 (nvm, also v18.20.8), Python 3.14.3 / 3.13 / 3.12</dd>
+        <dt>Key Software</dt><dd>QEMU, Ollama, MLX, Colima/Docker, cloudflared, rclone, ffmpeg, gh, jq, awscli, mas, tmux, Gradle</dd>
+        <dt>Key Roles</dt><dd>Home Assistant VM host, rclone sync, media processing (ffmpeg), Docker (Colima), Cloudflare Tunnel endpoint, Claude remote-control, Music Assistant, Uptime Kuma, all LaunchAgent services</dd>
+        <dt>External Drives</dt><dd>
+          rvault20 — 20 TB Seagate (ExFAT, 3.9 TB free) at <code>/Volumes/rvault20/</code><br>
+          RVaultBack1 — 16 TB WD Elements (ExFAT, 4.8 TB free) at <code>/Volumes/RVaultBack1/</code><br>
+          Terramass — 10 TB Seagate (NTFS read-only, 2.2 TB free) at <code>/Volumes/Terramass/</code>
+        </dd>
+        <dt>Logs</dt><dd><code>/Users/alpuca/logs/</code> — finleg-backup, alpacapps-backup, gdrive-sync, up-sense-monitor, backup-trigger-poller</dd>
       </dl>`
   },
   {
@@ -62,11 +79,13 @@ const INFRASTRUCTURE = [
       </dl>`
   },
   {
-    name: 'RVAULT20 External Drive',
-    meta: 'USB · Backup + Sync Storage',
-    body: `<p>External storage drive mounted at <code>/Volumes/RVAULT20/</code>. Houses all Google Drive syncs, Google Takeout exports, Tesla cam footage, and weekly repo backups.</p>
+    name: 'rvault20 — Seagate Expansion HDD',
+    meta: 'USB · 20 TB ExFAT · 3.9 TB free',
+    body: `<p>Primary external storage drive for all Google Drive syncs, Google Takeout exports, Tesla cam footage, and weekly repo backups.</p>
       <dl>
-        <dt>Mount Point</dt><dd><code>/Volumes/RVAULT20/</code></dd>
+        <dt>Mount Point</dt><dd><code>/Volumes/rvault20/</code></dd>
+        <dt>Capacity</dt><dd>20 TB (ExFAT) — 3.94 TB free (80% used)</dd>
+        <dt>Protocol</dt><dd>USB · GPT partition</dd>
         <dt>Key Folders</dt>
         <dd>
           <code>googledrivesync-rahulioson/</code> — Rahul's GDrive (~5.5 GB, syncs every 4h)<br>
@@ -76,6 +95,27 @@ const INFRASTRUCTURE = [
           <code>backups/</code> — Weekly repo backups<br>
           <code>Terraformer/</code> — Infrastructure configs
         </dd>
+      </dl>`
+  },
+  {
+    name: 'RVaultBack1 — WD Elements 25A3',
+    meta: 'USB · 16 TB ExFAT · 4.8 TB free',
+    body: `<p>Secondary backup drive for tiered backup strategy.</p>
+      <dl>
+        <dt>Mount Point</dt><dd><code>/Volumes/RVaultBack1/</code></dd>
+        <dt>Capacity</dt><dd>16 TB (ExFAT) — 4.76 TB free (70% used)</dd>
+        <dt>Protocol</dt><dd>USB · GPT partition</dd>
+      </dl>`
+  },
+  {
+    name: 'Terramass — Seagate Expansion Desk',
+    meta: 'USB · 10 TB NTFS (read-only) · 2.2 TB free',
+    body: `<p>Legacy archive drive. NTFS formatted — mounted read-only on macOS.</p>
+      <dl>
+        <dt>Mount Point</dt><dd><code>/Volumes/Terramass/</code></dd>
+        <dt>Capacity</dt><dd>10 TB (NTFS) — 2.19 TB free (78% used)</dd>
+        <dt>Protocol</dt><dd>USB · GPT partition</dd>
+        <dt>Note</dt><dd>Read-only — requires NTFS driver for writes</dd>
       </dl>`
   },
   {
@@ -166,6 +206,11 @@ const SOFTWARE = [
   { name: 'Supabase CLI', desc: 'Local development, migrations, and edge function deployment for the Supabase backend.', tags: ['database', 'deploy'], where: 'Alpuca Mac (npm)' },
   { name: 'gh (GitHub CLI)', desc: 'GitHub command-line tool for PR management, releases, and CI/CD interaction.', tags: ['git', 'deploy'], where: 'Alpuca Mac (Homebrew)' },
   { name: 'jq', desc: 'JSON query tool used in shell scripts for parsing API responses and config files.', tags: ['utility'], where: 'Alpuca Mac (Homebrew)' },
+  { name: 'Ollama', desc: 'Local LLM inference server for Apple Silicon. Runs open-source models (Qwen, Llama, etc.) on the M4 with 24 GB unified memory.', tags: ['ai', 'local'], where: 'Alpuca Mac (Homebrew)' },
+  { name: 'MLX / MLX-C', desc: 'Apple\'s machine learning framework optimized for Apple Silicon — used for local model inference and fine-tuning.', tags: ['ai', 'local'], where: 'Alpuca Mac (Homebrew)' },
+  { name: 'awscli', desc: 'AWS command-line tool — used for S3 operations and Cloudflare R2 compatible storage.', tags: ['cloud', 'storage'], where: 'Alpuca Mac (Homebrew)' },
+  { name: 'tmux', desc: 'Terminal multiplexer for persistent shell sessions on Alpuca.', tags: ['utility'], where: 'Alpuca Mac (Homebrew)' },
+  { name: 'Gradle', desc: 'Build tool for Android (Alpaca Kiosk app) and JVM projects.', tags: ['build', 'android'], where: 'Alpuca Mac (Homebrew)' },
 ];
 
 const SERVICES_AGENTS = [
@@ -184,6 +229,14 @@ const SERVICES_AGENTS = [
   { name: 'Printer Proxy', plist: 'com.printer-proxy', port: null, desc: 'HTTP proxy for FlashForge 3D printer TCP protocol.' },
   { name: 'PO Token Server', plist: 'com.po-token-server', port: null, desc: 'Token generation server for YouTube playback authentication.' },
   { name: 'Home Assistant VM', plist: 'com.alpacapps.homeassistant-vm (daemon)', port: null, desc: 'Auto-starts the HAOS QEMU VM on boot via LaunchDaemon.' },
+  { name: 'Claude Remote Control', plist: 'com.alpacapps.claude-remote', port: null, desc: 'Claude Code remote control daemon — allows remote agent sessions via Cloudflare Tunnel.' },
+  { name: 'Claude Task Poller', plist: 'com.alpacapps.claude-task-poller', port: null, desc: 'Polls Supabase for queued Claude tasks and executes them locally.' },
+  { name: 'Uptime Kuma', plist: 'com.uptime-kuma', port: null, desc: 'Self-hosted uptime monitoring dashboard (v1.23.x, Node 18). Monitors all services and endpoints.' },
+  { name: 'Light API', plist: 'com.alpacapps.light-api', port: null, desc: 'REST API for controlling smart lights across all protocols (WiZ, HAOS, Govee).' },
+  { name: 'Talkback Relay', plist: 'com.talkback-relay', port: null, desc: 'Two-way audio relay for intercom and talkback functionality.' },
+  { name: 'Ollama', plist: 'homebrew.mxcl.ollama', port: 11434, desc: 'Local LLM inference server — runs open-source models on Apple Silicon (M4, 24 GB).' },
+  { name: 'File Search Indexer (Gunicorn)', plist: 'com.alpacapps.file-search-api', port: null, desc: 'Python gunicorn workers (5 processes) indexing and serving full-text file search.' },
+  { name: 'Caffeinate', plist: 'com.caffeinate (daemon)', port: null, desc: 'Prevents macOS from sleeping — keeps Alpuca always awake for services.' },
 ];
 
 const CRON_JOBS = [
@@ -193,6 +246,10 @@ const CRON_JOBS = [
   { schedule: 'Mon 1:00 AM', cmd: 'backup-alpacapps-to-rvault.sh', desc: 'Weekly backup of alpacapps repository to RVAULT20.' },
   { schedule: 'Every 4h at :07', cmd: 'sync-gdrive-to-rvault.sh rahulioson', desc: 'Syncs rahulioson Google Drive to RVAULT20.' },
   { schedule: 'Sun 3:07 AM', cmd: 'sync-gdrive-to-rvault.sh tesloop', desc: 'Syncs tesloop Google Drive to RVAULT20.' },
+  { schedule: '3:17 AM daily', cmd: 'backup-haos.sh', desc: 'Backs up HAOS VM snapshots to local storage.' },
+  { schedule: '2:00 AM daily', cmd: 'haos-backup-sync.sh', desc: 'Syncs HAOS backups to Supabase — requires HA token and service key.' },
+  { schedule: 'Every 5 min', cmd: 'backup-trigger-poller.sh', desc: 'Polls Supabase for backup trigger requests and executes them.' },
+  { schedule: 'Every 10 min', cmd: 'haos-watchdog.sh', desc: 'Monitors HAOS VM health — auto-restarts QEMU if unresponsive, updates scripts on IP change.' },
 ];
 
 const CLOUD_SERVICES = {
@@ -230,6 +287,12 @@ const CLOUD_SERVICES = {
 };
 
 const DEVICES = {
+  'Computers & Kiosks — 4 devices': [
+    { name: 'Alpuca — Mac Mini M4', count: 1, desc: 'Primary home server. Apple M4 (10-core: 4P+6E), 24 GB LPDDR5, 256 GB SSD (60 GB free). macOS 26.4. 10-core GPU (Metal 4). Samsung 4K display. Serial C9F44FC69D. IP 192.168.1.200. Runs HAOS VM, 24 LaunchAgents, 10 cron jobs, 3 external drives (rvault20 20TB, RVaultBack1 16TB, Terramass 10TB). SSH: <code>ssh paca@192.168.1.200</code>' },
+    { name: 'Rahul M4 Airtop — MacBook Air M4', count: 1, desc: 'Primary dev machine. Apple M4 (10-core: 4P+6E), 24 GB LPDDR5, 512 GB SSD (109 GB free). macOS 26.3.1. Built-in Liquid Retina 2880×1864. Serial MP3QRJVT03. IP 192.168.1.87. Runs Claude Code, Xcode, dev tooling.' },
+    { name: 'AlpineMac — MacBook Pro 2015', count: 1, desc: 'Kiosk display machine. Intel Core i5 2.7 GHz (2-core HT), 8 GB DDR3, 128 GB SSD (89 GB free). macOS 12.7.6 Monterey. Retina 2560×1600. Serial C02RFWAYFVH3. IP 192.168.1.61, Tailscale 100.67.3.39. Chrome kiosk auto-launches alpacaplayhouse.com/kioskhall/ on login. 114 alpaca screensaver images. SSH: <code>sshpass -p "Pokpok00" ssh alpine@192.168.1.61</code>' },
+    { name: 'Entry Alpaca Tablet — Samsung Galaxy Tab A9', count: 1, desc: 'Front hallway entry kiosk. Model SM-X210, Android 16. Kiosk app v260314.0348. WiFi RSSI -44 dBm. Always charging (100%). LAN 192.168.1.239, Tailscale 100.103.110.7. Kiosk API port 2323. Loads alpacaplayhouse.com/kioskhall/. BRMesh key 9246 for 5 flood lights. ADB: <code>adb connect 100.103.110.7:5555</code>' },
+  ],
   'Lighting — 91 devices': [
     { name: 'WiZ RGB Tunable Bulbs', count: 26, desc: 'WiFi-connected smart bulbs across all rooms + outdoor. Controlled via WiZ Proxy (port 8902) and Home Assistant.' },
     { name: 'Govee Lights', count: 57, desc: '16 light bars + 41 AiDot/OREIN. Groups: Garage Mahal (17), Spartan (14), Outhouse (6), fence/string lights. Cloud API controlled.' },
