@@ -3635,6 +3635,61 @@ serve(async (req) => {
       text = content.text;
     }
 
+    // ==============================================
+    // EVENT STAFF CONFIRMATION DETECTOR
+    // If sender is an eventstaff person and body contains "yes",
+    // record confirmation in their people.metadata
+    // ==============================================
+    try {
+      const senderAddr = (from.toLowerCase().match(/<(.+)>/)?.[1] || from.toLowerCase()).trim();
+      const bodyLower = (text || html || "").toLowerCase().replace(/<[^>]*>/g, "").trim();
+      // Only check short replies (< 200 chars of new content) that contain "yes"
+      const newContent = bodyLower.split(/on .+ wrote:|from:|sent:/i)[0]?.trim() || bodyLower;
+      if (newContent.length < 200 && /\byes\b/i.test(newContent) && senderAddr) {
+        const { data: staffPerson } = await supabase
+          .from("people")
+          .select("id, first_name, last_name, type, metadata")
+          .eq("email", senderAddr)
+          .eq("type", "eventstaff")
+          .maybeSingle();
+
+        if (staffPerson) {
+          const existingMeta = staffPerson.metadata || {};
+          await supabase
+            .from("people")
+            .update({
+              metadata: {
+                ...existingMeta,
+                event_staff_confirmed: true,
+                event_staff_confirmed_at: new Date().toISOString(),
+                event_staff_confirmed_via: "email_reply",
+              },
+            })
+            .eq("id", staffPerson.id);
+
+          console.log(`Event staff confirmed: ${staffPerson.first_name} ${staffPerson.last_name} (${senderAddr})`);
+
+          // Notify admin
+          const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
+          if (RESEND_KEY) {
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "Alpaca Team <team@alpacaplayhouse.com>",
+                to: ["alpacaplayhouse@gmail.com"],
+                subject: `Staff CONFIRMED: ${staffPerson.first_name} ${staffPerson.last_name} replied Yes`,
+                text: `${staffPerson.first_name} ${staffPerson.last_name} (${senderAddr}) replied "Yes" to confirm their event staff assignment.\n\nTheir record has been updated in the database.`,
+              }),
+            });
+          }
+        }
+      }
+    } catch (staffErr) {
+      // Non-blocking — don't break normal email processing
+      console.error("Event staff confirmation check error (non-blocking):", staffErr);
+    }
+
     // Load forwarding rules from database
     const forwardingRules = await loadForwardingRules(supabase);
 
