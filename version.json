@@ -1,12 +1,12 @@
 {
-  "version": "v260330.39 1:21p",
-  "release": 1196,
-  "sha": "c55192a6b",
-  "fullSha": "c55192a6b20cd7a9c9bbf7840e958301e06edb11",
+  "version": "v260330.40 1:40p",
+  "release": 1197,
+  "sha": "41ab65862",
+  "fullSha": "41ab65862a7dd5dd55d1131cac1ed7931694f774",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T18:21:20+00:00",
-  "commits": [{"sha":"c55192a6b","message":"docs: add fork safety guide with Claude audit prompt","author":"Rahul"}]
+  "pushedAt": "2026-03-30T18:40:31+00:00",
+  "commits": [{"sha":"41ab65862","message":"feat: add multi-language source support to live subtitles","author":"Rahul"}]
 }
