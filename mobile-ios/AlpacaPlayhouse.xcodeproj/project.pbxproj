@@ -16,6 +16,11 @@
 		A1000007 /* CarsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007 /* CarsView.swift */; };
 		A1000008 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* AppTheme.swift */; };
 		A1000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000009 /* Assets.xcassets */; };
+		A100000A /* ApiConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C /* ApiConfig.swift */; };
+		A100000B /* SonosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000D /* SonosService.swift */; };
+		A100000C /* LightService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000E /* LightService.swift */; };
+		A100000D /* HaosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000F /* HaosService.swift */; };
+		A100000E /* AssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010 /* AssistantView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +35,11 @@
 		A2000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A200000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A200000B /* AlpacaPlayhouse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlpacaPlayhouse.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A200000C /* ApiConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiConfig.swift; sourceTree = "<group>"; };
+		A200000D /* SonosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SonosService.swift; sourceTree = "<group>"; };
+		A200000E /* LightService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightService.swift; sourceTree = "<group>"; };
+		A200000F /* HaosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaosService.swift; sourceTree = "<group>"; };
+		A2000010 /* AssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +68,7 @@
 				A2000002 /* ContentView.swift */,
 				A4000003 /* Views */,
 				A4000004 /* Theme */,
+				A4000006 /* Services */,
 				A2000009 /* Assets.xcassets */,
 				A200000A /* Info.plist */,
 			);
@@ -68,6 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				A2000003 /* CamerasView.swift */,
+				A2000010 /* AssistantView.swift */,
 				A2000004 /* MusicView.swift */,
 				A2000005 /* LightsView.swift */,
 				A2000006 /* ClimateView.swift */,
@@ -82,6 +94,17 @@
 				A2000008 /* AppTheme.swift */,
 			);
 			path = Theme;
+			sourceTree = "<group>";
+		};
+		A4000006 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A200000C /* ApiConfig.swift */,
+				A200000D /* SonosService.swift */,
+				A200000E /* LightService.swift */,
+				A200000F /* HaosService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		A4000005 /* Products */ = {
@@ -169,6 +192,11 @@
 				A1000006 /* ClimateView.swift in Sources */,
 				A1000007 /* CarsView.swift in Sources */,
 				A1000008 /* AppTheme.swift in Sources */,
+				A100000A /* ApiConfig.swift in Sources */,
+				A100000B /* SonosService.swift in Sources */,
+				A100000C /* LightService.swift in Sources */,
+				A100000D /* HaosService.swift in Sources */,
+				A100000E /* AssistantView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

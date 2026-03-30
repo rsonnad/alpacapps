@@ -3,10 +3,10 @@ package com.alpacaplayhouse.app.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -26,7 +26,7 @@ import com.alpacaplayhouse.app.ui.screens.*
 import kotlinx.serialization.Serializable
 
 // Type-safe route definitions
-@Serializable object CamerasRoute
+@Serializable object AssistantRoute
 @Serializable object MusicRoute
 @Serializable object LightsRoute
 @Serializable object ClimateRoute
@@ -39,7 +39,7 @@ data class TabItem(
 )
 
 val tabs = listOf(
-    TabItem("Cameras", Icons.Default.Videocam, CamerasRoute),
+    TabItem("Assistant", Icons.Default.SmartToy, AssistantRoute),
     TabItem("Music", Icons.Default.MusicNote, MusicRoute),
     TabItem("Lights", Icons.Default.Lightbulb, LightsRoute),
     TabItem("Climate", Icons.Default.Thermostat, ClimateRoute),
@@ -76,10 +76,10 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = CamerasRoute,
+            startDestination = AssistantRoute,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable<CamerasRoute> { CamerasScreen() }
+            composable<AssistantRoute> { AssistantScreen() }
             composable<MusicRoute> { MusicScreen() }
             composable<LightsRoute> { LightsScreen() }
             composable<ClimateRoute> { ClimateScreen() }

@@ -4,6 +4,8 @@
 <dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>supabase.co</key>
@@ -15,9 +17,30 @@
 				<key>NSExceptionMinimumTLSVersion</key>
 				<string>TLSv1.2</string>
 			</dict>
+			<key>192.168.1.74</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+			<key>192.168.1.200</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+			<key>192.168.1.39</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
 		</dict>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Alpaca Playhouse connects to local smart home devices for music and lighting control.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Alpaca Playhouse uses the camera for photo booth and property documentation.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Voice commands for smart home control</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Voice input for smart assistant</string>
 </dict>
 </plist>

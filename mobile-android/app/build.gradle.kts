@@ -69,12 +69,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.core:core-ktx:1.15.0")
 
-    // Supabase
-    implementation(platform("io.github.jan-m-k:supabase-kt-bom:3.1.1"))
-    implementation("io.github.jan-m-k:supabase-kt-gotrue")
-    implementation("io.github.jan-m-k:supabase-kt-postgrest")
-    implementation("io.github.jan-m-k:supabase-kt-realtime")
-    implementation("io.ktor:ktor-client-okhttp:3.1.1")
+    // HTTP client
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Image loading
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")

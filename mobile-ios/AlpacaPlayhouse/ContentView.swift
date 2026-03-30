@@ -3,9 +3,9 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         TabView {
-            CamerasView()
+            AssistantView()
                 .tabItem {
-                    Label("Cameras", systemImage: "video.fill")
+                    Label("Assistant", systemImage: "bubble.left.and.text.bubble.right.fill")
                 }
 
             MusicView()
