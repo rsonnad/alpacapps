@@ -8,6 +8,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @Serializable
 data class WorkTask(
@@ -123,8 +125,11 @@ object WorkApi {
 
     suspend fun clockIn(notes: String? = null): Result<HoursEntry> = withContext(Dispatchers.IO) {
         try {
+            val now = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            val userId = AuthManager.accessToken?.let { AuthManager.userId }
             val payload = buildString {
-                append("""{"status":"active","clock_in":"now()"""")
+                append("""{"status":"active","clock_in":"$now"""")
+                if (userId != null) append(""","user_id":"$userId"""")
                 if (notes != null) append(""","notes":"$notes"""")
                 append("}")
             }

@@ -10,6 +10,7 @@ final class AuthService {
     var userEmail: String?
     var userAvatar: String?
     var accessToken: String?
+    var userRole: String?
 
     private let defaults = UserDefaults.standard
     private let kAccessToken = "auth_access_token"
@@ -18,12 +19,14 @@ final class AuthService {
     private let kUserEmail = "auth_user_email"
     private let kUserAvatar = "auth_user_avatar"
     private let kUserId = "auth_user_id"
+    private let kUserRole = "auth_user_role"
 
     private init() {
         accessToken = defaults.string(forKey: kAccessToken)
         userName = defaults.string(forKey: kUserName)
         userEmail = defaults.string(forKey: kUserEmail)
         userAvatar = defaults.string(forKey: kUserAvatar)
+        userRole = defaults.string(forKey: kUserRole)
         isLoggedIn = accessToken != nil
     }
 
@@ -87,16 +90,33 @@ final class AuthService {
             defaults.set(user.userMetadata?.fullName ?? user.userMetadata?.name ?? user.email, forKey: kUserName)
             defaults.set(user.userMetadata?.avatarURL, forKey: kUserAvatar)
 
+            // Fetch role from app_users
+            let role = await fetchRole(token: token, userId: user.id)
+            if let role {
+                defaults.set(role, forKey: kUserRole)
+            }
+
             await MainActor.run {
                 self.accessToken = token
                 self.userName = user.userMetadata?.fullName ?? user.userMetadata?.name ?? user.email
                 self.userEmail = user.email
                 self.userAvatar = user.userMetadata?.avatarURL
+                self.userRole = role
                 self.isLoggedIn = true
             }
         } catch {
             print("Auth error: \(error)")
         }
+    }
+
+    private func fetchRole(token: String, userId: String) async -> String? {
+        var req = URLRequest(url: URL(string: "\(ApiConfig.supabaseURL)/rest/v1/app_users?id=eq.\(userId)&select=role")!)
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.setValue(ApiConfig.supabaseAnonKey, forHTTPHeaderField: "apikey")
+        guard let (data, _) = try? await URLSession.shared.data(for: req),
+              let rows = try? JSONDecoder().decode([[String: String]].self, from: data),
+              let role = rows.first?["role"] else { return nil }
+        return role
     }
 
     func logout() {
@@ -106,10 +126,12 @@ final class AuthService {
         defaults.removeObject(forKey: kUserEmail)
         defaults.removeObject(forKey: kUserName)
         defaults.removeObject(forKey: kUserAvatar)
+        defaults.removeObject(forKey: kUserRole)
         accessToken = nil
         userName = nil
         userEmail = nil
         userAvatar = nil
+        userRole = nil
         isLoggedIn = false
     }
 }

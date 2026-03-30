@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -19,14 +18,17 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +45,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.alpacaplayhouse.app.data.ApiConfig
+import com.alpacaplayhouse.app.data.AuthManager
+import com.alpacaplayhouse.app.data.UserCapabilities
 import com.alpacaplayhouse.app.ui.screens.*
 import com.alpacaplayhouse.app.ui.theme.*
 import kotlinx.serialization.Serializable
@@ -59,15 +63,17 @@ data class TabItem(
     val label: String,
     val icon: ImageVector,
     val route: Any,
+    val key: String, // used for visibility filtering
 )
 
-val tabs = listOf(
-    TabItem("Home", Icons.Default.Home, AssistantRoute),
-    TabItem("Music", Icons.Default.MusicNote, MusicRoute),
-    TabItem("Lights", Icons.Default.Lightbulb, LightsRoute),
-    TabItem("Work", Icons.Default.Work, WorkRoute),
-    TabItem("Climate", Icons.Default.Thermostat, ClimateRoute),
-    TabItem("Cars", Icons.Default.DirectionsCar, CarsRoute),
+// All possible tabs
+private val allTabs = listOf(
+    TabItem("Home", Icons.Default.Home, AssistantRoute, "home"),
+    TabItem("Music", Icons.Default.MusicNote, MusicRoute, "music"),
+    TabItem("Lights", Icons.Default.Lightbulb, LightsRoute, "lights"),
+    TabItem("Work", Icons.Default.Work, WorkRoute, "work"),
+    TabItem("Climate", Icons.Default.Thermostat, ClimateRoute, "climate"),
+    TabItem("Cars", Icons.Default.DirectionsCar, CarsRoute, "cars"),
 )
 
 @Composable
@@ -76,6 +82,29 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val isDark = isSystemInDarkTheme()
+
+    // Load user capabilities to determine which tabs to show
+    var capabilities by remember { mutableStateOf<UserCapabilities?>(null) }
+    LaunchedEffect(Unit) {
+        capabilities = UserCapabilities.load()
+    }
+
+    // Filter tabs based on capabilities
+    val visibleTabs = remember(capabilities) {
+        val caps = capabilities ?: return@remember allTabs.filter { it.key in listOf("home", "music", "lights", "work") }
+        if (caps.isAdmin) {
+            allTabs // Admin sees everything
+        } else {
+            allTabs.filter { tab ->
+                when (tab.key) {
+                    "home", "music", "lights", "work" -> true // Always visible
+                    "climate" -> caps.hasThermostat
+                    "cars" -> caps.hasTesla
+                    else -> false
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -96,7 +125,6 @@ fun AppNavigation() {
                         contentScale = ContentScale.Fit,
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    // Text fallback always visible (even if image fails)
                     Text(
                         text = "Alpaca Playhouse",
                         fontSize = 17.sp,
@@ -112,7 +140,7 @@ fun AppNavigation() {
                 containerColor = if (isDark) AlpacaDarkSurface else Color.White,
                 tonalElevation = 0.dp,
             ) {
-                tabs.forEach { tab ->
+                visibleTabs.forEach { tab ->
                     val selected = currentDestination?.hasRoute(tab.route::class) == true
                     NavigationBarItem(
                         selected = selected,
