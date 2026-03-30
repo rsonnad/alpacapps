@@ -1,12 +1,12 @@
 {
-  "version": "v260330.22 5:19a",
-  "release": 1179,
-  "sha": "d203864ef",
-  "fullSha": "d203864efb25693f4756866780b2cd96f8c02b4e",
+  "version": "v260330.23 5:29a",
+  "release": 1180,
+  "sha": "8c7e8a328",
+  "fullSha": "8c7e8a32834af292640e7b8cd1a1dbba74adff0c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:19:11+00",
-  "commits": [{"sha":"089ac4452","message":"feat: redesign resident devices page as hybrid table with group headers","author":"Rahul"},{"sha":"d203864ef","message":"resolve merge conflicts from upstream","author":"Rahul"}]
+  "pushedAt": "2026-03-30 10:29:01+00",
+  "commits": [{"sha":"31cd97527","message":"feat: add branded app icons — white alpaca head on dark green","author":"Rahul"},{"sha":"8c7e8a328","message":"Merge branch 'nice-curran'","author":"Rahul"}]
 }
