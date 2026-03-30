@@ -1,12 +1,12 @@
 {
-  "version": "v260330.32 6:05a",
-  "release": 1189,
-  "sha": "7498f5b4e",
-  "fullSha": "7498f5b4e1e19669969c54915bc25aa94bc96764",
+  "version": "v260330.33 6:08a",
+  "release": 1190,
+  "sha": "94a8f4df4",
+  "fullSha": "94a8f4df46163f5da5d2bf5ab7856b31215cace8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 11:05:18+00",
-  "commits": [{"sha":"7498f5b4e","message":"fix: make Subtitles tab visible for all users, not just admins","author":"Rahul"}]
+  "pushedAt": "2026-03-30 11:08:16+00",
+  "commits": [{"sha":"94a8f4df4","message":"fix: rename \"Smart Home Devices\" to \"Home Devices\" with live count from devices_unified","author":"Rahul"}]
 }
