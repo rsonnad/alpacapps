@@ -103,15 +103,19 @@ fun SubtitleScreen() {
                 val json = JSONObject(text)
                 if (json.optString("type") != "subtitle") return
 
-                val seg = SubtitleSegment(
-                    id = json.getString("id"),
-                    text = json.getString("text"),
-                    lang = json.getString("lang"),
-                    sourceLang = json.getString("source_lang"),
-                    sourceText = json.getString("source_text"),
-                    timestamp = json.getLong("timestamp"),
-                    isPartial = json.getBoolean("is_partial"),
-                )
+                val seg = try {
+                    SubtitleSegment(
+                        id = json.getString("id"),
+                        text = json.getString("text"),
+                        lang = json.optString("lang", selectedLang),
+                        sourceLang = json.optString("source_lang", ""),
+                        sourceText = json.optString("source_text", ""),
+                        timestamp = json.optLong("timestamp", System.currentTimeMillis()),
+                        isPartial = json.optBoolean("is_partial", false),
+                    )
+                } catch (e: Exception) {
+                    return
+                }
 
                 val updated = segments.toMutableList()
                 if (seg.isPartial) {
