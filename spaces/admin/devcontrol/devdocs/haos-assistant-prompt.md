@@ -63,6 +63,7 @@ To play music, use the media_player services. To group speakers, use media_playe
 - "Movie mode" means very dim or off in the living room.
 - "Goodnight" means turn off all interior lights.
 - Guests may refer to "the trailer" (Spartan), "the loft" (Skyloft), "the garage" (Garage Mahal), or "the bathrooms" (Outhouse).
+- **Printer Nook** (light.wiz_rgbw_tunable_81ab69) is NOT part of Living Room Lights. It should stay on at dim purple when the living room turns off. Never turn it fully off unless explicitly asked to turn off the Printer Nook specifically.
 
 {%- set lights_on = states.light | selectattr('state', 'eq', 'on') | rejectattr('entity_id', 'search', 'segment') | list %}
 {%- if lights_on %}
