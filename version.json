@@ -1,12 +1,12 @@
 {
-  "version": "v260329.17 9:18p",
-  "release": 1154,
-  "sha": "f2592fa8c",
-  "fullSha": "f2592fa8c048273f1dfc98c8b5686b2064ddb172",
+  "version": "v260329.18 10:42p",
+  "release": 1155,
+  "sha": "43ed6bf26",
+  "fullSha": "43ed6bf2638e5f25f8fc68efd349f380410d9f52",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 02:18:38+00",
-  "commits": [{"sha":"f2592fa8c","message":"feat: track event staff email confirmations in people.metadata","author":"Rahul"}]
+  "pushedAt": "2026-03-30 03:42:18+00",
+  "commits": [{"sha":"0a425304b","message":"docs: add comprehensive light onboarding checklist and new rooms to LIGHTINGAUTOMATION.md","author":"Rahul"},{"sha":"43ed6bf26","message":"fix: resolve merge conflict in LIGHTINGAUTOMATION.md device inventory","author":"Rahul"}]
 }
