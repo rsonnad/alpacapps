@@ -9,6 +9,10 @@ enum AppTheme {
     static let text = Color(red: 0x2D / 255.0, green: 0x31 / 255.0, blue: 0x42 / 255.0)           // #2d3142 dark navy
     static let muted = Color(red: 0x7A / 255.0, green: 0x7D / 255.0, blue: 0x8C / 255.0)          // #7a7d8c grey-blue
 
+    // Aliases for existing views
+    static let light = background
+    static let dark = text
+
     // Logo URLs
     static let logoLightURL = URL(string: "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png")!
     static let logoDarkURL = URL(string: "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png")!
