@@ -18,7 +18,12 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 
-const TOKEN_PATH = path.join(require('os').homedir(), '.alpacapps-gmail-tokens.json');
+// Support --account <name> for multi-account tokens
+const accountFlag = process.argv.indexOf('--account');
+const ACCOUNT_NAME = accountFlag !== -1 ? process.argv[accountFlag + 1] : null;
+const TOKEN_PATH = ACCOUNT_NAME
+  ? path.join(require('os').homedir(), `.gmail-tokens-${ACCOUNT_NAME}.json`)
+  : path.join(require('os').homedir(), '.alpacapps-gmail-tokens.json');
 
 function getClient() {
   // Load credentials
@@ -222,7 +227,9 @@ async function searchEmails(gmail, query, count = 10) {
 
 // Main
 (async () => {
-  const [,, command, ...args] = process.argv;
+  // Strip --account <name> from argv before parsing command
+  const filteredArgs = process.argv.slice(2).filter((a, i, arr) => a !== '--account' && arr[i - 1] !== '--account');
+  const [command, ...args] = filteredArgs;
   const gmail = getClient();
 
   switch (command) {

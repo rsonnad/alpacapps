@@ -22,7 +22,12 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-const TOKEN_PATH = path.join(require('os').homedir(), '.alpacapps-gmail-tokens.json');
+// Support --account <name> for multi-account tokens
+const accountFlag = process.argv.indexOf('--account');
+const ACCOUNT_NAME = accountFlag !== -1 ? process.argv[accountFlag + 1] : null;
+const TOKEN_PATH = ACCOUNT_NAME
+  ? path.join(require('os').homedir(), `.gmail-tokens-${ACCOUNT_NAME}.json`)
+  : path.join(require('os').homedir(), '.alpacapps-gmail-tokens.json');
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.settings.basic',  // Filters, labels
   'https://www.googleapis.com/auth/gmail.labels',          // Create/manage labels

@@ -9,12 +9,7 @@
   "scripts": {
     "css:build": "tailwindcss -i styles/tailwind.css -o styles/tailwind.out.css --minify",
     "css:watch": "tailwindcss -i styles/tailwind.css -o styles/tailwind.out.css --watch",
-    "rahulio-pages-manifest": "node scripts/rahulio-pages-manifest.js",
-    "cap:sync": "npx cap sync",
-    "cap:ios": "npx cap sync ios && npx cap open ios",
-    "cap:android": "npx cap sync android && npx cap open android",
-    "cap:build:ios": "npx cap sync ios && xcodebuild -project ios/App/App.xcodeproj -target App -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO",
-    "cap:build:android": "npx cap sync android && cd android && ./gradlew assembleRelease"
+    "rahulio-pages-manifest": "node scripts/rahulio-pages-manifest.js"
   },
   "repository": {
     "type": "git",
@@ -29,15 +24,10 @@
   "homepage": "https://github.com/rsonnad/alpacapps#readme",
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.18",
-    "marked": "^17.0.5",
-    "tailwindcss": "^4.1.18",
-    "typescript": "^6.0.2"
+    "tailwindcss": "^4.1.18"
   },
   "dependencies": {
-    "@capacitor/android": "^8.3.0",
-    "@capacitor/cli": "^8.3.0",
-    "@capacitor/core": "^8.3.0",
-    "@capacitor/ios": "^8.3.0",
+    "googleapis": "^171.4.0",
     "puppeteer": "^24.39.0"
   }
 }
