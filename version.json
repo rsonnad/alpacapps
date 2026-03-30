@@ -1,12 +1,12 @@
 {
-  "version": "v260330.52 6:50p",
-  "release": 1209,
-  "sha": "3df7ea6d6",
-  "fullSha": "3df7ea6d66512da9c6cb975756274015553b2375",
+  "version": "v260330.53 6:58p",
+  "release": 1210,
+  "sha": "db06ad5a4",
+  "fullSha": "db06ad5a410ec37b713c45c9f7904dbae5b1eb7a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T23:50:52+00:00",
-  "commits": [{"sha":"3df7ea6d6","message":"fix: home-assistant-control reads HA config from DB as fallback","author":"Rahul"}]
+  "pushedAt": "2026-03-30T23:58:43+00:00",
+  "commits": [{"sha":"db06ad5a4","message":"feat: interactive DB explorer with drill-down into schema and data","author":"Rahul"}]
 }
