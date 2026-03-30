@@ -132,13 +132,6 @@
     <div class="controls">
       <button class="mic-btn" id="micBtn" title="Speak into your mic (uses browser speech recognition)">&#127908; Mic</button>
       <span class="mic-unsupported" id="micUnsupported">Browser speech recognition not supported</span>
-      <select id="sourceLangPicker" title="What language is the speaker speaking?">
-        <option value="en">Speaker: English</option>
-        <option value="pl">Speaker: Polski</option>
-        <option value="es">Speaker: Español</option>
-        <option value="fr">Speaker: Français</option>
-        <option value="de">Speaker: Deutsch</option>
-      </select>
       <select id="langPicker" title="What language do you want subtitles in?">
         <option value="en">Subtitles: English</option>
         <option value="pl">Subtitles: Polski</option>
@@ -185,7 +178,6 @@
     const segCount = document.getElementById('segCount');
     const micInfo = document.getElementById('micInfo');
     const langPicker = document.getElementById('langPicker');
-    const sourceLangPicker = document.getElementById('sourceLangPicker');
     const micBtn = document.getElementById('micBtn');
     let ws = null;
     let currentLang = 'en';
@@ -254,7 +246,7 @@
       micActive = true;
       micBtn.classList.add('recording');
       micBtn.innerHTML = '&#9724; Stop';
-      sourceLangPicker.disabled = true;
+      // recording active
       micInfo.textContent = 'Recording...';
 
       audioChunks = [];
@@ -299,11 +291,11 @@
       micBtn.classList.remove('recording');
       micBtn.innerHTML = '&#127908; Mic';
       micInfo.textContent = '';
-      sourceLangPicker.disabled = false;
+      // recording stopped
     }
 
     async function sendAudioChunk(blob) {
-      const srcLang = sourceLangPicker.value;
+      const srcLang = 'auto';
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64 = reader.result.split(',')[1];
