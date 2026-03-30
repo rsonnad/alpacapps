@@ -8,9 +8,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.foundation.isSystemInDarkTheme
-
-// Provides the actual theme dark/light state to all composables (not system setting)
-val LocalIsDarkTheme = compositionLocalOf { true }
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.alpacaplayhouse.app.data.BrandConfig
