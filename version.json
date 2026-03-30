@@ -1,12 +1,12 @@
 {
-  "version": "v260330.26 5:51a",
-  "release": 1183,
-  "sha": "fcb860116",
-  "fullSha": "fcb860116273a4418d6358aedf324b25e28c8f8d",
+  "version": "v260330.27 5:56a",
+  "release": 1184,
+  "sha": "02589531b",
+  "fullSha": "02589531b32588f162583eacee0b2cc6111e28f4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:51:19+00",
-  "commits": [{"sha":"fcb860116","message":"feat: add download.alpacaplayhouse.com Worker with R2 bucket binding","author":"Rahul"}]
+  "pushedAt": "2026-03-30 10:56:10+00",
+  "commits": [{"sha":"02589531b","message":"fix: align inventory subtabs with manage-tabs (padding, max-width, font size)","author":"Rahul"}]
 }
