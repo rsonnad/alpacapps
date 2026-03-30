@@ -17,6 +17,9 @@
   <span data-site-version style="display:none;">v260330.20 5:10a</span>
   <div id="siteHeader"></div>
 
+  <!-- Directory tab bar -->
+  <div id="directoryTabs"></div>
+
   <!-- Loading state -->
   <div id="loadingState" class="dir-state">
     <div class="dir-spinner"></div>
@@ -85,6 +88,10 @@
   <!-- Footer -->
   <div id="siteFooter"></div>
 
+  <script type="module">
+    import { renderDirectoryTabs } from '/directory/directory-tabs.js';
+    renderDirectoryTabs();
+  </script>
   <script type="module" src="/directory/lightingdevices.js"></script>
 </body>
 </html>

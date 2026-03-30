@@ -1,7 +1,44 @@
 /**
  * Lighting Directory Styles
  * Sortable table view for all smart lighting devices
+ * Also includes shared directory tab bar styles
  */
+
+/* =============================================
+   DIRECTORY TAB BAR (shared across all directory pages)
+   ============================================= */
+
+.dir-tabs {
+  display: flex;
+  gap: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--aap-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dir-tab {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--aap-text-muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.dir-tab:hover {
+  color: var(--aap-text);
+}
+
+.dir-tab.active {
+  color: var(--aap-text);
+  font-weight: 600;
+  border-bottom-color: var(--aap-accent, #f59e0b);
+}
 
 /* =============================================
    CONTAINER
