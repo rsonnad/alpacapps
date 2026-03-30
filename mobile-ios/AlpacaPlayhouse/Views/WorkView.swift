@@ -23,8 +23,7 @@ struct WorkView: View {
                 // Sub-tab picker
                 Picker("Section", selection: $selectedTab) {
                     ForEach(WorkTab.allCases, id: \.self) { tab in
-                        Label(tab.rawValue, systemImage: tab.icon)
-                            .tag(tab)
+                        Text(tab.rawValue).tag(tab)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -38,6 +37,7 @@ struct WorkView: View {
                 }
             }
             .navigationTitle("Work")
+            .navigationBarTitleDisplayMode(.large)
         }
     }
 }
@@ -87,20 +87,16 @@ struct TasksPane: View {
                 .listStyle(.plain)
             }
         }
-        .overlay(alignment: .bottomTrailing) {
-            Button {
-                showCreate = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white)
-                    .frame(width: 56, height: 56)
-                    .background(AppTheme.primary)
-                    .clipShape(Circle())
-                    .shadow(radius: 4)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showCreate = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(AppTheme.primary)
+                }
             }
-            .padding()
         }
         .sheet(isPresented: $showCreate) {
             CreateTaskSheet { title, desc, priority in

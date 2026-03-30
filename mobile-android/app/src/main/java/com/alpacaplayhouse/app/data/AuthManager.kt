@@ -72,6 +72,9 @@ object AuthManager {
     val accessToken: String?
         get() = prefs?.getString(KEY_ACCESS_TOKEN, null)
 
+    val userId: String?
+        get() = prefs?.getString(KEY_USER_ID, null)
+
     val userName: String?
         get() = prefs?.getString(KEY_USER_NAME, null)
 

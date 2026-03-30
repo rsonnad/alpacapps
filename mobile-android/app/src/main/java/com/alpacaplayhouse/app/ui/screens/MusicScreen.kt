@@ -12,12 +12,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.alpacaplayhouse.app.data.AuthManager
 import com.alpacaplayhouse.app.data.SonosApi
 import com.alpacaplayhouse.app.data.SonosState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private val SONOS_ROOMS = listOf(
+// All Sonos rooms — Skyloft Sound and MasterBlaster require room assignment
+private val ALL_SONOS_ROOMS = listOf(
     "Living Sound",
     "Dining Sound",
     "Skyloft Sound",
@@ -29,6 +31,9 @@ private val SONOS_ROOMS = listOf(
     "Outhouse",
     "garage outdoors",
 )
+
+// Rooms that require assignment (private dwelling rooms)
+private val RESTRICTED_ROOMS = setOf("Skyloft Sound", "MasterBlaster")
 
 private val AMBIENT_PLAYLISTS = listOf(
     "Ambient Music",
@@ -47,7 +52,15 @@ private val AMBIENT_PLAYLISTS = listOf(
 @Composable
 fun MusicScreen() {
     val scope = rememberCoroutineScope()
-    var selectedRoom by remember { mutableStateOf(SONOS_ROOMS.first()) }
+
+    // Filter rooms based on role — admin/staff see all, others skip private rooms
+    val visibleRooms = remember {
+        val role = AuthManager.userRole
+        val isAdmin = role == "admin" || role == "staff"
+        if (isAdmin) ALL_SONOS_ROOMS else ALL_SONOS_ROOMS.filter { it !in RESTRICTED_ROOMS }
+    }
+
+    var selectedRoom by remember { mutableStateOf(visibleRooms.first()) }
     var roomDropdownExpanded by remember { mutableStateOf(false) }
     var sonosState by remember { mutableStateOf<SonosState?>(null) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
@@ -103,7 +116,7 @@ fun MusicScreen() {
                 expanded = roomDropdownExpanded,
                 onDismissRequest = { roomDropdownExpanded = false },
             ) {
-                SONOS_ROOMS.forEach { room ->
+                visibleRooms.forEach { room ->
                     DropdownMenuItem(
                         text = { Text(room) },
                         onClick = {
