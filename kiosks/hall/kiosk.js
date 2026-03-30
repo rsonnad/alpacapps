@@ -5,7 +5,7 @@
  * Video/audio guestbook recording with R2 upload.
  */
 
-import { supabase, SUPABASE_URL } from '../shared/supabase.js';
+import { supabase, SUPABASE_URL } from '../../shared/supabase.js';
 
 const POLL_INTERVAL = 60_000;        // 60s data refresh
 

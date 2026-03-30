@@ -4,7 +4,7 @@
  * Modes: dashboard, cameras, signage, slideshow
  */
 
-import { supabase, SUPABASE_URL } from '../shared/supabase.js';
+import { supabase, SUPABASE_URL } from '../../shared/supabase.js';
 
 const POLL_INTERVAL = 60_000;
 const WEATHER_CACHE_MS = 600_000;

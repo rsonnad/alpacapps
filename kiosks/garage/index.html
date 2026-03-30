@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garage Mahal — Cameras + Gallery</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <style>
+    :root {
+      --bg: #0a0809;
+      --text: #f5f4ed;
+      --text-muted: #6e6467;
+      --accent: #e99c48;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      cursor: none;
+      -webkit-user-select: none;
+      user-select: none;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+
+    /* Anti-burn-in */
+    @keyframes anti-burn {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(1px, 0); }
+      50% { transform: translate(0, 1px); }
+      75% { transform: translate(-1px, 0); }
+    }
+
+    .layout {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      animation: anti-burn 180s ease-in-out infinite;
+    }
+
+    /* Left column: 3 cameras stacked */
+    .cameras-col {
+      width: 40%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: #000;
+    }
+
+    .camera-cell {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .camera-cell iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .camera-label {
+      position: absolute;
+      bottom: 4px;
+      left: 8px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .camera-offline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Right column: slideshow */
+    .slideshow-col {
+      width: 60%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .slideshow-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .slideshow-img.active {
+      opacity: 1;
+    }
+
+    .slideshow-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.4;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .slideshow-caption.active {
+      opacity: 1;
+    }
+
+    /* Loading state */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Left: 3 PTZ cameras stacked -->
+    <div class="cameras-col" id="camerasCol">
+      <div class="camera-cell">
+        <iframe src="https://monitor.ui.com/910c53f4-bd8a-41a7-b212-5ea9431d9cf9"
+                allow="autoplay; fullscreen" loading="lazy"></iframe>
+        <span class="camera-label">Alpacamera</span>
+      </div>
+      <div class="camera-cell">
+        <iframe src="https://monitor.ui.com/82ddc7f3-aea3-4c34-9dd3-9b2d20786e27"
+                allow="autoplay; fullscreen" loading="lazy"></iframe>
+        <span class="camera-label">Front Of House</span>
+      </div>
+      <div class="camera-cell">
+        <iframe src="https://monitor.ui.com/cca34fb6-f592-4a3c-b2cf-233432d7f40f"
+                allow="autoplay; fullscreen" loading="lazy"></iframe>
+        <span class="camera-label">Side Yard</span>
+      </div>
+    </div>
+
+    <!-- Right: Alpaca image slideshow -->
+    <div class="slideshow-col" id="slideshowCol">
+      <div class="loading" id="slideshowLoading">Loading images...</div>
+      <img class="slideshow-img" id="slideA" src="" alt="">
+      <img class="slideshow-img" id="slideB" src="" alt="">
+      <div class="slideshow-caption" id="captionA"></div>
+      <div class="slideshow-caption" id="captionB"></div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+    const SLIDE_INTERVAL = 12000; // 12 seconds per image
+    const RELOAD_INTERVAL = 3600000; // Refresh image list every hour
+
+    let photos = [];
+    let photoIndex = 0;
+    let activeSlot = 'A'; // Toggle between A and B for crossfade
+
+    // Shuffle array in place
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Trim AI-generated caption prefix
+    function cleanCaption(raw) {
+      if (!raw) return '';
+      return raw
+        .replace(/^AI-generated:\s*/i, '')
+        .replace(/^Generate\s+/i, '')
+        .substring(0, 120);
+    }
+
+    // Load photos from Supabase
+    async function loadPhotos() {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/media?category=eq.mktg&is_archived=eq.false&select=url,caption&limit=200`,
+          { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.length > 0) {
+          photos = shuffle(data);
+          photoIndex = 0;
+          document.getElementById('slideshowLoading').style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Failed to load photos:', err);
+        document.getElementById('slideshowLoading').textContent = 'Could not load images';
+      }
+    }
+
+    // Show next slide with crossfade
+    function showNextSlide() {
+      if (photos.length === 0) return;
+
+      const photo = photos[photoIndex];
+      photoIndex = (photoIndex + 1) % photos.length;
+
+      // Re-shuffle when we've cycled through all
+      if (photoIndex === 0) shuffle(photos);
+
+      const nextSlot = activeSlot === 'A' ? 'B' : 'A';
+      const prevSlot = activeSlot;
+
+      const nextImg = document.getElementById(`slide${nextSlot}`);
+      const nextCap = document.getElementById(`caption${nextSlot}`);
+      const prevImg = document.getElementById(`slide${prevSlot}`);
+      const prevCap = document.getElementById(`caption${prevSlot}`);
+
+      // Preload image
+      const preload = new Image();
+      preload.onload = () => {
+        nextImg.src = photo.url;
+        nextCap.textContent = cleanCaption(photo.caption);
+
+        // Crossfade
+        nextImg.classList.add('active');
+        nextCap.classList.add('active');
+        prevImg.classList.remove('active');
+        prevCap.classList.remove('active');
+
+        activeSlot = nextSlot;
+      };
+      preload.src = photo.url;
+    }
+
+    // Init
+    async function init() {
+      await loadPhotos();
+      if (photos.length > 0) {
+        showNextSlide();
+        setInterval(showNextSlide, SLIDE_INTERVAL);
+      }
+      // Periodically reload photo list (picks up new images)
+      setInterval(loadPhotos, RELOAD_INTERVAL);
+    }
+
+    init();
+  </script>
+</body>
+</html>

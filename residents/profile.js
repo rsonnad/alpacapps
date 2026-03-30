@@ -1488,7 +1488,7 @@ async function removeDriver(vehicleId, userId) {
 const RESERVED_SLUGS = [
   'spaces', 'residents', 'associates', 'login', 'shared', 'mobile',
   'supabase', 'auth', 'scripts', 'visiting', 'visiting-1', 'lost',
-  'index', 'directory', 'kioskhall', 'welcome', 'photos', 'sundays',
+  'index', 'directory', 'kioskhall', 'kiosks', 'welcome', 'photos', 'sundays',
   'orientation', 'overnight', 'worktrade', 'contact', 'community',
   'events', 'mistiq', 'docs', 'assets', 'styles', 'alpacapps',
   'bug-reporter-extension', 'bug-reporter-firefox', 'bug-fixer',

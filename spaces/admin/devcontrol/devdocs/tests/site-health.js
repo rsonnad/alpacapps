@@ -106,7 +106,7 @@ const PAGES = [
   // Dev docs
   '/spaces/admin/devcontrol/devdocs/',
   // Kiosk
-  '/kioskhall/',
+  '/kiosks/hall/',
 ];
 
 async function testPages() {

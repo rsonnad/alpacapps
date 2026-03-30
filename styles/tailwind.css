@@ -19,7 +19,7 @@
 @source "../residents/**/*.js";
 @source "../associates/**/*.js";
 @source "../pay/**/*.js";
-@source "../kioskhall/**/*.js";
+@source "../kiosks/hall/**/*.js";
 @source "../community/**/*.js";
 @source "../events/**/*.js";
 
