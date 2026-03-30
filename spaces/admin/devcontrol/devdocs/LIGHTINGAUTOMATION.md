@@ -24,7 +24,7 @@ On Alpuca or via SSH. No entity IDs needed.
 ssh paca@192.168.1.200 "~/lights.sh kitchen,living red"
 ```
 
-**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `garage`, `garage-ceiling`, `garage-dj`, `garage-dj-strip`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
+**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `facade`, `sauna`, `cabins-fence`, `garage`, `garage-ceiling`, `garage-dj`, `garage-dj-strip`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
 **Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, `NNNNk` (e.g. `2700k`), or `#RRGGBB` hex
 **Brightness:** Optional percentage, e.g. `50%`. Default is 100%.
 
@@ -507,8 +507,10 @@ curl -X POST https://lights.alpacaplayhouse.com/lights \
 | Fishbowl | `light.spartan_fishbowl` | `~/lights.sh fishbowl off` |
 | Cedar Chamber | `light.spartan_cedar_chamber` | `~/lights.sh cedar off` |
 | Stair Landing | `switch.stair_landing` | use `switch/turn_off` |
+| Facade Lights | `light.facade_lights` (3x Tuya flood) | `~/lights.sh facade off` |
+| Sauna Lights | `light.sauna_lights` (2x Tuya flood) | `~/lights.sh sauna off` |
+| Cabins Fence | `light.cabins_fence` (Tuya string) | `~/lights.sh cabins-fence off` |
 | Garage DJ Strip | `light.garage_dj_strip` (Tuya) | `~/lights.sh garage-dj-strip off` |
-| Garage All | `light.garage_all` | `~/lights.sh garage off` |
 
 ---
 
@@ -571,6 +573,9 @@ curl -X POST https://lights.alpacaplayhouse.com/lights \
 | Spartan Fishbowl | `light.spartan_fishbowl` | 2 | Govee H601F (via HACS) |
 | Spartan Cedar Chamber | `light.spartan_cedar_chamber` | 4 | Govee H601F (via HACS) |
 | Stair Landing | `switch.stair_landing` | - | TP-Link HS210 |
+| Facade Lights | `light.facade_lights` | 3 (Facade 1/2/3) | Tuya flood (LocalTuya v3.3) |
+| Sauna Lights | `light.sauna_lights` | 2 (Sauna Left/Right) | Tuya flood (LocalTuya v3.3) |
+| Cabins Fence | `light.cabins_fence` | 1 (string lights) | Tuya string (LocalTuya v3.3) |
 | Garage DJ Strip | `light.garage_dj_strip` | 1 (24ft neon rope, 15 segments) | Enbrighten (Jasco) 58088 / Tuya v3.4 |
 | Dining Room | `light.dining_room_lights` | 2 (OREIN _17, _18) + 4 Tuya/SmartLife | OREIN Matter / Tuya |
 | Garage Opener | `light.garage_opener_lights` | 2 (OREIN _19, _20) | OREIN Matter |
@@ -618,11 +623,22 @@ Controlled via Govee cloud API. Groups accessible through `lights.sh`, HTTP API,
 
 **Alexa:** Enable the **Govee Home** Alexa skill. Groups from the Govee app (Garage Mahal, Outhouse, etc.) will appear as Alexa devices.
 
-### Tuya/SmartLife (~32 devices — cloud only)
+### Tuya/SmartLife (~32 devices — mixed LocalTuya + cloud)
 
-Controlled via SmartLife app or Tuya Cloud API. Not yet in HAOS.
-- Skyloft Bar GU10 spotlights (3 bulbs)
-- Outdoor floods, string lights, dining bulbs
+Devices in HAOS via LocalTuya (LAN, v3.3):
+
+| Device | Entity ID | IP | Tuya ID |
+|--------|-----------|-----|---------|
+| Facade 1 | `light.facade_1` | 192.168.1.49 | `ebe0b2b6fe9780ac6ejwdm` |
+| Facade 2 | `light.facade_2` | 192.168.1.198 | `eba4b07cc7b3a42b15zxnl` |
+| Facade 3 | `light.facade_3` | 192.168.1.187 | `eb6f01e655c19e10ebyfq4` |
+| Sauna Right | `light.sauna_right` | 192.168.1.69 | `eb5675c98829e89548zvya` |
+| Sauna Left | `light.sauna_left` | 192.168.1.208 | `eb6db4252afdfae0c2ehlz` |
+| Cabins Fence | `light.cabins_fence` | 192.168.1.11 | `eb95d4ef003750afbckg9w` |
+| Skyloft Bar 1-3 | `light.skyloft_bar_light_1/2/3` | varies | see Skyloft section |
+
+Remaining devices (SmartLife app / Tuya Cloud API only, not yet in HAOS):
+- Outdoor floods (Spa, Gate, Pond, Spartan, Grill), string lights, dining bulbs
 
 **Tuya Cloud credentials:** Access ID `c9rxjqkkc3wevmpm394c` · Secret `69a76a01c1b543ab93cd5ffdc13d9e95` · Data Center: Western America
 
