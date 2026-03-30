@@ -47,6 +47,29 @@ D1_DATABASE_ID="${D1_DATABASE_ID:-98d0e680-8abe-4ce3-a941-70cb391adbf8}"
 AWS=$(command -v aws 2>/dev/null || echo /opt/homebrew/bin/aws)
 GH_REPO="https://github.com/rsonnad/alpacapps.git"
 
+# ── Auto-fail stale triggers (stuck running >30 min) ────────────────
+STALE_CUTOFF=$(date -u -v-30M +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ)
+STALE=$(curl -sf "$SUPABASE_URL/rest/v1/backup_triggers?status=eq.running&requested_at=lt.$STALE_CUTOFF&select=id" \
+  -H "apikey: $SUPABASE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_KEY" 2>/dev/null)
+
+if [ -n "$STALE" ] && [ "$STALE" != "[]" ]; then
+  echo "$STALE" | python3 -c "
+import sys, json
+for t in json.load(sys.stdin):
+    print(t['id'])
+" | while read -r stale_id; do
+    curl -sf "$SUPABASE_URL/rest/v1/backup_triggers?id=eq.$stale_id" \
+      -X PATCH \
+      -H "apikey: $SUPABASE_KEY" \
+      -H "Authorization: Bearer $SUPABASE_KEY" \
+      -H "Content-Type: application/json" \
+      -d "{\"status\":\"failed\",\"completed_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"notes\":\"Auto-failed: stuck running >30min\"}" \
+      >/dev/null 2>&1
+    echo "$LOG_PREFIX Auto-failed stale trigger $stale_id"
+  done
+fi
+
 # ── Check for pending triggers ────────────────────────────────────────
 PENDING=$(curl -sf "$SUPABASE_URL/rest/v1/backup_triggers?status=eq.pending&order=requested_at.asc" \
   -H "apikey: $SUPABASE_KEY" \
