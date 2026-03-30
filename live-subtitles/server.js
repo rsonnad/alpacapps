@@ -225,6 +225,11 @@ If the audio is silence or unintelligible, return: {"source_lang":"","source_tex
             const cleaned = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
             const result = JSON.parse(cleaned);
             if (!result.source_text) { resolve(null); return; }
+            // Filter out Gemini echoing the prompt back
+            const lower = result.source_text.toLowerCase();
+            if (lower.includes('transcribe this audio') || lower.includes('detect the language')) {
+              resolve(null); return;
+            }
             resolve({
               source_text: result.source_text,
               source_lang: result.source_lang || hintLang,
@@ -520,8 +525,9 @@ function broadcastSegment(sourceText, sourceLang, translations = {}) {
     is_partial: false,
   });
 
-  // Broadcast translations to other language listeners
+  // Broadcast translations to other language listeners (skip source lang — already sent above)
   for (const [lang, text] of Object.entries(translations)) {
+    if (lang === sourceLang) continue;
     broadcast(lang, {
       type: 'subtitle',
       id,
@@ -551,6 +557,7 @@ function broadcastPartial(sourceText, sourceLang, translations = {}) {
   });
 
   for (const [lang, text] of Object.entries(translations)) {
+    if (lang === sourceLang) continue;
     broadcast(lang, {
       type: 'subtitle',
       id,

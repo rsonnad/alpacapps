@@ -305,10 +305,10 @@ fun SubtitleScreen() {
                         if (seg.lang != seg.sourceLang && seg.sourceText.isNotBlank()) {
                             Text(
                                 text = seg.sourceText,
-                                fontSize = (fontSize * 0.6).sp,
-                                color = Color(0xFF8A7E82).copy(alpha = 0.7f),
+                                fontSize = (fontSize * 0.75).sp,
+                                color = Color(0xFFE9C46A),
                                 fontStyle = if (seg.isPartial) FontStyle.Italic else FontStyle.Normal,
-                                lineHeight = (fontSize * 0.9).sp,
+                                lineHeight = (fontSize * 1.1).sp,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                         }
