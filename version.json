@@ -1,12 +1,12 @@
 {
-  "version": "v260330.03 3:31a",
-  "release": 1160,
-  "sha": "1cfa1bfc5",
-  "fullSha": "1cfa1bfc5c1dc2a5f974f695ca94227ae747091a",
+  "version": "v260330.04 3:33a",
+  "release": 1161,
+  "sha": "9b87df8a0",
+  "fullSha": "9b87df8a03927e30d76c0949f0d85c629088fdb1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 08:31:29+00",
-  "commits": [{"sha":"1cfa1bfc5","message":"fix: backup UI — add dates to trigger logs, dedup files, log manual backups (#98)","author":"Rahul"}]
+  "pushedAt": "2026-03-30 08:33:28+00",
+  "commits": [{"sha":"5e19161c2","message":"feat: replace Capacitor with native mobile app scaffolds (Kotlin + Swift)","author":"Rahul"},{"sha":"a63cde58e","message":"feat: implement Music, Lights, and HAOS Assistant for both native apps","author":"Rahul"},{"sha":"05798f297","message":"feat: add Google auth, Work tab, branding colors, and logo to both native apps","author":"Rahul"},{"sha":"9b87df8a0","message":"Merge branch 'suspicious-liskov'","author":"Rahul"}]
 }
