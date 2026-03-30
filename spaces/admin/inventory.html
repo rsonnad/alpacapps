@@ -139,84 +139,45 @@
 
     <div class="manage-tabs" id="tabNav"></div>
 
+    <!-- Inventory subtabs — promoted to top, right below admin nav -->
+    <div class="inv-subtabs" id="invSubtabs">
+      <button class="inv-subtab active" data-tab="dashboard">Dashboard</button>
+      <button class="inv-subtab" data-tab="infrastructure">Infrastructure</button>
+      <button class="inv-subtab" data-tab="data">Data</button>
+      <button class="inv-subtab" data-tab="software">Software</button>
+      <button class="inv-subtab" data-tab="services">Services</button>
+      <button class="inv-subtab" data-tab="cloud">Cloud</button>
+      <button class="inv-subtab" data-tab="devices">Devices</button>
+      <button class="inv-subtab" data-tab="codebase">Codebase</button>
+    </div>
+
     <main class="manage-content">
       <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <div>
-            <h2 style="margin: 0;">Digital Inventory</h2>
-            <p style="margin: 0.25rem 0 0; color: var(--text-muted);">Complete catalog of data assets, software, hardware, services, and integrations across the AlpacApps ecosystem</p>
-          </div>
-        </div>
-
-        <!-- How It All Connects — collapsible explainer -->
-        <details class="inv-details" style="margin-bottom: 1.5rem; border-color: var(--accent, #b8a88a);">
-          <summary style="font-weight: 600; color: var(--accent-dark, #7a6e56);">
-            <span>How It All Connects</span>
-            <span class="inv-summary-meta">Architecture overview for humans and AI sessions</span>
-          </summary>
-          <div class="inv-details-body" style="line-height: 1.8;">
-
-            <p style="margin-bottom: 1rem; color: #374151;">AlpacApps is a property management + smart home control platform. There is no traditional server — static HTML/JS is served from GitHub Pages, and all business logic lives in Supabase edge functions or runs as background services on a Mac Mini.</p>
-
-            <dl>
-            <dt>The Request Path</dt>
-            <dd>Browser loads static pages from GitHub Pages &rarr; JS calls Supabase (auth + data) &rarr; Edge functions call external APIs (Stripe, Nest, Tesla, etc.) &rarr; Responses flow back to the browser. No middleware, no Node server, no SSR.</dd>
-
-            <dt>Who Can Do What (5 Access Levels)</dt>
-            <dd>
-              <strong>Public (0):</strong> View spaces, events, submit contact forms<br>
-              <strong>Resident (1):</strong> See own bookings, control assigned devices, house WiFi/door codes<br>
-              <strong>Staff (2):</strong> CRUD people/spaces, send notifications, create payment links, all devices<br>
-              <strong>Admin (3):</strong> Everything + all credentials, manage users, edit PAI config<br>
-              <strong>Oracle (4):</strong> Service-to-service only (edge function internal calls)
-            </dd>
-
-            <dt>How Credentials Flow</dt>
-            <dd>
-              <strong>Client side:</strong> Public Supabase anon key (safe to expose) + user JWT in localStorage<br>
-              <strong>Edge functions:</strong> Service role key via <code>Deno.env.get()</code> — never exposed to browser<br>
-              <strong>Device configs:</strong> API keys stored in DB config tables (<code>govee_config</code>, <code>nest_config</code>, etc.)<br>
-              <strong>Operator tools:</strong> Bitwarden vault for SSH passwords, API tokens — used by scripts, not app code
-            </dd>
-
-            <dt>Smart Home Control Chain</dt>
-            <dd>Browser &rarr; Edge function (auth check + permission validation) &rarr; Device API (Govee Cloud, Nest SDM, Tesla Fleet, etc.) or local proxy (WiZ Proxy, Sonos HTTP API on Alpuca Mac). Home Assistant acts as a unified hub for WiZ bulbs, Sonos, and TP-Link switches.</dd>
-
-            <dt>PAI (AI Assistant) — 5 Channels</dt>
-            <dd>
-              <strong>Web chat</strong> (JWT auth) &bull; <strong>Discord</strong> (maps discord_id to app_user) &bull; <strong>Email</strong> (Resend webhook, sender lookup) &bull; <strong>Voice</strong> (Vapi, phone number lookup) &bull; <strong>API</strong> (service key)<br>
-              Each channel resolves to a user level, which scopes what devices PAI can control and what data it can access. PAI uses Gemini 2.5 Pro with ~25 function-calling tools, each gated by <code>userLevel</code>.
-            </dd>
-
-            <dt>Background Services</dt>
-            <dd>15 LaunchAgents on Alpuca Mac handle local device proxies (Sonos, WiZ, cameras), file syncs (rclone to RVAULT20), and monitoring (UPSense). 6 cron jobs handle backups and Google Drive syncs. 3 pg_cron jobs inside Supabase handle Sonos schedules and token refreshes.</dd>
-
-            <dt>Data Storage</dt>
-            <dd>
-              <strong>Supabase PostgreSQL:</strong> 70+ tables — core entities, payments, smart home configs, AI prompts<br>
-              <strong>Supabase Storage:</strong> Photos, documents, camera snapshots<br>
-              <strong>Cloudflare R2:</strong> Leases, legal documents<br>
-              <strong>RVAULT20:</strong> Google Drive mirrors, Tesla dashcam, repo backups (local USB drive)
-            </dd>
-            </dl>
-
-          </div>
-        </details>
-
-        <!-- Subtabs -->
-        <div class="inv-subtabs" id="invSubtabs">
-          <button class="inv-subtab active" data-tab="dashboard">Dashboard</button>
-          <button class="inv-subtab" data-tab="infrastructure">Infrastructure</button>
-          <button class="inv-subtab" data-tab="data">Data</button>
-          <button class="inv-subtab" data-tab="software">Software</button>
-          <button class="inv-subtab" data-tab="services">Services</button>
-          <button class="inv-subtab" data-tab="cloud">Cloud</button>
-          <button class="inv-subtab" data-tab="devices">Devices</button>
-          <button class="inv-subtab" data-tab="codebase">Codebase</button>
-        </div>
 
         <!-- ════════ DASHBOARD ════════ -->
         <div id="inv-panel-dashboard" class="inv-panel">
+          <div style="margin-bottom: 1rem;">
+            <h2 style="margin: 0;">Digital Inventory</h2>
+            <p style="margin: 0.25rem 0 0; color: var(--text-muted);">Complete catalog of data assets, software, hardware, services, and integrations</p>
+          </div>
+
+          <!-- How It All Connects -->
+          <details class="inv-details" style="margin-bottom: 1.5rem; border-color: var(--accent, #b8a88a);">
+            <summary style="font-weight: 600; color: var(--accent-dark, #7a6e56);">
+              <span>How It All Connects</span>
+              <span class="inv-summary-meta">Architecture overview for humans and AI sessions</span>
+            </summary>
+            <div class="inv-details-body" style="line-height: 1.8;">
+              <p style="margin-bottom: 1rem; color: #374151;">AlpacApps is a property management + smart home control platform. Static HTML/JS from GitHub Pages, business logic in Supabase edge functions or background services on a Mac Mini.</p>
+              <dl>
+              <dt>Request Path</dt><dd>Browser &rarr; GitHub Pages &rarr; Supabase (auth + data) &rarr; Edge functions &rarr; External APIs. No middleware.</dd>
+              <dt>Access Levels</dt><dd><strong>Public (0)</strong> &bull; <strong>Resident (1)</strong> &bull; <strong>Staff (2)</strong> &bull; <strong>Admin (3)</strong> &bull; <strong>Oracle (4)</strong> service-to-service</dd>
+              <dt>Smart Home</dt><dd>Browser &rarr; Edge function &rarr; Device API or local proxy (WiZ, Sonos, HAOS on Alpuca Mac)</dd>
+              <dt>Background</dt><dd>15 LaunchAgents, 6 cron jobs, 3 pg_cron jobs on Alpuca Mac + Supabase</dd>
+              </dl>
+            </div>
+          </details>
+
           <div class="inv-stat-grid" id="dashStatGrid">
             <div class="inv-stat"><div class="inv-stat-label">Smart Home Devices</div><div class="inv-stat-value" id="statDevices">86+</div></div>
             <div class="inv-stat"><div class="inv-stat-label">Supabase Tables</div><div class="inv-stat-value" id="statTables">70+</div></div>
@@ -330,7 +291,13 @@
 
         <!-- ════════ DEVICES ════════ -->
         <div id="inv-panel-devices" class="inv-panel" style="display:none">
-          <p class="inv-section-sub">Smart home devices organized by category: lighting, climate, audio, cameras, vehicles, and appliances.</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <p class="inv-section-sub" style="margin:0">Smart home devices — live from database</p>
+            <div class="inv-view-toggle" id="deviceViewToggle">
+              <button class="inv-view-btn active" data-view="all">All Devices</button>
+              <button class="inv-view-btn" data-view="lighting">Lighting Detail</button>
+            </div>
+          </div>
           <div id="devicesContent"></div>
         </div>
 

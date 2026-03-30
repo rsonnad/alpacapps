@@ -475,44 +475,58 @@ function loadSoftware() {
   `).join('')}</div>`;
 }
 
-function loadServices() {
+async function loadServices() {
   const el = document.getElementById('servicesContent');
-
   const agentRows = SERVICES_AGENTS.map(s => [
     `<strong>${esc(s.name)}</strong>`,
     s.port ? `<code>${s.port}</code>` : '<span style="color:#9ca3af">—</span>',
     `<code style="font-size:0.7rem">${esc(s.plist)}</code>`,
     esc(s.desc),
   ]);
-
   const cronRows = CRON_JOBS.map(c => [
     `<strong>${esc(c.schedule)}</strong>`,
     `<code>${esc(c.cmd)}</code>`,
     esc(c.desc),
   ]);
 
-  el.innerHTML = `
-    <div class="inv-section">
+  // Live service connections from DB
+  let connectionsHtml = '';
+  try {
+    const { data, error } = await supabase.from('service_connections').select('*').order('display_order').order('name');
+    if (error) throw error;
+    const statusColors = { working: 'green', degraded: 'amber', down: 'red', unknown: 'gray', decommissioned: 'gray' };
+    const connRows = (data || []).map(s => [
+      `<strong>${esc(s.name)}</strong>`,
+      badge(s.status || 'unknown', statusColors[s.status] || 'gray'),
+      s.host ? `<code style="font-size:0.7rem">${esc(s.host)}${s.port ? ':' + s.port : ''}</code>` : '—',
+      esc(s.protocol || ''),
+      esc(s.category || ''),
+    ]);
+    connectionsHtml = `<div class="inv-section">
+      <h3 class="inv-section-title">Service Connections <span class="inv-badge inv-badge-blue">${(data||[]).length}</span></h3>
+      <p class="inv-section-sub">SSH, API, and infrastructure connection recipes — live from database.</p>
+      ${tableHtml(['Service', 'Status', 'Host', 'Protocol', 'Category'], connRows)}
+    </div>`;
+  } catch (e) { connectionsHtml = `<p style="color:#ef4444">Error: ${esc(e.message)}</p>`; }
+
+  el.innerHTML = `${connectionsHtml}
+    <div class="inv-section" style="margin-top: 2rem;">
       <h3 class="inv-section-title">LaunchAgents <span class="inv-badge inv-badge-blue">${SERVICES_AGENTS.length}</span></h3>
-      <p class="inv-section-sub">Background services that auto-start on boot via macOS LaunchAgents/LaunchDaemons.</p>
+      <p class="inv-section-sub">Background services via macOS LaunchAgents.</p>
       ${tableHtml(['Service', 'Port', 'Plist', 'Description'], agentRows)}
     </div>
     <div class="inv-section" style="margin-top: 2rem;">
       <h3 class="inv-section-title">Cron Jobs <span class="inv-badge inv-badge-blue">${CRON_JOBS.length}</span></h3>
-      <p class="inv-section-sub">Scheduled tasks running via crontab on the Alpuca Mac.</p>
       ${tableHtml(['Schedule', 'Command', 'Description'], cronRows)}
     </div>
-
     <div class="inv-section" style="margin-top: 2rem;">
       <h3 class="inv-section-title">Supabase pg_cron</h3>
-      <p class="inv-section-sub">Server-side scheduled jobs running inside the Supabase PostgreSQL database.</p>
       ${tableHtml(['Schedule', 'Job', 'Description'], [
-        ['Every 5 min', '<code>sonos-schedule-runner</code>', 'Checks and executes Sonos music schedules'],
-        ['Scheduled', '<code>nest-token-refresh</code>', 'Refreshes Google SDM OAuth tokens before expiry'],
-        ['Daily', '<code>event-payment-reminder</code>', 'Sends payment reminders for upcoming events'],
+        ['Every 5 min', '<code>sonos-schedule-runner</code>', 'Executes Sonos music schedules'],
+        ['Scheduled', '<code>nest-token-refresh</code>', 'Refreshes Google SDM OAuth tokens'],
+        ['Daily', '<code>event-payment-reminder</code>', 'Payment reminders for events'],
       ])}
-    </div>
-  `;
+    </div>`;
 }
 
 function loadCloud() {
@@ -529,21 +543,139 @@ function loadCloud() {
   `).join('');
 }
 
-function loadDevices() {
+// ── Live device loading ──
+const DOMAIN_LABELS = { lighting: 'Lighting', climate: 'Climate', appliance: 'Appliance', security: 'Security', vehicle: 'Vehicle' };
+const DOMAIN_ICONS = { lighting: '💡', climate: '🌡️', appliance: '🧺', security: '📹', vehicle: '🚗' };
+const PROTOCOL_LABELS = { light_api: 'Light API', govee_lan: 'Govee LAN', nest_sdm: 'Nest SDM', lg_thinq: 'LG ThinQ', rtsp: 'RTSP', tesla_api: 'Tesla API' };
+let _devicesCache = null, _recipesCache = null, _lightingCache = null, _deviceView = 'all';
+
+async function loadDevices() {
   const el = document.getElementById('devicesContent');
-  el.innerHTML = Object.entries(DEVICES).map(([group, items]) => {
-    const totalCount = items.reduce((s, i) => s + i.count, 0);
-    return `<details class="inv-details" open>
-      <summary>${esc(group)} <span class="inv-summary-meta">${totalCount} total</span></summary>
-      <div class="inv-details-body">
-        ${tableHtml(['Device', 'Count', 'Description'], items.map(i => [
-          `<strong>${esc(i.name)}</strong>`,
-          String(i.count),
-          esc(i.desc),
-        ]))}
-      </div>
-    </details>`;
-  }).join('');
+  el.innerHTML = '<p style="padding:1rem;color:var(--text-muted)">Loading devices...</p>';
+
+  document.querySelectorAll('#deviceViewToggle .inv-view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _deviceView = btn.dataset.view;
+      document.querySelectorAll('#deviceViewToggle .inv-view-btn').forEach(b => b.classList.toggle('active', b === btn));
+      renderDeviceView();
+    });
+  });
+
+  try {
+    const [devRes, recRes] = await Promise.all([
+      supabase.from('devices_unified').select('*'),
+      supabase.from('device_control_recipes').select('*').order('display_order'),
+    ]);
+    if (devRes.error) throw devRes.error;
+    if (recRes.error) throw recRes.error;
+    _devicesCache = devRes.data || [];
+    _recipesCache = recRes.data || [];
+    renderDeviceView();
+  } catch (e) {
+    el.innerHTML = `<p style="color:#ef4444;padding:1rem">Error: ${esc(e.message)}</p>`;
+  }
+}
+
+function renderDeviceView() {
+  if (_deviceView === 'lighting') renderLightingDetail();
+  else renderAllDevices();
+}
+
+function renderAllDevices() {
+  const el = document.getElementById('devicesContent');
+  const devices = (_devicesCache || []).filter(d => d.is_active);
+  const recipes = _recipesCache || [];
+  const recipeMap = {};
+  for (const r of recipes) {
+    const key = `${r.device_table}:${r.device_id}`;
+    if (!recipeMap[key]) recipeMap[key] = [];
+    recipeMap[key].push(r);
+  }
+
+  const groups = {};
+  for (const d of devices) {
+    if (!groups[d.domain]) groups[d.domain] = [];
+    groups[d.domain].push({ ...d, recipes: recipeMap[`${d.source_table}:${d.id}`] || [] });
+  }
+
+  const domainOrder = ['lighting', 'climate', 'appliance', 'security', 'vehicle'];
+  const summary = domainOrder.filter(d => groups[d]?.length)
+    .map(d => `<span style="margin-right:1rem;font-size:0.8rem;color:var(--text-muted)">${DOMAIN_ICONS[d]} ${groups[d].length} ${DOMAIN_LABELS[d]}</span>`).join('');
+
+  let html = `<div style="margin-bottom:0.5rem">${summary}<strong style="font-size:0.8rem">${devices.length} total</strong></div>
+    <div class="inv-device-filters"><input type="text" class="inv-device-search" id="invDeviceSearch" placeholder="Search devices...">
+    <select class="inv-device-select" id="invDeviceDomain"><option value="">All Domains</option>${domainOrder.filter(d => groups[d]).map(d => `<option value="${d}">${DOMAIN_LABELS[d]}</option>`).join('')}</select></div>`;
+
+  html += `<div class="inv-table-wrap"><table class="inv-table" id="invDeviceTable">
+    <thead><tr><th></th><th>Name</th><th>Room</th><th>Domain</th><th>Protocol</th><th>Recipes</th></tr></thead><tbody>`;
+  for (const domain of domainOrder) {
+    for (const d of (groups[domain] || [])) {
+      const rc = d.recipes.length;
+      html += `<tr data-domain="${d.domain}" data-search="${esc([d.name, d.room, d.domain, d.protocol].join(' ').toLowerCase())}">
+        <td>${DOMAIN_ICONS[d.domain] || ''}</td><td><strong>${esc(d.name)}</strong></td><td>${esc(d.room || '')}</td>
+        <td>${badge(DOMAIN_LABELS[d.domain] || d.domain, d.domain === 'lighting' ? 'amber' : d.domain === 'security' ? 'red' : d.domain === 'climate' ? 'blue' : d.domain === 'vehicle' ? 'green' : 'purple')}</td>
+        <td>${esc(PROTOCOL_LABELS[d.protocol] || d.protocol || '')}</td>
+        <td>${rc > 0 ? `<span class="inv-badge inv-badge-green">${rc}</span>` : '<span style="color:#d1d5db">—</span>'}</td></tr>`;
+    }
+  }
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+
+  const searchEl = document.getElementById('invDeviceSearch');
+  const domainEl = document.getElementById('invDeviceDomain');
+  const filterRows = () => {
+    const q = (searchEl?.value || '').toLowerCase();
+    const dom = domainEl?.value || '';
+    document.querySelectorAll('#invDeviceTable tbody tr').forEach(row => {
+      row.style.display = (!q || (row.dataset.search || '').includes(q)) && (!dom || row.dataset.domain === dom) ? '' : 'none';
+    });
+  };
+  searchEl?.addEventListener('input', filterRows);
+  domainEl?.addEventListener('change', filterRows);
+}
+
+async function renderLightingDetail() {
+  const el = document.getElementById('devicesContent');
+  el.innerHTML = '<p style="padding:1rem;color:var(--text-muted)">Loading lighting details...</p>';
+  try {
+    if (!_lightingCache) {
+      const [devRes, modelsRes] = await Promise.all([
+        supabase.from('govee_devices').select('*').eq('is_active', true).order('area').order('name'),
+        supabase.from('govee_models').select('sku, model_name'),
+      ]);
+      if (devRes.error) throw devRes.error;
+      const models = new Map((modelsRes.data || []).map(m => [m.sku, m.model_name]));
+      _lightingCache = (devRes.data || []).map(d => ({ ...d, model_name: models.get(d.sku) || d.sku || '' }));
+    }
+    const groups = _lightingCache.filter(d => d.is_group);
+    const individuals = _lightingCache.filter(d => !d.is_group);
+
+    let html = `<div style="margin-bottom:0.75rem;font-size:0.8rem;color:var(--text-muted)">${groups.length} groups · ${individuals.length} individual devices</div>
+      <div class="inv-device-filters"><input type="text" class="inv-device-search" id="invLightSearch" placeholder="Search lighting..."></div>`;
+
+    html += `<div class="inv-section"><h3 class="inv-section-title">Light Groups <span class="inv-badge inv-badge-blue">${groups.length}</span></h3>
+      ${tableHtml(['Group', 'Area', 'Devices'], groups.map(g => {
+        const kids = individuals.filter(i => i.parent_group_id === g.device_id);
+        return [`<strong>${esc(g.name)}</strong>`, esc(g.area || ''), String(kids.length)];
+      }))}</div>`;
+
+    html += `<div class="inv-section" style="margin-top:1.5rem"><h3 class="inv-section-title">Individual Devices <span class="inv-badge inv-badge-blue">${individuals.length}</span></h3>
+      ${tableHtml(['Name', 'Area', 'Model', 'SKU', 'Group'], individuals.map(d => {
+        const pg = groups.find(g => g.device_id === d.parent_group_id);
+        return [`<strong>${esc(d.name)}</strong>`, esc(d.area || ''), esc(d.model_name), `<code style="font-size:0.7rem">${esc(d.sku || '')}</code>`, pg ? esc(pg.name) : '<span style="color:#d1d5db">—</span>'];
+      }))}</div>`;
+
+    el.innerHTML = html;
+    const searchEl = document.getElementById('invLightSearch');
+    searchEl?.addEventListener('input', () => {
+      const q = searchEl.value.toLowerCase();
+      el.querySelectorAll('.inv-table tbody tr').forEach(row => {
+        row.style.display = !q || row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  } catch (e) {
+    el.innerHTML = `<p style="color:#ef4444;padding:1rem">Error: ${esc(e.message)}</p>`;
+  }
 }
 
 function loadCodebase() {

@@ -1,14 +1,13 @@
 /**
  * Directory Tab Navigation
- * Renders a tab bar connecting Lighting, All Devices, and Services pages.
- * Uses initNavTabList() from tab-utils for ARIA compliance.
+ * Services remains as a public standalone page.
+ * Lighting and Devices have moved to /spaces/admin/inventory.html#devices (behind auth).
  */
 import { initNavTabList, scrollActiveIntoView } from '../shared/tab-utils.js';
 
 const TABS = [
-  { id: 'lighting',  label: 'Lighting',    href: '/directory/lightingdevices.html' },
-  { id: 'devices',   label: 'All Devices', href: '/directory/devices.html' },
-  { id: 'services',  label: 'Services',    href: '/directory/services.html' },
+  { id: 'devices',   label: 'All Devices (Staff)',  href: '/spaces/admin/inventory.html#devices' },
+  { id: 'services',  label: 'Services',             href: '/directory/services.html' },
 ];
 
 export function renderDirectoryTabs(containerId = 'directoryTabs') {
@@ -19,7 +18,7 @@ export function renderDirectoryTabs(containerId = 'directoryTabs') {
 
   container.innerHTML = `<nav class="dir-tabs" role="tablist" aria-label="Directory sections">
     ${TABS.map(tab => {
-      const active = path.includes(tab.href.split('/').pop());
+      const active = path.includes(tab.href.split('/').pop().split('#')[0]);
       return `<a href="${tab.href}" class="dir-tab${active ? ' active' : ''}" role="tab"${active ? ' aria-selected="true" aria-current="page"' : ''}>${tab.label}</a>`;
     }).join('')}
   </nav>`;

@@ -2,96 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lighting Devices - Alpaca Playhouse</title>
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/styles/site.css">
-  <link rel="stylesheet" href="/styles/tailwind.out.css">
-  <link rel="stylesheet" href="/directory/styles.css">
-  <link rel="stylesheet" href="/directory/lightingdevices.css">
-  <script type="module" src="/shared/version-info.js"></script>
-  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <meta http-equiv="refresh" content="0;url=/spaces/admin/inventory.html#devices">
+  <title>Redirecting to Inventory — Lighting</title>
 </head>
 <body>
-  <span data-site-version style="display:none;">v260330.24 5:40a</span>
-  <div id="siteHeader"></div>
-
-  <!-- Directory tab bar -->
-  <div id="directoryTabs"></div>
-
-  <!-- Loading state -->
-  <div id="loadingState" class="dir-state">
-    <div class="dir-spinner"></div>
-  </div>
-
-  <!-- Main content -->
-  <div id="mainContent" class="ld-container aap-hidden">
-    <!-- Summary bar -->
-    <div class="ld-summary">
-      <h1 class="ld-title">Lighting Directory</h1>
-      <div class="ld-counts" id="summaryCounts"></div>
-    </div>
-
-    <!-- Filters -->
-    <div class="ld-filters">
-      <input type="text" class="ld-search" id="searchInput" placeholder="Search by name, room, brand, model...">
-      <div class="ld-filter-row">
-        <select class="ld-select" id="filterBrand">
-          <option value="">All Brands</option>
-        </select>
-        <select class="ld-select" id="filterRoom">
-          <option value="">All Spaces</option>
-        </select>
-        <select class="ld-select" id="filterProtocol">
-          <option value="">All Protocols</option>
-        </select>
-        <select class="ld-select" id="filterStatus">
-          <option value="">All Status</option>
-          <option value="online">Online</option>
-          <option value="offline">Offline</option>
-          <option value="unknown">Unknown</option>
-        </select>
-        <label class="ld-checkbox-label">
-          <input type="checkbox" id="filterActive" checked> Active only
-        </label>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="ld-table-wrap">
-      <table class="ld-table" id="lightingTable">
-        <thead>
-          <tr>
-            <th data-sort="status" class="ld-th-status"></th>
-            <th data-sort="name">Name</th>
-            <th data-sort="room">Space</th>
-            <th data-sort="brand">Brand</th>
-            <th data-sort="model">Model</th>
-            <th data-sort="protocol">Protocol</th>
-            <th data-sort="form_factor">Form</th>
-            <th data-sort="matter">Matter</th>
-            <th data-sort="ip">IP</th>
-            <th data-sort="mac">MAC</th>
-            <th data-sort="is_group">Group</th>
-            <th data-sort="device_type">Type</th>
-            <th data-sort="updated_at">Last Updated</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-
-    <div class="ld-footer-info" id="footerInfo"></div>
-  </div>
-
-  <!-- Footer -->
-  <div id="siteFooter"></div>
-
-  <script type="module">
-    import { renderDirectoryTabs } from '/directory/directory-tabs.js';
-    renderDirectoryTabs();
-  </script>
-  <script type="module" src="/directory/lightingdevices.js"></script>
+  <p>Redirecting to <a href="/spaces/admin/inventory.html#devices">Inventory → Devices</a>...</p>
 </body>
 </html>
