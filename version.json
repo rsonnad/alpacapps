@@ -1,12 +1,12 @@
 {
-  "version": "v260330.17 4:46a",
-  "release": 1174,
-  "sha": "c6748cdc4",
-  "fullSha": "c6748cdc4e64f74d17d23484d25a6487677694bc",
+  "version": "v260330.18 4:54a",
+  "release": 1175,
+  "sha": "0adf9ec9f",
+  "fullSha": "0adf9ec9f78cf9e783fc951198c6c32d0716ccd3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 09:46:40+00",
-  "commits": [{"sha":"c6748cdc4","message":"fix: auto-fail stale backup triggers (#101)","author":"Rahul"}]
+  "pushedAt": "2026-03-30 09:54:13+00",
+  "commits": [{"sha":"0adf9ec9f","message":"fix: HA backup trigger uses WebSocket Supervisor API (#102)","author":"Rahul"}]
 }
