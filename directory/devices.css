@@ -1,0 +1,131 @@
+/**
+ * Unified Devices Directory Styles
+ * Reuses ld-* from lightingdevices.css and sc-* from services.css
+ */
+
+/* =============================================
+   DOMAIN ICONS & BADGES
+   ============================================= */
+
+.dv-domain-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.dv-domain-badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.12rem 0.4rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.dv-domain--lighting { background: #fef3c7; color: #92400e; }
+.dv-domain--climate { background: #dbeafe; color: #1e40af; }
+.dv-domain--appliance { background: #ede9fe; color: #5b21b6; }
+.dv-domain--security { background: #fce7f3; color: #9d174d; }
+.dv-domain--vehicle { background: #d1fae5; color: #065f46; }
+.dv-domain--unknown { background: #f3f4f6; color: #6b7280; }
+
+/* =============================================
+   DOMAIN COUNT ICONS
+   ============================================= */
+
+.dv-count-icon {
+  margin-right: 0.2rem;
+  font-size: 0.8rem;
+}
+
+/* =============================================
+   ACTION BADGES
+   ============================================= */
+
+.dv-action-badge {
+  font-size: 0.58rem;
+  font-weight: 500;
+  padding: 0.08rem 0.35rem;
+  border-radius: 3px;
+  background: #e0f2fe;
+  color: #0369a1;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.dv-action-badge--lg {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  font-weight: 600;
+}
+
+/* =============================================
+   TABLE OVERRIDES
+   ============================================= */
+
+#devicesTable tbody tr {
+  cursor: pointer;
+}
+
+#devicesTable tbody tr:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* =============================================
+   RECIPE CARDS (in detail panel)
+   ============================================= */
+
+.dv-recipe {
+  background: var(--aap-bg-muted);
+  border: 1px solid var(--aap-border);
+  border-radius: var(--aap-radius);
+  padding: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.dv-recipe-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.dv-recipe-proto {
+  font-size: 0.65rem;
+  color: var(--aap-text-muted);
+  font-weight: 500;
+}
+
+.dv-recipe-notes {
+  font-size: 0.72rem;
+  color: var(--aap-text-muted);
+  margin-top: 0.4rem;
+  line-height: 1.4;
+}
+
+.dv-recipe-secret {
+  font-size: 0.72rem;
+  color: var(--aap-text-muted);
+  margin-top: 0.3rem;
+}
+
+.dv-recipe-secret strong {
+  color: var(--aap-text);
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .dv-domain-dot {
+    width: 1.2rem;
+    height: 1.2rem;
+    font-size: 0.75rem;
+  }
+}
