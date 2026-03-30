@@ -1,6 +1,6 @@
 # Bump version on every push to main.
 # Runs only when the push is NOT our own bump commit ([skip ci]), so we avoid a loop.
-# Version is incremented in DB and all HTML + version.json are updated, then committed and pushed.
+# Version is recorded via Supabase REST API (HTTPS), then HTML + version.json are updated.
 #
 # FORK SAFETY: This workflow only runs on the original rsonnad/alpacapps repo.
 # If you forked this repo, this workflow will be skipped automatically.
@@ -38,12 +38,10 @@ jobs:
       - name: Regenerate Rahulio pages manifest
         run: npm run rahulio-pages-manifest
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-
-      - name: Bump version (DB + HTML + version.json)
+      - name: Bump version (REST API + HTML + version.json)
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RELEASE_PUSH_SHA: ${{ github.sha }}
           RELEASE_COMPARE_FROM_SHA: ${{ github.event.before }}
           RELEASE_COMPARE_TO_SHA: ${{ github.sha }}

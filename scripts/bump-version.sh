@@ -5,12 +5,13 @@
 # Called by CI (GitHub Action) on every push to main.
 # Idempotent per push SHA: repeated runs return the same sequence number.
 #
+# Uses Supabase REST API (HTTPS) — no psql or direct DB connections needed.
+#
 # Usage:  ./scripts/bump-version.sh [--model CODE] [--source SRC]
 
 set -euo pipefail
 
 # ── helpers ──────────────────────────────────────────────────────────
-sql_esc() { printf "%s" "$1" | sed "s/'/''/g"; }
 json_esc() { printf "%s" "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
 
 # ── parse args / env ─────────────────────────────────────────────────
@@ -31,17 +32,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# ── resolve psql ─────────────────────────────────────────────────────
-if [ -x "/opt/homebrew/opt/libpq/bin/psql" ]; then
-  PSQL="/opt/homebrew/opt/libpq/bin/psql"
-elif command -v psql &>/dev/null; then
-  PSQL="psql"
-else
-  echo "ERROR: psql not found" >&2; exit 1
-fi
-
-DB_URL="${SUPABASE_DB_URL:-}"
-[ -z "$DB_URL" ] && { echo "ERROR: SUPABASE_DB_URL is required" >&2; exit 1; }
+# ── resolve Supabase API credentials ────────────────────────────────
+SUPABASE_URL="${SUPABASE_URL:-}"
+SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-}"
+[ -z "$SUPABASE_URL" ] && { echo "ERROR: SUPABASE_URL is required" >&2; exit 1; }
+[ -z "$SUPABASE_SERVICE_ROLE_KEY" ] && { echo "ERROR: SUPABASE_SERVICE_ROLE_KEY is required" >&2; exit 1; }
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
@@ -99,46 +94,68 @@ fi
 
 COMMIT_COUNT=$(echo "$COMMITS_FOR_DB" | python3 -c "import sys,json;print(len(json.loads(sys.stdin.read())))" 2>/dev/null || echo 0)
 
-# ── 1) record release event in DB ────────────────────────────────────
-# commit_summaries in metadata = same as COMMITS_FOR_DB (admin releases page reads .sha + .message)
+# ── 1) record release event via Supabase REST API ───────────────────
 META="{\"workflow\":\"bump-version.sh\",\"commit_count\":$COMMIT_COUNT,\"commit_summaries\":$COMMITS_FOR_DB}"
-ROW=$($PSQL "$DB_URL" -t -A --no-psqlrc -F $'\t' -c "
-  SELECT seq::text, display_version, pushed_at::text, actor_login, source
-  FROM record_release_event(
-    '$(sql_esc "$PUSH_SHA")',
-    '$(sql_esc "$BRANCH")',
-    NULLIF('$(sql_esc "$FROM_SHA")', ''),
-    NULLIF('$(sql_esc "$TO_SHA")', ''),
-    '$(sql_esc "$PUSHED_AT")'::timestamptz,
-    '$(sql_esc "$ACTOR")',
-    NULL,
-    '$(sql_esc "$SOURCE")',
-    NULLIF('$(sql_esc "$MODEL")', ''),
-    NULLIF('$(sql_esc "$MACHINE")', ''),
-    '$(sql_esc "$META")'::jsonb,
-    '$(sql_esc "$COMMITS_FOR_DB")'::jsonb
-  );
-" | head -1)
 
-[ -z "$ROW" ] && { echo "ERROR: Failed to record release event" >&2; exit 1; }
+RPC_PAYLOAD=$(python3 -c "
+import json, sys
+payload = {
+    'p_push_sha': sys.argv[1],
+    'p_branch': sys.argv[2],
+    'p_compare_from_sha': sys.argv[3] if sys.argv[3] else None,
+    'p_compare_to_sha': sys.argv[4],
+    'p_pushed_at': sys.argv[5],
+    'p_actor_login': sys.argv[6],
+    'p_actor_id': None,
+    'p_source': sys.argv[7],
+    'p_model_code': sys.argv[8] if sys.argv[8] else None,
+    'p_machine_name': sys.argv[9] if sys.argv[9] else None,
+    'p_metadata': json.loads(sys.argv[10]),
+    'p_commits': json.loads(sys.argv[11])
+}
+print(json.dumps(payload))
+" "$PUSH_SHA" "$BRANCH" "$FROM_SHA" "$TO_SHA" "$PUSHED_AT" "$ACTOR" "$SOURCE" "$MODEL" "$MACHINE" "$META" "$COMMITS_FOR_DB")
 
-SEQ=$(echo "$ROW"  | awk -F $'\t' '{print $1}')
-VER=$(echo "$ROW"  | awk -F $'\t' '{print $2}')
-R_AT=$(echo "$ROW" | awk -F $'\t' '{print $3}')
-R_ACT=$(echo "$ROW"| awk -F $'\t' '{print $4}')
-R_SRC=$(echo "$ROW"| awk -F $'\t' '{print $5}')
+echo "Recording release event via REST API..."
+API_RESULT=$(curl -s -w "\n%{http_code}" -X POST \
+  "${SUPABASE_URL}/rest/v1/rpc/record_release_event" \
+  -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+  -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation" \
+  -d "$RPC_PAYLOAD")
+
+HTTP_CODE=$(echo "$API_RESULT" | tail -1)
+API_BODY=$(echo "$API_RESULT" | sed '$d')
+
+if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+  echo "ERROR: Supabase RPC failed (HTTP $HTTP_CODE)" >&2
+  echo "Response: $API_BODY" >&2
+  exit 1
+fi
+
+# Parse response — the RPC returns a single row (the release_events record)
+SEQ=$(echo "$API_BODY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['seq'])" 2>/dev/null)
+VER=$(echo "$API_BODY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['display_version'])" 2>/dev/null)
+R_AT=$(echo "$API_BODY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('pushed_at',''))" 2>/dev/null)
+R_ACT=$(echo "$API_BODY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('actor_login',''))" 2>/dev/null)
+R_SRC=$(echo "$API_BODY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('source',''))" 2>/dev/null)
+
+[ -z "$VER" ] || [ "$VER" = "null" ] && { echo "ERROR: Failed to get version from API" >&2; echo "Response: $API_BODY" >&2; exit 1; }
 [ -z "$R_AT" ]  && R_AT="$PUSHED_AT"
 [ -z "$R_ACT" ] && R_ACT="$ACTOR"
 [ -z "$R_SRC" ] && R_SRC="$SOURCE"
 
-# Keep legacy site_config in sync
-$PSQL "$DB_URL" -t -A --no-psqlrc -c "
-  UPDATE site_config SET version = '$(sql_esc "$VER")', updated_at = now() WHERE id = 1;
-" >/dev/null 2>&1 || true
+# Keep legacy site_config in sync via REST API
+curl -s -X PATCH \
+  "${SUPABASE_URL}/rest/v1/site_config?id=eq.1" \
+  -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+  -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{\"version\":\"$(json_esc "$VER")\",\"updated_at\":\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"}" \
+  >/dev/null 2>&1 || true
 
 # ── 1b) backfill deployed_version for feature requests whose commit is in this push ──
-# When a review branch is merged to main, the feature's commit_sha appears in the push range.
-# Match those and set deployed_version so the App Dev page shows the version.
 if [ -n "$COMMITS_FOR_DB" ] && [ "$COMMITS_FOR_DB" != "[]" ]; then
   SHAS=$(echo "$COMMITS_FOR_DB" | python3 -c "
 import sys, json
@@ -149,13 +166,14 @@ for c in commits:
   if [ -n "$SHAS" ]; then
     while IFS= read -r sha; do
       [ -z "$sha" ] && continue
-      $PSQL "$DB_URL" -t -A --no-psqlrc -c "
-        UPDATE feature_requests
-        SET deployed_version = '$(sql_esc "$VER")',
-            status = CASE WHEN status = 'review' THEN 'completed' ELSE status END
-        WHERE commit_sha = '$(sql_esc "$sha")'
-          AND deployed_version IS NULL;
-      " >/dev/null 2>&1 || true
+      # Update feature_requests where commit_sha matches and deployed_version is null
+      curl -s -X PATCH \
+        "${SUPABASE_URL}/rest/v1/feature_requests?commit_sha=eq.${sha}&deployed_version=is.null" \
+        -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+        -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+        -H "Content-Type: application/json" \
+        -d "{\"deployed_version\":\"$(json_esc "$VER")\"}" \
+        >/dev/null 2>&1 || true
     done <<< "$SHAS"
   fi
 fi
