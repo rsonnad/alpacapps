@@ -182,6 +182,67 @@ async function translateWithGemini(text, fromLang, toLang) {
   });
 }
 
+/** Transcribe audio using Gemini — returns { source_text, source_lang, translations } */
+async function transcribeWithGemini(audioBase64, hintLang, targetLangs) {
+  const targetList = targetLangs.filter(l => l !== hintLang).map(l => LANG_NAMES[l] || l);
+  const langHint = hintLang === 'auto' ? 'Detect the language automatically' : `The speaker is likely speaking ${LANG_NAMES[hintLang] || hintLang}`;
+
+  let translationInstruction = '';
+  if (targetList.length > 0) {
+    translationInstruction = `\nAlso translate the transcription into these languages: ${targetList.join(', ')}.`;
+  }
+
+  const prompt = `Transcribe this audio clip exactly as spoken. ${langHint}.${translationInstruction}
+
+Return ONLY a JSON object (no markdown, no code fences) with this structure:
+{"source_lang":"two-letter code","source_text":"transcribed text"${targetList.length > 0 ? ',"translations":{"en":"English translation","pl":"Polish translation",...}' : ''}}
+
+If the audio is silence or unintelligible, return: {"source_lang":"","source_text":""}`;
+
+  const body = JSON.stringify({
+    contents: [{
+      parts: [
+        { inlineData: { mimeType: 'audio/webm', data: audioBase64 } },
+        { text: prompt },
+      ],
+    }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 1024 },
+  });
+
+  return new Promise((resolve) => {
+    const req = https.request(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (!text) { resolve(null); return; }
+            // Strip markdown fences if present
+            const cleaned = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+            const result = JSON.parse(cleaned);
+            if (!result.source_text) { resolve(null); return; }
+            resolve({
+              source_text: result.source_text,
+              source_lang: result.source_lang || hintLang,
+              translations: result.translations || {},
+            });
+          } catch (e) {
+            console.error('[Gemini STT] Parse error:', e.message, 'raw:', data.substring(0, 200));
+            resolve(null);
+          }
+        });
+      }
+    );
+    req.on('error', (e) => { console.error('[Gemini STT] Request error:', e.message); resolve(null); });
+    req.setTimeout(15000, () => { req.destroy(); resolve(null); });
+    req.end(body);
+  });
+}
+
 /** Translate text to all languages that have active listeners */
 async function translateForListeners(text, sourceLang) {
   const translations = {};
@@ -281,6 +342,61 @@ function handleRequest(req, res) {
       } catch (e) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'invalid json' }));
+      }
+    });
+    return;
+  }
+
+  // Transcribe endpoint: POST audio from browser MediaRecorder → Gemini STT
+  // Accepts: { audio: base64, source_lang? }
+  if (url.pathname === '/subtitles/transcribe' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        const { audio, source_lang } = JSON.parse(body);
+        const srcLang = source_lang || 'auto';
+        if (!audio) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'missing audio' }));
+          return;
+        }
+        if (!GEMINI_KEY) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'no GEMINI_API_KEY configured' }));
+          return;
+        }
+
+        isActive = true;
+        lastActivityTime = Date.now();
+
+        // Build list of target languages from active listeners
+        const targetLangs = [];
+        for (const [lang, clients] of clientsByLang.entries()) {
+          if (clients.size > 0) targetLangs.push(lang);
+        }
+
+        const result = await transcribeWithGemini(audio, srcLang, targetLangs);
+        if (!result || !result.source_text) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, text: null, silence: true }));
+          return;
+        }
+
+        // Broadcast source text + translations
+        broadcastSegment(result.source_text, result.source_lang, result.translations);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          ok: true,
+          text: result.source_text,
+          source_lang: result.source_lang,
+          translations: Object.keys(result.translations),
+        }));
+      } catch (e) {
+        console.error('[Transcribe] Error:', e.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
       }
     });
     return;

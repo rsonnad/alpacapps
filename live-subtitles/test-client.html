@@ -132,14 +132,14 @@
     <div class="controls">
       <button class="mic-btn" id="micBtn" title="Speak into your mic (uses browser speech recognition)">&#127908; Mic</button>
       <span class="mic-unsupported" id="micUnsupported">Browser speech recognition not supported</span>
-      <select id="micLangPicker" title="Language the speaker is speaking">
-        <option value="en-US">Speaker: English</option>
-        <option value="pl-PL">Speaker: Polski</option>
-        <option value="es-ES">Speaker: Español</option>
-        <option value="fr-FR">Speaker: Français</option>
-        <option value="de-DE">Speaker: Deutsch</option>
+      <select id="sourceLangPicker" title="What language is the speaker speaking?">
+        <option value="en">Speaker: English</option>
+        <option value="pl">Speaker: Polski</option>
+        <option value="es">Speaker: Español</option>
+        <option value="fr">Speaker: Français</option>
+        <option value="de">Speaker: Deutsch</option>
       </select>
-      <select id="langPicker" title="Language you want to read subtitles in">
+      <select id="langPicker" title="What language do you want subtitles in?">
         <option value="en">Subtitles: English</option>
         <option value="pl">Subtitles: Polski</option>
         <option value="es">Subtitles: Español</option>
@@ -185,7 +185,7 @@
     const segCount = document.getElementById('segCount');
     const micInfo = document.getElementById('micInfo');
     const langPicker = document.getElementById('langPicker');
-    const micLangPicker = document.getElementById('micLangPicker');
+    const sourceLangPicker = document.getElementById('sourceLangPicker');
     const micBtn = document.getElementById('micBtn');
     let ws = null;
     let currentLang = 'en';
@@ -232,89 +232,100 @@
       connect();
     };
 
-    // ── Mic: Web Speech API ────────────────────────────────
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    // ── Mic: MediaRecorder → Gemini server-side STT ──────
+    // Captures raw audio, sends to server every few seconds.
+    // Server uses Gemini to transcribe any language + translate.
+    // No dependency on Chrome's limited speech recognition.
+    let mediaRecorder = null;
+    let audioStream = null;
+    let audioChunks = [];
+    let chunkTimer = null;
 
-    if (!SpeechRecognition) {
-      micBtn.style.display = 'none';
-      document.getElementById('micUnsupported').style.display = 'inline';
-    } else {
-      micBtn.onclick = toggleMic;
-    }
+    micBtn.onclick = () => micActive ? stopMic() : startMic();
 
-    function toggleMic() {
-      if (micActive) {
-        stopMic();
-      } else {
-        startMic();
+    async function startMic() {
+      try {
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch(e) {
+        micInfo.textContent = 'Mic access denied — check browser permissions';
+        return;
       }
-    }
 
-    function startMic() {
-      const micLang = micLangPicker.value; // e.g. 'pl-PL'
-      const sourceLangCode = micLang.split('-')[0]; // e.g. 'pl'
+      micActive = true;
+      micBtn.classList.add('recording');
+      micBtn.innerHTML = '&#9724; Stop';
+      sourceLangPicker.disabled = true;
+      micInfo.textContent = 'Recording...';
 
-      recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = micLang;
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(audioStream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus' : 'audio/webm'
+      });
 
-      recognition.onstart = () => {
-        micActive = true;
-        micBtn.classList.add('recording');
-        micBtn.innerHTML = '&#9724; Stop';
-        micInfo.textContent = `Mic active (${micLang}) — speak now`;
-        micLangPicker.disabled = true;
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunks.push(e.data);
       };
 
-      recognition.onresult = (event) => {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          const text = result[0].transcript.trim();
-          if (!text) continue;
-
-          fetch(`${API_BASE}/subtitles/inject`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              text,
-              is_partial: !result.isFinal,
-              source_lang: sourceLangCode,
-            }),
-          }).catch(err => console.warn('[Mic] Inject failed:', err));
+      mediaRecorder.onstop = () => {
+        if (audioChunks.length > 0) {
+          const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+          audioChunks = [];
+          sendAudioChunk(blob);
         }
       };
 
-      recognition.onerror = (event) => {
-        console.error('[Mic] Error:', event.error);
-        if (event.error === 'not-allowed') {
-          micInfo.textContent = 'Mic access denied — check browser permissions';
-        } else {
-          micInfo.textContent = `Mic error: ${event.error}`;
-        }
-        stopMic();
-      };
+      mediaRecorder.start();
 
-      recognition.onend = () => {
-        // Auto-restart if still supposed to be recording
-        if (micActive) {
-          try { recognition.start(); } catch(e) { stopMic(); }
+      // Send audio every 5 seconds for near-real-time subtitles
+      chunkTimer = setInterval(() => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+          mediaRecorder.start();
         }
-      };
-
-      recognition.start();
+      }, 5000);
     }
 
     function stopMic() {
       micActive = false;
-      if (recognition) {
-        recognition.abort();
-        recognition = null;
+      clearInterval(chunkTimer);
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+      if (audioStream) {
+        audioStream.getTracks().forEach(t => t.stop());
+        audioStream = null;
       }
       micBtn.classList.remove('recording');
       micBtn.innerHTML = '&#127908; Mic';
       micInfo.textContent = '';
-      micLangPicker.disabled = false;
+      sourceLangPicker.disabled = false;
+    }
+
+    async function sendAudioChunk(blob) {
+      const srcLang = sourceLangPicker.value;
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result.split(',')[1];
+        if (!base64 || base64.length < 100) return; // skip tiny/empty chunks
+        try {
+          micInfo.textContent = 'Transcribing...';
+          const resp = await fetch(`${API_BASE}/subtitles/transcribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio: base64, source_lang: srcLang }),
+          });
+          const data = await resp.json();
+          if (data.ok) {
+            micInfo.textContent = `Recording... (${data.text ? data.text.substring(0, 40) + '...' : 'silence'})`;
+          } else {
+            micInfo.textContent = data.error || 'Transcription failed';
+          }
+        } catch(e) {
+          micInfo.textContent = `Send failed: ${e.message}`;
+        }
+      };
+      reader.readAsDataURL(blob);
     }
 
     // ── WebSocket connection ───────────────────────────────
