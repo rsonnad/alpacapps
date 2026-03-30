@@ -1,12 +1,12 @@
 {
-  "version": "v260330.31 6:03a",
-  "release": 1188,
-  "sha": "f90f854ec",
-  "fullSha": "f90f854eca2fe6b3b7af5d2f5e9db2d60881fddd",
+  "version": "v260330.32 6:05a",
+  "release": 1189,
+  "sha": "7498f5b4e",
+  "fullSha": "7498f5b4e1e19669969c54915bc25aa94bc96764",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 11:03:10+00",
-  "commits": [{"sha":"f90f854ec","message":"fix: correct Theme.kt merge — remove duplicate LocalIsDarkTheme declaration","author":"Rahul"}]
+  "pushedAt": "2026-03-30 11:05:18+00",
+  "commits": [{"sha":"7498f5b4e","message":"fix: make Subtitles tab visible for all users, not just admins","author":"Rahul"}]
 }
