@@ -2,7 +2,7 @@ package com.alpacaplayhouse.app.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.alpacaplayhouse.app.ui.theme.LocalIsDarkTheme
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -91,7 +91,7 @@ private fun sceneAccentColor(scene: LightScene): Color = when (scene.label) {
 fun LightsScreen() {
     val scope = rememberCoroutineScope()
     var statusMessage by remember { mutableStateOf<String?>(null) }
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
 
     // Check user access — admin/staff see all zones; others only see non-restricted or assigned
     val isAdmin = remember {

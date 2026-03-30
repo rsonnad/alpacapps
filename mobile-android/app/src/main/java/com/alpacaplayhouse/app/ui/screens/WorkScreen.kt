@@ -3,7 +3,7 @@ package com.alpacaplayhouse.app.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.alpacaplayhouse.app.ui.theme.LocalIsDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -52,7 +52,7 @@ private val StatusDoneBgDark = Color(0xFF0A3D2A)
 fun WorkScreen() {
     val scope = rememberCoroutineScope()
     var selectedTab by remember { mutableStateOf(WorkTab.Tasks) }
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Gradient header area

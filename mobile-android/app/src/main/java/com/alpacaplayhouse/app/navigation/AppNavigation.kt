@@ -1,7 +1,7 @@
 package com.alpacaplayhouse.app.navigation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.alpacaplayhouse.app.ui.theme.LocalIsDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -84,7 +84,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
 
     // Load user capabilities to determine which tabs to show
     var capabilities by remember { mutableStateOf<UserCapabilities?>(null) }
@@ -127,14 +127,14 @@ fun AppNavigation() {
                     AsyncImage(
                         model = if (isDark) ApiConfig.LOGO_DARK_URL else ApiConfig.LOGO_LIGHT_URL,
                         contentDescription = "Alpaca Playhouse",
-                        modifier = Modifier.size(30.dp),
+                        modifier = Modifier.size(44.dp),
                         contentScale = ContentScale.Fit,
                     )
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Alpaca Playhouse",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
                         color = if (isDark) Color.White else AlpacaText,
                         letterSpacing = (-0.3).sp,
                     )
