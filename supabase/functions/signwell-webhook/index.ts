@@ -540,6 +540,7 @@ async function sendRentalSignedEmail(
           <p>Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.</p>
           <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
+          <div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>
         `,
         text: `Lease Signing Complete!
 
@@ -668,6 +669,7 @@ async function sendEventSignedEmail(
           <p>Once we receive the cleaning deposit and rental fee, your event is confirmed!</p>
           <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
+          <div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>
         `,
         text: `Event Agreement Signed!
 
@@ -802,6 +804,7 @@ ${vehicleInfo.color ? `Color: ${vehicleInfo.color}\n` : ''}${vehicleInfo.vin ? `
 
           <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
+          <div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>
         `,
         text: `${hasVehicle ? 'Your Vehicle Information' : 'Register Your Vehicle'}
 
@@ -883,6 +886,7 @@ async function sendAdminEventSignedNotification(
           </div>
           <p><a href="${signedPdfUrl}">View Signed PDF</a></p>
           <p><a href="https://alpacaplayhouse.com/admin/events.html">View in Admin</a></p>
+          <div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>
         `,
         text: `Event Agreement Signed!\n\n${hostName} (${hostEmail}) has signed the event agreement.\n\nEvent: ${eventName}\nDate: ${eventDate}\n${eventTime ? `Time: ${eventTime}\n` : ''}Host: ${hostName} (${hostEmail})\n\nSigned PDF: ${signedPdfUrl}`,
       }),

@@ -3679,6 +3679,7 @@ serve(async (req) => {
                 from: "Alpaca Team <team@alpacaplayhouse.com>",
                 to: ["alpacaplayhouse@gmail.com"],
                 subject: `Staff CONFIRMED: ${staffPerson.first_name} ${staffPerson.last_name} replied Yes`,
+                html: `<p><strong>${staffPerson.first_name} ${staffPerson.last_name}</strong> (${senderAddr}) replied "Yes" to confirm their event staff assignment.</p><p>Their record has been updated in the database.</p><div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>`,
                 text: `${staffPerson.first_name} ${staffPerson.last_name} (${senderAddr}) replied "Yes" to confirm their event staff assignment.\n\nTheir record has been updated in the database.`,
               }),
             });
