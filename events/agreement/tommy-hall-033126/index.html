@@ -682,6 +682,39 @@
           ref,
         }));
 
+        // Send staff notification emails via edge function
+        const staffWithRoles = [
+          { role: 'Setup Crew #1', ...staffData.setup_crew_1 },
+          { role: 'Setup Crew #2', ...staffData.setup_crew_2 },
+          { role: 'Door Person', ...staffData.door_person },
+          { role: 'Parking Attendant', ...staffData.parking_attendant },
+        ].filter(s => s.name);
+
+        if (staffWithRoles.length > 0) {
+          try {
+            await fetch(`${SUPABASE_URL}/functions/v1/event-staff-notify`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              },
+              body: JSON.stringify({
+                event_request_id: EVENT_REQUEST_ID,
+                host_name: 'Tommy Hall',
+                host_email: 'tommy@nextspirit.co',
+                event_name: 'Tommy Hall Event - March 31, 2026',
+                event_date: 'Tuesday, March 31, 2026',
+                event_time: '8:00 PM - 1:00 AM',
+                event_location: '160 Still Forest Drive, Cedar Creek, TX 78612',
+                staff: staffWithRoles,
+              }),
+            });
+            console.log('Staff notification emails sent');
+          } catch (notifyErr) {
+            console.error('Staff notify error (non-blocking):', notifyErr);
+          }
+        }
+
         document.getElementById('successDate').textContent = signedAt;
         document.getElementById('successRef').textContent = ref;
         document.getElementById('formState').style.display = 'none';

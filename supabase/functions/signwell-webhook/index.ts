@@ -445,13 +445,20 @@ async function processEventAgreement(
     eventTimeFormatted = `${formatTime(eventRequest.event_start_time)} - ${formatTime(eventRequest.event_end_time)}`;
   }
 
-  // Send email notification
+  // Send email notification to client
   if (person?.email) {
     await sendEventSignedEmail(
       person, eventRequest.event_name, eventDateFormatted, eventTimeFormatted,
       rentalFee, cleaningDeposit, paymentDueDate, paymentMethodsHtml, paymentMethodsText
     );
   }
+
+  // Send admin notification
+  const hostName2 = person ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : 'Unknown';
+  await sendAdminEventSignedNotification(
+    hostName2, person?.email || '', eventRequest.event_name || 'Event',
+    eventDateFormatted, eventTimeFormatted, signedPdfUrl, eventRequest.id
+  );
 
   return new Response(
     JSON.stringify({
@@ -833,5 +840,61 @@ Alpaca Playhouse`,
     }
   } catch (emailErr) {
     console.error('Error sending vehicle registration email:', emailErr);
+  }
+}
+
+// Send admin notification when event agreement is signed
+async function sendAdminEventSignedNotification(
+  hostName: string,
+  hostEmail: string,
+  eventName: string,
+  eventDate: string,
+  eventTime: string,
+  signedPdfUrl: string,
+  eventRequestId: string
+) {
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  if (!RESEND_API_KEY) {
+    console.log('RESEND_API_KEY not configured, skipping admin notification');
+    return;
+  }
+
+  const ADMIN_EMAIL = 'alpacaplayhouse@gmail.com';
+
+  try {
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Alpaca Team <team@alpacaplayhouse.com>',
+        to: [ADMIN_EMAIL],
+        subject: `Event Agreement SIGNED by ${hostName} - ${eventName}`,
+        html: `
+          <h2>Event Agreement Signed!</h2>
+          <p><strong>${hostName}</strong> (${hostEmail}) has signed the event agreement.</p>
+          <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0;">
+            <strong>Event:</strong> ${eventName}<br>
+            <strong>Date:</strong> ${eventDate}<br>
+            ${eventTime ? `<strong>Time:</strong> ${eventTime}<br>` : ''}
+            <strong>Host:</strong> ${hostName} (${hostEmail})
+          </div>
+          <p><a href="${signedPdfUrl}">View Signed PDF</a></p>
+          <p><a href="https://alpacaplayhouse.com/admin/events.html">View in Admin</a></p>
+        `,
+        text: `Event Agreement Signed!\n\n${hostName} (${hostEmail}) has signed the event agreement.\n\nEvent: ${eventName}\nDate: ${eventDate}\n${eventTime ? `Time: ${eventTime}\n` : ''}Host: ${hostName} (${hostEmail})\n\nSigned PDF: ${signedPdfUrl}`,
+      }),
+    });
+
+    if (emailResponse.ok) {
+      console.log('Admin event signed notification sent to', ADMIN_EMAIL);
+    } else {
+      const emailError = await emailResponse.json();
+      console.error('Failed to send admin notification:', emailError);
+    }
+  } catch (emailErr) {
+    console.error('Error sending admin notification:', emailErr);
   }
 }
