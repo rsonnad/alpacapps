@@ -72,8 +72,9 @@ dependencies {
     // HTTP client
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-    // Image loading
+    // Image loading (coil3 + network fetcher for URL images)
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
 
     // ExoPlayer for HLS camera feeds
     implementation("androidx.media3:media3-exoplayer:1.5.1")

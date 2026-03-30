@@ -5,7 +5,7 @@ struct ContentView: View {
         TabView {
             AssistantView()
                 .tabItem {
-                    Label("Assistant", systemImage: "bubble.left.and.text.bubble.right.fill")
+                    Label("Home", systemImage: "house.fill")
                 }
 
             MusicView()
