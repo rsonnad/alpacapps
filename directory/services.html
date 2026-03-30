@@ -9,12 +9,13 @@
   <link rel="stylesheet" href="/styles/site.css">
   <link rel="stylesheet" href="/styles/tailwind.out.css">
   <link rel="stylesheet" href="/directory/styles.css">
+  <link rel="stylesheet" href="/directory/lightingdevices.css">
   <link rel="stylesheet" href="/directory/services.css">
   <script type="module" src="/shared/version-info.js"></script>
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
 </head>
 <body>
-  <span data-site-version style="display:none;">v260330.07 3:45a</span>
+  <span data-site-version style="display:none;"></span>
   <div id="siteHeader"></div>
 
   <!-- Loading state -->
@@ -23,21 +24,21 @@
   </div>
 
   <!-- Main content -->
-  <div id="mainContent" class="sc-container aap-hidden">
+  <div id="mainContent" class="ld-container aap-hidden">
     <!-- Summary bar -->
-    <div class="sc-summary">
-      <h1 class="sc-title">Service Connections</h1>
-      <div class="sc-counts" id="summaryCounts"></div>
+    <div class="ld-summary">
+      <h1 class="ld-title">Service Connections</h1>
+      <div class="ld-counts" id="summaryCounts"></div>
     </div>
 
     <!-- Filters -->
-    <div class="sc-filters">
-      <input type="text" class="sc-search" id="searchInput" placeholder="Search by name, host, protocol, tags...">
-      <div class="sc-filter-row">
-        <select class="sc-select" id="filterCategory">
+    <div class="ld-filters">
+      <input type="text" class="ld-search" id="searchInput" placeholder="Search by name, host, protocol, tags...">
+      <div class="ld-filter-row">
+        <select class="ld-select" id="filterCategory">
           <option value="">All Categories</option>
         </select>
-        <select class="sc-select" id="filterStatus">
+        <select class="ld-select" id="filterStatus">
           <option value="">All Status</option>
           <option value="working">Working</option>
           <option value="degraded">Degraded</option>
@@ -45,25 +46,42 @@
           <option value="unknown">Unknown</option>
           <option value="decommissioned">Decommissioned</option>
         </select>
-        <select class="sc-select" id="filterProtocol">
+        <select class="ld-select" id="filterProtocol">
           <option value="">All Protocols</option>
         </select>
-        <label class="sc-checkbox-label">
+        <label class="ld-checkbox-label">
           <input type="checkbox" id="filterActive" checked> Active only
         </label>
       </div>
     </div>
 
-    <!-- Cards view -->
-    <div class="sc-cards" id="cardsContainer"></div>
+    <!-- Table -->
+    <div class="ld-table-wrap">
+      <table class="ld-table" id="servicesTable">
+        <thead>
+          <tr>
+            <th data-sort="status" class="ld-th-status"></th>
+            <th data-sort="name">Name</th>
+            <th data-sort="category">Category</th>
+            <th data-sort="host">Host</th>
+            <th data-sort="protocol">Protocol</th>
+            <th data-sort="auth_method">Auth</th>
+            <th data-sort="bw_item_name">Credential</th>
+            <th data-sort="tags">Tags</th>
+            <th data-sort="last_tested_at">Tested</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
 
-    <!-- Detail panel (hidden by default) -->
+    <!-- Detail panel (slide-out on row click) -->
     <div class="sc-detail aap-hidden" id="detailPanel">
       <button class="sc-detail-close" id="detailClose">&times;</button>
       <div id="detailContent"></div>
     </div>
 
-    <div class="sc-footer-info" id="footerInfo"></div>
+    <div class="ld-footer-info" id="footerInfo"></div>
   </div>
 
   <!-- Footer -->

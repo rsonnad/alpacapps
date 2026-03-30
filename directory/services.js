@@ -1,6 +1,6 @@
 /**
  * Service Connections Directory
- * Card-based view with detail panel for infrastructure service recipes
+ * Sortable, filterable table with detail panel
  * Source: service_connections table
  */
 import { supabase } from '../shared/supabase.js';
@@ -11,7 +11,8 @@ import { renderHeader, renderFooter, initSiteComponents } from '../shared/site-c
 // =============================================
 
 let allServices = [];
-let selectedService = null;
+let sortCol = 'display_order';
+let sortDir = 'asc';
 
 // =============================================
 // HELPERS
@@ -37,42 +38,23 @@ function timeAgo(dateStr) {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   if (days < 30) return `${days}d ago`;
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function formatCategory(cat) {
-  const map = {
-    server: 'Server',
-    api: 'API',
-    storage: 'Storage',
-    database: 'Database',
-    iot: 'IoT',
-    network: 'Network',
-  };
-  return map[cat] || cat;
+  return { server: 'Server', api: 'API', storage: 'Storage', database: 'Database', iot: 'IoT', network: 'Network' }[cat] || cat;
 }
 
 function formatProtocol(p) {
-  const map = {
-    ssh: 'SSH',
-    https: 'HTTPS',
-    http: 'HTTP',
-    s3: 'S3',
-    mqtt: 'MQTT',
-  };
-  return map[p] || p;
+  return { ssh: 'SSH', https: 'HTTPS', http: 'HTTP', s3: 'S3', mqtt: 'MQTT' }[p] || p;
 }
 
 function formatAuthMethod(m) {
-  const map = {
-    key: 'SSH Key',
-    password: 'Password',
-    token: 'API Token',
-    s3_keys: 'S3 Access Keys',
-    cookie: 'Cookie/Session',
-    none: 'None',
-  };
-  return map[m] || m || 'Unknown';
+  return { key: 'SSH Key', password: 'Password', token: 'API Token', s3_keys: 'S3 Keys', cookie: 'Cookie', none: 'None' }[m] || m || '';
+}
+
+function categoryClass(cat) {
+  return { server: 'sc-cat--server', api: 'sc-cat--api', storage: 'sc-cat--storage', database: 'sc-cat--database', iot: 'sc-cat--iot', network: 'sc-cat--network' }[cat] || '';
 }
 
 // =============================================
@@ -85,7 +67,6 @@ async function loadServices() {
     .select('*')
     .order('display_order')
     .order('name');
-
   if (error) throw error;
   return data || [];
 }
@@ -117,75 +98,111 @@ function getFiltered() {
 }
 
 // =============================================
+// SORTING
+// =============================================
+
+function sortServices(services) {
+  return [...services].sort((a, b) => {
+    let av = a[sortCol];
+    let bv = b[sortCol];
+
+    if (sortCol === 'status') {
+      const order = { working: 0, degraded: 1, down: 2, unknown: 3, decommissioned: 4 };
+      av = order[av] ?? 3;
+      bv = order[bv] ?? 3;
+    }
+
+    if (sortCol === 'tags') {
+      av = (av || []).join(',');
+      bv = (bv || []).join(',');
+    }
+
+    if (sortCol === 'last_tested_at') {
+      av = av ? new Date(av).getTime() : 0;
+      bv = bv ? new Date(bv).getTime() : 0;
+    }
+
+    if (!av && av !== 0) av = '';
+    if (!bv && bv !== 0) bv = '';
+
+    if (typeof av === 'number' && typeof bv === 'number') {
+      return sortDir === 'asc' ? av - bv : bv - av;
+    }
+
+    const cmp = String(av).localeCompare(String(bv), undefined, { sensitivity: 'base' });
+    return sortDir === 'asc' ? cmp : -cmp;
+  });
+}
+
+// =============================================
 // RENDERING
 // =============================================
 
 function renderSummary(filtered) {
   const counts = {};
-  for (const s of filtered) {
-    counts[s.status] = (counts[s.status] || 0) + 1;
-  }
+  for (const s of filtered) counts[s.status] = (counts[s.status] || 0) + 1;
 
   const items = ['working', 'degraded', 'down', 'unknown', 'decommissioned']
     .filter(st => counts[st])
-    .map(st => `<span class="sc-count-item"><span class="sc-count-dot sc-count-dot--${st}"></span>${counts[st]} ${st}</span>`)
+    .map(st => `<span class="ld-count-item"><span class="ld-count-dot sc-count-dot--${st}"></span>${counts[st]} ${st}</span>`)
     .join('');
 
   document.getElementById('summaryCounts').innerHTML =
-    items + `<span class="sc-count-item"><strong>${filtered.length}</strong> total</span>`;
+    items + `<span class="ld-count-item"><strong>${filtered.length}</strong> total</span>`;
 }
 
 function renderFilters() {
   const categories = [...new Set(allServices.map(s => s.category))].filter(Boolean).sort();
   const protocols = [...new Set(allServices.map(s => s.protocol))].filter(Boolean).sort();
 
-  const catSel = document.getElementById('filterCategory');
-  catSel.innerHTML = '<option value="">All Categories</option>' +
+  document.getElementById('filterCategory').innerHTML = '<option value="">All Categories</option>' +
     categories.map(c => `<option value="${esc(c)}">${esc(formatCategory(c))}</option>`).join('');
 
-  const protoSel = document.getElementById('filterProtocol');
-  protoSel.innerHTML = '<option value="">All Protocols</option>' +
+  document.getElementById('filterProtocol').innerHTML = '<option value="">All Protocols</option>' +
     protocols.map(p => `<option value="${esc(p)}">${esc(formatProtocol(p))}</option>`).join('');
 }
 
-function renderCards() {
+function renderTable() {
   const filtered = getFiltered();
+  const sorted = sortServices(filtered);
   renderSummary(filtered);
 
-  const container = document.getElementById('cardsContainer');
+  // Update sort indicators
+  document.querySelectorAll('.ld-table th').forEach(th => {
+    th.classList.remove('ld-sorted-asc', 'ld-sorted-desc');
+    if (th.dataset.sort === sortCol) {
+      th.classList.add(sortDir === 'asc' ? 'ld-sorted-asc' : 'ld-sorted-desc');
+    }
+  });
 
-  if (!filtered.length) {
-    container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--aap-text-muted);">No services match your filters</div>`;
+  const tbody = document.getElementById('tableBody');
+  if (!sorted.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--aap-text-muted);">No services match your filters</td></tr>`;
     document.getElementById('footerInfo').textContent = '';
     return;
   }
 
-  container.innerHTML = filtered.map(s => {
-    const tags = (s.tags || []).slice(0, 5);
-    const cardClass = [
-      'sc-card',
-      !s.is_active ? 'sc-card--inactive' : '',
-      s.status === 'decommissioned' ? 'sc-card--decommissioned' : '',
+  tbody.innerHTML = sorted.map(s => {
+    const tags = (s.tags || []).slice(0, 4);
+    const rowClass = [
+      !s.is_active ? 'ld-row-inactive' : '',
+      s.status === 'decommissioned' ? 'sc-row-decom' : '',
     ].filter(Boolean).join(' ');
 
-    return `<div class="${cardClass}" data-slug="${esc(s.slug)}">
-      <div class="sc-card-header">
-        <span class="sc-card-status sc-card-status--${s.status}" title="${s.status}"></span>
-        <span class="sc-card-name">${esc(s.name)}</span>
-        <span class="sc-card-category sc-cat--${s.category}">${esc(formatCategory(s.category))}</span>
-      </div>
-      <div class="sc-card-meta">
-        ${s.host ? `<span class="sc-card-meta-item"><span class="sc-card-host">${esc(s.host)}${s.port ? ':' + s.port : ''}</span></span>` : ''}
-        ${s.protocol ? `<span class="sc-card-meta-item">${esc(formatProtocol(s.protocol))}</span>` : ''}
-        ${s.auth_method ? `<span class="sc-card-meta-item">${esc(formatAuthMethod(s.auth_method))}</span>` : ''}
-      </div>
-      ${s.notes ? `<div class="sc-card-notes">${esc(s.notes)}</div>` : ''}
-      ${tags.length ? `<div class="sc-card-tags">${tags.map(t => `<span class="sc-tag">${esc(t)}</span>`).join('')}</div>` : ''}
-    </div>`;
+    return `<tr class="${rowClass}" data-slug="${esc(s.slug)}" title="${esc(s.notes || '')}">
+      <td><span class="ld-status-dot sc-status--${s.status}" title="${s.status}"></span></td>
+      <td class="sc-name-cell">${esc(s.name)}</td>
+      <td><span class="sc-cat-badge ${categoryClass(s.category)}">${esc(formatCategory(s.category))}</span></td>
+      <td class="ld-mono">${esc(s.host || '')}${s.port ? ':' + s.port : ''}</td>
+      <td>${esc(formatProtocol(s.protocol))}</td>
+      <td>${esc(formatAuthMethod(s.auth_method))}</td>
+      <td class="sc-cred-cell" title="${esc(s.bw_item_name || '')}">${esc(s.bw_item_name ? s.bw_item_name.split(' — ')[0] : '')}</td>
+      <td>${tags.map(t => `<span class="sc-tag">${esc(t)}</span>`).join(' ')}</td>
+      <td title="${esc(s.last_tested_at || '')}">${timeAgo(s.last_tested_at)}</td>
+    </tr>`;
   }).join('');
 
-  document.getElementById('footerInfo').textContent =
-    `Showing ${filtered.length} of ${allServices.length} services`;
+  document.getElementById('footerInfo').textContent = `Showing ${sorted.length} of ${allServices.length} services`;
 }
 
 function renderDetail(service) {
@@ -194,14 +211,10 @@ function renderDetail(service) {
   const content = document.getElementById('detailContent');
 
   let commonCmds = [];
-  try {
-    commonCmds = typeof s.common_commands === 'string' ? JSON.parse(s.common_commands) : (s.common_commands || []);
-  } catch { commonCmds = []; }
+  try { commonCmds = typeof s.common_commands === 'string' ? JSON.parse(s.common_commands) : (s.common_commands || []); } catch { commonCmds = []; }
 
   let extraFields = {};
-  try {
-    extraFields = typeof s.bw_extra_fields === 'string' ? JSON.parse(s.bw_extra_fields) : (s.bw_extra_fields || {});
-  } catch { extraFields = {}; }
+  try { extraFields = typeof s.bw_extra_fields === 'string' ? JSON.parse(s.bw_extra_fields) : (s.bw_extra_fields || {}); } catch { extraFields = {}; }
 
   const gotchas = s.gotchas || [];
   const tags = s.tags || [];
@@ -209,7 +222,7 @@ function renderDetail(service) {
   content.innerHTML = `
     <div class="sc-detail-title">${esc(s.name)}</div>
     <div class="sc-detail-status">
-      <span class="sc-card-status sc-card-status--${s.status}"></span>
+      <span class="ld-status-dot sc-status--${s.status}"></span>
       ${s.status.toUpperCase()}
       ${s.last_tested_at ? ` — tested ${timeAgo(s.last_tested_at)}` : ''}
     </div>
@@ -219,7 +232,7 @@ function renderDetail(service) {
       ${s.host ? `<div class="sc-detail-field"><span class="sc-detail-label">Host</span><span class="sc-detail-value" style="font-family:monospace">${esc(s.host)}${s.port ? ':' + s.port : ''}</span></div>` : ''}
       ${s.protocol ? `<div class="sc-detail-field"><span class="sc-detail-label">Protocol</span><span class="sc-detail-value">${esc(formatProtocol(s.protocol))}</span></div>` : ''}
       ${s.auth_method ? `<div class="sc-detail-field"><span class="sc-detail-label">Auth</span><span class="sc-detail-value">${esc(formatAuthMethod(s.auth_method))}</span></div>` : ''}
-      <div class="sc-detail-field"><span class="sc-detail-label">Category</span><span class="sc-detail-value"><span class="sc-card-category sc-cat--${s.category}">${esc(formatCategory(s.category))}</span></span></div>
+      <div class="sc-detail-field"><span class="sc-detail-label">Category</span><span class="sc-detail-value"><span class="sc-cat-badge ${categoryClass(s.category)}">${esc(formatCategory(s.category))}</span></span></div>
     </div>
 
     ${s.bw_item_name ? `
@@ -234,7 +247,8 @@ function renderDetail(service) {
     ${s.connect_command ? `
     <div class="sc-detail-section">
       <div class="sc-detail-section-title">Connect Command</div>
-      <div class="sc-detail-code"><button class="sc-detail-code-copy" onclick="navigator.clipboard.writeText(this.parentElement.textContent.replace('Copy','').trim())">Copy</button>${esc(s.connect_command)}</div>
+      <div class="sc-detail-code" id="connectCmd">${esc(s.connect_command)}</div>
+      <button class="sc-copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('connectCmd').textContent)">Copy</button>
     </div>
     ` : ''}
 
@@ -267,36 +281,48 @@ function renderDetail(service) {
     ${tags.length ? `
     <div class="sc-detail-section">
       <div class="sc-detail-section-title">Tags</div>
-      <div class="sc-card-tags">${tags.map(t => `<span class="sc-tag">${esc(t)}</span>`).join('')}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.25rem">${tags.map(t => `<span class="sc-tag">${esc(t)}</span>`).join('')}</div>
     </div>
     ` : ''}
   `;
 
   panel.classList.remove('aap-hidden');
-  selectedService = s;
 }
 
 function closeDetail() {
   document.getElementById('detailPanel').classList.add('aap-hidden');
-  selectedService = null;
 }
 
 // =============================================
 // EVENT HANDLERS
 // =============================================
 
-function initCardHandlers() {
-  document.getElementById('cardsContainer').addEventListener('click', (e) => {
-    const card = e.target.closest('.sc-card');
-    if (!card) return;
-    const slug = card.dataset.slug;
-    const service = allServices.find(s => s.slug === slug);
+function initSortHandlers() {
+  document.querySelectorAll('.ld-table th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortCol = col;
+        sortDir = 'asc';
+      }
+      renderTable();
+    });
+  });
+}
+
+function initRowHandlers() {
+  document.getElementById('tableBody').addEventListener('click', (e) => {
+    const row = e.target.closest('tr[data-slug]');
+    if (!row) return;
+    const service = allServices.find(s => s.slug === row.dataset.slug);
     if (service) renderDetail(service);
   });
 }
 
 function initFilterHandlers() {
-  const handler = () => renderCards();
+  const handler = () => renderTable();
   document.getElementById('searchInput').addEventListener('input', handler);
   document.getElementById('filterCategory').addEventListener('change', handler);
   document.getElementById('filterStatus').addEventListener('change', handler);
@@ -315,20 +341,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSiteComponents();
 
   document.getElementById('detailClose').addEventListener('click', closeDetail);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeDetail();
-  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
 
   try {
     allServices = await loadServices();
     renderFilters();
-    initCardHandlers();
+    initSortHandlers();
+    initRowHandlers();
     initFilterHandlers();
 
     document.getElementById('loadingState').classList.add('aap-hidden');
     document.getElementById('mainContent').classList.remove('aap-hidden');
-
-    renderCards();
+    renderTable();
   } catch (err) {
     console.error('Failed to load services:', err);
     document.getElementById('loadingState').innerHTML =

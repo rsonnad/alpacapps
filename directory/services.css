@@ -1,56 +1,18 @@
 /**
  * Service Connections Directory Styles
- * Card-based view for infrastructure service recipes
+ * Table view with slide-out detail panel
+ * Reuses ld-* classes from lightingdevices.css for table/filters
  */
 
 /* =============================================
-   CONTAINER
+   STATUS DOTS (service-specific statuses)
    ============================================= */
 
-.sc-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
-}
-
-/* =============================================
-   SUMMARY BAR
-   ============================================= */
-
-.sc-summary {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.sc-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-
-.sc-counts {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.8rem;
-  color: var(--aap-text-muted);
-}
-
-.sc-count-item {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.sc-count-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
+.sc-status--working { background: #22c55e; }
+.sc-status--degraded { background: #f59e0b; }
+.sc-status--down { background: #ef4444; }
+.sc-status--unknown { background: #d1d5db; }
+.sc-status--decommissioned { background: #6b7280; }
 
 .sc-count-dot--working { background: #22c55e; }
 .sc-count-dot--degraded { background: #f59e0b; }
@@ -59,135 +21,36 @@
 .sc-count-dot--decommissioned { background: #6b7280; }
 
 /* =============================================
-   FILTERS
+   TABLE OVERRIDES
    ============================================= */
 
-.sc-filters {
-  background: var(--aap-bg);
-  border: 1px solid var(--aap-border);
-  border-radius: var(--aap-radius);
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.sc-search {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--aap-border);
-  border-radius: var(--aap-radius);
-  font-size: 0.85rem;
-  background: var(--aap-bg);
-  color: var(--aap-text);
-  margin-bottom: 0.5rem;
-  outline: none;
-  transition: border-color var(--aap-transition);
-}
-
-.sc-search:focus {
-  border-color: var(--aap-accent);
-}
-
-.sc-filter-row {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.sc-select {
-  padding: 0.35rem 0.5rem;
-  border: 1px solid var(--aap-border);
-  border-radius: var(--aap-radius);
-  font-size: 0.8rem;
-  background: var(--aap-bg);
-  color: var(--aap-text);
+.sc-name-cell {
+  font-weight: 600;
   cursor: pointer;
-  outline: none;
 }
 
-.sc-select:focus {
-  border-color: var(--aap-accent);
-}
-
-.sc-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.8rem;
-  color: var(--aap-text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-/* =============================================
-   CARDS
-   ============================================= */
-
-.sc-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 0.75rem;
-}
-
-.sc-card {
-  background: var(--aap-bg);
-  border: 1px solid var(--aap-border);
-  border-radius: var(--aap-radius);
-  padding: 1rem;
-  cursor: pointer;
-  transition: border-color var(--aap-transition), box-shadow var(--aap-transition);
-}
-
-.sc-card:hover {
-  border-color: var(--aap-accent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.sc-card--inactive {
-  opacity: 0.45;
-}
-
-.sc-card--decommissioned {
+.sc-row-decom {
+  opacity: 0.4;
   background: var(--aap-bg-muted);
 }
 
-.sc-card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+#servicesTable tbody tr {
+  cursor: pointer;
 }
 
-.sc-card-status {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
+#servicesTable tbody tr:hover {
+  background: rgba(0, 0, 0, 0.03);
 }
 
-.sc-card-status--working { background: #22c55e; }
-.sc-card-status--degraded { background: #f59e0b; }
-.sc-card-status--down { background: #ef4444; }
-.sc-card-status--unknown { background: #9ca3af; }
-.sc-card-status--decommissioned { background: #6b7280; }
-
-.sc-card-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sc-card-category {
+/* Category badges */
+.sc-cat-badge {
   font-size: 0.6rem;
   font-weight: 600;
   padding: 0.12rem 0.4rem;
   border-radius: 3px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .sc-cat--server { background: #dbeafe; color: #1e40af; }
@@ -197,57 +60,27 @@
 .sc-cat--iot { background: #ede9fe; color: #5b21b6; }
 .sc-cat--network { background: #ffedd5; color: #9a3412; }
 
-.sc-card-meta {
-  display: flex;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  color: var(--aap-text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.sc-card-meta-item {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.sc-card-host {
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
-  font-size: 0.72rem;
-  color: var(--aap-text-muted);
-  background: var(--aap-bg-muted);
-  padding: 0.15rem 0.4rem;
-  border-radius: 3px;
-}
-
-.sc-card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-}
-
+/* Tags */
 .sc-tag {
   font-size: 0.6rem;
-  padding: 0.1rem 0.35rem;
+  padding: 0.08rem 0.3rem;
   border-radius: 3px;
   background: var(--aap-bg-muted);
   color: var(--aap-text-muted);
+  white-space: nowrap;
 }
 
-.sc-card-notes {
-  font-size: 0.75rem;
-  color: var(--aap-text-muted);
-  margin-top: 0.4rem;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+/* Credential cell truncation */
+.sc-cred-cell {
+  max-width: 140px;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
 }
 
 /* =============================================
-   DETAIL PANEL
+   DETAIL PANEL (slide-out)
    ============================================= */
 
 .sc-detail {
@@ -341,24 +174,23 @@
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-all;
-  position: relative;
 }
 
-.sc-detail-code-copy {
-  position: absolute;
-  top: 0.4rem;
-  right: 0.4rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: #cdd6f4;
-  font-size: 0.65rem;
-  padding: 0.2rem 0.5rem;
+.sc-copy-btn {
+  display: inline-block;
+  margin-top: 0.4rem;
+  background: var(--aap-bg-muted);
+  border: 1px solid var(--aap-border);
+  color: var(--aap-text-muted);
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 3px;
   cursor: pointer;
 }
 
-.sc-detail-code-copy:hover {
-  background: rgba(255, 255, 255, 0.2);
+.sc-copy-btn:hover {
+  border-color: var(--aap-accent);
+  color: var(--aap-text);
 }
 
 .sc-detail-cmd {
@@ -397,43 +229,10 @@
 }
 
 /* =============================================
-   FOOTER INFO
-   ============================================= */
-
-.sc-footer-info {
-  margin-top: 0.75rem;
-  font-size: 0.75rem;
-  color: var(--aap-text-muted);
-  text-align: center;
-}
-
-/* =============================================
    RESPONSIVE
    ============================================= */
 
 @media (max-width: 768px) {
-  .sc-container {
-    padding: 1rem 0.5rem 2rem;
-  }
-
-  .sc-summary {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .sc-filter-row {
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .sc-select {
-    width: 100%;
-  }
-
-  .sc-cards {
-    grid-template-columns: 1fr;
-  }
-
   .sc-detail {
     width: 100vw;
   }
