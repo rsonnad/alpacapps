@@ -964,6 +964,200 @@ body {
   color: var(--kiosk-blue);
 }
 
+/* ---- Live Subtitles Button ---- */
+.kiosk-subtitles-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--kiosk-card) 0%, rgba(92, 184, 92, 0.12) 100%);
+  border: 1px solid var(--kiosk-green);
+  border-radius: var(--kiosk-radius);
+  padding: 0.5rem 0.75rem;
+  color: var(--kiosk-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: inherit;
+  text-align: left;
+}
+
+.kiosk-subtitles-btn:hover,
+.kiosk-subtitles-btn:active {
+  border-color: var(--kiosk-accent);
+  background: linear-gradient(135deg, var(--kiosk-card) 0%, rgba(233, 156, 72, 0.12) 100%);
+}
+
+.subtitles-icon {
+  font-size: 1.6rem;
+  color: var(--kiosk-green);
+  line-height: 1;
+}
+
+.kiosk-subtitles-btn:hover .subtitles-icon,
+.kiosk-subtitles-btn:active .subtitles-icon {
+  color: var(--kiosk-accent);
+}
+
+.subtitles-btn-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.subtitles-btn-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.subtitles-btn-subtitle {
+  font-size: 0.5rem;
+  color: var(--kiosk-text-muted);
+}
+
+/* ---- Live Subtitles Overlay ---- */
+.subtitles-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  background: var(--kiosk-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.subtitles-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--kiosk-card-border);
+  flex-shrink: 0;
+}
+
+.subtitles-overlay-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--kiosk-green);
+}
+
+.subtitles-overlay-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.subtitles-lang-picker {
+  background: var(--kiosk-card);
+  color: var(--kiosk-text);
+  border: 1px solid var(--kiosk-card-border);
+  border-radius: var(--kiosk-radius-sm);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+}
+
+.subtitles-font-btn {
+  background: var(--kiosk-card);
+  color: var(--kiosk-text);
+  border: 1px solid var(--kiosk-card-border);
+  border-radius: var(--kiosk-radius-sm);
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.subtitles-font-btn:hover {
+  border-color: var(--kiosk-accent);
+}
+
+.subtitles-close-btn {
+  background: none;
+  border: none;
+  color: var(--kiosk-text-muted);
+  font-size: 1.6rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.subtitles-close-btn:hover {
+  color: var(--kiosk-text);
+}
+
+.subtitles-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.7rem;
+  color: var(--kiosk-text-muted);
+  flex-shrink: 0;
+}
+
+.subtitles-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--kiosk-red);
+  flex-shrink: 0;
+}
+
+.subtitles-status-dot.connected {
+  background: var(--kiosk-green);
+}
+
+.subtitles-status-dot.reconnecting {
+  background: var(--kiosk-accent);
+}
+
+.subtitles-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  scrollbar-width: none;
+}
+
+.subtitles-content::-webkit-scrollbar {
+  display: none;
+}
+
+.subtitles-segment {
+  font-size: var(--subtitle-font-size, 2rem);
+  line-height: 1.5;
+  color: var(--kiosk-text);
+  transition: opacity 0.2s;
+}
+
+.subtitles-segment.partial {
+  opacity: 0.45;
+  font-style: italic;
+}
+
+/* Original language: dim, smaller, on top */
+.subtitles-segment .sub-original {
+  font-size: calc(var(--subtitle-font-size, 2rem) * 0.6);
+  color: var(--kiosk-text-muted);
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+/* Preferred language translation: full size, bright */
+.subtitles-segment .sub-translation {
+  font-size: var(--subtitle-font-size, 2rem);
+  color: var(--kiosk-text);
+}
+
+.subtitles-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--kiosk-text-muted);
+  font-size: 1.2rem;
+}
+
 /* ---- Portrait mode (phone / portrait tablet) ---- */
 @media (orientation: portrait) {
   .kiosk-main {

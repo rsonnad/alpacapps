@@ -1,0 +1,13 @@
+{
+  "name": "live-subtitles",
+  "version": "1.0.0",
+  "description": "Real-time speech-to-text + translation subtitle server for Alpaca Playhouse",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js --mock"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

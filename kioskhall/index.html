@@ -99,6 +99,15 @@
           </div>
         </button>
 
+        <!-- Live Subtitles -->
+        <button class="kiosk-subtitles-btn" id="subtitlesBtn" style="display:none">
+          <span class="subtitles-icon">&#127760;</span>
+          <div class="subtitles-btn-info">
+            <span class="subtitles-btn-title">Live Subtitles</span>
+            <span class="subtitles-btn-subtitle">Real-time translation in your language</span>
+          </div>
+        </button>
+
         <!-- Network Status (bottom-right corner) -->
         <a href="https://192.168.1.1" target="_blank" class="kiosk-network-link" id="networkLink">
           <span class="net-icon">&#9678;</span>
@@ -150,6 +159,36 @@
   </div>
 
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <!-- Live Subtitles Fullscreen Overlay -->
+  <div class="subtitles-overlay" id="subtitlesOverlay" style="display:none">
+    <div class="subtitles-overlay-header">
+      <span class="subtitles-overlay-title">&#127760; Live Subtitles</span>
+      <div class="subtitles-overlay-controls">
+        <select id="subtitleLangPicker" class="subtitles-lang-picker">
+          <option value="en">English</option>
+          <option value="pl">Polski</option>
+          <option value="es">Espa&#241;ol</option>
+          <option value="fr">Fran&#231;ais</option>
+          <option value="de">Deutsch</option>
+          <option value="pt">Portugu&#234;s</option>
+          <option value="it">Italiano</option>
+          <option value="hi">Hindi</option>
+          <option value="ar">Arabic</option>
+        </select>
+        <button class="subtitles-font-btn" id="subtitleFontDown">A-</button>
+        <button class="subtitles-font-btn" id="subtitleFontUp">A+</button>
+        <button class="subtitles-close-btn" id="subtitlesClose">&times;</button>
+      </div>
+    </div>
+    <div class="subtitles-status" id="subtitleStatus">
+      <span class="subtitles-status-dot" id="subtitleStatusDot"></span>
+      <span id="subtitleStatusText">Connecting...</span>
+    </div>
+    <div class="subtitles-content" id="subtitleContent">
+      <div class="subtitles-empty">Waiting for subtitles...</div>
+    </div>
+  </div>
+
   <script type="module" src="kiosk.js"></script>
 </body>
 </html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Subtitles — Test Client</title>
+  <style>
+    :root {
+      --bg: #110e10;
+      --surface: #1e1a1c;
+      --border: #2e282b;
+      --text: #f5f4ed;
+      --text-dim: #8a7e82;
+      --accent: #e99c48;
+      --green: #5cb85c;
+      --yellow: #f0ad4e;
+      --red: #d9534f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    select, button {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    .font-btn { min-width: 32px; text-align: center; }
+    .status-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--red); display: inline-block; margin-right: 8px;
+    }
+    .status-dot.connected { background: var(--green); }
+    .status-dot.reconnecting { background: var(--yellow); }
+
+    /* Mic button */
+    .mic-btn { font-size: 16px; padding: 6px 14px; transition: all 0.2s; }
+    .mic-btn.recording {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .mic-unsupported { display: none; font-size: 11px; color: var(--red); }
+
+    .subtitles {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .segment {
+      line-height: 1.5;
+      transition: opacity 0.2s;
+    }
+    .segment.partial {
+      opacity: 0.5;
+      font-style: italic;
+    }
+    /* Original language: dim, smaller, on top */
+    .segment .original {
+      font-size: calc(var(--font-size, 24px) * 0.6);
+      color: var(--text-dim);
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+    /* Preferred language: full size, bright */
+    .segment .translation {
+      font-size: var(--font-size, 24px);
+      color: var(--text);
+    }
+    .empty-state {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 18px; flex-direction: column; gap: 8px;
+    }
+    .empty-state small { font-size: 13px; color: var(--text-dim); opacity: 0.7; }
+    .info-bar {
+      padding: 8px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    /* Fullscreen mode */
+    body.fullscreen .header { display: none; }
+    body.fullscreen .info-bar { display: none; }
+    body.fullscreen .subtitles { padding: 48px; }
+    body.fullscreen .segment { font-size: calc(var(--font-size, 24px) * 1.5); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>
+      <span class="status-dot" id="statusDot"></span>
+      Live Subtitles
+    </h1>
+    <div class="controls">
+      <button class="mic-btn" id="micBtn" title="Speak into your mic (uses browser speech recognition)">&#127908; Mic</button>
+      <span class="mic-unsupported" id="micUnsupported">Browser speech recognition not supported</span>
+      <select id="langPicker">
+        <option value="en">English (transcript only)</option>
+        <option value="pl">Polski</option>
+        <option value="es">Espanol</option>
+        <option value="fr">Francais</option>
+        <option value="de">Deutsch</option>
+        <option value="pt">Portugues</option>
+        <option value="it">Italiano</option>
+        <option value="hi">Hindi</option>
+        <option value="ar">Arabic</option>
+      </select>
+      <button class="font-btn" id="fontDown" title="Smaller text">A-</button>
+      <button class="font-btn" id="fontUp" title="Larger text">A+</button>
+      <button id="fullscreenBtn" title="Toggle fullscreen">&#9974;</button>
+    </div>
+  </div>
+
+  <div class="subtitles" id="subtitles">
+    <div class="empty-state" id="emptyState">
+      Waiting for subtitles...
+      <small>Click &#127908; Mic to speak, or wait for mock broadcast</small>
+    </div>
+  </div>
+
+  <div class="info-bar">
+    <span id="connInfo">Disconnected</span>
+    <span id="segCount">0 segments</span>
+    <span id="micInfo"></span>
+  </div>
+
+  <script>
+    const API_BASE = `${location.protocol}//${location.hostname}:${location.port || 8910}`;
+    const WS_BASE = `ws://${location.hostname}:${location.port || 8910}/subtitles`;
+    const subtitlesEl = document.getElementById('subtitles');
+    const emptyState = document.getElementById('emptyState');
+    const statusDot = document.getElementById('statusDot');
+    const connInfo = document.getElementById('connInfo');
+    const segCount = document.getElementById('segCount');
+    const micInfo = document.getElementById('micInfo');
+    const langPicker = document.getElementById('langPicker');
+    const micBtn = document.getElementById('micBtn');
+    let ws = null;
+    let currentLang = 'en';
+    let fontSize = 24;
+    let segments = [];
+    let reconnectDelay = 1000;
+    let autoScroll = true;
+    let recognition = null;
+    let micActive = false;
+    const MAX_SEGMENTS = 50;
+
+    // ── Font size ──────────────────────────────────────────
+    document.getElementById('fontUp').onclick = () => {
+      fontSize = Math.min(64, fontSize + 4);
+      document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+    };
+    document.getElementById('fontDown').onclick = () => {
+      fontSize = Math.max(12, fontSize - 4);
+      document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+    };
+
+    // ── Fullscreen ─────────────────────────────────────────
+    document.getElementById('fullscreenBtn').onclick = () => {
+      document.body.classList.toggle('fullscreen');
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    };
+
+    // ── Auto-scroll ────────────────────────────────────────
+    subtitlesEl.addEventListener('scroll', () => {
+      const { scrollTop, scrollHeight, clientHeight } = subtitlesEl;
+      autoScroll = scrollHeight - scrollTop - clientHeight < 50;
+    });
+
+    // ── Language picker ────────────────────────────────────
+    langPicker.onchange = () => {
+      currentLang = langPicker.value;
+      segments = [];
+      renderSegments();
+      if (ws) ws.close();
+      connect();
+    };
+
+    // ── Mic: Web Speech API ────────────────────────────────
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      micBtn.style.display = 'none';
+      document.getElementById('micUnsupported').style.display = 'inline';
+    } else {
+      micBtn.onclick = toggleMic;
+    }
+
+    function toggleMic() {
+      if (micActive) {
+        stopMic();
+      } else {
+        startMic();
+      }
+    }
+
+    function startMic() {
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        micActive = true;
+        micBtn.classList.add('recording');
+        micBtn.innerHTML = '&#9724; Stop';
+        micInfo.textContent = 'Mic active — speak now';
+      };
+
+      recognition.onresult = (event) => {
+        // Get the latest result
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          const text = result[0].transcript.trim();
+          if (!text) continue;
+
+          // Send to server via inject endpoint
+          fetch(`${API_BASE}/subtitles/inject`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text,
+              is_partial: !result.isFinal,
+            }),
+          }).catch(err => console.warn('[Mic] Inject failed:', err));
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error('[Mic] Error:', event.error);
+        if (event.error === 'not-allowed') {
+          micInfo.textContent = 'Mic access denied — check browser permissions';
+        } else {
+          micInfo.textContent = `Mic error: ${event.error}`;
+        }
+        stopMic();
+      };
+
+      recognition.onend = () => {
+        // Auto-restart if still supposed to be recording
+        if (micActive) {
+          try { recognition.start(); } catch(e) { stopMic(); }
+        }
+      };
+
+      recognition.start();
+    }
+
+    function stopMic() {
+      micActive = false;
+      if (recognition) {
+        recognition.abort();
+        recognition = null;
+      }
+      micBtn.classList.remove('recording');
+      micBtn.innerHTML = '&#127908; Mic';
+      micInfo.textContent = '';
+    }
+
+    // ── WebSocket connection ───────────────────────────────
+    function connect() {
+      const url = `${WS_BASE}?lang=${currentLang}`;
+      statusDot.className = 'status-dot reconnecting';
+      connInfo.textContent = 'Connecting...';
+
+      ws = new WebSocket(url);
+
+      ws.onopen = () => {
+        statusDot.className = 'status-dot connected';
+        connInfo.textContent = `Connected (${currentLang})`;
+        reconnectDelay = 1000;
+      };
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type !== 'subtitle') return;
+
+        if (msg.is_partial) {
+          const existing = segments.findIndex(s => s.id === msg.id && s.is_partial);
+          if (existing >= 0) segments[existing] = msg;
+          else segments.push(msg);
+        } else {
+          segments = segments.filter(s => !(s.id === msg.id && s.is_partial));
+          segments.push(msg);
+        }
+        while (segments.length > MAX_SEGMENTS) segments.shift();
+        renderSegments();
+      };
+
+      ws.onclose = () => {
+        statusDot.className = 'status-dot';
+        connInfo.textContent = `Disconnected — retrying in ${reconnectDelay / 1000}s`;
+        setTimeout(connect, reconnectDelay);
+        reconnectDelay = Math.min(30000, reconnectDelay * 2);
+      };
+
+      ws.onerror = () => ws.close();
+    }
+
+    // ── Render ─────────────────────────────────────────────
+    function renderSegments() {
+      if (segments.length === 0) {
+        subtitlesEl.innerHTML = '';
+        subtitlesEl.appendChild(emptyState);
+        segCount.textContent = '0 segments';
+        return;
+      }
+
+      emptyState.remove();
+      subtitlesEl.innerHTML = segments.map(seg => {
+        const cls = seg.is_partial ? 'segment partial' : 'segment';
+        if (seg.lang !== 'en' && seg.source_text) {
+          // Different language: original (dim) on top, translation (bright) below
+          return `<div class="${cls}"><div class="original">${esc(seg.source_text)}</div><div class="translation">${esc(seg.text)}</div></div>`;
+        }
+        // Same language (English): just show the text normally
+        return `<div class="${cls}"><div class="translation">${esc(seg.text)}</div></div>`;
+      }).join('');
+
+      segCount.textContent = `${segments.filter(s => !s.is_partial).length} segments`;
+      if (autoScroll) subtitlesEl.scrollTop = subtitlesEl.scrollHeight;
+    }
+
+    function esc(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    connect();
+  </script>
+</body>
+</html>

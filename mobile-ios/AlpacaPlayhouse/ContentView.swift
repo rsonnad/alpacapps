@@ -18,6 +18,11 @@ struct ContentView: View {
                     Label("Lights", systemImage: "lightbulb.fill")
                 }
 
+            SubtitleView()
+                .tabItem {
+                    Label("Subtitles", systemImage: "captions.bubble.fill")
+                }
+
             WorkView()
                 .tabItem {
                     Label("Work", systemImage: "briefcase.fill")
