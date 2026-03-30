@@ -1,12 +1,12 @@
 {
-  "version": "v260330.27 5:56a",
-  "release": 1184,
-  "sha": "02589531b",
-  "fullSha": "02589531b32588f162583eacee0b2cc6111e28f4",
+  "version": "v260330.28 5:59a",
+  "release": 1185,
+  "sha": "6d7570260",
+  "fullSha": "6d757026094d18f53d55596e2880acebdfe0c264",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:56:10+00",
-  "commits": [{"sha":"02589531b","message":"fix: align inventory subtabs with manage-tabs (padding, max-width, font size)","author":"Rahul"}]
+  "pushedAt": "2026-03-30 10:59:07+00",
+  "commits": [{"sha":"6d7570260","message":"fix: line break Supabase tables stat — 70+ on top, row count below","author":"Rahul"}]
 }
