@@ -1,12 +1,12 @@
 {
-  "version": "v260330.19 5:04a",
-  "release": 1176,
-  "sha": "459e0492c",
-  "fullSha": "459e0492cca84cffba3dbcb953874cee75996de3",
+  "version": "v260330.20 5:10a",
+  "release": 1177,
+  "sha": "4f10bc6b7",
+  "fullSha": "4f10bc6b7b88fc83bab7814fc294d4f6f71eeab8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:04:54+00",
-  "commits": [{"sha":"d14c9369f","message":"feat: redesign Work screen, add auth-based access control for rooms and tabs","author":"Rahul"},{"sha":"459e0492c","message":"Merge branch 'suspicious-liskov'","author":"Rahul"}]
+  "pushedAt": "2026-03-30 10:10:43+00",
+  "commits": [{"sha":"d6948bfbf","message":"feat: implement live subtitles system with server, mobile apps, and kiosk integration","author":"Rahul"},{"sha":"4f10bc6b7","message":"Merge branch 'nice-curran'","author":"Rahul"}]
 }
