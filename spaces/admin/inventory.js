@@ -451,6 +451,14 @@ async function loadDashboard() {
   } catch (e) {
     console.error('Dashboard stats error:', e);
   }
+  // Fetch live device count from devices_unified view
+  try {
+    const { count } = await supabase.from('devices_unified').select('*', { count: 'exact', head: true });
+    const devEl = document.getElementById('statDevices');
+    if (devEl && typeof count === 'number') devEl.textContent = count.toLocaleString();
+  } catch (e) {
+    console.error('Device count error:', e);
+  }
 }
 
 function loadInfrastructure() {
