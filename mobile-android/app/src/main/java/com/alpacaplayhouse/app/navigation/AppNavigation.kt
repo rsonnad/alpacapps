@@ -188,7 +188,7 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = AssistantRoute,
+            startDestination = SubtitleRoute,
             modifier = Modifier.padding(innerPadding),
         ) {
             composable<AssistantRoute> { AssistantScreen() }

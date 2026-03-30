@@ -37,11 +37,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AlpacaPlayhouseTheme {
-                if (isLoggedIn) {
-                    AppNavigation()
-                } else {
-                    LoginScreen()
-                }
+                AppNavigation()
             }
         }
     }

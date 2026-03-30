@@ -126,7 +126,7 @@ fun LoginScreen() {
                         text = "Welcome",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = AlpacaText,
+                        color = Color(0xFF1A1A1A),
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -134,7 +134,7 @@ fun LoginScreen() {
                     Text(
                         text = "Sign in to control your smart home,\nmanage work, and more.",
                         fontSize = 14.sp,
-                        color = AlpacaMuted,
+                        color = Color(0xFF6B6B6B),
                         textAlign = TextAlign.Center,
                         lineHeight = 20.sp,
                     )
