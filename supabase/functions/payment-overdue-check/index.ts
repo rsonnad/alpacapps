@@ -518,10 +518,11 @@ Deno.serve(async (req) => {
         id, event_name, event_date,
         rental_fee, cleaning_deposit, reservation_fee,
         rental_fee_paid, cleaning_deposit_paid, reservation_fee_paid,
-        request_status,
+        request_status, agreement_status,
         person:person_id (id, first_name, last_name, email)
       `)
       .eq('request_status', 'approved')
+      .eq('agreement_status', 'signed')
       .or('is_archived.is.null,is_archived.eq.false')
       .gte('event_date', todayStr);
 
@@ -545,13 +546,14 @@ Deno.serve(async (req) => {
       if (daysOverdue < 1) continue;
 
       const feeTypes = [
-        { type: 'event_rental_fee', paid: event.rental_fee_paid, amount: event.rental_fee || 295, label: 'Rental Fee' },
-        { type: 'event_cleaning_deposit', paid: event.cleaning_deposit_paid, amount: event.cleaning_deposit || 195, label: 'Cleaning Deposit' },
-        { type: 'event_reservation_fee', paid: event.reservation_fee_paid, amount: event.reservation_fee || 95, label: 'Reservation Fee' },
+        { type: 'event_rental_fee', paid: event.rental_fee_paid, amount: parseFloat(event.rental_fee ?? 295), label: 'Rental Fee' },
+        { type: 'event_cleaning_deposit', paid: event.cleaning_deposit_paid, amount: parseFloat(event.cleaning_deposit ?? 195), label: 'Cleaning Deposit' },
+        { type: 'event_reservation_fee', paid: event.reservation_fee_paid, amount: parseFloat(event.reservation_fee ?? 500), label: 'Reservation Fee' },
       ];
 
       for (const fee of feeTypes) {
         if (fee.paid) continue;
+        if (fee.amount <= 0) continue;
         overdueItems.push({
           sourceType: fee.type,
           sourceId: event.id,
