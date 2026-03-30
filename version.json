@@ -1,12 +1,12 @@
 {
-  "version": "v260330.28 5:59a",
-  "release": 1185,
-  "sha": "6d7570260",
-  "fullSha": "6d757026094d18f53d55596e2880acebdfe0c264",
+  "version": "v260330.31 6:03a",
+  "release": 1188,
+  "sha": "f90f854ec",
+  "fullSha": "f90f854eca2fe6b3b7af5d2f5e9db2d60881fddd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 10:59:07+00",
-  "commits": [{"sha":"6d7570260","message":"fix: line break Supabase tables stat — 70+ on top, row count below","author":"Rahul"}]
+  "pushedAt": "2026-03-30 11:03:10+00",
+  "commits": [{"sha":"f90f854ec","message":"fix: correct Theme.kt merge — remove duplicate LocalIsDarkTheme declaration","author":"Rahul"}]
 }
