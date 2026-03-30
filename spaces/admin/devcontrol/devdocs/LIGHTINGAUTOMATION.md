@@ -86,6 +86,64 @@ SELECT room, device_name, ha_entity_id, device_brand, protocol
 FROM lighting_devices WHERE is_active ORDER BY room, socket_number;
 ```
 
+### Database Schema
+
+Three tables in Supabase track all lighting state. Query via Management API (see Step 6 in the checklist below).
+
+**`lighting_devices`** — one row per physical bulb/strip
+
+| Column | Type | Required | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | auto | PK, `gen_random_uuid()` |
+| `device_name` | text | **yes** | Human name, e.g. "Dining Room Light 5" |
+| `room` | text | **yes** | Room name, e.g. "Dining Room" |
+| `socket_label` | text | no | Physical socket label if applicable |
+| `socket_number` | int | no | Position in room (for ordering) |
+| `ha_entity_id` | text | no | HAOS entity, e.g. `light.smart_rgbtw_bulb_17` |
+| `device_brand` | text | no | e.g. "OREIN", "WiZ", "Govee" |
+| `device_model` | text | no | e.g. "Smart RGBTW Bulb", "H601F" |
+| `protocol` | text | no | "Matter", "WiZ", "Govee Cloud", "Tuya", "LocalTuya" |
+| `matter_support` | bool | default false | True if Matter-capable |
+| `mac_address` | text | no | e.g. "A8:BB:50:81:51:AF" |
+| `ip_address` | text | no | LAN IP (WiZ bulbs have static IPs) |
+| `local_key` | text | no | Tuya local key (for LocalTuya) |
+| `cloud_device_id` | text | no | Govee/Tuya cloud device ID |
+| `sku` | text | no | Product SKU |
+| `form_factor` | text | no | "A19", "BR30", "GU10", "LED Bar", "LED Strip" |
+| `matter_setup_code` | text | no | Matter pairing code from bulb label |
+| `matter_qr_url` | text | no | QR code URL for Matter commissioning |
+| `space_id` | uuid | no | FK to `spaces` table |
+| `ai_control` | bool | default false | **true** = reachable via HAOS/API; **false** = cloud-only or unreachable |
+| `notes` | text | no | **Unlimited length.** Put ALL extra info here: commissioning date, physical socket location, firmware quirks, Alexa group membership, wiring notes, anything an LLM or future-you needs to know. |
+| `is_active` | bool | default true | Set false to soft-delete |
+| `created_at` | timestamptz | auto | |
+| `updated_at` | timestamptz | auto | |
+
+**`lighting_groups`** — one row per logical group (maps to HAOS groups, Govee groups, or `lights.sh` room keys)
+
+| Column | Type | Required | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | auto | PK |
+| `key` | text | **yes** | Machine key, e.g. "dining_room", "garage" |
+| `name` | text | **yes** | Display name, e.g. "Dining Room" |
+| `area` | text | no | Building area, e.g. "Main House", "Spartan" |
+| `display_order` | int | default 0 | Sort order in UI |
+| `space_id` | uuid | no | FK to `spaces` table |
+| `notes` | text | no | |
+| `is_active` | bool | default true | |
+
+**`lighting_group_targets`** — junction table linking groups to their backend targets
+
+| Column | Type | Required | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | auto | PK |
+| `group_id` | uuid | **yes** | FK to `lighting_groups.id` |
+| `backend` | text | **yes** | "haos", "govee", "wiz", "tuya" |
+| `target_id` | text | **yes** | Entity/device ID for that backend |
+| `mac_address` | text | no | MAC of target device |
+| `metadata` | jsonb | default {} | Backend-specific config |
+| `is_active` | bool | default true | |
+
 ---
 
 ## Room Command Reference
@@ -725,19 +783,24 @@ ha core restart
 
 ```sql
 INSERT INTO lighting_devices (
-  device_name, entity_id, room, protocol, brand, model,
-  mac_address, ip_address, ai_control, notes
+  device_name, ha_entity_id, room, protocol, device_brand, device_model,
+  form_factor, mac_address, ip_address, ai_control, matter_support, notes
 ) VALUES (
-  'Dining Room Light 5',
-  'light.smart_rgbtw_bulb_17',
-  'Dining Room',
-  'Matter',
-  'OREIN',
-  'Smart RGBTW Bulb',
-  NULL,          -- MAC if known
-  NULL,          -- IP if known (WiZ bulbs have static IPs)
-  true,          -- true if controllable via HAOS/API
-  'Commissioned 2026-03-29 via HA iOS Matter'
+  'Dining Room Light 5',           -- device_name (required)
+  'light.smart_rgbtw_bulb_17',     -- ha_entity_id
+  'Dining Room',                   -- room (required)
+  'Matter',                        -- protocol
+  'OREIN',                         -- device_brand
+  'Smart RGBTW Bulb',              -- device_model
+  'A19',                           -- form_factor
+  NULL,                            -- mac_address (if known)
+  NULL,                            -- ip_address (WiZ bulbs have static IPs)
+  true,                            -- ai_control: true = reachable via HAOS/API
+  true,                            -- matter_support
+  'Commissioned 2026-03-29 via HA iOS Matter. Socket is left of entry door.'
+  -- notes: put ALL extra info here — arbitrary length text field.
+  -- Include: commissioning date, physical location detail, quirks,
+  -- Alexa group membership, firmware issues, anything future-you needs.
 );
 ```
 
