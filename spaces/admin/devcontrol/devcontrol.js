@@ -1397,7 +1397,7 @@ async function loadBackups() {
 
       ${serviceBlock('active', 'Supabase DB',
         'Full database dump of the AlpacApps Supabase project — all tables, data, schemas, and RLS policies',
-        `/Volumes/RVAULT20/backups/alpacapps/db/ &nbsp;·&nbsp; 12 rolling dumps &nbsp;·&nbsp; Cron on Almaca
+        `/Volumes/RVAULT20/backups/alpacapps/db/ &nbsp;·&nbsp; 12 rolling dumps &nbsp;·&nbsp; Cron on Alpuca
          &nbsp;·&nbsp; ${link('https://supabase.com/dashboard/project/aphrrfprbixmhissnjfn','Supabase dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
         instanceTable(rvaultCols('supabase-db'), rvaultRowsFor('supabase','db','supabase-db'), 'supabase'),
@@ -1406,7 +1406,7 @@ async function loadBackups() {
 
       ${serviceBlock('active', 'Cloudflare R2',
         'Full mirror of the alpacapps R2 bucket — uploaded images, attachments, and media files',
-        `/Volumes/RVAULT20/backups/alpacapps/r2/ &nbsp;·&nbsp; Full mirror retained &nbsp;·&nbsp; Cron on Almaca
+        `/Volumes/RVAULT20/backups/alpacapps/r2/ &nbsp;·&nbsp; Full mirror retained &nbsp;·&nbsp; Cron on Alpuca
          &nbsp;·&nbsp; ${link('https://dash.cloudflare.com','Cloudflare dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
         instanceTable(rvaultCols('cloudflare-r2'), rvaultRowsFor('r2','r2','cloudflare-r2'), 'r2'),
@@ -1415,7 +1415,7 @@ async function loadBackups() {
 
       ${serviceBlock('active', 'Cloudflare D1',
         'Export of the claude-sessions D1 database — all Claude conversation session records',
-        `/Volumes/RVAULT20/backups/alpacapps/d1/ &nbsp;·&nbsp; 12 rolling exports &nbsp;·&nbsp; Cron on Almaca
+        `/Volumes/RVAULT20/backups/alpacapps/d1/ &nbsp;·&nbsp; 12 rolling exports &nbsp;·&nbsp; Cron on Alpuca
          &nbsp;·&nbsp; ${link('https://dash.cloudflare.com','Cloudflare dashboard ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
         instanceTable(rvaultCols('cloudflare-d1'), rvaultRowsFor('d1','d1','cloudflare-d1'), 'd1'),
@@ -1424,7 +1424,7 @@ async function loadBackups() {
 
       ${serviceBlock('active', 'GitHub Repo',
         'Bare mirror of the rsonnad/alpacapps repository — all branches, tags, and full commit history',
-        `/Volumes/RVAULT20/backups/alpacapps/github/ &nbsp;·&nbsp; Cron on Almaca
+        `/Volumes/RVAULT20/backups/alpacapps/github/ &nbsp;·&nbsp; Cron on Alpuca
          &nbsp;·&nbsp; ${link('https://github.com/rsonnad/alpacapps','github.com/rsonnad/alpacapps ↗')}`,
         'Every Monday at 1:00 AM CT', nextRvault,
         instanceTable(rvaultCols('github-repo'), rvaultRowsFor('github','github','github-repo'), 'github'),

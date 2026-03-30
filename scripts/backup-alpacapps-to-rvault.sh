@@ -25,6 +25,9 @@
 
 set -uo pipefail
 
+# Ensure PATH includes Homebrew (cron has minimal PATH)
+export PATH="/opt/homebrew/opt/libpq/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+
 # ── config ───────────────────────────────────────────────────────────
 BACKUP_ROOT="/Volumes/RVAULT20/backups/alpacapps"
 LOG_PREFIX="[$(date '+%Y-%m-%d %H:%M:%S')]"
