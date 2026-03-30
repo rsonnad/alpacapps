@@ -1,12 +1,12 @@
 {
-  "version": "v260330.06 3:40a",
-  "release": 1163,
-  "sha": "8508aaca9",
-  "fullSha": "8508aaca99cdcbabb1390b6fd1e020013140ffb4",
+  "version": "v260330.07 3:45a",
+  "release": 1164,
+  "sha": "c751c7f98",
+  "fullSha": "c751c7f988aa39147130d5e4da666f7f721b45d6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 08:40:49+00",
-  "commits": [{"sha":"8508aaca9","message":"feat: add service connections directory + connectivity audit system","author":"Rahul"}]
+  "pushedAt": "2026-03-30 08:45:13+00",
+  "commits": [{"sha":"c751c7f98","message":"fix: stale backup triggers show as warnings (#99)","author":"Rahul"}]
 }
