@@ -1,12 +1,12 @@
 {
-  "version": "v260330.43 1:57p",
-  "release": 1200,
-  "sha": "487639037",
-  "fullSha": "487639037c529b8eb22122d36255969fcd3d052d",
+  "version": "v260330.44 1:58p",
+  "release": 1201,
+  "sha": "fb0f80a87",
+  "fullSha": "fb0f80a87e69e5727aca7b892213746b1c9ff899",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T18:57:13+00:00",
-  "commits": [{"sha":"487639037","message":"fix: rename labels to Speaker/Subtitles in event speaker UI","author":"Rahul"}]
+  "pushedAt": "2026-03-30T18:58:56+00:00",
+  "commits": [{"sha":"fb0f80a87","message":"feat: add APK download route to subtitle server","author":"Rahul"}]
 }
