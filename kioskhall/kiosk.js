@@ -624,6 +624,112 @@ async function uploadMediaEntry(blob, type) {
 }
 
 // =============================================
+// HAOS CONVERSATION AGENT
+// =============================================
+const HAOS_BASE_URL = 'http://192.168.1.39:8123';
+const HAOS_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxN2FlNmMyNTdhYWY0NGMxODBjZmMxOWU3ZDBiZWExMiIsImlhdCI6MTc3NDE1NTUzNSwiZXhwIjoyMDg5NTE1NTM1fQ.MdIZq95i9pJBKuKxn_aeyrK1O55JbMhsgtnM7GcTkXQ';
+let haosConversationId = null;
+let haosIsLoading = false;
+
+function openHaosChat() {
+  const overlay = document.getElementById('haosOverlay');
+  overlay.style.display = '';
+  document.getElementById('haosInput')?.focus();
+  // Pause rotation while chat is open
+  if (rotationTimer) clearTimeout(rotationTimer);
+}
+
+function closeHaosChat() {
+  document.getElementById('haosOverlay').style.display = 'none';
+  // Resume rotation
+  rotationTimer = setTimeout(advanceRotation, TAP_DISMISS_SECONDS * 1000);
+}
+
+function appendHaosMessage(text, type) {
+  const container = document.getElementById('haosChatMessages');
+  const div = document.createElement('div');
+  div.className = `haos-msg haos-msg-${type}`;
+  if (type === 'loading') {
+    div.textContent = 'Thinking';
+  } else {
+    const p = document.createElement('p');
+    p.textContent = text;
+    div.appendChild(p);
+  }
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function removeHaosLoading() {
+  const container = document.getElementById('haosChatMessages');
+  const loader = container.querySelector('.haos-msg-loading');
+  if (loader) loader.remove();
+}
+
+async function sendHaosMessage(text) {
+  if (!text.trim() || haosIsLoading) return;
+  haosIsLoading = true;
+
+  const input = document.getElementById('haosInput');
+  const sendBtn = document.getElementById('haosSend');
+  input.value = '';
+  sendBtn.disabled = true;
+
+  appendHaosMessage(text, 'user');
+  appendHaosMessage('', 'loading');
+
+  try {
+    const body = {
+      text: text.trim(),
+      language: 'en',
+    };
+    if (haosConversationId) body.conversation_id = haosConversationId;
+
+    const resp = await fetch(`${HAOS_BASE_URL}/api/conversation/process`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${HAOS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30000),
+    });
+
+    removeHaosLoading();
+
+    if (!resp.ok) {
+      throw new Error(`HAOS returned ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const speech = data.response?.speech?.plain?.speech || 'No response received.';
+    haosConversationId = data.conversation_id || haosConversationId;
+
+    appendHaosMessage(speech, 'assistant');
+  } catch (err) {
+    removeHaosLoading();
+    const msg = err.name === 'TimeoutError'
+      ? 'Request timed out — the house may be busy.'
+      : `Could not reach the house: ${err.message}`;
+    appendHaosMessage(msg, 'error');
+    console.error('HAOS conversation error:', err);
+  } finally {
+    haosIsLoading = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+function startNewHaosConversation() {
+  haosConversationId = null;
+  const container = document.getElementById('haosChatMessages');
+  container.innerHTML = `<div class="haos-msg haos-msg-assistant">
+    <p>Hi! I'm the house assistant. Ask me to control lights, play music, check the weather, or anything about the property.</p>
+  </div>`;
+}
+
+// =============================================
 // PAI QUERY COUNT
 // =============================================
 async function loadPaiCount() {
@@ -835,6 +941,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('recordAudioBtn')?.addEventListener('click', () => showRecorder('audio'));
   document.getElementById('recorderStartStop')?.addEventListener('click', toggleRecording);
   document.getElementById('recorderCancel')?.addEventListener('click', hideRecorder);
+
+  // HAOS chat
+  document.getElementById('haosBtn')?.addEventListener('click', openHaosChat);
+  document.getElementById('haosClose')?.addEventListener('click', closeHaosChat);
+  document.getElementById('haosOverlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'haosOverlay') closeHaosChat();
+  });
+  document.getElementById('haosSend')?.addEventListener('click', () => {
+    sendHaosMessage(document.getElementById('haosInput').value);
+  });
+  document.getElementById('haosInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendHaosMessage(e.target.value);
+    }
+  });
+  document.querySelectorAll('.haos-quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sendHaosMessage(btn.dataset.cmd);
+    });
+  });
 
   // Rotation overlays: tap to dismiss
   document.getElementById('slideshowOverlay')?.addEventListener('click', onRotationTap);

@@ -90,6 +90,15 @@
           <p class="fact-text" id="factText">Loading...</p>
         </section>
 
+        <!-- Ask the House (HAOS Conversation Agent) -->
+        <button class="kiosk-haos-btn" id="haosBtn">
+          <span class="haos-icon">&#9751;</span>
+          <div class="haos-btn-info">
+            <span class="haos-btn-title">Ask the House</span>
+            <span class="haos-btn-subtitle">Voice &amp; text — powered by Home Assistant</span>
+          </div>
+        </button>
+
         <!-- Network Status (bottom-right corner) -->
         <a href="https://192.168.1.1" target="_blank" class="kiosk-network-link" id="networkLink">
           <span class="net-icon">&#9678;</span>
@@ -113,6 +122,31 @@
   <div class="rotation-overlay" id="slideshowOverlay" style="display:none">
     <img class="rotation-slideshow-img" id="slideshowImage" alt="">
     <div class="rotation-label" id="slideshowCaption"></div>
+  </div>
+
+  <!-- HAOS Chat Overlay -->
+  <div class="haos-overlay" id="haosOverlay" style="display:none">
+    <div class="haos-chat">
+      <div class="haos-chat-header">
+        <span class="haos-chat-title">&#9751; Ask the House</span>
+        <button class="haos-chat-close" id="haosClose">&times;</button>
+      </div>
+      <div class="haos-chat-messages" id="haosChatMessages">
+        <div class="haos-msg haos-msg-assistant">
+          <p>Hi! I'm the house assistant. Ask me to control lights, play music, check the weather, or anything about the property.</p>
+        </div>
+      </div>
+      <div class="haos-chat-input">
+        <input type="text" id="haosInput" placeholder="e.g. Turn on the living room lights..." class="haos-input-field" autocomplete="off">
+        <button id="haosSend" class="haos-send-btn" title="Send">&#10148;</button>
+      </div>
+      <div class="haos-quick-actions" id="haosQuickActions">
+        <button class="haos-quick-btn" data-cmd="Turn on all lights">&#128161; Lights On</button>
+        <button class="haos-quick-btn" data-cmd="Turn off all lights">&#127761; Lights Off</button>
+        <button class="haos-quick-btn" data-cmd="What's the temperature inside?">&#127777; Temperature</button>
+        <button class="haos-quick-btn" data-cmd="Play music in the living room">&#127925; Play Music</button>
+      </div>
+    </div>
   </div>
 
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>

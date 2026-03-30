@@ -714,6 +714,256 @@ body {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
 }
 
+/* ---- HAOS "Ask the House" Button ---- */
+.kiosk-haos-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--kiosk-card) 0%, rgba(91, 155, 213, 0.12) 100%);
+  border: 1px solid var(--kiosk-blue);
+  border-radius: var(--kiosk-radius);
+  padding: 0.5rem 0.75rem;
+  color: var(--kiosk-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: inherit;
+  text-align: left;
+}
+
+.kiosk-haos-btn:hover,
+.kiosk-haos-btn:active {
+  border-color: var(--kiosk-accent);
+  background: linear-gradient(135deg, var(--kiosk-card) 0%, rgba(233, 156, 72, 0.12) 100%);
+}
+
+.haos-icon {
+  font-size: 1.6rem;
+  color: var(--kiosk-blue);
+  line-height: 1;
+}
+
+.kiosk-haos-btn:hover .haos-icon,
+.kiosk-haos-btn:active .haos-icon {
+  color: var(--kiosk-accent);
+}
+
+.haos-btn-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.haos-btn-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.haos-btn-subtitle {
+  font-size: 0.5rem;
+  color: var(--kiosk-text-muted);
+}
+
+/* ---- HAOS Chat Overlay ---- */
+.haos-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.haos-chat {
+  background: var(--kiosk-bg);
+  border: 1px solid var(--kiosk-card-border);
+  border-radius: var(--kiosk-radius);
+  width: 100%;
+  max-width: 520px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.haos-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--kiosk-card-border);
+  flex-shrink: 0;
+}
+
+.haos-chat-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--kiosk-blue);
+}
+
+.haos-chat-close {
+  background: none;
+  border: none;
+  color: var(--kiosk-text-muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.haos-chat-close:hover {
+  color: var(--kiosk-text);
+}
+
+/* Messages area */
+.haos-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  scrollbar-width: none;
+}
+
+.haos-chat-messages::-webkit-scrollbar {
+  display: none;
+}
+
+.haos-msg {
+  max-width: 85%;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--kiosk-radius-sm);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.haos-msg p {
+  margin: 0;
+}
+
+.haos-msg-user {
+  align-self: flex-end;
+  background: var(--kiosk-accent);
+  color: var(--kiosk-bg);
+  border-bottom-right-radius: 2px;
+}
+
+.haos-msg-assistant {
+  align-self: flex-start;
+  background: var(--kiosk-card);
+  color: var(--kiosk-text-secondary);
+  border: 1px solid var(--kiosk-card-border);
+  border-bottom-left-radius: 2px;
+}
+
+.haos-msg-error {
+  align-self: flex-start;
+  background: rgba(217, 83, 79, 0.15);
+  color: var(--kiosk-red);
+  border: 1px solid rgba(217, 83, 79, 0.3);
+  font-size: 0.7rem;
+}
+
+.haos-msg-loading {
+  align-self: flex-start;
+  background: var(--kiosk-card);
+  border: 1px solid var(--kiosk-card-border);
+  color: var(--kiosk-text-muted);
+  font-style: italic;
+}
+
+@keyframes haos-dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+.haos-msg-loading::after {
+  content: '...';
+  animation: haos-dots 1.2s steps(1) infinite;
+}
+
+/* Input bar */
+.haos-chat-input {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--kiosk-card-border);
+  flex-shrink: 0;
+}
+
+.haos-input-field {
+  flex: 1;
+  background: var(--kiosk-card);
+  border: 1px solid var(--kiosk-card-border);
+  border-radius: var(--kiosk-radius-sm);
+  color: var(--kiosk-text);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.45rem 0.6rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.haos-input-field:focus {
+  border-color: var(--kiosk-blue);
+}
+
+.haos-input-field::placeholder {
+  color: var(--kiosk-text-muted);
+}
+
+.haos-send-btn {
+  background: var(--kiosk-blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--kiosk-radius-sm);
+  padding: 0.4rem 0.7rem;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.haos-send-btn:hover {
+  opacity: 0.85;
+}
+
+.haos-send-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Quick action buttons */
+.haos-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem 0.6rem;
+  flex-shrink: 0;
+}
+
+.haos-quick-btn {
+  background: var(--kiosk-card);
+  border: 1px solid var(--kiosk-card-border);
+  border-radius: 20px;
+  color: var(--kiosk-text-secondary);
+  font-family: inherit;
+  font-size: 0.65rem;
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.haos-quick-btn:hover {
+  border-color: var(--kiosk-blue);
+  color: var(--kiosk-blue);
+}
+
 /* ---- Portrait mode (phone / portrait tablet) ---- */
 @media (orientation: portrait) {
   .kiosk-main {
