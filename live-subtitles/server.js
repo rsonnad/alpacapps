@@ -192,12 +192,9 @@ async function transcribeWithGemini(audioBase64, hintLang, targetLangs) {
     translationInstruction = `\nAlso translate the transcription into these languages: ${targetList.join(', ')}.`;
   }
 
-  const prompt = `Transcribe this audio clip exactly as spoken. ${langHint}.${translationInstruction}
-
-Return ONLY a JSON object (no markdown, no code fences) with this structure:
-{"source_lang":"two-letter code","source_text":"transcribed text"${targetList.length > 0 ? ',"translations":{"en":"English translation","pl":"Polish translation",...}' : ''}}
-
-If the audio is silence or unintelligible, return: {"source_lang":"","source_text":""}`;
+  const prompt = `Transcribe verbatim. ${langHint}.${translationInstruction}
+JSON only: {"source_lang":"xx","source_text":"..."${targetList.length > 0 ? ',"translations":{"xx":"..."}' : ''}}
+Silence→{"source_lang":"","source_text":""}`;
 
   const body = JSON.stringify({
     contents: [{
@@ -206,7 +203,7 @@ If the audio is silence or unintelligible, return: {"source_lang":"","source_tex
         { text: prompt },
       ],
     }],
-    generationConfig: { temperature: 0.1, maxOutputTokens: 1024 },
+    generationConfig: { temperature: 0, maxOutputTokens: 512 },
   });
 
   return new Promise((resolve) => {
@@ -381,23 +378,15 @@ function handleRequest(req, res) {
           if (clients.size > 0) targetLangs.push(lang);
         }
 
-        const result = await transcribeWithGemini(audio, srcLang, targetLangs);
-        if (!result || !result.source_text) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ ok: true, text: null, silence: true }));
-          return;
-        }
-
-        // Broadcast source text + translations
-        broadcastSegment(result.source_text, result.source_lang, result.translations);
-
+        // Respond immediately so client can send next chunk without waiting
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          ok: true,
-          text: result.source_text,
-          source_lang: result.source_lang,
-          translations: Object.keys(result.translations),
-        }));
+        res.end(JSON.stringify({ ok: true, queued: true }));
+
+        // Process in background — don't block the HTTP response
+        transcribeWithGemini(audio, srcLang, targetLangs).then(result => {
+          if (!result || !result.source_text) return;
+          broadcastSegment(result.source_text, result.source_lang, result.translations);
+        }).catch(e => console.error('[Transcribe BG]', e.message));
       } catch (e) {
         console.error('[Transcribe] Error:', e.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });

@@ -268,13 +268,13 @@
 
       mediaRecorder.start();
 
-      // Send audio every 5 seconds for near-real-time subtitles
+      // Send audio every 2 seconds for low-latency subtitles
       chunkTimer = setInterval(() => {
         if (mediaRecorder && mediaRecorder.state === 'recording') {
           mediaRecorder.stop();
           mediaRecorder.start();
         }
-      }, 5000);
+      }, 2000);
     }
 
     function stopMic() {
@@ -296,25 +296,20 @@
     async function sendAudioChunk(blob) {
       const srcLang = 'auto';
       const reader = new FileReader();
-      reader.onloadend = async () => {
+      reader.onloadend = () => {
         const base64 = reader.result.split(',')[1];
         if (!base64 || base64.length < 100) return; // skip tiny/empty chunks
-        try {
-          micInfo.textContent = 'Transcribing...';
-          const resp = await fetch(`${API_BASE}/subtitles/transcribe`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ audio: base64, source_lang: srcLang }),
-          });
-          const data = await resp.json();
-          if (data.ok) {
-            micInfo.textContent = `Recording... (${data.text ? data.text.substring(0, 40) + '...' : 'silence'})`;
-          } else {
-            micInfo.textContent = data.error || 'Transcription failed';
-          }
-        } catch(e) {
+        micInfo.textContent = 'Sending...';
+        // Fire-and-forget — don't await, let next chunk send immediately
+        fetch(`${API_BASE}/subtitles/transcribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio: base64, source_lang: srcLang }),
+        }).then(() => {
+          micInfo.textContent = 'Recording...';
+        }).catch(e => {
           micInfo.textContent = `Send failed: ${e.message}`;
-        }
+        });
       };
       reader.readAsDataURL(blob);
     }
