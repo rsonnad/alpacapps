@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.alpacaplayhouse.app.data.AuthManager
+import com.alpacaplayhouse.app.data.BrandConfig
 import com.alpacaplayhouse.app.navigation.AppNavigation
 import com.alpacaplayhouse.app.ui.screens.LoginScreen
 import com.alpacaplayhouse.app.ui.theme.AlpacaPlayhouseTheme
@@ -23,7 +24,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         AuthManager.init(this)
+        BrandConfig.init(this)
         isLoggedIn = AuthManager.isLoggedIn
+
+        // Refresh brand colors from Supabase in background
+        lifecycleScope.launch { BrandConfig.refresh(this@MainActivity) }
 
         // Handle OAuth callback if launched via deep link
         handleAuthIntent(intent)

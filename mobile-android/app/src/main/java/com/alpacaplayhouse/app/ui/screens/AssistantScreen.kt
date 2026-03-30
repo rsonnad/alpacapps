@@ -14,8 +14,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,7 +45,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,8 +52,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -65,6 +65,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -139,12 +140,12 @@ object PromptHistory {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssistantScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val isDark = isSystemInDarkTheme()
 
     val messages = remember { mutableStateListOf<ChatMessage>() }
     var inputText by remember { mutableStateOf("") }
@@ -253,30 +254,47 @@ fun AssistantScreen() {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Top bar
-        TopAppBar(
-            title = {
-                Column {
-                    Text("Smart Assistant", style = MaterialTheme.typography.titleLarge)
-                    Text(
-                        "Powered by HAOS + Ollama",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        // Gradient header (replaces TopAppBar)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            AlpacaPrimary.copy(alpha = 0.3f),
+                            Color.Transparent,
+                        )
                     )
-                }
-            },
-            actions = {
-                IconButton(onClick = {
+                )
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+        ) {
+            Column(modifier = Modifier.align(Alignment.CenterStart)) {
+                Text(
+                    text = "Smart Assistant",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "Powered by HAOS + Ollama",
+                    fontSize = 12.sp,
+                    color = AlpacaMuted,
+                )
+            }
+            IconButton(
+                onClick = {
                     conversationId = null
                     messages.clear()
-                }) {
-                    Icon(Icons.Default.AddComment, contentDescription = "New conversation")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-        )
+                },
+                modifier = Modifier.align(Alignment.CenterEnd),
+            ) {
+                Icon(
+                    Icons.Default.AddComment,
+                    contentDescription = "New conversation",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
 
         // Chat or prompt history
         LazyColumn(
@@ -284,7 +302,7 @@ fun AssistantScreen() {
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (messages.isEmpty()) {
@@ -305,6 +323,7 @@ fun AssistantScreen() {
                     items(favorites, key = { "fav-${it.text}" }) { entry ->
                         PromptChip(
                             entry = entry,
+                            isDark = isDark,
                             onTap = { sendMessage(entry.text) },
                             onToggleFavorite = {
                                 PromptHistory.toggleFavorite(context, entry.text)
@@ -331,6 +350,7 @@ fun AssistantScreen() {
                     items(recent.take(15), key = { "rec-${it.text}" }) { entry ->
                         PromptChip(
                             entry = entry,
+                            isDark = isDark,
                             onTap = { sendMessage(entry.text) },
                             onToggleFavorite = {
                                 PromptHistory.toggleFavorite(context, entry.text)
@@ -353,14 +373,15 @@ fun AssistantScreen() {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     text = "Ask me anything about your home",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(6.dp))
                                 Text(
                                     text = "\"Turn on the living room lights\"",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    fontSize = 15.sp,
+                                    color = AlpacaMuted,
                                 )
                             }
                         }
@@ -369,18 +390,19 @@ fun AssistantScreen() {
             }
 
             items(messages) { message ->
-                ChatBubble(message = message)
+                ChatBubble(message = message, isDark = isDark)
             }
 
             if (isLoading) {
-                item { TypingIndicator() }
+                item { TypingIndicator(isDark = isDark) }
             }
         }
 
-        // Input bar
+        // Glass input bar
         Surface(
-            tonalElevation = 3.dp,
             modifier = Modifier.imePadding(),
+            color = if (isDark) AlpacaDarkSurface.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.95f),
+            tonalElevation = 0.dp,
         ) {
             Row(
                 modifier = Modifier
@@ -401,6 +423,7 @@ fun AssistantScreen() {
                         unfocusedContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
                     ),
                 )
                 IconButton(
@@ -435,19 +458,28 @@ fun AssistantScreen() {
 @Composable
 private fun PromptChip(
     entry: PromptEntry,
+    isDark: Boolean,
     onTap: () -> Unit,
     onToggleFavorite: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val glassBackground = if (isDark)
+        AlpacaDarkSurface.copy(alpha = 0.6f)
+    else
+        Color.White.copy(alpha = 0.85f)
+
+    val borderStroke = if (entry.isFavorite)
+        BorderStroke(1.dp, AlpacaPrimary.copy(alpha = 0.3f))
+    else
+        BorderStroke(1.dp, if (isDark) AlpacaLuxe.glassBorder else AlpacaLuxe.glassBorderLightMode)
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onTap),
-        shape = RoundedCornerShape(12.dp),
-        color = if (entry.isFavorite)
-            AlpacaPrimary.copy(alpha = 0.08f)
-        else
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(AlpacaLuxe.chipRadius.dp),
+        color = glassBackground,
+        border = borderStroke,
     ) {
         Row(
             modifier = Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
@@ -482,32 +514,55 @@ private fun PromptChip(
 }
 
 @Composable
-private fun ChatBubble(message: ChatMessage) {
+private fun ChatBubble(message: ChatMessage, isDark: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start,
     ) {
-        Surface(
-            shape = RoundedCornerShape(
-                topStart = 16.dp, topEnd = 16.dp,
-                bottomStart = if (message.isUser) 16.dp else 4.dp,
-                bottomEnd = if (message.isUser) 4.dp else 16.dp,
-            ),
-            color = if (message.isUser)
-                AlpacaPrimary
+        val bubbleShape = RoundedCornerShape(
+            topStart = AlpacaLuxe.cardRadius.dp,
+            topEnd = AlpacaLuxe.cardRadius.dp,
+            bottomStart = if (message.isUser) AlpacaLuxe.cardRadius.dp else 4.dp,
+            bottomEnd = if (message.isUser) 4.dp else AlpacaLuxe.cardRadius.dp,
+        )
+
+        if (message.isUser) {
+            Surface(
+                shape = bubbleShape,
+                color = AlpacaPrimary,
+                modifier = Modifier.widthIn(max = 300.dp),
+            ) {
+                Text(
+                    text = message.text,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White,
+                )
+            }
+        } else {
+            // Glass assistant bubble
+            val glassBg = if (isDark)
+                AlpacaDarkSurface.copy(alpha = 0.6f)
             else
-                MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.widthIn(max = 300.dp),
-        ) {
-            Text(
-                text = message.text,
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (message.isUser)
-                    Color.White
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+                Color.White.copy(alpha = 0.85f)
+            val glassBorderColor = if (isDark)
+                AlpacaLuxe.glassBorder
+            else
+                AlpacaLuxe.glassBorderLightMode
+
+            Surface(
+                shape = bubbleShape,
+                color = glassBg,
+                border = BorderStroke(1.dp, glassBorderColor),
+                modifier = Modifier.widthIn(max = 300.dp),
+            ) {
+                Text(
+                    text = message.text,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
     }
 }
@@ -529,27 +584,37 @@ private fun MicButton(isListening: Boolean, onClick: () -> Unit) {
                         .size(40.dp)
                         .alpha(pulseAlpha)
                         .clip(CircleShape)
-                        .background(Color.Red.copy(alpha = 0.2f))
+                        .background(AlpacaAccent.copy(alpha = 0.2f))
                 )
             }
             Icon(
                 Icons.Default.Mic,
                 contentDescription = if (isListening) "Stop listening" else "Voice input",
-                tint = if (isListening) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (isListening) AlpacaAccent else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 }
 
 @Composable
-private fun TypingIndicator() {
+private fun TypingIndicator(isDark: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start,
     ) {
+        val glassBg = if (isDark)
+            AlpacaDarkSurface.copy(alpha = 0.6f)
+        else
+            Color.White.copy(alpha = 0.85f)
+        val glassBorderColor = if (isDark)
+            AlpacaLuxe.glassBorder
+        else
+            AlpacaLuxe.glassBorderLightMode
+
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
+            color = glassBg,
+            border = BorderStroke(1.dp, glassBorderColor),
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -571,7 +636,7 @@ private fun TypingIndicator() {
                             .size(8.dp)
                             .alpha(alpha)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                            .background(AlpacaPrimary.copy(alpha = 0.6f))
                     )
                 }
             }

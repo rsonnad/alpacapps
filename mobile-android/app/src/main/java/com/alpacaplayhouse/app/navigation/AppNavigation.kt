@@ -65,7 +65,7 @@ data class TabItem(
     val label: String,
     val icon: ImageVector,
     val route: Any,
-    val key: String, // used for visibility filtering
+    val key: String,
 )
 
 // All possible tabs
@@ -111,26 +111,29 @@ fun AppNavigation() {
 
     Scaffold(
         topBar = {
-            // Branded top bar
+            // Branded top bar with gradient
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(if (isDark) AlpacaDarkBg else Color.White)
+                    .background(
+                        if (isDark) AlpacaLuxe.headerGradientDark
+                        else AlpacaLuxe.headerGradientLight
+                    )
                     .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AsyncImage(
                         model = if (isDark) ApiConfig.LOGO_DARK_URL else ApiConfig.LOGO_LIGHT_URL,
                         contentDescription = "Alpaca Playhouse",
-                        modifier = Modifier.size(28.dp),
+                        modifier = Modifier.size(30.dp),
                         contentScale = ContentScale.Fit,
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "Alpaca Playhouse",
-                        fontSize = 17.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isDark) Color.White else AlpacaText,
                         letterSpacing = (-0.3).sp,
@@ -140,7 +143,7 @@ fun AppNavigation() {
         },
         bottomBar = {
             NavigationBar(
-                containerColor = if (isDark) AlpacaDarkSurface else Color.White,
+                containerColor = if (isDark) AlpacaLuxe.navBarDark else AlpacaLuxe.navBarLight,
                 tonalElevation = 0.dp,
             ) {
                 visibleTabs.forEach { tab ->
@@ -176,7 +179,7 @@ fun AppNavigation() {
                             selectedTextColor = AlpacaPrimary,
                             unselectedIconColor = AlpacaMuted,
                             unselectedTextColor = AlpacaMuted,
-                            indicatorColor = AlpacaPrimary.copy(alpha = 0.12f),
+                            indicatorColor = AlpacaLuxe.navIndicator,
                         ),
                     )
                 }
