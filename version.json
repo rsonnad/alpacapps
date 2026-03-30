@@ -1,12 +1,12 @@
 {
-  "version": "v260330.48 2:14p",
-  "release": 1205,
-  "sha": "12dfccd84",
-  "fullSha": "12dfccd847be617bdaeca28e2f905cc505e8865e",
+  "version": "v260330.49 4:34p",
+  "release": 1206,
+  "sha": "5c4dc2d93",
+  "fullSha": "5c4dc2d932ee672f31492e6d614228a57c57df6d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T19:14:31+00:00",
-  "commits": [{"sha":"12dfccd84","message":"fix: always show both languages in subtitles, remove speaker dropdown","author":"Rahul"}]
+  "pushedAt": "2026-03-30T21:34:07+00:00",
+  "commits": [{"sha":"5c4dc2d93","message":"Add Garage Mahal cameras + slideshow kiosk page","author":"Rahul"}]
 }
