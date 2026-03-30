@@ -514,6 +514,11 @@ curl -X POST https://lights.alpacaplayhouse.com/lights \
 | Spartan Cedar Chamber | `light.spartan_cedar_chamber` | 4 | Govee H601F (via HACS) |
 | Stair Landing | `switch.stair_landing` | - | TP-Link HS210 |
 | Garage DJ Strip | `light.garage_dj_strip` | 1 (24ft neon rope, 15 segments) | Enbrighten (Jasco) 58088 / Tuya v3.4 |
+| Dining Room | `light.dining_room_lights` | 2 (OREIN _17, _18) + 4 Tuya/SmartLife | OREIN Matter / Tuya |
+| Garage Opener | `light.garage_opener_lights` | 2 (OREIN _19, _20) | OREIN Matter |
+| Outhouse Porch | `light.outhouse_porch_lights` | 2 (OREIN _21, _22) | OREIN Matter |
+| Outhouse Sink | `light.outhouse_sink_lights` | 2 (Govee H600B) | Govee Matter |
+| Outhouse All | `light.outhouse_lights` | 4 (2 porch + 2 sink) | OREIN/Govee |
 
 ### Tuya Local (via `~/lights.sh` on Alpuca — tinytuya)
 
@@ -620,6 +625,190 @@ Govee devices use the **Govee Home** Alexa skill (separate from HAOS/Nabu Casa).
 | "Alexa, turn Outhouse red" | 6 light bars → red |
 | "Alexa, set Garage Mahal to 50%" | Dim to 50% |
 | "Alexa, turn off Cedar Chamber" | Cedar Chamber off |
+
+---
+
+## How to Add a New Light — Full Checklist
+
+> **For LLM use:** Follow every step in order. Each step includes the exact commands. Skip steps only where noted.
+
+### Step 1: Commission the bulb
+
+**Matter/OREIN bulbs:** Open the HA iOS app → Settings → Devices → Add Device → Matter → scan the QR code on the bulb (power it on first — it enters pairing mode for ~3 seconds after factory reset). The bulb appears as `light.smart_rgbtw_bulb_N` where N auto-increments.
+
+**Govee bulbs:** Add via Govee Home app first, then HAOS discovers via Govee integration. They appear as `light.h600b`, `light.h600b_2`, etc.
+
+**WiZ bulbs:** Auto-discovered by HAOS WiZ integration if on the same subnet. No manual commissioning needed.
+
+### Step 2: Identify the new entity ID
+
+Poll the HAOS API for new entities:
+
+```bash
+# From Alpuca (192.168.1.200)
+TOKEN=$(grep 'TOKEN=' ~/ha-cmd.sh | head -1 | cut -d'"' -f2)
+curl -s -H "Authorization: Bearer $TOKEN" http://192.168.1.39:8123/api/states | \
+  python3 -c "import sys,json; [print(e['entity_id'],e['attributes'].get('friendly_name','')) for e in json.load(sys.stdin) if e['entity_id'].startswith('light.') and 'smart_rgbtw' in e['entity_id']]"
+```
+
+Or check the HA iOS app → Settings → Devices for the new entry.
+
+### Step 3: Rename the entity in HAOS
+
+**CRITICAL:** You must stop HA core before editing the entity registry — otherwise HA overwrites your changes from memory on restart.
+
+```bash
+# SSH to HAOS
+sshpass -p "playhouse" ssh root@192.168.1.39
+
+# Stop HA core (prevents overwrite)
+ha core stop
+
+# Download entity registry
+cat /config/.storage/core.entity_registry > /tmp/entity_reg.json
+
+# Edit with python3 — example: rename smart_rgbtw_bulb_17 → "Dining Room Light 5"
+python3 -c "
+import json
+with open('/tmp/entity_reg.json') as f: data = json.load(f)
+for e in data['data']['entities']:
+    if e['entity_id'] == 'light.smart_rgbtw_bulb_17':
+        e['name'] = 'Dining Room Light 5'
+        e['original_name'] = 'Dining Room Light 5'
+with open('/tmp/entity_reg.json','w') as f: json.dump(data, f)
+"
+
+# Upload edited registry
+cat /tmp/entity_reg.json > /config/.storage/core.entity_registry
+
+# Start HA core
+ha core start
+```
+
+### Step 4: Create or update a HAOS group
+
+Edit `/config/configuration.yaml` on HAOS to add the bulb to an existing group or create a new one:
+
+```yaml
+# Under the existing light: section
+light:
+  # ... existing groups ...
+  - platform: group
+    name: "Room Name Lights"
+    unique_id: room_name_lights
+    entities:
+      - light.smart_rgbtw_bulb_17
+      - light.smart_rgbtw_bulb_18
+```
+
+After editing, reload config: `ha core restart` (or call `configuration.reload` via API).
+
+### Step 5: Hide junk entities from Alexa (if needed)
+
+Govee devices expose 7 segment entities each. Hide them in `/config/.storage/cloud`:
+
+```bash
+# On HAOS
+python3 -c "
+import json
+with open('/config/.storage/cloud') as f: data = json.load(f)
+cfg = data['data']['alexa_entity_configs']
+# Hide segment entities
+for entity_id in ['light.h600b_segment_1', 'light.h600b_segment_2']:  # etc
+    cfg[entity_id] = {'should_expose': False}
+with open('/config/.storage/cloud','w') as f: json.dump(data, f)
+"
+ha core restart
+```
+
+### Step 6: Insert into Supabase `lighting_devices`
+
+```sql
+INSERT INTO lighting_devices (
+  device_name, entity_id, room, protocol, brand, model,
+  mac_address, ip_address, ai_control, notes
+) VALUES (
+  'Dining Room Light 5',
+  'light.smart_rgbtw_bulb_17',
+  'Dining Room',
+  'Matter',
+  'OREIN',
+  'Smart RGBTW Bulb',
+  NULL,          -- MAC if known
+  NULL,          -- IP if known (WiZ bulbs have static IPs)
+  true,          -- true if controllable via HAOS/API
+  'Commissioned 2026-03-29 via HA iOS Matter'
+);
+```
+
+Run via Management API:
+```bash
+export BW_SESSION=$(~/bin/bw-unlock)
+MGMT_TOKEN=$(bw list items --search "Supabase — AlpacApps Project" 2>/dev/null | python3 -c "import sys,json; [print(f['value']) for i in json.load(sys.stdin) if 'AlpacApps' in i['name'] for f in i.get('fields',[]) if 'Management' in f['name']]")
+curl -s -X POST \
+  -H "Authorization: Bearer $MGMT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"INSERT INTO lighting_devices ..."}' \
+  "https://api.supabase.com/v1/projects/aphrrfprbixmhissnjfn/database/query"
+```
+
+### Step 7: Add to `lighting_groups` / `lighting_group_targets` (if new group)
+
+```sql
+-- Create the group
+INSERT INTO lighting_groups (group_name, room, protocol, notes)
+VALUES ('dining_room', 'Dining Room', 'HAOS Group', 'OREIN Matter bulbs 17+18');
+
+-- Link devices to group (use device IDs from lighting_devices)
+INSERT INTO lighting_group_targets (group_id, device_id)
+SELECT g.id, d.id
+FROM lighting_groups g, lighting_devices d
+WHERE g.group_name = 'dining_room'
+  AND d.entity_id IN ('light.smart_rgbtw_bulb_17', 'light.smart_rgbtw_bulb_18');
+```
+
+### Step 8: Expose to Alexa
+
+1. Say **"Alexa, discover devices"** (or Alexa app → Devices → + → scan)
+2. In Alexa app, assign the new device/group to the correct room
+3. Test: "Alexa, turn on [device name]"
+
+**Note:** Matter bulbs via HAOS → Nabu Casa → Alexa have 10-20s lag. Govee/Tuya cloud-to-cloud is faster.
+
+### Step 9: Verify with test color
+
+```bash
+# Via lights.sh
+ssh paca@192.168.1.200 "~/lights.sh dining red"
+
+# Or via HAOS API
+TOKEN=$(grep 'TOKEN=' ~/ha-cmd.sh | head -1 | cut -d'"' -f2)
+curl -X POST http://192.168.1.39:8123/api/services/light/turn_on \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"entity_id":"light.smart_rgbtw_bulb_17","rgb_color":[255,0,0]}'
+```
+
+### Step 10: Update this document
+
+Add the new room/device to the relevant sections above:
+- Room table (entity IDs, protocols)
+- Alexa voice commands table
+- `lights.sh` room list (if a new room alias was added)
+
+### Quick-add checklist (copy-paste)
+
+```
+[ ] Bulb commissioned in HA (entity ID: ___)
+[ ] Entity renamed in registry (stop→edit→start)
+[ ] Added to configuration.yaml group
+[ ] Junk entities hidden from Alexa (if Govee)
+[ ] Inserted into lighting_devices table
+[ ] Group created/updated in lighting_groups
+[ ] Alexa discovered + assigned to room
+[ ] Test color verified
+[ ] LIGHTINGAUTOMATION.md updated
+```
 
 ---
 
