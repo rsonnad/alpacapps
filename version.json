@@ -1,12 +1,12 @@
 {
-  "version": "v260329.20 11:07p",
-  "release": 1157,
-  "sha": "c45bcfcb2",
-  "fullSha": "c45bcfcb2a2c61a78cfcd4d5c67054936529d574",
+  "version": "v260330.01 2:13a",
+  "release": 1158,
+  "sha": "1028fb74a",
+  "fullSha": "1028fb74a5f807df7cbd2073244af0b1f0e44e68",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 04:07:10+00",
-  "commits": [{"sha":"c45bcfcb2","message":"feat: add facade, sauna, and cabins fence lights to HAOS and lights.sh","author":"Rahul"}]
+  "pushedAt": "2026-03-30 07:13:11+00",
+  "commits": [{"sha":"2f9059056","message":"feat: add live-queried machine specs to inventory — Alpuca, AlpineMac, M4 Air, Entry Tablet","author":"Rahul"},{"sha":"1028fb74a","message":"Merge remote-tracking branch 'origin/lucid-lamport'","author":"Rahul"}]
 }
