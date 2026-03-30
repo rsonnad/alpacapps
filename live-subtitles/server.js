@@ -194,7 +194,7 @@ async function transcribeWithGemini(audioBase64, hintLang, targetLangs) {
 
   const prompt = `You are a live subtitle transcription system. Transcribe the spoken words in this audio exactly as spoken. ${langHint}.${translationInstruction}
 
-Return ONLY valid JSON (no markdown): {"source_lang":"xx","source_text":"the transcribed speech"${targetList.length > 0 ? ',"translations":{"en":"English text","pl":"Polish text"}' : ''}}
+Return ONLY valid JSON (no markdown) with keys: source_lang (two-letter code), source_text (what was said)${targetList.length > 0 ? ', translations (object mapping language codes to translated text)' : ''}.
 
 If truly silent (no speech at all), return: {"source_lang":"","source_text":""}
 Do NOT return empty for quiet or distant speech — transcribe whatever you can hear.`;
@@ -225,9 +225,11 @@ Do NOT return empty for quiet or distant speech — transcribe whatever you can 
             const cleaned = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
             const result = JSON.parse(cleaned);
             if (!result.source_text) { resolve(null); return; }
-            // Filter out Gemini echoing the prompt back
+            // Filter out Gemini echoing the prompt or template back
             const lower = result.source_text.toLowerCase();
-            if (lower.includes('transcribe this audio') || lower.includes('detect the language')) {
+            if (lower.includes('transcribe this audio') || lower.includes('detect the language')
+                || lower === 'the transcribed speech' || lower.includes('what was said')) {
+              console.log('[Gemini STT] Filtered prompt echo:', result.source_text);
               resolve(null); return;
             }
             resolve({
