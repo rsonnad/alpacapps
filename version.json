@@ -1,12 +1,12 @@
 {
-  "version": "v260330.16 4:35a",
-  "release": 1173,
-  "sha": "6b02c104c",
-  "fullSha": "6b02c104c5106ae965dc8e051dd2a133d88b1bcd",
+  "version": "v260330.17 4:46a",
+  "release": 1174,
+  "sha": "c6748cdc4",
+  "fullSha": "c6748cdc4e64f74d17d23484d25a6487677694bc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30 09:35:32+00",
-  "commits": [{"sha":"6b02c104c","message":"feat: add live translation subtitles implementation spec","author":"Rahul"}]
+  "pushedAt": "2026-03-30 09:46:40+00",
+  "commits": [{"sha":"c6748cdc4","message":"fix: auto-fail stale backup triggers (#101)","author":"Rahul"}]
 }
