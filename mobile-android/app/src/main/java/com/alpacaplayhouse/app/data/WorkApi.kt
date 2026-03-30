@@ -13,19 +13,19 @@ import java.time.format.DateTimeFormatter
 
 @Serializable
 data class WorkTask(
-    val id: Long = 0,
+    val id: String = "",
     val title: String = "",
     val description: String? = null,
     val status: String = "open",
     val priority: String = "medium",
     val assignee_id: String? = null,
-    val space_id: Long? = null,
+    val space_id: String? = null,
     val created_at: String? = null,
 )
 
 @Serializable
 data class HoursEntry(
-    val id: Long = 0,
+    val id: String = "",
     val user_id: String = "",
     val clock_in: String? = null,
     val clock_out: String? = null,
@@ -37,7 +37,7 @@ data class HoursEntry(
 
 @Serializable
 data class ProjectInquiry(
-    val id: Long = 0,
+    val id: String = "",
     val question: String = "",
     val answer: String? = null,
     val status: String = "pending",
@@ -94,7 +94,7 @@ object WorkApi {
             }
         }
 
-    suspend fun updateTaskStatus(taskId: Long, status: String): Result<Unit> =
+    suspend fun updateTaskStatus(taskId: String, status: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             try {
                 val payload = """{"status":"$status"}"""
