@@ -132,16 +132,23 @@
     <div class="controls">
       <button class="mic-btn" id="micBtn" title="Speak into your mic (uses browser speech recognition)">&#127908; Mic</button>
       <span class="mic-unsupported" id="micUnsupported">Browser speech recognition not supported</span>
-      <select id="langPicker">
-        <option value="en">English (transcript only)</option>
-        <option value="pl">Polski</option>
-        <option value="es">Espanol</option>
-        <option value="fr">Francais</option>
-        <option value="de">Deutsch</option>
-        <option value="pt">Portugues</option>
-        <option value="it">Italiano</option>
-        <option value="hi">Hindi</option>
-        <option value="ar">Arabic</option>
+      <select id="micLangPicker" title="Language you are speaking into the mic">
+        <option value="en-US">Mic: English</option>
+        <option value="pl-PL">Mic: Polski</option>
+        <option value="es-ES">Mic: Español</option>
+        <option value="fr-FR">Mic: Français</option>
+        <option value="de-DE">Mic: Deutsch</option>
+      </select>
+      <select id="langPicker" title="Language you want to READ subtitles in">
+        <option value="en">Read: English</option>
+        <option value="pl">Read: Polski</option>
+        <option value="es">Read: Español</option>
+        <option value="fr">Read: Français</option>
+        <option value="de">Read: Deutsch</option>
+        <option value="pt">Read: Português</option>
+        <option value="it">Read: Italiano</option>
+        <option value="hi">Read: Hindi</option>
+        <option value="ar">Read: Arabic</option>
       </select>
       <button class="font-btn" id="fontDown" title="Smaller text">A-</button>
       <button class="font-btn" id="fontUp" title="Larger text">A+</button>
@@ -163,8 +170,13 @@
   </div>
 
   <script>
-    const API_BASE = `${location.protocol}//${location.hostname}:${location.port || 8910}`;
-    const WS_BASE = `ws://${location.hostname}:${location.port || 8910}/subtitles`;
+    // Connect to Alpuca on local network (fallback to same host for when served from Alpuca itself)
+    const ALPUCA_HOST = '192.168.1.200';
+    const SUBTITLE_PORT = 8910;
+    const serverHost = (location.hostname === ALPUCA_HOST || location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? location.hostname : ALPUCA_HOST;
+    const API_BASE = `http://${serverHost}:${SUBTITLE_PORT}`;
+    const WS_BASE = `ws://${serverHost}:${SUBTITLE_PORT}/subtitles`;
     const subtitlesEl = document.getElementById('subtitles');
     const emptyState = document.getElementById('emptyState');
     const statusDot = document.getElementById('statusDot');
@@ -172,6 +184,7 @@
     const segCount = document.getElementById('segCount');
     const micInfo = document.getElementById('micInfo');
     const langPicker = document.getElementById('langPicker');
+    const micLangPicker = document.getElementById('micLangPicker');
     const micBtn = document.getElementById('micBtn');
     let ws = null;
     let currentLang = 'en';
@@ -237,32 +250,35 @@
     }
 
     function startMic() {
+      const micLang = micLangPicker.value; // e.g. 'pl-PL'
+      const sourceLangCode = micLang.split('-')[0]; // e.g. 'pl'
+
       recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'en-US';
+      recognition.lang = micLang;
 
       recognition.onstart = () => {
         micActive = true;
         micBtn.classList.add('recording');
         micBtn.innerHTML = '&#9724; Stop';
-        micInfo.textContent = 'Mic active — speak now';
+        micInfo.textContent = `Mic active (${micLang}) — speak now`;
+        micLangPicker.disabled = true;
       };
 
       recognition.onresult = (event) => {
-        // Get the latest result
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i];
           const text = result[0].transcript.trim();
           if (!text) continue;
 
-          // Send to server via inject endpoint
           fetch(`${API_BASE}/subtitles/inject`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               text,
               is_partial: !result.isFinal,
+              source_lang: sourceLangCode,
             }),
           }).catch(err => console.warn('[Mic] Inject failed:', err));
         }
@@ -297,6 +313,7 @@
       micBtn.classList.remove('recording');
       micBtn.innerHTML = '&#127908; Mic';
       micInfo.textContent = '';
+      micLangPicker.disabled = false;
     }
 
     // ── WebSocket connection ───────────────────────────────

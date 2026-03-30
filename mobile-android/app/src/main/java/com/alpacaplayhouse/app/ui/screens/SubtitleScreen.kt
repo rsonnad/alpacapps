@@ -297,8 +297,8 @@ fun SubtitleScreen() {
             ) {
                 items(segments, key = { "${it.id}_${it.isPartial}" }) { seg ->
                     Column {
-                        // Original language: dim, smaller, on top (only if different from English)
-                        if (seg.lang != "en" && seg.sourceText.isNotBlank()) {
+                        // Original language: dim, smaller, on top (when translated)
+                        if (seg.lang != seg.sourceLang && seg.sourceText.isNotBlank()) {
                             Text(
                                 text = seg.sourceText,
                                 fontSize = (fontSize * 0.6).sp,

@@ -3,20 +3,28 @@
  * Live Subtitles Server
  *
  * WebSocket server that broadcasts speech-to-text transcription and translations.
- * Run with --mock flag for local testing with simulated transcription.
+ * Supports any source language → translates to all connected listeners' languages.
  *
  * Usage:
- *   node server.js          # Production (requires mic + STT)
- *   node server.js --mock   # Mock mode with sample sentences
+ *   node server.js                # Production (requires mic + STT)
+ *   node server.js --mock         # Mock mode with English source
+ *   node server.js --mock-pl      # Mock mode with Polish source
+ *
+ * Env vars:
+ *   GEMINI_API_KEY  — Gemini API key for real translation
+ *   SUBTITLE_PORT   — Port (default 8910)
  */
 
 const http = require('http');
+const https = require('https');
 const { WebSocketServer } = require('ws');
 const path = require('path');
 const fs = require('fs');
 
 const PORT = parseInt(process.env.SUBTITLE_PORT || '8910', 10);
-const MOCK_MODE = process.argv.includes('--mock');
+const MOCK_MODE = process.argv.includes('--mock') || process.argv.includes('--mock-pl');
+const MOCK_LANG = process.argv.includes('--mock-pl') ? 'pl' : 'en';
+const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
 
 // ── State ──────────────────────────────────────────────────
 
@@ -51,43 +59,142 @@ const MOCK_SENTENCES = [
   'We have board games and cards in the living room cabinet.',
 ];
 
-// Simple mock translations (just prefixed for testing — real impl uses DeepL/Azure)
+// Polish source sentences for --mock-pl mode
+const MOCK_PL_SENTENCES = [
+  'Witamy w Alpaca Playhouse! Czuj się jak w domu.',
+  'Hasło do WiFi jest na karcie w Twoim pokoju.',
+  'Śniadanie jest między ósmą a dziesiątą rano.',
+  'Możesz korzystać z sauny po szesnastej.',
+  'Alpaki są dziś na przednim pastwisku.',
+  'Ręczniki są w szafie przy łazience.',
+  'Jeśli czegokolwiek potrzebujesz, zapytaj asystenta domu.',
+  'Kod do drzwi wejściowych zostanie wysłany SMSem.',
+  'Muzyka sterowana z każdego głośnika Sonos.',
+  'Wymeldowanie o jedenastej — bez pośpieszania!',
+  'Jacuzzi jest podgrzane i gotowe.',
+  'Prosimy zamykać bramkę, żeby alpaki nie wyszły.',
+  'Na podwórku jest ognisko, drewno przy szopie.',
+  'Kuchnia jest w pełni wyposażona, częstuj się.',
+  'Mamy gry planszowe i karty w szafce w salonie.',
+];
+
+// Pre-built mock translations for both directions
 const MOCK_TRANSLATIONS = {
-  pl: [
-    'Witamy w Alpaca Playhouse! Czuj sie jak w domu.',
-    'Haslo do WiFi jest na karcie w Twoim pokoju.',
-    'Sniadanie jest miedzy osma a dziesiata rano.',
-    'Mozesz korzystac z sauny po szesnastej.',
-    'Alpaki sa dzis na przednim pastwisku.',
-    'Reczniki sa w szafie przy lazience.',
-    'Jesli czegokolwiek potrzebujesz, zapytaj asystenta domu.',
-    'Kod do drzwi wejsciowych zostanie wyslany SMSem.',
-    'Muzyka sterowana z kazdego glosnika Sonos.',
-    'Wymeldowanie o jedenastej — bez pospieszania!',
+  // English translations of the Polish mock sentences
+  pl_to_en: [
+    'Welcome to Alpaca Playhouse! Make yourself at home.',
+    'The WiFi password is on the card in your room.',
+    'Breakfast is between eight and ten in the morning.',
+    'Feel free to use the sauna any time after four PM.',
+    'The alpacas are in the front pasture today.',
+    'There are towels in the closet by the bathroom.',
+    'If you need anything, just ask the house assistant.',
+    'The front door code will be texted to you.',
+    'Music can be controlled from any Sonos speaker.',
+    'Checkout is at eleven AM — no rush though!',
+    'The hot tub is heated and ready for you.',
+    'Please keep the gate closed so the alpacas stay in.',
+    'There is a fire pit in the backyard, firewood is by the shed.',
+    'The kitchen is fully stocked, help yourself to anything.',
+    'We have board games and cards in the living room cabinet.',
+  ],
+  // Polish translations of the English mock sentences
+  en_to_pl: [
+    'Witamy w Alpaca Playhouse! Czuj się jak w domu.',
+    'Hasło do WiFi jest na karcie w Twoim pokoju.',
+    'Śniadanie jest między ósmą a dziesiątą rano.',
+    'Możesz korzystać z sauny po szesnastej.',
+    'Alpaki są dziś na przednim pastwisku.',
+    'Ręczniki są w szafie przy łazience.',
+    'Jeśli czegokolwiek potrzebujesz, zapytaj asystenta domu.',
+    'Kod do drzwi wejściowych zostanie wysłany SMSem.',
+    'Muzyka sterowana z każdego głośnika Sonos.',
+    'Wymeldowanie o jedenastej — bez pośpieszania!',
     'Jacuzzi jest podgrzane i gotowe.',
-    'Prosimy zamykac bramke, zeby alpaki nie wyszly.',
-    'Na podworku jest ognisko, drewno przy szopie.',
-    'Kuchnia jest w pelni wyposazona, czestuj sie.',
+    'Prosimy zamykać bramkę, żeby alpaki nie wyszły.',
+    'Na podwórku jest ognisko, drewno przy szopie.',
+    'Kuchnia jest w pełni wyposażona, częstuj się.',
     'Mamy gry planszowe i karty w szafce w salonie.',
   ],
-  es: [
-    'Bienvenido a Alpaca Playhouse! Sientete como en casa.',
-    'La contrasena del WiFi esta en la tarjeta de tu habitacion.',
-    'El desayuno es entre las ocho y las diez de la manana.',
-    'Puedes usar la sauna despues de las cuatro.',
-    'Las alpacas estan en el pastizal delantero hoy.',
-    'Las toallas estan en el armario del bano.',
-    'Si necesitas algo, preguntale al asistente de la casa.',
-    'El codigo de la puerta te llegara por mensaje.',
-    'La musica se controla desde cualquier altavoz Sonos.',
+  // Spanish translations of English mock sentences
+  en_to_es: [
+    'Bienvenido a Alpaca Playhouse! Siéntete como en casa.',
+    'La contraseña del WiFi está en la tarjeta de tu habitación.',
+    'El desayuno es entre las ocho y las diez de la mañana.',
+    'Puedes usar la sauna después de las cuatro.',
+    'Las alpacas están en el pastizal delantero hoy.',
+    'Las toallas están en el armario del baño.',
+    'Si necesitas algo, pregúntale al asistente de la casa.',
+    'El código de la puerta te llegará por mensaje.',
+    'La música se controla desde cualquier altavoz Sonos.',
     'El checkout es a las once — sin prisa!',
-    'El jacuzzi esta caliente y listo.',
+    'El jacuzzi está caliente y listo.',
     'Por favor cierra la puerta para que las alpacas no salgan.',
-    'Hay una fogata en el patio, la lena esta junto al cobertizo.',
-    'La cocina esta completamente equipada, sirvete lo que quieras.',
+    'Hay una fogata en el patio, la leña está junto al cobertizo.',
+    'La cocina está completamente equipada, sírvete lo que quieras.',
     'Tenemos juegos de mesa y cartas en el gabinete de la sala.',
   ],
 };
+
+// ── Gemini Translation ────────────────────────────────────
+
+const LANG_NAMES = {
+  en: 'English', pl: 'Polish', es: 'Spanish', fr: 'French',
+  de: 'German', pt: 'Portuguese', it: 'Italian', hi: 'Hindi', ar: 'Arabic',
+};
+
+/** Translate text using Gemini Flash */
+async function translateWithGemini(text, fromLang, toLang) {
+  if (!GEMINI_KEY) return `[${toLang.toUpperCase()}] ${text}`;
+  if (fromLang === toLang) return text;
+
+  const fromName = LANG_NAMES[fromLang] || fromLang;
+  const toName = LANG_NAMES[toLang] || toLang;
+
+  const body = JSON.stringify({
+    contents: [{
+      parts: [{ text: `Translate the following ${fromName} text to ${toName}. Return ONLY the translation, no explanation:\n\n${text}` }],
+    }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 256 },
+  });
+
+  return new Promise((resolve) => {
+    const req = https.request(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            const translated = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            resolve(translated || `[${toLang.toUpperCase()}] ${text}`);
+          } catch {
+            resolve(`[${toLang.toUpperCase()}] ${text}`);
+          }
+        });
+      }
+    );
+    req.on('error', () => resolve(`[${toLang.toUpperCase()}] ${text}`));
+    req.setTimeout(5000, () => { req.destroy(); resolve(`[${toLang.toUpperCase()}] ${text}`); });
+    req.end(body);
+  });
+}
+
+/** Translate text to all languages that have active listeners */
+async function translateForListeners(text, sourceLang) {
+  const translations = {};
+  const promises = [];
+  for (const [lang, clients] of clientsByLang.entries()) {
+    if (lang === sourceLang || clients.size === 0) continue;
+    promises.push(
+      translateWithGemini(text, sourceLang, lang).then(t => { translations[lang] = t; })
+    );
+  }
+  await Promise.all(promises);
+  return translations;
+}
 
 // ── HTTP Server ────────────────────────────────────────────
 
@@ -125,12 +232,14 @@ const server = http.createServer((req, res) => {
   }
 
   // Inject endpoint: POST text from browser mic (Web Speech API)
+  // Accepts: { text, is_partial, source_lang? }
   if (url.pathname === '/subtitles/inject' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
-        const { text, is_partial } = JSON.parse(body);
+        const { text, is_partial, source_lang } = JSON.parse(body);
+        const srcLang = source_lang || 'en';
         if (!text) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'missing text' }));
@@ -138,13 +247,21 @@ const server = http.createServer((req, res) => {
         }
         isActive = true;
         lastActivityTime = Date.now();
-        if (is_partial) {
-          broadcastPartial(text, buildMockTranslations(text, true));
+
+        // For partials, use fast placeholder translations (no API call)
+        // For finals, use Gemini if available
+        let translations;
+        if (is_partial || !GEMINI_KEY) {
+          translations = buildPlaceholderTranslations(text, srcLang);
+          if (is_partial) broadcastPartial(text, srcLang, translations);
+          else broadcastSegment(text, srcLang, translations);
         } else {
-          broadcastSegment(text, buildMockTranslations(text, false));
+          translations = await translateForListeners(text, srcLang);
+          broadcastSegment(text, srcLang, translations);
         }
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: true, segment: segmentCounter }));
+        res.end(JSON.stringify({ ok: true, segment: segmentCounter, source_lang: srcLang }));
       } catch (e) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'invalid json' }));
@@ -227,31 +344,31 @@ function broadcast(lang, message) {
   }
 }
 
-function broadcastSegment(sourceText, translations = {}) {
+function broadcastSegment(sourceText, sourceLang, translations = {}) {
   segmentCounter++;
   const id = `seg_${String(segmentCounter).padStart(4, '0')}`;
   const timestamp = Math.floor(Date.now() / 1000);
 
-  // Broadcast English (source)
-  broadcast('en', {
+  // Broadcast source language (listeners who want the original)
+  broadcast(sourceLang, {
     type: 'subtitle',
     id,
     text: sourceText,
-    lang: 'en',
-    source_lang: 'en',
+    lang: sourceLang,
+    source_lang: sourceLang,
     source_text: sourceText,
     timestamp,
     is_partial: false,
   });
 
-  // Broadcast translations
+  // Broadcast translations to other language listeners
   for (const [lang, text] of Object.entries(translations)) {
     broadcast(lang, {
       type: 'subtitle',
       id,
       text,
       lang,
-      source_lang: 'en',
+      source_lang: sourceLang,
       source_text: sourceText,
       timestamp,
       is_partial: false,
@@ -259,16 +376,16 @@ function broadcastSegment(sourceText, translations = {}) {
   }
 }
 
-function broadcastPartial(sourceText, translations = {}) {
+function broadcastPartial(sourceText, sourceLang, translations = {}) {
   const id = `seg_${String(segmentCounter + 1).padStart(4, '0')}`;
   const timestamp = Math.floor(Date.now() / 1000);
 
-  broadcast('en', {
+  broadcast(sourceLang, {
     type: 'subtitle',
     id,
     text: sourceText,
-    lang: 'en',
-    source_lang: 'en',
+    lang: sourceLang,
+    source_lang: sourceLang,
     source_text: sourceText,
     timestamp,
     is_partial: true,
@@ -280,7 +397,7 @@ function broadcastPartial(sourceText, translations = {}) {
       id,
       text,
       lang,
-      source_lang: 'en',
+      source_lang: sourceLang,
       source_text: sourceText,
       timestamp,
       is_partial: true,
@@ -288,15 +405,13 @@ function broadcastPartial(sourceText, translations = {}) {
   }
 }
 
-// ── Translation helper for inject mode ─────────────────────
+// ── Translation helpers ───────────────────────────────────
 
-/** Build placeholder translations for injected text (real translation comes in Phase 2) */
-function buildMockTranslations(text, isPartial) {
+/** Fast placeholder translations (no API call — used for partials) */
+function buildPlaceholderTranslations(text, sourceLang) {
   const translations = {};
-  // Only translate for languages with active listeners
   for (const [lang, clients] of clientsByLang.entries()) {
-    if (lang === 'en' || clients.size === 0) continue;
-    // Placeholder: prefix with lang code. Replace with DeepL/Azure in Phase 2.
+    if (lang === sourceLang || clients.size === 0) continue;
     translations[lang] = `[${lang.toUpperCase()}] ${text}`;
   }
   return translations;
@@ -307,43 +422,59 @@ function buildMockTranslations(text, isPartial) {
 function startMockSTT() {
   isActive = true;
   let sentenceIdx = 0;
+  const sourceLang = MOCK_LANG;
+  const sentences = sourceLang === 'pl' ? MOCK_PL_SENTENCES : MOCK_SENTENCES;
 
-  console.log('[Mock] Starting mock STT — broadcasting sample sentences every 4s');
+  // Pick translation targets based on source language
+  const transKey = sourceLang === 'pl' ? 'pl_to_en' : 'en_to_pl';
+  const transKey2 = sourceLang === 'pl' ? null : 'en_to_es';
+
+  console.log(`[Mock] Starting mock STT — source: ${sourceLang}, broadcasting every 5s`);
 
   setInterval(() => {
-    const sentence = MOCK_SENTENCES[sentenceIdx % MOCK_SENTENCES.length];
+    const sentence = sentences[sentenceIdx % sentences.length];
     const words = sentence.split(' ');
 
-    // Simulate partial results: reveal word by word over ~2 seconds
     let wordIdx = 0;
     const partialInterval = setInterval(() => {
       wordIdx++;
       if (wordIdx < words.length) {
         const partial = words.slice(0, wordIdx).join(' ');
         const translations = {};
+        const ratio = wordIdx / words.length;
+
         // Build partial translations proportionally
-        for (const lang of ['pl', 'es']) {
-          const mockTrans = MOCK_TRANSLATIONS[lang];
-          if (mockTrans) {
-            const fullTrans = mockTrans[sentenceIdx % mockTrans.length];
+        const mockTrans1 = MOCK_TRANSLATIONS[transKey];
+        if (mockTrans1) {
+          const targetLang = sourceLang === 'pl' ? 'en' : 'pl';
+          const fullTrans = mockTrans1[sentenceIdx % mockTrans1.length];
+          const transWords = fullTrans.split(' ');
+          const transWordCount = Math.max(1, Math.round(transWords.length * ratio));
+          translations[targetLang] = transWords.slice(0, transWordCount).join(' ');
+        }
+        if (transKey2) {
+          const mockTrans2 = MOCK_TRANSLATIONS[transKey2];
+          if (mockTrans2) {
+            const fullTrans = mockTrans2[sentenceIdx % mockTrans2.length];
             const transWords = fullTrans.split(' ');
-            const ratio = wordIdx / words.length;
             const transWordCount = Math.max(1, Math.round(transWords.length * ratio));
-            translations[lang] = transWords.slice(0, transWordCount).join(' ');
+            translations['es'] = transWords.slice(0, transWordCount).join(' ');
           }
         }
-        broadcastPartial(partial, translations);
+        broadcastPartial(partial, sourceLang, translations);
       } else {
         clearInterval(partialInterval);
-        // Final segment
         const translations = {};
-        for (const lang of ['pl', 'es']) {
-          const mockTrans = MOCK_TRANSLATIONS[lang];
-          if (mockTrans) {
-            translations[lang] = mockTrans[sentenceIdx % mockTrans.length];
-          }
+        const mockTrans1 = MOCK_TRANSLATIONS[transKey];
+        if (mockTrans1) {
+          const targetLang = sourceLang === 'pl' ? 'en' : 'pl';
+          translations[targetLang] = mockTrans1[sentenceIdx % mockTrans1.length];
         }
-        broadcastSegment(sentence, translations);
+        if (transKey2) {
+          const mockTrans2 = MOCK_TRANSLATIONS[transKey2];
+          if (mockTrans2) translations['es'] = mockTrans2[sentenceIdx % mockTrans2.length];
+        }
+        broadcastSegment(sentence, sourceLang, translations);
         sentenceIdx++;
       }
     }, 250);
