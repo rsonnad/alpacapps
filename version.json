@@ -1,12 +1,12 @@
 {
-  "version": "v260331.05 12:48a",
-  "release": 1217,
-  "sha": "0e419f869",
-  "fullSha": "0e419f8698035e5ef1b35af4eb9c49c5d5d82394",
+  "version": "v260331.07 1:02a",
+  "release": 1219,
+  "sha": "9f4e87778",
+  "fullSha": "9f4e877781038d07cc32d57d41750af5c7c66695",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T05:48:17+00:00",
-  "commits": [{"sha":"0e419f869","message":"feat: switch rental pipeline to vertical kanban with table rows (#105)","author":"Rahul"}]
+  "pushedAt": "2026-03-31T06:02:59+00:00",
+  "commits": [{"sha":"9f4e87778","message":"feat: apply dark navy theme to devices inventory tab — matches approved Variant D design","author":"Rahul"}]
 }
