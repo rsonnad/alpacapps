@@ -1,12 +1,12 @@
 {
-  "version": "v260331.01 12:15a",
-  "release": 1213,
-  "sha": "d7f5fed86",
-  "fullSha": "d7f5fed86ea755b34915999ed9f0776cfa3e9a9c",
+  "version": "v260331.02 12:17a",
+  "release": 1214,
+  "sha": "4c8560d9c",
+  "fullSha": "4c8560d9c28fe413da9c0a546c90a7ce1a138de2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T05:15:34+00:00",
-  "commits": [{"sha":"d7f5fed86","message":"feat: add last activity date and actor to rental pipeline cards (#103)","author":"Rahul"}]
+  "pushedAt": "2026-03-31T05:17:25+00:00",
+  "commits": [{"sha":"9fbe87dbe","message":"feat: redesign devices tab with grouped table, expandable recipes, and multi-filter","author":"Rahul"},{"sha":"4c8560d9c","message":"Merge pull request #104 from rsonnad/vibrant-borg","author":"Rahul"}]
 }
