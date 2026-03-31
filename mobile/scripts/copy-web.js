@@ -26,6 +26,7 @@ const DIRS_TO_COPY = [
   'photos',
   'orientation',
   'worktrade',
+  'associates',
   'overnight',
   'welcome',
   'sundays',
