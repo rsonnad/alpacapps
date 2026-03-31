@@ -57,7 +57,9 @@ async function fetchHa(
   method = "GET",
   body?: any,
 ) {
-  const resp = await fetch(`${normalizeHaBaseUrl(baseUrl)}${path}`, {
+  const url = `${normalizeHaBaseUrl(baseUrl)}${path}`;
+  console.log(`fetchHa: ${method} ${url} (baseUrl=${baseUrl})`);
+  const resp = await fetch(url, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,
@@ -262,8 +264,10 @@ serve(async (req) => {
       .eq("id", 1)
       .maybeSingle();
 
-    const haBaseUrl = Deno.env.get("HA_BASE_URL") || Deno.env.get("HOME_ASSISTANT_URL") || haConfig?.ha_base_url || "";
+    const envHaUrl = Deno.env.get("HA_BASE_URL") || Deno.env.get("HOME_ASSISTANT_URL") || "";
+    const haBaseUrl = envHaUrl || haConfig?.ha_base_url || "";
     const haToken = Deno.env.get("HA_TOKEN") || Deno.env.get("HOME_ASSISTANT_TOKEN") || haConfig?.ha_token || "";
+    console.log(`HA config: envUrl=${envHaUrl ? envHaUrl.substring(0, 30) : "(none)"}, dbUrl=${haConfig?.ha_base_url?.substring(0, 30) || "(none)"}, resolved=${haBaseUrl.substring(0, 30)}, action=${body.action}`);
     const wizProxyUrl = Deno.env.get("WIZ_PROXY_URL") || "";
     const wizProxyToken = Deno.env.get("WIZ_PROXY_TOKEN") || "";
     const lightApiUrl = Deno.env.get("LIGHT_API_URL") || "";
