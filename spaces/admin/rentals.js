@@ -308,7 +308,8 @@ function renderPipelineRow(app) {
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     shortDate = `${monthNames[d.getMonth()]} ${d.getDate()}`;
   }
-  const activityBy = app.last_activity_by || '—';
+  // If no admin actor recorded, the applicant themselves was the last actor
+  const activityBy = app.last_activity_by || person.first_name || '—';
 
   return `
     <tr class="pipeline-row" data-id="${app.id}">
