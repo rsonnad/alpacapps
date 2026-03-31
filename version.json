@@ -1,12 +1,12 @@
 {
-  "version": "v260330.54 11:24p",
-  "release": 1211,
-  "sha": "1187e411d",
-  "fullSha": "1187e411d95194a8d43c4c35c7386a1535c490ba",
+  "version": "v260330.55 11:46p",
+  "release": 1212,
+  "sha": "174089bfd",
+  "fullSha": "174089bfd081d66cff9685967d78dfcb8453d83c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T04:24:49+00:00",
-  "commits": [{"sha":"1187e411d","message":"Add service_registry table and infrashare docs for cross-project discovery","author":"Rahul"}]
+  "pushedAt": "2026-03-31T04:46:31+00:00",
+  "commits": [{"sha":"5b7d7fd59","message":"fix: home-assistant-control reads HA config from DB as fallback","author":"Rahul"},{"sha":"e1bdc0f7b","message":"fix: add debug logging to home-assistant-control for URL resolution","author":"Rahul"},{"sha":"174089bfd","message":"Merge branch 'objective-mayer'","author":"Rahul"}]
 }
