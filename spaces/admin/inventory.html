@@ -247,6 +247,99 @@
       font-size: 0.8125rem; font-family: inherit; outline: none; background: white;
     }
     .db-search:focus { border-color: var(--accent, #b8a88a); }
+
+    /* View toggle */
+    .inv-view-toggle { display: flex; gap: 0; border: 1px solid var(--border-color, #e5e7eb); border-radius: 6px; overflow: hidden; }
+    .inv-view-btn {
+      padding: 0.3rem 0.75rem; font-size: 0.75rem; font-weight: 500; border: none;
+      background: white; color: var(--text-muted, #6b7280); cursor: pointer; font-family: inherit;
+      border-right: 1px solid var(--border-color, #e5e7eb); transition: background 0.15s, color 0.15s;
+    }
+    .inv-view-btn:last-child { border-right: none; }
+    .inv-view-btn:hover { background: #f9fafb; }
+    .inv-view-btn.active { background: var(--accent, #b8a88a); color: white; }
+
+    /* ── Device Grouped Table (inv-dev- prefix) ── */
+    .inv-dev-filters {
+      display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;
+    }
+    .inv-dev-filters input[type="text"] {
+      flex: 1; min-width: 180px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 6px; font-size: 0.8125rem; background: white; color: #1f2937;
+    }
+    .inv-dev-filters select {
+      padding: 0.5rem 0.625rem; border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 6px; font-size: 0.8125rem; background: white; color: #1f2937;
+    }
+    .inv-dev-group-header {
+      display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 1rem;
+      cursor: pointer; user-select: none; font-size: 0.8125rem; font-weight: 600;
+      border-bottom: 1px solid var(--border-color, #e5e7eb);
+    }
+    .inv-dev-group-header .inv-dev-chevron {
+      font-size: 0.625rem; transition: transform 0.15s; color: var(--text-muted, #9ca3af);
+    }
+    .inv-dev-group-header.collapsed .inv-dev-chevron { transform: rotate(-90deg); }
+    .inv-dev-group-header .inv-dev-group-count {
+      margin-left: auto; font-weight: 400; font-size: 0.75rem; color: var(--text-muted, #9ca3af);
+    }
+    .inv-dev-group-header .inv-dev-accent {
+      width: 3px; height: 18px; border-radius: 2px; flex-shrink: 0;
+    }
+    .inv-dev-accent-lighting { background: #f59e0b; }
+    .inv-dev-accent-climate { background: #3b82f6; }
+    .inv-dev-accent-appliance { background: #8b5cf6; }
+    .inv-dev-accent-security { background: #ef4444; }
+    .inv-dev-accent-vehicle { background: #22c55e; }
+
+    .inv-dev-row { cursor: pointer; }
+    .inv-dev-row:hover td { background: #f9fafb; }
+    .inv-dev-row td:first-child { width: 1.5rem; text-align: center; }
+
+    .inv-dev-status { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+    .inv-dev-status-active { background: #22c55e; }
+    .inv-dev-status-inactive { background: #d1d5db; }
+
+    .inv-dev-recipe-count {
+      display: inline-block; min-width: 1.25rem; text-align: center;
+      padding: 0.0625rem 0.375rem; border-radius: 999px; font-size: 0.6875rem; font-weight: 600;
+    }
+    .inv-dev-recipe-count.has-recipes { background: #fff1f0; color: #c0392b; }
+    .inv-dev-recipe-count.no-recipes { color: #d1d5db; }
+
+    /* Expanded recipe sub-rows */
+    .inv-dev-expand-row td { padding: 0 !important; border-bottom: 1px solid #f3f4f6; }
+    .inv-dev-expand-inner {
+      padding: 0.5rem 1rem 0.75rem 2.5rem; background: #fafafa;
+      border-top: 1px solid #f3f4f6;
+    }
+    .inv-dev-recipe-item {
+      display: flex; align-items: baseline; gap: 0.75rem; padding: 0.375rem 0;
+      font-size: 0.8125rem; border-bottom: 1px solid #f0f0f0;
+    }
+    .inv-dev-recipe-item:last-child { border-bottom: none; }
+    .inv-dev-recipe-action {
+      font-weight: 600; color: #374151; min-width: 80px; text-transform: capitalize;
+    }
+    .inv-dev-recipe-proto {
+      font-size: 0.6875rem; padding: 0.0625rem 0.375rem; border-radius: 4px;
+      background: #ede9fe; color: #5b21b6;
+    }
+    .inv-dev-recipe-cmd {
+      font-family: ui-monospace, SFMono-Regular, monospace; font-size: 0.6875rem;
+      color: var(--text-muted, #6b7280); max-width: 400px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .inv-dev-recipe-tag {
+      display: inline-block; padding: 0.0625rem 0.3rem; border-radius: 3px;
+      font-size: 0.625rem; background: #f3f4f6; color: #6b7280; margin-right: 0.25rem;
+    }
+    .inv-dev-recipe-gotcha {
+      font-size: 0.6875rem; color: #d97706; font-style: italic;
+    }
+    .inv-dev-recipe-verified {
+      font-size: 0.6875rem; color: var(--text-muted, #9ca3af); margin-left: auto; white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -426,7 +519,9 @@
         <!-- ════════ DEVICES ════════ -->
         <div id="inv-panel-devices" class="inv-panel" style="display:none">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-            <p class="inv-section-sub" style="margin:0">Smart home devices — live from database</p>
+            <div>
+              <p class="inv-section-sub" style="margin:0">Smart home devices — live from database</p>
+            </div>
             <div class="inv-view-toggle" id="deviceViewToggle">
               <button class="inv-view-btn active" data-view="all">All Devices</button>
               <button class="inv-view-btn" data-view="lighting">Lighting Detail</button>

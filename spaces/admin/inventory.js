@@ -923,45 +923,148 @@ function renderAllDevices() {
   }
 
   const groups = {};
+  const rooms = new Set();
+  const protocols = new Set();
   for (const d of devices) {
     if (!groups[d.domain]) groups[d.domain] = [];
-    groups[d.domain].push({ ...d, recipes: recipeMap[`${d.source_table}:${d.id}`] || [] });
+    const devWithRecipes = { ...d, recipes: recipeMap[`${d.source_table}:${d.id}`] || [] };
+    groups[d.domain].push(devWithRecipes);
+    if (d.room) rooms.add(d.room);
+    if (d.protocol) protocols.add(d.protocol);
   }
 
   const domainOrder = ['lighting', 'climate', 'appliance', 'security', 'vehicle'];
-  const summary = domainOrder.filter(d => groups[d]?.length)
-    .map(d => `<span style="margin-right:1rem;font-size:0.8rem;color:var(--text-muted)">${DOMAIN_ICONS[d]} ${groups[d].length} ${DOMAIN_LABELS[d]}</span>`).join('');
+  const sortedRooms = [...rooms].sort();
+  const sortedProtocols = [...protocols].sort();
 
-  let html = `<div style="margin-bottom:0.5rem">${summary}<strong style="font-size:0.8rem">${devices.length} total</strong></div>
-    <div class="inv-device-filters"><input type="text" class="inv-device-search" id="invDeviceSearch" placeholder="Search devices...">
-    <select class="inv-device-select" id="invDeviceDomain"><option value="">All Domains</option>${domainOrder.filter(d => groups[d]).map(d => `<option value="${d}">${DOMAIN_LABELS[d]}</option>`).join('')}</select></div>`;
+  // Filter bar
+  let html = `<div class="inv-dev-filters">
+    <input type="text" id="invDevSearch" placeholder="Search devices...">
+    <select id="invDevDomain"><option value="">All Domains</option>${domainOrder.filter(d => groups[d]).map(d => `<option value="${d}">${DOMAIN_LABELS[d]}</option>`).join('')}</select>
+    <select id="invDevRoom"><option value="">All Rooms</option>${sortedRooms.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('')}</select>
+    <select id="invDevProtocol"><option value="">All Protocols</option>${sortedProtocols.map(p => `<option value="${p}">${esc(PROTOCOL_LABELS[p] || p)}</option>`).join('')}</select>
+  </div>`;
 
+  // Grouped table
   html += `<div class="inv-table-wrap"><table class="inv-table" id="invDeviceTable">
-    <thead><tr><th></th><th>Name</th><th>Room</th><th>Domain</th><th>Protocol</th><th>Recipes</th></tr></thead><tbody>`;
+    <thead><tr><th style="width:1.5rem"></th><th>Name</th><th>Room</th><th>Protocol</th><th style="width:4.5rem;text-align:center">Recipes</th></tr></thead>
+    <tbody>`;
+
   for (const domain of domainOrder) {
-    for (const d of (groups[domain] || [])) {
+    const items = groups[domain];
+    if (!items?.length) continue;
+    // Group header row
+    html += `<tr class="inv-dev-group-header" data-domain="${domain}">
+      <td colspan="5" style="padding:0">
+        <div style="display:flex;align-items:center;gap:0.625rem;padding:0.5rem 1rem;cursor:pointer;user-select:none;font-size:0.8125rem;font-weight:600;">
+          <span class="inv-dev-chevron">▾</span>
+          <span class="inv-dev-accent inv-dev-accent-${domain}"></span>
+          <span>${DOMAIN_ICONS[domain]} ${DOMAIN_LABELS[domain]}</span>
+          <span class="inv-dev-group-count">${items.length} device${items.length !== 1 ? 's' : ''}</span>
+        </div>
+      </td>
+    </tr>`;
+
+    for (const d of items) {
       const rc = d.recipes.length;
-      html += `<tr data-domain="${d.domain}" data-search="${esc([d.name, d.room, d.domain, d.protocol].join(' ').toLowerCase())}">
-        <td>${DOMAIN_ICONS[d.domain] || ''}</td><td><strong>${esc(d.name)}</strong></td><td>${esc(d.room || '')}</td>
-        <td>${badge(DOMAIN_LABELS[d.domain] || d.domain, d.domain === 'lighting' ? 'amber' : d.domain === 'security' ? 'red' : d.domain === 'climate' ? 'blue' : d.domain === 'vehicle' ? 'green' : 'purple')}</td>
-        <td>${esc(PROTOCOL_LABELS[d.protocol] || d.protocol || '')}</td>
-        <td>${rc > 0 ? `<span class="inv-badge inv-badge-green">${rc}</span>` : '<span style="color:#d1d5db">—</span>'}</td></tr>`;
+      const searchStr = [d.name, d.room, d.domain, d.protocol, ...(d.recipes.map(r => r.action))].join(' ').toLowerCase();
+      html += `<tr class="inv-dev-row" data-domain="${d.domain}" data-room="${esc(d.room || '')}" data-protocol="${d.protocol || ''}" data-search="${esc(searchStr)}" data-device-id="${d.source_table}:${d.id}">
+        <td><span class="inv-dev-status inv-dev-status-active"></span></td>
+        <td><strong>${esc(d.name)}</strong></td>
+        <td>${esc(d.room || '')}</td>
+        <td>${d.protocol ? `<span class="inv-dev-recipe-proto">${esc(PROTOCOL_LABELS[d.protocol] || d.protocol)}</span>` : ''}</td>
+        <td style="text-align:center">${rc > 0
+          ? `<span class="inv-dev-recipe-count has-recipes">${rc}</span>`
+          : `<span class="inv-dev-recipe-count no-recipes">—</span>`}</td>
+      </tr>`;
+
+      // Expandable recipe sub-row (hidden by default)
+      if (rc > 0) {
+        html += `<tr class="inv-dev-expand-row" data-domain="${d.domain}" data-room="${esc(d.room || '')}" data-protocol="${d.protocol || ''}" style="display:none">
+          <td colspan="5"><div class="inv-dev-expand-inner">`;
+        for (const r of d.recipes) {
+          const tags = (r.tags || []).map(t => `<span class="inv-dev-recipe-tag">${esc(t)}</span>`).join('');
+          const verified = r.last_verified_at ? new Date(r.last_verified_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+          html += `<div class="inv-dev-recipe-item">
+            <span class="inv-dev-recipe-action">${esc(r.action)}</span>
+            <span class="inv-dev-recipe-proto">${esc(r.protocol || '')}</span>
+            <span class="inv-dev-recipe-cmd" title="${esc(r.command_template || '')}">${esc((r.command_template || '').slice(0, 80))}</span>
+            ${tags ? `<span>${tags}</span>` : ''}
+            ${r.gotchas ? `<span class="inv-dev-recipe-gotcha">⚠ ${esc(r.gotchas)}</span>` : ''}
+            ${verified ? `<span class="inv-dev-recipe-verified">✓ ${verified}</span>` : ''}
+          </div>`;
+        }
+        html += `</div></td></tr>`;
+      }
     }
   }
   html += '</tbody></table></div>';
+  html += `<div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted,#9ca3af)">${devices.length} devices across ${domainOrder.filter(d => groups[d]).length} domains · ${[...rooms].length} rooms</div>`;
   el.innerHTML = html;
 
-  const searchEl = document.getElementById('invDeviceSearch');
-  const domainEl = document.getElementById('invDeviceDomain');
-  const filterRows = () => {
+  // Group header collapse/expand
+  el.querySelectorAll('.inv-dev-group-header').forEach(hdr => {
+    hdr.addEventListener('click', () => {
+      const collapsed = hdr.classList.toggle('collapsed');
+      const chevron = hdr.querySelector('.inv-dev-chevron');
+      if (chevron) chevron.textContent = collapsed ? '▸' : '▾';
+      let s = hdr.nextElementSibling;
+      while (s && !s.classList.contains('inv-dev-group-header')) {
+        s.style.display = collapsed ? 'none' : '';
+        s = s.nextElementSibling;
+      }
+    });
+  });
+
+  // Row expand/collapse on click
+  el.querySelectorAll('.inv-dev-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const expandRow = row.nextElementSibling;
+      if (!expandRow || !expandRow.classList.contains('inv-dev-expand-row')) return;
+      const isOpen = expandRow.style.display !== 'none';
+      expandRow.style.display = isOpen ? 'none' : '';
+      row.style.background = isOpen ? '' : '#f9fafb';
+    });
+  });
+
+  // Filtering
+  const searchEl = document.getElementById('invDevSearch');
+  const domainEl = document.getElementById('invDevDomain');
+  const roomEl = document.getElementById('invDevRoom');
+  const protoEl = document.getElementById('invDevProtocol');
+  const filterAll = () => {
     const q = (searchEl?.value || '').toLowerCase();
     const dom = domainEl?.value || '';
-    document.querySelectorAll('#invDeviceTable tbody tr').forEach(row => {
-      row.style.display = (!q || (row.dataset.search || '').includes(q)) && (!dom || row.dataset.domain === dom) ? '' : 'none';
+    const room = roomEl?.value || '';
+    const proto = protoEl?.value || '';
+
+    // Track which group headers should show
+    const groupVis = {};
+
+    document.querySelectorAll('#invDeviceTable tbody tr.inv-dev-row').forEach(row => {
+      const show = (!q || (row.dataset.search || '').includes(q))
+        && (!dom || row.dataset.domain === dom)
+        && (!room || row.dataset.room === room)
+        && (!proto || row.dataset.protocol === proto);
+      row.style.display = show ? '' : 'none';
+      // Hide expand row too when filtering
+      const expandRow = row.nextElementSibling;
+      if (expandRow?.classList.contains('inv-dev-expand-row')) {
+        expandRow.style.display = 'none';
+        row.style.background = '';
+      }
+      if (show) groupVis[row.dataset.domain] = true;
+    });
+
+    // Show/hide group headers based on whether any child rows are visible
+    document.querySelectorAll('#invDeviceTable tbody tr.inv-dev-group-header').forEach(hdr => {
+      hdr.style.display = groupVis[hdr.dataset.domain] ? '' : 'none';
     });
   };
-  searchEl?.addEventListener('input', filterRows);
-  domainEl?.addEventListener('change', filterRows);
+  searchEl?.addEventListener('input', filterAll);
+  domainEl?.addEventListener('change', filterAll);
+  roomEl?.addEventListener('change', filterAll);
+  protoEl?.addEventListener('change', filterAll);
 }
 
 async function renderLightingDetail() {
