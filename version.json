@@ -1,12 +1,12 @@
 {
-  "version": "v260331.10 2:38a",
-  "release": 1222,
-  "sha": "ee30e94ac",
-  "fullSha": "ee30e94ace6deb8389f7f8cecf67af242f3365d2",
+  "version": "v260331.11 3:01a",
+  "release": 1223,
+  "sha": "493c5cb5a",
+  "fullSha": "493c5cb5a9cdeb38e8a00b8ed81bee32686c338b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T07:38:54+00:00",
-  "commits": [{"sha":"ee30e94ac","message":"fix: make devices dark theme group headers bold and prominent","author":"Rahul"}]
+  "pushedAt": "2026-03-31T08:01:59+00:00",
+  "commits": [{"sha":"493c5cb5a","message":"fix: enable domain accent badge dots on devices group headers","author":"Rahul"}]
 }
