@@ -105,17 +105,47 @@
     .photo-action-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
     .photo-action-hint { font-size: 0.65rem; color: #94a3b8; margin-top: 0.15rem; }
 
-    .tasks-photo-bar { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-    .tasks-photo-btn {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.35rem;
-      padding: 0.5rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px;
-      background: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600;
-      color: var(--text-muted); transition: border-color 0.2s, background 0.2s;
+    /* Photo AI tab */
+    .photoai-section { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .photoai-section h3 { margin: 0 0 0.25rem; font-size: 1.05rem; }
+    .photoai-desc { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 0.75rem; line-height: 1.4; }
+    .photoai-capture { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .photoai-preview {
+      position: relative; margin-bottom: 0.75rem; border-radius: 10px; overflow: hidden;
+      max-height: 260px; display: flex; align-items: center; justify-content: center; background: #f1f5f9;
     }
-    .tasks-photo-btn:hover { border-color: var(--accent); background: #f8fafc; }
-    .tasks-photo-btn:active { background: #f1f5f9; transform: scale(0.98); }
-    .tasks-photo-btn input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
-    .tasks-photo-btn span { font-size: 1.1rem; }
+    .photoai-preview img { width: 100%; max-height: 260px; object-fit: contain; }
+    .photoai-clear-btn {
+      position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .photoai-prompt-row { margin-bottom: 0.75rem; }
+    .photoai-prompt {
+      width: 100%; padding: 0.6rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px;
+      font-size: 0.85rem; font-family: inherit; resize: vertical; box-sizing: border-box;
+    }
+    .photoai-prompt:focus { border-color: var(--accent); outline: none; }
+    .photoai-submit-btn {
+      width: 100%; padding: 0.75rem; border: none; border-radius: 10px;
+      background: #1a1a2e; color: #e0d68a; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .photoai-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .photoai-submit-btn:not(:disabled):active { opacity: 0.8; }
+    .photoai-result {
+      margin-top: 0.75rem; padding: 0.75rem; border-radius: 8px;
+      background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 0.85rem; line-height: 1.5;
+    }
+    .photoai-result.error { background: #fef2f2; border-color: #fecaca; }
+    .photoai-history { margin-top: 1rem; }
+    .photoai-history-item {
+      display: flex; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;
+      font-size: 0.8rem; align-items: flex-start;
+    }
+    .photoai-history-thumb { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+    .photoai-history-text { flex: 1; color: var(--text-muted); }
+    .photoai-history-text strong { color: #1e293b; display: block; margin-bottom: 0.15rem; }
 
     .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.75rem; }
     .photo-thumb { border-radius: 6px; overflow: hidden; aspect-ratio: 1; cursor: pointer; position: relative; }
@@ -647,6 +677,7 @@
       <div class="tabs" id="workTabs">
         <button data-tab="today">Today</button>
         <button class="active" data-tab="tasks">Tasks</button>
+        <button data-tab="photoai">Photo AI</button>
         <button data-tab="history">History</button>
         <button data-tab="coworkers">Coworkers</button>
         <button data-tab="payment">Payment</button>
@@ -712,17 +743,46 @@
 
       <!-- Tasks Tab -->
       <div class="tab-content active" id="tabTasks">
-        <div class="tasks-photo-bar">
-          <label class="tasks-photo-btn">
-            <input type="file" id="tasksCameraInput" accept="image/*" capture="environment">
-            <span>📷</span> Take Photo
-          </label>
-          <label class="tasks-photo-btn">
-            <input type="file" id="tasksFileInput" multiple accept="image/*">
-            <span>🖼️</span> Upload Photo
-          </label>
-        </div>
         <div id="tasksList"><p style="color:var(--text-muted);text-align:center;font-size:0.85rem;">Loading tasks...</p></div>
+      </div>
+
+      <!-- Photo AI Tab -->
+      <div class="tab-content" id="tabPhotoai">
+        <div class="photoai-section">
+          <h3>📸 Snap & Analyze</h3>
+          <p class="photoai-desc">Take or upload a photo and PAI will figure out what to do — create a task, file it as marketing, post to social, or anything else.</p>
+
+          <div class="photoai-capture">
+            <label class="photo-action-btn">
+              <input type="file" id="photoaiCameraInput" accept="image/*" capture="environment">
+              <span class="photo-action-icon">📷</span>
+              <span class="photo-action-label">Take Photo</span>
+            </label>
+            <label class="photo-action-btn">
+              <input type="file" id="photoaiFileInput" accept="image/*">
+              <span class="photo-action-icon">🖼️</span>
+              <span class="photo-action-label">Choose Photo</span>
+            </label>
+          </div>
+
+          <div id="photoaiPreview" class="photoai-preview" style="display:none;">
+            <img id="photoaiPreviewImg" alt="Preview">
+            <button id="photoaiClearBtn" class="photoai-clear-btn" title="Remove">&times;</button>
+          </div>
+
+          <div class="photoai-prompt-row">
+            <textarea id="photoaiPrompt" class="photoai-prompt" rows="2" placeholder="Optional: tell PAI what this is (e.g. 'new task: fix the fence', 'marketing shot', 'alpaca photo for Instagram')"></textarea>
+          </div>
+
+          <button id="photoaiSubmitBtn" class="photoai-submit-btn" disabled>
+            <span class="photoai-submit-label">Analyze with PAI</span>
+            <span class="photoai-submit-spinner" style="display:none;">⏳ Analyzing...</span>
+          </button>
+
+          <div id="photoaiResult" class="photoai-result" style="display:none;"></div>
+
+          <div id="photoaiHistory" class="photoai-history"></div>
+        </div>
       </div>
 
       <!-- History Tab -->

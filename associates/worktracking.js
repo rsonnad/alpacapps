@@ -1317,6 +1317,7 @@ function setupEventListeners() {
       onSwitch: (btn) => {
         if (btn?.dataset?.tab === 'history') refreshHistory();
         else if (btn?.dataset?.tab === 'tasks') refreshTasksList();
+        else if (btn?.dataset?.tab === 'photoai') refreshPhotoAiHistory();
         else if (btn?.dataset?.tab === 'coworkers') refreshCoworkers();
         else if (btn?.dataset?.tab === 'payment') refreshPaymentTab();
       },
@@ -1356,17 +1357,8 @@ function setupEventListeners() {
     e.target.value = '';
   });
 
-  // Tasks tab — quick photo buttons
-  document.getElementById('tasksCameraInput').addEventListener('change', (e) => {
-    if (e.target.files[0]) handlePhotoUpload(e.target.files[0]);
-    e.target.value = '';
-  });
-  document.getElementById('tasksFileInput').addEventListener('change', (e) => {
-    for (const file of Array.from(e.target.files)) {
-      handlePhotoUpload(file);
-    }
-    e.target.value = '';
-  });
+  // Photo AI tab
+  initPhotoAiTab();
 
   // History filters
   document.getElementById('historyPeriod').addEventListener('change', refreshHistory);
@@ -2182,6 +2174,155 @@ async function refreshCoworkers() {
   } catch (err) {
     console.error('Failed to load coworkers:', err);
     container.innerHTML = `<div class="cw-empty"><div class="cw-text">Failed to load coworkers</div></div>`;
+  }
+}
+
+// =============================================
+// PHOTO AI TAB
+// =============================================
+let photoaiFile = null;
+
+function initPhotoAiTab() {
+  const cameraInput = document.getElementById('photoaiCameraInput');
+  const fileInput = document.getElementById('photoaiFileInput');
+  const previewDiv = document.getElementById('photoaiPreview');
+  const previewImg = document.getElementById('photoaiPreviewImg');
+  const clearBtn = document.getElementById('photoaiClearBtn');
+  const submitBtn = document.getElementById('photoaiSubmitBtn');
+  const promptInput = document.getElementById('photoaiPrompt');
+
+  function setPreview(file) {
+    photoaiFile = file;
+    const url = URL.createObjectURL(file);
+    previewImg.src = url;
+    previewDiv.style.display = 'flex';
+    submitBtn.disabled = false;
+  }
+
+  function clearPreview() {
+    photoaiFile = null;
+    previewImg.src = '';
+    previewDiv.style.display = 'none';
+    submitBtn.disabled = true;
+    cameraInput.value = '';
+    fileInput.value = '';
+  }
+
+  cameraInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) setPreview(e.target.files[0]);
+  });
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) setPreview(e.target.files[0]);
+  });
+  clearBtn.addEventListener('click', clearPreview);
+
+  submitBtn.addEventListener('click', async () => {
+    if (!photoaiFile) return;
+
+    const labelEl = submitBtn.querySelector('.photoai-submit-label');
+    const spinnerEl = submitBtn.querySelector('.photoai-submit-spinner');
+    const resultDiv = document.getElementById('photoaiResult');
+    const prompt = promptInput.value.trim();
+
+    // Show spinner
+    labelEl.style.display = 'none';
+    spinnerEl.style.display = 'inline';
+    submitBtn.disabled = true;
+    resultDiv.style.display = 'none';
+
+    try {
+      // Step 1: Upload photo via media service
+      showToast('Uploading photo...', 'info', 2000);
+      const uploadResult = await mediaService.upload(photoaiFile, { category: 'photoai' });
+      if (!uploadResult.success) throw new Error(uploadResult.error || 'Upload failed');
+
+      const photoUrl = uploadResult.media.url;
+      const mediaId = uploadResult.media.id;
+
+      // Step 2: Call pai-photo-analyze edge function
+      showToast('Analyzing with PAI...', 'info', 5000);
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/pai-photo-analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          photo_url: photoUrl,
+          media_id: mediaId,
+          prompt: prompt || null,
+          user_id: profile.id,
+          user_name: profile.display_name || profile.first_name || 'Team member',
+          user_email: authState?.user?.email || null,
+        }),
+      });
+
+      const result = await resp.json();
+
+      if (!resp.ok) throw new Error(result.error || 'Analysis failed');
+
+      // Show result
+      resultDiv.className = 'photoai-result';
+      resultDiv.innerHTML = `
+        <strong>${escapeHtml(result.action_label || 'Processed')}</strong><br>
+        ${escapeHtml(result.summary || 'PAI has processed your photo.')}
+        ${result.task_id ? '<br><em>Task created!</em>' : ''}
+        ${result.emailed ? '<br>📧 Results emailed to you.' : ''}
+      `;
+      resultDiv.style.display = 'block';
+      showToast('Photo analyzed!', 'success');
+
+      // Clear form
+      clearPreview();
+      promptInput.value = '';
+
+      // Refresh history
+      refreshPhotoAiHistory();
+    } catch (err) {
+      resultDiv.className = 'photoai-result error';
+      resultDiv.innerHTML = `<strong>Error:</strong> ${escapeHtml(err.message)}`;
+      resultDiv.style.display = 'block';
+      showToast('Analysis failed: ' + err.message, 'error');
+    } finally {
+      labelEl.style.display = 'inline';
+      spinnerEl.style.display = 'none';
+      submitBtn.disabled = !photoaiFile;
+    }
+  });
+}
+
+async function refreshPhotoAiHistory() {
+  const container = document.getElementById('photoaiHistory');
+  if (!container) return;
+  try {
+    const { data, error: err } = await supabase
+      .from('photo_ai_submissions')
+      .select('id, photo_url, prompt, action_taken, summary, created_at')
+      .eq('app_user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (err || !data?.length) {
+      container.innerHTML = '';
+      return;
+    }
+
+    container.innerHTML = '<div class="tasks-section-label" style="margin-top:0.5rem;">Recent Submissions</div>' +
+      data.map(item => {
+        const date = new Date(item.created_at).toLocaleDateString();
+        return `<div class="photoai-history-item">
+          <img class="photoai-history-thumb" src="${escapeHtml(item.photo_url)}" alt="Photo" loading="lazy">
+          <div class="photoai-history-text">
+            <strong>${escapeHtml(item.action_taken || 'Analyzed')}</strong>
+            ${item.prompt ? `<em>"${escapeHtml(item.prompt)}"</em><br>` : ''}
+            ${escapeHtml(item.summary || '')}
+            <br><span style="color:#94a3b8;font-size:0.7rem;">${date}</span>
+          </div>
+        </div>`;
+      }).join('');
+  } catch (_e) {
+    container.innerHTML = '';
   }
 }
 
