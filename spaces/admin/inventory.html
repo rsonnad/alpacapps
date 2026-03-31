@@ -259,88 +259,111 @@
     .inv-view-btn:hover { background: #f9fafb; }
     .inv-view-btn.active { background: var(--accent, #b8a88a); color: white; }
 
-    /* ── Device Grouped Table (inv-dev- prefix) ── */
+    /* ── Device Grouped Table — Dark Navy Theme (inv-dev- prefix) ── */
+    .inv-dev-wrap {
+      background: #0f172a; border-radius: 8px; padding: 1rem; color: #e2e8f0;
+    }
     .inv-dev-filters {
       display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;
     }
     .inv-dev-filters input[type="text"] {
-      flex: 1; min-width: 180px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color, #e5e7eb);
-      border-radius: 6px; font-size: 0.8125rem; background: white; color: #1f2937;
+      flex: 1; min-width: 180px; padding: 0.5rem 0.75rem; border: 1px solid #334155;
+      border-radius: 6px; font-size: 0.8125rem; background: #1e293b; color: #e2e8f0;
     }
+    .inv-dev-filters input[type="text"]::placeholder { color: #64748b; }
     .inv-dev-filters select {
-      padding: 0.5rem 0.625rem; border: 1px solid var(--border-color, #e5e7eb);
-      border-radius: 6px; font-size: 0.8125rem; background: white; color: #1f2937;
+      padding: 0.5rem 0.625rem; border: 1px solid #334155;
+      border-radius: 6px; font-size: 0.8125rem; background: #1e293b; color: #e2e8f0;
     }
-    tr.inv-dev-group-header { background: #f9fafb; }
+    .inv-dev-wrap .inv-table { color: #e2e8f0; }
+    .inv-dev-wrap .inv-table thead th {
+      color: #94a3b8; border-bottom-color: #1e293b;
+      font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .inv-dev-wrap .inv-table tbody td { border-bottom-color: #1e293b; }
+
+    /* Group headers — colored left border bars */
+    tr.inv-dev-group-header { background: transparent; }
     tr.inv-dev-group-header td { padding: 0; }
     .inv-dev-group-inner {
-      display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 1rem;
+      display: flex; align-items: center; gap: 0.625rem; padding: 0.625rem 1rem;
       cursor: pointer; user-select: none; font-size: 0.8125rem; font-weight: 600;
+      color: #e2e8f0; border-left: 4px solid transparent;
     }
     .inv-dev-group-inner .inv-dev-chevron {
-      font-size: 0.625rem; transition: transform 0.15s; color: var(--text-muted, #9ca3af);
+      font-size: 0.625rem; transition: transform 0.15s; color: #64748b;
     }
     tr.inv-dev-group-header.collapsed .inv-dev-chevron { transform: rotate(-90deg); }
     .inv-dev-group-inner .inv-dev-group-count {
-      margin-left: auto; font-weight: 400; font-size: 0.75rem; color: var(--text-muted, #9ca3af);
+      margin-left: auto; font-weight: 400; font-size: 0.75rem; color: #64748b;
     }
-    .inv-dev-group-inner .inv-dev-accent {
-      width: 3px; height: 18px; border-radius: 2px; flex-shrink: 0;
-    }
-    .inv-dev-accent-lighting { background: #f59e0b; }
-    .inv-dev-accent-climate { background: #3b82f6; }
-    .inv-dev-accent-appliance { background: #8b5cf6; }
-    .inv-dev-accent-security { background: #ef4444; }
-    .inv-dev-accent-vehicle { background: #22c55e; }
+    .inv-dev-group-inner .inv-dev-accent { display: none; }
+    /* Domain-colored header bars */
+    tr.inv-dev-group-header[data-domain="lighting"] .inv-dev-group-inner { background: rgba(245,158,11,0.12); border-left-color: #f59e0b; }
+    tr.inv-dev-group-header[data-domain="climate"] .inv-dev-group-inner { background: rgba(59,130,246,0.12); border-left-color: #3b82f6; }
+    tr.inv-dev-group-header[data-domain="appliance"] .inv-dev-group-inner { background: rgba(139,92,246,0.12); border-left-color: #8b5cf6; }
+    tr.inv-dev-group-header[data-domain="security"] .inv-dev-group-inner { background: rgba(239,68,68,0.12); border-left-color: #ef4444; }
+    tr.inv-dev-group-header[data-domain="vehicle"] .inv-dev-group-inner { background: rgba(34,197,94,0.12); border-left-color: #22c55e; }
 
+    /* Device rows */
     .inv-dev-row { cursor: pointer; }
-    .inv-dev-row:hover td { background: #f9fafb; }
+    .inv-dev-row td { height: 40px; padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .inv-dev-row:hover td { background: #1e293b; }
     .inv-dev-row td:first-child { width: 1.5rem; text-align: center; }
+    .inv-dev-row td:nth-child(2) { font-weight: 600; color: #f1f5f9; }
 
     .inv-dev-status { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
-    .inv-dev-status-active { background: #22c55e; }
-    .inv-dev-status-inactive { background: #d1d5db; }
+    .inv-dev-status-active { background: #14b8a6; }
+    .inv-dev-status-inactive { background: #475569; }
 
+    /* Recipe count — salmon */
     .inv-dev-recipe-count {
       display: inline-block; min-width: 1.25rem; text-align: center;
       padding: 0.0625rem 0.375rem; border-radius: 999px; font-size: 0.6875rem; font-weight: 600;
     }
-    .inv-dev-recipe-count.has-recipes { background: #fff1f0; color: #c0392b; }
-    .inv-dev-recipe-count.no-recipes { color: #d1d5db; }
+    .inv-dev-recipe-count.has-recipes { background: rgba(249,112,102,0.15); color: #f97066; }
+    .inv-dev-recipe-count.no-recipes { color: #475569; }
+
+    /* Protocol badge — teal */
+    .inv-dev-proto-badge {
+      font-size: 0.6875rem; padding: 0.0625rem 0.375rem; border-radius: 4px;
+      background: rgba(20,184,166,0.15); color: #14b8a6;
+    }
 
     /* Expanded recipe sub-rows */
-    .inv-dev-expand-row td { padding: 0 !important; border-bottom: 1px solid #f3f4f6; }
+    .inv-dev-expand-row td { padding: 0 !important; border-bottom: 1px solid #1e293b; }
     .inv-dev-expand-inner {
-      padding: 0.5rem 1rem 0.75rem 2.5rem; background: #fafafa;
-      border-top: 1px solid #f3f4f6;
+      padding: 0.5rem 1rem 0.75rem 2.5rem; background: #1e293b;
+      border-top: 1px solid #334155;
     }
     .inv-dev-recipe-item {
       display: flex; align-items: baseline; gap: 0.75rem; padding: 0.375rem 0;
-      font-size: 0.8125rem; border-bottom: 1px solid #f0f0f0;
+      font-size: 0.8125rem; border-bottom: 1px solid #334155;
     }
     .inv-dev-recipe-item:last-child { border-bottom: none; }
     .inv-dev-recipe-action {
-      font-weight: 600; color: #374151; min-width: 80px; text-transform: capitalize;
+      font-weight: 600; color: #e2e8f0; min-width: 80px; text-transform: capitalize;
     }
     .inv-dev-recipe-proto {
       font-size: 0.6875rem; padding: 0.0625rem 0.375rem; border-radius: 4px;
-      background: #ede9fe; color: #5b21b6;
+      background: rgba(20,184,166,0.15); color: #14b8a6;
     }
     .inv-dev-recipe-cmd {
       font-family: ui-monospace, SFMono-Regular, monospace; font-size: 0.6875rem;
-      color: var(--text-muted, #6b7280); max-width: 400px; overflow: hidden;
+      color: #64748b; max-width: 400px; overflow: hidden;
       text-overflow: ellipsis; white-space: nowrap;
     }
     .inv-dev-recipe-tag {
       display: inline-block; padding: 0.0625rem 0.3rem; border-radius: 3px;
-      font-size: 0.625rem; background: #f3f4f6; color: #6b7280; margin-right: 0.25rem;
+      font-size: 0.625rem; background: #334155; color: #94a3b8; margin-right: 0.25rem;
     }
     .inv-dev-recipe-gotcha {
       font-size: 0.6875rem; color: #d97706; font-style: italic;
     }
     .inv-dev-recipe-verified {
-      font-size: 0.6875rem; color: var(--text-muted, #9ca3af); margin-left: auto; white-space: nowrap;
+      font-size: 0.6875rem; color: #64748b; margin-left: auto; white-space: nowrap;
     }
+    .inv-dev-summary { margin-top: 0.5rem; font-size: 0.75rem; color: #475569; }
   </style>
 </head>
 <body>
@@ -358,7 +381,7 @@
 
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
-    <span data-site-version style="display:none">v260331.05 12:48a</span>
+    <span data-site-version style="display:none">v260331.03 12:18a</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>

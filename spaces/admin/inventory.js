@@ -937,8 +937,8 @@ function renderAllDevices() {
   const sortedRooms = [...rooms].sort();
   const sortedProtocols = [...protocols].sort();
 
-  // Filter bar
-  let html = `<div class="inv-dev-filters">
+  // Filter bar (inside dark wrapper)
+  let html = `<div class="inv-dev-wrap"><div class="inv-dev-filters">
     <input type="text" id="invDevSearch" placeholder="Search devices...">
     <select id="invDevDomain"><option value="">All Domains</option>${domainOrder.filter(d => groups[d]).map(d => `<option value="${d}">${DOMAIN_LABELS[d]}</option>`).join('')}</select>
     <select id="invDevRoom"><option value="">All Rooms</option>${sortedRooms.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('')}</select>
@@ -972,7 +972,7 @@ function renderAllDevices() {
         <td><span class="inv-dev-status inv-dev-status-active"></span></td>
         <td><strong>${esc(d.name)}</strong></td>
         <td>${esc(d.room || '')}</td>
-        <td>${d.protocol ? `<span class="inv-dev-recipe-proto">${esc(PROTOCOL_LABELS[d.protocol] || d.protocol)}</span>` : ''}</td>
+        <td>${d.protocol ? `<span class="inv-dev-proto-badge">${esc(PROTOCOL_LABELS[d.protocol] || d.protocol)}</span>` : ''}</td>
         <td style="text-align:center">${rc > 0
           ? `<span class="inv-dev-recipe-count has-recipes">${rc}</span>`
           : `<span class="inv-dev-recipe-count no-recipes">—</span>`}</td>
@@ -999,7 +999,8 @@ function renderAllDevices() {
     }
   }
   html += '</tbody></table></div>';
-  html += `<div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted,#9ca3af)">${devices.length} devices across ${domainOrder.filter(d => groups[d]).length} domains · ${[...rooms].length} rooms</div>`;
+  html += `<div class="inv-dev-summary">${devices.length} devices across ${domainOrder.filter(d => groups[d]).length} domains · ${[...rooms].length} rooms</div>`;
+  html += '</div>'; // close .inv-dev-wrap
   el.innerHTML = html;
 
   // Group header collapse/expand
