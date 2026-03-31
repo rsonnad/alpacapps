@@ -1,12 +1,12 @@
 {
-  "version": "v260330.53 6:58p",
-  "release": 1210,
-  "sha": "db06ad5a4",
-  "fullSha": "db06ad5a410ec37b713c45c9f7904dbae5b1eb7a",
+  "version": "v260330.54 11:24p",
+  "release": 1211,
+  "sha": "1187e411d",
+  "fullSha": "1187e411d95194a8d43c4c35c7386a1535c490ba",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-30T23:58:43+00:00",
-  "commits": [{"sha":"db06ad5a4","message":"feat: interactive DB explorer with drill-down into schema and data","author":"Rahul"}]
+  "pushedAt": "2026-03-31T04:24:49+00:00",
+  "commits": [{"sha":"1187e411d","message":"Add service_registry table and infrashare docs for cross-project discovery","author":"Rahul"}]
 }
