@@ -955,8 +955,8 @@ function renderAllDevices() {
     if (!items?.length) continue;
     // Group header row
     html += `<tr class="inv-dev-group-header" data-domain="${domain}">
-      <td colspan="5" style="padding:0">
-        <div style="display:flex;align-items:center;gap:0.625rem;padding:0.5rem 1rem;cursor:pointer;user-select:none;font-size:0.8125rem;font-weight:600;">
+      <td colspan="5">
+        <div class="inv-dev-group-inner">
           <span class="inv-dev-chevron">▾</span>
           <span class="inv-dev-accent inv-dev-accent-${domain}"></span>
           <span>${DOMAIN_ICONS[domain]} ${DOMAIN_LABELS[domain]}</span>
