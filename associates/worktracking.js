@@ -1135,10 +1135,14 @@ async function handleRequestPayment() {
 
     let workPhotos = [];
     if (earliestDate && latestDate) {
-      workPhotos = await hoursService.getWorkPhotos(profile.id, {
-        dateFrom: earliestDate,
-        dateTo: latestDate
-      });
+      try {
+        workPhotos = await hoursService.getWorkPhotos(profile.id, {
+          dateFrom: earliestDate,
+          dateTo: latestDate
+        });
+      } catch (photoErr) {
+        console.warn('Failed to fetch work photos for payment request:', photoErr);
+      }
     }
 
     // Group entries by date for the line-item breakdown
@@ -1169,7 +1173,7 @@ async function handleRequestPayment() {
 
     // --- Summary table ---
     body += `<table style="border-collapse:collapse;width:100%;margin:12px 0;">`;
-    body += `<tr><td style="${headerCellStyle}">Period</td><td style="${cellStyle}">${earliestDate && latestDate ? `${new Date(earliestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${new Date(latestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : 'N/A'}</td></tr>`;
+    body += `<tr><td style="${headerCellStyle}">Period</td><td style="${cellStyle}">${earliestDate && latestDate ? `${new Date(earliestDate + 'T12:00:00').toLocaleDateString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric' })} – ${new Date(latestDate + 'T12:00:00').toLocaleDateString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric', year: 'numeric' })}` : 'N/A'}</td></tr>`;
     body += `<tr><td style="${headerCellStyle}">Work Sessions</td><td style="${cellStyle}">${completedEntries.length} sessions across ${Object.keys(entriesByDate).length} days</td></tr>`;
     body += `<tr><td style="${headerCellStyle}">Unpaid Hours</td><td style="${cellStyle}">${HoursService.formatHoursDecimal(unpaidSummary.totalMinutes)}h</td></tr>`;
     body += `<tr><td style="${headerCellStyle}">Current Rate</td><td style="${cellStyle}">${HoursService.formatCurrency(currentRate)}/hr</td></tr>`;
@@ -1197,11 +1201,7 @@ async function handleRequestPayment() {
         });
         const hrs = HoursService.formatHoursDecimal(parseFloat(e.duration_minutes) || 0);
         const desc = e.description ? escapeHtml(e.description) : '<span style="color:#9ca3af;">—</span>';
-        // Only show date label on first entry for that day
-        const dateTd = i === 0
-          ? `<td style="${cellStyle}font-weight:600;" rowspan="${dayEntries.length}">${dateLabel}</td>`
-          : '';
-        body += `<tr>${dateTd}<td style="${cellStyle}">${clockInTime} – ${clockOutTime}</td><td style="${cellStyle}text-align:right;">${hrs}h</td><td style="${cellStyle}">${desc}</td></tr>`;
+        body += `<tr><td style="${cellStyle}font-weight:600;">${dateLabel}</td><td style="${cellStyle}">${clockInTime} – ${clockOutTime}</td><td style="${cellStyle}text-align:right;">${hrs}h</td><td style="${cellStyle}">${desc}</td></tr>`;
       }
     }
     body += `</table>`;
@@ -1215,7 +1215,7 @@ async function handleRequestPayment() {
         const caption = photo.caption || photo.media?.caption || '';
         const typeLabel = PHOTO_TYPE_LABELS[photo.photo_type] || '';
         const photoDate = photo.work_date
-          ? new Date(photo.work_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          ? new Date(photo.work_date + 'T12:00:00').toLocaleDateString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric' })
           : '';
         if (url) {
           body += `<div style="text-align:center;font-size:11px;color:#6b7280;">`;
