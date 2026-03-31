@@ -1,12 +1,12 @@
 {
-  "version": "v260331.08 1:36a",
-  "release": 1220,
-  "sha": "547c987a5",
-  "fullSha": "547c987a53fa2f684814a888b7621460494167b0",
+  "version": "v260331.09 1:39a",
+  "release": 1221,
+  "sha": "9d758f2ed",
+  "fullSha": "9d758f2ed6a86860e238b63dfe99dc3249353e71",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T06:36:55+00:00",
-  "commits": [{"sha":"547c987a5","message":"fix: increase text contrast in dark devices table — names white, rooms light slate","author":"Rahul"}]
+  "pushedAt": "2026-03-31T06:39:08+00:00",
+  "commits": [{"sha":"9d758f2ed","message":"fix: override .inv-table-wrap white background inside dark devices panel","author":"Rahul"}]
 }
