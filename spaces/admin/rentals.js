@@ -177,8 +177,19 @@ function populateRentalDropdowns() {
 // PIPELINE RENDERING
 // =============================================
 
+const STAGE_LABELS = {
+  community_fit: 'Community Fit',
+  applications: 'Applications',
+  approved: 'Approved',
+  contract: 'Contract',
+  deposit: 'Deposit',
+  ready: 'Ready',
+};
+
 function renderPipeline() {
   const stages = ['community_fit', 'applications', 'approved', 'contract', 'deposit', 'ready'];
+  const container = document.getElementById('rentalPipeline');
+  if (!container) return;
 
   // Group applications by pipeline stage
   const grouped = {};
@@ -191,30 +202,66 @@ function renderPipeline() {
     }
   });
 
-  // Render each column
-  stages.forEach(stage => {
-    const container = document.getElementById(`${stage}Cards`);
-    const countEl = document.getElementById(`${stage}Count`);
+  // Load collapsed state from localStorage
+  const collapsed = JSON.parse(localStorage.getItem('pipeline-collapsed') || '{}');
+
+  container.innerHTML = stages.map(stage => {
     const apps = grouped[stage] || [];
+    const isCollapsed = collapsed[stage] === true;
+    return `
+      <div class="pipeline-section" data-stage="${stage}">
+        <div class="pipeline-section-header" data-toggle="${stage}">
+          <span class="pipeline-section-chevron ${isCollapsed ? 'collapsed' : ''}">\u25BC</span>
+          <h3>${STAGE_LABELS[stage]}</h3>
+          <span class="pipeline-count">${apps.length}</span>
+        </div>
+        <div class="pipeline-section-body ${isCollapsed ? 'collapsed' : ''}">
+          ${apps.length === 0
+            ? '<div class="pipeline-empty">No applications</div>'
+            : `<table class="pipeline-table">
+                <thead>
+                  <tr>
+                    <th class="col-name">Name</th>
+                    <th class="col-space">Space</th>
+                    <th class="col-rate">Rate</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-days">Age</th>
+                    <th class="col-activity">Last Activity</th>
+                    <th class="col-actor">By</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${apps.map(app => renderPipelineRow(app)).join('')}
+                </tbody>
+              </table>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
 
-    if (countEl) countEl.textContent = apps.length;
+  // Attach click handlers for rows
+  container.querySelectorAll('.pipeline-row').forEach(row => {
+    row.addEventListener('click', () => openRentalDetail(row.dataset.id));
+  });
 
-    if (container) {
-      if (apps.length === 0) {
-        container.innerHTML = '<div class="pipeline-empty">No applications</div>';
-      } else {
-        container.innerHTML = apps.map(app => renderPipelineCard(app)).join('');
-
-        // Add click handlers
-        container.querySelectorAll('.pipeline-card').forEach(card => {
-          card.addEventListener('click', () => openRentalDetail(card.dataset.id));
-        });
-      }
-    }
+  // Attach collapse/expand handlers
+  container.querySelectorAll('.pipeline-section-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const stage = header.dataset.toggle;
+      const body = header.nextElementSibling;
+      const chevron = header.querySelector('.pipeline-section-chevron');
+      const collapsed = JSON.parse(localStorage.getItem('pipeline-collapsed') || '{}');
+      const isNowCollapsed = !body.classList.contains('collapsed');
+      body.classList.toggle('collapsed');
+      chevron.classList.toggle('collapsed');
+      collapsed[stage] = isNowCollapsed;
+      localStorage.setItem('pipeline-collapsed', JSON.stringify(collapsed));
+    });
   });
 }
 
-function renderPipelineCard(app) {
+function renderPipelineRow(app) {
   const person = app.person || {};
   const space = app.approved_space || app.desired_space;
   const days = rentalService.daysSince(app.created_at || app.submitted_at);
@@ -229,7 +276,7 @@ function renderPipelineCard(app) {
     subStatus = app.agreement_status;
   }
 
-  const testBadge = app.is_test ? '<span class="test-badge">TEST</span>' : '';
+  const testBadge = app.is_test ? ' <span class="test-badge">TEST</span>' : '';
 
   const displayName = isInquiry
     ? (ACCOMMODATION_LABELS[person.preferred_accommodation] || person.preferred_accommodation || 'Flexible')
@@ -243,42 +290,36 @@ function renderPipelineCard(app) {
     : '';
 
   const demo = isDemoUser();
-  const cardName = demo
+  const personName = demo
     ? `<span class="demo-redacted">${redactString(`${person.first_name || ''} ${person.last_name || ''}`, 'name')}</span>`
     : `${person.first_name || ''} ${person.last_name || ''}`;
-  const rateDisplay = app.approved_rate
-    ? (demo
-      ? `<div class="rate demo-redacted">${redactString('$' + app.approved_rate, 'amount')}</div>`
-      : `<div class="rate">$${app.approved_rate}/${app.approved_rate_term === 'weekly' ? 'wk' : app.approved_rate_term === 'nightly' ? 'night' : 'mo'}</div>`)
-    : '';
 
-  // Last activity line
+  const rateText = app.approved_rate
+    ? (demo
+      ? `<span class="demo-redacted">${redactString('$' + app.approved_rate, 'amount')}</span>`
+      : `$${app.approved_rate}/${app.approved_rate_term === 'weekly' ? 'wk' : app.approved_rate_term === 'nightly' ? 'night' : 'mo'}`)
+    : '—';
+
+  // Last activity
   const activityDate = app.last_activity_at || app.updated_at || app.created_at;
-  const activityBy = app.last_activity_by;
-  let activityLine = '';
+  let shortDate = '—';
   if (activityDate) {
     const d = new Date(activityDate);
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const shortDate = `${monthNames[d.getMonth()]} ${d.getDate()}`;
-    activityLine = activityBy ? `${shortDate} · ${activityBy}` : shortDate;
+    shortDate = `${monthNames[d.getMonth()]} ${d.getDate()}`;
   }
+  const activityBy = app.last_activity_by || '—';
 
   return `
-    <div class="pipeline-card" data-id="${app.id}">
-      <div class="card-header">
-        <span class="applicant-name">${cardName}${idBadge}</span>
-        ${testBadge}
-        <span class="days-ago">${days}d</span>
-      </div>
-      <div class="card-body">
-        <div class="space-name">${displayName}</div>
-        ${rateDisplay}
-      </div>
-      <div class="card-footer">
-        ${subStatus ? `<span class="sub-status">${subStatus}</span>` : ''}
-        ${activityLine ? `<span class="last-activity">${activityLine}</span>` : ''}
-      </div>
-    </div>
+    <tr class="pipeline-row" data-id="${app.id}">
+      <td class="col-name">${personName}${idBadge}${testBadge}</td>
+      <td class="col-space">${displayName}</td>
+      <td class="col-rate">${rateText}</td>
+      <td class="col-status">${subStatus ? `<span class="sub-status">${subStatus}</span>` : '—'}</td>
+      <td class="col-days">${days}d</td>
+      <td class="col-activity">${shortDate}</td>
+      <td class="col-actor">${activityBy}</td>
+    </tr>
   `;
 }
 
