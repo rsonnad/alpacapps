@@ -46,6 +46,8 @@ export const EMAIL_TYPES = {
   TASK_ASSIGNED: 'task_assigned',
   // Time entry edited
   TIME_ENTRY_EDITED: 'time_entry_edited',
+  // Event notification (from event-notify trigger system)
+  EVENT_NOTIFICATION: 'event_notification',
   // Space reservations
   RESERVATION_SUBMITTED: 'reservation_submitted',
   RESERVATION_APPROVED: 'reservation_approved',
