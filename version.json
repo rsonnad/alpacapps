@@ -1,12 +1,12 @@
 {
-  "version": "v260330.55 11:46p",
-  "release": 1212,
-  "sha": "174089bfd",
-  "fullSha": "174089bfd081d66cff9685967d78dfcb8453d83c",
+  "version": "v260331.01 12:15a",
+  "release": 1213,
+  "sha": "d7f5fed86",
+  "fullSha": "d7f5fed86ea755b34915999ed9f0776cfa3e9a9c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T04:46:31+00:00",
-  "commits": [{"sha":"5b7d7fd59","message":"fix: home-assistant-control reads HA config from DB as fallback","author":"Rahul"},{"sha":"e1bdc0f7b","message":"fix: add debug logging to home-assistant-control for URL resolution","author":"Rahul"},{"sha":"174089bfd","message":"Merge branch 'objective-mayer'","author":"Rahul"}]
+  "pushedAt": "2026-03-31T05:15:34+00:00",
+  "commits": [{"sha":"d7f5fed86","message":"feat: add last activity date and actor to rental pipeline cards (#103)","author":"Rahul"}]
 }
