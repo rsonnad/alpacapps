@@ -1,12 +1,12 @@
 {
-  "version": "v260331.11 3:01a",
-  "release": 1223,
-  "sha": "493c5cb5a",
-  "fullSha": "493c5cb5a9cdeb38e8a00b8ed81bee32686c338b",
+  "version": "v260331.12 3:57p",
+  "release": 1224,
+  "sha": "d99baf964",
+  "fullSha": "d99baf964b4125dd2c8b3b1fd2f4bcec3acfd5bb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T08:01:59+00:00",
-  "commits": [{"sha":"493c5cb5a","message":"fix: enable domain accent badge dots on devices group headers","author":"Rahul"}]
+  "pushedAt": "2026-03-31T20:57:05+00:00",
+  "commits": [{"sha":"d99baf964","message":"Remove deprecated claudesessions page — replaced by devcontrol Sessions tab","author":"Rahul"}]
 }
