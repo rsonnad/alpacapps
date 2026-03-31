@@ -1,12 +1,12 @@
 {
-  "version": "v260331.03 12:18a",
-  "release": 1215,
-  "sha": "0a0485fcb",
-  "fullSha": "0a0485fcb86bd62de624b736d7b265bc63f63844",
+  "version": "v260331.04 12:36a",
+  "release": 1216,
+  "sha": "6c6e531a2",
+  "fullSha": "6c6e531a2be20efffd6e1035c48e6f008c11b5e2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T05:18:27+00:00",
-  "commits": [{"sha":"0a0485fcb","message":"fix: home-assistant-control reads HA config from DB as fallback","author":"Rahul"}]
+  "pushedAt": "2026-03-31T05:36:00+00:00",
+  "commits": [{"sha":"6c6e531a2","message":"fix: device group headers not rendering — display:flex broke table row layout","author":"Rahul"}]
 }
