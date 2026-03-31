@@ -1,12 +1,12 @@
 {
-  "version": "v260331.12 3:57p",
-  "release": 1224,
-  "sha": "d99baf964",
-  "fullSha": "d99baf964b4125dd2c8b3b1fd2f4bcec3acfd5bb",
+  "version": "v260331.13 4:28p",
+  "release": 1225,
+  "sha": "d4c7f10fc",
+  "fullSha": "d4c7f10fcdb29c73e086f615db6015032b9c3fda",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T20:57:05+00:00",
-  "commits": [{"sha":"d99baf964","message":"Remove deprecated claudesessions page — replaced by devcontrol Sessions tab","author":"Rahul"}]
+  "pushedAt": "2026-03-31T21:28:57+00:00",
+  "commits": [{"sha":"20ec2fd53","message":"feat: add event notification subscription system","author":"Rahul"},{"sha":"d4c7f10fc","message":"Merge branch 'determined-colden'","author":"Rahul"}]
 }
