@@ -11,6 +11,20 @@
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 import { formatDateAustin, getAustinToday, AUSTIN_TIMEZONE } from './timezone.js';
+import { getAuthState } from './auth.js';
+
+/**
+ * Get activity tracking fields for any rental_applications update.
+ * Stamps last_activity_at + last_activity_by (first name of current user).
+ */
+function activityStamp() {
+  const state = getAuthState();
+  const name = state.appUser?.first_name || state.appUser?.display_name || null;
+  return {
+    last_activity_at: new Date().toISOString(),
+    last_activity_by: name,
+  };
+}
 
 // Trigger iCal regeneration to sync with Airbnb
 async function triggerIcalRegeneration() {
@@ -212,6 +226,7 @@ async function createApplication(personId, options = {}) {
       desired_move_in,
       desired_term,
       application_status: APPLICATION_STATUS.SUBMITTED,
+      ...activityStamp(),
     })
     .select()
     .single();
@@ -291,6 +306,7 @@ async function startReview(applicationId, reviewedBy = null) {
       application_status: APPLICATION_STATUS.UNDER_REVIEW,
       reviewed_by: reviewedBy,
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
@@ -337,6 +353,7 @@ async function approveApplication(applicationId, terms) {
       additional_terms: additionalTerms,
       reviewed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
@@ -384,6 +401,7 @@ async function saveTerms(applicationId, terms) {
 
   const updateData = {
     updated_at: new Date().toISOString(),
+    ...activityStamp(),
   };
 
   // Only update fields that have values (use != null to allow 0)
@@ -431,6 +449,7 @@ async function denyApplication(applicationId, reason = null) {
       denial_reason: reason,
       reviewed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
       assignment_id: null, // Clear the assignment reference
     })
     .eq('id', applicationId)
@@ -478,6 +497,7 @@ async function archiveApplication(applicationId) {
     .update({
       is_archived: true,
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
@@ -496,6 +516,7 @@ async function unarchiveApplication(applicationId) {
     .update({
       is_archived: false,
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
@@ -514,6 +535,7 @@ async function toggleTestFlag(applicationId, isTest) {
     .update({
       is_test: isTest,
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
@@ -534,6 +556,7 @@ async function updateAgreementStatus(applicationId, status, documentUrl = null) 
   const updates = {
     agreement_status: status,
     updated_at: new Date().toISOString(),
+    ...activityStamp(),
   };
 
   if (status === AGREEMENT_STATUS.GENERATED) {
@@ -715,6 +738,7 @@ async function requestDeposit(applicationId) {
       deposit_status: DEPOSIT_STATUS.REQUESTED,
       deposit_requested_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
@@ -744,6 +768,7 @@ async function recordMoveInDeposit(applicationId, details = {}) {
     move_in_deposit_method: method,
     move_in_deposit_transaction_id: transactionId,
     updated_at: new Date().toISOString(),
+    ...activityStamp(),
   };
 
   // Update the stored amount if a new amount was provided
@@ -816,6 +841,7 @@ async function recordSecurityDeposit(applicationId, details = {}) {
     security_deposit_method: method,
     security_deposit_transaction_id: transactionId,
     updated_at: new Date().toISOString(),
+    ...activityStamp(),
   };
 
   // Update the stored amount if a new amount was provided
@@ -893,6 +919,7 @@ async function updateOverallDepositStatus(applicationId) {
     .update({
       deposit_status: newStatus,
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId);
 }
@@ -931,6 +958,7 @@ async function confirmDeposit(applicationId) {
       deposit_status: DEPOSIT_STATUS.CONFIRMED,
       deposit_confirmed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
@@ -1202,6 +1230,7 @@ async function confirmMoveIn(applicationId) {
       assignment_id: assignment.id,
       move_in_confirmed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
@@ -1408,6 +1437,7 @@ async function inviteToApply(applicationId) {
     .update({
       invited_to_apply_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...activityStamp(),
     })
     .eq('id', applicationId)
     .select()
