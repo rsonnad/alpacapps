@@ -1,12 +1,12 @@
 {
-  "version": "v260331.04 12:36a",
-  "release": 1216,
-  "sha": "6c6e531a2",
-  "fullSha": "6c6e531a2be20efffd6e1035c48e6f008c11b5e2",
+  "version": "v260331.05 12:48a",
+  "release": 1217,
+  "sha": "0e419f869",
+  "fullSha": "0e419f8698035e5ef1b35af4eb9c49c5d5d82394",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-03-31T05:36:00+00:00",
-  "commits": [{"sha":"6c6e531a2","message":"fix: device group headers not rendering — display:flex broke table row layout","author":"Rahul"}]
+  "pushedAt": "2026-03-31T05:48:17+00:00",
+  "commits": [{"sha":"0e419f869","message":"feat: switch rental pipeline to vertical kanban with table rows (#105)","author":"Rahul"}]
 }
