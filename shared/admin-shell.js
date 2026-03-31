@@ -82,6 +82,7 @@ export const ALL_ADMIN_TABS = [
   { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin', feature: 'documents' },
   { id: 'brand', label: 'Brand', href: 'brand.html', permission: 'view_settings', section: 'admin' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html', permission: 'view_accounting', section: 'admin' },
+  { id: 'notifications', label: 'Notifications', href: 'notifications.html', permission: 'view_settings', section: 'admin' },
   { id: 'testdev', label: 'Test Dev', href: 'testdev.html', permission: 'view_settings', section: 'admin' },
   { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin', feature: 'pai' },
   { id: 'openclaw', label: 'AlpaClaw', href: 'alpaclaw.html', permission: 'view_openclaw', section: 'admin', feature: 'pai' },

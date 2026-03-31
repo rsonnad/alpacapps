@@ -93,6 +93,8 @@ type EmailType =
   | "time_entry_edited"
   // Weekly associate schedule report
   | "weekly_associate_schedule"
+  // Event notification (from event-notify trigger system)
+  | "event_notification"
   // Custom (raw HTML passthrough)
   | "custom"
   // Internal — never sent to recipients directly
@@ -2317,6 +2319,13 @@ Total: ${totalHours.toFixed(1)} hours across ${schedDays.length} day(s)
 This is an automated weekly schedule report from Alpaca Playhouse.`
       };
     }
+
+    case "event_notification":
+      return {
+        subject: data.subject || `Event Notification — Alpaca Playhouse`,
+        html: data._raw_html || `<p>An event occurred: <strong>${data.event || "unknown"}</strong></p>`,
+        text: data.text || `Event notification: ${data.event || "unknown"}`,
+      };
 
     case "custom":
       if (!data.html) throw new Error("Custom email requires data.html");
