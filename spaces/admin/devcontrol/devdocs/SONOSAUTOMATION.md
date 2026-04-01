@@ -99,8 +99,8 @@ and [TwP Sonos/UniFi gist](https://gist.github.com/TwP/a8286f85dfb606a0403b71a65
 
 | Switch | STP Status | Recommended | Status | Why |
 |--------|-----------|-------------|--------|-----|
-| UDM Pro (ports 1-8) | **Disabled per-port** | Disabled | OK | Sonos uses old STP path costs incompatible with RSTP |
-| US8P60 Skyloft Closet (all ports) | **Disabled per-port** | Disabled | OK | Same reason |
+| UDM Pro (ports 1-8) | **Default (enabled)** | Default | OK | Disabling per-port caused grouping failures + cutouts (tested 2026-03-31) |
+| US8P60 Skyloft Closet (all ports) | **Default (enabled)** | Default | OK | Same — reverted 2026-03-31 |
 | Flex Mini Attic (fw 2.1.6) | Default | Disabled (can't) | N/A | Firmware doesn't support per-port STP disable |
 | Flex Mini Sauna (fw 2.1.6) | Default | Disabled (can't) | N/A | Firmware doesn't support per-port STP disable |
 
@@ -121,6 +121,7 @@ and [TwP Sonos/UniFi gist](https://gist.github.com/TwP/a8286f85dfb606a0403b71a65
 | Block LAN to WLAN Multicast | Prevents wired-to-wireless multicast |
 | Client Device Isolation | Prevents speakers from communicating |
 | WPA3 | Old Connect/Connect:Amp doesn't support it |
+| Per-port STP disable | Causes grouping failures and cutouts — tested and reverted 2026-03-31 |
 
 ### Sonos-Required Ports (for firewall/VLAN setups)
 
@@ -149,7 +150,9 @@ but zero Sonos reservations. Add these when speaker MACs/IPs are stable.
 /Applications/Tailscale.app/Contents/MacOS/Tailscale set --accept-dns=false
 ```
 
-**Secondary issue:** Music stops when adding rooms to a group — caused by STP/RSTP incompatibility on wired Sonos ports. Fixed by disabling STP per-port on UDM Pro and US8P60.
+**Secondary issue (REVERTED):** Tried disabling STP per-port on UDM Pro and US8P60 to fix group-add stops. This actually made things **worse** — caused persistent cutouts and grouping failures. Reverted `port_overrides` back to `[]` (default STP enabled). The Mar 30 working state had default STP on all ports.
+
+**Lesson:** Despite internet guides recommending per-port STP disable for Sonos, it doesn't work on this network. The default STP is what was running when everything worked fine on Mar 27-30.
 
 ### 2026-03-30: All speakers moved to WiFi
 
@@ -189,7 +192,8 @@ After migrating from Google Mesh to UDM Pro, grouping failed and Front Sound dis
 The "music stops when adding rooms" issue is caused by:
 - **STP topology renegotiation** when wired+wireless speakers are grouped
 - **Multicast stream renegotiation** across wired/wireless boundaries
-- **Fix:** Disable STP on all wired Sonos switch ports (done — see above)
+- **Tried fix:** Per-port STP disable — **made things worse** (reverted 2026-03-31)
+- **Working state:** Default STP enabled on all ports. The grouping pause is brief (~2-3 sec) but playback resumes. Per-port STP disable caused persistent cutouts instead.
 
 ### Music Service Authentication
 
