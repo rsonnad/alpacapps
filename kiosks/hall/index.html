@@ -127,6 +127,13 @@
   </div>
 
   <!-- Rotation Overlays -->
+  <!-- 0. Network Dashboard (UniFi iframe) -->
+  <div class="rotation-overlay" id="networkOverlay" style="display:none">
+    <iframe class="rotation-network-iframe" id="networkIframe" src="about:blank" allow="fullscreen"></iframe>
+    <button class="rotation-dismiss-btn" id="networkDismissBtn" title="Back to kiosk">&times;</button>
+    <div class="rotation-label">Network Dashboard</div>
+  </div>
+
   <!-- 1. Image Slideshow (Alpaca imagery) -->
   <div class="rotation-overlay" id="slideshowOverlay" style="display:none">
     <img class="rotation-slideshow-img" id="slideshowImage" alt="">
