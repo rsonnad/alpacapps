@@ -58,45 +58,85 @@ Room names are URL-encoded: `garage%20outdoors`, `Living%20Sound`, `Front%20Outs
 
 ## UDM Pro Network Settings
 
-### Current Configuration (verified 2026-03-31)
+### Full Settings Audit (verified 2026-03-31)
 
-**Black Rock City SSID:**
+Audited against [unifi-sonos-doc](https://github.com/IngmarStein/unifi-sonos-doc) (537★),
+[Ubiquiti Help Center](https://help.ui.com/hc/en-us/articles/18930473041047),
+and [TwP Sonos/UniFi gist](https://gist.github.com/TwP/a8286f85dfb606a0403b71a6516f4132).
 
-| Setting | Value | Why |
-|---------|-------|-----|
-| Multicast Enhancement | **OFF** | ON breaks older Sonos hardware (Connect/Connect:Amp) |
-| BSS Transition (802.11v) | **OFF** | Prevents APs from handing off stationary speakers |
-| Fast Roaming (802.11r) | **OFF** | Old Sonos devices disconnect during fast roam |
-| Min 2.4GHz Rate | **6 Mbps** | Higher values can kick weak-signal speakers |
-| DTIM 2.4GHz | **1** | Fastest multicast delivery |
-| DTIM 5GHz | **1** | Fastest multicast delivery |
-| Client Isolation | **OFF** | Speakers must talk to each other |
-| Proxy ARP | **OFF** | Can interfere with Sonos discovery |
+**Black Rock City SSID** (all Sonos speakers are on this network):
+
+| Setting | Value | Recommended | Status | Why |
+|---------|-------|-------------|--------|-----|
+| Multicast Enhancement (IGMPv3) | **OFF** | ON (guides say) | Intentional override | ON breaks older Connect/Connect:Amp — tested 2026-03-31 |
+| BSS Transition (802.11v) | **OFF** | OFF | OK | Prevents APs from handing off stationary speakers |
+| Fast Roaming (802.11r) | **OFF** | OFF | OK | Old Sonos devices disconnect during fast roam |
+| Min 2.4GHz Rate | **6 Mbps** | 6-12 Mbps | OK | Higher values can kick weak-signal speakers |
+| DTIM 2.4GHz | **1** | 1 | OK | Fastest multicast delivery |
+| DTIM 5GHz | **1** | 1 | OK | Fastest multicast delivery |
+| L2 Isolation | **OFF** | OFF | OK | Speakers must talk to each other |
+| Proxy ARP | **OFF** | OFF | OK | Can interfere with Sonos discovery |
+| UAPSD | **OFF** | OFF | OK | Power save mode can delay multicast |
+| Broadcast Filter | **OFF** | OFF | OK | Sonos needs broadcast for discovery |
+| Group Rekey | **0** (disabled) | 0 | OK | Rekeying can briefly disconnect clients |
+| mDNS Proxy Mode | **auto** | auto/on | OK | Required for Sonos mDNS discovery |
+| IAPP | **ON** | ON | OK | Inter-AP handoff protocol |
+| WPA Mode | **wpa2** | wpa2 | OK | WPA3 causes issues with older Sonos |
+| Band | **both** (2g+5g) | both | OK | Old devices use 2.4GHz, newer use 5GHz |
+| Hide SSID | **OFF** | OFF | OK | Sonos can't find hidden SSIDs reliably |
+| Enhanced IoT | **OFF** | OFF | OK | Can cause unexpected behavior |
 
 **Default Network (LAN):**
 
-| Setting | Value | Why |
-|---------|-------|-----|
-| IGMP Snooping | **ON** | Directs multicast to only ports that need it (critical for 14 zones) |
-| mDNS | **ON** | Required for Sonos discovery |
+| Setting | Value | Recommended | Status | Why |
+|---------|-------|-------------|--------|-----|
+| IGMP Snooping | **ON** | ON | OK | Directs multicast to only ports that need it (critical for 14 zones) |
+| mDNS | **ON** | ON | OK | Required for Sonos discovery |
+| DHCP Range | 192.168.1.6–254 | — | OK | — |
+| Sonos DHCP Reservations | **NONE** | Should have | GAP | Prevents IP churn during DHCP renewal |
 
 **Switch Ports (STP):**
 
-| Switch | STP Status | Why |
-|--------|-----------|-----|
-| UDM Pro (ports 1-8) | **Disabled per-port** | Sonos uses old STP path costs incompatible with RSTP |
-| US8P60 Skyloft Closet (all ports) | **Disabled per-port** | Same reason |
-| Flex Mini (Attic, Sauna) | Default (cannot disable per-port) | fw 2.1.6 doesn't support it |
+| Switch | STP Status | Recommended | Status | Why |
+|--------|-----------|-------------|--------|-----|
+| UDM Pro (ports 1-8) | **Disabled per-port** | Disabled | OK | Sonos uses old STP path costs incompatible with RSTP |
+| US8P60 Skyloft Closet (all ports) | **Disabled per-port** | Disabled | OK | Same reason |
+| Flex Mini Attic (fw 2.1.6) | Default | Disabled (can't) | N/A | Firmware doesn't support per-port STP disable |
+| Flex Mini Sauna (fw 2.1.6) | Default | Disabled (can't) | N/A | Firmware doesn't support per-port STP disable |
 
-### Settings to NEVER enable
+**Other SSIDs** (not used by Sonos, but listed for reference):
+
+| SSID | Multicast Enhancement | BSS Transition | Min Rate 2.4GHz |
+|------|----------------------|----------------|-----------------|
+| Alpacalypse | ON | ON | 1 Mbps |
+| Eight Small Eyes | ON | ON | 1 Mbps |
+
+### Settings to NEVER enable on Black Rock City
 
 | Setting | Why |
 |---------|-----|
-| Multicast Enhancement | Breaks older Sonos Connect/Connect:Amp grouping |
+| Multicast Enhancement | Breaks older Sonos Connect/Connect:Amp grouping (tested 2026-03-31) |
 | WiFi AI / Auto-Optimize | Channel changes mid-stream cause dropouts |
 | Airtime Fairness | Starves older Sonos hardware |
 | Block LAN to WLAN Multicast | Prevents wired-to-wireless multicast |
 | Client Device Isolation | Prevents speakers from communicating |
+| WPA3 | Old Connect/Connect:Amp doesn't support it |
+
+### Sonos-Required Ports (for firewall/VLAN setups)
+
+| Protocol | Ports | Purpose |
+|----------|-------|---------|
+| TCP | 3400, 3401, 3500 | Sonos control |
+| UDP | 319, 1900, 1901, 1902 | SSDP/UPnP discovery, PTP sync |
+| UDP | 6969 | Sonos direct control |
+| UDP | 32768-65535 | Audio streaming |
+| UDP | 5353 | mDNS |
+
+### TODO: Add DHCP Reservations
+
+No Sonos speakers have static DHCP reservations. When speakers get new IPs during renewal,
+it can cause temporary grouping failures. Current WiZ bulb reservations exist (192.168.1.160-167)
+but zero Sonos reservations. Add these when speaker MACs/IPs are stable.
 
 ## Troubleshooting History
 
