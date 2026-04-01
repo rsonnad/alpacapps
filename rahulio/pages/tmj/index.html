@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TMJ Self-Assessment Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal:       #0D7377;
+      --teal-dark:  #095456;
+      --teal-light: #16A3A8;
+      --teal-pale:  #E0F5F5;
+      --coral:      #E8614D;
+      --coral-light:#F09080;
+      --amber:      #E8A630;
+      --amber-pale: #FFF5E0;
+      --green:      #2E8B57;
+      --green-pale: #E8F5EE;
+      --bg:         #F7F5F2;
+      --surface:    #FFFFFF;
+      --text:       #1A1A2E;
+      --text-soft:  #4A4A60;
+      --text-dim:   #8888A0;
+      --border:     #E0DDD8;
+      --radius:     12px;
+      --radius-lg:  20px;
+      --shadow-sm:  0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg:  0 12px 40px rgba(0,0,0,0.10);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 40px 0 32px;
+    }
+    .header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: var(--teal-dark);
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: var(--text-soft);
+      font-size: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .disclaimer {
+      background: var(--amber-pale);
+      border-left: 4px solid var(--amber);
+      padding: 12px 16px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      margin-top: 20px;
+    }
+
+    /* Progress */
+    .progress-bar {
+      background: var(--border);
+      border-radius: 100px;
+      height: 6px;
+      margin: 24px 0;
+      overflow: hidden;
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, var(--teal), var(--teal-light));
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+    .progress-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      text-align: right;
+      margin-bottom: 4px;
+    }
+
+    /* Survey card */
+    .survey-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 32px;
+      margin-bottom: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .survey-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.35rem;
+      color: var(--teal-dark);
+      margin-bottom: 6px;
+    }
+    .survey-card .subtitle {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    /* Options */
+    .option-group { display: flex; flex-direction: column; gap: 10px; }
+    .option-group.grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+    .option:hover { border-color: var(--teal-light); background: var(--teal-pale); }
+    .option.selected { border-color: var(--teal); background: var(--teal-pale); }
+    .option .check {
+      width: 22px; height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .option.selected .check {
+      background: var(--teal);
+      border-color: var(--teal);
+    }
+    .option.selected .check::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .option .radio-check {
+      border-radius: 50%;
+    }
+    .option.selected .radio-check {
+      background: var(--teal);
+      border-color: var(--teal);
+    }
+
+    /* Slider */
+    .slider-container {
+      padding: 10px 0 20px;
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 100px;
+      background: var(--border);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--teal);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(13,115,119,0.3);
+    }
+    .slider-value {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--teal);
+      margin-top: 8px;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn {
+      padding: 12px 28px;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: var(--teal);
+      color: white;
+      flex: 1;
+    }
+    .btn-primary:hover { background: var(--teal-dark); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-soft);
+      border: 2px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--text-dim); }
+    .btn-restart {
+      background: transparent;
+      color: var(--coral);
+      border: 2px solid var(--coral-light);
+      margin-top: 32px;
+      width: 100%;
+    }
+
+    /* Results */
+    .results-section { animation: fadeIn 0.4s ease; }
+    .results-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem;
+      color: var(--teal-dark);
+      margin-bottom: 6px;
+    }
+    .results-intro {
+      color: var(--text-soft);
+      margin-bottom: 24px;
+    }
+
+    .diagnosis-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 24px;
+      margin-bottom: 16px;
+      border-left: 5px solid var(--teal);
+    }
+    .diagnosis-card.secondary { border-left-color: var(--amber); }
+    .diagnosis-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .diagnosis-card .match {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .diagnosis-card.secondary .match { color: var(--amber); }
+    .diagnosis-card p {
+      color: var(--text-soft);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    .rec-section {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 28px;
+      margin-top: 20px;
+    }
+    .rec-section h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--teal-dark);
+      margin-bottom: 16px;
+    }
+
+    .rec-category {
+      margin-bottom: 20px;
+    }
+    .rec-category:last-child { margin-bottom: 0; }
+    .rec-category h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .rec-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+    }
+    .rec-item + .rec-item { border-top: 1px solid #f0eeeb; }
+    .rec-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .rec-icon.self { background: var(--green-pale); }
+    .rec-icon.pro { background: var(--teal-pale); }
+    .rec-icon.med { background: var(--amber-pale); }
+    .rec-item-text strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
+    .rec-item-text span { font-size: 0.88rem; color: var(--text-soft); }
+
+    .severity-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .severity-mild { background: var(--green-pale); color: var(--green); }
+    .severity-moderate { background: var(--amber-pale); color: #B8860B; }
+    .severity-severe { background: #FDECEA; color: var(--coral); }
+
+    .when-to-see-doc {
+      background: #FFF3F0;
+      border: 1px solid var(--coral-light);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 20px;
+    }
+    .when-to-see-doc h4 { color: var(--coral); margin-bottom: 8px; }
+    .when-to-see-doc ul { padding-left: 20px; color: var(--text-soft); font-size: 0.9rem; }
+    .when-to-see-doc li { margin-bottom: 4px; }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px 16px 40px; }
+      .header h1 { font-size: 1.6rem; }
+      .survey-card { padding: 24px 20px; }
+      .option-group.grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>TMJ Self-Assessment</h1>
+    <p>Answer a few questions about your jaw symptoms to understand what type of TMJ issue you may have and how to address it.</p>
+    <div class="disclaimer">
+      <strong>Not medical advice.</strong> This tool is for educational purposes only. Always consult a dentist, oral surgeon, or TMJ specialist for diagnosis and treatment.
+    </div>
+  </div>
+
+  <div id="survey"></div>
+  <div id="results"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 'pain_location',
+    title: 'Where do you feel pain or discomfort?',
+    subtitle: 'Select all that apply',
+    type: 'multi',
+    options: [
+      { value: 'jaw_joint', label: 'Right at the jaw joint (in front of the ear)' },
+      { value: 'jaw_muscles', label: 'Jaw muscles (cheeks / sides of face)' },
+      { value: 'temples', label: 'Temples' },
+      { value: 'ear', label: 'In or around the ear' },
+      { value: 'neck_shoulders', label: 'Neck and shoulders' },
+      { value: 'teeth', label: 'Teeth (aching, sensitivity)' },
+      { value: 'none', label: 'No pain currently' },
+    ]
+  },
+  {
+    id: 'sounds',
+    title: 'Do you experience jaw sounds?',
+    subtitle: 'Select all that apply',
+    type: 'multi',
+    options: [
+      { value: 'clicking', label: 'Clicking or popping when opening/closing' },
+      { value: 'grating', label: 'Grating or crunching sound (crepitus)' },
+      { value: 'no_sounds', label: 'No sounds' },
+    ]
+  },
+  {
+    id: 'jaw_function',
+    title: 'Do you have trouble with jaw movement?',
+    subtitle: 'Select all that apply',
+    type: 'multi',
+    options: [
+      { value: 'limited_opening', label: 'Can\'t open my mouth fully' },
+      { value: 'locks_open', label: 'Jaw locks in the open position' },
+      { value: 'locks_closed', label: 'Jaw locks or catches when opening' },
+      { value: 'deviation', label: 'Jaw shifts to one side when opening' },
+      { value: 'pain_chewing', label: 'Pain when chewing or biting' },
+      { value: 'none', label: 'No movement issues' },
+    ]
+  },
+  {
+    id: 'bruxism',
+    title: 'Do you clench or grind your teeth?',
+    subtitle: 'Select one',
+    type: 'single',
+    options: [
+      { value: 'sleep_grind', label: 'Yes — I grind at night (or have been told I do)' },
+      { value: 'day_clench', label: 'Yes — I clench during the day (stress, focus)' },
+      { value: 'both', label: 'Both day clenching and night grinding' },
+      { value: 'unsure', label: 'Not sure' },
+      { value: 'no', label: 'No' },
+    ]
+  },
+  {
+    id: 'timing',
+    title: 'When are symptoms worst?',
+    subtitle: 'Select one',
+    type: 'single',
+    options: [
+      { value: 'morning', label: 'Morning (wake up with pain/stiffness)' },
+      { value: 'evening', label: 'End of day (builds throughout the day)' },
+      { value: 'eating', label: 'During or after meals' },
+      { value: 'stress', label: 'During stressful periods' },
+      { value: 'constant', label: 'Constant / no pattern' },
+      { value: 'variable', label: 'Comes and goes randomly' },
+    ]
+  },
+  {
+    id: 'headaches',
+    title: 'Do you get headaches related to jaw tension?',
+    subtitle: 'Select one',
+    type: 'single',
+    options: [
+      { value: 'frequent', label: 'Yes — frequently (several per week)' },
+      { value: 'occasional', label: 'Occasionally (a few per month)' },
+      { value: 'rare', label: 'Rarely' },
+      { value: 'no', label: 'No' },
+    ]
+  },
+  {
+    id: 'ear_symptoms',
+    title: 'Do you experience ear-related symptoms?',
+    subtitle: 'Select all that apply',
+    type: 'multi',
+    options: [
+      { value: 'tinnitus', label: 'Ringing or buzzing in the ears (tinnitus)' },
+      { value: 'fullness', label: 'Feeling of ear fullness or pressure' },
+      { value: 'ear_pain', label: 'Ear pain (no infection)' },
+      { value: 'dizziness', label: 'Dizziness or vertigo' },
+      { value: 'none', label: 'None' },
+    ]
+  },
+  {
+    id: 'pain_severity',
+    title: 'How severe is your pain at its worst?',
+    subtitle: 'Slide to indicate severity',
+    type: 'slider',
+    min: 0,
+    max: 10,
+    labels: ['No pain', 'Worst imaginable'],
+    default: 3,
+  },
+  {
+    id: 'duration',
+    title: 'How long have you had these symptoms?',
+    subtitle: 'Select one',
+    type: 'single',
+    options: [
+      { value: 'days', label: 'A few days' },
+      { value: 'weeks', label: 'A few weeks' },
+      { value: 'months', label: '1–6 months' },
+      { value: 'long', label: '6+ months' },
+      { value: 'years', label: 'Years' },
+    ]
+  },
+  {
+    id: 'other_factors',
+    title: 'Any of these apply to you?',
+    subtitle: 'Select all that apply',
+    type: 'multi',
+    options: [
+      { value: 'stress', label: 'High stress levels' },
+      { value: 'posture', label: 'Poor posture / desk work for long hours' },
+      { value: 'trauma', label: 'History of jaw or face injury' },
+      { value: 'orthodontics', label: 'History of orthodontic work or dental procedures' },
+      { value: 'arthritis', label: 'Arthritis or autoimmune condition' },
+      { value: 'sleep_position', label: 'Sleep on stomach or side (jaw pressed)' },
+      { value: 'none', label: 'None of these' },
+    ]
+  },
+];
+
+// TMJ Type definitions and scoring
+const TMJ_TYPES = {
+  myofascial: {
+    name: 'Myofascial Pain Disorder',
+    description: 'Muscle-based TMJ disorder. Pain originates from the muscles of mastication (chewing muscles) rather than the joint itself. This is the most common type of TMD, often triggered by clenching, grinding, stress, or poor posture.',
+    indicators: []
+  },
+  disc_displacement_reducing: {
+    name: 'Disc Displacement with Reduction',
+    description: 'The articular disc in the jaw joint has shifted out of position but pops back into place when you open your mouth (causing the click). This is common and often manageable, but can progress if untreated.',
+    indicators: []
+  },
+  disc_displacement_nonreducing: {
+    name: 'Disc Displacement without Reduction',
+    description: 'The disc has shifted and does NOT return to its normal position, causing limited jaw opening ("closed lock"). This represents a more advanced stage and usually requires professional treatment.',
+    indicators: []
+  },
+  degenerative: {
+    name: 'Degenerative Joint Disease',
+    description: 'Osteoarthritis or degenerative changes in the TMJ. The cartilage and bone surfaces of the joint break down over time, causing grating sounds, stiffness, and progressive symptoms.',
+    indicators: []
+  },
+  bruxism_primary: {
+    name: 'Bruxism-Dominant TMD',
+    description: 'Your symptoms appear primarily driven by teeth grinding (sleep bruxism) and/or daytime clenching. This mechanical overuse fatigues the jaw muscles and can damage teeth and the joint over time.',
+    indicators: []
+  },
+};
+
+function scoreAnswers(answers) {
+  const scores = {
+    myofascial: 0,
+    disc_displacement_reducing: 0,
+    disc_displacement_nonreducing: 0,
+    degenerative: 0,
+    bruxism_primary: 0,
+  };
+
+  const a = answers;
+
+  // Pain location scoring
+  if (a.pain_location) {
+    if (a.pain_location.includes('jaw_muscles')) { scores.myofascial += 3; }
+    if (a.pain_location.includes('temples')) { scores.myofascial += 2; }
+    if (a.pain_location.includes('neck_shoulders')) { scores.myofascial += 2; }
+    if (a.pain_location.includes('jaw_joint')) {
+      scores.disc_displacement_reducing += 2;
+      scores.disc_displacement_nonreducing += 2;
+      scores.degenerative += 2;
+    }
+    if (a.pain_location.includes('ear')) {
+      scores.disc_displacement_reducing += 1;
+      scores.degenerative += 1;
+    }
+    if (a.pain_location.includes('teeth')) { scores.bruxism_primary += 2; }
+  }
+
+  // Sounds
+  if (a.sounds) {
+    if (a.sounds.includes('clicking')) {
+      scores.disc_displacement_reducing += 4;
+    }
+    if (a.sounds.includes('grating')) {
+      scores.degenerative += 4;
+      scores.disc_displacement_nonreducing += 1;
+    }
+  }
+
+  // Jaw function
+  if (a.jaw_function) {
+    if (a.jaw_function.includes('limited_opening')) {
+      scores.disc_displacement_nonreducing += 3;
+      scores.degenerative += 1;
+    }
+    if (a.jaw_function.includes('locks_open')) { scores.disc_displacement_reducing += 2; }
+    if (a.jaw_function.includes('locks_closed')) { scores.disc_displacement_nonreducing += 4; }
+    if (a.jaw_function.includes('deviation')) {
+      scores.disc_displacement_reducing += 2;
+      scores.disc_displacement_nonreducing += 2;
+    }
+    if (a.jaw_function.includes('pain_chewing')) {
+      scores.myofascial += 1;
+      scores.degenerative += 1;
+    }
+  }
+
+  // Bruxism
+  if (a.bruxism) {
+    if (['sleep_grind', 'both'].includes(a.bruxism)) {
+      scores.bruxism_primary += 4;
+      scores.myofascial += 2;
+    }
+    if (['day_clench', 'both'].includes(a.bruxism)) {
+      scores.bruxism_primary += 3;
+      scores.myofascial += 2;
+    }
+  }
+
+  // Timing
+  if (a.timing) {
+    if (a.timing === 'morning') { scores.bruxism_primary += 3; scores.myofascial += 1; }
+    if (a.timing === 'evening') { scores.myofascial += 3; }
+    if (a.timing === 'stress') { scores.myofascial += 2; scores.bruxism_primary += 1; }
+    if (a.timing === 'constant') { scores.degenerative += 2; scores.disc_displacement_nonreducing += 1; }
+  }
+
+  // Headaches
+  if (a.headaches === 'frequent') { scores.myofascial += 3; scores.bruxism_primary += 2; }
+  if (a.headaches === 'occasional') { scores.myofascial += 1; }
+
+  // Ear symptoms
+  if (a.ear_symptoms) {
+    if (a.ear_symptoms.includes('tinnitus')) { scores.myofascial += 1; scores.bruxism_primary += 1; }
+    if (a.ear_symptoms.includes('fullness')) { scores.disc_displacement_reducing += 1; }
+    if (a.ear_symptoms.includes('dizziness')) { scores.degenerative += 1; }
+  }
+
+  // Duration
+  if (a.duration === 'years') { scores.degenerative += 2; }
+  if (a.duration === 'long') { scores.degenerative += 1; }
+
+  // Other factors
+  if (a.other_factors) {
+    if (a.other_factors.includes('stress')) { scores.myofascial += 2; scores.bruxism_primary += 2; }
+    if (a.other_factors.includes('posture')) { scores.myofascial += 2; }
+    if (a.other_factors.includes('trauma')) { scores.disc_displacement_reducing += 2; scores.disc_displacement_nonreducing += 2; }
+    if (a.other_factors.includes('arthritis')) { scores.degenerative += 3; }
+    if (a.other_factors.includes('sleep_position')) { scores.myofascial += 1; }
+  }
+
+  return scores;
+}
+
+function getRecommendations(topTypes, answers) {
+  const recs = { self_care: [], professional: [], medical: [] };
+  const types = topTypes.map(t => t.type);
+  const severity = answers.pain_severity || 3;
+
+  // Universal self-care
+  recs.self_care.push({
+    icon: '🧊', title: 'Ice & Heat Therapy',
+    desc: 'Apply ice for 10 min to reduce inflammation, then moist heat for 15 min to relax muscles. Alternate throughout the day.'
+  });
+  recs.self_care.push({
+    icon: '🍲', title: 'Soft Diet',
+    desc: 'Avoid hard, chewy, or crunchy foods. Cut food into small pieces. No gum chewing. Favor soups, pasta, eggs, and steamed vegetables.'
+  });
+  recs.self_care.push({
+    icon: '👄', title: 'Rest Position Awareness',
+    desc: 'Lips together, teeth apart, tongue on the roof of the mouth. This is the jaw\'s natural resting position — practice it throughout the day.'
+  });
+
+  // Myofascial-specific
+  if (types.includes('myofascial')) {
+    recs.self_care.push({
+      icon: '💆', title: 'Jaw Muscle Massage',
+      desc: 'Apply firm, circular pressure to the masseter (cheek) and temporalis (temple) muscles for 2–3 minutes each side, twice daily.'
+    });
+    recs.self_care.push({
+      icon: '🧘', title: 'Stress Reduction',
+      desc: 'Progressive muscle relaxation, diaphragmatic breathing, or meditation. Jaw tension is strongly linked to emotional stress.'
+    });
+    recs.self_care.push({
+      icon: '🪑', title: 'Posture Correction',
+      desc: 'Keep ears aligned over shoulders. Forward head posture overloads jaw muscles. Take breaks from screens every 30 minutes.'
+    });
+    recs.professional.push({
+      icon: '🏥', title: 'Physical Therapy',
+      desc: 'A TMJ-trained PT can do manual therapy, teach stretches, and address postural issues that feed into jaw tension.'
+    });
+    if (severity >= 6) {
+      recs.professional.push({
+        icon: '💉', title: 'Trigger Point Injections or Dry Needling',
+        desc: 'For persistent myofascial trigger points that don\'t respond to massage and stretching.'
+      });
+    }
+  }
+
+  // Bruxism-specific
+  if (types.includes('bruxism_primary')) {
+    recs.self_care.push({
+      icon: '⏰', title: 'Daytime Clench Checks',
+      desc: 'Set hourly reminders to check if you\'re clenching. Place a small sticker on your monitor as a "teeth apart" cue.'
+    });
+    recs.professional.push({
+      icon: '🦷', title: 'Custom Night Guard (Occlusal Splint)',
+      desc: 'A dentist-fitted guard protects teeth and reduces grinding forces. Over-the-counter guards can worsen bite issues — get a custom one.'
+    });
+    recs.professional.push({
+      icon: '💉', title: 'Botox for Masseter Muscles',
+      desc: 'Injections into the masseter reduce grinding force by 30–50%. Effects last 3–4 months. Increasingly common for refractory bruxism.'
+    });
+  }
+
+  // Disc displacement
+  if (types.includes('disc_displacement_reducing')) {
+    recs.self_care.push({
+      icon: '🫶', title: 'Jaw Exercises — Controlled Opening',
+      desc: 'Place your tongue on the roof of your mouth and slowly open. This guides the jaw to open straight and can reduce clicking over time.'
+    });
+    recs.self_care.push({
+      icon: '⚠️', title: 'Avoid Extreme Jaw Movements',
+      desc: 'Don\'t open wide (limit yawning), don\'t rest chin on hand, and avoid biting into very large foods like burgers or apples.'
+    });
+    recs.professional.push({
+      icon: '🦷', title: 'Stabilization Splint',
+      desc: 'A flat-plane splint worn at night can reposition the jaw and take pressure off the displaced disc.'
+    });
+  }
+
+  if (types.includes('disc_displacement_nonreducing')) {
+    recs.self_care.push({
+      icon: '🫶', title: 'Gentle Stretching Protocol',
+      desc: 'Slowly and gently stretch the jaw open to its limit (without forcing). Hold 5 seconds, repeat 5 times, 5 times per day. Progress is gradual.'
+    });
+    recs.professional.push({
+      icon: '🏥', title: 'Manual Manipulation / Mobilization',
+      desc: 'A specialist may be able to manually reposition the disc. Physical therapy with joint mobilization is often the first step.'
+    });
+    if (severity >= 5) {
+      recs.medical.push({
+        icon: '💊', title: 'Anti-inflammatory Medication',
+        desc: 'NSAIDs (ibuprofen) or a short course of oral corticosteroids to reduce joint inflammation and improve range of motion.'
+      });
+      recs.professional.push({
+        icon: '🔬', title: 'Arthrocentesis',
+        desc: 'A minimally invasive procedure where fluid is flushed through the joint to break adhesions and restore movement. High success rate.'
+      });
+    }
+  }
+
+  // Degenerative
+  if (types.includes('degenerative')) {
+    recs.self_care.push({
+      icon: '🐟', title: 'Anti-inflammatory Diet',
+      desc: 'Omega-3s (fish oil), turmeric, ginger, and leafy greens. Reduce sugar, processed food, and alcohol which promote inflammation.'
+    });
+    recs.professional.push({
+      icon: '📋', title: 'Imaging & Specialist Evaluation',
+      desc: 'An MRI or CT scan can confirm degenerative changes. See an oral/maxillofacial surgeon or TMJ specialist for a full workup.'
+    });
+    recs.medical.push({
+      icon: '💊', title: 'NSAIDs & Joint Support',
+      desc: 'Consistent use of anti-inflammatories (under doctor guidance), plus glucosamine/chondroitin supplements may help joint health.'
+    });
+    if (severity >= 7) {
+      recs.medical.push({
+        icon: '💉', title: 'Corticosteroid or Hyaluronic Acid Injection',
+        desc: 'Injected directly into the joint to reduce inflammation and improve lubrication. Provides months of relief for degenerative TMJ.'
+      });
+    }
+  }
+
+  // General severity-based
+  if (severity >= 5) {
+    recs.medical.push({
+      icon: '💊', title: 'Pain Management',
+      desc: 'Ibuprofen (400–600mg) every 6–8 hours with food for acute flares. Muscle relaxants (e.g., cyclobenzaprine) at bedtime for 2 weeks can break the pain-tension cycle.'
+    });
+  }
+
+  // Ear symptom specific
+  if (answers.ear_symptoms && answers.ear_symptoms.includes('tinnitus')) {
+    recs.self_care.push({
+      icon: '👂', title: 'Tinnitus & TMJ Connection',
+      desc: 'TMJ-related tinnitus often improves with jaw treatment. The jaw joint shares nerves and ligaments with the middle ear. Address the TMJ first.'
+    });
+  }
+
+  return recs;
+}
+
+// ---- UI Engine ----
+let currentStep = 0;
+let answers = {};
+
+function render() {
+  const surveyEl = document.getElementById('survey');
+  const resultsEl = document.getElementById('results');
+
+  if (currentStep >= QUESTIONS.length) {
+    surveyEl.innerHTML = '';
+    renderResults(resultsEl);
+    return;
+  }
+
+  resultsEl.innerHTML = '';
+  const q = QUESTIONS[currentStep];
+  const total = QUESTIONS.length;
+
+  let optionsHTML = '';
+  if (q.type === 'slider') {
+    const val = answers[q.id] !== undefined ? answers[q.id] : q.default;
+    optionsHTML = `
+      <div class="slider-container">
+        <div class="slider-labels"><span>${q.labels[0]}</span><span>${q.labels[1]}</span></div>
+        <input type="range" min="${q.min}" max="${q.max}" value="${val}" id="slider-${q.id}">
+        <div class="slider-value" id="slider-val-${q.id}">${val}/10</div>
+      </div>`;
+  } else {
+    const isMulti = q.type === 'multi';
+    const selected = isMulti ? (answers[q.id] || []) : [answers[q.id]];
+    const gridClass = q.options.length <= 4 && q.type === 'single' ? ' grid-2' : '';
+    optionsHTML = `<div class="option-group${gridClass}">` + q.options.map(o => {
+      const sel = selected.includes(o.value) ? ' selected' : '';
+      const checkClass = isMulti ? 'check' : 'check radio-check';
+      return `<div class="option${sel}" data-value="${o.value}" onclick="selectOption('${q.id}','${o.value}','${q.type}')">
+        <div class="${checkClass}"></div>
+        <span>${o.label}</span>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  surveyEl.innerHTML = `
+    <div class="progress-label">Question ${currentStep + 1} of ${total}</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${((currentStep + 1) / total) * 100}%"></div></div>
+    <div class="survey-card">
+      <h2>${q.title}</h2>
+      <div class="subtitle">${q.subtitle}</div>
+      ${optionsHTML}
+      <div class="btn-row">
+        ${currentStep > 0 ? '<button class="btn btn-secondary" onclick="prevStep()">Back</button>' : ''}
+        <button class="btn btn-primary" id="next-btn" onclick="nextStep()">${currentStep === total - 1 ? 'See Results' : 'Next'}</button>
+      </div>
+    </div>`;
+
+  if (q.type === 'slider') {
+    const slider = document.getElementById(`slider-${q.id}`);
+    slider.addEventListener('input', () => {
+      answers[q.id] = parseInt(slider.value);
+      document.getElementById(`slider-val-${q.id}`).textContent = slider.value + '/10';
+    });
+    if (answers[q.id] === undefined) answers[q.id] = q.default;
+  }
+}
+
+function selectOption(qId, value, type) {
+  if (type === 'multi') {
+    if (!answers[qId]) answers[qId] = [];
+    // "none" clears others, selecting anything else clears "none"
+    if (value === 'none' || value === 'no_sounds') {
+      answers[qId] = [value];
+    } else {
+      answers[qId] = answers[qId].filter(v => v !== 'none' && v !== 'no_sounds');
+      const idx = answers[qId].indexOf(value);
+      if (idx >= 0) answers[qId].splice(idx, 1);
+      else answers[qId].push(value);
+    }
+  } else {
+    answers[qId] = value;
+  }
+  render();
+}
+
+function nextStep() {
+  const q = QUESTIONS[currentStep];
+  if (q.type !== 'slider') {
+    const a = answers[q.id];
+    if (!a || (Array.isArray(a) && a.length === 0)) return; // require answer
+  }
+  currentStep++;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevStep() {
+  if (currentStep > 0) { currentStep--; render(); }
+}
+
+function restart() {
+  currentStep = 0;
+  answers = {};
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderResults(el) {
+  const scores = scoreAnswers(answers);
+
+  // Sort and filter
+  const sorted = Object.entries(scores)
+    .map(([type, score]) => ({ type, score }))
+    .sort((a, b) => b.score - a.score)
+    .filter(t => t.score > 0);
+
+  if (sorted.length === 0) {
+    el.innerHTML = `<div class="results-section">
+      <h2>Results</h2>
+      <p class="results-intro">Based on your responses, you don't show strong indicators for any specific TMJ disorder. If you're still experiencing discomfort, consider seeing a dentist or TMJ specialist for evaluation.</p>
+      <button class="btn btn-restart" onclick="restart()">Start Over</button>
+    </div>`;
+    return;
+  }
+
+  const maxScore = sorted[0].score;
+  const topTypes = sorted.filter(t => t.score >= maxScore * 0.5).slice(0, 3);
+
+  // Severity label
+  const sev = answers.pain_severity || 3;
+  let sevLabel, sevClass;
+  if (sev <= 3) { sevLabel = 'Mild'; sevClass = 'severity-mild'; }
+  else if (sev <= 6) { sevLabel = 'Moderate'; sevClass = 'severity-moderate'; }
+  else { sevLabel = 'Severe'; sevClass = 'severity-severe'; }
+
+  // Diagnosis cards
+  const diagCards = topTypes.map((t, i) => {
+    const info = TMJ_TYPES[t.type];
+    const pct = Math.round((t.score / maxScore) * 100);
+    const matchLabel = i === 0 ? 'Strongest Match' : 'Possible Contributing Factor';
+    return `<div class="diagnosis-card${i > 0 ? ' secondary' : ''}">
+      <div class="match">${matchLabel}${i === 0 ? ` — ${pct}%` : ` — ${pct}%`}</div>
+      <h3>${info.name}</h3>
+      <p>${info.description}</p>
+    </div>`;
+  }).join('');
+
+  const recs = getRecommendations(topTypes, answers);
+
+  const renderCategory = (title, items, iconClass) => {
+    if (items.length === 0) return '';
+    return `<div class="rec-category">
+      <h4>${title}</h4>
+      ${items.map(r => `<div class="rec-item">
+        <div class="rec-icon ${iconClass}">${r.icon}</div>
+        <div class="rec-item-text">
+          <strong>${r.title}</strong>
+          <span>${r.desc}</span>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  };
+
+  el.innerHTML = `<div class="results-section">
+    <h2>Your Assessment Results</h2>
+    <p class="results-intro">
+      Severity: <span class="severity-badge ${sevClass}">${sevLabel} (${sev}/10)</span>
+      &nbsp;·&nbsp; Duration: ${answers.duration === 'years' ? 'Years' : answers.duration === 'long' ? '6+ months' : answers.duration === 'months' ? '1–6 months' : answers.duration === 'weeks' ? 'Weeks' : 'Days'}
+    </p>
+
+    ${diagCards}
+
+    <div class="rec-section">
+      <h3>Recommended Actions</h3>
+      ${renderCategory('Self-Care (Start Today)', recs.self_care, 'self')}
+      ${renderCategory('Professional Treatment', recs.professional, 'pro')}
+      ${renderCategory('Medical Options', recs.medical, 'med')}
+    </div>
+
+    <div class="when-to-see-doc">
+      <h4>See a Doctor Immediately If:</h4>
+      <ul>
+        <li>Your jaw is locked and you cannot open or close your mouth</li>
+        <li>You have sudden severe pain with swelling</li>
+        <li>Pain follows a recent injury or trauma</li>
+        <li>You have difficulty breathing or swallowing</li>
+        <li>Numbness in your face, jaw, or tongue</li>
+      </ul>
+    </div>
+
+    <button class="btn btn-restart" onclick="restart()">Retake Assessment</button>
+  </div>`;
+}
+
+// Init
+render();
+</script>
+
+</body>
+</html>
