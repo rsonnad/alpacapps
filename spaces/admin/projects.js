@@ -316,8 +316,35 @@ function bindEvents() {
     document.getElementById(id).addEventListener('change', loadInquiries);
   });
 
-  // Inquiry grid click (expand/collapse results + image lightbox)
-  document.getElementById('inquiryGrid').addEventListener('click', (e) => {
+  // Inquiry grid click (expand/collapse results + image lightbox + respond)
+  document.getElementById('inquiryGrid').addEventListener('click', async (e) => {
+    // Handle respond button
+    const respondBtn = e.target.closest('[data-respond-id]');
+    if (respondBtn) {
+      e.stopPropagation();
+      const inquiryId = respondBtn.dataset.respondId;
+      const textarea = document.querySelector(`.inquiry-response-input[data-inquiry-id="${inquiryId}"]`);
+      const answer = textarea?.value?.trim();
+      if (!answer) { showToast('Please type a response', 'warning'); return; }
+
+      respondBtn.disabled = true;
+      respondBtn.textContent = 'Sending...';
+
+      try {
+        await respondToInquiry(inquiryId, answer);
+        showToast('Response sent', 'success');
+        await loadInquiries();
+      } catch (err) {
+        showToast('Failed to send response', 'error');
+        respondBtn.disabled = false;
+        respondBtn.textContent = 'Send Response';
+      }
+      return;
+    }
+
+    // Don't collapse when clicking inside textarea
+    if (e.target.closest('.inquiry-response-input')) return;
+
     const thumb = e.target.closest('.inquiry-thumb');
     if (thumb) {
       const url = thumb.querySelector('img')?.src;
@@ -537,9 +564,19 @@ function renderInquiries() {
       `<span class="inquiry-swatch" style="background:${esc(c.hex)}" title="${esc(c.name || c.hex)}"></span>`
     ).join('');
 
-    // Detail section (initially hidden) for completed inquiries
+    // Status label
+    const statusLabel = inq.status === 'awaiting_response' ? 'Awaiting Response' : inq.status;
+    const statusClass = inq.status;
+
+    // Detail section (initially hidden) for completed or awaiting_response inquiries
     let detailHtml = '';
-    if (inq.status === 'completed') {
+    if (inq.status === 'awaiting_response') {
+      detailHtml = `<div class="inquiry-detail" style="display:none">
+        <div style="margin-bottom:0.5rem;font-size:0.8rem;color:#d97706;font-weight:600">Waiting for ${esc(inq.assigned_to_name || 'assignee')} to respond</div>
+        <textarea class="inquiry-response-input" data-inquiry-id="${inq.id}" placeholder="Type your response here..." style="width:100%;box-sizing:border-box;min-height:80px;padding:0.5rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;margin-bottom:0.5rem"></textarea>
+        <button class="btn-respond" data-respond-id="${inq.id}" style="padding:0.4rem 1rem;background:#d4883a;color:#fff;border:none;border-radius:6px;font-size:0.85rem;font-weight:600;cursor:pointer">Send Response</button>
+      </div>`;
+    } else if (inq.status === 'completed') {
       if (inq.inquiry_type === 'general' && inq.answer) {
         detailHtml = `<div class="inquiry-detail" style="display:none">
           <div class="inquiry-answer">${esc(inq.answer)}</div>
@@ -582,7 +619,7 @@ function renderInquiries() {
         <div class="inquiry-title">${esc(titleText)}</div>
         <div class="inquiry-meta">
           <span class="inquiry-type-badge ${inq.inquiry_type}">${inq.inquiry_type === 'general' ? 'General' : 'Color Pick'}</span>
-          <span class="inquiry-status ${inq.status}">${inq.status}</span>
+          <span class="inquiry-status ${statusClass}">${statusLabel}</span>
           ${inq.assigned_to_name ? `<span>For: ${esc(inq.assigned_to_name)}</span>` : ''}
           <span>${date}</span>
         </div>
@@ -591,6 +628,53 @@ function renderInquiries() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ---- Respond to Inquiry from Admin Panel ----
+async function respondToInquiry(inquiryId, answer) {
+  // Get the inquiry to find the submitter
+  const { data: inquiry, error: fetchErr } = await supabase
+    .from('project_inquiries')
+    .select('*, app_users!project_inquiries_app_user_id_fkey(id, email, first_name, display_name)')
+    .eq('id', inquiryId)
+    .single();
+
+  if (fetchErr || !inquiry) throw new Error('Inquiry not found');
+
+  // Update the inquiry
+  const { error: updateErr } = await supabase
+    .from('project_inquiries')
+    .update({
+      answer,
+      status: 'completed',
+      completed_at: new Date().toISOString(),
+    })
+    .eq('id', inquiryId);
+
+  if (updateErr) throw updateErr;
+
+  // Notify the original submitter via email
+  const submitter = inquiry.app_users;
+  if (submitter?.email) {
+    try {
+      await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'inquiry_answered',
+          to: submitter.email,
+          data: {
+            first_name: submitter.first_name || submitter.display_name || 'there',
+            question: inquiry.question || inquiry.caption || 'Project inquiry',
+            caption: inquiry.caption || '',
+            image_url: inquiry.image_url || '',
+            answer,
+            responder_name: 'Admin',
+          },
+        },
+      });
+    } catch (emailErr) {
+      console.error('Failed to send notification:', emailErr);
+    }
+  }
 }
 
 function esc(str) {

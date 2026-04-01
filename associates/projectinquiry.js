@@ -501,7 +501,8 @@ function startPolling(jobIds) {
 
     if (!jobs || jobs.length === 0) return;
 
-    const allDone = jobs.every(j => j.status === 'completed' || j.status === 'failed');
+    const terminalStatuses = ['completed', 'failed', 'awaiting_response'];
+    const allDone = jobs.every(j => terminalStatuses.includes(j.status));
     if (!allDone) return;
 
     clearInterval(pollTimer);
@@ -509,6 +510,7 @@ function startPolling(jobIds) {
     document.getElementById('processingSection').style.display = 'none';
 
     const completed = jobs.filter(j => j.status === 'completed');
+    const awaiting = jobs.filter(j => j.status === 'awaiting_response');
     const failed = jobs.filter(j => j.status === 'failed');
 
     if (completed.length > 0) {
@@ -519,8 +521,14 @@ function startPolling(jobIds) {
       }
     }
 
+    if (awaiting.length > 0 && completed.length === 0) {
+      const assigneeName = awaiting[0].assigned_to_name || 'the assignee';
+      document.getElementById('uploadSection').style.display = '';
+      showToast(`Inquiry sent to ${assigneeName} — you'll get an email when they respond`, 'success');
+    }
+
     if (failed.length > 0) {
-      if (completed.length === 0) {
+      if (completed.length === 0 && awaiting.length === 0) {
         document.getElementById('uploadSection').style.display = '';
       }
       showToast(`${failed.length} inquiry(s) failed: ${failed[0].error_message || 'Unknown error'}`, 'error');
@@ -701,7 +709,7 @@ function buildHistoryItem(job, isForMe) {
   const colors = job.analysis_result?.colors || [];
   const swatches = colors.slice(0, 6).map(c => `<div class="history-swatch" style="background:${escHtml(c.hex)}"></div>`).join('');
   const date = new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-  const statusIcon = job.status === 'completed' ? '✅' : job.status === 'failed' ? '❌' : job.status === 'processing' ? '⏳' : '🔄';
+  const statusIcon = job.status === 'completed' ? '✅' : job.status === 'failed' ? '❌' : job.status === 'processing' ? '⏳' : job.status === 'awaiting_response' ? '💬' : '🔄';
   const typeIcon = job.inquiry_type === 'general' ? '❓' : '🎨';
   const typeBadge = `<span class="badge-type ${job.inquiry_type === 'general' ? 'general' : 'color-pick'}">${job.inquiry_type === 'general' ? 'General' : 'Color Pick'}</span>`;
 
@@ -713,10 +721,15 @@ function buildHistoryItem(job, isForMe) {
     titleText = job.caption || 'Untitled analysis';
   }
 
-  // From line (for assigned items)
-  const fromLine = isForMe && job.assigned_to_name
-    ? ''
-    : (job.assigned_to_name ? `<div class="history-from">For: ${escHtml(job.assigned_to_name)}</div>` : '');
+  // From/status line (for assigned items)
+  let fromLine = '';
+  if (isForMe && job.assigned_to_name) {
+    fromLine = '';
+  } else if (job.status === 'awaiting_response' && job.assigned_to_name) {
+    fromLine = `<div class="history-from" style="color:#d97706;font-weight:600">Waiting for ${escHtml(job.assigned_to_name)}</div>`;
+  } else if (job.assigned_to_name) {
+    fromLine = `<div class="history-from">For: ${escHtml(job.assigned_to_name)}</div>`;
+  }
 
   el.innerHTML = `
     <div style="display:flex;gap:0.75rem;align-items:flex-start">

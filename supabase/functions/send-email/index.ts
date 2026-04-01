@@ -85,6 +85,10 @@ type EmailType =
   | "task_assigned"
   // Time entry edited
   | "time_entry_edited"
+  // Project inquiry notifications
+  | "inquiry_assigned"
+  | "inquiry_answered"
+  | "inquiry_digest"
   // Custom (raw HTML passthrough)
   | "custom"
   // Internal — never sent to recipients directly
@@ -106,6 +110,15 @@ interface EmailTemplate {
   subject: string;
   html: string;
   text: string;
+}
+
+// Helper: human-readable time ago
+function timeSince(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  const days = Math.floor(seconds / 86400);
+  return days === 1 ? '1 day ago' : `${days} days ago`;
 }
 
 // Template generators
@@ -2137,6 +2150,157 @@ New Times: ${data.new_clock_in} — ${data.new_clock_out}
 Duration: ${data.new_duration}
 ${data.space_name ? `Location: ${data.space_name}\n` : ''}${data.description ? `Description: ${data.description}\n` : ''}
 This is an automated notification from Alpaca Playhouse work tracking.`
+      };
+    }
+
+    case "inquiry_assigned": {
+      const typeLabel = data.inquiry_type === 'color_pick' ? 'Color Pick' : 'General Question';
+      const typeBadgeColor = data.inquiry_type === 'color_pick' ? '#92400e' : '#2563eb';
+      const typeBadgeBg = data.inquiry_type === 'color_pick' ? '#fef3c7' : '#eff6ff';
+
+      return {
+        subject: `Project inquiry from ${data.submitter_name} — ${typeLabel}`,
+        html: `
+          <h2 style="margin:0 0 4px;">New Project Inquiry</h2>
+          <p style="margin:0 0 16px;color:#7d6f74;font-size:14px;">${data.submitter_name} has a question for you.</p>
+
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 20px;">
+            <tr>
+              <td style="padding:16px 20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding:0 0 8px;font-size:13px;"><strong>Type:</strong></td>
+                    <td style="padding:0 0 8px;text-align:right;"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:${typeBadgeBg};color:${typeBadgeColor};">${typeLabel}</span></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding:0 0 8px;font-size:14px;font-weight:600;color:#2a1f23;">${data.question || data.caption || 'No question provided'}</td>
+                  </tr>
+                  ${data.caption && data.question ? `<tr>
+                    <td style="padding:0 0 6px;font-size:13px;"><strong>Caption:</strong></td>
+                    <td style="padding:0 0 6px;text-align:right;font-size:13px;">${data.caption}</td>
+                  </tr>` : ''}
+                  <tr>
+                    <td style="padding:0;font-size:13px;"><strong>From:</strong></td>
+                    <td style="padding:0;text-align:right;font-size:13px;">${data.submitter_name}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          ${data.image_url ? `<div style="margin:0 0 20px;text-align:center;"><img src="${data.image_url}" alt="Inquiry photo" style="max-width:100%;max-height:300px;border-radius:8px;"></div>` : ''}
+
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin:0 0 20px;">
+            <p style="margin:0;font-size:14px;font-weight:600;color:#1e40af;">How to respond:</p>
+            <p style="margin:8px 0 0;font-size:13px;color:#1d4ed8;">Simply <strong>reply to this email</strong> with your answer. Your response will be sent to ${data.submitter_name} automatically.</p>
+          </div>
+
+          <p style="margin:0;color:#7d6f74;font-size:12px;">You can also respond from the <a href="https://alpacaplayhouse.com/spaces/admin/projects.html" style="color:#d4883a;">admin panel</a>.</p>
+        `,
+        text: `New Project Inquiry
+
+${data.submitter_name} has a question for you.
+
+Type: ${typeLabel}
+Question: ${data.question || data.caption || 'No question provided'}
+${data.caption && data.question ? `Caption: ${data.caption}\n` : ''}From: ${data.submitter_name}
+
+Reply to this email with your answer. Your response will be sent to ${data.submitter_name} automatically.
+
+Or respond from the admin panel: https://alpacaplayhouse.com/spaces/admin/projects.html
+
+— Alpaca Playhouse`
+      };
+    }
+
+    case "inquiry_answered": {
+      return {
+        subject: `Your project inquiry has been answered`,
+        html: `
+          <h2 style="margin:0 0 4px;">Your Inquiry Was Answered</h2>
+          <p style="margin:0 0 16px;color:#7d6f74;font-size:14px;">${data.responder_name || 'Someone'} responded to your project inquiry.</p>
+
+          ${data.image_url ? `<div style="margin:0 0 16px;text-align:center;"><img src="${data.image_url}" alt="Inquiry photo" style="max-width:100%;max-height:200px;border-radius:8px;"></div>` : ''}
+
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 16px;">
+            <tr>
+              <td style="padding:12px 16px;">
+                <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#7d6f74;text-transform:uppercase;letter-spacing:0.05em;">Your Question</p>
+                <p style="margin:0;font-size:14px;color:#2a1f23;font-style:italic;">"${data.question || data.caption || 'Project inquiry'}"</p>
+              </td>
+            </tr>
+          </table>
+
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:0 0 20px;">
+            <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#166534;text-transform:uppercase;letter-spacing:0.05em;">Answer from ${data.responder_name || 'Admin'}</p>
+            <p style="margin:0;font-size:14px;color:#15803d;white-space:pre-wrap;line-height:1.6;">${data.answer}</p>
+          </div>
+
+          <p style="margin:0;color:#7d6f74;font-size:12px;">View all your inquiries at <a href="https://alpacaplayhouse.com/associates/projectinquiry.html" style="color:#d4883a;">Project Inquiry</a>.</p>
+        `,
+        text: `Your Inquiry Was Answered
+
+${data.responder_name || 'Someone'} responded to your project inquiry.
+
+Your Question: "${data.question || data.caption || 'Project inquiry'}"
+
+Answer: ${data.answer}
+
+View all your inquiries at https://alpacaplayhouse.com/associates/projectinquiry.html
+
+— Alpaca Playhouse`
+      };
+    }
+
+    case "inquiry_digest": {
+      const inquiries: Array<{ id: string; question: string; caption: string; image_url: string; submitter_name: string; inquiry_type: string; created_at: string }> = data.inquiries || [];
+      const count = inquiries.length;
+
+      const inquiryRows = inquiries.map((inq: any) => {
+        const typeLabel = inq.inquiry_type === 'color_pick' ? 'Color Pick' : 'General';
+        const ago = inq.created_at ? timeSince(new Date(inq.created_at)) : '';
+        return `
+          <tr style="border-bottom:1px solid #f0ede8;">
+            <td style="padding:12px 8px;vertical-align:top;">
+              ${inq.image_url ? `<img src="${inq.image_url}" alt="" style="width:48px;height:48px;border-radius:6px;object-fit:cover;">` : '<div style="width:48px;height:48px;border-radius:6px;background:#f0ede8;"></div>'}
+            </td>
+            <td style="padding:12px 8px;vertical-align:top;">
+              <div style="font-size:13px;font-weight:600;color:#2a1f23;">${inq.question || inq.caption || 'Inquiry'}</div>
+              <div style="font-size:12px;color:#7d6f74;margin-top:2px;">From ${inq.submitter_name} · ${typeLabel} · ${ago}</div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      const inquiryText = inquiries.map((inq: any) => {
+        const typeLabel = inq.inquiry_type === 'color_pick' ? 'Color Pick' : 'General';
+        return `- ${inq.question || inq.caption || 'Inquiry'} (${typeLabel}, from ${inq.submitter_name})`;
+      }).join('\n');
+
+      return {
+        subject: `${count} project inquir${count === 1 ? 'y' : 'ies'} waiting for your response`,
+        html: `
+          <h2 style="margin:0 0 4px;">Pending Project Inquiries</h2>
+          <p style="margin:0 0 16px;color:#7d6f74;font-size:14px;">You have <strong>${count}</strong> unanswered inquir${count === 1 ? 'y' : 'ies'}.</p>
+
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 20px;">
+            ${inquiryRows}
+          </table>
+
+          <div style="text-align:center;margin:0 0 20px;">
+            <a href="https://alpacaplayhouse.com/spaces/admin/projects.html" style="display:inline-block;padding:10px 24px;background:#d4883a;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">View & Respond</a>
+          </div>
+
+          <p style="margin:0;color:#7d6f74;font-size:12px;">You can also reply to the original notification emails for each inquiry.</p>
+        `,
+        text: `Pending Project Inquiries
+
+You have ${count} unanswered inquir${count === 1 ? 'y' : 'ies'}:
+
+${inquiryText}
+
+View & respond: https://alpacaplayhouse.com/spaces/admin/projects.html
+
+— Alpaca Playhouse`
       };
     }
 

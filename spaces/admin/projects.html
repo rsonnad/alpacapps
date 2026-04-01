@@ -200,6 +200,7 @@
     .inquiry-status.processing { background: #dbeafe; color: #1e40af; }
     .inquiry-status.completed { background: #d1fae5; color: #065f46; }
     .inquiry-status.failed { background: #fef2f2; color: #991b1b; }
+    .inquiry-status.awaiting_response { background: #fff7ed; color: #c2410c; }
     .inquiry-answer {
       margin-top: 0.5rem; font-size: 0.8rem; color: var(--text);
       background: #f9fafb; border-radius: 6px; padding: 0.5rem; line-height: 1.4;
@@ -355,6 +356,7 @@
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
+            <option value="awaiting_response">Awaiting Response</option>
             <option value="completed">Completed</option>
             <option value="failed">Failed</option>
           </select>

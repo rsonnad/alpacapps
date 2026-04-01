@@ -393,6 +393,31 @@ async function logApiUsage(vendor, category, endpoint, job, extra = {}) {
 }
 
 // ============================================
+// Send notification email via send-email edge function
+// ============================================
+async function sendEmail(type, to, data, options = {}) {
+  try {
+    const body = { type, to, data, ...options };
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      const text = await resp.text();
+      log('warn', `Email send failed: ${resp.status}`, { text: text.substring(0, 200) });
+    } else {
+      log('info', `Email sent: ${type} → ${to}`);
+    }
+  } catch (err) {
+    log('warn', `Email send error: ${err.message}`);
+  }
+}
+
+// ============================================
 // Process a single job (routes to type-specific handler)
 // ============================================
 async function processJob(job) {
@@ -401,9 +426,59 @@ async function processJob(job) {
     caption: job.caption,
     question: job.question?.substring(0, 60),
     image_url: job.image_url?.substring(0, 80),
+    assigned_to: job.assigned_to,
   });
 
-  // Mark as processing
+  // If assigned to a person, skip AI — mark as awaiting_response and notify assignee
+  if (job.assigned_to) {
+    log('info', `Job ${job.id} assigned to ${job.assigned_to_name || job.assigned_to}, skipping AI`);
+
+    await supabase
+      .from('project_inquiries')
+      .update({
+        status: 'awaiting_response',
+        started_at: new Date().toISOString(),
+      })
+      .eq('id', job.id);
+
+    // Look up assignee email and submitter name
+    const { data: assignee } = await supabase
+      .from('app_users')
+      .select('email, first_name, display_name')
+      .eq('id', job.assigned_to)
+      .single();
+
+    const { data: submitter } = await supabase
+      .from('app_users')
+      .select('first_name, last_name, display_name')
+      .eq('id', job.app_user_id)
+      .single();
+
+    const submitterName = submitter
+      ? (submitter.first_name && submitter.last_name
+        ? `${submitter.first_name} ${submitter.last_name}`
+        : submitter.display_name || 'An associate')
+      : 'An associate';
+
+    if (assignee?.email) {
+      await sendEmail('inquiry_assigned', assignee.email, {
+        first_name: assignee.first_name || assignee.display_name || 'there',
+        inquiry_id: job.id,
+        inquiry_type: job.inquiry_type,
+        question: job.question || job.caption || 'No question provided',
+        caption: job.caption || '',
+        image_url: job.image_url || '',
+        submitter_name: submitterName,
+      }, {
+        reply_to: `inquiry+${job.id}@alpacaplayhouse.com`,
+      });
+    }
+
+    log('info', `Job ${job.id} set to awaiting_response`);
+    return;
+  }
+
+  // Mark as processing (AI path)
   await supabase
     .from('project_inquiries')
     .update({
