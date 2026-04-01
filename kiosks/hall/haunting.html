@@ -260,18 +260,22 @@ async function showLine(item) {
   // Type the text character by character
   await typeText(item.text, div);
 
-  // Hold
-  await sleep(item.hold || 4000);
+  // Hold — stretched for 30-min pacing
+  await sleep((item.hold || 4000) * 2);
 }
 
+const LOOP_DURATION = 30 * 60 * 1000; // 30 minutes
+
 async function run() {
-  await sleep(3000); // Initial darkness
+  const startTime = Date.now();
+  await sleep(5000); // Initial darkness — longer
 
   for (const item of sequence) {
     if (item.pause) {
-      await sleep(item.pause);
+      await sleep(item.pause * 2.5); // Stretch pauses for 30-min pacing
     } else {
       await showLine(item);
+      await sleep(2000); // Extra breath between lines
     }
   }
 
@@ -283,8 +287,10 @@ async function run() {
     if (currentLine.parentNode) currentLine.remove();
   }
 
-  // After a long pause, loop
-  await sleep(15000);
+  // Wait out the rest of the 30-minute loop
+  const elapsed = Date.now() - startTime;
+  const remaining = Math.max(LOOP_DURATION - elapsed, 10000);
+  await sleep(remaining);
   run();
 }
 
