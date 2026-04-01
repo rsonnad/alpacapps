@@ -1,12 +1,12 @@
 {
-  "version": "v260331.17 9:27p",
-  "release": 1229,
-  "sha": "fc9a5a3fb",
-  "fullSha": "fc9a5a3fb8ebfe10a546541cd6bdff808c4c7d16",
+  "version": "v260331.18 10:11p",
+  "release": 1230,
+  "sha": "89373440f",
+  "fullSha": "89373440f5f129f06a5d59317a3d6e36ef7853fe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T02:27:24+00:00",
-  "commits": [{"sha":"fc9a5a3fb","message":"fix: revert STP per-port disable — caused worse Sonos cutouts than default","author":"Rahul"}]
+  "pushedAt": "2026-04-01T03:11:46+00:00",
+  "commits": [{"sha":"26f0e4c82","message":"fix: revert STP per-port disable — caused worse Sonos cutouts than default","author":"Rahul"},{"sha":"018b35344","message":"fix: enable IGMP querier — root cause of Sonos music stopping after ~2 min","author":"Rahul"},{"sha":"89373440f","message":"fix: enable IGMP querier — root cause of Sonos music stopping after ~2 min","author":"Rahul"}]
 }
