@@ -331,12 +331,9 @@ serve(async (req) => {
     }
 
     if (body.action === "get_group_state") {
-      const perTarget: Array<Record<string, unknown>> = [];
-      let onCount = 0;
-      let brightnessTotal = 0;
-      let brightnessCount = 0;
-      for (const t of targets) {
-        try {
+      // Query all targets in parallel instead of sequentially
+      const perTargetResults = await Promise.allSettled(
+        targets.map(async (t: any) => {
           if (t.backend === "home_assistant") {
             if (!haBaseUrl || !haToken) throw new Error("HA not configured");
             const state = await fetchHa(
@@ -344,58 +341,59 @@ serve(async (req) => {
               haToken,
               `/api/states/${encodeURIComponent(t.target_id)}`,
             );
-            const isOn = state?.state === "on";
-            if (isOn) onCount += 1;
-            const bri = state?.attributes?.brightness;
-            if (typeof bri === "number") {
-              brightnessTotal += Math.round((bri / 255) * 100);
-              brightnessCount += 1;
-            }
-            perTarget.push({
+            return {
               backend: t.backend,
               target_id: t.target_id,
               state: state?.state,
               attributes: state?.attributes || {},
-            });
+            };
           } else if (t.backend === "govee_cloud" && useFallbacks) {
             const stateResp = await callGoveeState(supabaseUrl, serviceRoleKey, t.target_id);
             const caps = stateResp?.payload?.capabilities || [];
             const power = caps.find((c: any) => c.instance === "powerSwitch")?.state?.value;
             const bri = caps.find((c: any) => c.instance === "brightness")?.state?.value;
-            const isOn = power === 1;
-            if (isOn) onCount += 1;
-            if (typeof bri === "number") {
-              brightnessTotal += bri;
-              brightnessCount += 1;
-            }
-            perTarget.push({
+            return {
               backend: t.backend,
               target_id: t.target_id,
-              state: isOn ? "on" : "off",
+              state: power === 1 ? "on" : "off",
               brightness: bri ?? null,
-            });
+            };
           } else if (t.backend === "light_api") {
-            // Light API devices don't support state queries yet
-            perTarget.push({
+            return {
               backend: t.backend,
               target_id: t.target_id,
               state: "unknown",
               note: "Light API state not yet supported",
-            });
+            };
           } else {
-            perTarget.push({
+            return {
               backend: t.backend,
               target_id: t.target_id,
               state: "unknown",
               note: "No state adapter configured",
-            });
+            };
           }
-        } catch (err) {
-          perTarget.push({
-            backend: t.backend,
-            target_id: t.target_id,
-            error: (err as Error).message,
-          });
+        }),
+      );
+
+      const perTarget: Array<Record<string, unknown>> = [];
+      let onCount = 0;
+      let brightnessTotal = 0;
+      let brightnessCount = 0;
+      for (const result of perTargetResults) {
+        if (result.status === "fulfilled") {
+          const entry = result.value;
+          perTarget.push(entry);
+          const isOn = entry.state === "on";
+          if (isOn) onCount += 1;
+          const bri = entry.brightness ?? entry.attributes?.brightness;
+          if (typeof bri === "number") {
+            const briPct = entry.backend === "home_assistant" ? Math.round((bri / 255) * 100) : bri;
+            brightnessTotal += briPct;
+            brightnessCount += 1;
+          }
+        } else {
+          perTarget.push({ error: result.reason?.message || "Unknown error" });
         }
       }
       return jsonResponse(req, {
@@ -424,134 +422,120 @@ serve(async (req) => {
       });
     }
 
+    // Dispatch all backends in parallel using Promise.allSettled
+    const backendPromises: Array<Promise<{ backend: string; ok: boolean; count?: number; result?: any }>> = [];
+
+    // Home Assistant — already batches entity IDs into one call
     if (haTargets.length) {
       if (!haActive || !haBaseUrl || !haToken) {
-        return jsonResponse(req, 
+        return jsonResponse(req,
           { error: "Home Assistant targets exist but HA is not configured." },
           500,
         );
       }
-
-      const haEntityIds = haTargets.map((t: any) => t.target_id);
-      if (body.action === "set_power") {
-        await fetchHa(
-          haBaseUrl,
-          haToken,
-          `/api/services/light/${body.on ? "turn_on" : "turn_off"}`,
-          "POST",
-          { entity_id: haEntityIds, transition: body.transition },
-        );
-      } else if (body.action === "set_brightness") {
-        const brightness = clampInt(Number(body.brightness || 0), 1, 100);
-        await fetchHa(
-          haBaseUrl,
-          haToken,
-          "/api/services/light/turn_on",
-          "POST",
-          { entity_id: haEntityIds, brightness_pct: brightness, transition: body.transition },
-        );
-      } else if (body.action === "set_color") {
-        if (!body.hex_color) throw new Error("hex_color is required for set_color");
-        const rgb = hexToRgb(body.hex_color);
-        await fetchHa(
-          haBaseUrl,
-          haToken,
-          "/api/services/light/turn_on",
-          "POST",
-          { entity_id: haEntityIds, rgb_color: rgb, transition: body.transition },
-        );
-      } else if (body.action === "activate_scene") {
-        const sceneId = body.scene_entity_id ||
-          haTargets.find((t: any) => String(t.target_id).startsWith("scene."))?.target_id;
-        if (!sceneId) throw new Error("scene_entity_id is required for activate_scene");
-        await fetchHa(
-          haBaseUrl,
-          haToken,
-          "/api/services/scene/turn_on",
-          "POST",
-          { entity_id: sceneId, transition: body.transition },
-        );
-      } else {
-        throw new Error(`Unsupported action: ${body.action}`);
-      }
-      results.push({ backend: "home_assistant", ok: true, count: haTargets.length });
+      backendPromises.push((async () => {
+        const haEntityIds = haTargets.map((t: any) => t.target_id);
+        if (body.action === "set_power") {
+          await fetchHa(haBaseUrl, haToken,
+            `/api/services/light/${body.on ? "turn_on" : "turn_off"}`, "POST",
+            { entity_id: haEntityIds, transition: body.transition });
+        } else if (body.action === "set_brightness") {
+          await fetchHa(haBaseUrl, haToken, "/api/services/light/turn_on", "POST",
+            { entity_id: haEntityIds, brightness_pct: clampInt(Number(body.brightness || 0), 1, 100), transition: body.transition });
+        } else if (body.action === "set_color") {
+          if (!body.hex_color) throw new Error("hex_color is required for set_color");
+          await fetchHa(haBaseUrl, haToken, "/api/services/light/turn_on", "POST",
+            { entity_id: haEntityIds, rgb_color: hexToRgb(body.hex_color), transition: body.transition });
+        } else if (body.action === "activate_scene") {
+          const sceneId = body.scene_entity_id ||
+            haTargets.find((t: any) => String(t.target_id).startsWith("scene."))?.target_id;
+          if (!sceneId) throw new Error("scene_entity_id is required for activate_scene");
+          await fetchHa(haBaseUrl, haToken, "/api/services/scene/turn_on", "POST",
+            { entity_id: sceneId, transition: body.transition });
+        } else {
+          throw new Error(`Unsupported action: ${body.action}`);
+        }
+        return { backend: "home_assistant", ok: true, count: haTargets.length };
+      })());
     }
 
+    // WiZ Proxy — already batches IPs into one call
     if (wizTargets.length && useFallbacks) {
       if (!wizProxyUrl || !wizProxyToken) {
         throw new Error("WIZ fallback requested but WIZ_PROXY_URL/WIZ_PROXY_TOKEN missing");
       }
-      const wizIps = wizTargets.map((t: any) => t.target_id);
-      if (body.action === "set_power") {
-        const result = await callWizProxy(wizProxyUrl, wizProxyToken, "power", {
-          ips: wizIps,
-          on: !!body.on,
-        });
-        results.push({ backend: "wiz_proxy", ok: true, result });
-      } else if (body.action === "set_brightness") {
-        const result = await callWizProxy(wizProxyUrl, wizProxyToken, "brightness", {
-          ips: wizIps,
-          brightness: clampInt(Number(body.brightness || 0), 1, 100),
-        });
-        results.push({ backend: "wiz_proxy", ok: true, result });
-      } else if (body.action === "set_color") {
-        if (!body.hex_color) throw new Error("hex_color is required for set_color");
-        const [r, g, b] = hexToRgb(body.hex_color);
-        const result = await callWizProxy(wizProxyUrl, wizProxyToken, "color", {
-          ips: wizIps,
-          r,
-          g,
-          b,
-          dimming: 70,
-        });
-        results.push({ backend: "wiz_proxy", ok: true, result });
-      }
-    }
-
-    if (goveeTargets.length && useFallbacks) {
-      for (const t of goveeTargets) {
+      backendPromises.push((async () => {
+        const wizIps = wizTargets.map((t: any) => t.target_id);
         if (body.action === "set_power") {
-          await callGoveeControl(supabaseUrl, serviceRoleKey, t.target_id, {
-            type: "devices.capabilities.on_off",
-            instance: "powerSwitch",
-            value: body.on ? 1 : 0,
-          });
+          const result = await callWizProxy(wizProxyUrl, wizProxyToken, "power", { ips: wizIps, on: !!body.on });
+          return { backend: "wiz_proxy", ok: true, result };
         } else if (body.action === "set_brightness") {
-          await callGoveeControl(supabaseUrl, serviceRoleKey, t.target_id, {
-            type: "devices.capabilities.range",
-            instance: "brightness",
-            value: clampInt(Number(body.brightness || 0), 1, 100),
-          });
+          const result = await callWizProxy(wizProxyUrl, wizProxyToken, "brightness", {
+            ips: wizIps, brightness: clampInt(Number(body.brightness || 0), 1, 100) });
+          return { backend: "wiz_proxy", ok: true, result };
         } else if (body.action === "set_color") {
           if (!body.hex_color) throw new Error("hex_color is required for set_color");
           const [r, g, b] = hexToRgb(body.hex_color);
-          await callGoveeControl(supabaseUrl, serviceRoleKey, t.target_id, {
-            type: "devices.capabilities.color_setting",
-            instance: "colorRgb",
-            value: r * 65536 + g * 256 + b,
-          });
+          const result = await callWizProxy(wizProxyUrl, wizProxyToken, "color", { ips: wizIps, r, g, b, dimming: 70 });
+          return { backend: "wiz_proxy", ok: true, result };
         }
-      }
-      results.push({ backend: "govee_cloud", ok: true, count: goveeTargets.length });
+        return { backend: "wiz_proxy", ok: true };
+      })());
     }
 
+    // Govee — parallelize all device commands within the backend
+    if (goveeTargets.length && useFallbacks) {
+      backendPromises.push((async () => {
+        await Promise.all(goveeTargets.map((t: any) => {
+          if (body.action === "set_power") {
+            return callGoveeControl(supabaseUrl, serviceRoleKey, t.target_id, {
+              type: "devices.capabilities.on_off", instance: "powerSwitch", value: body.on ? 1 : 0 });
+          } else if (body.action === "set_brightness") {
+            return callGoveeControl(supabaseUrl, serviceRoleKey, t.target_id, {
+              type: "devices.capabilities.range", instance: "brightness",
+              value: clampInt(Number(body.brightness || 0), 1, 100) });
+          } else if (body.action === "set_color") {
+            if (!body.hex_color) throw new Error("hex_color is required for set_color");
+            const [r, g, b] = hexToRgb(body.hex_color);
+            return callGoveeControl(supabaseUrl, serviceRoleKey, t.target_id, {
+              type: "devices.capabilities.color_setting", instance: "colorRgb",
+              value: r * 65536 + g * 256 + b });
+          }
+        }));
+        return { backend: "govee_cloud", ok: true, count: goveeTargets.length };
+      })());
+    }
+
+    // Light API — parallelize all room commands within the backend
     if (lightApiTargets.length) {
       if (!lightApiUrl || !lightApiToken) {
         throw new Error("Light API targets exist but LIGHT_API_URL/LIGHT_API_TOKEN not configured");
       }
-      for (const t of lightApiTargets) {
-        const room = t.metadata?.light_api_room || t.target_id;
-        if (body.action === "set_power") {
-          await callLightApi(lightApiUrl, lightApiToken, room, body.on ? "on" : "off");
-        } else if (body.action === "set_brightness") {
-          const brightness = clampInt(Number(body.brightness || 0), 1, 100);
-          await callLightApi(lightApiUrl, lightApiToken, room, "on", brightness);
-        } else if (body.action === "set_color") {
-          if (!body.hex_color) throw new Error("hex_color is required for set_color");
-          await callLightApi(lightApiUrl, lightApiToken, room, body.hex_color);
-        }
+      backendPromises.push((async () => {
+        await Promise.all(lightApiTargets.map((t: any) => {
+          const room = t.metadata?.light_api_room || t.target_id;
+          if (body.action === "set_power") {
+            return callLightApi(lightApiUrl, lightApiToken, room, body.on ? "on" : "off");
+          } else if (body.action === "set_brightness") {
+            return callLightApi(lightApiUrl, lightApiToken, room, "on",
+              clampInt(Number(body.brightness || 0), 1, 100));
+          } else if (body.action === "set_color") {
+            if (!body.hex_color) throw new Error("hex_color is required for set_color");
+            return callLightApi(lightApiUrl, lightApiToken, room, body.hex_color);
+          }
+        }));
+        return { backend: "light_api", ok: true, count: lightApiTargets.length };
+      })());
+    }
+
+    // Wait for all backends to complete in parallel
+    const settled = await Promise.allSettled(backendPromises);
+    for (const r of settled) {
+      if (r.status === "fulfilled") {
+        results.push(r.value);
+      } else {
+        results.push({ backend: "unknown", ok: false, error: r.reason?.message || "Backend failed" });
       }
-      results.push({ backend: "light_api", ok: true, count: lightApiTargets.length });
     }
 
     return jsonResponse(req, {
