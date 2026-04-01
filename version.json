@@ -1,12 +1,12 @@
 {
-  "version": "v260401.05 4:52a",
-  "release": 1240,
-  "sha": "e6c2fabf6",
-  "fullSha": "e6c2fabf69332f04828a33240e60070bb2a140f2",
+  "version": "v260401.06 5:06a",
+  "release": 1241,
+  "sha": "e1de92db4",
+  "fullSha": "e1de92db43ca84b6769e69e104e4320d4267e625",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T09:52:57+00:00",
-  "commits": [{"sha":"686bcd55e","message":"update haunting page for 30-minute loop pacing","author":"Rahul"},{"sha":"b5af49265","message":"add garage test page for Pi kiosk verification","author":"Rahul"},{"sha":"e6c2fabf6","message":"Merge branch 'clever-dhawan'","author":"Rahul"}]
+  "pushedAt": "2026-04-01T10:06:46+00:00",
+  "commits": [{"sha":"e1a23d027","message":"rewrite haunting text — ambiguous fables from another realm","author":"Rahul"},{"sha":"3f1b39919","message":"hide cursor and tune pacing for Pi kiosk haunting","author":"Rahul"},{"sha":"c274f900e","message":"haunting page: bigger colored text, alpaca wisdom, cursor hidden","author":"Rahul"},{"sha":"e1de92db4","message":"Merge branch 'clever-dhawan'","author":"Rahul"}]
 }
