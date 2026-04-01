@@ -45,14 +45,49 @@
 
 To control ANY device (lights, thermostats, cameras, vehicles, appliances):
 
-1. **Query `device_control_recipes`** for the device's command: `SELECT * FROM device_control_recipes WHERE device_name ILIKE '%keyword%' AND action = 'turn_on'`
-2. **For lights:** the universal command is the Light API: `curl -X POST https://lights.alpacaplayhouse.com/lights -H "Authorization: Bearer $TOKEN" -d '{"rooms":"ROOM","color":"COLOR"}'`
-3. **Token:** `bw-read "Light API — Alpuca" "password"`
-4. **All rooms list:** query `SELECT DISTINCT room FROM device_control_recipes WHERE device_table = 'lighting_groups'`
+1. **For lights — use HAOS API directly (1 call).** Do NOT use `lights.alpacaplayhouse.com` (404 since 2026-03-31).
+   ```bash
+   ssh -o StrictHostKeyChecking=no paca@192.168.1.200 "curl -s -X POST 'http://192.168.1.39:8123/api/services/light/turn_off' \
+     -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxN2FlNmMyNTdhYWY0NGMxODBjZmMxOWU3ZDBiZWExMiIsImlhdCI6MTc3NDE1NTUzNSwiZXhwIjoyMDg5NTE1NTM1fQ.MdIZq95i9pJBKuKxn_aeyrK1O55JbMhsgtnM7GcTkXQ' \
+     -H 'Content-Type: application/json' \
+     -d '{\"entity_id\":\"light.ENTITY\"}'"
+   ```
+   For turn_on with color: add `\"rgb_color\":[R,G,B],\"brightness\":0-255` to the JSON body.
+
+2. **Light entity quick-reference (use these exact entity IDs):**
+   | User says | HAOS entity_id |
+   |-----------|---------------|
+   | garage / garage mahal | `light.garage_all` |
+   | garage ceiling | `light.garage_ceiling` |
+   | garage dj | `light.garage_dj` |
+   | outhouse | `light.outhouse_all` |
+   | outhouse ceiling | `light.outhouse_ceiling` |
+   | outhouse stalls | `light.outhouse_stalls` |
+   | outhouse porch | `light.outhouse_porch_lights` |
+   | skyloft | `light.skyloft_lights` |
+   | skyloft ceiling | `light.skyloft_ceiling` |
+   | skyloft bathroom | `light.skyloft_bathroom` |
+   | living room | `light.living_room_lights` |
+   | kitchen | `light.kitchen_lights` |
+   | dining room | `light.dining_room_lights` |
+   | master bathroom | `light.master_bathroom_lights` |
+   | stairs | `light.stairs_lights` |
+   | spartan | `light.spartan_all` |
+   | sauna | `light.sauna_lights` |
+   | facade | `light.facade_lights` |
+   | front fence | `light.front_fence_lights` |
+   | back patio string | `light.back_patio_string_lite` |
+   | food fence | `light.food_fence_string` |
+   | master pasture | `light.master_pasture_lights` |
+   | nook / pequeno nook | `light.pequeno_nook_lights` |
+   | cabins fence | `light.cabins_fence` |
+   | balcony | `light.balcony_striplight` |
+
+3. **Verify after:** `ssh paca@192.168.1.200 "curl -s 'http://192.168.1.39:8123/api/states/light.ENTITY' -H 'Authorization: Bearer TOKEN'" | python3 -c "import sys,json; print(json.load(sys.stdin)['state'])"`
+
+4. **For non-light devices:** query `device_control_recipes`: `SELECT * FROM device_control_recipes WHERE device_name ILIKE '%keyword%' AND action = 'turn_on'`
 5. **Browse all devices:** `devices_unified` VIEW unions all device tables into one queryable surface
 6. **Directory page:** https://alpacaplayhouse.com/directory/devices.html
-
-**Do NOT** read `memory/light-control.md` or `memory/light-inventory.md` — all recipes are now in the `device_control_recipes` table.
 
 ## Service Connection Protocol
 
