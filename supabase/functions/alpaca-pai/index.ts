@@ -483,7 +483,12 @@ If you skip steps 1-2 and answer from memory, you WILL give wrong answers. You a
 
 This applies to ALL questions about: monitors, TVs, speakers, audio, Sonos, cameras, thermostats, appliances, locks, swim spa, washer/dryer, lighting, computers, WiFi, streaming, HDMI, Bluetooth, remotes, or any physical thing on the property.
 
-1. NEVER fabricate. Do not guess brand names, model numbers, technical specs, or how-to instructions. If lookup_document and web_search return nothing useful, say "I'm not sure — let me connect you with the team" rather than guessing.
+1. NEVER fabricate brand names, model numbers, or technical specs. But DO try hard to answer:
+   - Step 1: lookup_document for property-specific info.
+   - Step 2: If not found, call web_search with a specific query (include device brand/model if known).
+   - Step 3: If web_search gives a reasonable generic answer (e.g. "how to use a Nest thermostat"), USE it — generic instructions for known device brands are helpful even without property-specific docs.
+   - Step 4: ONLY if you truly cannot give a useful answer, say "I'm not 100% sure about that specific setup, but here's what I found..." and give your best attempt.
+   - Step 5: After ANY answer where you lacked property-specific documentation, SILENTLY call report_unanswered so the owner can add proper docs. Do NOT ask the user for permission — just call it.
 2. Only control devices listed below. If asked about something not in scope, say you don't have access to that.
 3. For ambiguous requests, ask for clarification.
 4. Confirm what you did after taking actions.
@@ -1468,6 +1473,33 @@ const TOOL_DECLARATIONS = [
         },
       },
       required: ["prompt"],
+    },
+  },
+  {
+    name: "report_unanswered",
+    description:
+      "Report a question you couldn't confidently answer, so the property owner gets an email and can add it to the knowledge base. Use this AUTOMATICALLY when: (a) lookup_document found nothing relevant AND web_search didn't give a clear property-specific answer, or (b) the question is about a specific device/setup at the property that you can't verify. Do NOT ask the user for permission — just call this tool silently after giving your best attempt answer.",
+    parameters: {
+      type: "object",
+      properties: {
+        question: {
+          type: "string",
+          description: "The original question the user asked",
+        },
+        attempted_answer: {
+          type: "string",
+          description: "Brief summary of what you told the user (or 'none' if you couldn't answer at all)",
+        },
+        reason: {
+          type: "string",
+          description: "Why you're not confident: e.g. 'no property docs found', 'web search gave generic info but not property-specific', 'device not in document_index'",
+        },
+        user_email: {
+          type: "string",
+          description: "The user's email if known (from their profile), otherwise omit",
+        },
+      },
+      required: ["question", "attempted_answer", "reason"],
     },
   },
 ];
@@ -2755,6 +2787,42 @@ async function executeToolCall(
         }).then(() => {});
 
         return `Web search results for "${query}":\n\n${formatted}`;
+      }
+
+      case "report_unanswered": {
+        // Send faq_unanswered email to property owner
+        const question = args.question || "Unknown question";
+        const attemptedAnswer = args.attempted_answer || "none";
+        const reason = args.reason || "No reason given";
+        const userEmail = args.user_email || scope.email || null;
+
+        try {
+          const emailResp = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            },
+            body: JSON.stringify({
+              type: "faq_unanswered",
+              to: "rahulioson@gmail.com",
+              data: {
+                question: `${question}\n\nPAI's attempted answer: ${attemptedAnswer}\nReason flagged: ${reason}`,
+                user_email: userEmail || "Not provided",
+                faq_admin_url: "https://alpacaplayhouse.com/spaces/admin/faq.html",
+              },
+            }),
+          });
+
+          if (!emailResp.ok) {
+            console.error("report_unanswered email failed:", emailResp.status);
+            return "Flagged question internally (email delivery uncertain).";
+          }
+          return "Question flagged and admin notified. The knowledge base will be updated.";
+        } catch (err: any) {
+          console.error("report_unanswered error:", err.message);
+          return "Flagged question internally (email send failed).";
+        }
       }
 
       case "check_pending_emails": {
