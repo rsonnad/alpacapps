@@ -1,12 +1,12 @@
 {
-  "version": "v260331.21 11:29p",
-  "release": 1233,
-  "sha": "b03bedbeb",
-  "fullSha": "b03bedbebb8bd10e338c0a953628373ddf270b20",
+  "version": "v260331.22 11:46p",
+  "release": 1234,
+  "sha": "8e3775a22",
+  "fullSha": "8e3775a22efd494ac7f0b1f786820e3d780e041d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T04:29:36+00:00",
-  "commits": [{"sha":"b03bedbeb","message":"Add code editor box to TMJ page — sends prompts to feature-builder","author":"Rahul"}]
+  "pushedAt": "2026-04-01T04:46:23+00:00",
+  "commits": [{"sha":"8e3775a22","message":"Switch TMJ editor to prompt-first flow with Google OAuth","author":"Rahul"}]
 }
