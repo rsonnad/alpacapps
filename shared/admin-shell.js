@@ -188,10 +188,16 @@ export async function renderTabNav(activeTab, authState, section = 'staff') {
 
   // Filter tabs by section, permission, AND enabled features
   const enabledFeatures = await getEnabledFeatures();
+  const permissionsLoaded = authState.permissions?.size > 0;
+  const isAdminRole = ['admin', 'oracle'].includes(authState.appUser?.role);
   const tabs = ALL_ADMIN_TABS
     .filter(tab => tab.section === section)
     .filter(tab => !tab.feature || enabledFeatures[tab.feature])
-    .filter(tab => authState.hasPermission?.(tab.permission));
+    .filter(tab => {
+      // If permissions haven't loaded yet but user has admin role, show all tabs
+      if (!permissionsLoaded && isAdminRole) return true;
+      return authState.hasPermission?.(tab.permission);
+    });
 
   // DevControl manages its own sub-tabs via renderDevControlTabs() — don't overwrite
   if (section !== 'devcontrol') {
