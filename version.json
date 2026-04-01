@@ -1,12 +1,12 @@
 {
-  "version": "v260331.18 10:11p",
-  "release": 1230,
-  "sha": "89373440f",
-  "fullSha": "89373440f5f129f06a5d59317a3d6e36ef7853fe",
+  "version": "v260331.19 10:33p",
+  "release": 1231,
+  "sha": "c46a6093c",
+  "fullSha": "c46a6093c94b66ad85ce6b20b3de03aecaa33061",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T03:11:46+00:00",
-  "commits": [{"sha":"26f0e4c82","message":"fix: revert STP per-port disable — caused worse Sonos cutouts than default","author":"Rahul"},{"sha":"018b35344","message":"fix: enable IGMP querier — root cause of Sonos music stopping after ~2 min","author":"Rahul"},{"sha":"89373440f","message":"fix: enable IGMP querier — root cause of Sonos music stopping after ~2 min","author":"Rahul"}]
+  "pushedAt": "2026-04-01T03:33:39+00:00",
+  "commits": [{"sha":"c46a6093c","message":"fix: migrate all Sonos API references from Almaca to Alpuca","author":"Rahul"}]
 }
