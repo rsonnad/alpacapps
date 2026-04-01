@@ -91,6 +91,7 @@ and [TwP Sonos/UniFi gist](https://gist.github.com/TwP/a8286f85dfb606a0403b71a65
 | Setting | Value | Recommended | Status | Why |
 |---------|-------|-------------|--------|-----|
 | IGMP Snooping | **ON** | ON | OK | Directs multicast to only ports that need it (critical for 14 zones) |
+| IGMP Querier (kernel) | **ON** (`multicast_querier=1`) | ON | **CRITICAL** | Without querier, IGMP memberships expire after ~260s and music stops. Boot script: `/data/on_boot.d/10-igmp-querier.sh` |
 | mDNS | **ON** | ON | OK | Required for Sonos discovery |
 | DHCP Range | 192.168.1.6–254 | — | OK | — |
 | Sonos DHCP Reservations | **NONE** | Should have | GAP | Prevents IP churn during DHCP renewal |
@@ -153,6 +154,19 @@ but zero Sonos reservations. Add these when speaker MACs/IPs are stable.
 **Secondary issue (REVERTED):** Tried disabling STP per-port on UDM Pro and US8P60 to fix group-add stops. This actually made things **worse** — caused persistent cutouts and grouping failures. Reverted `port_overrides` back to `[]` (default STP enabled). The Mar 30 working state had default STP on all ports.
 
 **Lesson:** Despite internet guides recommending per-port STP disable for Sonos, it doesn't work on this network. The default STP is what was running when everything worked fine on Mar 27-30.
+
+### 2026-03-31: Music stops after ~2 minutes (IGMP querier missing)
+
+**Root cause:** IGMP snooping was ON (enabled Mar 27) but the **IGMP querier was OFF** (kernel default `multicast_querier=0`). Without a querier sending periodic queries, the switch's IGMP group membership entries expire after 260 seconds. Once expired, the switch stops forwarding multicast traffic to Sonos ports → music stops.
+
+**Fix:** Enabled IGMP querier on br0 bridge:
+```bash
+echo 1 > /sys/devices/virtual/net/br0/bridge/multicast_querier
+```
+
+**Persistence:** Created `/data/on_boot.d/10-igmp-querier.sh` boot script on UDM Pro. Runs on every boot with 30s delay for bridge initialization.
+
+**Why this wasn't caught earlier:** On Mar 27 when IGMP snooping was first enabled, the querier wasn't set. Music worked initially because speakers had just joined their multicast groups. The ~2-4 minute timeout wasn't immediately obvious during short testing sessions.
 
 ### 2026-03-30: All speakers moved to WiFi
 
