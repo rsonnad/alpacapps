@@ -1,12 +1,12 @@
 {
-  "version": "v260401.01 12:22a",
-  "release": 1236,
-  "sha": "2807b6461",
-  "fullSha": "2807b6461228101fc4f57bdcb7ae0050fad09917",
+  "version": "v260401.02 4:42a",
+  "release": 1237,
+  "sha": "3084b4e09",
+  "fullSha": "3084b4e09cb844cd16d6cb7678aed79d3dfde2af",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T05:22:22+00:00",
-  "commits": [{"sha":"2807b6461","message":"docs: update SONOSAUTOMATION.md — full revert to pre-3/27 + kernel snooping fix","author":"Rahul"}]
+  "pushedAt": "2026-04-01T09:42:50+00:00",
+  "commits": [{"sha":"3084b4e09","message":"fix: replace broken Light API with direct HAOS entity lookup table","author":"Rahul"}]
 }
