@@ -58,7 +58,7 @@ Room names are URL-encoded: `garage%20outdoors`, `Living%20Sound`, `Front%20Outs
 
 ## UDM Pro Network Settings
 
-### Full Settings Audit (verified 2026-03-31)
+### Full Settings Audit (verified 2026-04-01)
 
 Audited against [unifi-sonos-doc](https://github.com/IngmarStein/unifi-sonos-doc) (537★),
 [Ubiquiti Help Center](https://help.ui.com/hc/en-us/articles/18930473041047),
@@ -69,11 +69,11 @@ and [TwP Sonos/UniFi gist](https://gist.github.com/TwP/a8286f85dfb606a0403b71a65
 | Setting | Value | Recommended | Status | Why |
 |---------|-------|-------------|--------|-----|
 | Multicast Enhancement (IGMPv3) | **OFF** | ON (guides say) | Intentional override | ON breaks older Connect/Connect:Amp — tested 2026-03-31 |
-| BSS Transition (802.11v) | **OFF** | OFF | OK | Prevents APs from handing off stationary speakers |
+| BSS Transition (802.11v) | **ON** | OFF (guides say) | Reverted to pre-3/27 | Disabling didn't help; pre-3/27 had it ON and worked fine |
 | Fast Roaming (802.11r) | **OFF** | OFF | OK | Old Sonos devices disconnect during fast roam |
 | Min 2.4GHz Rate | **6 Mbps** | 6-12 Mbps | OK | Higher values can kick weak-signal speakers |
 | DTIM 2.4GHz | **1** | 1 | OK | Fastest multicast delivery |
-| DTIM 5GHz | **1** | 1 | OK | Fastest multicast delivery |
+| DTIM 5GHz | **3** (default) | 1 (guides say) | Reverted to pre-3/27 | DTIM 1 didn't help; default 3 is what worked pre-3/27 |
 | L2 Isolation | **OFF** | OFF | OK | Speakers must talk to each other |
 | Proxy ARP | **OFF** | OFF | OK | Can interfere with Sonos discovery |
 | UAPSD | **OFF** | OFF | OK | Power save mode can delay multicast |
@@ -82,6 +82,9 @@ and [TwP Sonos/UniFi gist](https://gist.github.com/TwP/a8286f85dfb606a0403b71a65
 | mDNS Proxy Mode | **auto** | auto/on | OK | Required for Sonos mDNS discovery |
 | IAPP | **ON** | ON | OK | Inter-AP handoff protocol |
 | WPA Mode | **wpa2** | wpa2 | OK | WPA3 causes issues with older Sonos |
+| WPA3 Support | **OFF** | OFF | OK | Old Connect/Connect:Amp don't support WPA3 |
+| WPA3 Transition | **OFF** | OFF | OK | Transition mode still advertises PMF, confuses old devices |
+| PMF Mode | **disabled** | disabled | OK | Protected Management Frames breaks old Sonos auth |
 | Band | **both** (2g+5g) | both | OK | Old devices use 2.4GHz, newer use 5GHz |
 | Hide SSID | **OFF** | OFF | OK | Sonos can't find hidden SSIDs reliably |
 | Enhanced IoT | **OFF** | OFF | OK | Can cause unexpected behavior |
@@ -90,11 +93,33 @@ and [TwP Sonos/UniFi gist](https://gist.github.com/TwP/a8286f85dfb606a0403b71a65
 
 | Setting | Value | Recommended | Status | Why |
 |---------|-------|-------------|--------|-----|
-| IGMP Snooping | **ON** | ON | OK | Directs multicast to only ports that need it (critical for 14 zones) |
-| IGMP Querier (kernel) | **ON** (`multicast_querier=1`) | ON | **CRITICAL** | Without querier, IGMP memberships expire after ~260s and music stops. Boot script: `/data/on_boot.d/10-igmp-querier.sh` |
+| IGMP Snooping (controller) | **OFF** | ON (guides say) | Reverted to pre-3/27 | See "Kernel vs Controller" below — controller toggle alone is insufficient |
+| IGMP Querier (kernel) | **OFF** (`multicast_querier=0`) | ON if snooping ON | OK (snooping off) | Not needed when snooping is off — multicast floods everywhere |
+| Kernel multicast_snooping (br0) | **OFF** (`multicast_snooping=0`) | — | **CRITICAL** | See "Kernel vs Controller" below |
 | mDNS | **ON** | ON | OK | Required for Sonos discovery |
 | DHCP Range | 192.168.1.6–254 | — | OK | — |
 | Sonos DHCP Reservations | **NONE** | Should have | GAP | Prevents IP churn during DHCP renewal |
+
+### ⚠️ Kernel vs Controller IGMP Snooping — CRITICAL
+
+The UniFi controller's `igmp_snooping` toggle (Settings → Networks → Default) only controls the **UniFi switch layer**. It does **NOT** control the Linux kernel's `br0` bridge `multicast_snooping` setting on the UDM Pro itself. These are two independent systems:
+
+| Layer | Setting | How to read | How to change |
+|-------|---------|-------------|---------------|
+| Controller (switch) | `igmp_snooping` in networkconf | API GET `/rest/networkconf/{id}` | API PUT with CSRF |
+| Kernel (br0 bridge) | `/sys/devices/virtual/net/br0/bridge/multicast_snooping` | SSH: `cat /sys/.../multicast_snooping` | SSH: `echo 0 > /sys/.../multicast_snooping` |
+
+**If you enable controller IGMP snooping, you MUST also enable the kernel querier** (`multicast_querier=1`). If the kernel has snooping ON but querier OFF, IGMP group memberships expire after ~260 seconds and the switch stops forwarding multicast to Sonos ports → music stops.
+
+**Current working state (2026-04-01):** Both OFF — multicast floods freely. Less efficient but 100% reliable for 14 zones.
+
+**Non-persistent:** Kernel settings reset on UDM reboot. If a boot persistence script is needed:
+```bash
+# /data/on_boot.d/10-multicast-snooping-off.sh
+#!/bin/sh
+sleep 30  # wait for br0 bridge init
+echo 0 > /sys/devices/virtual/net/br0/bridge/multicast_snooping
+```
 
 **Switch Ports (STP):**
 
@@ -121,8 +146,10 @@ and [TwP Sonos/UniFi gist](https://gist.github.com/TwP/a8286f85dfb606a0403b71a65
 | Airtime Fairness | Starves older Sonos hardware |
 | Block LAN to WLAN Multicast | Prevents wired-to-wireless multicast |
 | Client Device Isolation | Prevents speakers from communicating |
-| WPA3 | Old Connect/Connect:Amp doesn't support it |
+| WPA3 / WPA3 Transition | Old Connect/Connect:Amp doesn't support it. Transition mode causes repeated auth negotiation loops (WPA3 fail → WPA2 reconnect → repeat) |
+| PMF (Protected Management Frames) | Even in "optional" mode, confuses old Sonos devices. Set to `disabled`. |
 | Per-port STP disable | Causes grouping failures and cutouts — tested and reverted 2026-03-31 |
+| Kernel snooping ON without querier | Controller `igmp_snooping` toggle doesn't control kernel `br0`. If kernel snooping is ON, querier MUST also be ON or music dies after ~260s |
 
 ### Sonos-Required Ports (for firewall/VLAN setups)
 
@@ -141,6 +168,35 @@ it can cause temporary grouping failures. Current WiZ bulb reservations exist (1
 but zero Sonos reservations. Add these when speaker MACs/IPs are stable.
 
 ## Troubleshooting History
+
+### 2026-04-01: Full revert to pre-3/27 + kernel snooping fix
+
+**Symptoms:** Music cuts off after ~1 minute, stops when starting music on a different speaker, songs take forever to load or fail entirely.
+
+**Root causes (3 issues compounding):**
+
+1. **Kernel `multicast_snooping` ON with querier OFF** — The UniFi controller's `igmp_snooping: false` toggle only controls the switch layer, NOT the Linux kernel's `br0` bridge. Kernel had `multicast_snooping=1` + `multicast_querier=0` → IGMP memberships expired after ~260s → multicast dropped.
+
+2. **WPA3 Transition mode ON** — `wpa3_support: true`, `wpa3_transition: true`, `pmf_mode: "optional"` were set on Black Rock City. Old Sonos Connect devices tried WPA3 auth, failed, fell back to WPA2, causing repeated connection cycling.
+
+3. **Various 3/27 "optimization" changes** — IGMP snooping ON (without proper querier), BSS Transition OFF, DTIM 5GHz changed to 1. None of these helped; the pre-3/27 defaults worked better.
+
+**All fixes applied (2026-04-01):**
+
+| Fix | Command/Method | Persists? |
+|-----|---------------|-----------|
+| Kernel multicast_snooping → 0 | `echo 0 > /sys/.../br0/bridge/multicast_snooping` via SSH | **NO** — resets on reboot |
+| Kernel multicast_querier → 0 | `echo 0 > /sys/.../br0/bridge/multicast_querier` via SSH | NO |
+| Controller IGMP snooping → OFF | API PUT to networkconf | Yes |
+| BSS Transition → ON | API PUT to wlanconf | Yes |
+| DTIM 5GHz → 3 (default) | API PUT to wlanconf | Yes |
+| WPA3 Support → OFF | API PUT to wlanconf | Yes |
+| WPA3 Transition → OFF | API PUT to wlanconf | Yes |
+| PMF → disabled | API PUT to wlanconf | Yes |
+
+**Lesson:** The controller UI is not the whole story. Always verify kernel-level settings via SSH (`cat /sys/devices/virtual/net/br0/bridge/multicast_snooping`). The two layers are independent.
+
+**SSH gotcha:** UDM Pro SSH requires `-o PubkeyAuthentication=no` flag or sshpass can't feed the password. Without it, pubkey fails silently and keyboard-interactive doesn't prompt.
 
 ### 2026-03-31: "Unable to play" + songs not changing
 
@@ -225,16 +281,16 @@ YouTube Music and Spotify tokens can expire if DNS is broken (e.g., Tailscale DN
 
 ### UDM Pro Maintenance
 
-- **After firmware updates:** Re-verify IGMP Snooping, mDNS, and per-port STP settings
+- **After firmware updates or reboots:** Re-check kernel `multicast_snooping` via SSH — it resets to default (ON) on every reboot. Run: `cat /sys/devices/virtual/net/br0/bridge/multicast_snooping` — should be `0`.
 - **After AP firmware updates:** Check multicast settings haven't been reset
-- **Settings are in MongoDB** (port 27117 on UDM Pro) — API account is read-only
+- **Settings are in MongoDB** (port 27117 on UDM Pro) or via **REST API** (PUT with CSRF token — `alpacaauto` is Super Admin)
 
 #### How to read/write UDM Pro settings
 
 ```bash
-# SSH to UDM Pro
+# SSH to UDM Pro (MUST use -o PubkeyAuthentication=no)
 sshpass -p "$(bw-read 'UniFi Dream Machine Pro — Network Gateway' 'SSH Password')" \
-  ssh -o StrictHostKeyChecking=no root@192.168.1.1
+  ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@192.168.1.1
 
 # Read WiFi settings
 mongo --port 27117 ace --quiet --eval 'db.wlanconf.find({name:"Black Rock City"}).pretty()'
