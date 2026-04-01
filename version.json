@@ -1,12 +1,12 @@
 {
-  "version": "v260331.15 8:33p",
-  "release": 1227,
-  "sha": "000e9396e",
-  "fullSha": "000e9396e9fbb91fdf11d87ae0fa3a8e431c890e",
+  "version": "v260331.16 8:54p",
+  "release": 1228,
+  "sha": "ef7cba3bf",
+  "fullSha": "ef7cba3bfa36fd8795cd9007d1ec69d3d51c8d9d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T01:33:59+00:00",
-  "commits": [{"sha":"000e9396e","message":"docs: add Sonos automation guide with UDM Pro network settings and troubleshooting history","author":"Rahul"}]
+  "pushedAt": "2026-04-01T01:54:44+00:00",
+  "commits": [{"sha":"ef7cba3bf","message":"docs: expand SONOSAUTOMATION.md with full UDM Pro audit table and port reference","author":"Rahul"}]
 }
