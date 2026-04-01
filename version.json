@@ -1,12 +1,12 @@
 {
-  "version": "v260401.08 5:34a",
-  "release": 1243,
-  "sha": "a66b65877",
-  "fullSha": "a66b658774656e6cf85764a1f23b7de83ba9648e",
+  "version": "v260401.09 1:18p",
+  "release": 1244,
+  "sha": "36e360c3a",
+  "fullSha": "36e360c3ad9e0412ecf4fd4474db40b5f420af4b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T10:34:00+00:00",
-  "commits": [{"sha":"a66b65877","message":"Add ghost voice audition studio for ancient/whispery PAI voice","author":"Rahul"}]
+  "pushedAt": "2026-04-01T18:18:23+00:00",
+  "commits": [{"sha":"36e360c3a","message":"Update infra pages and ARCHITECTURE.md with current codebase state","author":"Rahul"}]
 }
