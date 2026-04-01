@@ -2190,6 +2190,12 @@ function initPhotoAiTab() {
   const clearBtn = document.getElementById('photoaiClearBtn');
   const submitBtn = document.getElementById('photoaiSubmitBtn');
   const promptInput = document.getElementById('photoaiPrompt');
+  const emailInput = document.getElementById('photoaiEmail');
+
+  // Pre-fill email from auth
+  if (authState?.user?.email) {
+    emailInput.value = authState.user.email;
+  }
 
   function setPreview(file) {
     photoaiFile = file;
@@ -2254,7 +2260,7 @@ function initPhotoAiTab() {
           prompt: prompt || null,
           user_id: profile.id,
           user_name: profile.display_name || profile.first_name || 'Team member',
-          user_email: authState?.user?.email || null,
+          user_email: emailInput.value.trim() || null,
         }),
       });
 
