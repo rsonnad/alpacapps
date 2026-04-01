@@ -976,5 +976,198 @@ function renderResults(el) {
 render();
 </script>
 
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script>
+// =============================================
+// CODE EDITOR — sends prompt to feature-builder
+// =============================================
+const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+const TARGET_FILE = 'rahulio/pages/tmj/index.html';
+
+let sb, editorUser = null;
+
+function initSupabase() {
+  if (sb) return;
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: { persistSession: true, storageKey: 'genalpaca-auth' }
+  });
+}
+
+async function checkEditorAuth() {
+  initSupabase();
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    editorUser = session.user;
+    renderEditorBox();
+  }
+}
+
+async function editorLogin() {
+  initSupabase();
+  const email = document.getElementById('editor-email').value.trim();
+  const pass = document.getElementById('editor-pass').value;
+  if (!email || !pass) return;
+
+  const loginBtn = document.getElementById('editor-login-btn');
+  loginBtn.textContent = 'Signing in...';
+  loginBtn.disabled = true;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    document.getElementById('editor-status').textContent = error.message;
+    document.getElementById('editor-status').style.color = 'var(--coral)';
+    loginBtn.textContent = 'Sign In';
+    loginBtn.disabled = false;
+    return;
+  }
+  editorUser = data.user;
+  renderEditorBox();
+}
+
+function renderEditorBox() {
+  const box = document.getElementById('editor-box');
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="font-size:0.85rem;color:var(--text-dim)">Signed in as ${editorUser.email}</span>
+      <button onclick="editorLogout()" style="font-size:0.8rem;color:var(--coral);background:none;border:none;cursor:pointer">Sign out</button>
+    </div>
+    <textarea id="editor-prompt" placeholder="Describe how you want to change this page... e.g. 'Add a question about sleep quality' or 'Change the color scheme to dark mode'" rows="3" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:0.95rem;resize:vertical;background:var(--bg)"></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+      <button class="btn btn-primary" onclick="submitEditorPrompt()" id="editor-submit-btn" style="flex:none;padding:10px 24px">Send to Builder</button>
+      <span id="editor-status" style="font-size:0.85rem;color:var(--text-dim)"></span>
+    </div>
+    <div id="editor-history" style="margin-top:16px"></div>`;
+  loadEditorHistory();
+}
+
+async function editorLogout() {
+  await sb.auth.signOut();
+  editorUser = null;
+  document.getElementById('editor-box').innerHTML = editorLoginForm();
+}
+
+async function submitEditorPrompt() {
+  const prompt = document.getElementById('editor-prompt').value.trim();
+  if (!prompt) return;
+
+  const btn = document.getElementById('editor-submit-btn');
+  const status = document.getElementById('editor-status');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  status.textContent = '';
+
+  // Scope the prompt to only this file
+  const scopedDesc = `[SCOPED TO FILE: ${TARGET_FILE}]\n\nYou may ONLY modify the file: ${TARGET_FILE}\nDo NOT create, modify, or delete any other files.\n\nUser request:\n${prompt}`;
+
+  const { data: appUser } = await sb.from('app_users').select('id, display_name, role').eq('auth_user_id', editorUser.id).single();
+
+  const { error } = await sb.from('feature_requests').insert({
+    requester_user_id: appUser?.id || null,
+    requester_name: appUser?.display_name || editorUser.email,
+    requester_role: appUser?.role || 'staff',
+    requester_email: editorUser.email,
+    description: scopedDesc,
+    status: 'pending',
+    attachments: [],
+  });
+
+  if (error) {
+    status.textContent = 'Error: ' + error.message;
+    status.style.color = 'var(--coral)';
+    btn.disabled = false;
+    btn.textContent = 'Send to Builder';
+    return;
+  }
+
+  status.textContent = 'Submitted! Builder will process shortly.';
+  status.style.color = 'var(--green)';
+  document.getElementById('editor-prompt').value = '';
+  btn.disabled = false;
+  btn.textContent = 'Send to Builder';
+  loadEditorHistory();
+}
+
+async function loadEditorHistory() {
+  const container = document.getElementById('editor-history');
+  if (!container) return;
+
+  const { data, error } = await sb.from('feature_requests')
+    .select('id, description, status, created_at, deployed_version, commit_sha')
+    .like('description', `%${TARGET_FILE}%`)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  if (error || !data?.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);margin-bottom:8px">Recent Changes</div>
+    ${data.map(r => {
+      const desc = r.description.replace(/\[SCOPED TO FILE:.*?\]\n\n.*?User request:\n/s, '');
+      const short = desc.length > 80 ? desc.slice(0, 80) + '...' : desc;
+      const time = new Date(r.created_at).toLocaleString();
+      const statusColors = { pending: '#E8A630', building: '#16A3A8', completed: '#2E8B57', failed: '#E8614D', review: '#8888A0' };
+      const color = statusColors[r.status] || 'var(--text-dim)';
+      const version = r.deployed_version ? ` · ${r.deployed_version}` : '';
+      return `<div style="padding:8px 0;border-top:1px solid var(--border);font-size:0.88rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--text)">${short}</span>
+          <span style="font-size:0.75rem;font-weight:600;color:${color};text-transform:uppercase">${r.status}${version}</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-dim);margin-top:2px">${time}</div>
+      </div>`;
+    }).join('')}`;
+}
+
+function editorLoginForm() {
+  return `
+    <input type="email" id="editor-email" placeholder="Email" style="width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:0.95rem;margin-bottom:8px;background:var(--bg)">
+    <input type="password" id="editor-pass" placeholder="Password" style="width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:0.95rem;margin-bottom:10px;background:var(--bg)" onkeydown="if(event.key==='Enter')editorLogin()">
+    <button class="btn btn-primary" onclick="editorLogin()" id="editor-login-btn" style="width:100%">Sign In</button>
+    <div id="editor-status" style="font-size:0.85rem;margin-top:8px;text-align:center"></div>`;
+}
+
+// Auto-check auth on load
+checkEditorAuth();
+</script>
+
+<style>
+  .editor-section {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 28px;
+    margin-top: 32px;
+    border-top: 3px solid var(--teal);
+  }
+  .editor-section h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: var(--teal-dark);
+    margin-bottom: 4px;
+  }
+  .editor-section .editor-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+</style>
+
+<div class="container" style="padding-top:0">
+  <div class="editor-section">
+    <h3>Edit This Page</h3>
+    <div class="editor-subtitle">Describe changes in plain English — Claude will modify the code and deploy.</div>
+    <div id="editor-box">
+      <input type="email" id="editor-email" placeholder="Email" style="width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:0.95rem;margin-bottom:8px;background:var(--bg)">
+      <input type="password" id="editor-pass" placeholder="Password" style="width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:0.95rem;margin-bottom:10px;background:var(--bg)" onkeydown="if(event.key==='Enter')editorLogin()">
+      <button class="btn btn-primary" onclick="editorLogin()" id="editor-login-btn" style="width:100%">Sign In</button>
+      <div id="editor-status" style="font-size:0.85rem;margin-top:8px;text-align:center"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
