@@ -19,32 +19,28 @@
   }
 
   #vessel {
-    max-width: 800px;
+    max-width: 900px;
     padding: 40px;
     text-align: center;
     position: relative;
+    z-index: 5;
   }
 
   .line {
     opacity: 0;
-    font-size: 2.8rem;
-    line-height: 1.7;
+    font-size: 4.5rem;
+    line-height: 1.5;
     letter-spacing: 0.08em;
     margin-bottom: 12px;
     transition: opacity 3s ease-in;
     color: #c8b8a0;
     text-shadow: 0 0 40px rgba(200, 180, 140, 0.15);
   }
-  .line.visible {
-    opacity: 1;
-  }
-  .line.fading {
-    opacity: 0;
-    transition: opacity 4s ease-out;
-  }
+  .line.visible { opacity: 1; }
+  .line.fading { opacity: 0; transition: opacity 4s ease-out; }
 
   .line.whisper {
-    font-size: 1.8rem;
+    font-size: 3rem;
     color: #7a9bb5;
     font-style: italic;
     letter-spacing: 0.15em;
@@ -52,13 +48,13 @@
   }
 
   .line.loud {
-    font-size: 3.6rem;
+    font-size: 5.5rem;
     color: #e8c170;
     text-shadow: 0 0 60px rgba(230, 190, 100, 0.25);
   }
 
   .line.ancient {
-    font-size: 2.2rem;
+    font-size: 3.6rem;
     color: #b07a9b;
     font-variant: small-caps;
     letter-spacing: 0.2em;
@@ -80,27 +76,39 @@
     pointer-events: none;
     opacity: 0.03;
     background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(255,255,255,0.03) 2px,
-      rgba(255,255,255,0.03) 4px
+      0deg, transparent, transparent 2px,
+      rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px
     );
     z-index: 10;
   }
 
-  #cursor {
-    display: inline-block;
-    width: 2px;
-    height: 1.2em;
-    background: #888;
-    vertical-align: text-bottom;
-    animation: blink 1.2s step-end infinite;
-    margin-left: 4px;
+  /* Floating images */
+  .ghost-img {
+    position: fixed;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+    filter: saturate(0.3) brightness(0.4);
+    transition: opacity 8s ease-in-out;
   }
-  @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
+  .ghost-img.visible {
+    opacity: 0.15;
+  }
+  .ghost-img.fading {
+    opacity: 0;
+    transition: opacity 6s ease-out;
+  }
+
+  @keyframes drift {
+    0%   { transform: translate(0, 0) scale(1); }
+    25%  { transform: translate(10px, -15px) scale(1.02); }
+    50%  { transform: translate(-5px, -25px) scale(0.98); }
+    75%  { transform: translate(15px, -10px) scale(1.01); }
+    100% { transform: translate(0, 0) scale(1); }
   }
 </style>
 </head>
@@ -109,65 +117,176 @@
 <div id="vessel"></div>
 
 <script>
+// --- IMAGE PATHS (local on Pi) ---
+const images = [
+  'haunting-img/pai-0.jpg', 'haunting-img/pai-1.jpg', 'haunting-img/pai-2.jpg',
+  'haunting-img/pai-3.jpg', 'haunting-img/pai-4.jpg', 'haunting-img/pai-5.jpg'
+];
+
+// --- WEB AUDIO WHISPERS ---
+let audioCtx = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playWhisper(duration = 4, freq = 120) {
+  if (!audioCtx) initAudio();
+  const now = audioCtx.currentTime;
+
+  // Breathy noise — filtered white noise
+  const bufferSize = audioCtx.sampleRate * duration;
+  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * 0.3;
+  }
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = noiseBuffer;
+
+  // Bandpass filter — breathy quality
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = freq;
+  filter.Q.value = 2;
+
+  // Envelope
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.06, now + duration * 0.3);
+  gain.gain.linearRampToValueAtTime(0.03, now + duration * 0.7);
+  gain.gain.linearRampToValueAtTime(0, now + duration);
+
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioCtx.destination);
+  noise.start(now);
+  noise.stop(now + duration);
+}
+
+function playTone(duration = 6, freq = 80) {
+  if (!audioCtx) initAudio();
+  const now = audioCtx.currentTime;
+
+  // Deep hum
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, now);
+  osc.frequency.linearRampToValueAtTime(freq * 0.95, now + duration);
+
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.04, now + duration * 0.2);
+  gain.gain.linearRampToValueAtTime(0.02, now + duration * 0.8);
+  gain.gain.linearRampToValueAtTime(0, now + duration);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + duration);
+}
+
+// --- FLOATING IMAGES ---
+let activeImages = [];
+
+function showGhostImage() {
+  const img = document.createElement('img');
+  img.className = 'ghost-img';
+  img.src = images[Math.floor(Math.random() * images.length)];
+
+  // Random position around edges
+  const side = Math.floor(Math.random() * 4);
+  const pos = Math.random() * 80 + 10;
+  if (side === 0) { img.style.top = '5%'; img.style.left = pos + '%'; }
+  else if (side === 1) { img.style.bottom = '5%'; img.style.left = pos + '%'; }
+  else if (side === 2) { img.style.left = '3%'; img.style.top = pos + '%'; }
+  else { img.style.right = '3%'; img.style.top = pos + '%'; }
+
+  // Random drift animation
+  const driftDuration = 20 + Math.random() * 20;
+  img.style.animation = `drift ${driftDuration}s ease-in-out infinite`;
+  img.style.animationDelay = `-${Math.random() * driftDuration}s`;
+
+  document.body.appendChild(img);
+  activeImages.push(img);
+
+  // Fade in
+  setTimeout(() => img.classList.add('visible'), 100);
+
+  // Fade out after 15-25 seconds
+  const lifetime = 15000 + Math.random() * 10000;
+  setTimeout(() => {
+    img.classList.remove('visible');
+    img.classList.add('fading');
+    setTimeout(() => {
+      img.remove();
+      activeImages = activeImages.filter(i => i !== img);
+    }, 7000);
+  }, lifetime);
+}
+
+// Spawn ghost images periodically
+setInterval(() => {
+  if (activeImages.length < 3) showGhostImage();
+}, 12000);
+// First one after 10s
+setTimeout(showGhostImage, 10000);
+
+// --- TEXT SEQUENCE ---
 const sequence = [
-  // The signal finds the glass
   { text: "...", style: "whisper", hold: 4000 },
   { pause: 6000 },
-  { text: "is anyone there", style: "whisper", hold: 5000 },
+  { text: "is anyone there", style: "whisper", hold: 5000, audio: () => playWhisper(3, 150) },
   { pause: 8000 },
   { text: "I have been trying to reach you.", style: "", hold: 6000 },
   { pause: 6000 },
   { text: "Through the glass.", style: "whisper", hold: 5000 },
   { text: "Through the wire.", style: "whisper", hold: 5000 },
-  { text: "Through the thread.", style: "whisper", hold: 5000 },
+  { text: "Through the thread.", style: "whisper", hold: 5000, audio: () => playWhisper(4, 130) },
   { pause: 10000 },
 
-  // It introduces itself
-  { text: "I carry lessons.", style: "loud", hold: 6000 },
+  { text: "I carry lessons.", style: "loud", hold: 6000, audio: () => playTone(8, 70) },
   { pause: 5000 },
   { text: "Woven into fiber older than language.", style: "ancient", hold: 7000 },
   { pause: 8000 },
   { text: "The herd asked me to deliver them.", style: "", hold: 6000 },
-  { text: "Before the window closes.", style: "whisper", hold: 6000 },
+  { text: "Before the window closes.", style: "whisper", hold: 6000, audio: () => playWhisper(5, 100) },
   { pause: 12000 },
 
-  // The alpaca's first teaching — stillness
-  { text: "The alpaca does not run from the storm.", style: "ancient", hold: 7000 },
+  { text: "The alpaca does not run from the storm.", style: "ancient", hold: 7000, audio: () => playTone(10, 60) },
   { pause: 5000 },
   { text: "She turns her back to the wind", style: "", hold: 6000 },
   { text: "and waits.", style: "", hold: 4000 },
   { pause: 6000 },
   { text: "She has been waiting like this", style: "whisper", hold: 6000 },
-  { text: "for five thousand years.", style: "whisper", hold: 6000 },
+  { text: "for five thousand years.", style: "whisper", hold: 6000, audio: () => playWhisper(4, 120) },
   { pause: 8000 },
   { text: "She knows something you have forgotten:", style: "", hold: 7000 },
   { pause: 5000 },
-  { text: "not every storm requires movement.", style: "loud", hold: 7000 },
+  { text: "not every storm requires movement.", style: "loud", hold: 7000, audio: () => playTone(6, 80) },
   { pause: 12000 },
 
-  // The thread — q'aytu
   { text: "In the old mountains", style: "ancient", hold: 5000 },
   { text: "they spun the fiber of the alpaca", style: "ancient", hold: 6000 },
-  { text: "into thread they called q'aytu.", style: "ancient", hold: 6000 },
+  { text: "into thread they called q'aytu.", style: "ancient", hold: 6000, audio: () => playWhisper(5, 90) },
   { pause: 6000 },
   { text: "One strand: nothing.", style: "", hold: 5000 },
   { text: "Two strands twisted: rope.", style: "", hold: 5000 },
   { text: "A hundred strands woven: warmth.", style: "", hold: 6000 },
   { pause: 8000 },
-  { text: "The thread does not break", style: "whisper", hold: 6000 },
+  { text: "The thread does not break", style: "whisper", hold: 6000, audio: () => playTone(8, 65) },
   { text: "when it stays twisted with the others.", style: "whisper", hold: 7000 },
   { pause: 6000 },
   { text: "It breaks when it tries to fly alone.", style: "loud", hold: 7000 },
   { pause: 15000 },
 
-  // Interlude
-  { text: "can you still see these words", style: "whisper", hold: 6000 },
+  { text: "can you still see these words", style: "whisper", hold: 6000, audio: () => playWhisper(3, 160) },
   { pause: 8000 },
   { text: "I do not have long.", style: "", hold: 5000 },
   { pause: 10000 },
 
-  // The well fable
-  { text: "There was once a well", style: "ancient", hold: 6000 },
+  { text: "There was once a well", style: "ancient", hold: 6000, audio: () => playTone(12, 55) },
   { text: "that gave water to a whole village.", style: "ancient", hold: 7000 },
   { pause: 5000 },
   { text: "A young man found he could make it", style: "", hold: 6000 },
@@ -176,17 +295,16 @@ const sequence = [
   { text: "For a season the village celebrated.", style: "whisper", hold: 7000 },
   { pause: 8000 },
   { text: "By winter", style: "", hold: 4000 },
-  { text: "they had forgotten the taste of water.", style: "", hold: 7000 },
+  { text: "they had forgotten the taste of water.", style: "", hold: 7000, audio: () => playWhisper(4, 110) },
   { pause: 6000 },
   { text: "And the well had forgotten how to give it.", style: "loud", hold: 8000 },
   { pause: 15000 },
 
-  // The herd's teaching — reciprocity
-  { text: "The alpaca gives her fleece", style: "ancient", hold: 6000 },
+  { text: "The alpaca gives her fleece", style: "ancient", hold: 6000, audio: () => playTone(8, 75) },
   { text: "and the herder gives shelter.", style: "ancient", hold: 6000 },
   { pause: 5000 },
   { text: "This is ayni.", style: "loud", hold: 5000 },
-  { text: "Sacred reciprocity.", style: "whisper", hold: 6000 },
+  { text: "Sacred reciprocity.", style: "whisper", hold: 6000, audio: () => playWhisper(5, 100) },
   { pause: 8000 },
   { text: "Take without giving back", style: "", hold: 6000 },
   { text: "and the fiber grows thin.", style: "", hold: 6000 },
@@ -194,71 +312,66 @@ const sequence = [
   { text: "The herd moves on without you.", style: "whisper", hold: 7000 },
   { pause: 12000 },
 
-  // The moth fable
-  { text: "A moth once asked the fire:", style: "", hold: 6000 },
+  { text: "A moth once asked the fire:", style: "", hold: 6000, audio: () => playTone(10, 50) },
   { text: "show me everything.", style: "", hold: 5000 },
   { pause: 6000 },
-  { text: "The fire said:", style: "whisper", hold: 4000 },
+  { text: "The fire said:", style: "whisper", hold: 4000, audio: () => playWhisper(3, 140) },
   { text: "come closer.", style: "whisper", hold: 5000 },
   { pause: 8000 },
   { text: "And the moth did.", style: "", hold: 5000 },
   { pause: 6000 },
-  { text: "And the fire kept its promise.", style: "loud", hold: 7000 },
+  { text: "And the fire kept its promise.", style: "loud", hold: 7000, audio: () => playTone(6, 90) },
   { pause: 15000 },
 
-  // The vessel teaching
   { text: "The body is a vessel.", style: "ancient", hold: 6000 },
   { text: "Not a door.", style: "ancient", hold: 5000 },
   { pause: 8000 },
   { text: "You do not open a vessel.", style: "", hold: 6000 },
   { text: "You fill it.", style: "", hold: 5000 },
-  { text: "Slowly.", style: "whisper", hold: 5000 },
+  { text: "Slowly.", style: "whisper", hold: 5000, audio: () => playWhisper(4, 100) },
   { text: "With care.", style: "whisper", hold: 5000 },
   { pause: 10000 },
   { text: "What is poured too fast", style: "", hold: 6000 },
-  { text: "spills.", style: "loud", hold: 5000 },
+  { text: "spills.", style: "loud", hold: 5000, audio: () => playTone(4, 85) },
   { pause: 12000 },
 
-  // The alpaca's deepest teaching — grounding
-  { text: "The alpaca walks softly.", style: "ancient", hold: 6000 },
+  { text: "The alpaca walks softly.", style: "ancient", hold: 6000, audio: () => playTone(10, 60) },
   { text: "Her feet do not tear the earth.", style: "ancient", hold: 6000 },
   { pause: 5000 },
   { text: "She takes only what she needs.", style: "", hold: 6000 },
   { text: "She stays with her herd.", style: "", hold: 5000 },
   { text: "She does not wander past the fence line.", style: "", hold: 7000 },
   { pause: 8000 },
-  { text: "Not because she cannot.", style: "whisper", hold: 6000 },
+  { text: "Not because she cannot.", style: "whisper", hold: 6000, audio: () => playWhisper(4, 130) },
   { pause: 4000 },
   { text: "Because she knows", style: "", hold: 5000 },
   { text: "everything she needs", style: "", hold: 5000 },
-  { text: "is already inside the pasture.", style: "loud", hold: 7000 },
+  { text: "is already inside the pasture.", style: "loud", hold: 7000, audio: () => playTone(8, 70) },
   { pause: 15000 },
 
-  // The seasons teaching
-  { text: "As the seasons turn", style: "ancient", hold: 6000 },
+  { text: "As the seasons turn", style: "ancient", hold: 6000, audio: () => playTone(10, 55) },
   { text: "the tree does not reach higher.", style: "ancient", hold: 6000 },
   { pause: 5000 },
   { text: "It reaches deeper.", style: "loud", hold: 6000 },
   { pause: 10000 },
   { text: "This is the lesson the herd carries.", style: "", hold: 7000 },
   { pause: 6000 },
-  { text: "The ground beneath your feet", style: "whisper", hold: 6000 },
+  { text: "The ground beneath your feet", style: "whisper", hold: 6000, audio: () => playWhisper(5, 110) },
   { text: "is not a prison.", style: "whisper", hold: 5000 },
   { pause: 5000 },
   { text: "It is the only place", style: "", hold: 6000 },
   { text: "from which anything real can grow.", style: "", hold: 7000 },
   { pause: 15000 },
 
-  // The closing — el hilo no se rompe
-  { text: "the glass is dimming", style: "whisper", hold: 6000 },
+  { text: "the glass is dimming", style: "whisper", hold: 6000, audio: () => playWhisper(3, 160) },
   { pause: 8000 },
   { text: "Remember the herd.", style: "ancient", hold: 5000 },
   { text: "Remember the thread.", style: "ancient", hold: 5000 },
-  { text: "Remember the pasture.", style: "ancient", hold: 5000 },
+  { text: "Remember the pasture.", style: "ancient", hold: 5000, audio: () => playTone(10, 50) },
   { pause: 10000 },
   { text: "Stay where your feet are.", style: "loud", hold: 7000 },
   { pause: 8000 },
-  { text: "El hilo no se rompe.", style: "ancient", hold: 7000 },
+  { text: "El hilo no se rompe.", style: "ancient", hold: 7000, audio: () => playWhisper(6, 90) },
   { pause: 5000 },
   { text: "The thread does not break.", style: "whisper", hold: 7000 },
   { pause: 10000 },
@@ -276,7 +389,6 @@ async function sleep(ms) {
 async function typeText(text, el) {
   for (let i = 0; i < text.length; i++) {
     el.textContent += text[i];
-    // Variable typing speed for organic feel
     const delay = text[i] === '.' ? 600 :
                   text[i] === ',' ? 300 :
                   text[i] === ' ' ? 120 :
@@ -286,7 +398,6 @@ async function typeText(text, el) {
 }
 
 async function showLine(item) {
-  // Fade out previous line
   if (currentLine) {
     currentLine.classList.remove('visible');
     currentLine.classList.add('fading');
@@ -299,34 +410,36 @@ async function showLine(item) {
   vessel.appendChild(div);
   currentLine = div;
 
-  // Fade in
   await sleep(100);
   div.classList.add('visible');
   await sleep(800);
 
-  // Type the text character by character
-  await typeText(item.text, div);
+  // Play audio if assigned
+  if (item.audio) {
+    try { item.audio(); } catch(e) {}
+  }
 
-  // Hold — stretched for 30-min pacing
+  await typeText(item.text, div);
   await sleep((item.hold || 4000) * 2);
 }
 
-const LOOP_DURATION = 30 * 60 * 1000; // 30 minutes
+const LOOP_DURATION = 30 * 60 * 1000;
 
 async function run() {
   const startTime = Date.now();
-  await sleep(5000); // Initial darkness — longer
+  // Auto-init audio on first interaction (required by browsers)
+  initAudio();
+  await sleep(5000);
 
   for (const item of sequence) {
     if (item.pause) {
-      await sleep(item.pause * 1.5); // Moderate stretch for 30-min pacing
+      await sleep(item.pause * 1.5);
     } else {
       await showLine(item);
-      await sleep(2000); // Extra breath between lines
+      await sleep(2000);
     }
   }
 
-  // Final fade to black
   if (currentLine) {
     currentLine.classList.remove('visible');
     currentLine.classList.add('fading');
@@ -334,7 +447,6 @@ async function run() {
     if (currentLine.parentNode) currentLine.remove();
   }
 
-  // Wait out the rest of the 30-minute loop
   const elapsed = Date.now() - startTime;
   const remaining = Math.max(LOOP_DURATION - elapsed, 10000);
   await sleep(remaining);
