@@ -1,12 +1,12 @@
 {
-  "version": "v260401.04 4:51a",
-  "release": 1239,
-  "sha": "c0e64b351",
-  "fullSha": "c0e64b35149279c67175d33d54876b11de5bce75",
+  "version": "v260401.05 4:52a",
+  "release": 1240,
+  "sha": "e6c2fabf6",
+  "fullSha": "e6c2fabf69332f04828a33240e60070bb2a140f2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T09:51:07+00:00",
-  "commits": [{"sha":"c0e64b351","message":"update haunting page for 30-minute loop pacing","author":"Rahul"}]
+  "pushedAt": "2026-04-01T09:52:57+00:00",
+  "commits": [{"sha":"686bcd55e","message":"update haunting page for 30-minute loop pacing","author":"Rahul"},{"sha":"b5af49265","message":"add garage test page for Pi kiosk verification","author":"Rahul"},{"sha":"e6c2fabf6","message":"Merge branch 'clever-dhawan'","author":"Rahul"}]
 }
