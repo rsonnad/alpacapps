@@ -661,17 +661,28 @@
           <div class="config-row">
             <span class="config-label">TTS Voice</span>
             <select class="config-select" id="cfgVoice">
-              <option value="Sulafat">Sulafat (warm) - recommended</option>
-              <option value="Achernar">Achernar (soft)</option>
-              <option value="Vindemiatrix">Vindemiatrix (gentle)</option>
-              <option value="Aoede">Aoede (breezy)</option>
-              <option value="Despina">Despina (smooth)</option>
-              <option value="Achird">Achird (friendly)</option>
-              <option value="Zephyr">Zephyr (bright)</option>
-              <option value="Kore">Kore (firm)</option>
-              <option value="Leda">Leda (youthful)</option>
-              <option value="Charon">Charon (informative)</option>
-              <option value="Gacrux">Gacrux (mature)</option>
+              <optgroup label="👻 Ancient / Ghostly">
+                <option value="Enceladus">Enceladus (breathy)</option>
+                <option value="Charon">Charon (informative)</option>
+                <option value="Gacrux">Gacrux (mature)</option>
+                <option value="Algenib">Algenib (gravelly)</option>
+                <option value="Schedar">Schedar (even)</option>
+              </optgroup>
+              <optgroup label="⭐ Recommended">
+                <option value="Sulafat">Sulafat (warm) - current</option>
+                <option value="Achernar">Achernar (soft)</option>
+                <option value="Vindemiatrix">Vindemiatrix (gentle)</option>
+                <option value="Aoede">Aoede (breezy)</option>
+                <option value="Despina">Despina (smooth)</option>
+                <option value="Leda">Leda (youthful)</option>
+              </optgroup>
+              <optgroup label="Other">
+                <option value="Achird">Achird (friendly)</option>
+                <option value="Zephyr">Zephyr (bright)</option>
+                <option value="Kore">Kore (firm)</option>
+                <option value="Algieba">Algieba (smooth)</option>
+                <option value="Pulcherrima">Pulcherrima (forward)</option>
+              </optgroup>
             </select>
           </div>
           <div class="config-row">
@@ -888,9 +899,16 @@
           <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
             <div>
               <label style="font-size:0.75rem; display:block; margin-bottom:0.25rem;">Single Voice</label>
-              <select class="config-select" id="auditionVoice" style="width:175px;">
+              <select class="config-select" id="auditionVoice" style="width:200px;">
+                <optgroup label="👻 Ancient / Ghostly">
+                  <option value="Enceladus" selected>Enceladus — Breathy</option>
+                  <option value="Charon">Charon — Informative</option>
+                  <option value="Gacrux">Gacrux — Mature</option>
+                  <option value="Algenib">Algenib — Gravelly</option>
+                  <option value="Schedar">Schedar — Even</option>
+                </optgroup>
                 <optgroup label="⭐ Ethereal / Fairy-like">
-                  <option value="Leda" selected>Leda — Youthful</option>
+                  <option value="Leda">Leda — Youthful</option>
                   <option value="Zephyr">Zephyr — Bright</option>
                   <option value="Achernar">Achernar — Soft</option>
                   <option value="Vindemiatrix">Vindemiatrix — Gentle</option>
@@ -910,25 +928,52 @@
                   <option value="Callirrhoe">Callirrhoe — Easy-going</option>
                   <option value="Sadachbia">Sadachbia — Lively</option>
                 </optgroup>
+                <optgroup label="Other">
+                  <option value="Puck">Puck — Upbeat</option>
+                  <option value="Fenrir">Fenrir — Excitable</option>
+                  <option value="Orus">Orus — Firm</option>
+                  <option value="Iapetus">Iapetus — Clear</option>
+                  <option value="Umbriel">Umbriel — Easy-going</option>
+                  <option value="Alnilam">Alnilam — Firm</option>
+                  <option value="Achird">Achird — Friendly</option>
+                  <option value="Zubenelgenubi">Zubenelgenubi — Casual</option>
+                  <option value="Rasalgethi">Rasalgethi — Informative</option>
+                  <option value="Sadaltager">Sadaltager — Knowledgeable</option>
+                </optgroup>
               </select>
             </div>
             <button class="btn-play" id="auditionSingleBtn" style="font-size:0.8rem; padding:0.35rem 0.6rem;">▶ Audition</button>
+          </div>
+
+          <!-- Quick Ghost Voice Audition -->
+          <div style="border:1px solid #9C27B0; border-radius:8px; padding:1rem; margin-bottom:1.25rem; background:rgba(156,39,176,0.04);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+              <label style="font-size:0.85rem; font-weight:700; color:#9C27B0;">👻 Ghost Voice Audition</label>
+              <button class="btn-small" id="ghostAuditionBtn" style="background:#9C27B0; color:#fff; border-color:#9C27B0; font-size:0.8rem; padding:0.4rem 1rem;">Generate All 5 Ghost Voices</button>
+            </div>
+            <p class="text-muted" style="font-size:0.72rem; margin-bottom:0.75rem;">Generates the same ancient whisper line in all 5 ghostly voices so you can compare side-by-side. Uses Ch 1 (Samay) director's notes.</p>
+            <div id="ghostAuditionResults" style="display:grid; gap:0.5rem;"></div>
           </div>
 
           <!-- Batch comparison -->
           <div>
             <label style="font-size:0.75rem; display:block; margin-bottom:0.4rem; font-weight:600;">Batch Voices — select voices to include</label>
             <div id="auditionBatchChecks" style="display:flex; flex-wrap:wrap; gap:0.3rem 0.75rem; margin-bottom:0.75rem; font-size:0.78rem;">
-              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Leda" checked> ⭐ Leda (Youthful)</label>
-              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Zephyr" checked> ⭐ Zephyr (Bright)</label>
-              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Achernar" checked> ⭐ Achernar (Soft)</label>
-              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Vindemiatrix" checked> ⭐ Vindemiatrix (Gentle)</label>
-              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Aoede" checked> ⭐ Aoede (Breezy)</label>
-              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Despina" checked> ⭐ Despina (Smooth)</label>
-              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Laomedeia" checked> ⭐ Laomedeia (Upbeat)</label>
+              <label style="font-weight:600; color:#9C27B0;"><input type="checkbox" value="Enceladus" checked> 👻 Enceladus (Breathy)</label>
+              <label style="font-weight:600; color:#9C27B0;"><input type="checkbox" value="Charon" checked> 👻 Charon (Informative)</label>
+              <label style="font-weight:600; color:#9C27B0;"><input type="checkbox" value="Gacrux" checked> 👻 Gacrux (Mature)</label>
+              <label style="font-weight:600; color:#9C27B0;"><input type="checkbox" value="Algenib" checked> 👻 Algenib (Gravelly)</label>
+              <label style="font-weight:600; color:#9C27B0;"><input type="checkbox" value="Schedar" checked> 👻 Schedar (Even)</label>
+              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Leda"> ⭐ Leda (Youthful)</label>
+              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Achernar"> ⭐ Achernar (Soft)</label>
+              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Vindemiatrix"> ⭐ Vindemiatrix (Gentle)</label>
+              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Aoede"> ⭐ Aoede (Breezy)</label>
+              <label style="font-weight:600; color:#E99C48;"><input type="checkbox" value="Despina"> ⭐ Despina (Smooth)</label>
               <label><input type="checkbox" value="Sulafat"> Sulafat (Warm)</label>
               <label><input type="checkbox" value="Algieba"> Algieba (Smooth)</label>
               <label><input type="checkbox" value="Kore"> Kore (Firm)</label>
+              <label><input type="checkbox" value="Zephyr"> Zephyr (Bright)</label>
+              <label><input type="checkbox" value="Laomedeia"> Laomedeia (Upbeat)</label>
               <label><input type="checkbox" value="Pulcherrima"> Pulcherrima (Forward)</label>
               <label><input type="checkbox" value="Autonoe"> Autonoe (Bright)</label>
               <label><input type="checkbox" value="Erinome"> Erinome (Clear)</label>

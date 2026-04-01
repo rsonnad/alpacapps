@@ -33,6 +33,7 @@ async function initPaiAdmin() {
   document.getElementById('auditionSingleBtn').addEventListener('click', auditionSingleVoice);
   document.getElementById('auditionBatchBtn').addEventListener('click', auditionBatchVoices);
   document.getElementById('auditionMatrixBtn').addEventListener('click', auditionMatrix);
+  document.getElementById('ghostAuditionBtn').addEventListener('click', auditionGhostVoices);
   document.getElementById('auditionPreset').addEventListener('change', (e) => {
     const sel = e.target;
     if (!sel.value) return;
@@ -1200,12 +1201,24 @@ function closePlayer() {
 
 // Female Gemini TTS voices — ⭐ = best for fairy/child/ethereal quality
 const VOICE_TAGS = {
+  // 👻 Ancient / Ghostly
+  Enceladus: '👻 Breathy', Charon: '👻 Informative', Gacrux: '👻 Mature',
+  Algenib: '👻 Gravelly', Schedar: '👻 Even',
+  // ⭐ Ethereal / Fairy-like
   Leda: '⭐ Youthful', Zephyr: '⭐ Bright', Achernar: '⭐ Soft',
   Vindemiatrix: '⭐ Gentle', Aoede: '⭐ Breezy', Despina: '⭐ Smooth',
   Laomedeia: '⭐ Upbeat',
+  // Warm / Grounded
   Sulafat: 'Warm', Algieba: 'Smooth', Kore: 'Firm',
-  Pulcherrima: 'Forward', Autonoe: 'Bright', Erinome: 'Clear',
+  Pulcherrima: 'Forward',
+  // Bright / Lively
+  Autonoe: 'Bright', Erinome: 'Clear',
   Callirrhoe: 'Easy-going', Sadachbia: 'Lively',
+  // Other
+  Puck: 'Upbeat', Fenrir: 'Excitable', Orus: 'Firm',
+  Iapetus: 'Clear', Umbriel: 'Easy-going', Alnilam: 'Firm',
+  Achird: 'Friendly', Zubenelgenubi: 'Casual',
+  Rasalgethi: 'Informative', Sadaltager: 'Knowledgeable',
 };
 
 function getAuditionText() {
@@ -1412,6 +1425,63 @@ async function auditionBatchVoices() {
   statusEl.textContent = `Done — ${done} voice${done !== 1 ? 's' : ''} generated`;
   btn.disabled = false;
   document.getElementById('auditionMatrixBtn').disabled = false;
+}
+
+// ── Ghost Voice Quick Audition ──
+
+const GHOST_VOICES = ['Enceladus', 'Charon', 'Gacrux', 'Algenib', 'Schedar'];
+const GHOST_WHISPER = '...samay... five thousand years I traveled through the fiber... from the puna to the wiring... the thread does not break... el hilo no se rompe...';
+
+async function auditionGhostVoices() {
+  const btn = document.getElementById('ghostAuditionBtn');
+  const container = document.getElementById('ghostAuditionResults');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating 0/5...';
+  container.innerHTML = '';
+
+  // Show placeholders
+  GHOST_VOICES.forEach(v => {
+    const card = renderAuditionCard(v, 'generating');
+    card.id = `ghost-card-${v}`;
+    container.appendChild(card);
+  });
+
+  // Generate sequentially (Gemini rate limits)
+  let done = 0;
+  for (const voice of GHOST_VOICES) {
+    const result = await generateAuditionForChapter(GHOST_WHISPER, voice, 1);
+    done++;
+    btn.textContent = `⏳ Generating ${done}/5...`;
+
+    const existing = document.getElementById(`ghost-card-${voice}`);
+    const newCard = result.audioUrl
+      ? renderAuditionCard(voice, 'ready', result.audioUrl, null, result.elapsedMs)
+      : renderAuditionCard(voice, 'error', null, result.error, result.elapsedMs);
+    newCard.id = `ghost-card-${voice}`;
+
+    // Add "Stage this voice" button to ready cards
+    if (result.audioUrl) {
+      const stageBtn = document.createElement('button');
+      stageBtn.className = 'btn-small';
+      stageBtn.style.cssText = 'background:#9C27B0; color:#fff; border-color:#9C27B0; font-size:0.7rem; margin-left:auto; padding:0.25rem 0.6rem;';
+      stageBtn.textContent = 'Stage for PAI';
+      stageBtn.addEventListener('click', () => {
+        document.getElementById('cfgVoice').value = voice;
+        showToast(`${voice} staged — save config to apply`, 'success');
+      });
+      newCard.style.display = 'flex';
+      newCard.style.alignItems = 'center';
+      newCard.style.gap = '0.5rem';
+      newCard.appendChild(stageBtn);
+    }
+
+    if (existing) existing.replaceWith(newCard);
+    else container.appendChild(newCard);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Generate All 5 Ghost Voices';
 }
 
 // ── Matrix Generation (two-phase: audition → drill-down) ──
