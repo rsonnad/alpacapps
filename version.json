@@ -1,12 +1,12 @@
 {
-  "version": "v260331.22 11:46p",
-  "release": 1234,
-  "sha": "8e3775a22",
-  "fullSha": "8e3775a22efd494ac7f0b1f786820e3d780e041d",
+  "version": "v260331.23 11:52p",
+  "release": 1235,
+  "sha": "55f283fe1",
+  "fullSha": "55f283fe1ac415c03b5ded90343260c44145cc4e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T04:46:23+00:00",
-  "commits": [{"sha":"8e3775a22","message":"Switch TMJ editor to prompt-first flow with Google OAuth","author":"Rahul"}]
+  "pushedAt": "2026-04-01T04:52:05+00:00",
+  "commits": [{"sha":"55f283fe1","message":"Fix editor prompt box not rendering — render immediately on DOMContentLoaded","author":"Rahul"}]
 }
