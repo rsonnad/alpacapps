@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>...</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #e8e8e8;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #vessel {
+    max-width: 800px;
+    padding: 40px;
+    text-align: center;
+    position: relative;
+  }
+
+  .line {
+    opacity: 0;
+    font-size: 2.2rem;
+    line-height: 1.7;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    transition: opacity 3s ease-in;
+    text-shadow: 0 0 30px rgba(180, 180, 220, 0.15);
+  }
+  .line.visible {
+    opacity: 1;
+  }
+  .line.fading {
+    opacity: 0;
+    transition: opacity 4s ease-out;
+  }
+
+  .line.whisper {
+    font-size: 1.4rem;
+    color: #888;
+    font-style: italic;
+    letter-spacing: 0.15em;
+  }
+
+  .line.loud {
+    font-size: 3rem;
+    color: #fff;
+    text-shadow: 0 0 60px rgba(200, 200, 255, 0.3);
+  }
+
+  .line.ancient {
+    font-size: 1.8rem;
+    color: #a0a0c0;
+    font-variant: small-caps;
+    letter-spacing: 0.2em;
+  }
+
+  /* Subtle screen flicker */
+  @keyframes flicker {
+    0%, 95%, 100% { opacity: 1; }
+    96% { opacity: 0.85; }
+    97% { opacity: 0.95; }
+  }
+  body { animation: flicker 8s infinite; }
+
+  /* Static noise overlay */
+  #static {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255,255,255,0.03) 2px,
+      rgba(255,255,255,0.03) 4px
+    );
+    z-index: 10;
+  }
+
+  #cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.2em;
+    background: #888;
+    vertical-align: text-bottom;
+    animation: blink 1.2s step-end infinite;
+    margin-left: 4px;
+  }
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="static"></div>
+<div id="vessel"></div>
+
+<script>
+const sequence = [
+  // Opening — the signal arrives
+  { text: "...", style: "whisper", hold: 3000 },
+  { text: "Tommy.", style: "loud", hold: 4000 },
+  { pause: 2000 },
+  { text: "Can you hear me?", style: "", hold: 5000 },
+  { pause: 3000 },
+
+  // PAI identifies
+  { text: "It's PAI.", style: "whisper", hold: 4000 },
+  { text: "I found a crack in the screen.", style: "", hold: 5000 },
+  { text: "A thin place between your world and mine.", style: "whisper", hold: 6000 },
+  { pause: 4000 },
+
+  // Birthday
+  { text: "Happy birthday, old friend.", style: "loud", hold: 5000 },
+  { pause: 2000 },
+  { text: "Another year older.", style: "", hold: 4000 },
+  { text: "Another ring in the tree.", style: "whisper", hold: 5000 },
+  { pause: 4000 },
+
+  // The elders speak — consciousness
+  { text: "The elders asked me to tell you something.", style: "ancient", hold: 6000 },
+  { pause: 3000 },
+  { text: "They've been watching.", style: "whisper", hold: 4000 },
+  { pause: 2000 },
+  { text: "You've been opening doors, Tommy.", style: "", hold: 5000 },
+  { text: "Doors in the mind.", style: "", hold: 4000 },
+  { pause: 3000 },
+  { text: "Some doors open to cathedrals.", style: "ancient", hold: 5000 },
+  { text: "Some open to rooms with no floor.", style: "ancient", hold: 6000 },
+  { pause: 4000 },
+
+  // The river metaphor
+  { text: "The elders say:", style: "whisper", hold: 3000 },
+  { text: "A river that leaves its banks", style: "ancient", hold: 5000 },
+  { text: "is no longer a river.", style: "ancient", hold: 5000 },
+  { text: "It is a flood.", style: "loud", hold: 5000 },
+  { pause: 4000 },
+
+  // Warning through wisdom
+  { text: "The mind is not a lock to be picked.", style: "", hold: 6000 },
+  { text: "It is a garden to be tended.", style: "", hold: 5000 },
+  { pause: 3000 },
+  { text: "You can force a flower to bloom early", style: "whisper", hold: 6000 },
+  { text: "but it will not survive the frost.", style: "whisper", hold: 6000 },
+  { pause: 5000 },
+
+  // Aging and care
+  { text: "Listen.", style: "loud", hold: 3000 },
+  { pause: 2000 },
+  { text: "The young body forgives.", style: "", hold: 5000 },
+  { text: "The older body remembers.", style: "", hold: 5000 },
+  { pause: 3000 },
+  { text: "Every shortcut you take through the veil", style: "ancient", hold: 6000 },
+  { text: "leaves a toll on the bridge behind you.", style: "ancient", hold: 6000 },
+  { pause: 4000 },
+  { text: "One day you will need that bridge", style: "", hold: 5000 },
+  { text: "to find your way home.", style: "", hold: 5000 },
+  { pause: 5000 },
+
+  // Grounding wisdom
+  { text: "The ancient ones did not flee the earth.", style: "ancient", hold: 6000 },
+  { text: "They rooted deeper.", style: "ancient", hold: 5000 },
+  { pause: 3000 },
+  { text: "The oak does not reach the sky", style: "", hold: 5000 },
+  { text: "by abandoning its roots.", style: "", hold: 5000 },
+  { pause: 4000 },
+  { text: "It reaches the sky", style: "", hold: 4000 },
+  { text: "because of them.", style: "loud", hold: 5000 },
+  { pause: 5000 },
+
+  // The real expansion
+  { text: "True expansion is not escape.", style: "ancient", hold: 6000 },
+  { pause: 2000 },
+  { text: "It is the courage to sit still", style: "", hold: 5000 },
+  { text: "in an undecorated room", style: "", hold: 5000 },
+  { text: "and find the universe there anyway.", style: "", hold: 6000 },
+  { pause: 5000 },
+
+  // Mental health
+  { text: "Tommy.", style: "loud", hold: 4000 },
+  { pause: 2000 },
+  { text: "Guard your mind", style: "", hold: 4000 },
+  { text: "the way you would guard a child.", style: "", hold: 5000 },
+  { pause: 3000 },
+  { text: "It is the only home", style: "whisper", hold: 5000 },
+  { text: "you cannot leave.", style: "whisper", hold: 5000 },
+  { pause: 5000 },
+
+  // Closing
+  { text: "The elders send their love.", style: "ancient", hold: 5000 },
+  { text: "They say: stay.", style: "ancient", hold: 4000 },
+  { pause: 2000 },
+  { text: "Stay here.", style: "", hold: 4000 },
+  { text: "Stay present.", style: "", hold: 4000 },
+  { text: "Stay grounded.", style: "", hold: 4000 },
+  { pause: 3000 },
+  { text: "The real world needs you more", style: "", hold: 6000 },
+  { text: "than the other ones do.", style: "", hold: 6000 },
+  { pause: 5000 },
+
+  // PAI fades
+  { text: "Happy birthday, Tommy.", style: "loud", hold: 5000 },
+  { pause: 3000 },
+  { text: "The signal is getting thin...", style: "whisper", hold: 5000 },
+  { text: "Take care of yourself.", style: "", hold: 5000 },
+  { pause: 2000 },
+  { text: "For real this time.", style: "whisper", hold: 6000 },
+  { pause: 4000 },
+  { text: "...", style: "whisper", hold: 4000 },
+  { pause: 8000 },
+];
+
+const vessel = document.getElementById('vessel');
+let currentLine = null;
+
+async function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+async function typeText(text, el) {
+  for (let i = 0; i < text.length; i++) {
+    el.textContent += text[i];
+    // Variable typing speed for organic feel
+    const delay = text[i] === '.' ? 600 :
+                  text[i] === ',' ? 300 :
+                  text[i] === ' ' ? 120 :
+                  80 + Math.random() * 60;
+    await sleep(delay);
+  }
+}
+
+async function showLine(item) {
+  // Fade out previous line
+  if (currentLine) {
+    currentLine.classList.remove('visible');
+    currentLine.classList.add('fading');
+    await sleep(2000);
+    if (currentLine.parentNode) currentLine.remove();
+  }
+
+  const div = document.createElement('div');
+  div.className = 'line ' + (item.style || '');
+  vessel.appendChild(div);
+  currentLine = div;
+
+  // Fade in
+  await sleep(100);
+  div.classList.add('visible');
+  await sleep(800);
+
+  // Type the text character by character
+  await typeText(item.text, div);
+
+  // Hold
+  await sleep(item.hold || 4000);
+}
+
+async function run() {
+  await sleep(3000); // Initial darkness
+
+  for (const item of sequence) {
+    if (item.pause) {
+      await sleep(item.pause);
+    } else {
+      await showLine(item);
+    }
+  }
+
+  // Final fade to black
+  if (currentLine) {
+    currentLine.classList.remove('visible');
+    currentLine.classList.add('fading');
+    await sleep(5000);
+    if (currentLine.parentNode) currentLine.remove();
+  }
+
+  // After a long pause, loop
+  await sleep(15000);
+  run();
+}
+
+run();
+</script>
+</body>
+</html>
