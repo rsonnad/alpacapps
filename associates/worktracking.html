@@ -126,6 +126,13 @@
       font-size: 0.85rem; font-family: inherit; resize: vertical; box-sizing: border-box;
     }
     .photoai-prompt:focus { border-color: var(--accent); outline: none; }
+    .photoai-email-row { margin-bottom: 0.75rem; }
+    .photoai-email-row label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; }
+    .photoai-email {
+      width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px;
+      font-size: 0.85rem; font-family: inherit; box-sizing: border-box;
+    }
+    .photoai-email:focus { border-color: var(--accent); outline: none; }
     .photoai-submit-btn {
       width: 100%; padding: 0.75rem; border: none; border-radius: 10px;
       background: #1a1a2e; color: #e0d68a; font-size: 0.95rem; font-weight: 700;
@@ -772,6 +779,11 @@
 
           <div class="photoai-prompt-row">
             <textarea id="photoaiPrompt" class="photoai-prompt" rows="2" placeholder="Optional: tell PAI what this is (e.g. 'new task: fix the fence', 'marketing shot', 'alpaca photo for Instagram')"></textarea>
+          </div>
+
+          <div class="photoai-email-row">
+            <label for="photoaiEmail">📧 Email results to:</label>
+            <input type="email" id="photoaiEmail" class="photoai-email" placeholder="your@email.com">
           </div>
 
           <button id="photoaiSubmitBtn" class="photoai-submit-btn" disabled>
