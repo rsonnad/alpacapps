@@ -1,12 +1,12 @@
 {
-  "version": "v260331.23 11:52p",
-  "release": 1235,
-  "sha": "55f283fe1",
-  "fullSha": "55f283fe1ac415c03b5ded90343260c44145cc4e",
+  "version": "v260401.01 12:22a",
+  "release": 1236,
+  "sha": "2807b6461",
+  "fullSha": "2807b6461228101fc4f57bdcb7ae0050fad09917",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T04:52:05+00:00",
-  "commits": [{"sha":"55f283fe1","message":"Fix editor prompt box not rendering — render immediately on DOMContentLoaded","author":"Rahul"}]
+  "pushedAt": "2026-04-01T05:22:22+00:00",
+  "commits": [{"sha":"2807b6461","message":"docs: update SONOSAUTOMATION.md — full revert to pre-3/27 + kernel snooping fix","author":"Rahul"}]
 }
