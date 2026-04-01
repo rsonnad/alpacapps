@@ -1,12 +1,12 @@
 {
-  "version": "v260401.09 1:18p",
-  "release": 1244,
-  "sha": "36e360c3a",
-  "fullSha": "36e360c3ad9e0412ecf4fd4474db40b5f420af4b",
+  "version": "v260401.10 1:55p",
+  "release": 1245,
+  "sha": "afc47c173",
+  "fullSha": "afc47c173ad53c71aa72f491cc53913954d53a7e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T18:18:23+00:00",
-  "commits": [{"sha":"36e360c3a","message":"Update infra pages and ARCHITECTURE.md with current codebase state","author":"Rahul"}]
+  "pushedAt": "2026-04-01T18:55:19+00:00",
+  "commits": [{"sha":"28c4b34bd","message":"Fix admin tabs not rendering on fresh project clone","author":"Rahul"},{"sha":"afc47c173","message":"Merge branch 'eager-mestorf'","author":"Rahul"}]
 }
