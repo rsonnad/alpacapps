@@ -74,9 +74,12 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 | gstack | QA testing & browser automation | Free |
 | Background Workers | Cloud VM for pollers, automation | $12–32/mo |
 | Custom Domain | Your own domain name | ~$10/yr |
-| iPhone App | Capacitor 8 native iOS app | $99/yr (Apple Developer) |
-| Android App | Capacitor 8 native Android app | $25 one-time (Google Play) |
-| Home Server | Local Mac for smart home, cameras, media | ~$150 one-time |
+| PayPal | Checkout, payouts & instant transfers | % per transaction |
+| VAPI | AI voice calling & phone agents | Pay-as-you-go |
+| Discord Bot | AI assistant bot for community server | Free |
+| iPhone App | Native iOS (Swift/SwiftUI) + App Store | $99/yr (Apple Developer) |
+| Android App | Native Android (Kotlin/Compose) + Play Store | $25 one-time (Google Play) |
+| Home Server | Local Mac for HAOS, cameras, media, 30+ devices | ~$150 one-time |
 
 ## Project Profiles
 
@@ -92,9 +95,74 @@ After initial setup, users can adopt new features by reading:
 
 Feature index (machine-readable): **https://alpacaplayhouse.com/infra/updates.json**
 
+## First-Run Behavior & Gotchas
+
+When someone first clones and sets up the project, be aware of these:
+
+### Admin tabs not showing
+On a fresh project, the `get_effective_permissions` RPC may not exist or return empty results.
+The admin-shell.js has a built-in fallback: if the user has an `admin` or `oracle` role but
+their permissions set is empty, all tabs are shown. Once `syncTabPermissions()` runs and
+creates the permission rows, the normal permission filter takes over.
+
+**If tabs are still missing:**
+1. Check that the user's `role` in `app_users` is set to `admin` or `oracle`
+2. Ensure the `get_effective_permissions` RPC function exists in the database
+3. Check the browser console for Supabase RPC errors
+4. The `syncTabPermissions()` function auto-creates missing permission keys on each page load
+
+### Feature flags
+Optional features (rentals, events, SMS, voice, etc.) are toggled via `property_config.features` JSONB.
+If `property_config` doesn't exist or has no `features` key, only core tabs show (Spaces, Media,
+Purchases, Todo, PhyProp, Inventory, App Dev). To enable features, insert into property_config:
+
+```sql
+INSERT INTO property_config (id, config) VALUES (1, '{"features": {"rentals": true, "events": true, "sms": true}}')
+ON CONFLICT (id) DO UPDATE SET config = jsonb_set(property_config.config, '{features}',
+  COALESCE(property_config.config->'features', '{}') || '{"rentals": true, "events": true, "sms": true}');
+```
+
+### First user setup
+The first user to sign in should be granted admin role. After Supabase auth is configured:
+1. User signs in via Google OAuth or email
+2. An `app_users` row is created automatically
+3. Set their role to `admin`: `UPDATE app_users SET role = 'admin' WHERE email = 'user@example.com';`
+4. On next page load, `syncTabPermissions` creates all permission keys and grants them to the admin role
+
+### Mobile apps
+The mobile apps are **native** (not Capacitor):
+- **iOS**: Swift + SwiftUI (`mobile-ios/`)
+- **Android**: Kotlin + Jetpack Compose (`mobile-android/`)
+- **Kiosk**: Kotlin lockdown app (`alpaca-kiosk/`)
+
+### Current scale
+- **67 Supabase edge functions** — serverless TypeScript for all integrations
+- **11 background workers** — device pollers, AI image gen, Discord bot, live subtitles, etc.
+- **2 native mobile apps** + Android kiosk + macOS kiosk
+- **3 payment processors** — Stripe, Square, PayPal
+- **30+ smart home devices** via Home Assistant OS (HAOS)
+
+## How to Update an Existing Project
+
+If the user already has a running project and wants to adopt new features:
+
+1. **Read the update index**: Fetch `https://alpacaplayhouse.com/infra/updates.json` for the machine-readable feature list
+2. **Check what's missing**: Each feature has `detectionPaths` — check if those files exist in the project
+3. **Read the upgrade guide**: `https://alpacaplayhouse.com/infra/infra-upgrade-guide.md` has step-by-step instructions
+4. **Run the upgrade prompt**: `https://alpacaplayhouse.com/infra/infra-upgrade-prompt.md` can be pasted into Claude Code to auto-upgrade
+
+### Key files to sync from template
+When updating an existing project from the template (`https://github.com/rsonnad/alpacapps-infra`):
+- `shared/admin-shell.js` — tab navigation, auth flow, permission system
+- `shared/feature-registry.js` — feature flag definitions
+- `shared/config-loader.js` — property config loader with fallbacks
+- `shared/auth.js` — authentication and permission checks
+- `shared/site-components.js` — header, footer, navigation components
+- `infra/` — setup guides and update system
+
 ## Platform Notes
 
 - **Conductor**: macOS only (as of March 2026). Non-Mac users use Claude Code directly in the terminal.
-- **iPhone App**: Requires macOS for Xcode builds
-- **Android App**: Builds on any OS via Android Studio
-- **Home Server**: Requires a dedicated Mac on the local network
+- **iPhone App**: Native Swift/SwiftUI, requires macOS for Xcode builds
+- **Android App**: Native Kotlin/Jetpack Compose, builds on any OS via Android Studio
+- **Home Server**: Requires a dedicated Mac on the local network running HAOS
