@@ -1129,8 +1129,10 @@
             <span>Payments</span>
             <span>E-Signatures</span>
             <span>AI Features</span>
+            <span>Smart Home</span>
+            <span>Voice Calling</span>
           </div>
-          <div class="layer-services">Google OAuth &bull; Resend &bull; Telnyx &bull; Square &bull; SignWell &bull; Gemini</div>
+          <div class="layer-services">Google OAuth &bull; Resend &bull; Telnyx &bull; Stripe &bull; PayPal &bull; Square &bull; SignWell &bull; Gemini &bull; HAOS &bull; VAPI</div>
         </div>
 
         <div class="stack-layer layer-crm">
@@ -1328,7 +1330,7 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
           <span class="calc-svc__name">iPhone App</span>
-          <span class="calc-svc__desc">iOS via Capacitor + App Store</span>
+          <span class="calc-svc__desc">Native iOS (Swift/SwiftUI) + App Store</span>
         </span>
         <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr</span>
       </label>
@@ -1337,7 +1339,7 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
           <span class="calc-svc__name">Android App</span>
-          <span class="calc-svc__desc">Android via Capacitor + Play Store</span>
+          <span class="calc-svc__desc">Native Android (Kotlin/Jetpack Compose) + Play Store</span>
         </span>
         <span class="cost-badge cost-payg" style="margin-left:auto;">$25 one-time</span>
       </label>
@@ -1346,7 +1348,7 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
           <span class="calc-svc__name">Home Server</span>
-          <span class="calc-svc__desc">Local Mac for smart home, cameras, media</span>
+          <span class="calc-svc__desc">Local Mac for HAOS, cameras, media &amp; 30+ device integrations</span>
         </span>
         <span class="cost-badge cost-payg" style="margin-left:auto;">~$150 one-time</span>
       </label>
@@ -2070,16 +2072,21 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
       <summary><h2>13. Background Workers (Optional)</h2></summary>
     <div class="section-body">
 
-    <p>Some features need always-on processes that can&rsquo;t run in the browser or in Supabase Edge Functions. These run on a cloud VM (any provider: DigitalOcean, Google Cloud, Hetzner, etc.).</p>
+    <p>Some features need always-on processes that can&rsquo;t run in the browser or in Supabase Edge Functions. These run on a cloud VM (recommended: Hostinger VPS $5&ndash;12/mo, or any provider).</p>
 
-    <h3>What runs here</h3>
+    <h3>What runs here (11 workers)</h3>
     <ul>
       <li><strong>Automated bug fixer</strong> &mdash; polls for bug reports, runs Claude Code to fix them, commits, merges</li>
       <li><strong>Feature builder</strong> &mdash; picks up feature requests, implements them autonomously</li>
-      <li><strong>Device pollers</strong> &mdash; Tesla vehicles (every 5 min), LG washer/dryer (every 30s)</li>
+      <li><strong>Device pollers</strong> &mdash; Tesla vehicles (every 5 min), LG washer/dryer (every 30s), Blink cameras (snapshots)</li>
+      <li><strong>Camera event poller</strong> &mdash; UniFi Protect smart detection events &rarr; SMS alerts</li>
       <li><strong>AI image generation</strong> &mdash; polls job queue, calls Gemini API, uploads results</li>
-      <li><strong>Camera PTZ proxy</strong> &mdash; relays pan/tilt/zoom commands to cameras via home server</li>
-      <li><strong>Reverse proxy</strong> &mdash; Caddy for camera HLS streams, nginx for Sonos API relay</li>
+      <li><strong>Spirit whisper worker</strong> &mdash; PAI daily whisper scheduler &amp; delivery</li>
+      <li><strong>Live subtitles</strong> &mdash; real-time speech-to-text + translation server</li>
+      <li><strong>PAI Discord bot</strong> &mdash; bridges Discord community server to PAI AI assistant</li>
+      <li><strong>Project inquiry worker</strong> &mdash; Gemini Vision + Brave Search for research tasks</li>
+      <li><strong>Instruction runner</strong> &mdash; watches for instruction files from mobile Claude Code</li>
+      <li><strong>Reverse proxy</strong> &mdash; Caddy for camera HLS streams, OpenClaw chatbot gateway</li>
     </ul>
 
     <h3>Typical sizing</h3>
@@ -2343,24 +2350,40 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   <details class="section" id="mobile">
       <summary><h2>17. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2></summary>
     <div class="section-body">
-    <p>The mobile app wraps the same web codebase in a native shell using <strong>Capacitor 8</strong>. Residents get a native app experience (home screen icon, push notifications, no browser chrome) while you maintain a single codebase.</p>
+    <p>Fully native mobile apps for iOS and Android. Each platform uses its native UI toolkit for the best possible experience &mdash; SwiftUI on iOS, Jetpack Compose on Android.</p>
 
     <h3>How It Works</h3>
-    <div class="arch-diagram">Web App (HTML/CSS/JS) &rarr; Capacitor WebView &rarr; Native iOS / Android App
-                                    &darr;
-                          Same Supabase backend as web</div>
-    <p>Capacitor takes your existing web code, loads it inside a native WebView, and gives you access to native device APIs (push notifications, camera, status bar) through JavaScript plugins. There's no need to learn Swift or Kotlin &mdash; your web skills are all you need.</p>
+    <div class="arch-diagram">Native iOS (Swift/SwiftUI)  &rarr;  Supabase REST API  &larr;  Native Android (Kotlin/Compose)
+                                          &darr;
+                               Home Assistant API (smart home)
+                               Sonos API (music control)</div>
+    <p>Both apps connect to the same Supabase backend and Home Assistant APIs as the web app. Each is built with platform-native tools for smooth performance and idiomatic UI.</p>
 
     <h3>Tech Stack</h3>
     <table>
-      <thead><tr><th>Layer</th><th>Technology</th><th>Notes</th></tr></thead>
+      <thead><tr><th>Layer</th><th>iOS</th><th>Android</th></tr></thead>
       <tbody>
-        <tr><td>Native shell</td><td>Capacitor 8</td><td>Wraps web content in native WebView</td></tr>
-        <tr><td>UI</td><td>Vanilla HTML/CSS/JS</td><td>Dark theme, bottom tab bar, no framework needed</td></tr>
-        <tr><td>Auth</td><td>Supabase Auth</td><td>Inline email/password + Google OAuth</td></tr>
-        <tr><td>Data</td><td>Supabase JS SDK</td><td>Same client as web app</td></tr>
-        <tr><td>OTA Updates</td><td>@capgo/capacitor-updater</td><td>Push code updates without App Store review</td></tr>
-        <tr><td>Push Notifications</td><td>@capacitor/push-notifications</td><td>FCM (Android) + APNs (iOS)</td></tr>
+        <tr><td>Language</td><td>Swift</td><td>Kotlin</td></tr>
+        <tr><td>UI Framework</td><td>SwiftUI</td><td>Jetpack Compose (Material 3)</td></tr>
+        <tr><td>Auth</td><td>Supabase Auth (AuthService.swift)</td><td>Supabase Auth (AuthManager.kt)</td></tr>
+        <tr><td>API Layer</td><td>HaosService, LightService, SonosService</td><td>HaosApi, LightApi, SonosApi</td></tr>
+        <tr><td>Theme</td><td>AppTheme.swift (brand tokens)</td><td>Theme.kt (Material 3 brand tokens)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>App Screens</h3>
+    <table>
+      <thead><tr><th>Screen</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Login</td><td>Email/password + Google OAuth</td></tr>
+        <tr><td>Lights</td><td>Control all smart lights (on/off, color, brightness) via HAOS</td></tr>
+        <tr><td>Music</td><td>Sonos room control (play, pause, volume, search)</td></tr>
+        <tr><td>Climate</td><td>Nest thermostat control</td></tr>
+        <tr><td>Cameras</td><td>Live camera streams via go2rtc</td></tr>
+        <tr><td>Cars</td><td>Tesla vehicle status and controls</td></tr>
+        <tr><td>Assistant</td><td>Chat with PAI (AI assistant)</td></tr>
+        <tr><td>Subtitles</td><td>Real-time live subtitles</td></tr>
+        <tr><td>Work</td><td>Associate work tracking and hours</td></tr>
       </tbody>
     </table>
 
@@ -2373,36 +2396,22 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
       </tbody>
     </table>
 
-    <h3>On the Phone</h3>
-    <table>
-      <thead><tr><th>Platform</th><th>Runtime</th><th>Min Version</th></tr></thead>
-      <tbody>
-        <tr><td>iPhone / iPad</td><td>WKWebView (Safari engine)</td><td>iOS 16+</td></tr>
-        <tr><td>Android</td><td>Android WebView (Chromium engine)</td><td>Android 6.0+ (API 23)</td></tr>
-      </tbody>
-    </table>
-    <p>On iOS, the app runs inside Apple's WKWebView (same engine as Safari). On Android, it uses the system WebView powered by Chromium. Both provide near-native performance for web content.</p>
-
     <h3>Build &amp; Deploy</h3>
     <div class="step-label step-claude">Claude does this</div>
-    <p>Claude Code handles the build process. The workflow is:</p>
+    <p>Claude Code handles the build process. Each platform builds independently:</p>
     <ol>
-      <li><strong>Build web assets</strong> &mdash; A script (<code>copy-web.js</code>) copies your web files into the mobile project, injects <code>capacitor.js</code>, and patches any redirect-based navigation</li>
-      <li><strong>Sync to native</strong> &mdash; <code>npm run sync</code> from the <code>mobile/</code> directory copies web assets into the iOS and Android native projects</li>
-      <li><strong>Run on device</strong> &mdash; Open Xcode (iOS) or Android Studio (Android) and press Play</li>
+      <li><strong>iOS</strong> &mdash; Open <code>mobile-ios/AlpacaPlayhouse.xcodeproj</code> in Xcode, press Play to build and run on simulator or device</li>
+      <li><strong>Android</strong> &mdash; Open <code>mobile-android/</code> in Android Studio, press Run to build the APK and deploy</li>
+      <li><strong>Kiosk (Android)</strong> &mdash; A separate <code>alpaca-kiosk/</code> project provides a lockdown kiosk mode with device admin, boot receiver, photo booth, and HTTP API server</li>
     </ol>
-<pre><code># From the mobile/ directory:
-npm run sync          # Build + sync to both platforms
-npm run open:ios      # Open Xcode &mdash; press Play to run
-npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
 
     <h3>Key Design Decisions</h3>
     <ul>
-      <li><strong>Single codebase</strong> &mdash; Web and mobile share the same data services (<code>shared/services/</code>). Write once, runs on web + iOS + Android</li>
-      <li><strong>No framework required</strong> &mdash; Vanilla JS with CSS-based tab switching. No React Native, no Flutter, no Swift/Kotlin to learn</li>
-      <li><strong>Lazy-loaded tabs</strong> &mdash; Each tab module loads on first visit via dynamic <code>import()</code>, keeping startup fast</li>
-      <li><strong>OTA updates</strong> &mdash; After the initial App Store submission, code changes (HTML/CSS/JS) can be pushed live instantly via Capgo &mdash; no App Store review wait</li>
-      <li><strong>Inline login</strong> &mdash; Capacitor WebView can't handle multi-page redirects, so the mobile app uses an inline login form instead of a separate login page</li>
+      <li><strong>Fully native</strong> &mdash; SwiftUI (iOS) and Jetpack Compose (Android) for platform-idiomatic UI, smooth 60fps animations, and full native API access</li>
+      <li><strong>Shared API layer</strong> &mdash; Both apps connect to the same Supabase backend and HAOS APIs, keeping data in sync with the web app</li>
+      <li><strong>Brand theming</strong> &mdash; Both apps use the same brand color tokens (accent gold, warm backgrounds) defined in their respective theme files</li>
+      <li><strong>Kiosk variant</strong> &mdash; A dedicated Android kiosk app (<code>alpaca-kiosk/</code>) with device admin lockdown, guest book photo booth, and HTTP API for remote control</li>
+      <li><strong>macOS kiosk</strong> &mdash; A Swift Package (<code>oldmackiosk/</code>) for legacy Mac kiosk displays with screen lockdown, audio management, and JS bridge</li>
     </ul>
 
   </div>
@@ -2420,7 +2429,7 @@ npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
     <h2 style="text-align:center;font-size:1.6rem;font-weight:700;color:#E8EAED;margin-bottom:6px;font-family:'DM Sans',system-ui,sans-serif;">
       <span style="background:linear-gradient(135deg,#3ECF8E,#8B5CF6,#D97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">AlpacApps</span> Architecture
     </h2>
-    <p style="text-align:center;color:#9BA1B0;font-size:1rem;margin-bottom:32px;font-family:'DM Sans',system-ui,sans-serif;">Five services, zero backend code</p>
+    <p style="text-align:center;color:#9BA1B0;font-size:1rem;margin-bottom:32px;font-family:'DM Sans',system-ui,sans-serif;">67 edge functions, 11 workers, 2 native mobile apps &mdash; zero backend code</p>
 
     <!-- Legend -->
     <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-bottom:36px;">
@@ -2499,7 +2508,7 @@ npm run open:android  # Open Android Studio &mdash; press Run</code></pre>
         <text x="72" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Claude Code</text>
         <text x="42" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">AI dev agent: writes code,</text>
         <text x="42" y="192" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">fixes bugs, deploys, runs SQL</text>
-        <text x="42" y="209" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Oracle Cloud (free tier)</text>
+        <text x="42" y="209" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Local or cloud (Claude Max/Pro)</text>
 
         <line x1="280" y1="155" x2="338" y2="155" stroke="#D97706" stroke-width="1.5" marker-end="url(#ad-arrowClaude)" opacity="0.6"/>
         <text x="290" y="148" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">git push</text>

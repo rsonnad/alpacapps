@@ -39,7 +39,7 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
         │                                 │
         │  ┌─────────────────────────┐    │
         │  │    Edge Functions       │    │
-        │  │  (38+ serverless funcs)  │    │
+        │  │  (67 serverless funcs)  │    │
         │  │  incl. Centralized API  │    │
         │  └─────────────────────────┘    │
         │                                 │
@@ -58,15 +58,15 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Lease Documents | Supabase Storage | bucket: `lease-documents` |
 | Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
 | OpenClaw Chatbot Gateway | Hostinger VPS | https://alpaclaw.cloud (Caddy → Docker:43414) |
-| OpenClaw Bot (legacy) | DigitalOcean | Droplet (being replaced by Hostinger) |
-| Bug Fixer Worker | DigitalOcean | Same droplet as legacy OpenClaw |
+| Bug Fixer Worker | Hostinger VPS | systemd service on Hostinger |
+| Feature Builder Worker | Hostinger VPS | systemd service on Hostinger |
 | E-Signatures | SignWell | API: signwell.com/api |
 | Payments | Square | API: connect.squareup.com |
 | Email (Outbound) | Resend | Domain: alpacaplayhouse.com, API key in Supabase secrets |
 | Email (Inbound) | Resend | Webhook → `resend-inbound-webhook` Edge Function |
 | SMS Notifications | Telnyx | Phone: +17377474737, config in `telnyx_config` table |
 | Error Monitoring | Custom | Daily digest emails via Resend |
-| Bug Reporter | Chrome Extension + DO Worker | Extension: local install, Worker: same droplet as OpenClaw |
+| Bug Reporter | Chrome Extension + Hostinger | Extension: local install, Worker: Hostinger VPS |
 | Bug Screenshots | Supabase Storage | bucket: `bug-screenshots` |
 | Rental Agreements | Google Drive | Folder ID: 1IdMGhprT0LskK7g6zN9xw1O8ECtrS0eQ (legacy) |
 | Home Server (Alpuca) | On-premise Mac mini M4 | LAN: 192.168.1.200, Tailscale: 100.74.59.97 |
@@ -79,7 +79,7 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Govee Lighting | Govee Cloud API | API key as Supabase secret `GOVEE_API_KEY` |
 | Tesla Fleet API | Tesla Developer | Fleet API creds in `tesla_accounts` table |
 | LG ThinQ | LG ThinQ Connect API | PAT auth in `lg_config` table |
-| AI Image Gen | Gemini 2.5 Flash | Worker on DO droplet, Nano Banana MCP locally |
+| AI Image Gen | Gemini 2.5 Flash | Worker on Hostinger VPS, Nano Banana MCP locally |
 | Voice Calling | Vapi.ai | Config in `vapi_config` table |
 | PayPal Payouts | PayPal Payouts API | Config in `paypal_config` table |
 | Identity Verification | Claude Vision API | `verify-identity` Edge Function |
@@ -91,12 +91,16 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 | Stripe Payments | Stripe API | Config in `stripe_config` table |
 | Square Webhook | Supabase Edge Function | `square-webhook` (payment/refund status) |
 | Stripe Webhook | Supabase Edge Function | `stripe-webhook` (payment/transfer status) |
-| PAI Discord Bot | DigitalOcean → Oracle Cloud | `pai-discord.service` (bridges Discord → alpaca-pai) |
+| PAI Discord Bot | Hostinger VPS | `pai-discord.service` (bridges Discord → alpaca-pai) |
 | Anova Oven | Anova Developer API | WebSocket API, config in `anova_config` table |
 | Glowforge Laser | Glowforge Cloud API | Undocumented API, config in `glowforge_config` table |
 | Payment Page | GitHub Pages | Self-service tenant payment at `/pay/` |
-| Oracle Cloud (Migration) | Oracle Cloud Always Free | ARM64 4-core 24GB replacing DO ($0/mo) |
-| Hostinger VPS | Hostinger KVM 4 | OpenClaw chatbot gateway, Docker, 15GB RAM, 200GB disk |
+| Hostinger VPS | Hostinger KVM 4 | All workers, OpenClaw gateway, Docker, 15GB RAM, 200GB disk |
+| Spirit Whisper Worker | Hostinger VPS | PAI daily whisper scheduler & delivery |
+| Live Subtitles | Hostinger VPS | Real-time speech-to-text + translation server |
+| Camera Event Poller | Hostinger VPS | UniFi Protect smart detection → SMS alerts |
+| Blink Poller | Alpuca | Blink camera snapshot poller → Supabase Storage |
+| Home Assistant (HAOS) | Alpuca (QEMU VM) | LAN: 192.168.1.39, 30+ smart devices (WiZ, Govee, Tuya/SmartLife) |
 
 ## Repository Structure
 
@@ -155,7 +159,7 @@ alpacapps/
 │   ├── version-info.js     # Version badge click handler
 │   └── timezone.js         # Timezone utilities (Austin/Chicago)
 │
-├── supabase/               # Supabase Edge Functions (38+ functions)
+├── supabase/               # Supabase Edge Functions (67 functions)
 │   └── functions/
 │       ├── _shared/           # Shared modules across edge functions
 │       │   ├── permissions.ts      # Permission checking helpers

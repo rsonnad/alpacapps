@@ -872,9 +872,11 @@
           <span>Payments</span>
           <span>E-Signatures</span>
           <span>AI Features</span>
+          <span>Smart Home</span>
+          <span>Voice Calling</span>
           <span>QA Testing</span>
         </div>
-        <div class="layer-services">Google OAuth &bull; Resend &bull; Telnyx &bull; Square &bull; SignWell &bull; Gemini &bull; gstack</div>
+        <div class="layer-services">Google OAuth &bull; Resend &bull; Telnyx &bull; Stripe &bull; PayPal &bull; Square &bull; SignWell &bull; Gemini &bull; HAOS &bull; gstack</div>
       </div>
       <div class="stack-layer layer-crm">
         <div class="layer-label">Your Business</div>
@@ -1101,6 +1103,25 @@
 
       <div class="svc-row">
         <label class="calc-svc">
+          <input type="checkbox" data-svc="paypal" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/paypal/003087" alt="PayPal"></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">PayPal</span><span class="calc-svc__desc">Checkout, payouts &amp; instant transfers</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">2.9% + 30&cent;</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Accept payments via PayPal and send payouts to associates. Works alongside Stripe and Square for maximum payment flexibility.</p>
+          <ul>
+            <li><strong>Checkout:</strong> Buyers pay with PayPal balance, cards, or Venmo. 2.9% + 30&cent; per transaction.</li>
+            <li><strong>Payouts:</strong> Send money to vendors and associates via the PayPal Payouts API &mdash; instant to their PayPal account.</li>
+            <li><strong>How it integrates:</strong> Three Supabase edge functions handle checkout, payouts, and webhooks. Config stored in <code>paypal_config</code> table.</li>
+          </ul>
+          <p><a href="https://developer.paypal.com/" target="_blank">Go to PayPal Developer &rarr;</a></p>
+        </details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
           <input type="checkbox" data-svc="signwell" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#4A90D9" width="20" height="20"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg></span>
@@ -1200,7 +1221,7 @@
           <input type="checkbox" data-svc="workers" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#0080FF" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">Background Workers</span><span class="calc-svc__desc">Automated pollers, AI image gen, OpenClaw on a VPS</span></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Background Workers</span><span class="calc-svc__desc">11 workers: device pollers, AI image gen, Discord bot, live subtitles, and more on a VPS</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$5&ndash;12/mo</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
@@ -1238,14 +1259,14 @@
           <input type="checkbox" data-svc="iphone" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><img src="https://cdn.simpleicons.org/apple/000000" alt="Apple"></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">iPhone App</span><span class="calc-svc__desc">iOS via Capacitor + App Store</span></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">iPhone App</span><span class="calc-svc__desc">Native iOS (Swift/SwiftUI) + App Store</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$99/yr</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
-          <p>Native iOS app using Capacitor 8. Your existing web app runs inside a native shell with access to push notifications, camera, GPS, and more.</p>
+          <p>Native iOS app built with Swift and SwiftUI. Full access to push notifications, camera, GPS, biometrics, and all native APIs.</p>
           <ul>
-            <li><strong>Same codebase:</strong> No Swift or Objective-C needed. Your HTML/CSS/JS runs in a WKWebView with native API bridges.</li>
-            <li><strong>OTA updates:</strong> After the initial App Store submission, code changes push live instantly via Capgo &mdash; no App Store review wait.</li>
+            <li><strong>Native performance:</strong> Built with SwiftUI for smooth 60fps animations, native navigation, and platform-idiomatic UI. Screens for lights, music, climate, cameras, vehicles, and more.</li>
+            <li><strong>Shared API layer:</strong> Connects to the same Supabase backend and Home Assistant APIs as the web app.</li>
             <li><strong>Cost:</strong> Apple Developer Program ($99/yr). Requires a Mac with Xcode to build.</li>
           </ul>
           <p><a href="https://developer.apple.com/programs/" target="_blank">Go to Apple Developer &rarr;</a></p>
@@ -1257,13 +1278,13 @@
           <input type="checkbox" data-svc="android" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><img src="https://cdn.simpleicons.org/android/34A853" alt="Android"></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">Android App</span><span class="calc-svc__desc">Android via Capacitor + Play Store</span></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Android App</span><span class="calc-svc__desc">Native Android (Kotlin/Jetpack Compose) + Play Store</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">$25 one-time</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
-          <p>Native Android app using Capacitor 8. Same codebase as your web app with native features and Play Store distribution.</p>
+          <p>Native Android app built with Kotlin and Jetpack Compose. Full Material 3 design with native performance.</p>
           <ul>
-            <li><strong>Same codebase:</strong> No Kotlin or Java needed. Your web app runs in an Android WebView (Chromium engine) with native API bridges.</li>
+            <li><strong>Native performance:</strong> Built with Jetpack Compose for native Android UI. Screens for lights, music, climate, cameras, vehicles, and an AI assistant.</li>
             <li><strong>Build anywhere:</strong> Android Studio runs on macOS, Windows, and Linux &mdash; no Mac required.</li>
             <li><strong>Cost:</strong> Google Play Console is a $25 one-time fee (not annual).</li>
           </ul>
@@ -1273,16 +1294,54 @@
 
       <div class="svc-row">
         <label class="calc-svc">
+          <input type="checkbox" data-svc="vapi" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#7C3AED" width="20" height="20"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">VAPI</span><span class="calc-svc__desc">AI voice calling &amp; phone agents</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">Pay-as-you-go</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Add AI-powered voice calling to your app. Create phone agents that answer calls, make outbound calls, and handle conversations with natural language.</p>
+          <ul>
+            <li><strong>How it works:</strong> VAPI handles the phone infrastructure. Your Supabase edge function (<code>vapi-webhook</code>) processes call events and transcripts.</li>
+            <li><strong>Use cases:</strong> Automated appointment reminders, AI receptionist, property inquiry hotline, emergency notification calls.</li>
+            <li><strong>Config:</strong> API key and assistant settings stored in <code>vapi_config</code> table.</li>
+          </ul>
+          <p><a href="https://vapi.ai" target="_blank">Go to VAPI &rarr;</a></p>
+        </details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
+          <input type="checkbox" data-svc="discord" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/discord/5865F2" alt="Discord"></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Discord Bot</span><span class="calc-svc__desc">AI assistant bot for your community server</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>An AI-powered Discord bot that bridges your community server to your platform&rsquo;s AI assistant. Users can chat with PAI, ask questions about the property, and trigger actions.</p>
+          <ul>
+            <li><strong>How it works:</strong> A Node.js worker (<code>pai-discord</code>) listens for messages and forwards them to the <code>alpaca-pai</code> Supabase edge function.</li>
+            <li><strong>Runs on:</strong> Your background worker VPS as a systemd service.</li>
+            <li><strong>Cost:</strong> Free &mdash; Discord bot accounts are free to create and run.</li>
+          </ul>
+          <p><a href="https://discord.com/developers/applications" target="_blank">Go to Discord Developer Portal &rarr;</a></p>
+        </details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
           <input type="checkbox" data-svc="homeserver" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><svg viewBox="0 0 24 24" fill="#6B7280" width="20" height="20"><path d="M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">Home Server</span><span class="calc-svc__desc">Local Mac for smart home, cameras, media</span></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Home Server</span><span class="calc-svc__desc">Local Mac for smart home, cameras, media &amp; 30+ device integrations</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">~$150 one-time</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
-          <p>A dedicated Mac on your local network that bridges LAN-only smart home devices to your cloud app.</p>
+          <p>A dedicated Mac on your local network that bridges LAN-only smart home devices to your cloud app. Runs Home Assistant OS (HAOS) as the central smart home hub.</p>
           <ul>
-            <li><strong>What it runs:</strong> Sonos HTTP API (music control), go2rtc (camera streams), Home Assistant (device automation), Music Assistant, and device pollers.</li>
+            <li><strong>What it runs:</strong> Home Assistant (HAOS &mdash; 30+ smart devices across WiZ, Govee, Tuya/SmartLife), Sonos HTTP API (music control), go2rtc (camera streams), Music Assistant, Blink camera poller, and device pollers.</li>
             <li><strong>How it connects:</strong> Tailscale VPN links the Mac to your cloud services. A reverse proxy (Hostinger or similar) routes external requests to the Mac.</li>
             <li><strong>Cost:</strong> A used Mac Mini runs ~$150 one-time. Low power draw (~10W idle).</li>
             <li><strong>When you need it:</strong> Only for smart home features (Sonos, cameras, climate control). Not needed for standard web apps.</li>
@@ -1337,7 +1396,7 @@
       <h2 style="text-align:center;font-size:1.6rem;font-weight:700;color:#E8EAED;margin-bottom:6px;font-family:'DM Sans',system-ui,sans-serif;">
         <span style="background:linear-gradient(135deg,#3ECF8E,#8B5CF6,#D97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">AlpacApps</span> Architecture
       </h2>
-      <p style="text-align:center;color:#9BA1B0;font-size:1rem;margin-bottom:32px;font-family:'DM Sans',system-ui,sans-serif;">Five services, zero backend code</p>
+      <p style="text-align:center;color:#9BA1B0;font-size:1rem;margin-bottom:32px;font-family:'DM Sans',system-ui,sans-serif;">67 edge functions, 11 workers, 2 native mobile apps &mdash; zero backend code</p>
 
       <!-- Legend -->
       <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-bottom:36px;">
@@ -1416,7 +1475,7 @@
           <text x="72" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Claude Code</text>
           <text x="42" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">AI dev agent: writes code,</text>
           <text x="42" y="192" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">fixes bugs, deploys, runs SQL</text>
-          <text x="42" y="209" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Oracle Cloud (free tier)</text>
+          <text x="42" y="209" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Local or cloud (Claude Max/Pro)</text>
 
           <line x1="280" y1="155" x2="338" y2="155" stroke="#D97706" stroke-width="1.5" marker-end="url(#ad-arrowClaude)" opacity="0.6"/>
           <text x="290" y="148" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">git push</text>
