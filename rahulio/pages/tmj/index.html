@@ -1164,9 +1164,13 @@ async function loadEditorHistory() {
     }).join('')}`;
 }
 
-// Init — check auth, render appropriate state
-checkEditorAuth().then(() => {
-  if (!editorUser) renderPromptBox();
+// Init — render prompt box immediately, then check auth
+document.addEventListener('DOMContentLoaded', () => {
+  renderPromptBox();
+  // After DOM is ready and supabase lib loaded, check for existing session
+  setTimeout(() => {
+    checkEditorAuth();
+  }, 100);
 });
 </script>
 
