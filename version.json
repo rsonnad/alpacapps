@@ -1,12 +1,12 @@
 {
-  "version": "v260401.06 5:06a",
-  "release": 1241,
-  "sha": "e1de92db4",
-  "fullSha": "e1de92db43ca84b6769e69e104e4320d4267e625",
+  "version": "v260401.07 5:13a",
+  "release": 1242,
+  "sha": "9ecca22fb",
+  "fullSha": "9ecca22fb6434b030f7db96b1dab8d8c9f9d5d3d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T10:06:46+00:00",
-  "commits": [{"sha":"e1a23d027","message":"rewrite haunting text — ambiguous fables from another realm","author":"Rahul"},{"sha":"3f1b39919","message":"hide cursor and tune pacing for Pi kiosk haunting","author":"Rahul"},{"sha":"c274f900e","message":"haunting page: bigger colored text, alpaca wisdom, cursor hidden","author":"Rahul"},{"sha":"e1de92db4","message":"Merge branch 'clever-dhawan'","author":"Rahul"}]
+  "pushedAt": "2026-04-01T10:13:34+00:00",
+  "commits": [{"sha":"ea3a9cf22","message":"haunting: bigger text, floating PAI art, Web Audio whispers","author":"Rahul"},{"sha":"9ecca22fb","message":"Merge branch 'clever-dhawan'","author":"Rahul"}]
 }
