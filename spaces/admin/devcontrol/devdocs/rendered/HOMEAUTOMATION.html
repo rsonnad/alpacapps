@@ -196,9 +196,9 @@ EFI\BOOT\BOOTAA64.EFI</code></pre>
 <tr><td>MasterBlaster</td><td>`media_player.masterblaster`</td><td>paused</td></tr>
 <tr><td>Pequeno</td><td>`media_player.pequeno`</td><td>paused</td></tr>
 <tr><td>DJ</td><td>`media_player.dj`</td><td>paused</td></tr>
-<tr><td>garage outdoors</td><td>`media_player.garage_outdoors`</td><td>paused</td></tr></tbody></table></div><p><strong>Full Sonos room list</strong> (from Sonos HTTP API on Almaca :5005):
+<tr><td>garage outdoors</td><td>`media_player.garage_outdoors`</td><td>paused</td></tr></tbody></table></div><p><strong>Full Sonos room list</strong> (from Sonos HTTP API on Alpuca :5005):
 Living Sound, Dining Sound, Outhouse, Skyloft Sound, Front Outside Sound, Pequeno, MasterBlaster, DJ, garage outdoors, Kitchen, Office, Bedroom, TV Room, Bathroom</p>
-<p><strong>Sonos HTTP API</strong> (legacy, still on Almaca):</p>
+<p><strong>Sonos HTTP API</strong> (Alpuca only — never Almaca):</p>
 <div class="dv-code-wrap">
       <div class="dv-code-header">
         <span class="dv-code-lang">bash</span>
@@ -302,7 +302,8 @@ Living Sound, Dining Sound, Outhouse, Skyloft Sound, Front Outside Sound, Pequen
 <tr><td>Firmware</td><td>5.0.12</td></tr>
 <tr><td>Network App</td><td>10.1.85</td></tr></tbody></table></div><h3><span id="key-device-ips"></span>Key Device IPs</h3>
 <div class="dv-table-wrap"><table><thead><tr><th>Device</th><th>IP</th><th>Purpose</th></tr></thead><tbody><tr><td>UDM Pro</td><td>192.168.1.1</td><td>Router, UniFi Protect</td></tr>
-<tr><td>Almaca</td><td>192.168.1.200</td><td>Old HA Core, Sonos API, WiZ Proxy, Music Assistant, UniFi Protect RTSP proxy</td></tr>
+<tr><td>Alpuca</td><td>192.168.1.200</td><td>Sonos API, HAOS VM host, Cloudflare tunnel</td></tr>
+<tr><td>Almaca</td><td>192.168.1.74</td><td>Legacy — WiZ Proxy, UP-Sense monitor only (avoid for new workloads)</td></tr>
 <tr><td>HAOS VM</td><td>192.168.1.39</td><td>New Home Assistant OS</td></tr>
 <tr><td>Nest Kitchen</td><td>192.168.1.139</td><td>Thermostat</td></tr>
 <tr><td>Nest Master</td><td>192.168.1.111</td><td>Thermostat</td></tr>

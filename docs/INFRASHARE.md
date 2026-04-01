@@ -38,7 +38,7 @@ curl -s -X POST -H "Authorization: Bearer $MGMT_TOKEN" -H "Content-Type: applica
 
 | Machine | Role | IP | SSH |
 |---------|------|-----|-----|
-| **Almaca** | Legacy home server (cameras, audio, files) | 192.168.1.74 | `ssh almaca` |
+| **Almaca** | Legacy server (WiZ proxy, UP-Sense only — avoid) | 192.168.1.74 | `ssh almaca` |
 | **Alpuca** | Primary home server (HAOS, lights, AI, builds) | 192.168.1.200 | `ssh paca@192.168.1.200` |
 | **Hostinger** | Cloud workers (image-gen, pollers, proxies) | 93.188.164.224 | `sshpass -p "$(bw-read 'Hostinger VPS — OpenClaw Server')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224` |
 

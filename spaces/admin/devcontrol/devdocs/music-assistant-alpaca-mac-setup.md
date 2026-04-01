@@ -10,8 +10,8 @@ Review and configuration guide for Music Assistant (MA) on the Almaca: Docker se
 
 | Layer | Role |
 |-------|------|
-| **Almaca** | Runs node-sonos-http-api (:5005) and Music Assistant in Docker (:8095). Same LAN as Sonos. |
-| **Hostinger** | HTTPS proxy: `/sonos/*` → Sonos API, `/ma-api` → MA API. Reaches Almaca via Tailscale. |
+| **Alpuca** | Runs node-sonos-http-api (:5005). Same LAN as Sonos. Music Assistant removed 2026-03-25. |
+| **Hostinger** | HTTPS proxy: `/sonos/*` → Sonos API. Reaches Alpuca via Tailscale. |
 | **Supabase** | Edge function `sonos-control` routes playback/grouping to MA first, fallback to Sonos proxy; announce/EQ stay on Sonos. |
 
 ---
@@ -123,8 +123,8 @@ Music Assistant can serve music from local folders or mounted drives so resident
 | MA data dir | Almaca `~/music-assistant-data/` | Persistent config + database |
 | Music folders | Almaca filesystem | Local/hard-drive music → MA Filesystem provider (no Docker bind mount needed) |
 | MA API token | Supabase `MUSIC_ASSISTANT_TOKEN`, optionally Hostinger | Auth for MA API |
-| Sonos proxy | Hostinger Caddy | `/sonos/*` → Almaca :5005 |
-| MA proxy | Hostinger Caddy | `/ma-api` → Almaca :8095/api |
+| Sonos proxy | Hostinger Caddy | `/sonos/*` → Alpuca :5005 |
+| MA proxy | Hostinger Caddy | `/ma-api` → removed (MA deleted 2026-03-25) |
 | Schedule runner | pg_cron job #31 (`*/5 * * * *`) | Calls `sonos-control` `run-schedules` action → checks due `sonos_schedules` → MA/Sonos |
 
 ---

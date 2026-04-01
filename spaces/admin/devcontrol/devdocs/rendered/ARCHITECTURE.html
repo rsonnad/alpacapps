@@ -184,7 +184,7 @@
 │       ├── resend-inbound-webhook/  # Inbound email receiver &amp; router + Zelle auto-recording
 │       ├── contact-form/      # Contact form submission handler
 │       ├── govee-control/     # Govee Cloud API proxy (resident+ auth)
-│       ├── sonos-control/     # Sonos HTTP API proxy via Almaca (resident+ auth)
+│       ├── sonos-control/     # Sonos HTTP API proxy via Alpuca (resident+ auth)
 │       ├── nest-control/      # Google SDM API proxy with OAuth token mgmt (resident+ auth)
 │       ├── nest-token-refresh/ # Standalone Nest OAuth token refresher
 │       ├── tesla-command/     # Tesla Fleet API commands (lock, unlock, wake, flash, honk)
@@ -2062,8 +2062,8 @@ su - bugfixer -c &quot;<span class="dv-kw">cd</span> /opt/bug-fixer/repo &amp;&a
                  go2rtc :1984 (HLS restream)
                  talkback-relay :8902 (FFmpeg audio)</code></pre>
     </div><h3><span id="components"></span>Components</h3>
-<div class="dv-table-wrap"><table><thead><tr><th>Component</th><th>Location</th><th>Purpose</th></tr></thead><tbody><tr><td>Almaca</td><td>On-premise, Black Rock City WiFi</td><td>Runs Sonos API + camera restreaming + talkback</td></tr>
-<tr><td>node-sonos-http-api</td><td>Almaca :5005</td><td>REST API for 12 Sonos speaker zones</td></tr>
+<div class="dv-table-wrap"><table><thead><tr><th>Component</th><th>Location</th><th>Purpose</th></tr></thead><tbody><tr><td>Alpuca</td><td>On-premise, Black Rock City WiFi</td><td>Runs Sonos API, HAOS VM, Cloudflare tunnel</td></tr>
+<tr><td>node-sonos-http-api</td><td>Alpuca :5005</td><td>REST API for 14 Sonos speaker zones</td></tr>
 <tr><td>go2rtc</td><td>Almaca :1984</td><td>RTSP→HLS restreaming from UniFi Protect</td></tr>
 <tr><td>talkback-relay</td><td>Almaca :8902</td><td>WebSocket→FFmpeg→UDP two-way camera audio</td></tr>
 <tr><td>Tailscale</td><td>DO Droplet + Almaca</td><td>Encrypted mesh VPN for remote access</td></tr>

@@ -228,10 +228,10 @@ WiZ RGBW Tunable bulbs communicate via UDP port 38899, auto-discovered by HA. 16
 | DJ | `media_player.dj` | paused |
 | garage outdoors | `media_player.garage_outdoors` | paused |
 
-**Full Sonos room list** (from Sonos HTTP API on Almaca :5005):
+**Full Sonos room list** (from Sonos HTTP API on Alpuca :5005):
 Living Sound, Dining Sound, Outhouse, Skyloft Sound, Front Outside Sound, Pequeno, MasterBlaster, DJ, garage outdoors, Kitchen, Office, Bedroom, TV Room, Bathroom
 
-**Sonos HTTP API** (legacy, still on Almaca):
+**Sonos HTTP API** (Alpuca only — never Almaca):
 ```bash
 curl http://192.168.1.200:5005/{Room}/musicsearch/spotify/song/{query}
 curl http://192.168.1.200:5005/{Room}/{play|pause|stop}
@@ -398,7 +398,8 @@ Rooms to create in HAOS (matching physical property):
 | Device | IP | Purpose |
 |--------|-----|---------|
 | UDM Pro | 192.168.1.1 | Router, UniFi Protect |
-| Almaca | 192.168.1.200 | Old HA Core, Sonos API, WiZ Proxy, Music Assistant, UniFi Protect RTSP proxy |
+| Alpuca | 192.168.1.200 | Sonos API, HAOS VM host, Cloudflare tunnel |
+| Almaca | 192.168.1.74 | Legacy — WiZ Proxy, UP-Sense monitor only (avoid for new workloads) |
 | HAOS VM | 192.168.1.39 | New Home Assistant OS |
 | Nest Kitchen | 192.168.1.139 | Thermostat |
 | Nest Master | 192.168.1.111 | Thermostat |

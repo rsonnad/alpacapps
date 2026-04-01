@@ -17,11 +17,6 @@
 				<key>NSExceptionMinimumTLSVersion</key>
 				<string>TLSv1.2</string>
 			</dict>
-			<key>192.168.1.74</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-			</dict>
 			<key>192.168.1.200</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>

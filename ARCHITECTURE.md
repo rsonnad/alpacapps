@@ -178,7 +178,7 @@ alpacapps/
 │       ├── resend-inbound-webhook/  # Inbound email receiver & router + Zelle auto-recording
 │       ├── contact-form/      # Contact form submission handler
 │       ├── govee-control/     # Govee Cloud API proxy (resident+ auth)
-│       ├── sonos-control/     # Sonos HTTP API proxy via Almaca (resident+ auth)
+│       ├── sonos-control/     # Sonos HTTP API proxy via Alpuca (resident+ auth)
 │       ├── nest-control/      # Google SDM API proxy with OAuth token mgmt (resident+ auth)
 │       ├── nest-token-refresh/ # Standalone Nest OAuth token refresher
 │       ├── tesla-command/     # Tesla Fleet API commands (lock, unlock, wake, flash, honk)
@@ -1901,8 +1901,8 @@ DO Droplet ──── Tailscale VPN ────► Almaca (home server)
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Almaca | On-premise, Black Rock City WiFi | Runs Sonos API + camera restreaming + talkback |
-| node-sonos-http-api | Almaca :5005 | REST API for 12 Sonos speaker zones |
+| Alpuca | On-premise, Black Rock City WiFi | Runs Sonos API, HAOS VM, Cloudflare tunnel |
+| node-sonos-http-api | Alpuca :5005 | REST API for 14 Sonos speaker zones |
 | go2rtc | Almaca :1984 | RTSP→HLS restreaming from UniFi Protect |
 | talkback-relay | Almaca :8902 | WebSocket→FFmpeg→UDP two-way camera audio |
 | Tailscale | DO Droplet + Almaca | Encrypted mesh VPN for remote access |
