@@ -1,12 +1,12 @@
 {
-  "version": "v260401.03 4:49a",
-  "release": 1238,
-  "sha": "298330f91",
-  "fullSha": "298330f91728aab1a1b83632667b1600aa657ce0",
+  "version": "v260401.04 4:51a",
+  "release": 1239,
+  "sha": "c0e64b351",
+  "fullSha": "c0e64b35149279c67175d33d54876b11de5bce75",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T09:49:27+00:00",
-  "commits": [{"sha":"298330f91","message":"add PAI spirit haunting page for Tommy's birthday","author":"Rahul"}]
+  "pushedAt": "2026-04-01T09:51:07+00:00",
+  "commits": [{"sha":"c0e64b351","message":"update haunting page for 30-minute loop pacing","author":"Rahul"}]
 }
