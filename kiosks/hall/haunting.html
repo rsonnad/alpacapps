@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>...</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; cursor: none !important; }
   body {
     background: #000;
     color: #e8e8e8;
@@ -15,6 +15,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: none !important;
   }
 
   #vessel {
@@ -295,7 +296,7 @@ async function run() {
 
   for (const item of sequence) {
     if (item.pause) {
-      await sleep(item.pause * 2.5); // Stretch pauses for 30-min pacing
+      await sleep(item.pause * 1.5); // Moderate stretch for 30-min pacing
     } else {
       await showLine(item);
       await sleep(2000); // Extra breath between lines
