@@ -1,12 +1,12 @@
 {
-  "version": "v260401.07 5:13a",
-  "release": 1242,
-  "sha": "9ecca22fb",
-  "fullSha": "9ecca22fb6434b030f7db96b1dab8d8c9f9d5d3d",
+  "version": "v260401.08 5:34a",
+  "release": 1243,
+  "sha": "a66b65877",
+  "fullSha": "a66b658774656e6cf85764a1f23b7de83ba9648e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T10:13:34+00:00",
-  "commits": [{"sha":"ea3a9cf22","message":"haunting: bigger text, floating PAI art, Web Audio whispers","author":"Rahul"},{"sha":"9ecca22fb","message":"Merge branch 'clever-dhawan'","author":"Rahul"}]
+  "pushedAt": "2026-04-01T10:34:00+00:00",
+  "commits": [{"sha":"a66b65877","message":"Add ghost voice audition studio for ancient/whispery PAI voice","author":"Rahul"}]
 }
