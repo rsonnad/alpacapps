@@ -1,12 +1,12 @@
 {
-  "version": "v260402.09 4:42p",
-  "release": 1257,
-  "sha": "d0ab9220a",
-  "fullSha": "d0ab9220a58b8e332af801e86e77df472d2c6103",
+  "version": "v260402.10 5:23p",
+  "release": 1258,
+  "sha": "b7cda4eb7",
+  "fullSha": "b7cda4eb7594308e5904496b8e1079b48362b3a8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-02T21:42:33+00:00",
-  "commits": [{"sha":"d0ab9220a","message":"Add Coinbase P2P payment email parsing and ledger recording","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-02T22:23:46+00:00",
+  "commits": [{"sha":"b7cda4eb7","message":"Fix backup system: retry logic, last-backup display, watchdog context","author":"Rahul"}]
 }
