@@ -11,18 +11,12 @@ import { renderHeader, initSiteComponents } from './site-components.js';
 import { setupVersionInfo } from './version-info.js';
 import { initNavTabList, scrollActiveIntoView } from './tab-utils.js';
 import { getEnabledFeatures } from './feature-registry.js';
+import { ALL_ADMIN_TABS } from './admin-tabs.js';
+import { STAFF_PERMISSION_KEYS, ADMIN_PERMISSION_KEYS, renderContextSwitcher } from './context-switcher.js';
 
 // =============================================
 // TAB DEFINITIONS
 // =============================================
-// Permission keys for staff/admin section detection
-const STAFF_PERMISSION_KEYS = [
-  'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
-  'view_purchases', 'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_appdev', 'view_inventory',
-];
-const ADMIN_PERMISSION_KEYS = [
-  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'view_testdev', 'view_openclaw', 'view_devcontrol',
-];
 
 // Compact SVG icons for tabs (16x16, stroke-based)
 const _i = (d) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -54,41 +48,9 @@ const TAB_ICONS = {
   devcontrol: _i('<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'),
 };
 
-// Tab definitions with optional `feature` key for config-driven visibility.
-// Tabs without a `feature` key are always shown (core admin tabs).
-// When property_config.features exists, tabs whose feature is disabled are hidden.
-// When property_config.features is NOT set, all tabs show (backward compatible).
-export const ALL_ADMIN_TABS = [
-  // Staff section
-  { id: 'spaces', label: 'Spaces', href: 'spaces.html', permission: 'view_spaces', section: 'staff' },
-  { id: 'rentals', label: 'Rentals', href: 'rentals.html', permission: 'view_rentals', section: 'staff', feature: 'rentals' },
-  { id: 'reservations', label: 'Reservations', href: 'reservations.html', permission: 'view_rentals', section: 'staff', feature: 'rentals' },
-  { id: 'events', label: 'Events', href: 'events.html', permission: 'view_events', section: 'staff', feature: 'events' },
-  { id: 'media', label: 'Media', href: 'media.html', permission: 'view_media', section: 'staff' },
-  { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff', feature: 'sms' },
-  { id: 'purchases', label: 'Purchases', href: 'purchases.html', permission: 'view_purchases', section: 'staff' },
-  { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff', feature: 'associates' },
-  { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff', feature: 'pai' },
-  { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff', feature: 'voice' },
-  { id: 'todo', label: 'Todo', href: 'devcontrol/#planlist', permission: 'view_todo', section: 'staff' },
-  { id: 'phyprop', label: 'PhyProp', href: 'phyprop.html', permission: 'view_spaces', section: 'staff' },
-  { id: 'inventory', label: 'Inventory', href: 'inventory.html', permission: 'view_inventory', section: 'staff' },
-  { id: 'appdev', label: 'App Dev', href: 'appdev.html', permission: 'view_appdev', section: 'staff' },
-  // Admin section
-  { id: 'users', label: 'Users', href: 'users.html', permission: 'view_users', section: 'admin' },
-  { id: 'passwords', label: 'Passwords', href: 'passwords.html', permission: 'view_passwords', section: 'admin' },
-  { id: 'settings', label: 'Settings', href: 'settings.html', permission: 'view_settings', section: 'admin' },
-  { id: 'releases', label: 'Releases', href: 'releases.html', permission: 'view_settings', section: 'admin' },
-  { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin', feature: 'documents' },
-  { id: 'brand', label: 'Brand', href: 'brand.html', permission: 'view_settings', section: 'admin' },
-  { id: 'accounting', label: 'Accounting', href: 'accounting.html', permission: 'view_accounting', section: 'admin' },
-  { id: 'notifications', label: 'Notifications', href: 'notifications.html', permission: 'view_settings', section: 'admin' },
-  { id: 'testdev', label: 'Test Dev', href: 'testdev.html', permission: 'view_settings', section: 'admin' },
-  { id: 'lifeofpai', label: 'Life of PAI', href: '/residents/lifeofpaiadmin.html', permission: 'admin_pai_settings', section: 'admin', feature: 'pai' },
-  { id: 'openclaw', label: 'AlpaClaw', href: 'alpaclaw.html', permission: 'view_openclaw', section: 'admin', feature: 'pai' },
-  // DevControl is a top-level nav item (in context switcher), not an admin sub-tab — but listed here for permission sync
-  { id: 'devcontrol', label: 'DevControl', href: '/spaces/admin/devcontrol/', permission: 'view_devcontrol', section: 'admin' },
-];
+// ALL_ADMIN_TABS imported from ./admin-tabs.js
+// Re-export for consumers that import from admin-shell
+export { ALL_ADMIN_TABS } from './admin-tabs.js';
 
 // =============================================
 // TOAST NOTIFICATIONS
@@ -265,57 +227,7 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 
-// =============================================
-// CONTEXT SWITCHER (Devices / Resident / Associate / Staff / Admin)
-// =============================================
-async function renderContextSwitcher(userRole, activeSection = 'staff') {
-  const switcher = document.getElementById('contextSwitcher');
-  if (!switcher) return;
-
-  // Show context switcher if user has any staff or admin permissions
-  const hasStaffPerms = hasAnyPermission(...STAFF_PERMISSION_KEYS);
-  const hasAdminPerms = hasAnyPermission(...ADMIN_PERMISSION_KEYS);
-  if (!hasStaffPerms && !hasAdminPerms) {
-    switcher.classList.add('hidden');
-    return;
-  }
-
-  // Resolve Staff/Admin hrefs to the first page the user actually has permission for
-  // Feature filtering uses the cached result from getEnabledFeatures (already loaded by renderTabNav)
-  const enabledFeatures = await getEnabledFeatures();
-  const firstStaffTab = ALL_ADMIN_TABS.find(t => t.section === 'staff' && (!t.feature || enabledFeatures[t.feature]) && hasAnyPermission(t.permission));
-  const firstAdminTab = ALL_ADMIN_TABS.find(t => t.section === 'admin' && (!t.feature || enabledFeatures[t.feature]) && hasAnyPermission(t.permission));
-  const staffHref = firstStaffTab ? (firstStaffTab.href.startsWith('/') ? firstStaffTab.href : `/spaces/admin/${firstStaffTab.href}`) : '/spaces/admin/';
-  const adminHref = firstAdminTab ? (firstAdminTab.href.startsWith('/') ? firstAdminTab.href : `/spaces/admin/${firstAdminTab.href}`) : '/spaces/admin/users.html';
-
-  const DEVICE_PERMISSION_KEYS = ['view_lighting', 'view_music', 'view_cameras', 'view_climate', 'view_laundry', 'view_cars', 'view_oven', 'view_glowforge', 'view_printer'];
-  const hasDevicePerms = hasAnyPermission(...DEVICE_PERMISSION_KEYS);
-  const hasAssociatePerms = hasAnyPermission('clock_in_out', 'view_own_hours');
-
-  const tabs = [];
-  if (hasDevicePerms) tabs.push({ id: 'devices', label: 'Devices', href: '/residents/devices.html' });
-  tabs.push({ id: 'resident', label: 'Residents', href: '/residents/' });
-  if (hasAssociatePerms || ['staff', 'admin', 'oracle'].includes(userRole)) {
-    tabs.push({ id: 'associate', label: 'Associates', href: '/associates/worktracking.html' });
-  }
-  if (hasStaffPerms) tabs.push({ id: 'staff', label: 'Staff', href: staffHref });
-  if (hasAdminPerms) tabs.push({ id: 'admin', label: 'Admin', href: adminHref });
-  const hasDevControlPerm = hasPermission('view_devcontrol');
-  if (hasDevControlPerm) tabs.push({ id: 'devcontrol', label: 'DevControl', href: '/spaces/admin/devcontrol/' });
-
-  // Hide if only one tab (nothing to switch between)
-  if (tabs.length <= 1) {
-    switcher.classList.add('hidden');
-    return;
-  }
-
-  const safeSection = activeSection === 'devcontrol' && hasDevControlPerm ? 'devcontrol' : (hasAdminPerms && activeSection === 'admin' ? 'admin' : 'staff');
-  switcher.innerHTML = tabs.map(tab => {
-    const isActive = tab.id === safeSection || (tab.id === 'resident' && safeSection === 'resident');
-    const activeClass = isActive ? ' active' : '';
-    return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
-  }).join('');
-}
+// Context switcher imported from ./context-switcher.js
 
 // =============================================
 // SITE NAV INJECTION
@@ -613,7 +525,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       }
 
       await renderTabNav(activeTab, state, resolvedSection);
-      await renderContextSwitcher(state.appUser?.role, resolvedSection);
+      await renderContextSwitcher({ activeSection: resolvedSection, userRole: state.appUser?.role });
 
       let demoBanner = document.getElementById('demoModeBanner');
       if (isDemo && document.getElementById('appContent')) {

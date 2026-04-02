@@ -9,18 +9,11 @@ import { initAuth, getAuthState, signOut, onAuthStateChange, hasAnyPermission } 
 import { errorLogger } from './error-logger.js';
 import { setupVersionInfo } from './version-info.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
+import { renderContextSwitcher } from './context-switcher.js';
 
 // =============================================
 // TAB DEFINITIONS
 // =============================================
-// Permission keys for staff/admin section detection (context switcher)
-const STAFF_PERMISSION_KEYS = [
-  'view_spaces', 'view_rentals', 'view_events', 'view_media', 'view_sms',
-  'view_hours', 'view_faq', 'view_voice', 'view_todo', 'view_projects',
-];
-const ADMIN_PERMISSION_KEYS = [
-  'view_users', 'view_passwords', 'view_settings', 'view_templates', 'view_accounting', 'view_testdev', 'admin_pai_settings',
-];
 
 const ASSOCIATE_TABS = [
   { id: 'hours', label: 'Work Planning', href: 'worktracking.html' },
@@ -74,43 +67,7 @@ function renderAssociateTabNav(activeTab) {
   }).join('');
 }
 
-// =============================================
-// CONTEXT SWITCHER (Devices / Resident / Associate / Staff / Admin)
-// =============================================
-function renderContextSwitcher() {
-  const switcher = document.getElementById('contextSwitcher');
-  if (!switcher) return;
-
-  const hasStaffPerms = hasAnyPermission(...STAFF_PERMISSION_KEYS);
-  const hasAdminPerms = hasAnyPermission(...ADMIN_PERMISSION_KEYS);
-  if (!hasStaffPerms && !hasAdminPerms) {
-    // Still show switcher for associates (they can see Resident + Associate at minimum)
-    // but hide Staff/Admin if no perms
-  }
-
-  const tabs = [
-    { id: 'devices', label: 'Devices', href: '/residents/devices.html' },
-    { id: 'resident', label: 'Residents', href: '/residents/' },
-    { id: 'associate', label: 'Associates', href: '/associates/worktracking.html' },
-    { id: 'staff', label: 'Staff', href: '/spaces/admin/' },
-    { id: 'admin', label: 'Admin', href: '/spaces/admin/users.html' },
-  ];
-
-  const btns = tabs.map(tab => {
-    if (tab.id === 'admin' && !hasAdminPerms) {
-      return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
-    }
-    if (tab.id === 'staff' && !hasStaffPerms) {
-      return `<span class="context-switcher-btn disabled">${tab.label}</span>`;
-    }
-    const isActive = tab.id === 'associate';
-    const activeClass = isActive ? ' active' : '';
-    return `<a href="${tab.href}" class="context-switcher-btn${activeClass}">${tab.label}</a>`;
-  }).join('');
-  switcher.innerHTML = btns;
-
-  switcher.classList.remove('hidden');
-}
+// Context switcher imported from ./context-switcher.js
 
 // =============================================
 // USER INFO (HEADER AVATAR + NAME)
@@ -404,7 +361,7 @@ export async function initAssociatePage({ activeTab, onReady }) {
         roleBadge.style.display = '';
       }
 
-      renderContextSwitcher();
+      await renderContextSwitcher({ activeSection: 'associate', userRole: state.appUser?.role });
       renderAssociateTabNav(activeTab);
 
       // Sign out handlers + version info (only bind once). Use delegation on userInfo so header dropdown Sign Out is reliable.
