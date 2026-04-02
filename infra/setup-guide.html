@@ -252,7 +252,16 @@
       <li><strong>Windows:</strong> <code>winget install --id GitHub.cli</code></li>
       <li><strong>Linux:</strong> See <a href="https://github.com/cli/cli/blob/trunk/docs/install_linux.md">github.com/cli/cli install docs</a></li>
     </ul>
-    <p>Then authenticate: <code>gh auth login</code> (follow prompts, choose HTTPS, authenticate via browser).</p>
+    <p>Then authenticate:</p>
+    <pre><code>gh auth login</code></pre>
+    <p>The CLI will ask a series of questions. Tell the user to:</p>
+    <ol>
+      <li><strong>"What account do you want to log into?"</strong> &mdash; Press <strong>Enter</strong> to pick the default (<code>GitHub.com</code>)</li>
+      <li><strong>"What is your preferred protocol?"</strong> &mdash; Press <strong>Enter</strong> to pick the default (<code>HTTPS</code>)</li>
+      <li><strong>"Authenticate Git with your GitHub credentials?"</strong> &mdash; Type <strong>Y</strong> and press Enter</li>
+      <li><strong>"How would you like to authenticate?"</strong> &mdash; Press <strong>Enter</strong> to pick <code>Login with a web browser</code></li>
+      <li>A one-time code will appear &mdash; press <strong>Enter</strong>, paste the code in the browser, and authorize</li>
+    </ol>
 
     <h3>Claude Desktop</h3>
     <p>Claude Desktop is the AI app that includes Claude Code &mdash; the AI developer that handles all terminal work, database setup, and code generation.</p>
