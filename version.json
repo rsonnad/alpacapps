@@ -1,12 +1,12 @@
 {
-  "version": "v260402.02 1:01p",
-  "release": 1250,
-  "sha": "544978edb",
-  "fullSha": "544978edbb395fb31ebfb2195c21a94cb9cb07ee",
+  "version": "v260402.03 2:37p",
+  "release": 1251,
+  "sha": "76f2334e4",
+  "fullSha": "76f2334e4ef6743dcf3820dc20f4860aa0f7a34a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm727z3",
-  "pushedAt": "2026-04-02T18:01:33+00:00",
-  "commits": [{"sha":"544978edb","message":"Update LOCAL-AI-SETUP.md for Gemma 4 upgrade on Alpuca","author":"Rahul"}]
+  "machine": "runnervmrg6be",
+  "pushedAt": "2026-04-02T19:37:34+00:00",
+  "commits": [{"sha":"c6fbb0ca1","message":"Update infra setup guide: Claude Desktop first, then switch to Claude Code after clone","author":"Rahul"},{"sha":"76f2334e4","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
 }
