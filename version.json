@@ -1,12 +1,12 @@
 {
-  "version": "v260402.04 2:44p",
-  "release": 1252,
-  "sha": "6437a8b25",
-  "fullSha": "6437a8b25401560ffb2a896440c703b8ada81944",
+  "version": "v260402.05 2:50p",
+  "release": 1253,
+  "sha": "2c63cacf5",
+  "fullSha": "2c63cacf51284913b04a5fb9ae4ee18f685a4b8c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm727z3",
-  "pushedAt": "2026-04-02T19:44:59+00:00",
-  "commits": [{"sha":"83e5a72c3","message":"Update infra setup guide: model selection, one-step-at-a-time LLM instructions","author":"Rahul"},{"sha":"6437a8b25","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
+  "machine": "runnervmrg6be",
+  "pushedAt": "2026-04-02T19:50:55+00:00",
+  "commits": [{"sha":"53c66f0b9","message":"Update infra setup guide: Xcode always-install, hidden dialog warning","author":"Rahul"},{"sha":"2c63cacf5","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
 }
