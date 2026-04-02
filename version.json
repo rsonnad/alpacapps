@@ -1,12 +1,12 @@
 {
-  "version": "v260402.12 5:34p",
-  "release": 1260,
-  "sha": "2b769d763",
-  "fullSha": "2b769d763a23fdfe68a0782125954df86fcdee76",
+  "version": "v260402.13 5:35p",
+  "release": 1261,
+  "sha": "d1e9bef6f",
+  "fullSha": "d1e9bef6ff2726b445efc25e0f276346238f2ac7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-02T22:34:16+00:00",
-  "commits": [{"sha":"2b769d763","message":"Unify intranet context switcher navigation across all shell modules","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-02T22:35:39+00:00",
+  "commits": [{"sha":"d1e9bef6f","message":"Move test suite from standalone page to DevControl tab","author":"Rahul"}]
 }
