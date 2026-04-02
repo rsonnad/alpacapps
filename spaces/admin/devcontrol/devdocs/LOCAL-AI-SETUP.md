@@ -8,10 +8,9 @@
 | Component | Version | Location |
 |-----------|---------|----------|
 | msty | Latest | `/Applications/msty.app` |
-| Ollama | v0.18.3 | `brew services` (auto-starts on boot) |
-| Gemma 3 27B (Q4) | 17 GB | Primary model — best general quality at local speed |
-| Qwen 3.5 9B (Q8) | 10 GB | Tool-calling, coding, structured output |
-| Qwen 3 14B (Q4) | 9.3 GB | Heavy reasoning — use for complex logic/math |
+| Ollama | v0.20.0-rc0 | `brew services` (auto-starts on boot) — manually upgraded binary for Gemma 4 support |
+| Gemma 4 26B (MoE, Q4) | 17 GB | Primary model — MoE architecture (3.8B active params), 256K context, vision, thinking mode |
+| glm-ocr | 2.2 GB | OCR model for document text extraction |
 
 Ollama API: `http://192.168.1.200:11434` (accessible from LAN)
 
