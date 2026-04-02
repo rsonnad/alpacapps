@@ -1,12 +1,12 @@
 {
-  "version": "v260401.13 9:06p",
-  "release": 1248,
-  "sha": "807bb27c0",
-  "fullSha": "807bb27c01ac8e2df4fca00c0e55c835c258546e",
+  "version": "v260402.01 11:41a",
+  "release": 1249,
+  "sha": "9e6a340ac",
+  "fullSha": "9e6a340ac59edabc6de8ff793805761d0daa4123",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm727z3",
-  "pushedAt": "2026-04-02T02:06:53+00:00",
-  "commits": [{"sha":"807bb27c0","message":"Make hero calculator interactive with live state-specific estimates","author":"Rahul"}]
+  "machine": "runnervmrg6be",
+  "pushedAt": "2026-04-02T16:41:26+00:00",
+  "commits": [{"sha":"9e6a340ac","message":"Update Shottr setup instructions with detailed configuration steps","author":"Rahul"}]
 }
