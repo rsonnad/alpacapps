@@ -235,19 +235,32 @@
     <h3>Operating system</h3>
     <p>Ask what OS they're using. This affects install commands throughout.</p>
 
-    <h3>Git</h3>
-    <p>Ask the user to open their terminal and run:</p>
-    <pre><code>git --version</code></pre>
-    <p>If Git is not installed:</p>
+    <h3>Xcode Command Line Tools (Mac only)</h3>
+    <p>On Mac, always install Xcode Command Line Tools first &mdash; this provides Git, compilers, and other developer essentials that Claude Code needs.</p>
+    <p>Ask the user to open Terminal and run:</p>
+    <pre><code>xcode-select --install</code></pre>
+    <p>If already installed, the terminal will say so and they can move on. If not installed:</p>
+    <ol>
+      <li>A system dialog will appear asking to install &mdash; click <strong>"Install"</strong></li>
+      <li>Then click <strong>"Agree"</strong> to the license agreement</li>
+    </ol>
+    <div class="callout warning">
+      <strong>The install dialog hides behind other windows!</strong> After running the command, the confirmation dialog almost always appears BEHIND the Terminal window and other open apps. Tell the user to <strong>check behind all their open windows</strong> or use <strong>Mission Control</strong> (swipe up with three fingers, or press F3) to find the dialog. If they don't see anything happening, it's hiding &mdash; not missing.
+    </div>
+    <p>The download is ~1&ndash;2 GB and can take several minutes. Wait for it to complete before moving on.</p>
+    <div class="validate">Ask the user to confirm the install finished by running <code>git --version</code>. They should see a version number (e.g., <code>git version 2.39.5</code>).</div>
+
+    <h3>Git (Windows / Linux)</h3>
+    <p>If the user is NOT on Mac, they need to install Git separately:</p>
     <ul>
-      <li><strong>Mac:</strong> Run <code>xcode-select --install</code> in Terminal (installs Git along with command-line tools)</li>
       <li><strong>Windows:</strong> Download from <a href="https://git-scm.com/download/win">git-scm.com/download/win</a> and run the installer. Use the defaults.</li>
       <li><strong>Linux:</strong> <code>sudo apt install git</code> (Ubuntu/Debian) or <code>sudo dnf install git</code> (Fedora)</li>
     </ul>
+    <div class="validate">Ask the user to confirm they can run <code>git --version</code> successfully.</div>
 
     <h3>GitHub account</h3>
     <p>Ask if they already have a GitHub account. If not, direct them to <a href="https://github.com/signup">github.com/signup</a>.</p>
-    <div class="validate">Ask the user to confirm they can run <code>git --version</code> successfully and that they have a GitHub account.</div>
+    <div class="validate">Ask the user to confirm they have a GitHub account.</div>
 
     <h3>GitHub CLI (optional but recommended)</h3>
     <p>The GitHub CLI (<code>gh</code>) simplifies authentication and repo management. Check if installed:</p>
