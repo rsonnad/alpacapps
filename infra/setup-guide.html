@@ -200,32 +200,13 @@
   <!-- Step 1 -->
   <div class="guide-step">
     <h2><span class="step-num">1</span> Understand what they're building</h2>
-    <p>Before any setup, ask the user two questions:</p>
-    <ol>
-      <li><strong>What kind of project?</strong> Two profiles are available:
-        <ul>
-          <li><strong>Property Management</strong> &mdash; full stack with spaces, tenants, devices, events, smart home, bookings</li>
-          <li><strong>General AI Enablement</strong> &mdash; core framework for SaaS apps, portfolios, CRMs, booking systems, side projects. No property-specific modules.</li>
-        </ul>
-      </li>
-      <li><strong>Which services do they need?</strong> Walk through this list:
-        <ul>
-          <li><strong>GitHub Pages</strong> (hosting) &mdash; Free, always included</li>
-          <li><strong>Supabase</strong> (database, auth, storage, edge functions) &mdash; Free, always included</li>
-          <li><strong>Cloudflare</strong> (domain management + D1 session logging) &mdash; Free, always included</li>
-          <li><strong>Google Sign-In</strong> (OAuth user login) &mdash; Free</li>
-          <li><strong>Resend</strong> (transactional email) &mdash; Free, 3,000 emails/month</li>
-          <li><strong>Telnyx</strong> (SMS notifications) &mdash; ~$0.004/SMS + $1/mo phone number</li>
-          <li><strong>Square</strong> (payment processing) &mdash; 2.9% + 30 cents per transaction</li>
-          <li><strong>Stripe</strong> (ACH &amp; card payments, Connect payouts) &mdash; 0.8%&ndash;2.9% per transaction</li>
-          <li><strong>SignWell</strong> (e-signatures) &mdash; Free, 3&ndash;25 docs/month</li>
-          <li><strong>Google Gemini</strong> (AI features) &mdash; Free API</li>
-          <li><strong>Cloudflare R2</strong> (object storage) &mdash; Free 10 GB, zero egress fees (uses Cloudflare token from core)</li>
-          <li><strong>gstack</strong> (QA &amp; developer skills) &mdash; Free, open-source headless browser + Claude Code skills for code review, shipping, QA testing</li>
-        </ul>
-      </li>
-    </ol>
-    <p>Record their profile choice and selected services. You'll need these for the Claude Code setup wizard later.</p>
+    <p>Before any setup, ask the user one question:</p>
+    <p><strong>What kind of project?</strong> Two profiles are available:</p>
+    <ul>
+      <li><strong>Property Management</strong> &mdash; full stack with spaces, tenants, devices, events, smart home, bookings</li>
+      <li><strong>General AI Enablement</strong> &mdash; core framework for SaaS apps, portfolios, CRMs, booking systems, side projects. No property-specific modules.</li>
+    </ul>
+    <p>Record their profile choice. You'll need it for the Claude Code setup wizard later. Service selection happens at the end &mdash; don't discuss it now.</p>
   </div>
 
   <!-- Step 2 -->
@@ -468,8 +449,56 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     <p>Claude Code handles the code, commits, and deploys.</p>
 
     <div class="callout success">
+      <strong>Core setup complete!</strong>
+      Your site is live on GitHub Pages with a fully configured Supabase backend and Cloudflare managing your domain. Next: install gstack (quick, 30 seconds), then optionally add more services.
+    </div>
+  </div>
+
+  <!-- Step 7 -->
+  <div class="guide-step">
+    <h2><span class="step-num">7</span> Install gstack</h2>
+    <p>gstack adds powerful skills to Claude Code: headless browser for QA testing, code review, ship workflow, engineering retrospectives, and more. Sub-second commands with zero token overhead.</p>
+    <p>In your Claude Code session, run:</p>
+    <pre><code>curl -fsSL https://raw.githubusercontent.com/garrytan/gstack/main/install.sh | bash</code></pre>
+    <p>Verify it installed:</p>
+    <pre><code>ls ~/.claude/skills/gstack/SKILL.md</code></pre>
+    <p>If the file exists, gstack is installed and Claude Code will automatically detect the skills.</p>
+    <h3>Available skills</h3>
+    <ul>
+      <li><code>/browse</code> &mdash; Headless browser for QA testing and site dogfooding (~100ms per command)</li>
+      <li><code>/review</code> &mdash; Pre-landing code review with production risk detection</li>
+      <li><code>/ship</code> &mdash; Ship workflow: merge base, test, review, bump, push, create PR</li>
+      <li><code>/qa</code> &mdash; Systematic QA testing with auto-fix (Quick/Standard/Exhaustive tiers)</li>
+      <li><code>/retro</code> &mdash; Engineering retrospectives with commit analysis and trend tracking</li>
+      <li><code>/plan-ceo-review</code> &mdash; CEO/founder-mode plan review</li>
+      <li><code>/plan-eng-review</code> &mdash; Engineering manager plan review</li>
+    </ul>
+    <p><strong>Update later:</strong> Run <code>/gstack-upgrade</code> inside Claude Code, or re-run the install script.</p>
+    <p><strong>Source:</strong> <a href="https://github.com/garrytan/gstack">github.com/garrytan/gstack</a> (MIT license)</p>
+    <div class="validate">Ask the user to confirm gstack installed by checking if the SKILL.md file exists.</div>
+  </div>
+
+  <!-- Step 8 -->
+  <div class="guide-step">
+    <h2><span class="step-num">8</span> Add optional services</h2>
+    <p>Your core stack is running. Now walk through these optional services and ask which ones they want to add. Claude Code will configure each one &mdash; just provide the API keys when asked.</p>
+
+    <h3>Which services do they need?</h3>
+    <ul>
+      <li><strong>Google Sign-In</strong> (OAuth user login) &mdash; Free</li>
+      <li><strong>Resend</strong> (transactional email) &mdash; Free, 3,000 emails/month</li>
+      <li><strong>Telnyx</strong> (SMS notifications) &mdash; ~$0.004/SMS + $1/mo phone number</li>
+      <li><strong>Square</strong> (payment processing) &mdash; 2.9% + 30 cents per transaction</li>
+      <li><strong>Stripe</strong> (ACH &amp; card payments, Connect payouts) &mdash; 0.8%&ndash;2.9% per transaction</li>
+      <li><strong>SignWell</strong> (e-signatures) &mdash; Free, 3&ndash;25 docs/month</li>
+      <li><strong>Google Gemini</strong> (AI features) &mdash; Free API</li>
+      <li><strong>Cloudflare R2</strong> (object storage) &mdash; Free 10 GB, zero egress fees (uses Cloudflare token from core)</li>
+    </ul>
+    <p>For each service the user selects, walk them through the vendor signup below, then have Claude Code configure it.</p>
+
+    <div class="callout success">
       <strong>You're done!</strong>
-      Once the setup wizard finishes, your site is live on GitHub Pages with a fully configured Supabase backend and Cloudflare managing your domain. Start building by telling Claude Code what you want &mdash; it handles the rest.
+      Start building by telling Claude Code what you want &mdash; it handles the code, commits, and deploys.
     </div>
 
     <div class="callout" style="border-color: var(--text-muted); background: #f5f5f5;">
@@ -546,34 +575,6 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     </ul>
   </div>
 
-  <!-- gstack -->
-  <div class="guide-step">
-    <h3>gstack &mdash; Claude Code Skills &amp; Headless Browser</h3>
-    <p>Open-source CLI that adds powerful skills to Claude Code: headless browser for QA testing, code review, ship workflow, engineering retrospectives, and more. Sub-second commands with zero token overhead.</p>
-    <ol>
-      <li><strong>Install:</strong>
-        <pre><code>curl -fsSL https://raw.githubusercontent.com/garrytan/gstack/main/install.sh | bash</code></pre>
-        This installs the <code>gstack</code> binary and skill definitions to <code>~/.claude/skills/gstack/</code>.
-      </li>
-      <li><strong>Verify installation:</strong>
-        <pre><code>ls ~/.claude/skills/gstack/SKILL.md</code></pre>
-        If the file exists, gstack is installed and Claude Code will automatically detect the skills.
-      </li>
-      <li><strong>Available skills:</strong>
-        <ul>
-          <li><code>/browse</code> &mdash; Headless browser for QA testing and site dogfooding (~100ms per command)</li>
-          <li><code>/review</code> &mdash; Pre-landing code review with production risk detection</li>
-          <li><code>/ship</code> &mdash; Ship workflow: merge base, test, review, bump, push, create PR</li>
-          <li><code>/qa</code> &mdash; Systematic QA testing with auto-fix (Quick/Standard/Exhaustive tiers)</li>
-          <li><code>/retro</code> &mdash; Engineering retrospectives with commit analysis and trend tracking</li>
-          <li><code>/plan-ceo-review</code> &mdash; CEO/founder-mode plan review</li>
-          <li><code>/plan-eng-review</code> &mdash; Engineering manager plan review</li>
-        </ul>
-      </li>
-      <li><strong>Update later:</strong> Run <code>/gstack-upgrade</code> inside Claude Code, or re-run the install script.</li>
-    </ol>
-    <p><strong>Source:</strong> <a href="https://github.com/garrytan/gstack">github.com/garrytan/gstack</a> (MIT license)</p>
-  </div>
 
 </div>
 
