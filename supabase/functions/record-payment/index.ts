@@ -100,6 +100,7 @@ Deno.serve(async (req) => {
         'zelle': 'zelle',
         'venmo': 'venmo',
         'paypal': 'paypal',
+        'coinbase': 'coinbase',
         'check': 'check',
         'cash': 'cash',
         'stripe': 'stripe'

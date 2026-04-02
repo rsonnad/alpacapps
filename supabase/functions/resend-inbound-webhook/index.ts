@@ -1958,6 +1958,114 @@ function parseZellePayment(bodyText: string): ZellePayment | null {
 }
 
 // =============================================
+// COINBASE PAYMENT PARSING (person-to-person transfers)
+// =============================================
+
+interface CoinbasePayment {
+  amount: number;
+  senderName: string;
+  senderEmail: string | null;
+  currency: string; // "USD", "BTC", "ETH", etc.
+  transactionId: string | null;
+}
+
+/**
+ * Parse Coinbase payment notification emails.
+ * Handles person-to-person transfer notifications:
+ * - "You received $X.XX from Name"
+ * - "Name sent you $X.XX"
+ * - "You just received X.XX BTC ($X.XX) from Name"
+ * - "You received X.XX USD from Name"
+ */
+function parseCoinbasePayment(bodyText: string, fromAddress: string): CoinbasePayment | null {
+  const fromLower = fromAddress.toLowerCase();
+  if (!fromLower.includes("coinbase") && !fromLower.includes("@coinbase.com")) {
+    return null;
+  }
+
+  const normalized = bodyText.replace(/\s+/g, " ");
+
+  // Reject outbound sends
+  if (/you sent \$?[\d,]+\.?\d*/i.test(normalized) && !/you.*received/i.test(normalized)) {
+    return null;
+  }
+
+  // Pattern 1: Crypto with USD equivalent — "You received 0.05 BTC ($X.XX USD) from Name"
+  const cryptoWithUsd = /(?:You['']?ve? )?received ([\d,.]+) ([A-Z]{2,10}) \(\$([\d,]+\.\d{2})(?: USD)?\) from (.+?)(?:\s*\.|$|!|\s+on\b|\s+via\b)/im;
+  const match1 = normalized.match(cryptoWithUsd);
+  if (match1) {
+    const txMatch = normalized.match(/(?:Transaction|Txn|Reference)[:\s#]*([A-Za-z0-9]+)/i);
+    return {
+      amount: parseFloat(match1[3].replace(/,/g, "")),
+      senderName: match1[4].trim(),
+      senderEmail: null,
+      currency: match1[2],
+      transactionId: txMatch?.[1] || null,
+    };
+  }
+
+  // Pattern 2: USD received — "You received $X.XX from Name" or "You received X.XX USD from Name"
+  const usdReceived = /(?:You['']?ve? )?received \$([\d,]+\.\d{2})(?: USD)? from (.+?)(?:\s*\.|$|!|\s+on\b|\s+via\b)/im;
+  const match2 = normalized.match(usdReceived);
+  if (match2) {
+    const txMatch = normalized.match(/(?:Transaction|Txn|Reference)[:\s#]*([A-Za-z0-9]+)/i);
+    return {
+      amount: parseFloat(match2[1].replace(/,/g, "")),
+      senderName: match2[2].trim(),
+      senderEmail: null,
+      currency: "USD",
+      transactionId: txMatch?.[1] || null,
+    };
+  }
+
+  // Pattern 2b: "You received X.XX USD from Name" (without dollar sign)
+  const usdNoDollar = /(?:You['']?ve? )?received ([\d,]+\.\d{2}) USD from (.+?)(?:\s*\.|$|!|\s+on\b|\s+via\b)/im;
+  const match2b = normalized.match(usdNoDollar);
+  if (match2b) {
+    const txMatch = normalized.match(/(?:Transaction|Txn|Reference)[:\s#]*([A-Za-z0-9]+)/i);
+    return {
+      amount: parseFloat(match2b[1].replace(/,/g, "")),
+      senderName: match2b[2].trim(),
+      senderEmail: null,
+      currency: "USD",
+      transactionId: txMatch?.[1] || null,
+    };
+  }
+
+  // Pattern 3: "Name sent you $X.XX"
+  const sentYou = /(.+?) sent you \$([\d,]+\.\d{2})/im;
+  const match3 = normalized.match(sentYou);
+  if (match3) {
+    const txMatch = normalized.match(/(?:Transaction|Txn|Reference)[:\s#]*([A-Za-z0-9]+)/i);
+    return {
+      amount: parseFloat(match3[2].replace(/,/g, "")),
+      senderName: match3[1].trim(),
+      senderEmail: null,
+      currency: "USD",
+      transactionId: txMatch?.[1] || null,
+    };
+  }
+
+  // Pattern 4: Generic fallback — any dollar amount from Coinbase email with sender
+  const genericAmount = normalized.match(/\$([\d,]+\.\d{2})/);
+  if (genericAmount) {
+    const nameMatch = normalized.match(/(?:from|sender|paid by)[:\s]+(.+?)(?:\s*\.|$|!|\s+on\b)/i);
+    if (nameMatch) {
+      const txMatch = normalized.match(/(?:Transaction|Txn|Reference)[:\s#]*([A-Za-z0-9]+)/i);
+      return {
+        amount: parseFloat(genericAmount[1].replace(/,/g, "")),
+        senderName: nameMatch[1].trim(),
+        senderEmail: null,
+        currency: "USD",
+        transactionId: txMatch?.[1] || null,
+      };
+    }
+  }
+
+  return null;
+}
+
+// =============================================
 // OUTBOUND ZELLE PAYMENT PARSING (sent payments / refunds)
 // =============================================
 
@@ -3084,7 +3192,15 @@ async function handlePaymentEmail(
     return;
   }
 
-  // 1b. Try to parse as outbound Zelle payment (refund/payout sent)
+  // 1b. Try to parse as Coinbase payment
+  const coinbaseParsed = parseCoinbasePayment(bodyText, fromAddress);
+  if (coinbaseParsed) {
+    console.log(`Parsed Coinbase payment: $${coinbaseParsed.amount} from ${coinbaseParsed.senderName}, currency=${coinbaseParsed.currency}, txn=${coinbaseParsed.transactionId}`);
+    await handleParsedCoinbasePayment(supabase, resendApiKey, coinbaseParsed, emailRecord);
+    return;
+  }
+
+  // 1c. Try to parse as outbound Zelle payment (refund/payout sent)
   const outboundParsed = parseOutboundZellePayment(bodyText);
   if (outboundParsed) {
     console.log(`Parsed outbound Zelle payment: $${outboundParsed.amount} to ${outboundParsed.recipientName}, conf#${outboundParsed.confirmationNumber}, memo="${outboundParsed.memo || ""}"`);
@@ -3092,10 +3208,10 @@ async function handlePaymentEmail(
     return;
   }
 
-  // 1c. Try to parse as inbound Zelle payment
+  // 1d. Try to parse as inbound Zelle payment
   const parsed = parseZellePayment(bodyText);
   if (!parsed) {
-    console.log("Could not parse payment from email (tried Zelle + PayPal + outbound Zelle), forwarding to admin for review");
+    console.log("Could not parse payment from email (tried PayPal + Coinbase + Zelle + outbound Zelle), forwarding to admin for review");
     // Forward the unrecognized email to admin for manual classification
     try {
       const subject = emailRecord.subject || "Unknown payment email";
@@ -3438,6 +3554,159 @@ async function autoRecordPayPalDeposit(
   });
 
   console.log(`Auto-recorded PayPal deposit: $${paypal.amount} from ${nameMatch.name} for app ${application.id}`);
+}
+
+// =============================================
+// COINBASE PAYMENT HANDLER
+// =============================================
+
+/**
+ * Handle a parsed Coinbase payment: match to tenant, record in ledger.
+ * Follows the same pattern as handleParsedPayPalPayment.
+ */
+async function handleParsedCoinbasePayment(
+  supabase: any,
+  resendApiKey: string,
+  coinbase: CoinbasePayment,
+  emailRecord: any
+): Promise<void> {
+  // Dedup: check if transaction already recorded
+  if (coinbase.transactionId) {
+    const { data: existing } = await supabase
+      .from("ledger")
+      .select("id")
+      .eq("notes", `Coinbase txn: ${coinbase.transactionId}`)
+      .single();
+
+    if (existing) {
+      console.log(`Coinbase transaction ${coinbase.transactionId} already recorded, skipping`);
+      return;
+    }
+  }
+
+  const currencyNote = coinbase.currency !== "USD" ? ` (original: ${coinbase.currency})` : "";
+
+  // Try to match sender to a person
+  const nameMatch = await matchByName(supabase, coinbase.senderName);
+
+  if (nameMatch) {
+    // Check if there's a pending deposit application
+    const application = await findDepositApplication(supabase, nameMatch.person_id);
+    if (application) {
+      console.log(`Coinbase payment matched to deposit application: ${nameMatch.name}, app=${application.id}`);
+      const moveIn = application.move_in_deposit_amount || 0;
+      const security = application.security_deposit_amount || 0;
+      const today = new Date().toISOString().split("T")[0];
+
+      if (moveIn > 0) {
+        await supabase.from("ledger").insert({
+          direction: "income",
+          category: "move_in_deposit",
+          amount: moveIn,
+          payment_method: "coinbase",
+          transaction_date: today,
+          person_id: nameMatch.person_id,
+          person_name: nameMatch.name,
+          rental_application_id: application.id,
+          status: "completed",
+          description: `Move-in deposit from ${nameMatch.name} (Coinbase${currencyNote})`,
+          notes: coinbase.transactionId ? `Coinbase txn: ${coinbase.transactionId}` : null,
+          recorded_by: "system:coinbase-email",
+        });
+      }
+      if (security > 0) {
+        await supabase.from("ledger").insert({
+          direction: "income",
+          category: "security_deposit",
+          amount: security,
+          payment_method: "coinbase",
+          transaction_date: today,
+          person_id: nameMatch.person_id,
+          person_name: nameMatch.name,
+          rental_application_id: application.id,
+          status: "completed",
+          description: `Security deposit from ${nameMatch.name} (Coinbase${currencyNote})`,
+          notes: coinbase.transactionId ? `Coinbase txn: ${coinbase.transactionId}-sec` : null,
+          recorded_by: "system:coinbase-email",
+        });
+      }
+
+      await supabase
+        .from("rental_applications")
+        .update({ deposit_status: "paid", deposit_paid_at: new Date().toISOString() })
+        .eq("id", application.id);
+
+      await sendPaymentNotification(resendApiKey, "auto_recorded_coinbase", {
+        parsed: { amount: coinbase.amount, senderName: coinbase.senderName, confirmationNumber: coinbase.transactionId },
+        personName: nameMatch.name,
+        applicationId: application.id,
+        category: "deposit",
+      });
+      return;
+    }
+
+    // No deposit application — check for active assignment (likely rent)
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id, rate_amount")
+      .eq("person_id", nameMatch.person_id)
+      .in("status", ["active", "pending_contract", "contract_sent"])
+      .order("start_date", { ascending: false })
+      .limit(1)
+      .single();
+
+    const category = assignment ? "rent" : "other";
+
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category,
+      amount: coinbase.amount,
+      payment_method: "coinbase",
+      transaction_date: new Date().toISOString().split("T")[0],
+      person_id: nameMatch.person_id,
+      person_name: nameMatch.name,
+      assignment_id: assignment?.id || null,
+      status: "completed",
+      description: `Coinbase payment from ${nameMatch.name}${currencyNote}`,
+      notes: coinbase.transactionId ? `Coinbase txn: ${coinbase.transactionId}` : null,
+      recorded_by: "system:coinbase-email",
+      is_test: false,
+    });
+
+    console.log(`Recorded Coinbase payment: $${coinbase.amount} from ${nameMatch.name} as ${category}`);
+
+    await sendPaymentNotification(resendApiKey, "auto_recorded_coinbase", {
+      parsed: { amount: coinbase.amount, senderName: coinbase.senderName, confirmationNumber: coinbase.transactionId },
+      personName: nameMatch.name,
+      applicationId: "",
+      category,
+    });
+    return;
+  }
+
+  // No name match — try amount matching
+  const amountMatches = await matchByAmount(supabase, coinbase.amount);
+
+  if (amountMatches.length === 1) {
+    console.log(`Coinbase amount match: $${coinbase.amount} → ${amountMatches[0].person.first_name} ${amountMatches[0].person.last_name}`);
+    const zelleEquiv: ZellePayment = {
+      amount: coinbase.amount,
+      senderName: coinbase.senderName,
+      confirmationNumber: coinbase.transactionId,
+      bank: "coinbase",
+    };
+    await createConfirmationRequest(supabase, resendApiKey, zelleEquiv, amountMatches[0], emailRecord.id);
+    return;
+  }
+
+  // No match — notify admin
+  console.log("Coinbase payment: no match found, notifying admin");
+  await sendPaymentNotification(resendApiKey, "no_match", {
+    parsed: { amount: coinbase.amount, senderName: coinbase.senderName, confirmationNumber: coinbase.transactionId },
+    personName: "",
+    applicationId: "",
+    pendingApps: "",
+  });
 }
 
 /**
