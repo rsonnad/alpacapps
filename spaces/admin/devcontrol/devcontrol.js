@@ -71,7 +71,7 @@ function switchTab(tab) {
 
   if (!loadedTabs.has(tab)) {
     loadedTabs.add(tab);
-    const loaders = { overview: loadOverview, releases: loadReleases, sessions: loadSessions, tokens: loadTokens, context: loadContext, backups: loadBackups, planlist: loadPlanList };
+    const loaders = { overview: loadOverview, releases: loadReleases, sessions: loadSessions, tokens: loadTokens, context: loadContext, backups: loadBackups, planlist: loadPlanList, tests: loadTests };
     loaders[tab]?.();
   }
 }
@@ -88,7 +88,7 @@ function loadOverview() {
     { tab: 'backups', label: 'Backups', desc: 'Database and file storage backup status', icon: '<path d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>' },
     { tab: 'planlist', label: 'PlanList', desc: 'Development todo items, checklists, and project tasks', icon: '<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>' },
     { tab: '_devdocs', label: 'Dev Docs', desc: 'Internal development documentation — schema, patterns, credentials, guides', icon: '<path d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6V7.5Z"/>' },
-    { tab: '_tests', label: 'Test Suite', desc: 'All registered tests, last run results, models, and status', icon: '<path d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>' },
+    { tab: 'tests', label: 'Test Suite', desc: 'All registered tests, last run results, models, and status', icon: '<path d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>' },
   ];
 
   const panel = document.getElementById('dc-panel-overview');
@@ -110,7 +110,6 @@ function loadOverview() {
       if (target.startsWith('_')) {
         // External link cards
         if (target === '_devdocs') window.location.href = '/spaces/admin/devcontrol/devdocs/';
-        if (target === '_tests') window.location.href = '/spaces/admin/devcontrol/tests.html';
       } else {
         switchTab(target);
       }
@@ -1876,6 +1875,164 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
+// ═══════════════════════════════════════════════════════════
+// TESTS TAB
+// ═══════════════════════════════════════════════════════════
+function loadTests() {
+  const panel = document.getElementById('dc-panel-tests');
+
+  const TESTS = [
+    {
+      id: 'pai-test-suite', name: 'PAI Response Quality', section: 'AI / LLM',
+      description: 'Queries real Supabase data, generates 50+ test questions across 14 categories, calls PAI API endpoint, and scores responses with keyword matching.',
+      runner: 'dev/testing/pai-test-suite.js', reportUrl: '/dev/testing/testrun1.html', resultsFile: '/dev/testing/results.json',
+      models: ['Gemini 2.5 Flash'], sentToClaude: false,
+    },
+    {
+      id: 'site-health', name: 'Site Health Check', section: 'Infrastructure',
+      description: 'Loads 40+ pages (public, resident, admin), checks camera feeds, verifies device inventory, and tests Supabase connectivity.',
+      runner: 'spaces/admin/devcontrol/devdocs/tests/site-health.js', reportUrl: null, resultsFile: null,
+      models: [], sentToClaude: false,
+    },
+    {
+      id: 'email-classifier', name: 'Email Classifier Accuracy', section: 'AI / LLM',
+      description: 'Tests the dual-model email classifier (Gemini Flash + Llama Maverick) with sample emails across categories: spam, payment, receipt, query, complaint.',
+      runner: null, reportUrl: null, resultsFile: null,
+      models: ['Gemini 2.5 Flash', 'Llama 4 Maverick'], sentToClaude: false, notImplemented: true,
+    },
+    {
+      id: 'payment-email-parsing', name: 'Payment Email Parsing', section: 'Payment & Email',
+      description: 'Tests Zelle, PayPal, and Coinbase email parsers with sample notification emails. Verifies sender name, amount, and transaction ID extraction.',
+      runner: null, reportUrl: null, resultsFile: null,
+      models: [], sentToClaude: false, notImplemented: true,
+    },
+    {
+      id: 'tenant-matcher', name: 'Tenant Matcher Accuracy', section: 'Payment & Email',
+      description: 'Tests the 3-tier payment sender matching (cached → exact → Gemini AI) with various name formats, misspellings, and amount-based matching.',
+      runner: null, reportUrl: null, resultsFile: null,
+      models: ['Gemini 2.0 Flash'], sentToClaude: false, notImplemented: true,
+    },
+  ];
+
+  function fmtDuration(ms) {
+    if (!ms) return '—';
+    if (ms < 1000) return ms + 'ms';
+    if (ms < 60000) return (ms / 1000).toFixed(1) + 's';
+    return Math.floor(ms / 60000) + 'm ' + Math.round((ms % 60000) / 1000) + 's';
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return 'Never';
+    const d = new Date(iso), now = new Date();
+    const days = Math.floor((now - d) / 86400000);
+    const ds = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const ts = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const ago = days === 0 ? ' (today)' : days === 1 ? ' (yesterday)' : days < 30 ? ` (${days}d ago)` : ` (${Math.floor(days / 30)}mo ago)`;
+    return ds + ' ' + ts + ago;
+  }
+
+  function getStatus(t) {
+    if (t.notImplemented || !t.lastRun) return 'never';
+    const days = Math.floor((Date.now() - new Date(t.lastRun)) / 86400000);
+    if (days > 14) return 'stale';
+    return (t.failed > 0) ? 'fail' : 'pass';
+  }
+
+  const statusColors = { pass: 'var(--success, #16a34a)', fail: 'var(--error, #dc2626)', stale: '#f59e0b', never: '#d1d5db' };
+
+  async function init() {
+    // Load results from JSON files
+    for (const test of TESTS) {
+      if (!test.resultsFile) continue;
+      try {
+        const resp = await fetch(test.resultsFile + '?t=' + Date.now());
+        if (!resp.ok) continue;
+        const data = await resp.json();
+        if (data.summary) {
+          test.lastRun = data.summary.runStart;
+          test.duration = data.summary.durationFormatted || fmtDuration(data.summary.durationMs);
+          test.passRate = data.summary.passRate;
+          test.totalQueries = data.summary.totalQueries;
+          test.passed = data.summary.passed;
+          test.failed = data.summary.failed;
+          test.avgScore = data.summary.avgScore;
+          test.avgResponseTime = data.summary.avgResponseTimeMs ? Math.round(data.summary.avgResponseTimeMs) + 'ms' : null;
+        }
+      } catch (e) { /* skip */ }
+    }
+
+    // Compute summary
+    let nPass = 0, nFail = 0, nNever = 0;
+    TESTS.forEach(t => { const s = getStatus(t); if (s === 'pass') nPass++; else if (s === 'fail' || s === 'stale') nFail++; else nNever++; });
+
+    // Group by section
+    const sections = {};
+    TESTS.forEach(t => { (sections[t.section] = sections[t.section] || []).push(t); });
+
+    panel.innerHTML = `
+      <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Test Suite</h2>
+      <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:1.25rem;">All registered tests, their last run results, and status.</p>
+      <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <div class="dc-stat"><div class="dc-stat-value">${TESTS.length}</div><div class="dc-stat-label">Tests</div></div>
+        <div class="dc-stat"><div class="dc-stat-value" style="color:var(--success)">${nPass}</div><div class="dc-stat-label">Passed</div></div>
+        <div class="dc-stat"><div class="dc-stat-value" style="color:var(--error)">${nFail}</div><div class="dc-stat-label">Failed</div></div>
+        <div class="dc-stat"><div class="dc-stat-value">${nNever}</div><div class="dc-stat-label">Never Run</div></div>
+      </div>
+      ${Object.entries(sections).map(([section, tests]) => `
+        <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin:1.5rem 0 0.5rem;">${esc(section)}</div>
+        ${tests.map(t => {
+          const status = getStatus(t);
+          const dotColor = statusColors[status];
+          return `
+          <div class="dc-test-card" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.5rem;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;cursor:pointer;" onclick="this.parentElement.classList.toggle('dc-test-expanded')">
+              <div style="width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0;"></div>
+              <span style="font-weight:600;font-size:0.9rem;flex:1;">${esc(t.name)}</span>
+              <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                ${t.models.map(m => `<span style="font-size:0.65rem;padding:0.1rem 0.4rem;border-radius:4px;background:#ede9fe;color:#6b21a8;">${esc(m)}</span>`).join('')}
+                ${t.sentToClaude ? '<span style="font-size:0.65rem;padding:0.1rem 0.4rem;border-radius:4px;background:#dbeafe;color:#1d4ed8;">Sent to Claude</span>' : ''}
+                ${t.notImplemented ? '<span style="font-size:0.65rem;padding:0.1rem 0.4rem;border-radius:4px;background:var(--bg);color:var(--text-muted);">Not implemented</span>' : ''}
+                ${t.duration ? `<span style="font-size:0.65rem;padding:0.1rem 0.4rem;border-radius:4px;background:var(--bg);color:var(--text-muted);">${esc(t.duration)}</span>` : ''}
+              </div>
+            </div>
+            <div class="dc-test-details" style="display:none;padding:0 1rem 0.75rem;border-top:1px solid var(--border);">
+              <p style="font-size:0.8rem;color:var(--text-muted);margin:0.75rem 0 0.5rem;">${esc(t.description)}</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.5rem;">
+                <div><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Last Run</div><div style="font-size:0.8rem;font-weight:500;">${fmtDate(t.lastRun)}</div></div>
+                <div><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Duration</div><div style="font-size:0.8rem;font-weight:500;">${t.duration || '—'}</div></div>
+                <div><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Runner</div><div style="font-size:0.8rem;font-weight:500;">${t.runner ? `<code style="font-size:0.7rem">${esc(t.runner)}</code>` : '<em>Not implemented</em>'}</div></div>
+                ${t.reportUrl ? `<div><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Report</div><div style="font-size:0.8rem;"><a href="${t.reportUrl}" target="_blank" style="color:var(--accent);text-decoration:none;">View report →</a></div></div>` : ''}
+              </div>
+              ${t.lastRun ? `<div style="margin-top:0.75rem;padding:0.5rem 0.75rem;background:var(--bg);border-radius:6px;font-size:0.8rem;">
+                <span style="color:var(--success);font-weight:600;">${t.passed || 0} passed</span> ·
+                <span style="color:var(--error);font-weight:600;">${t.failed || 0} failed</span>
+                ${t.totalQueries ? ` · ${t.totalQueries} total` : ''}
+                ${t.passRate ? ` · ${t.passRate} pass rate` : ''}
+                ${t.avgScore ? ` · avg score ${t.avgScore}` : ''}
+                ${t.avgResponseTime ? ` · avg ${t.avgResponseTime}` : ''}
+                ${t.sentToClaude ? ' · <span style="color:#1d4ed8;font-weight:600;">Failures sent to headless Claude for fix</span>' : ''}
+              </div>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      `).join('')}
+    `;
+
+    // Toggle expand
+    panel.querySelectorAll('.dc-test-card').forEach(card => {
+      const details = card.querySelector('.dc-test-details');
+      if (details) {
+        const observer = new MutationObserver(() => {
+          details.style.display = card.classList.contains('dc-test-expanded') ? 'block' : 'none';
+        });
+        observer.observe(card, { attributes: true, attributeFilter: ['class'] });
+      }
+    });
+  }
+
+  init();
+}
+
 function renderDevControlTabs() {
   const tabsContainer = document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
@@ -1887,6 +2044,7 @@ function renderDevControlTabs() {
     { id: 'context', label: 'Context' },
     { id: 'backups', label: 'Backups' },
     { id: 'planlist', label: 'PlanList' },
+    { id: 'tests', label: 'Tests' },
   ];
   tabsContainer.innerHTML = subtabs.map(tab =>
     `<a href="#${tab.id === 'overview' ? '' : tab.id}" class="manage-tab dc-manage-tab" data-tab="${tab.id}">${tab.label}</a>`
