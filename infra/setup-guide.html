@@ -190,9 +190,9 @@
 
   <div class="guide-note">
     <strong>Instructions for Claude Chat</strong>
-    <p>Walk the user through each numbered step below in order. Do not skip ahead.</p>
+    <p><strong>One step at a time:</strong> Present ONE sub-step, wait for the user to confirm they've done it, then move to the next sub-step. Do NOT give multiple instructions in one message. For example, don't say "install Git, create a GitHub account, and install the GitHub CLI" &mdash; instead say "First, let's check if Git is installed. Open your terminal and run <code>git --version</code>. What do you see?" Then wait.</p>
     <p><strong>Checkpoint rule:</strong> Do not move to Step N+1 until every item in Step N is explicitly confirmed by the user. If the user says they've already completed something, still confirm it — ask them to verify (run a command, paste a screenshot, or state the result). "I already did that" requires a quick proof before proceeding.</p>
-    <p><strong>Screenshot dependency:</strong> Ask users to paste screenshots at each step so you can verify they're on the right page and guide them to the correct buttons and fields.</p>
+    <p><strong>Chat vs Code:</strong> Steps 1&ndash;3 happen here in <strong>Claude Chat</strong>. The user cannot switch to Claude Code until after Step 3, because Claude Code needs a local project folder to open &mdash; and that folder doesn't exist until they clone the repo. Do NOT mention Claude Code or tell the user to switch to it until the clone in Step 3 is confirmed.</p>
     <p><strong>Screenshot verification:</strong> At each step that requires the user to interact with a website or application (GitHub, Supabase, Google Cloud, Cloudflare, etc.), ask them to paste a screenshot so you can verify they're on the right page and guide them to the correct buttons and fields.</p>
     <p><strong>Adapting to the user:</strong> Adapt commands and instructions to their OS (Mac, Windows, Linux). If they've already completed a full step (e.g., "I already have a Supabase project"), confirm the key details you'll need (project ref, password, etc.) and move on — but still follow step order.</p>
   </div>
@@ -313,7 +313,11 @@ cd REPO-NAME</code></pre>
       <li>Open <strong>Claude Desktop</strong></li>
       <li>Click the <strong>Code</strong> tab (or start a new Claude Code session)</li>
       <li>Open your project folder &mdash; navigate to the directory you just cloned</li>
+      <li><strong>Switch to Opus 4.6</strong> &mdash; Claude Code defaults to Sonnet, but you want the most capable model. Click the model selector (bottom of the chat) and choose <strong>Claude Opus 4.6</strong> (or the latest available model)</li>
     </ol>
+    <div class="callout warning">
+      <strong>Model matters!</strong> Claude Code defaults to Sonnet, which is fast but less capable. For infrastructure setup and complex tasks, switch to <strong>Opus 4.6</strong> (or the latest version) &mdash; it handles multi-step setup wizards, database migrations, and edge function deployment much more reliably.
+    </div>
     <p>From this point on, Claude Code handles everything: terminal commands, database setup, edge functions, and code generation. You can paste the remaining instructions directly into Claude Code.</p>
 
     <div class="validate">Ask the user to confirm they have Claude Code open in their project folder. They should see the project files and be ready to run commands.</div>
