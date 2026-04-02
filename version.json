@@ -1,12 +1,12 @@
 {
-  "version": "v260402.06 3:14p",
-  "release": 1254,
-  "sha": "728010de4",
-  "fullSha": "728010de47d970517f522bc9141ca937df2df9bb",
+  "version": "v260402.07 3:18p",
+  "release": 1255,
+  "sha": "a0847ca32",
+  "fullSha": "a0847ca32eddda39ded2be9648e67a2e0c2dc476",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-02T20:14:10+00:00",
-  "commits": [{"sha":"a38e9005f","message":"Update infra setup flow: Claude Desktop first, Chat then Code, services at end","author":"Rahul"},{"sha":"728010de4","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
+  "pushedAt": "2026-04-02T20:18:07+00:00",
+  "commits": [{"sha":"981d5d157","message":"Add step-by-step gh auth login instructions with defaults","author":"Rahul"},{"sha":"a0847ca32","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
 }
