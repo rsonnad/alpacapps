@@ -1,12 +1,12 @@
 {
-  "version": "v260402.05 2:50p",
-  "release": 1253,
-  "sha": "2c63cacf5",
-  "fullSha": "2c63cacf51284913b04a5fb9ae4ee18f685a4b8c",
+  "version": "v260402.06 3:14p",
+  "release": 1254,
+  "sha": "728010de4",
+  "fullSha": "728010de47d970517f522bc9141ca937df2df9bb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-02T19:50:55+00:00",
-  "commits": [{"sha":"53c66f0b9","message":"Update infra setup guide: Xcode always-install, hidden dialog warning","author":"Rahul"},{"sha":"2c63cacf5","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
+  "pushedAt": "2026-04-02T20:14:10+00:00",
+  "commits": [{"sha":"a38e9005f","message":"Update infra setup flow: Claude Desktop first, Chat then Code, services at end","author":"Rahul"},{"sha":"728010de4","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
 }
