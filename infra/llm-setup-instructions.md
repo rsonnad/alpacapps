@@ -20,7 +20,12 @@ Architecture: Browser → GitHub Pages → Supabase (no server-side code). Edge 
 The user pastes a setup prompt into Claude Code. Claude Code should:
 
 1. **Set up screenshots** — Detect the user's OS and help them set up one-click full-screen screenshot-to-clipboard:
-   - **macOS**: Install [Shottr](https://shottr.cc) (free) or use ⌘+Ctrl+Shift+3
+   - **macOS**: Install [Shottr](https://shottr.cc) (free). After installing, configure these settings:
+     - **Launch at login**: Open Shottr preferences → General → enable "Launch at login" so it's always available
+     - **Screenshot folder**: Preferences → General → set "Save screenshots to" folder (e.g. `~/Screenshots` or `~/Desktop/Screenshots`)
+     - **Copy on save**: Preferences → General → enable "Copy to clipboard after saving" so screenshots are both saved to disk and copied for pasting
+     - **Keyboard shortcut**: Preferences → Shortcuts → set a global shortcut for "Capture area" (recommended: ⌘+Shift+2) and/or "Capture fullscreen" (recommended: ⌘+Shift+1)
+     - Alternative (no install): use ⌘+Ctrl+Shift+3 (built-in macOS screenshot to clipboard)
    - **Windows**: Win+Shift+S (Snip & Sketch) or PrtScn
    - **Linux**: Install [Flameshot](https://flameshot.org) or use desktop screenshot tool
    - Test by having user paste a screenshot into the conversation
