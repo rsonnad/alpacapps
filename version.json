@@ -1,12 +1,12 @@
 {
-  "version": "v260402.03 2:37p",
-  "release": 1251,
-  "sha": "76f2334e4",
-  "fullSha": "76f2334e4ef6743dcf3820dc20f4860aa0f7a34a",
+  "version": "v260402.04 2:44p",
+  "release": 1252,
+  "sha": "6437a8b25",
+  "fullSha": "6437a8b25401560ffb2a896440c703b8ada81944",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-02T19:37:34+00:00",
-  "commits": [{"sha":"c6fbb0ca1","message":"Update infra setup guide: Claude Desktop first, then switch to Claude Code after clone","author":"Rahul"},{"sha":"76f2334e4","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-02T19:44:59+00:00",
+  "commits": [{"sha":"83e5a72c3","message":"Update infra setup guide: model selection, one-step-at-a-time LLM instructions","author":"Rahul"},{"sha":"6437a8b25","message":"Merge branch 'zealous-bouman'","author":"Rahul"}]
 }
