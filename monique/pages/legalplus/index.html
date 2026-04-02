@@ -396,9 +396,6 @@
       color: var(--navy);
     }
     .preview-badge {
-      position: absolute;
-      bottom: -12px;
-      right: 24px;
       background: var(--success);
       color: white;
       font-size: .75rem;
@@ -406,6 +403,60 @@
       padding: .375rem 1rem;
       border-radius: 100px;
       box-shadow: var(--shadow);
+      text-align: center;
+      margin: 1rem 1.5rem 1.5rem;
+      display: inline-block;
+    }
+    .preview-badge-row {
+      text-align: right;
+      padding: 0 1.5rem 1.5rem;
+    }
+    .preview-body { padding: 1.5rem 1.5rem .75rem; }
+    .calc-state-select {
+      width: 100%;
+      padding: .5rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .8125rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--light-gray);
+      margin-bottom: .75rem;
+      cursor: pointer;
+    }
+    .calc-state-select:focus { outline: none; border-color: var(--navy); }
+    .calc-input {
+      width: 100%;
+      padding: .5rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .9375rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--white);
+    }
+    .calc-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,58,95,.1); }
+    .calc-input::placeholder { color: var(--text-muted); font-weight: 400; }
+    .calc-btn {
+      width: 100%;
+      padding: .75rem;
+      background: var(--gold);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: .875rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+      margin-top: .25rem;
+    }
+    .calc-btn:hover { background: var(--gold-light); }
+    .preview-result { transition: all .3s ease; }
+    .preview-result.highlight {
+      background: #ecfdf5;
+      border-color: #86efac;
     }
 
     @media (max-width: 900px) {
@@ -1144,31 +1195,50 @@
             <span class="preview-url">legalpluscloud.com/supportcalc</span>
           </div>
           <div class="preview-body">
-            <h4>Washington Child Support Worksheet</h4>
+            <select class="calc-state-select" id="calcState" onchange="updateCalcTitle()">
+              <option value="WA">Washington</option>
+              <option value="CA">California</option>
+              <option value="PA">Pennsylvania</option>
+              <option value="WV">West Virginia</option>
+              <option value="NY">New York</option>
+            </select>
+            <h4 id="calcTitle">Washington Child Support Estimate</h4>
             <div class="preview-calc">
               <div class="preview-field">
-                <div class="preview-field-label">Parent A Income</div>
-                <div class="preview-field-value">$6,250 /mo</div>
+                <div class="preview-field-label">Parent A Monthly Income</div>
+                <input type="text" class="calc-input" id="incomeA" placeholder="$6,250" value="6250" inputmode="numeric">
               </div>
               <div class="preview-field">
-                <div class="preview-field-label">Parent B Income</div>
-                <div class="preview-field-value">$4,100 /mo</div>
+                <div class="preview-field-label">Parent B Monthly Income</div>
+                <input type="text" class="calc-input" id="incomeB" placeholder="$4,100" value="4100" inputmode="numeric">
               </div>
               <div class="preview-field">
-                <div class="preview-field-label">Children</div>
-                <div class="preview-field-value">2</div>
+                <div class="preview-field-label">Number of Children</div>
+                <select class="calc-input" id="numChildren">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
               </div>
               <div class="preview-field">
-                <div class="preview-field-label">Residential Schedule</div>
-                <div class="preview-field-value">60 / 40</div>
+                <div class="preview-field-label">Parent A Overnights / Year</div>
+                <input type="text" class="calc-input" id="overnights" placeholder="219" value="219" inputmode="numeric">
               </div>
             </div>
-            <div class="preview-result">
-              <div class="preview-result-label">Calculated Support Obligation</div>
-              <div class="preview-result-value">$1,247 /mo</div>
+            <button class="calc-btn" onclick="calculateSupport()">Calculate Estimate</button>
+            <div class="preview-result" id="calcResult" style="margin-top:.75rem">
+              <div class="preview-result-label">Estimated Support Obligation</div>
+              <div class="preview-result-value" id="calcAmount">$1,247 /mo</div>
+            </div>
+            <div style="font-size:.65rem;color:var(--text-muted);text-align:center;margin-top:.5rem;line-height:1.4">
+              Estimate only. Actual calculations depend on additional factors.<br>Use FamilySoft SupportCalc for court-ready worksheets.
             </div>
           </div>
-          <div class="preview-badge">Court-Certified Calculation</div>
+          <div class="preview-badge-row">
+            <span class="preview-badge">Court-Certified Software</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1661,6 +1731,78 @@
 
   <script>
     // Platform toggle
+    // ── Live Calculator ──
+    // Simplified child support estimation based on WA Schedule.
+    // Uses basic income shares model: combined income → base obligation → proportional split,
+    // with a residential credit when Parent A has >25% overnights.
+    // Other states use the same model shape with adjusted multipliers.
+
+    const stateNames = { WA:'Washington', CA:'California', PA:'Pennsylvania', WV:'West Virginia', NY:'New York' };
+
+    // Base obligation per child as % of combined income (simplified from WA schedule)
+    // These are rough mid-range estimates — real SupportCalc uses full statutory tables.
+    const baseRates = {
+      WA: [0, .20, .30, .37, .42, .46],
+      CA: [0, .22, .32, .39, .44, .48],
+      PA: [0, .18, .28, .35, .40, .44],
+      WV: [0, .19, .29, .36, .41, .45],
+      NY: [0, .17, .25, .29, .31, .35],
+    };
+
+    function parseNum(id) {
+      return Math.max(0, parseInt(String(document.getElementById(id).value).replace(/[^0-9]/g,'')) || 0);
+    }
+
+    function updateCalcTitle() {
+      const st = document.getElementById('calcState').value;
+      document.getElementById('calcTitle').textContent = stateNames[st] + ' Child Support Estimate';
+    }
+
+    function calculateSupport() {
+      const state = document.getElementById('calcState').value;
+      const incA = parseNum('incomeA');
+      const incB = parseNum('incomeB');
+      const kids = parseInt(document.getElementById('numChildren').value);
+      const overnights = Math.min(365, parseNum('overnights'));
+      const combined = incA + incB;
+
+      if (combined === 0) {
+        document.getElementById('calcAmount').textContent = '$0 /mo';
+        return;
+      }
+
+      const rate = baseRates[state][kids] || baseRates[state][5];
+      let obligation = combined * rate;
+
+      // Parent A's proportional share
+      const shareA = incA / combined;
+      let supportOwed = obligation * shareA;
+
+      // Residential credit: reduce obligation if Parent A has significant time (WA-style)
+      const pctTime = overnights / 365;
+      if (pctTime > 0.25) {
+        const credit = obligation * pctTime * 0.75;
+        supportOwed = Math.max(0, supportOwed - credit);
+      }
+
+      supportOwed = Math.round(supportOwed);
+
+      const result = document.getElementById('calcResult');
+      document.getElementById('calcAmount').textContent = '$' + supportOwed.toLocaleString() + ' /mo';
+      result.classList.add('highlight');
+      setTimeout(() => result.classList.remove('highlight'), 600);
+    }
+
+    // Run initial calculation on load
+    calculateSupport();
+
+    // Auto-recalculate on input changes
+    ['incomeA','incomeB','numChildren','overnights','calcState'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', calculateSupport);
+      el.addEventListener('change', calculateSupport);
+    });
+
     function togglePlatform(btn) {
       document.querySelectorAll('.pricing-toggle-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
