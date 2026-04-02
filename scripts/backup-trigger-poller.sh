@@ -204,16 +204,45 @@ for t in json.load(sys.stdin):
         RESULT_STATUS="failed"
         RESULT_JSON="{\"error\":\"CLOUDFLARE_API_TOKEN not set\"}"
       else
-        EXPORT_RESP=$(curl -sf "https://api.cloudflare.com/client/v4/accounts/${R2_ACCOUNT}/d1/database/${D1_DATABASE_ID}/export" \
-          -H "Authorization: Bearer $CF_API_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{"output_format":"file","dump_options":{"no_schema":false,"no_data":false,"tables":[]}}' 2>/dev/null) || true
+        D1_OK=false
+        for D1_ATTEMPT in 1 2 3; do
+          EXPORT_RESP=$(curl -sf --retry 2 --retry-delay 5 \
+            "https://api.cloudflare.com/client/v4/accounts/${R2_ACCOUNT}/d1/database/${D1_DATABASE_ID}/export" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"output_format":"file","dump_options":{"no_schema":false,"no_data":false,"tables":[]}}' 2>/dev/null) || true
 
-        SIGNED_URL=$(echo "$EXPORT_RESP" | jq -r '.result.signed_url // empty' 2>/dev/null)
-        if [ -n "$SIGNED_URL" ] && curl -sf "$SIGNED_URL" -o "$D1_FILE" 2>/dev/null; then
+          SIGNED_URL=$(echo "$EXPORT_RESP" | jq -r '.result.signed_url // empty' 2>/dev/null)
+          if [ -z "$SIGNED_URL" ]; then
+            D1_ERR="D1 export API returned no signed_url (attempt $D1_ATTEMPT)"
+            echo "$LOG_PREFIX   $D1_ERR"
+            [ "$D1_ATTEMPT" -lt 3 ] && sleep 10
+            continue
+          fi
+          if curl -sf --retry 2 --retry-delay 5 "$SIGNED_URL" -o "$D1_FILE" 2>/dev/null && [ -s "$D1_FILE" ]; then
+            D1_OK=true
+            break
+          else
+            D1_ERR="D1 signed URL download failed (attempt $D1_ATTEMPT)"
+            echo "$LOG_PREFIX   $D1_ERR"
+            rm -f "$D1_FILE"
+            [ "$D1_ATTEMPT" -lt 3 ] && sleep 10
+          fi
+        done
+
+        if [ "$D1_OK" = true ]; then
           D1_SIZE=$(du -h "$D1_FILE" | cut -f1)
           echo "$LOG_PREFIX   Done: $D1_FILE ($D1_SIZE)"
           RESULT_JSON="{\"size\":\"$D1_SIZE\",\"file\":\"$(basename "$D1_FILE")\"}"
+          # Log to backup_files
+          D1_SIZE_BYTES=$(stat -f%z "$D1_FILE" 2>/dev/null || echo 0)
+          curl -sf "$SUPABASE_URL/rest/v1/backup_files" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates" \
+            -d "{\"service\":\"cloudflare-d1\",\"backup_date\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"filename\":\"$(basename "$D1_FILE")\",\"filepath\":\"$D1_FILE\",\"size_bytes\":$D1_SIZE_BYTES}" \
+            >/dev/null 2>&1 || true
           # Prune old exports (keep last 12)
           D1_COUNT=$(ls -1 "$D1_DIR"/claude-sessions-*.sql 2>/dev/null | wc -l | tr -d ' ')
           if [ "$D1_COUNT" -gt 12 ]; then
@@ -221,7 +250,7 @@ for t in json.load(sys.stdin):
           fi
         else
           RESULT_STATUS="failed"
-          RESULT_JSON="{\"error\":\"D1 export or download failed\"}"
+          RESULT_JSON="{\"error\":\"${D1_ERR}\"}"
           rm -f "$D1_FILE"
         fi
       fi
@@ -235,14 +264,40 @@ for t in json.load(sys.stdin):
         RESULT_STATUS="failed"
         RESULT_JSON="{\"error\":\"git not found\"}"
       elif [ -d "$GH_DIR" ]; then
-        if git -C "$GH_DIR" remote update 2>/dev/null; then
+        # Clean macOS resource fork files that cause "non-monotonic index" errors
+        find "$GH_DIR" -name '._*' -delete 2>/dev/null || true
+        GIT_OK=false
+        GIT_ERR=""
+        for GIT_ATTEMPT in 1 2 3; do
+          GIT_OUTPUT=$(git -C "$GH_DIR" remote update 2>&1)
+          GIT_RC=$?
+          if [ $GIT_RC -eq 0 ]; then
+            GIT_OK=true
+            break
+          else
+            GIT_ERR=$(echo "$GIT_OUTPUT" | grep -v "^error: non-monotonic" | tail -1)
+            echo "$LOG_PREFIX   git remote update failed (attempt $GIT_ATTEMPT, rc=$GIT_RC): $GIT_ERR"
+            [ "$GIT_ATTEMPT" -lt 3 ] && sleep 5
+          fi
+        done
+        if [ "$GIT_OK" = true ]; then
           BRANCH_COUNT=$(git -C "$GH_DIR" branch -a 2>/dev/null | wc -l | tr -d ' ')
           COMMIT_COUNT=$(git -C "$GH_DIR" rev-list --all --count 2>/dev/null || echo "0")
           echo "$LOG_PREFIX   Updated: $BRANCH_COUNT branches, $COMMIT_COUNT commits"
           RESULT_JSON="{\"branches\":$BRANCH_COUNT,\"commits\":$COMMIT_COUNT}"
+          # Log to backup_files
+          GH_SIZE_BYTES=$(du -s "$GH_DIR" 2>/dev/null | cut -f1)
+          GH_SIZE_BYTES=$((GH_SIZE_BYTES * 512))  # du -s gives 512-byte blocks on macOS
+          curl -sf "$SUPABASE_URL/rest/v1/backup_files" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates" \
+            -d "{\"service\":\"github-repo\",\"backup_date\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"filename\":\"github/ ($(git -C "$GH_DIR" rev-list --all --count 2>/dev/null || echo 0) commits)\",\"filepath\":\"$GH_DIR\",\"size_bytes\":$GH_SIZE_BYTES}" \
+            >/dev/null 2>&1 || true
         else
           RESULT_STATUS="failed"
-          RESULT_JSON="{\"error\":\"remote update failed\"}"
+          RESULT_JSON="{\"error\":\"remote update failed after 3 attempts: ${GIT_ERR}\"}"
         fi
       else
         mkdir -p "$(dirname "$GH_DIR")"

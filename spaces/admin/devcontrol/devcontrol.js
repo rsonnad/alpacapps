@@ -1304,6 +1304,44 @@ async function loadBackups() {
     }
   };
 
+  // Compute last successful backup per service from backup_files, completed triggers, and backup_logs
+  function lastBackupInfo(svcKey) {
+    // Check backup_files first (most accurate)
+    const svcFiles = backupFiles.filter(f => f.service === svcKey);
+    if (svcFiles.length) {
+      const latest = svcFiles[0]; // already sorted by backup_date desc
+      return { date: latest.backup_date, source: 'file', size: fmtBytes(latest.size_bytes) };
+    }
+    // Check completed triggers
+    const completedTrigger = recentTriggers.find(t => t.service === svcKey && t.status === 'completed');
+    if (completedTrigger) {
+      return { date: completedTrigger.completed_at, source: 'trigger' };
+    }
+    // Check backup_logs (legacy)
+    const svcLog = logs.find(l => {
+      const d = l.details || {};
+      const keyMap = { 'supabase-db': 'supabase', 'cloudflare-r2': 'r2', 'cloudflare-d1': 'd1', 'github-repo': 'github' };
+      const k = keyMap[svcKey];
+      return k && d[k] && d[k].status === 'success';
+    });
+    if (svcLog) return { date: svcLog.created_at, source: 'log' };
+    return null;
+  }
+
+  function lastBackupHtml(svcKey) {
+    const info = lastBackupInfo(svcKey);
+    if (!info) return `<div class="dc-bk-last-backup" style="color:#c62828;font-size:0.75rem;margin-top:0.25rem">No successful backup on record</div>`;
+    const d = new Date(info.date);
+    const ageMs = Date.now() - d.getTime();
+    const ageDays = Math.floor(ageMs / 86400000);
+    const ageStr = ageDays === 0 ? 'today' : ageDays === 1 ? 'yesterday' : `${ageDays}d ago`;
+    const stale = ageDays > 8; // weekly backups — warn if >8 days
+    const color = stale ? '#c62828' : '#2e7d32';
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+                    d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return `<div class="dc-bk-last-backup" style="color:${color};font-size:0.75rem;margin-top:0.25rem;font-weight:500">Last backup: ${esc(dateStr)} (${esc(ageStr)})${info.size ? ` · ${esc(info.size)}` : ''}${stale ? ' ⚠️ stale' : ''}</div>`;
+  }
+
   function serviceBlock(dotClass, name, desc, meta, freq, next, backupsHtml, svcKey) {
     const active = activeTriggers.filter(t => t.service === svcKey);
     const recent = recentTriggers.filter(t => t.service === svcKey).slice(0, 3);
@@ -1353,6 +1391,7 @@ async function loadBackups() {
               <div class="dc-bk-svc-name"><span class="dc-schedule-dot ${dotClass}"></span> ${esc(name)}</div>
               <div class="dc-bk-svc-desc">${desc}</div>
               <div class="dc-bk-svc-meta">${meta}</div>
+              ${lastBackupHtml(svcKey)}
             </div>
             <button class="dc-bk-now-btn" onclick="dcBackupNow('${svcKey}')"${active.length ? ' disabled' : ''}>
               ${active.length ? (active[0].status === 'running' ? 'Running…' : 'Requested ✓') : 'Backup Now'}

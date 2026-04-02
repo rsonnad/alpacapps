@@ -6,7 +6,7 @@
 # Loops until all services have a recent successful backup.
 #
 # Runs hourly via cron on Alpuca:
-#   0 * * * * /Users/alpuca/scripts/backup-watchdog.sh >> /Users/alpuca/logs/backup-watchdog.log 2>&1
+#   30 * * * * PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin /Users/alpuca/scripts/backup-watchdog.sh >> /Users/alpuca/logs/backup-watchdog.log 2>&1
 #
 # Requires: claude CLI, ~/.env-alpacapps, curl, jq
 
@@ -109,64 +109,144 @@ echo "$LOG_PREFIX Collecting diagnostic context for: $NEEDS_FIX"
 DIAG_FILE="/tmp/backup-watchdog-diag.txt"
 cat > "$DIAG_FILE" << 'HEADER'
 # Backup Watchdog — Failure Diagnosis Request
-You are running on Alpuca (Mac Mini M4, 192.168.1.200).
-RVAULT20 is a USB drive mounted at /Volumes/rvault20.
-Backup scripts are in ~/scripts/.
-Env vars are in ~/.env-alpacapps.
 
-FAILED SERVICES THAT NEED FIXING:
+You are running on Alpuca (Mac Mini M4, 192.168.1.200).
+RVAULT20 is a USB drive mounted at /Volumes/RVAULT20.
+Backup scripts are in ~/scripts/.
+Env vars are in ~/.env-alpacapps (already loaded — do NOT modify secrets).
+
 HEADER
 
+echo "## FAILED SERVICES THAT NEED FIXING:" >> "$DIAG_FILE"
 echo "$NEEDS_FIX" >> "$DIAG_FILE"
 echo "" >> "$DIAG_FILE"
 
-# Add failed trigger details
+# Add failed trigger details with full result JSON
 echo "## Failed trigger details (last 24h):" >> "$DIAG_FILE"
 echo "$FAILED" | python3 -c "
 import sys, json
 for t in json.load(sys.stdin):
     print(f\"  Service: {t['service']}\")
     print(f\"  Status: {t['status']}\")
-    print(f\"  Time: {t.get('completed_at','?')}\")
-    r = t.get('result') or {}
-    if isinstance(r, dict):
-        print(f\"  Error: {r.get('error','unknown')}\")
+    print(f\"  Requested: {t.get('requested_at','?')}\")
+    print(f\"  Completed: {t.get('completed_at','?')}\")
+    r = t.get('result')
+    if r:
+        if isinstance(r, str):
+            print(f\"  Result: {r}\")
+        else:
+            print(f\"  Result: {json.dumps(r)}\")
+    notes = t.get('notes','')
+    if notes:
+        print(f\"  Notes: {notes}\")
     print()
 " >> "$DIAG_FILE"
 
-# Add recent log tails
-echo "## Recent backup-trigger-poller.log (last 30 lines):" >> "$DIAG_FILE"
-tail -30 "$HOME/logs/backup-trigger-poller.log" >> "$DIAG_FILE" 2>/dev/null
+# Add recent log tails (more lines for better context)
+echo "## Recent backup-trigger-poller.log (last 60 lines):" >> "$DIAG_FILE"
+tail -60 "$HOME/logs/backup-trigger-poller.log" >> "$DIAG_FILE" 2>/dev/null
 
 echo "" >> "$DIAG_FILE"
-echo "## Recent alpacapps-backup.log (last 20 lines):" >> "$DIAG_FILE"
-tail -20 "$HOME/logs/alpacapps-backup.log" >> "$DIAG_FILE" 2>/dev/null
+echo "## Recent alpacapps-backup.log (last 30 lines):" >> "$DIAG_FILE"
+tail -30 "$HOME/logs/alpacapps-backup.log" >> "$DIAG_FILE" 2>/dev/null
 
-# Add system state
+echo "" >> "$DIAG_FILE"
+echo "## Recent watchdog log (last 20 lines):" >> "$DIAG_FILE"
+tail -20 "$HOME/logs/backup-watchdog.log" >> "$DIAG_FILE" 2>/dev/null
+
+# Add comprehensive system state
 echo "" >> "$DIAG_FILE"
 echo "## System state:" >> "$DIAG_FILE"
-echo "RVAULT20 mounted: $(mount | grep -c rvault20 || echo 0)" >> "$DIAG_FILE"
+echo "RVAULT20 mounted: $(mount | grep -c -i rvault20 || echo 0)" >> "$DIAG_FILE"
+echo "RVAULT20 free space: $(df -h /Volumes/RVAULT20 2>/dev/null | tail -1 | awk '{print $4}' || echo 'N/A')" >> "$DIAG_FILE"
 echo "pg_dump: $(which pg_dump 2>/dev/null || echo 'not in PATH')" >> "$DIAG_FILE"
 echo "aws: $(which aws 2>/dev/null || echo 'not in PATH')" >> "$DIAG_FILE"
+echo "jq: $(which jq 2>/dev/null || echo 'not in PATH')" >> "$DIAG_FILE"
+echo "git: $(which git 2>/dev/null || echo 'not in PATH')" >> "$DIAG_FILE"
 echo "HAOS img: $(ls ~/homeassistant-vm/haos_generic-aarch64*.img 2>/dev/null || echo 'not found')" >> "$DIAG_FILE"
-echo "SUPABASE_DB_URL set: $([ -n \"${SUPABASE_DB_URL:-}\" ] && echo 'yes' || echo 'no')" >> "$DIAG_FILE"
-echo "SUPABASE_SERVICE_ROLE_KEY set: $([ -n \"${SUPABASE_SERVICE_ROLE_KEY:-}\" ] && echo 'yes' || echo 'no')" >> "$DIAG_FILE"
+echo "SUPABASE_DB_URL set: $([ -n "${SUPABASE_DB_URL:-}" ] && echo 'yes' || echo 'no')" >> "$DIAG_FILE"
+echo "SUPABASE_SERVICE_ROLE_KEY set: $([ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ] && echo 'yes' || echo 'no')" >> "$DIAG_FILE"
+echo "CLOUDFLARE_API_TOKEN set: $([ -n "${CLOUDFLARE_API_TOKEN:-}" ] && echo 'yes' || echo 'no')" >> "$DIAG_FILE"
+echo "R2_ACCOUNT_ID set: $([ -n "${R2_ACCOUNT_ID:-}" ] && echo 'yes' || echo 'no')" >> "$DIAG_FILE"
+echo "D1_DATABASE_ID: ${D1_DATABASE_ID:-not set}" >> "$DIAG_FILE"
+echo "Network — Cloudflare API: $(curl -sf --max-time 5 -o /dev/null -w '%{http_code}' https://api.cloudflare.com/client/v4/user/tokens/verify -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN:-none}" 2>/dev/null || echo 'unreachable')" >> "$DIAG_FILE"
+echo "Network — GitHub: $(curl -sf --max-time 5 -o /dev/null -w '%{http_code}' https://github.com 2>/dev/null || echo 'unreachable')" >> "$DIAG_FILE"
+
+# Include the relevant sections of the backup script for each failing service
+echo "" >> "$DIAG_FILE"
+echo "## Relevant script sections (from ~/scripts/backup-trigger-poller.sh):" >> "$DIAG_FILE"
+for FAILING_SVC in $NEEDS_FIX; do
+  echo "" >> "$DIAG_FILE"
+  echo "### ---- $FAILING_SVC section ----" >> "$DIAG_FILE"
+  # Extract the case block for this service
+  sed -n "/^    ${FAILING_SVC})/,/^    ;;$/p" "$HOME/scripts/backup-trigger-poller.sh" >> "$DIAG_FILE" 2>/dev/null
+done
+
+# Include per-service live diagnostic tests
+echo "" >> "$DIAG_FILE"
+echo "## Live diagnostic tests (run just now):" >> "$DIAG_FILE"
+for FAILING_SVC in $NEEDS_FIX; do
+  echo "" >> "$DIAG_FILE"
+  echo "### $FAILING_SVC:" >> "$DIAG_FILE"
+  case "$FAILING_SVC" in
+    cloudflare-d1)
+      D1_DB="${D1_DATABASE_ID:-98d0e680-8abe-4ce3-a941-70cb391adbf8}"
+      D1_TEST=$(curl -sf "https://api.cloudflare.com/client/v4/accounts/${R2_ACCOUNT_ID:-}/d1/database/${D1_DB}/export" \
+        -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN:-}" \
+        -H "Content-Type: application/json" \
+        -d '{"output_format":"file","dump_options":{"no_schema":false,"no_data":false,"tables":[]}}' 2>&1)
+      echo "  D1 export API response success: $(echo "$D1_TEST" | python3 -c "import sys,json; print(json.load(sys.stdin).get('success','?'))" 2>/dev/null || echo 'parse failed')" >> "$DIAG_FILE"
+      echo "  D1 signed_url present: $(echo "$D1_TEST" | python3 -c "import sys,json; r=json.load(sys.stdin).get('result',{}); print('yes' if r.get('signed_url') else 'no')" 2>/dev/null || echo 'parse failed')" >> "$DIAG_FILE"
+      SIGNED_URL_TEST=$(echo "$D1_TEST" | jq -r '.result.signed_url // empty' 2>/dev/null)
+      if [ -n "$SIGNED_URL_TEST" ]; then
+        echo "  D1 download test: $(curl -sf --max-time 30 "$SIGNED_URL_TEST" -o /dev/null -w 'HTTP %{http_code}, %{size_download} bytes' 2>/dev/null || echo 'FAILED')" >> "$DIAG_FILE"
+      fi
+      ;;
+    github-repo)
+      GH_TEST_DIR="/Volumes/RVAULT20/backups/alpacapps/github/alpacapps.git"
+      echo "  GH bare repo exists: $([ -d "$GH_TEST_DIR" ] && echo yes || echo no)" >> "$DIAG_FILE"
+      echo "  macOS ._ files: $(find "$GH_TEST_DIR" -name '._*' 2>/dev/null | wc -l | tr -d ' ')" >> "$DIAG_FILE"
+      GIT_TEST_OUT=$(git -C "$GH_TEST_DIR" remote update 2>&1)
+      GIT_TEST_RC=$?
+      echo "  git remote update exit code: $GIT_TEST_RC" >> "$DIAG_FILE"
+      echo "  git remote update output: $(echo "$GIT_TEST_OUT" | tail -3)" >> "$DIAG_FILE"
+      ;;
+    supabase-db)
+      echo "  pg_dump version: $(pg_dump --version 2>/dev/null || echo 'not found')" >> "$DIAG_FILE"
+      echo "  DB URL reachable: $(pg_isready -d "${SUPABASE_DB_URL:-}" 2>&1 | tail -1 || echo 'pg_isready not found')" >> "$DIAG_FILE"
+      ;;
+    cloudflare-r2)
+      echo "  aws s3 ls test: $(AWS_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID:-}" AWS_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY:-}" aws s3 ls "s3://${R2_BUCKET_NAME:-alpacapps}/" --endpoint-url "https://${R2_ACCOUNT_ID:-}.r2.cloudflarestorage.com" 2>&1 | head -2)" >> "$DIAG_FILE"
+      ;;
+    home-assistant)
+      echo "  HA reachable: $(curl -sf --max-time 5 -o /dev/null -w '%{http_code}' http://192.168.1.39:8123/api/ -H "Authorization: Bearer $(head -1 ~/.ha_llat 2>/dev/null)" 2>/dev/null || echo 'unreachable')" >> "$DIAG_FILE"
+      ;;
+  esac
+done
 
 echo "" >> "$DIAG_FILE"
 cat >> "$DIAG_FILE" << 'INSTRUCTIONS'
 ## Your task:
-1. Read the errors above and diagnose root cause for each failed service.
-2. Fix the issue if possible (edit scripts, install missing tools, fix paths, etc.)
-3. After fixing, re-run the backup for each failed service by executing:
-   ~/scripts/backup-trigger-poller.sh
-   (It will pick up any pending triggers automatically.)
-4. If the backup still fails, explain what's wrong and what manual intervention is needed.
+1. Read the errors and live diagnostic results above. Identify the root cause for each failed service.
+2. Fix the issue if possible:
+   - Edit scripts in ~/scripts/ to fix bugs, handle edge cases, or improve error handling.
+   - Fix system issues (missing tools, wrong paths, file permissions).
+   - Clean up corrupt files (e.g. macOS ._ resource forks in git repos on RVAULT20).
+3. After fixing, create new pending backup triggers for each fixed service:
+   curl -sf "https://aphrrfprbixmhissnjfn.supabase.co/rest/v1/backup_triggers" \
+     -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+     -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"service":"SERVICE_NAME","requested_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","status":"pending"}'
+   Then wait 10 seconds and run ~/scripts/backup-trigger-poller.sh to execute them.
+4. Verify the backup succeeded by checking trigger status.
+5. If the backup still fails after your fix, explain what's wrong and what manual intervention is needed.
 
 IMPORTANT:
 - Do NOT modify ~/.env-alpacapps secrets.
 - Do NOT change cron entries (those are managed separately).
-- Focus on fixing the scripts in ~/scripts/ or system issues (mount, PATH, tools).
-- After your fix, verify the backup succeeded by checking the trigger status.
+- The backup script is at ~/scripts/backup-trigger-poller.sh — you can read and edit it.
+- Env vars from ~/.env-alpacapps are already loaded in the shell.
 INSTRUCTIONS
 
 # ── Send to Claude CLI ───────────────────────────────────────────────
