@@ -1,12 +1,12 @@
 {
-  "version": "v260402.01 11:41a",
-  "release": 1249,
-  "sha": "9e6a340ac",
-  "fullSha": "9e6a340ac59edabc6de8ff793805761d0daa4123",
+  "version": "v260402.02 1:01p",
+  "release": 1250,
+  "sha": "544978edb",
+  "fullSha": "544978edbb395fb31ebfb2195c21a94cb9cb07ee",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-02T16:41:26+00:00",
-  "commits": [{"sha":"9e6a340ac","message":"Update Shottr setup instructions with detailed configuration steps","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-02T18:01:33+00:00",
+  "commits": [{"sha":"544978edb","message":"Update LOCAL-AI-SETUP.md for Gemma 4 upgrade on Alpuca","author":"Rahul"}]
 }
