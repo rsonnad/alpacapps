@@ -1,12 +1,12 @@
 {
-  "version": "v260401.11 2:04p",
-  "release": 1246,
-  "sha": "01aff51b2",
-  "fullSha": "01aff51b24ec300a241ca8bdd01ab5b99ef506aa",
+  "version": "v260401.12 8:59p",
+  "release": 1247,
+  "sha": "aab28464d",
+  "fullSha": "aab28464d05c548fb2caca38df96a10a9932c00d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-01T19:04:09+00:00",
-  "commits": [{"sha":"7c3aaeb1f","message":"Update LLM setup instructions with first-run guidance and current state","author":"Rahul"},{"sha":"01aff51b2","message":"Merge branch 'eager-mestorf'","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-02T01:59:56+00:00",
+  "commits": [{"sha":"aab28464d","message":"Add modernized LegalPlus homepage based on Monique's roadmap PDF","author":"Rahul"}]
 }
