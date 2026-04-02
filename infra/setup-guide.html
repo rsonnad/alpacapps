@@ -317,13 +317,17 @@ cd REPO-NAME</code></pre>
       <li>Click the <strong>Code</strong> tab (or start a new Claude Code session)</li>
       <li>Open your project folder &mdash; navigate to the directory you just cloned</li>
       <li><strong>Switch to Opus 4.6</strong> &mdash; Claude Code defaults to Sonnet, but you want the most capable model. Click the model selector (bottom of the chat) and choose <strong>Claude Opus 4.6</strong> (or the latest available model)</li>
+      <li><strong>Enable "Bypass permissions"</strong> &mdash; This lets Claude Code run terminal commands without asking you to approve each one. Open Claude Code settings (click the gear icon or press <code>Cmd + ,</code> on Mac / <code>Ctrl + ,</code> on Windows), find <strong>"Bypass permissions"</strong> (or "Yolo mode"), and turn it <strong>on</strong>.</li>
     </ol>
+    <div class="callout warning">
+      <strong>Why bypass permissions?</strong> The setup wizard runs dozens of terminal commands (installing CLIs, running database migrations, deploying functions). Without bypass, Claude Code will pause and ask you to approve every single command &mdash; which makes the process painfully slow. You can always turn it off later.
+    </div>
     <div class="callout warning">
       <strong>Model matters!</strong> Claude Code defaults to Sonnet, which is fast but less capable. For infrastructure setup and complex tasks, switch to <strong>Opus 4.6</strong> (or the latest version) &mdash; it handles multi-step setup wizards, database migrations, and edge function deployment much more reliably.
     </div>
     <p>From this point on, Claude Code handles everything: terminal commands, database setup, edge functions, and code generation. You can paste the remaining instructions directly into Claude Code.</p>
 
-    <div class="validate">Ask the user to confirm they have Claude Code open in their project folder. They should see the project files and be ready to run commands.</div>
+    <div class="validate">Ask the user to confirm they have Claude Code open in their project folder with bypass permissions enabled and Opus 4.6 selected. They should see the project files and be ready to run commands.</div>
   </div>
 
   <!-- Step 4 -->
