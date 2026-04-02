@@ -1,12 +1,12 @@
 {
-  "version": "v260402.13 5:35p",
-  "release": 1261,
-  "sha": "d1e9bef6f",
-  "fullSha": "d1e9bef6ff2726b445efc25e0f276346238f2ac7",
+  "version": "v260402.14 6:01p",
+  "release": 1262,
+  "sha": "ed8402bc0",
+  "fullSha": "ed8402bc0d2e14a869322efffa160f45e3c89614",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm727z3",
-  "pushedAt": "2026-04-02T22:35:39+00:00",
-  "commits": [{"sha":"d1e9bef6f","message":"Move test suite from standalone page to DevControl tab","author":"Rahul"}]
+  "machine": "runnervmrg6be",
+  "pushedAt": "2026-04-02T23:01:00+00:00",
+  "commits": [{"sha":"ed8402bc0","message":"Fix Coinbase parser for external address transfers + fillable notification emails","author":"Rahul"}]
 }
