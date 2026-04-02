@@ -1990,16 +1990,33 @@ function parseCoinbasePayment(bodyText: string, fromAddress: string): CoinbasePa
     return null;
   }
 
-  // Pattern 1: Crypto with USD equivalent — "You received 0.05 BTC ($X.XX USD) from Name"
-  const cryptoWithUsd = /(?:You['']?ve? )?received ([\d,.]+) ([A-Z]{2,10}) \(\$([\d,]+\.\d{2})(?: USD)?\) from (.+?)(?:\s*\.|$|!|\s+on\b|\s+via\b)/im;
-  const match1 = normalized.match(cryptoWithUsd);
-  if (match1) {
+  // Pattern 1a: Crypto with USD equivalent + sender name — "You received 0.05 BTC ($X.XX) from John"
+  const cryptoWithName = /(?:You[' ]?(?:just )?)?received ([\d,.]+) ([A-Z]{2,10}) \(\$([\d,]+\.\d{2})(?: USD)?\) from (.+?)(?:\s*\.|$|!|\s+on\b|\s+via\b)/im;
+  const match1a = normalized.match(cryptoWithName);
+  if (match1a && !match1a[4].match(/^an?\s+external/i)) {
     const txMatch = normalized.match(/(?:Transaction|Txn|Reference)[:\s#]*([A-Za-z0-9]+)/i);
     return {
-      amount: parseFloat(match1[3].replace(/,/g, "")),
-      senderName: match1[4].trim(),
+      amount: parseFloat(match1a[3].replace(/,/g, "")),
+      senderName: match1a[4].trim(),
       senderEmail: null,
-      currency: match1[2],
+      currency: match1a[2],
+      transactionId: txMatch?.[1] || null,
+    };
+  }
+
+  // Pattern 1b: Crypto with USD equivalent, no sender name — "You received 0.15 ETH ($319.83) via the Ethereum network"
+  // Also matches: "You just received 0.15 ETH ($319.83) from an external address"
+  const cryptoNoName = /(?:You[' ]?(?:just )?)?received ([\d,.]+) ([A-Z]{2,10}) \(\$([\d,]+\.\d{2})(?: USD)?\)/im;
+  const match1b = normalized.match(cryptoNoName);
+  if (match1b) {
+    // Try to find a sender name elsewhere in the email
+    const senderMatch = normalized.match(/(?:from|sender|sent by)[:\s]+([A-Z][a-zA-Z]+ [A-Z][a-zA-Z]+)/);
+    const txMatch = normalized.match(/(?:Transaction|Txn|Reference)[:\s#]*([A-Za-z0-9]+)/i);
+    return {
+      amount: parseFloat(match1b[3].replace(/,/g, "")),
+      senderName: senderMatch?.[1]?.trim() || "External Address",
+      senderEmail: null,
+      currency: match1b[2],
       transactionId: txMatch?.[1] || null,
     };
   }
@@ -3111,7 +3128,14 @@ async function sendPaymentNotification(
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Zelle Sender</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
           ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Confirmation #</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
         </table>
-        <p>Please record this payment manually in the admin panel.</p>
+        <p><strong>To record this payment, reply with the following filled in:</strong></p>
+        <div style="background:#f8f8f8;padding:16px;border-radius:8px;margin:16px 0;font-family:monospace;font-size:0.9rem;line-height:2;">
+          Who sent it: ${parsed.senderName}<br>
+          Amount: $${parsed.amount.toFixed(2)}<br>
+          What for (rent/deposit/other): <br>
+          Person to match: <br>
+        </div>
+        <p style="color:#666;font-size:0.85rem;">Or record manually in the <a href="${adminUrl}">accounting dashboard</a>.</p>
         ${details.pendingApps ? `<p><strong>Current applications with pending deposits:</strong></p><ul>${details.pendingApps}</ul>` : ""}
       </div>
     `;
@@ -3140,12 +3164,36 @@ async function sendPaymentNotification(
         ${applicationId ? `<p><a href="${adminUrl}" style="display:inline-block;padding:10px 20px;background:#003087;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">View Application</a></p>` : ""}
       </div>
     `;
+  } else if (type === "auto_recorded_coinbase") {
+    subject = `Coinbase Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#0052ff;">&#x2705; Coinbase Payment Auto-Recorded</h2>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>
+          ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Transaction ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Coinbase</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${details.category || 'other'}</td></tr>
+        </table>
+        ${applicationId ? `<p><a href="${adminUrl}" style="display:inline-block;padding:10px 20px;background:#0052ff;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">View Application</a></p>` : ""}
+      </div>
+    `;
   } else if (type === "unparseable") {
     subject = "Unrecognized Payment Email";
     html = `
       <div style="font-family:-apple-system,sans-serif;max-width:600px;">
         <h2 style="color:#999;">&#x2709; Unrecognized Payment Email</h2>
-        <p>An email was sent to payments@ but could not be parsed as a payment notification (tried Zelle and PayPal patterns). It has been forwarded for manual review.</p>
+        <p>An email was sent to payments@ but could not be parsed as a payment notification.</p>
+        <p><strong>To record this payment, reply to this email with the following filled in:</strong></p>
+        <div style="background:#f8f8f8;padding:16px;border-radius:8px;margin:16px 0;font-family:monospace;font-size:0.9rem;line-height:2;">
+          Who sent it: <br>
+          Amount: <br>
+          What for (rent/deposit/other): <br>
+          Payment method (Coinbase/Zelle/Venmo/other): <br>
+        </div>
+        <p style="color:#666;font-size:0.85rem;">Or record manually in the <a href="${adminUrl}">accounting dashboard</a>.</p>
       </div>
     `;
   }
@@ -3229,13 +3277,20 @@ async function handlePaymentEmail(
           html: `
             <div style="font-family:-apple-system,sans-serif;max-width:600px;">
               <h2 style="color:#e67e22;">&#x26A0;&#xFE0F; Unrecognized Payment Email</h2>
-              <p>A forwarded email to <strong>payments@alpacaplayhouse.com</strong> could not be automatically classified as Zelle, PayPal, or any known payment format.</p>
+              <p>A forwarded email to <strong>payments@alpacaplayhouse.com</strong> could not be automatically classified as Zelle, PayPal, Coinbase, or any known payment format.</p>
               <p><strong>Original subject:</strong> ${subject}</p>
               <p><strong>From:</strong> ${emailRecord.from_address || "unknown"}</p>
               <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
               <p style="font-size:0.85rem;color:#666;"><strong>Body preview:</strong></p>
               <pre style="background:#f8f8f8;padding:12px;border-radius:4px;font-size:0.8rem;white-space:pre-wrap;max-height:300px;overflow:auto;">${snippet}</pre>
-              <p style="color:#666;font-size:0.85rem;margin-top:12px;">Please review and manually record in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a> if needed.</p>
+              <p style="margin-top:16px;"><strong>To record this payment, reply with the following filled in:</strong></p>
+              <div style="background:#f8f8f8;padding:16px;border-radius:8px;margin:12px 0;font-family:monospace;font-size:0.9rem;line-height:2;">
+                Who sent it: <br>
+                Amount: <br>
+                What for (rent/deposit/other): <br>
+                Payment method (Coinbase/Zelle/Venmo/other): <br>
+              </div>
+              <p style="color:#666;font-size:0.85rem;margin-top:12px;">Or record manually in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
             </div>
           `,
         }),
