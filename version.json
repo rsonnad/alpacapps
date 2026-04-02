@@ -1,12 +1,12 @@
 {
-  "version": "v260401.12 8:59p",
-  "release": 1247,
-  "sha": "aab28464d",
-  "fullSha": "aab28464d05c548fb2caca38df96a10a9932c00d",
+  "version": "v260401.13 9:06p",
+  "release": 1248,
+  "sha": "807bb27c0",
+  "fullSha": "807bb27c01ac8e2df4fca00c0e55c835c258546e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-02T01:59:56+00:00",
-  "commits": [{"sha":"aab28464d","message":"Add modernized LegalPlus homepage based on Monique's roadmap PDF","author":"Rahul"}]
+  "pushedAt": "2026-04-02T02:06:53+00:00",
+  "commits": [{"sha":"807bb27c0","message":"Make hero calculator interactive with live state-specific estimates","author":"Rahul"}]
 }
