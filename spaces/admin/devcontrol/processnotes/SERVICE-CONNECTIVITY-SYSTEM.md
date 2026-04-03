@@ -14,7 +14,7 @@ When Claude Code needs to connect to an external service (SSH, API, R2, HAOS, So
 
 **Real example (R2 upload session):** Agent needed to upload an APK to Cloudflare R2. Spent 5+ rounds trying wrong tokens, wrong item names, wrong field names — never completed the upload.
 
-**Root cause:** No copy-paste R2 upload recipe existed. CREDENTIALS.md used `op://` (1Password) syntax but system uses `bw-read` (Bitwarden).
+**Root cause:** No copy-paste R2 upload recipe existed. CREDENTIALS.md had outdated syntax but system uses `bw-read` (Bitwarden).
 
 ## Architecture
 

@@ -433,3 +433,30 @@ service_connections    - Infra connection recipes for SSH/API/S3 services
                          common_commands [jsonb], status, gotchas [text[]], tags [text[]])
 ```
 
+## Data Lookup Routing
+
+When user asks about property data, query via Management API. Route by topic:
+
+| Question about... | table | key filters | join / notes |
+|-------------------|-------|-------------|--------------|
+| Door codes, WiFi, passwords, PINs | `password_vault` | `category='house'` for physical | JOIN `spaces` ON `space_id` for room name |
+| Room info, rates, availability | `spaces` | `is_archived=false` | `type` = Dwelling/Amenity/Event |
+| Tenants, guests, contacts | `people` | — | JOIN `assignments` for bookings |
+| Bookings, stays, move-in/out | `assignments` | `status` | JOIN `people` on `person_id`, JOIN `spaces` on `space_id` |
+| Thermostats, temperature, HVAC | `nest_devices` | `is_active=true` | — |
+| Vehicles, Tesla, battery | `vehicles` | `is_active=true` | — |
+| Cameras, security streams | `camera_streams` | `is_active=true` | — |
+| UP-Sense sensor, Protect sensors | UniFi Protect API | `192.168.1.1/proxy/protect/api/sensors` | See `memory/service-access.md` § UP-Sense Monitor |
+| Payments, rent, ledger | `stripe_payments` or `ledger` | — | — |
+| Smart lights, Govee | `govee_devices` | `is_group=true` | — |
+| Light control commands | `device_control_recipes` | `device_table='lighting_groups'` | Query DB — see CLAUDE.md "Device Control Protocol" |
+| Any device control | `device_control_recipes` | `action`, `device_name` | 83 recipes across all device types |
+| All devices unified | `devices_unified` (VIEW) | `domain`, `is_active` | Unions lighting, climate, appliance, security, vehicle |
+| Laundry, washer, dryer | `lg_appliances` | `is_active=true` | — |
+| Schedule change history | `schedule_edits` | `associate_id`, `edited_at` | Auto-populated by trigger on `associate_schedules` UPDATE |
+| SMS messages, texts | `sms_messages` | — | — |
+| Emails, inbound mail | `inbound_emails` | — | — |
+| Property settings, address | `property_config` | `id=1` (singleton) | JSONB blob |
+| Brand colors, logos | `brand_config` | `id=1` (singleton) | JSONB blob |
+| Amazon purchases, electronics | `amazon_orders` | `product_name ILIKE '%...'` | Search by ASIN or product name |
+
