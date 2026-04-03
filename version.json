@@ -1,12 +1,12 @@
 {
-  "version": "v260402.14 6:01p",
-  "release": 1262,
-  "sha": "ed8402bc0",
-  "fullSha": "ed8402bc0d2e14a869322efffa160f45e3c89614",
+  "version": "v260403.01 1:44p",
+  "release": 1263,
+  "sha": "3eca5d642",
+  "fullSha": "3eca5d6428bf0c9cd8ef8ecb1e6a92f84f7f8101",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-02T23:01:00+00:00",
-  "commits": [{"sha":"ed8402bc0","message":"Fix Coinbase parser for external address transfers + fillable notification emails","author":"Rahul"}]
+  "pushedAt": "2026-04-03T18:44:05+00:00",
+  "commits": [{"sha":"3eca5d642","message":"Slim context loading: move verbose sections to on-demand docs","author":"Rahul"}]
 }
