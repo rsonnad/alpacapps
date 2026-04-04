@@ -1,12 +1,12 @@
 {
-  "version": "v260403.01 1:44p",
-  "release": 1263,
-  "sha": "3eca5d642",
-  "fullSha": "3eca5d6428bf0c9cd8ef8ecb1e6a92f84f7f8101",
+  "version": "v260404.01 6:06p",
+  "release": 1264,
+  "sha": "3fd5c1662",
+  "fullSha": "3fd5c16620395ee40a680947d91dc0cab1ff9ed7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrg6be",
-  "pushedAt": "2026-04-03T18:44:05+00:00",
-  "commits": [{"sha":"3eca5d642","message":"Slim context loading: move verbose sections to on-demand docs","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-04T23:06:48+00:00",
+  "commits": [{"sha":"3fd5c1662","message":"Add remote access guide for SSH tunneling to Alpuca and UDM Pro","author":"Rahul"}]
 }
