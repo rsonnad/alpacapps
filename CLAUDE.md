@@ -20,6 +20,7 @@
 > - `API.md` — **load for:** REST endpoints, edge functions, API calls, request/response formats
 > - `PRODUCTDESIGN.md` — **load for:** product decisions, UX philosophy, business model, feature prioritization
 > - `spaces/admin/devcontrol/devdocs/home-assistant-lighting-design.md` — **load for:** HAOS lighting architecture, entity naming, automation templates, migration status
+> - `spaces/admin/devcontrol/devdocs/REMOTE-ACCESS.md` — **load for:** SSH tunneling, remote access to Alpuca/UDM Pro, Tailscale, Cloudflare tunnel, port forwarding
 
 ## Mandatory Behaviors
 
