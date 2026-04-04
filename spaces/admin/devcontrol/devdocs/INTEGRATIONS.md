@@ -187,6 +187,9 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
   - Event: `email.received`
   - All inbound emails logged to `inbound_emails` table
   - Webhook payload doesn't include body — fetched separately via Resend API
+- **CLI**: `npx resend` — official CLI for managing domains, API keys, and sending test emails from terminal
+  - Changelog: https://resend.com/changelog/cli
+  - Useful for: quick email testing without deploying edge functions, domain/key management, delivery debugging
 
 **DNS Records** (GoDaddy, domain: `alpacaplayhouse.com`):
 - MX `@` → `inbound-smtp.us-east-1.amazonaws.com` (priority 10) — inbound receiving
