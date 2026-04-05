@@ -231,28 +231,26 @@
     <p>The download is ~1&ndash;2 GB and can take several minutes. Wait for it to complete before moving on.</p>
     <div class="validate">Ask the user to confirm the install finished by running <code>git --version</code>. They should see a version number (e.g., <code>git version 2.39.5</code>).</div>
 
-    <h3>Git (Windows / Linux)</h3>
-    <p>If the user is NOT on Mac, they need to install Git separately:</p>
-    <ul>
-      <li><strong>Windows:</strong> Download from <a href="https://git-scm.com/download/win">git-scm.com/download/win</a> and run the installer. Use the defaults.</li>
-      <li><strong>Linux:</strong> <code>sudo apt install git</code> (Ubuntu/Debian) or <code>sudo dnf install git</code> (Fedora)</li>
-    </ul>
-    <div class="validate">Ask the user to confirm they can run <code>git --version</code> successfully.</div>
+    <h3>Install all prerequisites (Mac &mdash; one command)</h3>
+    <p>After Xcode CLI Tools are confirmed, run the prerequisite installer. This installs or upgrades: git, GitHub CLI, Node.js, Supabase CLI, Wrangler, psql, TypeScript.</p>
+    <pre><code>bash &lt;(curl -fsSL https://alpacaplayhouse.com/scripts/install-prereqs.sh)</code></pre>
+    <p>If the user already has Homebrew and prefers granular control, they can also use <code>brew bundle</code> from the project's Brewfile after cloning.</p>
+    <div class="validate">Ask the user to confirm the script completed successfully. It prints a summary of all installed tools and versions at the end.</div>
 
-    <h3>GitHub account</h3>
+    <h3>Prerequisites (Windows / Linux)</h3>
+    <p>If the user is NOT on Mac, they need to install these manually:</p>
+    <ul>
+      <li><strong>Git:</strong> <a href="https://git-scm.com/download/win">Windows installer</a> or <code>sudo apt install git</code> (Linux)</li>
+      <li><strong>Node.js:</strong> <a href="https://nodejs.org">nodejs.org</a> (LTS recommended)</li>
+      <li><strong>GitHub CLI:</strong> <code>winget install --id GitHub.cli</code> (Windows) or see <a href="https://github.com/cli/cli/blob/trunk/docs/install_linux.md">Linux install docs</a></li>
+      <li><strong>Supabase CLI:</strong> <code>npm install -g supabase</code> (installed by wizard if missing)</li>
+      <li><strong>Wrangler:</strong> <code>npm install -g wrangler</code> (installed by wizard if missing)</li>
+    </ul>
+    <div class="validate">Ask the user to confirm they can run <code>git --version && node --version</code> successfully.</div>
+
+    <h3>GitHub account &amp; CLI auth</h3>
     <p>Ask if they already have a GitHub account. If not, direct them to <a href="https://github.com/signup">github.com/signup</a>.</p>
-    <div class="validate">Ask the user to confirm they have a GitHub account.</div>
-
-    <h3>GitHub CLI (optional but recommended)</h3>
-    <p>The GitHub CLI (<code>gh</code>) simplifies authentication and repo management. Check if installed:</p>
-    <pre><code>gh --version</code></pre>
-    <p>If not installed:</p>
-    <ul>
-      <li><strong>Mac:</strong> <code>brew install gh</code> (requires <a href="https://brew.sh">Homebrew</a>)</li>
-      <li><strong>Windows:</strong> <code>winget install --id GitHub.cli</code></li>
-      <li><strong>Linux:</strong> See <a href="https://github.com/cli/cli/blob/trunk/docs/install_linux.md">github.com/cli/cli install docs</a></li>
-    </ul>
-    <p>Then authenticate:</p>
+    <p>Then authenticate the GitHub CLI:</p>
     <pre><code>gh auth login</code></pre>
     <p>The CLI will ask a series of questions. Tell the user to:</p>
     <ol>
@@ -262,6 +260,7 @@
       <li><strong>"How would you like to authenticate?"</strong> &mdash; Press <strong>Enter</strong> to pick <code>Login with a web browser</code></li>
       <li>A one-time code will appear &mdash; press <strong>Enter</strong>, paste the code in the browser, and authorize</li>
     </ol>
+    <div class="validate">Ask the user to confirm they have a GitHub account and <code>gh auth status</code> shows "Logged in".</div>
 
     <h3>Claude Desktop</h3>
     <p>Claude Desktop is the AI app that includes Claude Code &mdash; the AI developer that handles all terminal work, database setup, and code generation.</p>
@@ -582,12 +581,30 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     <h3>Cloudflare R2 (Storage)</h3>
     <p>Uses the Cloudflare Global API Key you provided in Step 5 &mdash; no additional credentials needed.</p>
     <ul>
-      <li>The setup wizard creates the R2 bucket automatically</li>
+      <li>The setup wizard creates <strong>two R2 buckets</strong> automatically: <code>&lt;project&gt;-media</code> (images, uploads) and <code>&lt;project&gt;-backups</code> (DB exports, config snapshots)</li>
       <li>Free 10 GB storage with zero egress fees</li>
       <li>If you skipped Cloudflare in Step 5, sign up at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a> and provide your Global API Key</li>
     </ul>
+
+    <h3>Cloudflare D1 (DevControl)</h3>
+    <p>The setup wizard creates <strong>two D1 databases</strong> using the Global API Key from Step 5:</p>
+    <ul>
+      <li><code>&lt;project&gt;-sessions</code> &mdash; Claude session logging and search</li>
+      <li><code>&lt;project&gt;-devcontrol</code> &mdash; Task tracking, build logs, deployment history</li>
+    </ul>
+    <p>Both are free tier (5M reads/day, 100K writes/day, 5 GB storage).</p>
   </div>
 
+  <!-- Cross-links to other entry points -->
+  <div style="text-align: center; padding: 2rem 0; border-top: 1px solid var(--border); margin-top: 2rem;">
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Other ways to get started:</p>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
+      <a href="/infra/" style="font-size: 0.85rem;">Setup hub (overview)</a>
+      <a href="/docs/getting-started.html" style="font-size: 0.85rem;">Quick start (for humans)</a>
+      <a href="/docs/alpacappsinfra.html" style="font-size: 0.85rem;">Full manual guide</a>
+      <a href="/infra/updates.html" style="font-size: 0.85rem;">Sync new features</a>
+    </div>
+  </div>
 
 </div>
 

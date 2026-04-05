@@ -707,6 +707,21 @@
     -->
   </div>
 
+  <!-- STEP 0: Prerequisites -->
+  <div class="setup-step" style="border-left: 3px solid var(--success);">
+    <h2>
+      <span class="step-num" style="background: var(--success);">0</span>
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" stroke="#6b8e5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Install prerequisites
+      <span class="step-time">5 min</span>
+    </h2>
+    <p>On <strong>Mac</strong>, run this one command to install everything Claude needs (git, GitHub CLI, Node.js, Supabase CLI, Wrangler, psql, TypeScript):</p>
+    <div class="prompt-block" id="prereq-prompt"><button class="copy-btn" onclick="copyById('prereq-prompt')">Copy</button>bash &lt;(curl -fsSL https://alpacaplayhouse.com/scripts/install-prereqs.sh)</div>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">Or if you already cloned the repo: <code>bash scripts/install-prereqs.sh</code> &mdash; or <code>brew bundle</code> (uses the Brewfile).</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted);"><strong>Not on Mac?</strong> Install <a href="https://git-scm.com/downloads">Git</a>, <a href="https://nodejs.org">Node.js</a>, and <a href="https://cli.github.com">GitHub CLI</a> manually. The setup wizard handles the rest.</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted);"><strong>Note:</strong> Xcode Command Line Tools must be installed first (<code>xcode-select --install</code>). The script checks for this.</p>
+  </div>
+
   <!-- STEP 1 -->
   <div class="setup-step">
     <h2>
@@ -1586,8 +1601,10 @@
     <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">Or browse the <a href="/infra/updates.html">updates page</a> directly to pick and choose.</p>
   </div>
 
-  <!-- Footer links -->
+  <!-- Footer links — all entry points cross-linked -->
   <div class="footer-links">
+    <a href="/docs/getting-started.html">Quick start (for humans)</a>
+    <a href="/infra/setup-guide.html">Step-by-step guide (for Claude Chat)</a>
     <a href="/docs/alpacappsinfra.html">Full manual setup guide</a>
     <a href="/infra/llm-setup-instructions.md">LLM setup instructions</a>
     <a href="/infra/updates.html">Sync new features</a>
@@ -1600,6 +1617,17 @@
 // Copy update prompt
 function copyUpdatePrompt() {
   var el = document.getElementById('update-prompt');
+  var text = el.textContent.replace(/^\s*Copy\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = el.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
+// Copy by element ID (generic)
+function copyById(id) {
+  var el = document.getElementById(id);
   var text = el.textContent.replace(/^\s*Copy\s*/, '').trim();
   navigator.clipboard.writeText(text).then(function() {
     var btn = el.querySelector('.copy-btn');
