@@ -1,12 +1,12 @@
 {
-  "version": "v260405.04 2:46p",
-  "release": 1268,
-  "sha": "f3bac67a4",
-  "fullSha": "f3bac67a4e4e9a99d09b9a182f571b86b1b5ff4b",
+  "version": "v260405.05 5:23p",
+  "release": 1269,
+  "sha": "fc02b247a",
+  "fullSha": "fc02b247a36fd5fe16ec4a24e4f02e72c497c7aa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-05T19:46:16+00:00",
-  "commits": [{"sha":"1c6a9882f","message":"Clarify Terminal usage in infra setup Step 0","author":"Rahul"},{"sha":"f3bac67a4","message":"Merge branch 'naughty-tharp'","author":"Rahul"}]
+  "pushedAt": "2026-04-05T22:23:14+00:00",
+  "commits": [{"sha":"6e97b7936","message":"Replace all GitHub Pages references with Cloudflare Pages on infra page","author":"Rahul"},{"sha":"fc02b247a","message":"Merge branch 'naughty-tharp'","author":"Rahul"}]
 }
