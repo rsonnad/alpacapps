@@ -32,7 +32,7 @@ Use these exact vendor strings:
 | Vendor | Services |
 |--------|----------|
 | `gemini` | Gemini API (image gen, PAI chat, payment matching) |
-| `anthropic` | **Deprecated — do not use.** Workers use Claude CLI; edge functions use Gemini. |
+| `anthropic` | **No API key — subscription only.** We use Claude via Max subscription (Claude Code CLI), not the Anthropic API. No `ANTHROPIC_API_KEY` exists in Bitwarden. Edge functions use Gemini. Hermes Agent on Alpuca uses local Ollama (Gemma 4 26B) as default. |
 | `vapi` | Vapi voice calls |
 | `telnyx` | SMS sending/receiving |
 | `resend` | Email sending |

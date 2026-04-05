@@ -10,9 +10,24 @@
 | msty | Latest | `/Applications/msty.app` |
 | Ollama | v0.20.0-rc0 | `brew services` (auto-starts on boot) — manually upgraded binary for Gemma 4 support |
 | Gemma 4 26B (MoE, Q4) | 17 GB | Primary model — MoE architecture (3.8B active params), 256K context, vision, thinking mode |
+| hermes-gemma4 | 17 GB | Gemma 4 26B with `num_ctx 32768` baked in — used as Hermes Agent default |
+| Qwen 2.5 Coder 14B | ~9 GB | Coding-specialized model for Hermes scripting tasks |
 | glm-ocr | 2.2 GB | OCR model for document text extraction |
+| Hermes Agent | Latest | `~/.hermes/` — always-on AI agent (Nous Research). Config: `~/.hermes/config.yaml` |
 
 Ollama API: `http://192.168.1.200:11434` (accessible from LAN)
+
+### Hermes Agent
+
+Hermes Agent (by Nous Research) is an open-source always-on AI agent with self-improving skills, persistent memory, and multi-platform messaging (Telegram, Discord, WhatsApp).
+
+- **Install dir:** `~/.hermes/` (config, skills, memory, logs)
+- **Default model:** `hermes-gemma4` (Gemma 4 26B + 32K context) via local Ollama
+- **Coding model:** `qwen2.5-coder:14b` (switch with `/model` in Hermes)
+- **Cloud fallback:** None — we use Claude via Max subscription, not Anthropic API. No `ANTHROPIC_API_KEY` exists.
+- **Service:** LaunchAgent `com.hermes-agent` (gateway mode, auto-restarts)
+- **Messaging:** Telegram bot (allowlisted to Rahul only)
+- **Skills:** 74 bundled + auto-created from experience (`~/.hermes/skills/`)
 
 ---
 
