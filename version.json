@@ -1,12 +1,12 @@
 {
-  "version": "v260404.01 6:06p",
-  "release": 1264,
-  "sha": "3fd5c1662",
-  "fullSha": "3fd5c16620395ee40a680947d91dc0cab1ff9ed7",
+  "version": "v260405.01 10:56a",
+  "release": 1265,
+  "sha": "7d27132cc",
+  "fullSha": "7d27132ccd5652d53bd88054d05d97d54b92f15d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-04T23:06:48+00:00",
-  "commits": [{"sha":"3fd5c1662","message":"Add remote access guide for SSH tunneling to Alpuca and UDM Pro","author":"Rahul"}]
+  "pushedAt": "2026-04-05T15:56:13+00:00",
+  "commits": [{"sha":"eba144d56","message":"Infra setup: one-command prereqs, DEVCONTROL D1/R2, max-power tokens, cross-links","author":"Rahul"},{"sha":"7d27132cc","message":"Merge branch 'nostalgic-vaughan'","author":"Rahul"}]
 }
