@@ -837,7 +837,7 @@
     <p>Your project will be live with:</p>
     <ul>
       <li>
-        <span class="done-item"><svg class="brand-icon-sm" viewBox="0 0 24 24" fill="none"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> A website hosted on <strong>GitHub Pages</strong> (free)</span>
+        <span class="done-item"><svg class="brand-icon-sm" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#F6821F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> A website hosted on <strong>Cloudflare Pages</strong> (free)</span>
       </li>
       <li>
         <span class="done-item"><svg class="brand-icon-sm" viewBox="0 0 24 24" fill="none"><path d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7" stroke="#3ECF8E" stroke-width="2"/><ellipse cx="12" cy="7" rx="8" ry="4" stroke="#3ECF8E" stroke-width="2"/></svg> A PostgreSQL database with auth and storage on <strong>Supabase</strong> (free)</span>
@@ -904,7 +904,7 @@
           <span>Website + Hosting</span>
           <span>Tailwind CSS v4</span>
         </div>
-        <div class="layer-services">Supabase &bull; GitHub Pages &bull; Cloudflare &bull; Tailwind &bull; Free</div>
+        <div class="layer-services">Supabase &bull; Cloudflare Pages &bull; Tailwind &bull; Free</div>
       </div>
     </div>
     <div class="stack-sidebar">
@@ -926,17 +926,17 @@
           <input type="checkbox" checked disabled data-svc="github">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><img src="https://cdn.simpleicons.org/github/181717" alt="GitHub"></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">GitHub Pages</span><span class="calc-svc__desc">Static site hosting</span></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Cloudflare Pages</span><span class="calc-svc__desc">Static site hosting</span></span>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
-          <p>Free static site hosting directly from your GitHub repository. Every <code>git push</code> to main deploys automatically &mdash; no build step, no CI config, no server to manage.</p>
+          <p>Free static site hosting via Cloudflare&rsquo;s global CDN. Every <code>git push</code> to main deploys automatically &mdash; no build step, no server to manage.</p>
           <ul>
-            <li><strong>How it works:</strong> Your HTML, CSS, and JavaScript files are served as-is from the repo. GitHub handles SSL, CDN, and uptime.</li>
-            <li><strong>Limits:</strong> 1 GB repo size, 100 GB bandwidth/month (generous &mdash; most sites never hit this).</li>
-            <li><strong>Custom domains:</strong> Point any domain at GitHub Pages with free HTTPS via Let&rsquo;s Encrypt.</li>
+            <li><strong>How it works:</strong> Your HTML, CSS, and JavaScript files are built and served from Cloudflare&rsquo;s edge network. Cloudflare handles SSL, CDN, and uptime.</li>
+            <li><strong>Limits:</strong> 500 deploys/month, unlimited bandwidth, unlimited requests (generous &mdash; most sites never hit deploy limits).</li>
+            <li><strong>Custom domains:</strong> Add any domain in the Cloudflare Pages dashboard with free HTTPS automatically.</li>
           </ul>
-          <p><a href="https://pages.github.com" target="_blank">Go to GitHub Pages &rarr;</a></p>
+          <p><a href="https://pages.cloudflare.com" target="_blank">Go to Cloudflare Pages &rarr;</a></p>
         </details>
       </div>
 
@@ -972,7 +972,7 @@
         <details class="svc-expand"><summary>Learn more</summary>
           <p>Cloudflare manages your domain&rsquo;s DNS and provides a D1 serverless database for session logging. Claude sets everything up using your Global API Key.</p>
           <ul>
-            <li><strong>DNS management:</strong> Authoritative DNS for your domain. Claude configures records for GitHub Pages, custom domains, and any other services.</li>
+            <li><strong>DNS management:</strong> Authoritative DNS for your domain. Claude configures records for Cloudflare Pages, custom domains, and any other services.</li>
             <li><strong>D1 database:</strong> Serverless SQLite for logging Claude Code sessions &mdash; tracks what was built, when, and by which agent.</li>
             <li><strong>R2 storage:</strong> If you need object storage (images, files), Claude creates an R2 bucket using the same Cloudflare token.</li>
             <li><strong>Setup:</strong> Just provide your Cloudflare email and Global API Key. Claude creates a scoped project token automatically.</li>
@@ -1262,7 +1262,7 @@
           <p>Use your own branded URL (e.g., <code>yoursite.com</code>) instead of <code>username.github.io</code>.</p>
           <ul>
             <li><strong>Cost:</strong> ~$10/year from any domain registrar (Cloudflare, Namecheap, Google Domains).</li>
-            <li><strong>Setup:</strong> Point your domain&rsquo;s DNS at GitHub Pages, add the domain in your repo settings, and GitHub provides free HTTPS automatically.</li>
+            <li><strong>Setup:</strong> Add your domain in the Cloudflare Pages project settings. Cloudflare configures DNS and provides free HTTPS automatically.</li>
             <li><strong>When to get one:</strong> Before sharing your site publicly. You can always add a domain later without breaking anything.</li>
           </ul>
           <p><a href="https://www.cloudflare.com/products/registrar/" target="_blank">Go to Cloudflare Registrar &rarr;</a></p>
@@ -1417,7 +1417,7 @@
       <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-bottom:36px;">
         <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#D97706;display:inline-block;"></span> Claude Code</span>
         <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#3ECF8E;display:inline-block;"></span> Supabase</span>
-        <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#8B5CF6;display:inline-block;"></span> GitHub Pages</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#F6821F;display:inline-block;"></span> Cloudflare Pages</span>
         <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#3B82F6;display:inline-block;"></span> Alpaca Mac</span>
         <span style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#9BA1B0;font-family:'DM Sans',sans-serif;"><span style="width:10px;height:10px;border-radius:50%;background:#EF4444;display:inline-block;"></span> Hostinger</span>
       </div>
@@ -1455,11 +1455,11 @@
           <line x1="500" y1="60" x2="500" y2="115" stroke="#8B5CF6" stroke-width="2" marker-end="url(#ad-arrowGithub)" opacity="0.7"/>
           <text x="512" y="93" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">HTTPS</text>
 
-          <!-- GitHub Pages -->
-          <rect x="340" y="120" width="320" height="100" rx="16" fill="#181B24" stroke="#8B5CF6" stroke-width="2" filter="url(#ad-glowGithub)"/>
-          <circle cx="370" cy="148" r="14" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="1"/>
-          <text x="370" y="153" text-anchor="middle" fill="#8B5CF6" font-size="14">GH</text>
-          <text x="392" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">GitHub Pages</text>
+          <!-- Cloudflare Pages -->
+          <rect x="340" y="120" width="320" height="100" rx="16" fill="#181B24" stroke="#F6821F" stroke-width="2" filter="url(#ad-glowGithub)"/>
+          <circle cx="370" cy="148" r="14" fill="rgba(246,130,31,0.15)" stroke="#F6821F" stroke-width="1"/>
+          <text x="370" y="153" text-anchor="middle" fill="#F6821F" font-size="14">CF</text>
+          <text x="392" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Cloudflare Pages</text>
           <text x="362" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Static HTML/JS/CSS hosting</text>
           <text x="362" y="192" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">alpacaplayhouse.com</text>
           <text x="362" y="207" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">/spaces/ /residents/ /admin/ /auth/</text>
@@ -1559,7 +1559,7 @@
         <div style="background:#181B24;border:1px solid #2A2E3B;border-radius:12px;padding:16px;text-align:center;">
           <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#6B7280;margin-bottom:6px;">01</div>
           <div style="font-weight:600;font-size:.9rem;color:#E8EAED;margin-bottom:3px;">Browser</div>
-          <div style="font-size:.78rem;color:#9BA1B0;line-height:1.4;">User loads page from GitHub Pages</div>
+          <div style="font-size:.78rem;color:#9BA1B0;line-height:1.4;">User loads page from Cloudflare Pages</div>
         </div>
         <div style="background:#181B24;border:1px solid #2A2E3B;border-radius:12px;padding:16px;text-align:center;">
           <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#6B7280;margin-bottom:6px;">02</div>
@@ -1678,7 +1678,7 @@ function recalcCost() {
   };
 
   var svcLabels = {
-    'github': 'GitHub Pages', 'supabase': 'Supabase', 'cloudflare': 'Cloudflare', 'claude': 'Claude Code',
+    'github': 'Cloudflare Pages', 'supabase': 'Supabase', 'cloudflare': 'Cloudflare', 'claude': 'Claude Code',
     'google-auth': 'Google Sign-In', 'resend': 'Resend (email)', 'telnyx': 'Telnyx (SMS)',
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
@@ -1740,7 +1740,7 @@ function recalcCost() {
 
   var scopes = {
     basic: [
-      'Unlimited pages on GitHub Pages (soft cap: 1 GB repo, 100 GB bandwidth/mo)',
+      'Unlimited pages on Cloudflare Pages (500 deploys/mo, unlimited bandwidth)',
       '500 MB database on Supabase free tier',
       '1 GB file storage on Supabase (or 10 GB with Cloudflare R2, zero egress)',
       '50,000 monthly active users (Supabase Auth)',
