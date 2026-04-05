@@ -232,18 +232,19 @@
 
   <div class="step">
     <h2><span class="step-num">0</span> Prerequisites</h2>
-    <p>You need these installed before starting. Everything else is handled by Claude Code.</p>
+    <p><strong>Mac (one command):</strong> Install everything at once. Run this in Terminal:</p>
+
+    <pre><code id="prereq-cmd">bash &lt;(curl -fsSL https://alpacaplayhouse.com/scripts/install-prereqs.sh)</code><button class="copy-btn" onclick="copyText('prereq-cmd')">Copy</button></pre>
+
+    <p style="font-size: 0.85rem; color: var(--text-muted);">This installs/upgrades: git, GitHub CLI, Node.js, Supabase CLI, Wrangler, psql, TypeScript. Requires Xcode CLI Tools (<code>xcode-select --install</code>) first.</p>
+
+    <p style="margin-top: 1rem;"><strong>Then install Claude:</strong></p>
 
     <div class="prereqs">
       <div class="prereq">
-        <div class="name">Git</div>
-        <div class="desc">Version control</div>
-        <a href="https://git-scm.com/downloads" target="_blank">Install Git &rarr;</a>
-      </div>
-      <div class="prereq">
         <div class="name">Claude Code</div>
         <div class="desc">AI developer CLI (includes Node.js)</div>
-        <a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Install Claude Code &rarr;</a>
+        <a href="https://claude.ai/download" target="_blank">Download Claude Desktop &rarr;</a>
       </div>
       <div class="prereq">
         <div class="name">GitHub Account</div>
@@ -252,10 +253,12 @@
       </div>
     </div>
 
+    <p style="font-size: 0.85rem; color: var(--text-muted);"><strong>Not on Mac?</strong> Install <a href="https://git-scm.com/downloads">Git</a>, <a href="https://nodejs.org">Node.js</a>, <a href="https://cli.github.com">GitHub CLI</a>, and <a href="https://claude.ai/download">Claude Desktop</a> manually. The setup wizard handles Supabase CLI, Wrangler, and TypeScript.</p>
+
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm); font-size: 0.85rem;">
       <strong>Quick check &mdash; paste into your terminal:</strong>
-      <code>git --version && claude --version</code><br>
-      If both print version numbers, you're good. If not, install whatever's missing above.
+      <code>git --version && node --version && gh --version && claude --version</code><br>
+      If all four print version numbers, you're good. If not, install whatever's missing above.
     </div>
   </div>
 
@@ -369,6 +372,11 @@ claude</code><button class="copy-btn" onclick="copyText('fix-cmd')">Copy</button
   <div class="full-guide">
     <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Want the full detailed guide with service-by-service instructions?</p>
     <a href="/docs/alpacappsinfra.html">Read the Full Infrastructure Guide &rarr;</a>
+    <div style="margin-top: 1.5rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
+      <a href="/infra/" style="font-size: 0.85rem; background: none; color: var(--accent); padding: 0;">Setup hub (overview)</a>
+      <a href="/infra/setup-guide.html" style="font-size: 0.85rem; background: none; color: var(--accent); padding: 0;">Claude Chat guide</a>
+      <a href="/infra/updates.html" style="font-size: 0.85rem; background: none; color: var(--accent); padding: 0;">Sync new features</a>
+    </div>
   </div>
 
 </div>

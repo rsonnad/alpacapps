@@ -1454,14 +1454,15 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
     <h3><span class="step-label step-you">Connect Git to your GitHub account</span></h3>
     <p>Before Claude Code can push code to your repository, Git needs to know your GitHub credentials. The easiest way is GitHub CLI, which handles this through your browser &mdash; no passwords or tokens to manage.</p>
 
-    <p><strong>a) Install GitHub CLI</strong></p>
+    <p><strong>a) Install all prerequisites (Mac &mdash; one command)</strong></p>
+    <div class="callout" style="border-color: var(--success); background: var(--success-light);">
+      <strong>Mac:</strong> This installs git, GitHub CLI, Node.js, Supabase CLI, Wrangler, psql, and TypeScript in one step:<br>
+      <code>bash &lt;(curl -fsSL https://alpacaplayhouse.com/scripts/install-prereqs.sh)</code><br>
+      <span style="font-size: 0.85rem; color: var(--text-muted);">Requires Xcode CLI Tools first: <code>xcode-select --install</code></span>
+    </div>
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
-      <ul style="margin: 0; padding-left: 1.25rem;">
-        <li><strong>Mac:</strong> Paste into Terminal: <code>brew install gh</code><br>
-          <span style="font-size: 0.85rem; color: var(--text-muted);">Don&rsquo;t have Homebrew? Paste this first: <code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></span></li>
-        <li><strong>Windows:</strong> Paste into your terminal: <code>winget install --id GitHub.cli</code><br>
-          <span style="font-size: 0.85rem; color: var(--text-muted);">Then close and reopen your terminal.</span></li>
-      </ul>
+      <strong>Windows:</strong> Paste into your terminal: <code>winget install --id GitHub.cli</code><br>
+      <span style="font-size: 0.85rem; color: var(--text-muted);">Then close and reopen your terminal. Also install <a href="https://nodejs.org">Node.js</a> if not already installed.</span>
     </div>
 
     <p><strong>b) Log in to GitHub through your browser</strong></p>
@@ -1953,16 +1954,21 @@ Don't ask me for permission at each step — just do the work end to end and sho
   <details class="section" id="cloudflare-r2-setup">
       <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">12. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
-    <p>Optional. S3-compatible object storage with 10 GB free and zero egress fees. Great for documents, manuals, PDFs, and media that don&rsquo;t need Supabase Storage&rsquo;s RLS.</p>
+    <p>S3-compatible object storage with 10 GB free and zero egress fees. The setup wizard creates <strong>two R2 buckets</strong> automatically using your Cloudflare Global API Key:</p>
+    <ul>
+      <li><code>&lt;project&gt;-media</code> &mdash; Images, documents, uploads</li>
+      <li><code>&lt;project&gt;-backups</code> &mdash; Database exports, config snapshots</li>
+    </ul>
+    <p>If you prefer manual setup:</p>
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
     <ol>
       <li>Sign up at <a href="https://dash.cloudflare.com/sign-up" target="_blank">dash.cloudflare.com/sign-up</a> (free, no credit card)</li>
       <li>Go to <strong>R2 Object Storage</strong> in the left sidebar &rarr; <strong>Create bucket</strong></li>
-      <li>Name your bucket (e.g., your project name), choose a region, click <strong>Create bucket</strong></li>
-      <li>In bucket <strong>Settings</strong>, enable <strong>Public Development URL</strong> (allows public read access via a <code>pub-*.r2.dev</code> URL)</li>
+      <li>Create two buckets: <code>&lt;project&gt;-media</code> and <code>&lt;project&gt;-backups</code></li>
+      <li>In the media bucket <strong>Settings</strong>, enable <strong>Public Development URL</strong> (allows public read access via a <code>pub-*.r2.dev</code> URL)</li>
       <li>Go to <strong>R2 Object Storage</strong> &rarr; <strong>Manage R2 API Tokens</strong> &rarr; <strong>Create API token</strong></li>
-      <li>Give it <strong>Object Read &amp; Write</strong> permission, apply to your bucket, create the token</li>
+      <li>Give it <strong>Object Read &amp; Write</strong> permission, apply to both buckets, create the token</li>
       <li>Copy the <strong>Access Key ID</strong> and <strong>Secret Access Key</strong> (shown only once!)</li>
     </ol>
 
@@ -1985,19 +1991,25 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 11b. Cloudflare D1 — Session Archive -->
+  <!-- 11b. Cloudflare D1 — Session Archive + DevControl -->
   <details class="section" id="cloudflare-d1-setup">
-      <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11b. Cloudflare D1 &mdash; Session Archive <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11b. Cloudflare D1 &mdash; Sessions + DevControl <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
-    <p>Optional. Auto-saves every Claude Code session transcript to Cloudflare D1 (serverless SQLite). A hook fires when each session ends, reads the JSONL from disk, and posts it to a Worker. Browse sessions in the DevControl Sessions tab at <code>/spaces/admin/devcontrol/</code>.</p>
+    <p>The setup wizard creates <strong>two D1 databases</strong> automatically using your Cloudflare Global API Key:</p>
+    <ul>
+      <li><code>&lt;project&gt;-sessions</code> &mdash; Claude session transcripts with search/filtering (browsable in DevControl Sessions tab)</li>
+      <li><code>&lt;project&gt;-devcontrol</code> &mdash; Task tracking, build logs, deployment history</li>
+    </ul>
+    <p>Both use free tier (5M reads/day, 100K writes/day, 5 GB storage). If you prefer manual setup:</p>
 
     <h3><span class="step-label step-you">You do (in your terminal)</span></h3>
     <ol>
-      <li>Install Wrangler (Cloudflare CLI) if you don&rsquo;t have it: <code>npm install -g wrangler</code></li>
+      <li>Wrangler is installed by the prerequisite script. If missing: <code>npm install -g wrangler</code></li>
       <li>Authenticate: <code>wrangler login</code></li>
-      <li>Create the D1 database:
-        <pre><code>npx wrangler d1 create claude-sessions</code></pre>
-        Copy the <strong>database_id</strong> from the output.
+      <li>Create both D1 databases:
+        <pre><code>npx wrangler d1 create &lt;project&gt;-sessions
+npx wrangler d1 create &lt;project&gt;-devcontrol</code></pre>
+        Copy both <strong>database_id</strong> values from the output.
       </li>
       <li>Edit <code>cloudflare/claude-sessions/wrangler.jsonc</code> &mdash; replace <code>YOUR_DATABASE_ID_HERE</code> with your database ID</li>
       <li>Run the schema:
@@ -3051,6 +3063,21 @@ function updatePickedServices() {
 
 // Public header is initialized by public-shell.js
 </script>
+
+<!-- Cross-links to other entry points -->
+<div style="max-width: 860px; margin: 2rem auto; padding: 0 1.5rem;">
+  <div style="text-align: center; padding: 2rem 0; border-top: 1px solid #333;">
+    <p style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">Other ways to get started:</p>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem;">
+      <a href="/infra/" style="color: #c9a87c; font-size: 0.85rem;">Setup hub (overview)</a>
+      <a href="/docs/getting-started.html" style="color: #c9a87c; font-size: 0.85rem;">Quick start (for humans)</a>
+      <a href="/infra/setup-guide.html" style="color: #c9a87c; font-size: 0.85rem;">Claude Chat guide</a>
+      <a href="/infra/updates.html" style="color: #c9a87c; font-size: 0.85rem;">Sync new features</a>
+      <a href="https://github.com/rsonnad/alpacapps-infra" style="color: #c9a87c; font-size: 0.85rem;">Template repo</a>
+    </div>
+  </div>
+</div>
+
 <script src="/vendor/supabase-js-2.39.3.min.js"></script>
 <script type="module" src="/shared/version-info.js"></script>
 <script type="module">
