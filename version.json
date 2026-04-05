@@ -1,12 +1,12 @@
 {
-  "version": "v260405.01 10:56a",
-  "release": 1265,
-  "sha": "7d27132cc",
-  "fullSha": "7d27132ccd5652d53bd88054d05d97d54b92f15d",
+  "version": "v260405.02 11:48a",
+  "release": 1266,
+  "sha": "7c98aa605",
+  "fullSha": "7c98aa6055d17d3588308f68cd262d65c498f465",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-05T15:56:13+00:00",
-  "commits": [{"sha":"eba144d56","message":"Infra setup: one-command prereqs, DEVCONTROL D1/R2, max-power tokens, cross-links","author":"Rahul"},{"sha":"7d27132cc","message":"Merge branch 'nostalgic-vaughan'","author":"Rahul"}]
+  "pushedAt": "2026-04-05T16:48:38+00:00",
+  "commits": [{"sha":"d44fcc09a","message":"Add Southwest BNA board PDF to rahulio/docs","author":"Rahul"},{"sha":"7c98aa605","message":"Merge pull request #110 from rsonnad/heuristic-nash","author":"Rahul"}]
 }
