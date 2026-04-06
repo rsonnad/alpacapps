@@ -1,12 +1,12 @@
 {
-  "version": "v260405.05 5:23p",
-  "release": 1269,
-  "sha": "fc02b247a",
-  "fullSha": "fc02b247a36fd5fe16ec4a24e4f02e72c497c7aa",
+  "version": "v260406.01 2:30a",
+  "release": 1270,
+  "sha": "d07c1b78e",
+  "fullSha": "d07c1b78edf998af6eb9421d7c05e05f3da94b26",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-05T22:23:14+00:00",
-  "commits": [{"sha":"6e97b7936","message":"Replace all GitHub Pages references with Cloudflare Pages on infra page","author":"Rahul"},{"sha":"fc02b247a","message":"Merge branch 'naughty-tharp'","author":"Rahul"}]
+  "pushedAt": "2026-04-06T07:30:55+00:00",
+  "commits": [{"sha":"e6d576e89","message":"Document Hermes Agent install on Alpuca and Anthropic subscription-only status","author":"Rahul"},{"sha":"39387b1d0","message":"Add AI agents documentation (clawlikeagents.md)","author":"Rahul"},{"sha":"d07c1b78e","message":"Merge remote-tracking branch 'origin/affectionate-blackwell'","author":"Rahul"}]
 }
