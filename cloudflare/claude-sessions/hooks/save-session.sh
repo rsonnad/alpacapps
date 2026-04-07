@@ -44,9 +44,20 @@ if [ -z "$JSONL_FILE" ] || [ ! -f "$JSONL_FILE" ]; then
   exit 0
 fi
 
-# Extract project name from the directory path
+# Extract project name. Map known repo paths to canonical short names so
+# worktrees + main project all aggregate into one bucket. Falls back to a
+# slugified path for unknown projects.
 PROJECT_DIR=$(dirname "$JSONL_FILE")
-PROJECT_NAME=$(basename "$PROJECT_DIR" | sed 's/^-Users-[^-]*-//' | sed 's/-/\//g')
+DIR_SLUG=$(basename "$PROJECT_DIR")
+case "$DIR_SLUG" in
+  *genalpaca-admin*|*genalpaca/admin*) PROJECT_NAME="genalpaca" ;;
+  *sponic-garden*|*sponic/garden*)     PROJECT_NAME="sponic" ;;
+  *finleg*)                            PROJECT_NAME="finleg" ;;
+  *portsie*)                           PROJECT_NAME="portsie" ;;
+  *mistiq*)                            PROJECT_NAME="mistiq" ;;
+  *Khangtsen*|*khangtsen*)             PROJECT_NAME="khangtsen" ;;
+  *) PROJECT_NAME=$(echo "$DIR_SLUG" | sed 's/^-Users-[^-]*-//' | sed 's/-/\//g') ;;
+esac
 
 # Export variables so the Python heredoc can access them via os.environ
 export JSONL_FILE SESSION_ID PROJECT_NAME API_URL API_TOKEN
