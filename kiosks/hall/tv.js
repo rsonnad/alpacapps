@@ -453,13 +453,40 @@ async function initSlideshow() {
   }
 
   const { data: photos } = await query.limit(50);
-  if (!photos || photos.length === 0) {
+  let merged = photos ? [...photos] : [];
+
+  // Optional: merge in entries from an external manifest hosted off-Supabase
+  // (e.g. http://192.168.1.74:<port>/artemis-ii/manifest.json on Alpuca/RVAULT20).
+  // Defensive: any failure falls back silently to the Supabase-only list.
+  if (cfg.extra_manifest_url) {
+    try {
+      const r = await fetch(cfg.extra_manifest_url, { cache: 'no-store' });
+      if (r.ok) {
+        const m = await r.json();
+        const items = Array.isArray(m) ? m : (m.items || []);
+        const extra = items
+          .filter(i => i && i.url && (i.type ? i.type === 'image' : true))
+          .map(i => ({ id: 'ext:' + i.url, url: i.url, caption: i.caption || i.credit || '' }));
+        merged = merged.concat(extra);
+      }
+    } catch (e) {
+      console.warn('extra_manifest_url fetch failed:', e);
+    }
+  }
+
+  // Shuffle so external photos interleave with house photos
+  for (let i = merged.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [merged[i], merged[j]] = [merged[j], merged[i]];
+  }
+
+  if (merged.length === 0) {
     document.getElementById('slideshowMode').innerHTML =
       '<div class="tv-signage"><h1 class="tv-signage-message">No photos available</h1></div>';
     return;
   }
 
-  slideshowPhotos = photos;
+  slideshowPhotos = merged;
   slideshowIndex = 0;
   showSlide(showCaptions);
 
