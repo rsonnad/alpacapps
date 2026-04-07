@@ -1,12 +1,12 @@
 {
-  "version": "v260407.03 5:26p",
-  "release": 1274,
-  "sha": "4e7c9d8ed",
-  "fullSha": "4e7c9d8edc5586f64af88daa7a9f4c3cc0a24046",
+  "version": "v260407.04 5:31p",
+  "release": 1275,
+  "sha": "bb9aee274",
+  "fullSha": "bb9aee274e5ce3729d235bd6ca7e2df6e7ec9a9e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-07T22:26:13+00:00",
-  "commits": [{"sha":"4e7c9d8ed","message":"DevControl Tokens: ground-truth ingest from JSONL + cross-project view","author":"Rahul"}]
+  "pushedAt": "2026-04-07T22:31:23+00:00",
+  "commits": [{"sha":"bb9aee274","message":"claude-sessions: canonical project names + bulk JSONL backfill script","author":"Rahul"}]
 }
