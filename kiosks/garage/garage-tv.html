@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Garage Mahal TV</title>
+<style>
+  html,body { margin:0; height:100%; background:#000; color:#fff; font-family:-apple-system,system-ui,sans-serif; overflow:hidden; }
+  .stage { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  .stage img { max-width:100%; max-height:100%; object-fit:contain; opacity:0; transition:opacity 1.2s ease; }
+  .stage img.on { opacity:1; }
+  .caption {
+    position:fixed; left:0; right:0; bottom:0;
+    padding:24px 40px;
+    background:linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0));
+    font-size:22px; line-height:1.4;
+    text-shadow:0 2px 6px rgba(0,0,0,0.8);
+  }
+  .credit { opacity:0.7; font-size:16px; margin-top:4px; }
+  .err { position:fixed; top:10px; left:10px; font-size:14px; opacity:0.6; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <img id="a">
+  <img id="b">
+</div>
+<div id="cap" class="caption"></div>
+<div id="err" class="err"></div>
+<script>
+// Garage Mahal TV slideshow. Self-contained page served from Alpuca
+// (http://192.168.1.200:8200/kiosk/garage-tv.html). Mixes house photos from
+// Supabase with Artemis II photos from RVAULT20 manifest. Kept intentionally
+// tiny to fit the Pi Zero 2W's ~362 MB RAM budget.
+
+const MANIFEST_URL = '/artemis-ii/manifest.json';              // relative to this origin
+const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+const INTERVAL_MS = 12000;
+const REFRESH_MS  = 60 * 60 * 1000;  // refresh photo list hourly
+
+const errEl = document.getElementById('err');
+const capEl = document.getElementById('cap');
+const imgA  = document.getElementById('a');
+const imgB  = document.getElementById('b');
+let photos = [];
+let idx = 0;
+let showing = imgA;
+let hidden  = imgB;
+
+function showErr(msg) { errEl.textContent = msg || ''; }
+
+async function loadArtemis() {
+  try {
+    const r = await fetch(MANIFEST_URL, { cache: 'no-store' });
+    if (!r.ok) return [];
+    const m = await r.json();
+    return (m.items || []).filter(i => i.type === 'image').map(i => ({
+      url: i.url, caption: i.caption || '', credit: i.credit || 'NASA',
+    }));
+  } catch (e) { console.warn('artemis manifest fail', e); return []; }
+}
+
+async function loadHouse() {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/media?category=eq.mktg&is_archived=eq.false&select=url,caption&limit=200`,
+      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY } }
+    );
+    if (!r.ok) return [];
+    const data = await r.json();
+    return data.map(p => ({ url: p.url, caption: p.caption || '', credit: '' }));
+  } catch (e) { console.warn('house photos fail', e); return []; }
+}
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+async function refresh() {
+  const [artemis, house] = await Promise.all([loadArtemis(), loadHouse()]);
+  const merged = shuffle([...artemis, ...house]);
+  if (merged.length) {
+    photos = merged;
+    idx = 0;
+    showErr(`${artemis.length} NASA + ${house.length} house`);
+    setTimeout(() => showErr(''), 10000);
+  } else {
+    showErr('no photos available');
+  }
+}
+
+function next() {
+  if (!photos.length) return;
+  const p = photos[idx % photos.length];
+  idx++;
+  hidden.onload = () => {
+    hidden.classList.add('on');
+    showing.classList.remove('on');
+    [showing, hidden] = [hidden, showing];
+    const parts = [];
+    if (p.caption) parts.push(p.caption);
+    capEl.innerHTML = parts.length
+      ? `<div>${escapeHtml(p.caption)}</div>${p.credit ? `<div class="credit">${escapeHtml(p.credit)}</div>` : ''}`
+      : '';
+  };
+  hidden.onerror = () => {
+    console.warn('img failed', p.url);
+    // Skip and advance
+    next();
+  };
+  hidden.src = p.url;
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+(async function main() {
+  await refresh();
+  next();
+  setInterval(next, INTERVAL_MS);
+  setInterval(refresh, REFRESH_MS);
+})();
+</script>
+</body>
+</html>
