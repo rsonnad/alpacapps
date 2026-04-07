@@ -25,12 +25,14 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const crypto = require('crypto');
+const { execFileSync } = require('child_process');
 const { URL } = require('url');
 
 const SOURCE = process.env.SOURCE_URL || 'https://www.nasa.gov/artemis-ii-multimedia/';
 const OUT_DIR = process.env.OUT_DIR || '/Volumes/rvault20/media/artemis-ii';
 const BASE_URL = (process.env.BASE_URL || 'http://192.168.1.200:8088/artemis-ii').replace(/\/$/, '');
 const MAX_PAGES = parseInt(process.env.MAX_PAGES || '20', 10);
+const MAX_DIM   = parseInt(process.env.MAX_DIM   || '2560', 10);  // resized output dimension; 0 = keep originals
 const UA = 'AlpacAppsArtemisFetch/1.0 (+https://alpacaplayhouse.com)';
 
 const IMG_EXT = /\.(jpe?g|png|webp|gif)(\?|$)/i;
@@ -84,9 +86,16 @@ function absolutize(href, base) {
   try { return new URL(href, base).toString(); } catch { return null; }
 }
 
-// Strip srcset sizing suffix like "-1024x576" so we land on the original.
+// Upgrade NASA URLs to the highest-resolution variant we can guess.
+//   1. Strip ?w=… / ?h=… / fit=clip query strings (NASA's proxy honors these)
+//   2. Strip WordPress srcset sizing suffix "-1024x576"
+//   3. images-assets.nasa.gov/.../{id}~large.jpg  →  …{id}~orig.jpg
 function stripWpSizes(u) {
-  return u.replace(/-\d+x\d+(?=\.[a-z0-9]+(\?|$))/i, '');
+  if (!u) return u;
+  let out = u.replace(/&amp;/g, '&').split('#')[0].split('?')[0];
+  out = out.replace(/-\d+x\d+(?=\.[a-z0-9]+$)/i, '');
+  out = out.replace(/(images-assets\.nasa\.gov\/[^\s]*?)~(large|medium|small|thumb)(\.[a-z0-9]+)$/i, '$1~orig$3');
+  return out;
 }
 
 function safeName(u) {
@@ -252,5 +261,23 @@ function extractPaginationLinks(html, baseUrl) {
   const manifestPath = path.join(OUT_DIR, 'manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   console.log(`[artemis] wrote ${manifestPath}`);
+
+  // Stash originals + downscale images for low-power displays (Pi Zero 2W).
+  // macOS-only via `sips`. Set MAX_DIM=0 to skip.
+  if (MAX_DIM > 0 && process.platform === 'darwin') {
+    const origDir = path.join(OUT_DIR, 'originals');
+    fs.mkdirSync(origDir, { recursive: true });
+    let resized = 0;
+    for (const f of fs.readdirSync(path.join(OUT_DIR, 'images'))) {
+      const src = path.join(OUT_DIR, 'images', f);
+      const orig = path.join(origDir, f);
+      try {
+        if (!fs.existsSync(orig)) fs.copyFileSync(src, orig);
+        execFileSync('sips', ['-Z', String(MAX_DIM), src], { stdio: 'ignore' });
+        resized++;
+      } catch (e) { /* sips not present or non-image */ }
+    }
+    console.log(`[artemis] resized ${resized} images to max ${MAX_DIM}px (originals in originals/)`);
+  }
   console.log(`[artemis] downloaded=${dlCount} skipped=${skipCount} failed=${failCount}`);
 })().catch((e) => { console.error(e); process.exit(1); });
