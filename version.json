@@ -1,12 +1,12 @@
 {
-  "version": "v260407.02 4:46p",
-  "release": 1273,
-  "sha": "9b4669cb9",
-  "fullSha": "9b4669cb9710e1d32ef056183941a7200f53db99",
+  "version": "v260407.03 5:26p",
+  "release": 1274,
+  "sha": "4e7c9d8ed",
+  "fullSha": "4e7c9d8edc5586f64af88daa7a9f4c3cc0a24046",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-07T21:46:26+00:00",
-  "commits": [{"sha":"3d139ebc3","message":"Garage Mahal TV: full-bleed cover, multi-manifest, drop Supabase house photos","author":"Rahul"},{"sha":"9b4669cb9","message":"Merge pull request #113 from rsonnad/wonderful-williams","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-07T22:26:13+00:00",
+  "commits": [{"sha":"4e7c9d8ed","message":"DevControl Tokens: ground-truth ingest from JSONL + cross-project view","author":"Rahul"}]
 }
