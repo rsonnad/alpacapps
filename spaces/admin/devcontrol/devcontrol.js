@@ -385,19 +385,26 @@ function parseTranscript(text) {
 // ═══════════════════════════════════════════════════════════
 // TOKENS TAB
 // ═══════════════════════════════════════════════════════════
+let tokensProjectFilter = PROJECT_FILTER; // 'all' = global cross-project view
+
 async function loadTokens() {
   const panel = document.getElementById('dc-panel-tokens');
   panel.innerHTML = '<div class="dc-empty">Loading token analytics...</div>';
 
   try {
-    const [statsRes, sessionsRes] = await Promise.all([
-      fetch(`${SESSIONS_API}/stats?project=${PROJECT_FILTER}`, { headers: sessionHeaders }),
-      fetch(`${SESSIONS_API}/sessions?limit=200&project=${PROJECT_FILTER}`, { headers: sessionHeaders }),
+    const proj = tokensProjectFilter;
+    const projParam = proj === 'all' ? 'all' : encodeURIComponent(proj);
+    const [statsRes, sessionsRes, projectsRes] = await Promise.all([
+      fetch(`${SESSIONS_API}/stats?project=${projParam}`, { headers: sessionHeaders }),
+      fetch(`${SESSIONS_API}/sessions?limit=500&project=${projParam}`, { headers: sessionHeaders }),
+      fetch(`${SESSIONS_API}/projects`, { headers: sessionHeaders }),
     ]);
 
     const stats = statsRes.ok ? await statsRes.json() : {};
     const sessData = sessionsRes.ok ? await sessionsRes.json() : {};
     const sessions = sessData.sessions || sessData || [];
+    const projData = projectsRes.ok ? await projectsRes.json() : { projects: [] };
+    const projects = projData.projects || [];
 
     // Group by day
     const byDay = {};
@@ -410,19 +417,44 @@ async function loadTokens() {
     const dayEntries = Object.entries(byDay).map(([date, data]) => ({ date, ...data })).reverse();
     const maxDayTokens = Math.max(...dayEntries.map((d) => d.tokens), 1);
 
-    // Group by model
+    // Group by model — track input/output/cache + cost separately
     const byModel = {};
     for (const s of sessions) {
       const k = s.model ? s.model.replace('claude-', '').split('-202')[0] : 'unknown';
-      if (!byModel[k]) byModel[k] = { tokens: 0, sessions: 0 };
+      if (!byModel[k]) byModel[k] = { tokens: 0, input: 0, output: 0, cache_r: 0, cache_w: 0, cost: 0, sessions: 0 };
       byModel[k].tokens += s.token_count || 0;
+      byModel[k].input += s.input_tokens || 0;
+      byModel[k].output += s.output_tokens || 0;
+      byModel[k].cache_r += s.cache_read_tokens || 0;
+      byModel[k].cache_w += s.cache_creation_tokens || 0;
+      byModel[k].cost += s.cost_usd || 0;
       byModel[k].sessions += 1;
     }
     const modelEntries = Object.entries(byModel).map(([key, data]) => ({ key, ...data })).sort((a, b) => b.tokens - a.tokens);
 
+    // Project picker options
+    const projOptions = [
+      `<option value="all"${proj === 'all' ? ' selected' : ''}>All projects (global)</option>`,
+      ...projects.map((p) => `<option value="${esc(p.project)}"${p.project === proj ? ' selected' : ''}>${esc(p.project)} — ${fmt(p.sessions)} sessions</option>`),
+    ].join('');
+
+    const subtitle = proj === 'all'
+      ? 'Token usage and session analytics across <strong>all projects</strong>'
+      : `Token usage and session analytics for <strong>${esc(proj)}</strong>`;
+
     panel.innerHTML = `
-      <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Tokens & Cost</h2>
-      <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin-bottom:1.25rem;">Token usage and session analytics for this project</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+        <div>
+          <h2 style="font-size:1.375rem;font-weight:700;margin-bottom:0.25rem;">Tokens & Cost</h2>
+          <p style="color:var(--text-muted,#888);font-size:0.8125rem;margin:0;">${subtitle}</p>
+        </div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8125rem;color:var(--text-muted,#666);">
+          Project:
+          <select id="dc-tokens-project" style="padding:0.375rem 0.625rem;border:1px solid var(--border,#e2e0db);border-radius:6px;background:var(--bg-card,#fff);font-size:0.8125rem;">
+            ${projOptions}
+          </select>
+        </label>
+      </div>
 
       <div class="dc-stats">
         <div class="dc-stat"><div class="dc-stat-value" style="color:#059669">${fmt(stats.total_tokens || 0)}</div><div class="dc-stat-label">Total Tokens</div></div>
@@ -430,6 +462,17 @@ async function loadTokens() {
         <div class="dc-stat"><div class="dc-stat-value" style="color:#2563eb">${fmt(Math.round(stats.avg_tokens || 0))}</div><div class="dc-stat-label">Avg / Session</div></div>
         <div class="dc-stat"><div class="dc-stat-value" style="color:#7c3aed">${fmt(stats.total_sessions || 0)}</div><div class="dc-stat-label">Sessions</div></div>
       </div>
+
+      ${(stats.total_input_tokens || stats.total_output_tokens) ? `
+        <h3 class="dc-section-header">Token Breakdown</h3>
+        <div class="dc-stats" style="margin-bottom:1.5rem;">
+          <div class="dc-stat"><div class="dc-stat-value" style="color:#0891b2;font-size:1.25rem">${fmt(stats.total_input_tokens || 0)}</div><div class="dc-stat-label">Input</div></div>
+          <div class="dc-stat"><div class="dc-stat-value" style="color:#16a34a;font-size:1.25rem">${fmt(stats.total_output_tokens || 0)}</div><div class="dc-stat-label">Output</div></div>
+          <div class="dc-stat"><div class="dc-stat-value" style="color:#9333ea;font-size:1.25rem">${fmt(stats.total_cache_read_tokens || 0)}</div><div class="dc-stat-label">Cache Read</div></div>
+          <div class="dc-stat"><div class="dc-stat-value" style="color:#db2777;font-size:1.25rem">${fmt(stats.total_cache_creation_tokens || 0)}</div><div class="dc-stat-label">Cache Write</div></div>
+        </div>
+        <p style="color:var(--text-muted,#aaa);font-size:0.7rem;margin:-1rem 0 1.5rem;">Older sessions (pre-breakdown) only contribute to "Total Tokens". New sessions include the full split.</p>
+      ` : `<p style="color:var(--text-muted,#aaa);font-size:0.75rem;margin-bottom:1.25rem;">Per-class token breakdown (input / output / cache) populates from the next session onward.</p>`}
 
       ${dayEntries.length ? `
         <h3 class="dc-section-header">Daily Token Usage</h3>
@@ -447,12 +490,52 @@ async function loadTokens() {
         <h3 class="dc-section-header">By Model</h3>
         <div class="dc-table-wrap">
           <table class="dc-table">
-            <thead><tr><th>Model</th><th class="text-right">Sessions</th><th class="text-right">Tokens</th></tr></thead>
+            <thead><tr>
+              <th>Model</th>
+              <th class="text-right">Sessions</th>
+              <th class="text-right">Input</th>
+              <th class="text-right">Output</th>
+              <th class="text-right">Cache R</th>
+              <th class="text-right">Cache W</th>
+              <th class="text-right">Total</th>
+              <th class="text-right">Cost</th>
+            </tr></thead>
             <tbody>
-              ${modelEntries.map((r) => `<tr><td class="mono">${esc(r.key)}</td><td class="text-right tabular">${r.sessions}</td><td class="text-right tabular">${fmt(r.tokens)}</td></tr>`).join('')}
+              ${modelEntries.map((r) => `<tr>
+                <td class="mono">${esc(r.key)}</td>
+                <td class="text-right tabular">${r.sessions}</td>
+                <td class="text-right tabular">${r.input ? fmt(r.input) : '—'}</td>
+                <td class="text-right tabular">${r.output ? fmt(r.output) : '—'}</td>
+                <td class="text-right tabular">${r.cache_r ? fmt(r.cache_r) : '—'}</td>
+                <td class="text-right tabular">${r.cache_w ? fmt(r.cache_w) : '—'}</td>
+                <td class="text-right tabular">${fmt(r.tokens)}</td>
+                <td class="text-right tabular">${r.cost ? fmtCost(r.cost) : '—'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>` : ''}
+
+      ${proj === 'all' && projects.length ? `
+        <h3 class="dc-section-header">By Project</h3>
+        <div class="dc-table-wrap">
+          <table class="dc-table">
+            <thead><tr><th>Project</th><th class="text-right">Sessions</th><th class="text-right">Tokens</th><th class="text-right">Cost</th><th>Last seen</th></tr></thead>
+            <tbody>
+              ${projects.map((p) => `<tr>
+                <td class="mono">${esc(p.project)}</td>
+                <td class="text-right tabular">${fmt(p.sessions)}</td>
+                <td class="text-right tabular">${fmt(p.tokens || 0)}</td>
+                <td class="text-right tabular">${p.cost ? fmtCost(p.cost) : '—'}</td>
+                <td style="color:var(--text-muted,#888);font-size:0.75rem;">${p.last_seen ? fmtDate(p.last_seen) : '—'}</td>
+              </tr>`).join('')}
             </tbody>
           </table>
         </div>` : ''}`;
+
+    document.getElementById('dc-tokens-project')?.addEventListener('change', (e) => {
+      tokensProjectFilter = e.target.value;
+      loadTokens();
+    });
   } catch (err) {
     panel.innerHTML = `<div class="dc-empty">Failed to load token data: ${esc(err.message)}</div>`;
   }

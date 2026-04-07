@@ -65,11 +65,32 @@ api_token = os.environ.get("API_TOKEN", "")
 if not jsonl_file or not os.path.exists(jsonl_file):
     sys.exit(0)
 
+# Per-million-token prices in USD. Mirrors what claude-usage uses; cache_read
+# is 10% of input, cache_creation is 1.25x input (Anthropic standard).
+PRICING = {
+    "opus":    {"in": 15.00, "out": 75.00, "cr": 1.50,  "cw": 18.75},
+    "sonnet":  {"in":  3.00, "out": 15.00, "cr": 0.30,  "cw":  3.75},
+    "haiku":   {"in":  0.80, "out":  4.00, "cr": 0.08,  "cw":  1.00},
+}
+
+def price_for(model_name):
+    if not model_name:
+        return PRICING["sonnet"]
+    m = model_name.lower()
+    if "opus" in m:   return PRICING["opus"]
+    if "haiku" in m:  return PRICING["haiku"]
+    return PRICING["sonnet"]
+
 messages = []
 model = None
 started_at = None
 ended_at = None
 total_tokens = 0
+input_tokens = 0
+output_tokens = 0
+cache_read_tokens = 0
+cache_creation_tokens = 0
+cost_usd = 0.0
 
 with open(jsonl_file) as f:
     for line in f:
@@ -102,7 +123,17 @@ with open(jsonl_file) as f:
                 model = msg["model"]
             usage = msg.get("usage", {})
             if usage:
-                total_tokens += usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+                it = usage.get("input_tokens", 0) or 0
+                ot = usage.get("output_tokens", 0) or 0
+                cr = usage.get("cache_read_input_tokens", 0) or 0
+                cw = usage.get("cache_creation_input_tokens", 0) or 0
+                input_tokens += it
+                output_tokens += ot
+                cache_read_tokens += cr
+                cache_creation_tokens += cw
+                total_tokens += it + ot + cr + cw
+                p = price_for(msg.get("model") or model)
+                cost_usd += (it * p["in"] + ot * p["out"] + cr * p["cr"] + cw * p["cw"]) / 1_000_000
             content = msg.get("content", "")
             if isinstance(content, list):
                 parts = []
@@ -144,6 +175,11 @@ payload = json.dumps({
     "summary": summary,
     "transcript": transcript,
     "token_count": total_tokens if total_tokens else None,
+    "input_tokens": input_tokens or None,
+    "output_tokens": output_tokens or None,
+    "cache_read_tokens": cache_read_tokens or None,
+    "cache_creation_tokens": cache_creation_tokens or None,
+    "cost_usd": round(cost_usd, 6) if cost_usd else None,
     "tags": None
 })
 

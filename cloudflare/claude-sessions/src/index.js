@@ -25,8 +25,8 @@ export default {
       const id = body.id || crypto.randomUUID();
 
       await env.DB.prepare(`
-        INSERT OR REPLACE INTO sessions (id, project, model, started_at, ended_at, duration_mins, summary, transcript, token_count, cost_usd, tags)
-        VALUES (?, ?, ?, ?, COALESCE(?, datetime('now')), ?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO sessions (id, project, model, started_at, ended_at, duration_mins, summary, transcript, token_count, cost_usd, tags, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens)
+        VALUES (?, ?, ?, ?, COALESCE(?, datetime('now')), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         id,
         body.project || null,
@@ -38,7 +38,11 @@ export default {
         body.transcript || null,
         body.token_count || null,
         body.cost_usd || null,
-        body.tags || null
+        body.tags || null,
+        body.input_tokens || null,
+        body.output_tokens || null,
+        body.cache_read_tokens || null,
+        body.cache_creation_tokens || null
       ).run();
 
       return json({ ok: true, id });
@@ -53,13 +57,13 @@ export default {
       const dateFrom = url.searchParams.get('from');
       const dateTo = url.searchParams.get('to');
 
-      let query = 'SELECT id, project, model, started_at, ended_at, duration_mins, summary, token_count, cost_usd, tags FROM sessions';
+      let query = 'SELECT id, project, model, started_at, ended_at, duration_mins, summary, token_count, cost_usd, tags, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens FROM sessions';
       let countQuery = 'SELECT COUNT(*) as total FROM sessions';
       const params = [];
       const countParams = [];
       const conditions = [];
 
-      if (project) {
+      if (project && project !== 'all') {
         conditions.push('project = ?');
         params.push(project);
         countParams.push(project);
@@ -156,18 +160,43 @@ export default {
     }
 
     // GET /stats — aggregate stats (only count reasonable durations < 24h)
+    // Optional ?project=<name> filter
     if (request.method === 'GET' && url.pathname === '/stats') {
-      const result = await env.DB.prepare(`
+      const project = url.searchParams.get('project');
+      const where = project ? 'WHERE project = ?' : '';
+      const stmt = env.DB.prepare(`
         SELECT
           COUNT(*) as total_sessions,
           SUM(token_count) as total_tokens,
+          SUM(input_tokens) as total_input_tokens,
+          SUM(output_tokens) as total_output_tokens,
+          SUM(cache_read_tokens) as total_cache_read_tokens,
+          SUM(cache_creation_tokens) as total_cache_creation_tokens,
           SUM(cost_usd) as total_cost,
           SUM(CASE WHEN duration_mins IS NOT NULL AND duration_mins < 1440 THEN duration_mins ELSE 0 END) as total_minutes,
           AVG(token_count) as avg_tokens,
           AVG(CASE WHEN duration_mins IS NOT NULL AND duration_mins < 1440 THEN duration_mins ELSE NULL END) as avg_duration
-        FROM sessions
-      `).first();
+        FROM sessions ${where}
+      `);
+      const result = await (project ? stmt.bind(project) : stmt).first();
       return json(result);
+    }
+
+    // GET /projects — list distinct projects with session counts
+    if (request.method === 'GET' && url.pathname === '/projects') {
+      const result = await env.DB.prepare(`
+        SELECT
+          project,
+          COUNT(*) as sessions,
+          SUM(token_count) as tokens,
+          SUM(cost_usd) as cost,
+          MAX(COALESCE(started_at, ended_at)) as last_seen
+        FROM sessions
+        WHERE project IS NOT NULL
+        GROUP BY project
+        ORDER BY last_seen DESC
+      `).all();
+      return json({ projects: result.results });
     }
 
     return json({ error: 'not found' }, 404);
