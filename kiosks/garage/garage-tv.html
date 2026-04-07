@@ -7,7 +7,7 @@
 <style>
   html,body { margin:0; height:100%; background:#000; color:#fff; font-family:-apple-system,system-ui,sans-serif; overflow:hidden; }
   .stage { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
-  .stage img { max-width:100%; max-height:100%; object-fit:contain; opacity:0; transition:opacity 1.2s ease; }
+  .stage img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.5s ease; }
   .stage img.on { opacity:1; }
   .caption {
     position:fixed; left:0; right:0; bottom:0;
@@ -33,9 +33,11 @@
 // Supabase with Artemis II photos from RVAULT20 manifest. Kept intentionally
 // tiny to fit the Pi Zero 2W's ~362 MB RAM budget.
 
-const MANIFEST_URL = '/artemis-ii/manifest.json';              // relative to this origin
-const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+// Photo sources: any number of manifest URLs (same-origin or absolute).
+const MANIFESTS = [
+  '/alpacas/manifest.json',     // Gemini-generated alpaca images (full-bleed favorites)
+  '/artemis-ii/manifest.json',  // NASA Artemis II multimedia
+];
 const INTERVAL_MS = 12000;
 const REFRESH_MS  = 60 * 60 * 1000;  // refresh photo list hourly
 
@@ -50,27 +52,15 @@ let hidden  = imgB;
 
 function showErr(msg) { errEl.textContent = msg || ''; }
 
-async function loadArtemis() {
+async function loadManifest(url) {
   try {
-    const r = await fetch(MANIFEST_URL, { cache: 'no-store' });
+    const r = await fetch(url, { cache: 'no-store' });
     if (!r.ok) return [];
     const m = await r.json();
-    return (m.items || []).filter(i => i.type === 'image').map(i => ({
-      url: i.url, caption: i.caption || '', credit: i.credit || 'NASA',
+    return (m.items || []).filter(i => i && i.url && (i.type ? i.type === 'image' : true)).map(i => ({
+      url: i.url, caption: i.caption || '', credit: i.credit || '',
     }));
-  } catch (e) { console.warn('artemis manifest fail', e); return []; }
-}
-
-async function loadHouse() {
-  try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/media?category=eq.mktg&is_archived=eq.false&select=url,caption&limit=200`,
-      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY } }
-    );
-    if (!r.ok) return [];
-    const data = await r.json();
-    return data.map(p => ({ url: p.url, caption: p.caption || '', credit: '' }));
-  } catch (e) { console.warn('house photos fail', e); return []; }
+  } catch (e) { console.warn('manifest fail', url, e); return []; }
 }
 
 function shuffle(a) {
@@ -82,12 +72,12 @@ function shuffle(a) {
 }
 
 async function refresh() {
-  const [artemis, house] = await Promise.all([loadArtemis(), loadHouse()]);
-  const merged = shuffle([...artemis, ...house]);
+  const lists = await Promise.all(MANIFESTS.map(loadManifest));
+  const merged = shuffle(lists.flat());
   if (merged.length) {
     photos = merged;
     idx = 0;
-    showErr(`${artemis.length} NASA + ${house.length} house`);
+    showErr(lists.map((l, i) => `${MANIFESTS[i].split('/')[1]}:${l.length}`).join(' '));
     setTimeout(() => showErr(''), 10000);
   } else {
     showErr('no photos available');
