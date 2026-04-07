@@ -17,7 +17,7 @@ const path = require('path');
 
 const ROOT = process.env.MEDIA_ROOT || '/Volumes/rvault20/media';
 const PORT = parseInt(process.env.PORT || '8200', 10);
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';
 
 const MIME = {
   '.json': 'application/json; charset=utf-8',
