@@ -1,12 +1,12 @@
 {
-  "version": "v260407.01 2:59p",
-  "release": 1272,
-  "sha": "4307dba98",
-  "fullSha": "4307dba98b7ffa25d5d3b9b4c883b46f7ae54eaf",
+  "version": "v260407.02 4:46p",
+  "release": 1273,
+  "sha": "9b4669cb9",
+  "fullSha": "9b4669cb9710e1d32ef056183941a7200f53db99",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-07T19:59:10+00:00",
-  "commits": [{"sha":"e744f709c","message":"garage mahal tv: NASA Artemis II photos in rotation","author":"Rahul"},{"sha":"19d838239","message":"feat: add 8 Austin-Houston corridor civil engineering firms to permit planning pages","author":"Jacqueline Giroux"},{"sha":"839b05b1d","message":"chore: bump version [skip ci]","author":"github-actions[bot]"},{"sha":"0d01e08df","message":"media-server: bind 0.0.0.0 by default so LAN clients can reach it","author":"Rahul"},{"sha":"4307dba98","message":"Merge pull request #112 from rsonnad/wonderful-williams","author":"Rahul"}]
+  "pushedAt": "2026-04-07T21:46:26+00:00",
+  "commits": [{"sha":"3d139ebc3","message":"Garage Mahal TV: full-bleed cover, multi-manifest, drop Supabase house photos","author":"Rahul"},{"sha":"9b4669cb9","message":"Merge pull request #113 from rsonnad/wonderful-williams","author":"Rahul"}]
 }
