@@ -1,12 +1,12 @@
 {
-  "version": "v260407.04 5:31p",
-  "release": 1275,
-  "sha": "bb9aee274",
-  "fullSha": "bb9aee274e5ce3729d235bd6ca7e2df6e7ec9a9e",
+  "version": "v260408.15 2:14p",
+  "release": 1292,
+  "sha": "af923bbf6",
+  "fullSha": "af923bbf65ac7e55609f950cf1d7a2bc8eeed259",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm727z3",
-  "pushedAt": "2026-04-07T22:31:23+00:00",
-  "commits": [{"sha":"bb9aee274","message":"claude-sessions: canonical project names + bulk JSONL backfill script","author":"Rahul"}]
+  "machine": "runnervm35a4x",
+  "pushedAt": "2026-04-08T19:14:25+00:00",
+  "commits": [{"sha":"af923bbf6","message":"phyprop: expand all structure details by default","author":"Rahul"}]
 }

@@ -12,6 +12,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) });
@@ -110,9 +111,9 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'Alpaca Team <team@alpacaplayhouse.com>',
+              from: SENDER_MAP.pai.from,
               to: [appUser.email, 'alpacaautomatic@gmail.com'],
-              reply_to: 'team@alpacaplayhouse.com',
+              reply_to: SENDER_MAP.pai.reply_to,
               subject: 'Reminder: Upload Before Photos for Your Work Session',
               html: buildHtml(firstName, 'clock_in', spaceName),
               text: buildText(firstName, 'clock_in', spaceName),
@@ -210,9 +211,9 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'Alpaca Team <team@alpacaplayhouse.com>',
+              from: SENDER_MAP.pai.from,
               to: [appUser.email, 'alpacaautomatic@gmail.com'],
-              reply_to: 'team@alpacaplayhouse.com',
+              reply_to: SENDER_MAP.pai.reply_to,
               subject: 'Reminder: Upload After Photos for Your Work Session',
               html: buildHtml(firstName, 'clock_out', spaceName),
               text: buildText(firstName, 'clock_out', spaceName),

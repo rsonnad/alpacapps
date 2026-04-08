@@ -20,6 +20,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 
 const PAYMENTS_EMAIL = 'payments@alpacaplayhouse.com';
 
@@ -351,9 +352,9 @@ Alpaca Playhouse`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Team <team@alpacaplayhouse.com>',
+        from: SENDER_MAP.pai.from,
         to: [person.email],
-        reply_to: 'team@alpacaplayhouse.com',
+        reply_to: SENDER_MAP.pai.reply_to,
         subject: `Payment Received - ${formatCurrency(row.amount)} - Alpaca Playhouse`,
         html: emailHtml,
         text: emailText,
@@ -378,7 +379,8 @@ Alpaca Playhouse`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca System <auto@alpacaplayhouse.com>',
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
         to: [PAYMENTS_EMAIL],
         subject: `[Stripe] ${formatCurrency(row.amount)} received from ${person.first_name} ${person.last_name} - ${paymentTypeLabel}`,
         html: emailHtml,

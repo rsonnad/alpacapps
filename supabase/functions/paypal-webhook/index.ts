@@ -30,6 +30,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 
 interface PayPalWebhookEvent {
   id: string;
@@ -602,7 +603,8 @@ async function notifyUnknownEvent(event: PayPalWebhookEvent) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Payments <noreply@alpacaplayhouse.com>',
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
         to: ['alpacaplayhouse@gmail.com'],
         subject: `Unknown PayPal Event: ${event.event_type}`,
         html: `

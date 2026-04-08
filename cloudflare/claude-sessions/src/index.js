@@ -163,7 +163,8 @@ export default {
     // Optional ?project=<name> filter
     if (request.method === 'GET' && url.pathname === '/stats') {
       const project = url.searchParams.get('project');
-      const where = project ? 'WHERE project = ?' : '';
+      const useFilter = project && project !== 'all';
+      const where = useFilter ? 'WHERE project = ?' : '';
       const stmt = env.DB.prepare(`
         SELECT
           COUNT(*) as total_sessions,
@@ -178,7 +179,7 @@ export default {
           AVG(CASE WHEN duration_mins IS NOT NULL AND duration_mins < 1440 THEN duration_mins ELSE NULL END) as avg_duration
         FROM sessions ${where}
       `);
-      const result = await (project ? stmt.bind(project) : stmt).first();
+      const result = await (useFilter ? stmt.bind(project) : stmt).first();
       return json(result);
     }
 
