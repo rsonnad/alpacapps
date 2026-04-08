@@ -2,21 +2,28 @@
 /**
  * fetch-artemis-ii.js
  *
- * Scrape https://www.nasa.gov/artemis-ii-multimedia/ for images (and videos),
- * download originals to a target directory, and write a manifest.json that the
- * Garage Mahal TV slideshow loader can consume.
+ * Pulls Artemis II images from NASA's Image Library API
+ * (https://images-api.nasa.gov/) — clean, official, high-resolution.
+ * Replaces an earlier HTML-scraping approach that pulled in unrelated
+ * sidebar/teaser images (Earth Observatory Image of the Day, etc).
+ *
+ * For each search hit:
+ *   1. Fetch the asset collection.json which lists all renditions
+ *   2. Pick the "~orig" (or largest available) image
+ *   3. Download to OUT_DIR/images/<nasa_id>.<ext>
+ *   4. Stash original in originals/ and downscale image to MAX_DIM via sips
  *
  * Output layout (default OUT_DIR=/Volumes/rvault20/media/artemis-ii):
- *   OUT_DIR/images/<file>.jpg
- *   OUT_DIR/videos/<file>.mp4
- *   OUT_DIR/manifest.json   ->   { generated_at, source, items: [{type,url,caption,credit}] }
+ *   OUT_DIR/images/<file>.jpg              (downscaled, served to TVs)
+ *   OUT_DIR/originals/<file>.jpg           (full-res archive)
+ *   OUT_DIR/manifest.json                  ({ generated_at, items: [{type,url,caption,credit}] })
  *
- * The `url` field in the manifest is rewritten to point at the HTTP server that
- * serves OUT_DIR. Set BASE_URL to control that prefix
- * (default http://192.168.1.200:8088/artemis-ii).
+ * The `url` field in the manifest is rewritten to BASE_URL so the static
+ * media server on Alpuca can serve it (default
+ * http://192.168.1.200:8200/artemis-ii).
  *
- * Run on Alpuca so the writes hit the locally-mounted RVAULT20:
- *   ssh almaca "cd /path/to/repo && node scripts/fetch-artemis-ii.js"
+ * Run on Alpuca so writes hit the locally-mounted RVAULT20:
+ *   ssh paca@192.168.1.200 "node /Users/alpuca/bin/fetch-artemis-ii.js"
  *
  * Re-runs are idempotent: existing files are skipped.
  */
@@ -24,23 +31,23 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const http = require('http');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 const { URL } = require('url');
 
-const SOURCE = process.env.SOURCE_URL || 'https://www.nasa.gov/artemis-ii-multimedia/';
+const QUERIES = (process.env.QUERIES || 'Artemis II').split('|');
+const MAX_PAGES = parseInt(process.env.MAX_PAGES || '3', 10);
+const TITLE_MODE = process.env.TITLE_MODE !== '0';
 const OUT_DIR = process.env.OUT_DIR || '/Volumes/rvault20/media/artemis-ii';
-const BASE_URL = (process.env.BASE_URL || 'http://192.168.1.200:8088/artemis-ii').replace(/\/$/, '');
-const MAX_PAGES = parseInt(process.env.MAX_PAGES || '20', 10);
-const MAX_DIM   = parseInt(process.env.MAX_DIM   || '2560', 10);  // resized output dimension; 0 = keep originals
-const UA = 'AlpacAppsArtemisFetch/1.0 (+https://alpacaplayhouse.com)';
-
-const IMG_EXT = /\.(jpe?g|png|webp|gif)(\?|$)/i;
-const VID_EXT = /\.(mp4|mov|m4v)(\?|$)/i;
+const BASE_URL = (process.env.BASE_URL || 'http://192.168.1.200:8200/artemis-ii').replace(/\/$/, '');
+const MAX_DIM = parseInt(process.env.MAX_DIM || '2560', 10); // 0 = keep originals only
+const UA = 'AlpacAppsArtemisFetch/2.0 (+https://alpacaplayhouse.com)';
 
 function get(url, redirects = 5) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { headers: { 'User-Agent': UA, Accept: '*/*' } }, (res) => {
+    const lib = url.startsWith('http:') ? http : https;
+    const req = lib.get(url, { headers: { 'User-Agent': UA, Accept: '*/*' } }, (res) => {
       if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirects > 0) {
         res.resume();
         const next = new URL(res.headers.location, url).toString();
@@ -59,11 +66,11 @@ function get(url, redirects = 5) {
   });
 }
 
-async function getText(url) {
+async function getJSON(url) {
   const res = await get(url);
   const chunks = [];
   for await (const c of res) chunks.push(c);
-  return Buffer.concat(chunks).toString('utf8');
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
 async function download(url, dest) {
@@ -82,188 +89,137 @@ async function download(url, dest) {
   return true;
 }
 
-function absolutize(href, base) {
-  try { return new URL(href, base).toString(); } catch { return null; }
+function safeName(nasaId, ext) {
+  const cleaned = String(nasaId).replace(/[^A-Za-z0-9._-]/g, '_');
+  return cleaned + ext;
 }
 
-// Upgrade NASA URLs to the highest-resolution variant we can guess.
-//   1. Strip ?w=… / ?h=… / fit=clip query strings (NASA's proxy honors these)
-//   2. Strip WordPress srcset sizing suffix "-1024x576"
-//   3. images-assets.nasa.gov/.../{id}~large.jpg  →  …{id}~orig.jpg
-function stripWpSizes(u) {
-  if (!u) return u;
-  let out = u.replace(/&amp;/g, '&').split('#')[0].split('?')[0];
-  out = out.replace(/-\d+x\d+(?=\.[a-z0-9]+$)/i, '');
-  out = out.replace(/(images-assets\.nasa\.gov\/[^\s]*?)~(large|medium|small|thumb)(\.[a-z0-9]+)$/i, '$1~orig$3');
-  return out;
-}
-
-function safeName(u) {
-  const p = new URL(u).pathname.split('/').pop() || 'file';
-  const cleaned = p.replace(/[^A-Za-z0-9._-]/g, '_');
-  // Prefix with a short hash of the full URL path to avoid basename collisions
-  // (NASA wp-uploads has many same-named files in different month dirs).
-  const hash = crypto.createHash('sha1').update(new URL(u).pathname).digest('hex').slice(0, 8);
-  return `${hash}-${cleaned}`;
-}
-
-// Extract media URLs + nearby caption/credit from a page's HTML.
-function extractMedia(html, baseUrl) {
-  const items = new Map(); // url -> { type, caption, credit }
-
-  const addImg = (raw, caption, credit) => {
-    if (!raw) return;
-    const cleaned = stripWpSizes(absolutize(raw, baseUrl) || '');
-    if (!cleaned || !IMG_EXT.test(cleaned)) return;
-    // Skip site chrome (logos, theme assets, icons, avatars)
-    if (/\/wp-content\/(themes|plugins)\//i.test(cleaned)) return;
-    if (/\b(logo|sprite|icon|favicon|avatar|placeholder)\b/i.test(cleaned)) return;
-    if (!items.has(cleaned)) items.set(cleaned, { type: 'image', caption: caption || '', credit: credit || '' });
-  };
-  const addVid = (raw, caption, credit) => {
-    if (!raw) return;
-    const cleaned = absolutize(raw, baseUrl);
-    if (!cleaned || !VID_EXT.test(cleaned)) return;
-    if (!items.has(cleaned)) items.set(cleaned, { type: 'video', caption: caption || '', credit: credit || '' });
-  };
-
-  // <img src=... alt=...> and srcset entries
-  const imgRe = /<img\b[^>]*>/gi;
-  let m;
-  while ((m = imgRe.exec(html))) {
-    const tag = m[0];
-    const src = (tag.match(/\bsrc=["']([^"']+)["']/i) || [])[1];
-    const dataSrc = (tag.match(/\bdata-(?:src|lazy-src|original)=["']([^"']+)["']/i) || [])[1];
-    const srcset = (tag.match(/\bsrcset=["']([^"']+)["']/i) || [])[1];
-    const alt = (tag.match(/\balt=["']([^"']*)["']/i) || [])[1] || '';
-    addImg(dataSrc || src, alt);
-    if (srcset) {
-      // Pick the largest from srcset
-      const parts = srcset.split(',').map(s => s.trim().split(/\s+/));
-      let best = null, bestW = 0;
-      for (const [u, w] of parts) {
-        const wn = parseInt((w || '').replace(/\D/g, ''), 10) || 0;
-        if (wn >= bestW) { bestW = wn; best = u; }
-      }
-      if (best) addImg(best, alt);
+// Walk a search result page (paginated). Returns Set of nasa_ids.
+async function searchAll(query) {
+  const ids = new Set();
+  const items = [];
+  const param = TITLE_MODE ? 'title' : 'q';
+  let url = `https://images-api.nasa.gov/search?${param}=${encodeURIComponent(query)}&media_type=image`;
+  let page = 0;
+  while (url && page < MAX_PAGES) {
+    page++;
+    let body;
+    try {
+      console.log(`[artemis] search "${query}" page ${page}`);
+      body = await getJSON(url);
+    } catch (e) {
+      console.warn('[artemis] search failed:', e.message);
+      break;
     }
+    const collection = body.collection || {};
+    for (const it of (collection.items || [])) {
+      const data = (it.data && it.data[0]) || {};
+      if (!data.nasa_id || ids.has(data.nasa_id)) continue;
+      ids.add(data.nasa_id);
+      items.push({
+        nasa_id: data.nasa_id,
+        title: data.title || '',
+        description: data.description || '',
+        photographer: data.photographer || data.secondary_creator || 'NASA',
+        date_created: data.date_created || '',
+        center: data.center || '',
+        href: it.href, // collection.json URL
+      });
+    }
+    const next = (collection.links || []).find(l => l.rel === 'next');
+    url = next ? next.href : null;
   }
-
-  // <a href="...jpg|png|mp4"> direct links
-  const aRe = /<a\b[^>]*href=["']([^"']+)["'][^>]*>/gi;
-  while ((m = aRe.exec(html))) {
-    const href = m[1];
-    if (IMG_EXT.test(href)) addImg(href, '');
-    else if (VID_EXT.test(href)) addVid(href, '');
-  }
-
-  // <video><source src="..."></video>
-  const srcRe = /<source\b[^>]*src=["']([^"']+)["'][^>]*>/gi;
-  while ((m = srcRe.exec(html))) {
-    if (VID_EXT.test(m[1])) addVid(m[1], '');
-  }
-
   return items;
 }
 
-// Find pagination links (e.g. ?page=2 or /page/2/) on a NASA gallery page.
-function extractPaginationLinks(html, baseUrl) {
-  const links = new Set();
-  const re = /<a\b[^>]*href=["']([^"']+)["'][^>]*>/gi;
-  let m;
-  while ((m = re.exec(html))) {
-    const href = m[1];
-    if (/[?&]page=\d+/i.test(href) || /\/page\/\d+\/?/.test(href)) {
-      const abs = absolutize(href, baseUrl);
-      if (abs && abs.startsWith('https://www.nasa.gov/')) links.add(abs);
-    }
+// Pick the highest-resolution rendition from an asset collection.json.
+function pickBestRendition(assetCollection) {
+  // Asset collection.json is a flat array of URL strings.
+  let urls = [];
+  if (Array.isArray(assetCollection)) {
+    urls = assetCollection.filter(u => typeof u === 'string');
+  } else {
+    const items = (assetCollection.collection && assetCollection.collection.items) || [];
+    urls = items.map(i => i.href).filter(Boolean);
   }
-  return [...links];
+  urls = urls.filter(u => /\.(jpe?g|png|tif|tiff)(\?|$)/i.test(u));
+  // Preference order: ~orig > ~large > ~medium > ~small > ~thumb
+  const rank = u => {
+    if (/~orig\./i.test(u)) return 0;
+    if (/~large\./i.test(u)) return 1;
+    if (/~medium\./i.test(u)) return 2;
+    if (/~small\./i.test(u)) return 3;
+    if (/~thumb\./i.test(u)) return 4;
+    return 5;
+  };
+  urls.sort((a, b) => rank(a) - rank(b));
+  return urls[0] || null;
 }
 
 (async () => {
-  console.log('[artemis] source =', SOURCE);
-  console.log('[artemis] out    =', OUT_DIR);
-  console.log('[artemis] base   =', BASE_URL);
+  console.log('[artemis] queries =', QUERIES);
+  console.log('[artemis] out     =', OUT_DIR);
+  console.log('[artemis] base    =', BASE_URL);
   fs.mkdirSync(path.join(OUT_DIR, 'images'), { recursive: true });
-  fs.mkdirSync(path.join(OUT_DIR, 'videos'), { recursive: true });
 
-  const seenPages = new Set();
-  const queue = [SOURCE];
-  const all = new Map();
+  // 1. Run all searches, dedupe by nasa_id
+  const byId = new Map();
+  for (const q of QUERIES) {
+    const items = await searchAll(q);
+    for (const it of items) if (!byId.has(it.nasa_id)) byId.set(it.nasa_id, it);
+  }
+  console.log(`[artemis] ${byId.size} unique NASA images across ${QUERIES.length} search(es)`);
 
-  while (queue.length && seenPages.size < MAX_PAGES) {
-    const pageUrl = queue.shift();
-    if (seenPages.has(pageUrl)) continue;
-    seenPages.add(pageUrl);
-    let html;
+  // 2. For each, fetch asset manifest and pick best rendition
+  const manifestItems = [];
+  let dl = 0, skip = 0, fail = 0;
+  for (const it of byId.values()) {
+    let bestUrl;
     try {
-      console.log('[artemis] fetch page', pageUrl);
-      html = await getText(pageUrl);
+      const asset = await getJSON(it.href);
+      bestUrl = pickBestRendition(asset);
     } catch (e) {
-      console.warn('[artemis] page failed:', pageUrl, e.message);
+      console.warn('[artemis] asset fetch failed:', it.nasa_id, e.message);
+      fail++;
       continue;
     }
-    const found = extractMedia(html, pageUrl);
-    for (const [u, meta] of found) if (!all.has(u)) all.set(u, meta);
-    for (const next of extractPaginationLinks(html, pageUrl)) {
-      if (!seenPages.has(next)) queue.push(next);
-    }
-  }
-
-  console.log(`[artemis] discovered ${all.size} media items across ${seenPages.size} page(s)`);
-
-  const manifestItems = [];
-  let dlCount = 0, skipCount = 0, failCount = 0;
-
-  for (const [url, meta] of all) {
-    const isVideo = meta.type === 'video';
-    const subdir = isVideo ? 'videos' : 'images';
-    const name = safeName(url);
-    const dest = path.join(OUT_DIR, subdir, name);
+    if (!bestUrl) { fail++; continue; }
+    const ext = path.extname(new URL(bestUrl).pathname).toLowerCase() || '.jpg';
+    const name = safeName(it.nasa_id, ext);
+    const dest = path.join(OUT_DIR, 'images', name);
     try {
-      const downloaded = await download(url, dest);
-      if (downloaded) dlCount++; else skipCount++;
+      const downloaded = await download(bestUrl, dest);
+      if (downloaded) dl++; else skip++;
       manifestItems.push({
-        type: meta.type,
-        url: `${BASE_URL}/${subdir}/${name}`,
-        caption: meta.caption || '',
-        credit: meta.credit || '',
-        source: url,
+        type: 'image',
+        url: `${BASE_URL}/images/${name}`,
+        caption: it.title,
+        credit: it.photographer,
+        date: it.date_created,
+        center: it.center,
+        nasa_id: it.nasa_id,
+        source: bestUrl,
       });
     } catch (e) {
-      failCount++;
-      console.warn('[artemis] download failed:', url, e.message);
+      fail++;
+      console.warn('[artemis] download failed:', bestUrl, e.message);
     }
   }
 
-  // Dedupe manifest entries by output URL (multiple source URLs can map to the
-  // same destination file after stripWpSizes/hash collapse).
-  const seenUrls = new Set();
-  const dedupedItems = [];
-  for (const it of manifestItems) {
-    if (seenUrls.has(it.url)) continue;
-    seenUrls.add(it.url);
-    dedupedItems.push(it);
-  }
-
+  // 3. Write manifest
   const manifest = {
     generated_at: new Date().toISOString(),
-    source: SOURCE,
+    source: 'https://images-api.nasa.gov/search?q=Artemis%20II&media_type=image',
     base_url: BASE_URL,
-    counts: {
-      total: dedupedItems.length,
-      images: dedupedItems.filter(i => i.type === 'image').length,
-      videos: dedupedItems.filter(i => i.type === 'video').length,
-    },
-    items: dedupedItems,
+    counts: { total: manifestItems.length, images: manifestItems.length, videos: 0 },
+    items: manifestItems,
   };
   const manifestPath = path.join(OUT_DIR, 'manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   console.log(`[artemis] wrote ${manifestPath}`);
+  console.log(`[artemis] downloaded=${dl} skipped=${skip} failed=${fail}`);
 
-  // Stash originals + downscale images for low-power displays (Pi Zero 2W).
-  // macOS-only via `sips`. Set MAX_DIM=0 to skip.
+  // 4. Stash originals and downscale to MAX_DIM (macOS sips). MAX_DIM=0 to skip.
   if (MAX_DIM > 0 && process.platform === 'darwin') {
     const origDir = path.join(OUT_DIR, 'originals');
     fs.mkdirSync(origDir, { recursive: true });
@@ -277,7 +233,6 @@ function extractPaginationLinks(html, baseUrl) {
         resized++;
       } catch (e) { /* sips not present or non-image */ }
     }
-    console.log(`[artemis] resized ${resized} images to max ${MAX_DIM}px (originals in originals/)`);
+    console.log(`[artemis] resized ${resized} images to max ${MAX_DIM}px`);
   }
-  console.log(`[artemis] downloaded=${dlCount} skipped=${skipCount} failed=${failCount}`);
 })().catch((e) => { console.error(e); process.exit(1); });
