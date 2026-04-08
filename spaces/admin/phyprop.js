@@ -293,7 +293,7 @@ async function loadStructures() {
       </div>`;
 
       // Children container
-      out += `<div id="${groupId}" class="pp-tree-children">`;
+      out += `<div id="${groupId}" class="pp-tree-children open">`;
 
       // Render structures under this space
       matched.forEach(s => { out += renderStructureRow(s, depth + 1); });
@@ -408,7 +408,7 @@ async function loadStructures() {
         ['Updated', fmtDate(s.updated_at)],
       ];
 
-      out += `<div id="${detailId}" class="pp-tree-detail" style="padding-left:${1 + (depth + 1) * 1.25}rem">
+      out += `<div id="${detailId}" class="pp-tree-detail open" style="padding-left:${1 + (depth + 1) * 1.25}rem">
         <dl class="pp-tree-detail-grid">
           ${fields.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}
         </dl>
