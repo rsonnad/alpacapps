@@ -1,12 +1,12 @@
 {
-  "version": "v260408.12 1:53p",
-  "release": 1289,
-  "sha": "f106ef5fb",
-  "fullSha": "f106ef5fb099e4c8a2343c8e9f61d4fec680240f",
-  "actor": "jackie61899280",
+  "version": "v260408.13 1:56p",
+  "release": 1290,
+  "sha": "7209d2bef",
+  "fullSha": "7209d2bef464cd2c9a59b8fa1667dc02110c4b0e",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-08T18:53:25+00:00",
-  "commits": [{"sha":"9e1384827","message":"fix(permitting): repair broken action buttons + add document review page","author":"Jacqueline Giroux"},{"sha":"f106ef5fb","message":"merge: fix permitting plan action buttons + add document review page","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-04-08T18:56:27+00:00",
+  "commits": [{"sha":"7209d2bef","message":"phyprop: show all structure fields in detail panel","author":"Rahul"}]
 }
