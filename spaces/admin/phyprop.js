@@ -445,7 +445,7 @@ const STORAGE_BASE = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object
 const SURVEY_PLATS = [
   {
     title: 'Land Title Survey — 2025 Update',
-    description: '4Ward Land Surveying (Jason Ward, R.P.L.S. #5811). Shows all current structures including trailers, shipping containers, pool, main house, back house. Lot 14-B, Block 6, Blue Bonnet Acres.',
+    description: '4Ward Land Surveying (Jason Ward, R.P.L.S. #5811). Shows all current structures including trailers, shipping containers, pond, main house, back house. Lot 14-B, Block 6, Blue Bonnet Acres.',
     url: '../../jackie/pages/permittingplan/survey-ward-2025.png',
     date: '2025',
     tags: ['survey', 'current', '4Ward'],
