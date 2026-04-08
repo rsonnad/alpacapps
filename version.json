@@ -1,12 +1,12 @@
 {
-  "version": "v260407.06 5:37p",
-  "release": 1277,
-  "sha": "eac0d9b60",
-  "fullSha": "eac0d9b600ebed4482e57f79cd826c13b4b987d3",
+  "version": "v260408.01 12:19p",
+  "release": 1278,
+  "sha": "3500ed8a9",
+  "fullSha": "3500ed8a9eedd9fa515a535a3a6a309cc54ad988",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-07T22:37:34+00:00",
-  "commits": [{"sha":"bcca172d1","message":"fetch-artemis-ii: hi-res URLs (~orig + strip ?w= query) + downscale to 2560px","author":"Rahul"},{"sha":"eac0d9b60","message":"Merge pull request #114 from rsonnad/wonderful-williams","author":"Rahul"}]
+  "pushedAt": "2026-04-08T17:19:56+00:00",
+  "commits": [{"sha":"3500ed8a9","message":"PhyProp: add Permitting Plan subtab, move subtabs above title","author":"Rahul"}]
 }
