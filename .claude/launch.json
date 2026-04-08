@@ -8,6 +8,12 @@
       "port": 8090
     },
     {
+      "name": "worktree-practical-goldwasser",
+      "runtimeExecutable": "/opt/homebrew/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "8093", "--directory", "/Users/jacquelinegiroux/alpacapps/.claude/worktrees/practical-goldwasser"],
+      "port": 8093
+    },
+    {
       "name": "mistiq-cards",
       "runtimeExecutable": "/opt/homebrew/bin/python3",
       "runtimeArgs": ["-m", "http.server", "8092", "--directory", "/Users/rahulio/Documents/CodingProjects/genalpaca-admin/.claude/worktrees/optimistic-sammet/mistiq"],

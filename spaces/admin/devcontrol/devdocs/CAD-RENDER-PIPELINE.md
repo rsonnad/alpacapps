@@ -434,9 +434,9 @@ The following tasks should be created in the `tasks` table for on-site data coll
 ```sql
 INSERT INTO tasks (title, notes, description, priority, location_label, status) VALUES
 (
-  'Photograph all 14 structures (4+ angles each)',
+  'Photograph all 13 structures (4+ angles each)',
   'Front/back/left/right + material close-up for each structure',
-  'For 3D property render pipeline. Name files: {structure_name}_{angle}.jpg (e.g., main_house_front.jpg). Structures to photograph: Main House, Back House, Big Trailer, Small Trailer, Red Container #1, Red Container #2, Container #3, Beige Container, Deck, Sauna, Bathroom Building, Pool, Driveway/Gravel areas. See docs/CAD-RENDER-PIPELINE.md Phase 1A for full requirements.',
+  'For 3D property render pipeline. Name files: {structure_name}_{angle}.jpg (e.g., main_house_front.jpg). Structures to photograph: Main House, Back House, Big Trailer, Small Trailer, Red Container #1, Container #3, Beige Container, Deck, Sauna, Bathroom Building, Pond, Hot Tub, Driveway/Gravel areas. See docs/CAD-RENDER-PIPELINE.md Phase 1A for full requirements.',
   2,
   '160 Still Forest Dr',
   'open'

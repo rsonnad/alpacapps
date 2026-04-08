@@ -250,12 +250,8 @@ STRUCTURES = {
     4: {'along': 260, 'perp': 6, 'length': 40, 'width': 8, 'align': 'west',
         'name': 'Red Container #1'},
 
-    # Red Container #2 — 2 ft from W line, adjacent to #1
-    5: {'along': 270, 'perp': 16, 'length': 40, 'width': 8, 'align': 'west',
-        'name': 'Red Container #2'},
-
     # Container #3 — 5 ft from W line
-    6: {'along': 280, 'perp': 9, 'length': 40, 'width': 8, 'align': 'west',
+    5: {'along': 280, 'perp': 9, 'length': 40, 'width': 8, 'align': 'west',
         'name': 'Container #3'},
 
     # Deck — attached to south side of main house
@@ -279,9 +275,9 @@ STRUCTURES = {
     11: {'along': 210, 'perp': 78, 'length': 7, 'width': 7, 'align': 'west',
          'name': 'Sauna'},
 
-    # Swimming Pool — south of main house, per survey visible as oval
+    # Pond — front (south) of main house, per survey visible as oval
     12: {'along': 240, 'perp': 110, 'type': 'oval', 'rx': 20, 'ry': 10,
-         'name': 'Swimming Pool'},
+         'name': 'Pond'},
 
     # Gravel Driveway — from S edge curving up
     13: {'type': 'driveway', 'name': 'Gravel Driveway'},

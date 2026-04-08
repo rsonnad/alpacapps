@@ -308,14 +308,14 @@ Database (Supabase PostGIS)
 
 **Parcel:** 160 Still Forest Dr — 1.7348 acres, 4 edges, 1 road frontage (south)
 
-**11 Structures:**
+**10 Structures:**
 - 5 compliant (Main House, Back House, Deck, Sauna, Bathroom Bldg*)
-- 6 violations (Big Trailer, Red Container #1, Red Container #2, Container #3, Beige Container, Small Trailer)
+- 5 violations (Big Trailer, Red Container #1, Container #3, Beige Container, Small Trailer)
 - *Bathroom Bldg is setback-compliant but unpermitted
 
 **4 Utilities:** Water (well), Wastewater (aerobic OSSF), Electric (Bluebonnet), Fire Protection (none — tank required)
 
-**Impervious Cover:** 4 containers × 320 SF = 1,280 SF tracked
+**Impervious Cover:** 3 containers × 320 SF = 960 SF tracked
 
 ---
 
