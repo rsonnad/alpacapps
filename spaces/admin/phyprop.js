@@ -198,7 +198,7 @@ async function loadStructures() {
   try {
     const [{ data: structures }, { data: spaces }] = await Promise.all([
       supabase.from('structures')
-        .select('*, structure_setbacks(*, edge:edge_id(edge_side, edge_label))')
+        .select('*, structure_setbacks(*, edge:edge_id(edge_side, edge_label)), structure_rooms(*)')
         .order('name'),
       supabase.from('spaces')
         .select('id, name, type, parent_id, is_archived')
@@ -217,17 +217,22 @@ async function loadStructures() {
     const topSpaces = (spaces || []).filter(sp => !sp.parent_id);
     const childSpacesOf = (parentId) => (spaces || []).filter(sp => sp.parent_id === parentId);
 
-    // Match structures to spaces by fuzzy name matching
+    // Match structures to spaces by explicit space_id, fall back to fuzzy name match.
+    // The friendly name shown is the linked space's name when available.
     const structuresBySpace = {};
     const unmatched = [];
     structures.forEach(s => {
-      const nameLower = (s.name || '').toLowerCase();
-      const match = (spaces || []).find(sp => {
-        const spLower = sp.name.toLowerCase();
-        return spLower === nameLower || nameLower.includes(spLower) || spLower.includes(nameLower);
-      });
+      let match = s.space_id ? spaceMap[s.space_id] : null;
+      if (!match) {
+        const nameLower = (s.name || '').toLowerCase();
+        match = (spaces || []).find(sp => {
+          const spLower = sp.name.toLowerCase();
+          return spLower === nameLower || nameLower.includes(spLower) || spLower.includes(nameLower);
+        });
+      }
       if (match) {
         if (!structuresBySpace[match.id]) structuresBySpace[match.id] = [];
+        s._friendlySpace = match;
         structuresBySpace[match.id].push(s);
       } else {
         unmatched.push(s);
@@ -288,11 +293,16 @@ async function loadStructures() {
       const dims = [s.width_ft, s.length_ft].filter(Boolean).join(' × ');
       const dimsStr = dims ? `${dims} ft` : '';
 
+      const friendly = s._friendlySpace?.name;
+      const displayName = friendly && friendly.toLowerCase() !== (s.name || '').toLowerCase()
+        ? `${esc(friendly)} <span style="color:var(--text-muted);font-weight:400;font-size:0.8125rem;">(${esc(s.name)})</span>`
+        : esc(s.name);
+
       let out = `<div class="pp-tree-row" onclick="document.getElementById('${detailId}').classList.toggle('open');this.querySelector('.pp-tree-arrow').classList.toggle('open')">
         ${indent}
         <span class="pp-tree-arrow">&#9654;</span>
         <span class="pp-compliance-dot ${compClass}"></span>
-        <span class="pp-tree-name">${esc(s.name)}</span>
+        <span class="pp-tree-name">${displayName}</span>
         <span class="pp-tree-badges">
           ${badge(s.structure_type || '--', 'blue')}
           ${badge(s.permit_status || '?', permitColors[s.permit_status] || 'gray')}
@@ -311,8 +321,26 @@ async function loadStructures() {
         return `${sb.measured_distance_ft}′ to ${esc(edgeLabel)} (req ${sb.required_distance_ft}′) ${sb.is_compliant ? '✓' : '✗'}`;
       });
 
+      const rooms = (s.structure_rooms || []).slice().sort((a,b) => (a.sort_order||0) - (b.sort_order||0) || a.name.localeCompare(b.name));
+      const roomsHtml = rooms.length
+        ? `<table class="pp-table" style="margin-top:0.5rem;font-size:0.8125rem;">
+            <thead><tr><th>Room</th><th>Dimensions</th><th>Materials</th><th>Notes</th><th></th></tr></thead>
+            <tbody>${rooms.map(r => {
+              const rdims = [r.length_ft, r.width_ft, r.height_ft].filter(Boolean).join(' × ');
+              return `<tr>
+                <td style="font-weight:500;">${esc(r.name)}</td>
+                <td>${rdims ? esc(rdims) + ' ft' : '--'}</td>
+                <td>${esc(r.primary_materials || '--')}</td>
+                <td style="color:var(--text-muted);">${esc(r.notes || '')}</td>
+                <td style="text-align:right;"><a href="#" onclick="event.preventDefault();event.stopPropagation();editRoom('${r.id}')" style="font-size:0.75rem;">edit</a> · <a href="#" onclick="event.preventDefault();event.stopPropagation();deleteRoom('${r.id}')" style="font-size:0.75rem;color:#b91c1c;">×</a></td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table>`
+        : '<div style="color:var(--text-muted);font-size:0.8125rem;margin-top:0.5rem;">No rooms recorded.</div>';
+
       out += `<div id="${detailId}" class="pp-tree-detail" style="padding-left:${1 + (depth + 1) * 1.25}rem">
         <dl class="pp-tree-detail-grid">
+          <dt>Category</dt><dd>${esc(s.category || '--')} <a href="#" onclick="event.preventDefault();event.stopPropagation();editCategory(${s.id}, ${JSON.stringify(s.category||'').replace(/"/g,'&quot;')})" style="font-size:0.7rem;">edit</a></dd>
           <dt>Type</dt><dd>${esc(s.structure_type || '--')}</dd>
           <dt>Use</dt><dd>${esc(s.use_type || '--')}</dd>
           <dt>Dimensions</dt><dd>${dims ? `${dims}${s.height_ft ? ` × ${s.height_ft} H` : ''} ft` : '--'}</dd>
@@ -331,6 +359,13 @@ async function loadStructures() {
         ${setbacks.length ? `<div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted);">
           <strong>Setback Measurements:</strong> ${setbacks.join(' · ')}
         </div>` : ''}
+        <div style="margin-top:0.75rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem;">
+            <strong style="font-size:0.8125rem;">Rooms (${rooms.length})</strong>
+            <a href="#" onclick="event.preventDefault();event.stopPropagation();addRoom(${s.id})" style="font-size:0.75rem;">+ Add room</a>
+          </div>
+          ${roomsHtml}
+        </div>
       </div>`;
 
       return out;
@@ -526,3 +561,62 @@ async function loadRenderingsTab() {
 
   el.innerHTML = allRenderings.map(r => renderCard(r)).join('');
 }
+
+// =============================================
+// STRUCTURE EDIT — Rooms + Category (admin)
+// =============================================
+
+async function refreshStructures() {
+  loadedTabs.delete('structures');
+  await loadStructures();
+}
+
+window.addRoom = async function(structureId) {
+  const name = prompt('Room name:');
+  if (!name) return;
+  const length_ft = parseFloat(prompt('Length (ft):') || '') || null;
+  const width_ft = parseFloat(prompt('Width (ft):') || '') || null;
+  const height_ft = parseFloat(prompt('Height (ft):') || '') || null;
+  const primary_materials = prompt('Primary materials (comma-separated, e.g. tile, wood, cork):') || null;
+  const notes = prompt('Notes (optional):') || null;
+  const { error } = await supabase.from('structure_rooms').insert({
+    structure_id: structureId, name, length_ft, width_ft, height_ft, primary_materials, notes,
+  });
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Room added', 'success');
+  await refreshStructures();
+};
+
+window.editRoom = async function(roomId) {
+  const { data: r, error } = await supabase.from('structure_rooms').select('*').eq('id', roomId).single();
+  if (error || !r) { showToast('Could not load room', 'error'); return; }
+  const name = prompt('Room name:', r.name); if (name === null) return;
+  const length_ft = parseFloat(prompt('Length (ft):', r.length_ft ?? '') || '') || null;
+  const width_ft = parseFloat(prompt('Width (ft):', r.width_ft ?? '') || '') || null;
+  const height_ft = parseFloat(prompt('Height (ft):', r.height_ft ?? '') || '') || null;
+  const primary_materials = prompt('Primary materials (comma-separated):', r.primary_materials ?? '');
+  const notes = prompt('Notes:', r.notes ?? '');
+  const { error: uErr } = await supabase.from('structure_rooms').update({
+    name, length_ft, width_ft, height_ft, primary_materials: primary_materials || null, notes: notes || null, updated_at: new Date().toISOString(),
+  }).eq('id', roomId);
+  if (uErr) { showToast('Error: ' + uErr.message, 'error'); return; }
+  showToast('Room updated', 'success');
+  await refreshStructures();
+};
+
+window.deleteRoom = async function(roomId) {
+  if (!confirm('Delete this room?')) return;
+  const { error } = await supabase.from('structure_rooms').delete().eq('id', roomId);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Room deleted', 'success');
+  await refreshStructures();
+};
+
+window.editCategory = async function(structureId, current) {
+  const category = prompt('Category (Building, Container, Trailer, wood-frame, etc.):', current || '');
+  if (category === null) return;
+  const { error } = await supabase.from('structures').update({ category: category || null }).eq('id', structureId);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Category updated', 'success');
+  await refreshStructures();
+};
