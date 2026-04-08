@@ -297,7 +297,7 @@
     import { initPersonalPage } from '/shared/personal-page-shell.js';
     import { supabase } from '/shared/supabase.js';
 
-    const PHASE_LABELS = { A: 'Phase A: Research & Site Visits', B: 'Phase B: IDP Submission Documents', C: 'Phase C: Build & Final Inspection' };
+    const PHASE_LABELS = { A: 'Phase A: Research & Site Visits', B: 'Phase B: IDP Submission Documents', C: 'Phase C: Build & Final Inspection', D: 'Phase D: Operations & Compliance' };
     const STATUS_LABELS = { pending: 'Pending', in_progress: 'In Progress', blocked: 'Blocked', completed: 'Done', skipped: 'Skipped', not_needed: 'N/A' };
     const STORAGE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/permitting-documents';
 
@@ -350,10 +350,10 @@
       const color = pct >= 100 ? '#38a169' : pct >= 60 ? '#d4883a' : '#e53e3e';
 
       // Phase breakdown
-      const phaseData = ['A', 'B', 'C'].map(phase => {
+      const phaseData = ['A', 'B', 'C', 'D'].map(phase => {
         const pt = countable.filter(t => t.phase === phase);
         const pd = pt.filter(t => t.status === 'completed').length;
-        const label = phase === 'A' ? 'Research' : phase === 'B' ? 'IDP Submission' : 'Build & Final';
+        const label = phase === 'A' ? 'Research' : phase === 'B' ? 'IDP Submission' : phase === 'C' ? 'Build & Final' : 'Operations';
         const badgeColor = pt.length === 0 ? '#6b7280' : pd === pt.length ? '#38a169' : pd > 0 ? '#d4883a' : '#6b7280';
         return { phase, label, done: pd, total: pt.length, color: badgeColor };
       });
