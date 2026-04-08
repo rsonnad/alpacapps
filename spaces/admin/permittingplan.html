@@ -142,7 +142,15 @@
   </style>
 </head>
 <body>
-  <script>if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed-mode');</script>
+  <script>
+    // If accessed directly (not embedded), redirect to PhyProp subtab so the
+    // page shows under the proper Staff/PhyProp navigation chrome.
+    if (new URLSearchParams(location.search).get('embed') !== '1') {
+      location.replace('/spaces/admin/phyprop.html#permittingplan');
+    } else {
+      document.documentElement.classList.add('embed-mode');
+    }
+  </script>
   <style>html.embed-mode #siteHeader { display: none !important; } html.embed-mode body { padding-top: 0 !important; }</style>
   <div id="siteHeader"></div>
   <span data-site-version style="display:none;">v260408.05 12:39p</span>
