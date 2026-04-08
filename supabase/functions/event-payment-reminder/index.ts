@@ -11,6 +11,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -193,9 +194,9 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Alpaca Team <team@alpacaplayhouse.com>',
+            from: SENDER_MAP.pai.from,
             to: [person.email],
-            reply_to: 'team@alpacaplayhouse.com',
+            reply_to: SENDER_MAP.pai.reply_to,
             subject: `Payment Reminder: ${event.event_name} - Fees Due in 3 Days`,
             html: `
               <h2>Payment Reminder - Your Event is Coming Up!</h2>

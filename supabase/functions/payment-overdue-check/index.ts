@@ -13,6 +13,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 const TEAM_EMAIL = 'team@alpacaplayhouse.com';
 const ESCALATION_DAYS = [1, 3, 5, 7]; // days after due date
 const PAY_BASE_URL = 'https://alpacaplayhouse.com/pay/';
@@ -886,10 +887,10 @@ Alpaca Playhouse`;
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Alpaca Team <team@alpacaplayhouse.com>',
+            from: SENDER_MAP.pai.from,
             to: [first.personEmail],
             cc: [TEAM_EMAIL],
-            reply_to: 'team@alpacaplayhouse.com',
+            reply_to: SENDER_MAP.pai.reply_to,
             subject,
             html: emailHtml,
             text: emailText,
@@ -960,10 +961,10 @@ Alpaca Playhouse`;
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'Alpaca Team <team@alpacaplayhouse.com>',
+              from: SENDER_MAP.pai.from,
               to: [item.personEmail],
               cc: [TEAM_EMAIL],
-              reply_to: 'team@alpacaplayhouse.com',
+              reply_to: SENDER_MAP.pai.reply_to,
               subject,
               html,
               text,
@@ -1139,7 +1140,8 @@ Alpaca Playhouse`;
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Alpaca System <auto@alpacaplayhouse.com>',
+            from: SENDER_MAP.pai.from,
+            reply_to: SENDER_MAP.pai.reply_to,
             to: [TEAM_EMAIL],
             subject: digestSubject,
             html: digestHtml,

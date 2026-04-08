@@ -8,6 +8,7 @@
  */
 
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 
 interface StaffMember {
   role: string;
@@ -78,7 +79,8 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Team <team@alpacaplayhouse.com>',
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
         to: [ADMIN_EMAIL],
         subject: `Staff Submitted for ${event_name} by ${host_name}`,
         html: `
@@ -135,9 +137,9 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Alpaca Team <team@alpacaplayhouse.com>',
+          from: SENDER_MAP.pai.from,
           to: [member.email],
-          reply_to: 'team@alpacaplayhouse.com',
+          reply_to: SENDER_MAP.pai.reply_to,
           subject: `You're signed up to staff: ${event_name} - ${event_date}`,
           html: `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">

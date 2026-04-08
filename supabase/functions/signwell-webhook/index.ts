@@ -9,6 +9,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 
 interface SignWellWebhookPayload {
   event: string;
@@ -499,9 +500,9 @@ async function sendRentalSignedEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Team <team@alpacaplayhouse.com>',
+        from: SENDER_MAP.pai.from,
         to: [person.email],
-        reply_to: 'team@alpacaplayhouse.com',
+        reply_to: SENDER_MAP.pai.reply_to,
         subject: 'Lease Signed - Reservation Deposit Due - Alpaca Playhouse',
         html: `
           <h2>Lease Signing Complete!</h2>
@@ -614,9 +615,9 @@ async function sendEventSignedEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Team <team@alpacaplayhouse.com>',
+        from: SENDER_MAP.pai.from,
         to: [person.email],
-        reply_to: 'team@alpacaplayhouse.com',
+        reply_to: SENDER_MAP.pai.reply_to,
         subject: 'Event Agreement Signed - Outstanding Fees Due Before Event - Alpaca Playhouse',
         html: `
           <h2>Event Agreement Signed!</h2>
@@ -772,9 +773,9 @@ ${vehicleInfo.color ? `Color: ${vehicleInfo.color}\n` : ''}${vehicleInfo.vin ? `
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Team <team@alpacaplayhouse.com>',
+        from: SENDER_MAP.pai.from,
         to: [person.email],
-        reply_to: 'team@alpacaplayhouse.com',
+        reply_to: SENDER_MAP.pai.reply_to,
         subject,
         html: `
           <h2>${hasVehicle ? 'Your Vehicle Information' : 'Register Your Vehicle'}</h2>
@@ -872,7 +873,7 @@ async function sendAdminEventSignedNotification(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Alpaca Team <team@alpacaplayhouse.com>',
+        from: SENDER_MAP.pai.from,
         to: [ADMIN_EMAIL],
         subject: `Event Agreement SIGNED by ${hostName} - ${eventName}`,
         html: `

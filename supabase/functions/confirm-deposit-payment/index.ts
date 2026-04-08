@@ -9,6 +9,7 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
 
@@ -258,7 +259,8 @@ Deno.serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+          from: SENDER_MAP.pai.from,
+          reply_to: SENDER_MAP.pai.reply_to,
           to: ["team@alpacaplayhouse.com"],
           subject: `Payment Confirmed: $${conf.amount} from ${conf.sender_name} → ${personName}`,
           html: `

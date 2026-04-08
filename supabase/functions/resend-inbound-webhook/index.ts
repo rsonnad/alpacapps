@@ -17,6 +17,7 @@ import {
   type EmailAction,
   type OutboundEmailMeta,
 } from "../_shared/email-classifier.ts";
+import { SENDER_MAP } from "../_shared/template-engine.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
 
@@ -185,9 +186,9 @@ async function forwardEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `${originalFrom.replace(/<.*>/, '').trim() || originalFrom} <notifications@alpacaplayhouse.com>`,
+        from: SENDER_MAP.pai.from,
         to: [to],
-        reply_to: originalFrom,
+        reply_to: SENDER_MAP.pai.reply_to,
         subject: subject,
         html: html || `<pre>${text}</pre>`,
         text: text || "(HTML-only email)",
@@ -679,9 +680,9 @@ This is an automated reply from Claudero at Alpaca Playhouse.`;
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Claudero <claudero@alpacaplayhouse.com>",
+      from: SENDER_MAP.pai.from,
       to: [to],
-      reply_to: "claudero@alpacaplayhouse.com",
+      reply_to: SENDER_MAP.pai.reply_to,
       subject: reSubject,
       html,
       text,
@@ -890,8 +891,8 @@ async function sendPaiReply(
           body: JSON.stringify({
             type: "pai_email_reply",
             to: to,
-            from: "PAI <pai@alpacaplayhouse.com>",
-            reply_to: "pai@alpacaplayhouse.com",
+            from: SENDER_MAP.pai.from,
+            reply_to: SENDER_MAP.pai.reply_to,
             data: {
               reply_body: replyBody,
               original_subject: originalSubject,
@@ -947,9 +948,9 @@ This is an automated reply from PAI at Alpaca Playhouse.`;
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "PAI <pai@alpacaplayhouse.com>",
+      from: SENDER_MAP.pai.from,
       to: [to],
-      reply_to: "pai@alpacaplayhouse.com",
+      reply_to: SENDER_MAP.pai.reply_to,
       subject,
       html,
       text,
@@ -1010,9 +1011,9 @@ This is an automated reply from AlpaClaw at Alpaca Playhouse.`;
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "AlpaClaw <alpaclaw@alpacaplayhouse.com>",
+      from: SENDER_MAP.pai.from,
       to: [to],
-      reply_to: "alpaclaw@alpacaplayhouse.com",
+      reply_to: SENDER_MAP.pai.reply_to,
       subject,
       html,
       text,
@@ -1396,7 +1397,8 @@ Guidelines:
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
         body: JSON.stringify({
-          from: "PAI <pai@alpacaplayhouse.com>",
+          from: SENDER_MAP.pai.from,
+          reply_to: SENDER_MAP.pai.reply_to,
           to: adminEmails,
           subject: `🔍 Claude Task Needs Review: ${subject}`,
           html: `<h2>Claude Task Approval Required</h2>
@@ -1422,7 +1424,8 @@ Guidelines:
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
         body: JSON.stringify({
-          from: "PAI <pai@alpacaplayhouse.com>",
+          from: SENDER_MAP.pai.from,
+          reply_to: SENDER_MAP.pai.reply_to,
           to: senderEmail,
           subject: `Re: ${subject}`,
           html: `<p>Your request has been received but requires admin approval before execution.</p>
@@ -1440,7 +1443,8 @@ Guidelines:
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
         body: JSON.stringify({
-          from: "PAI <pai@alpacaplayhouse.com>",
+          from: SENDER_MAP.pai.from,
+          reply_to: SENDER_MAP.pai.reply_to,
           to: senderEmail,
           subject: `Re: ${subject}`,
           html: `<p>Got it — this has been queued as a Claude Code task on Alpuca (task ${data.id.slice(0, 8)}).</p>` +
@@ -1856,9 +1860,9 @@ async function handlePaiEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `PAI Forward <notifications@alpacaplayhouse.com>`,
+        from: SENDER_MAP.pai.from,
         to: [adminEmail],
-        reply_to: senderEmail,
+        reply_to: SENDER_MAP.pai.reply_to,
         subject: `[PAI Forward] ${subject}`,
         html: bodyHtml || `<pre>${bodyText}</pre>`,
         text: bodyText || "(HTML-only email)",
@@ -2297,7 +2301,8 @@ async function handleOutboundZellePayment(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
         to: [adminEmail],
         subject,
         html,
@@ -2975,7 +2980,8 @@ async function sendTenantReceipt(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "AlpacApps <noreply@alpacaplayhouse.com>",
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
         to: [details.tenantEmail],
         bcc: ["alpacaautomatic@gmail.com"],
         subject,
@@ -3208,7 +3214,8 @@ async function sendPaymentNotification(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
         to: [adminEmail],
         subject,
         html,
@@ -3271,7 +3278,8 @@ async function handlePaymentEmail(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Alpaca Payments <noreply@alpacaplayhouse.com>",
+          from: SENDER_MAP.pai.from,
+          reply_to: SENDER_MAP.pai.reply_to,
           to: ["alpacaplayhouse@gmail.com"],
           subject: `Unrecognized payment email: ${subject}`,
           html: `
@@ -4000,7 +4008,8 @@ serve(async (req) => {
               method: "POST",
               headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
               body: JSON.stringify({
-                from: "Alpaca Team <team@alpacaplayhouse.com>",
+                from: SENDER_MAP.pai.from,
+                reply_to: SENDER_MAP.pai.reply_to,
                 to: ["alpacaplayhouse@gmail.com"],
                 subject: `Staff CONFIRMED: ${staffPerson.first_name} ${staffPerson.last_name} replied Yes`,
                 html: `<p><strong>${staffPerson.first_name} ${staffPerson.last_name}</strong> (${senderAddr}) replied "Yes" to confirm their event staff assignment.</p><p>Their record has been updated in the database.</p><div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>`,
