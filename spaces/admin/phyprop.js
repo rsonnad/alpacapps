@@ -338,24 +338,55 @@ async function loadStructures() {
           </table>`
         : '<div style="color:var(--text-muted);font-size:0.8125rem;margin-top:0.5rem;">No rooms recorded.</div>';
 
+      const fmtNum = (v, suffix = '') => v == null || v === '' ? '--' : `${Number(v).toLocaleString()}${suffix}`;
+      const fmtBool = v => v == null ? '--' : (v ? 'Yes' : 'No');
+      const fmtTxt = v => v == null || v === '' ? '--' : esc(v);
+      const fmtDate = v => v ? new Date(v).toLocaleDateString() : '--';
+      const friendlyName = s._friendlySpace?.name || '--';
+      const editCatAttr = JSON.stringify(s.category || '').replace(/"/g, '&quot;');
+
+      const fields = [
+        ['Friendly Name', fmtTxt(friendlyName)],
+        ['DB Name', fmtTxt(s.name)],
+        ['Category', `${fmtTxt(s.category)} <a href="#" onclick="event.preventDefault();event.stopPropagation();editCategory(${s.id}, ${editCatAttr})" style="font-size:0.7rem;">edit</a>`],
+        ['Structure Type', fmtTxt(s.structure_type)],
+        ['Use Type', fmtTxt(s.use_type)],
+        ['Width', fmtNum(s.width_ft, ' ft')],
+        ['Length', fmtNum(s.length_ft, ' ft')],
+        ['Height', fmtNum(s.height_ft, ' ft')],
+        ['Stories', s.stories ?? '--'],
+        ['Area', fmtNum(s.area_sqft, ' sq ft')],
+        ['Material', fmtTxt(s.material)],
+        ['Roof Type', fmtTxt(s.roof_type)],
+        ['Color', fmtTxt(s.color)],
+        ['Year Built', s.year_built ?? '--'],
+        ['Year Placed', s.year_placed ?? '--'],
+        ['Ground Elevation', fmtNum(s.ground_elevation_ft, ' ft')],
+        ['Permit Status', fmtTxt(s.permit_status)],
+        ['Movable', fmtBool(s.is_movable)],
+        ['Permanent', fmtBool(s.is_permanent_structure)],
+        ['Active', fmtBool(s.is_active)],
+        ['Guest Capacity', s.guest_capacity ?? '--'],
+        ['Bedrooms', s.bedrooms ?? '--'],
+        ['Bathrooms', s.bathrooms ?? '--'],
+        ['Plumbing', fmtBool(s.has_plumbing)],
+        ['Electric', fmtBool(s.has_electric)],
+        ['HVAC', fmtBool(s.has_hvac)],
+        ['Condition', fmtTxt(s.condition)],
+        ['Nearest Edge', s.nearest_edge_side ? `${esc(s.nearest_edge_side)} — ${s.nearest_edge_distance_ft}′` : '--'],
+        ['Setback Required', fmtNum(s.setback_required_ft, ' ft')],
+        ['Setback Compliant', fmtBool(s.setback_compliant)],
+        ['Setback Surplus', s.setback_surplus_ft != null ? `${s.setback_surplus_ft > 0 ? '+' : ''}${s.setback_surplus_ft}′` : '--'],
+        ['Display Order', s.display_order ?? '--'],
+        ['Created', fmtDate(s.created_at)],
+        ['Updated', fmtDate(s.updated_at)],
+      ];
+
       out += `<div id="${detailId}" class="pp-tree-detail" style="padding-left:${1 + (depth + 1) * 1.25}rem">
         <dl class="pp-tree-detail-grid">
-          <dt>Category</dt><dd>${esc(s.category || '--')} <a href="#" onclick="event.preventDefault();event.stopPropagation();editCategory(${s.id}, ${JSON.stringify(s.category||'').replace(/"/g,'&quot;')})" style="font-size:0.7rem;">edit</a></dd>
-          <dt>Type</dt><dd>${esc(s.structure_type || '--')}</dd>
-          <dt>Use</dt><dd>${esc(s.use_type || '--')}</dd>
-          <dt>Dimensions</dt><dd>${dims ? `${dims}${s.height_ft ? ` × ${s.height_ft} H` : ''} ft` : '--'}</dd>
-          <dt>Area</dt><dd>${s.area_sqft ? `${Number(s.area_sqft).toLocaleString()} sq ft` : '--'}</dd>
-          <dt>Stories</dt><dd>${s.stories ?? '--'}</dd>
-          <dt>Material</dt><dd>${esc(s.material || '--')}</dd>
-          <dt>Roof</dt><dd>${esc(s.roof_type || '--')}</dd>
-          <dt>Permit</dt><dd>${esc(s.permit_status || '--')}</dd>
-          ${s.guest_capacity ? `<dt>Capacity</dt><dd>${s.guest_capacity} guests</dd>` : ''}
-          ${s.bedrooms ? `<dt>Beds / Baths</dt><dd>${s.bedrooms} / ${s.bathrooms ?? '--'}</dd>` : ''}
-          <dt>Movable</dt><dd>${s.is_movable ? 'Yes' : 'No'}</dd>
-          ${amenities.length ? `<dt>Utilities</dt><dd>${amenities.join(', ')}</dd>` : ''}
-          <dt>Nearest Edge</dt><dd>${s.nearest_edge_side ? `${s.nearest_edge_side} — ${s.nearest_edge_distance_ft}′ (req ${s.setback_required_ft}′)` : '--'}</dd>
-          ${s.setback_surplus_ft != null ? `<dt>Setback Surplus</dt><dd>${s.setback_surplus_ft > 0 ? `+${s.setback_surplus_ft}′` : `${s.setback_surplus_ft}′`}</dd>` : ''}
+          ${fields.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}
         </dl>
+        ${s.notes ? `<div style="margin-top:0.5rem;font-size:0.8125rem;"><strong>Notes:</strong> ${esc(s.notes)}</div>` : ''}
         ${setbacks.length ? `<div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted);">
           <strong>Setback Measurements:</strong> ${setbacks.join(' · ')}
         </div>` : ''}
