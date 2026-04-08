@@ -1,12 +1,12 @@
 {
-  "version": "v260408.06 12:46p",
-  "release": 1283,
-  "sha": "901638067",
-  "fullSha": "901638067cc35d2b30d70318c7545c3c794a06a6",
+  "version": "v260408.07 1:23p",
+  "release": 1284,
+  "sha": "970d239d9",
+  "fullSha": "970d239d96c5a7739521a271d72c81b0e7e91f79",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-08T17:46:38+00:00",
-  "commits": [{"sha":"901638067","message":"permittingplan: redirect direct hits to PhyProp subtab","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-08T18:23:53+00:00",
+  "commits": [{"sha":"970d239d9","message":"unify all edge function senders to PAI (pai@alpacaplayhouse.com)","author":"Rahul"}]
 }
