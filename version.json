@@ -1,12 +1,12 @@
 {
-  "version": "v260408.10 1:50p",
-  "release": 1287,
-  "sha": "e0cf6bde5",
-  "fullSha": "e0cf6bde5ac22986f57260e6b915e20cc927382d",
+  "version": "v260408.12 1:53p",
+  "release": 1289,
+  "sha": "f106ef5fb",
+  "fullSha": "f106ef5fb099e4c8a2343c8e9f61d4fec680240f",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-08T18:50:53+00:00",
-  "commits": [{"sha":"e0cf6bde5","message":"docs(permitting): add HTML wrapper for compliance roadmap","author":"Jacqueline Giroux"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-08T18:53:25+00:00",
+  "commits": [{"sha":"9e1384827","message":"fix(permitting): repair broken action buttons + add document review page","author":"Jacqueline Giroux"},{"sha":"f106ef5fb","message":"merge: fix permitting plan action buttons + add document review page","author":"Jacqueline Giroux"}]
 }
