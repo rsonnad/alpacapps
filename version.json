@@ -1,12 +1,12 @@
 {
-  "version": "v260408.07 1:23p",
-  "release": 1284,
-  "sha": "970d239d9",
-  "fullSha": "970d239d96c5a7739521a271d72c81b0e7e91f79",
+  "version": "v260408.08 1:37p",
+  "release": 1285,
+  "sha": "3960f9893",
+  "fullSha": "3960f98939fd06b4341e123de4a3983d545f8048",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-08T18:23:53+00:00",
-  "commits": [{"sha":"970d239d9","message":"unify all edge function senders to PAI (pai@alpacaplayhouse.com)","author":"Rahul"}]
+  "pushedAt": "2026-04-08T18:37:40+00:00",
+  "commits": [{"sha":"3960f9893","message":"PhyProp: rooms, category, friendly names","author":"Rahul"}]
 }
