@@ -54,6 +54,7 @@ function switchSubtab(tab) {
       overview: loadOverviewTab,
       structures: loadStructuresTab,
       renderings: loadRenderingsTab,
+      permittingplan: () => {},
     };
     loaders[tab]?.();
   }

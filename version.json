@@ -1,12 +1,12 @@
 {
-  "version": "v260407.04 5:31p",
-  "release": 1275,
-  "sha": "bb9aee274",
-  "fullSha": "bb9aee274e5ce3729d235bd6ca7e2df6e7ec9a9e",
+  "version": "v260408.02 12:26p",
+  "release": 1279,
+  "sha": "568ff3712",
+  "fullSha": "568ff3712566f29c4384ec3ab3e3eca43f1d250a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-07T22:31:23+00:00",
-  "commits": [{"sha":"bb9aee274","message":"claude-sessions: canonical project names + bulk JSONL backfill script","author":"Rahul"}]
+  "pushedAt": "2026-04-08T17:26:27+00:00",
+  "commits": [{"sha":"568ff3712","message":"Move permittingplan from jackie/ to spaces/admin/","author":"Rahul"}]
 }
