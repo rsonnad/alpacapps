@@ -1,12 +1,12 @@
 {
-  "version": "v260408.01 12:19p",
-  "release": 1278,
-  "sha": "3500ed8a9",
-  "fullSha": "3500ed8a9eedd9fa515a535a3a6a309cc54ad988",
+  "version": "v260408.02 12:26p",
+  "release": 1279,
+  "sha": "568ff3712",
+  "fullSha": "568ff3712566f29c4384ec3ab3e3eca43f1d250a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-08T17:19:56+00:00",
-  "commits": [{"sha":"3500ed8a9","message":"PhyProp: add Permitting Plan subtab, move subtabs above title","author":"Rahul"}]
+  "pushedAt": "2026-04-08T17:26:27+00:00",
+  "commits": [{"sha":"568ff3712","message":"Move permittingplan from jackie/ to spaces/admin/","author":"Rahul"}]
 }
