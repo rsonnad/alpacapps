@@ -272,6 +272,131 @@
       <div id="readinessBar" class="readiness-bar" style="display:none;"></div>
       <div class="permit-summary" id="summaryStats"></div>
       <div id="phasesContainer"></div>
+
+      <!-- Drainage & Stormwater Reference (Bastrop County rules + parcel-specific data) -->
+      <details class="phase-section" style="margin-top:1.25rem;">
+        <summary style="display:flex; align-items:center; gap:0.6rem; padding:0.75rem 1rem; background:var(--bg); border-bottom:1px solid var(--border); cursor:pointer; user-select:none; list-style:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <h3 style="font-size:0.95rem; font-weight:700; margin:0; flex:1;">Drainage &amp; Stormwater Reference</h3>
+          <span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">Bastrop County rules + NOAA depths</span>
+        </summary>
+        <div style="padding:1rem;">
+          <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 1rem;">Verified against Subdivision Regulations (2017) §VIII and the 2022 Lodging &amp; RV Park Infrastructure Requirements. Drives tasks B32, B35–B40.</p>
+
+          <!-- Why this applies -->
+          <div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem;">
+            <div style="font-size:0.78rem; color:#78350f;">
+              <strong>Why this applies:</strong> Per Texas Attorney General Opinion GA-1007 (May 13, 2013), lodging developments are legally classified as <em>subdivisions</em> under Texas Local Government Code Chapter 232. Any lot accommodating more than 2 lodging units (including tiny houses on foundations) requires an <strong>Infrastructure Development Plan (IDP)</strong> sealed by a Texas-licensed P.E. or RPLS, plus a sealed drainage study.
+            </div>
+          </div>
+
+          <!-- Key facts grid -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.75rem; margin-bottom:1rem;">
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Design Storms</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                <strong>25-year:</strong> drainage structures, culverts, closed conduits<br>
+                <strong>100-year:</strong> floodway, bridges, FFE certification<br>
+                <span style="color:#6b7280;">Per Subdivision Regs §VIII.3.a, §VIII.5</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">NOAA Atlas 14 — Cedar Creek (30.13°N, -97.46°W)</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                <strong>25-year, 24-hr:</strong> 4.46 in<br>
+                <strong>100-year, 24-hr:</strong> 6.06 in<br>
+                <span style="color:#6b7280;">Plug into Rational Method or TR-55</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Approved Calculation Methods</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                <strong>Rational Method</strong> — drainage area ≤ 400 ac ✅ <em>(applies)</em><br>
+                WinTR-55 — ≤ 2,000 ac<br>
+                TxDOT Hydraulic Design Manual<br>
+                HEC-HMS / HEC-RAS — larger basins
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Finished Floor Elevation</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                All buildings must sit <strong>≥ 2 ft above the 100-year water surface elevation</strong>.<br>
+                <span style="color:#16a34a; font-weight:600;">✓ Parcel is in FEMA Zone X (not in 100-yr floodplain)</span><br>
+                <span style="color:#6b7280;">Per §VIII.4.c</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Detention Pond — Conditional</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                Required <strong>only if</strong> TR-55 pre/post analysis shows adverse downstream flooding. <strong>NOT automatic.</strong><br>
+                <span style="color:#6b7280;">Per §VIII.6 — biggest cost variable in the engineering scope</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Channel Velocity Limits</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                <strong>Sandy soils:</strong> &gt; 4 ft/s requires concrete/rock retards<br>
+                <strong>Clay soils:</strong> &gt; 5 ft/s requires concrete/rock retards<br>
+                Unlined ditches must have established vegetation
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Setbacks (Lodging Rules §IV.8)</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                25 ft from public ROW (Still Forest Dr)<br>
+                15 ft from property line<br>
+                10 ft from internal road<br>
+                20 ft between lodging units
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Cost Range</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                Topo survey (RPLS): <strong>$2,500–$5,000</strong><br>
+                P.E. drainage + IDP: <strong>$4,000–$10,000</strong><br>
+                OSSF design: <strong>$1,500–$3,500</strong><br>
+                Detention (if triggered): <strong>+$2,000–$5,000</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Source documents -->
+          <h4 style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#6b7280; margin: 1.25rem 0 0.5rem;">Source Documents</h4>
+          <div style="font-size:0.8rem; line-height:1.7;">
+            <a href="https://www.bastropcounty.gov/upload/page/0145/docs/2022.09.12CourtAppdLodgingRVParkRequirements.pdf" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">📄 Lodging &amp; RV Park Infrastructure Requirements (2022)</a>
+            <a href="https://www.bastropcounty.gov/upload/page/0145/docs/SDRegsBookmarkedAdopted042417.pdf" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">📄 Subdivision Regulations §VIII (2017)</a>
+            <a href="https://www.bastropcounty.gov/upload/page/0145/docs/FLOOD%20DAMAGE%20PREVENTION%20ORDER%20-%20ADOPTED%207.14.2025.pdf" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">📄 Flood Damage Prevention Order (2025)</a><br>
+            <a href="https://www.bastropcounty.gov/page/ds.home" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">🌐 Bastrop County Dev Services</a>
+            <a href="https://hdsc.nws.noaa.gov/pfds/pfds_map_cont.html" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">🌐 NOAA Atlas 14</a>
+            <a href="https://pels.texas.gov/lictype.html" target="_blank" rel="noopener" style="color:var(--accent);">🌐 TBPELS P.E. Lookup</a>
+            <div style="margin-top:0.5rem; color:#6b7280;">📞 Bastrop County Dev Services: (512) 581-7176 · 211 Jackson St, Bastrop TX</div>
+          </div>
+
+          <!-- Pre-app meeting questions -->
+          <h4 style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#6b7280; margin: 1.25rem 0 0.5rem;">Questions to Ask at Pre-Application Meeting</h4>
+          <ol style="font-size:0.8rem; line-height:1.7; padding-left:1.25rem; color:#374151;">
+            <li>Does the <strong>Rational Method</strong> suffice for our 1.7-ac parcel, or do you require TR-55?</li>
+            <li>Given our planned impervious cover, do you anticipate <strong>detention will be triggered</strong>?</li>
+            <li>Is <strong>Still Forest Dr county-maintained</strong> (driveway permit jurisdiction)?</li>
+            <li>Are there any <strong>known downstream drainage constraints</strong> on our discharge path?</li>
+            <li>Does long-term rental classify as commercial for drainage review, or residential? Does the answer change at a certain unit count?</li>
+            <li>Does our project need a full <strong>Drainage Study</strong> or just a <strong>Drainage Report</strong>?</li>
+            <li>Are there any <strong>karst / groundwater protection overlays</strong> affecting Cedar Creek parcels?</li>
+            <li>What is the current <strong>fee schedule</strong> for IDP review?</li>
+            <li>How many sets of plans + digital format requirements at submittal?</li>
+            <li>Does the county maintain a list of <strong>preferred local civil engineers</strong>?</li>
+          </ol>
+        </div>
+      </details>
+
       <!-- Next Phase: Building Permit -->
       <a href="building-permit.html" style="display:flex; align-items:center; gap:0.75rem; padding:1rem 1.25rem; background:#fff; border:2px solid #0d9488; border-radius:var(--radius); text-decoration:none; margin-top:1.25rem; transition:background 0.15s;" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='#fff'">
         <div style="width:40px; height:40px; background:#0d9488; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
