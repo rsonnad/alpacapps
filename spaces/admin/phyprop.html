@@ -152,6 +152,65 @@
     .pp-render-info h4 { font-size: 0.9375rem; font-weight: 600; color: #1f2937; margin: 0 0 0.25rem; }
     .pp-render-info p { font-size: 0.8125rem; color: var(--text-muted, #6b7280); margin: 0; line-height: 1.5; }
     .pp-render-tags { display: flex; gap: 0.375rem; flex-wrap: wrap; flex-shrink: 0; }
+
+    /* Blendering page — long-form readable doc style */
+    .pp-doc { max-width: 760px; font-size: 0.9375rem; line-height: 1.65; color: #1f2937; }
+    .pp-doc h2 {
+      font-size: 1.375rem; font-weight: 600; color: #111827;
+      margin: 2.25rem 0 0.5rem; padding-bottom: 0.375rem;
+      border-bottom: 1px solid var(--border-color, #e5e7eb);
+    }
+    .pp-doc h2:first-child { margin-top: 0; }
+    .pp-doc h3 {
+      font-size: 1.0625rem; font-weight: 600; color: #1f2937;
+      margin: 1.5rem 0 0.375rem;
+    }
+    .pp-doc p { margin: 0.5rem 0 0.875rem; }
+    .pp-doc ul, .pp-doc ol { margin: 0.5rem 0 1rem; padding-left: 1.375rem; }
+    .pp-doc li { margin: 0.25rem 0; }
+    .pp-doc code {
+      background: #f3f4f6; padding: 0.1rem 0.375rem; border-radius: 4px;
+      font-size: 0.85em; color: #b91c1c;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .pp-doc pre {
+      background: #1f2937; color: #f9fafb; padding: 0.875rem 1rem;
+      border-radius: 6px; overflow-x: auto; font-size: 0.8125rem;
+      line-height: 1.5; margin: 0.75rem 0 1.25rem;
+    }
+    .pp-doc pre code { background: transparent; color: inherit; padding: 0; }
+    .pp-doc .pp-callout {
+      background: #fef3c7; border-left: 3px solid #f59e0b;
+      padding: 0.75rem 1rem; border-radius: 4px; margin: 1rem 0;
+      font-size: 0.875rem;
+    }
+    .pp-doc .pp-callout.demoted {
+      background: #f3f4f6; border-left-color: #9ca3af; color: #4b5563;
+    }
+    .pp-doc .pp-callout.priority {
+      background: #dbeafe; border-left-color: #2563eb;
+    }
+    .pp-doc .pp-step {
+      background: white; border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 8px; padding: 1rem 1.25rem; margin: 0.75rem 0;
+    }
+    .pp-doc .pp-step-num {
+      display: inline-block; width: 1.75rem; height: 1.75rem; line-height: 1.75rem;
+      text-align: center; background: #1f2937; color: white; border-radius: 50%;
+      font-weight: 600; font-size: 0.8125rem; margin-right: 0.625rem;
+    }
+    .pp-doc table {
+      width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.25rem;
+      font-size: 0.875rem;
+    }
+    .pp-doc th, .pp-doc td {
+      text-align: left; padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .pp-doc th {
+      background: #f9fafb; font-weight: 600; color: #374151;
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em;
+    }
   </style>
 </head>
 <body>
@@ -192,6 +251,7 @@
           <button class="pp-subtab active" data-tab="overview">Overview</button>
           <button class="pp-subtab" data-tab="structures">Structures</button>
           <button class="pp-subtab" data-tab="renderings">Renderings</button>
+          <button class="pp-subtab" data-tab="blendering">Blendering</button>
         </div>
 
         <!-- Panel: Overview -->
@@ -446,6 +506,285 @@
           </div>
 
         </div><!-- /pp-panel-renderings -->
+
+        <!-- Panel: Blendering -->
+        <div id="pp-panel-blendering" class="pp-panel" style="display:none">
+          <div class="pp-doc">
+
+            <h2>Blendering — turning a real property into a real render</h2>
+            <p>
+              This page is the field guide for producing accurate 3D renders of 160 Still Forest Dr.
+              The render quality settings (Cycles, AgX Punchy, OIDN, 4K, 2048 samples) are already
+              wired into <code>blender/render_property.py</code>. What's still missing is the
+              <strong>real-world input</strong>: photo-derived materials, drainage paths, and
+              measurements that aren't in the database. Everything below is how to capture that input
+              and feed it into the system so Claude can stitch it into a render.
+            </p>
+
+            <div class="pp-callout priority">
+              <strong>Priority order (biggest visual impact first):</strong>
+              real terrain (LiDAR DEM) → photo-based PBR materials → drainage &amp; water flow →
+              manually modeled structures → vegetation → AgX/2048 samples polish.
+            </div>
+
+            <div class="pp-callout demoted">
+              <strong>De-prioritized:</strong> outdoor lighting setup. Nishita sky + a Poly Haven
+              HDRI is good enough out of the box — don't spend time tuning sun angles or area lights.
+              The render engine settings already encode reasonable defaults.
+            </div>
+
+            <h2>1. Photos → Materials (the highest-leverage workflow)</h2>
+            <p>
+              A material is what makes a wall look like stone vs. concrete vs. wood. The current
+              script paints surfaces with flat RGB swatches, which is why the render looks like a
+              zoning map. Real materials are <strong>PBR texture sets</strong> — usually 4 image maps
+              that Blender combines: base color, roughness, normal, displacement.
+            </p>
+
+            <h3>The two paths from a photo to a usable material</h3>
+
+            <div class="pp-step">
+              <span class="pp-step-num">A</span><strong>Match-and-grab from a free library (90% of cases)</strong>
+              <p>
+                Take a close-up photo of the surface (corrugated container side, stone foundation,
+                cedar siding). Then go find a <em>visually similar</em> CC0 PBR set on
+                <a href="https://ambientcg.com" target="_blank" rel="noopener">ambientCG</a> or
+                <a href="https://polyhaven.com/textures" target="_blank" rel="noopener">Poly Haven</a>
+                and tint the base color in Blender to match the actual photo. You're not photographing
+                <em>for</em> the material — you're photographing <em>to identify</em> the right
+                library set.
+              </p>
+              <ul>
+                <li>Photograph the surface flat-on, in even shade (not direct sun, no shadows from your body).</li>
+                <li>Frame about 2 ft × 2 ft of surface — enough to see the repeating pattern.</li>
+                <li>Note the dominant color in the photo (eyedropper in any image viewer works).</li>
+                <li>In ambientCG, search the category (e.g. "Metal Corrugated", "Wood Planks Painted")
+                    and pick one whose roughness/scale matches.</li>
+                <li>Download the 2K or 4K JPG bundle and drop into <code>~/Projects/alpacapps-3d/textures/AAP_<em>category</em>_<em>name</em>/</code></li>
+                <li>In Blender, multiply the base color with an RGB node tinted to your photo's color.</li>
+              </ul>
+            </div>
+
+            <div class="pp-step">
+              <span class="pp-step-num">B</span><strong>Photo-to-PBR (when nothing in the library matches)</strong>
+              <p>
+                For unique surfaces (the specific stone on the Main House foundation, a custom
+                paint job), generate the PBR maps directly from your photo:
+              </p>
+              <ul>
+                <li><strong>Materialize</strong> (free, GUI app, Mac/Win) — drop in one photo,
+                    auto-generates albedo + normal + roughness + height. Best for tileable surfaces.</li>
+                <li><strong>Substance Sampler</strong> (paid, ~$20/mo) — best results, handles
+                    non-flat photos.</li>
+                <li><strong>Image-to-PBR via Claude</strong> — take 4 photos of the surface from
+                    slightly different angles in flat light, drop them in <code>property_data/textures_raw/</code>,
+                    and ask Claude in this project to run the photo-to-PBR pipeline. Claude can
+                    invoke an Alpuca-side script that uses <code>oidn-denoise</code> + a normal-map
+                    estimator (e.g. <code>NormalMapGenerator</code> or a small ONNX model) and
+                    writes the result to <code>~/Projects/alpacapps-3d/textures/AAP_*</code>.</li>
+              </ul>
+              <p>
+                <strong>Make it tileable:</strong> Whatever path you use, run the result through
+                <a href="https://gimp.org" target="_blank" rel="noopener">GIMP</a>'s
+                <em>Filters → Map → Tile / Make Seamless</em> so the texture doesn't show grid
+                lines when stretched across a wall.
+              </p>
+            </div>
+
+            <h3>Naming convention</h3>
+            <p>
+              All materials follow <code>AAP_&lt;category&gt;_&lt;name&gt;</code>. This matches what
+              Claude expects when scanning the textures folder, and it keeps the Blender shader
+              graph readable.
+            </p>
+            <pre><code>~/Projects/alpacapps-3d/textures/
+  AAP_structure_main_house_stone/
+    base_color.jpg
+    roughness.jpg
+    normal.jpg
+    displacement.jpg
+    source_photos/        ← keep originals
+    source.txt            ← link to ambientCG asset OR "captured on-site 2026-04-08"
+  AAP_structure_red_container_corrugated/
+    ...</code></pre>
+
+            <h2>2. Water drainage — capture &amp; express</h2>
+            <p>
+              Water drainage is critical for this property: Bastrop sandy-clay soil, gentle slope,
+              septic constraints, and the Main House sits in a shallow swale. The render must show
+              <strong>where water actually goes during a heavy rain</strong> — not just terrain
+              elevation contours.
+            </p>
+
+            <h3>What to capture on-site</h3>
+            <table>
+              <thead><tr><th>Observation</th><th>How to record it</th></tr></thead>
+              <tbody>
+                <tr><td>Standing water spots after rain</td><td>GPS pin + photo + rough size in feet. Use the iPhone Compass app for lat/lon.</td></tr>
+                <tr><td>Erosion channels / rills</td><td>Walk the channel, drop a GPS pin every ~10 ft. Photograph from above.</td></tr>
+                <tr><td>Roof downspout outlets</td><td>Photo of where each downspout discharges; note splash block / pipe / nothing.</td></tr>
+                <tr><td>Driveway runoff direction</td><td>Stand uphill, pour a water bottle, photograph the path it takes.</td></tr>
+                <tr><td>Septic drainfield perimeter</td><td>GPS-pin the corners. This is a no-flow zone for designed drainage.</td></tr>
+                <tr><td>Culverts, swales, French drains</td><td>Pin both ends + photo + estimated capacity (pipe diameter, swale width).</td></tr>
+              </tbody>
+            </table>
+
+            <h3>Schema — store it in PostGIS</h3>
+            <p>
+              Drainage features go in a new table so they can be queried, rendered, and audited
+              the same way structures are. Claude creates this on request via the Supabase
+              Management API:
+            </p>
+            <pre><code>CREATE TABLE drainage_features (
+  id SERIAL PRIMARY KEY,
+  parcel_id INT REFERENCES parcels(id),
+  feature_type TEXT,         -- 'flow_path', 'standing_water',
+                             -- 'downspout', 'culvert', 'swale',
+                             -- 'erosion_channel', 'septic_drainfield'
+  geom GEOMETRY,             -- POINT, LINESTRING, or POLYGON in EPSG:4326
+  flow_direction_deg INT,    -- 0-360, where water moves (for points)
+  observed_during TEXT,      -- 'heavy_rain', 'normal', 'drought'
+  width_ft NUMERIC,          -- for swales/channels
+  depth_in NUMERIC,          -- for standing water / channels
+  capacity_note TEXT,        -- "8in PVC", "12in corrugated"
+  notes TEXT,
+  photo_urls TEXT[],
+  observed_at DATE,
+  observed_by TEXT
+);</code></pre>
+
+            <h3>How drainage shows up in the render</h3>
+            <ul>
+              <li><strong>Flow paths</strong> (LINESTRINGs) become animated blue arrows on the
+                  terrain in the bird's-eye render — Claude bakes them as Geometry Nodes curves
+                  that ride the LiDAR DEM surface.</li>
+              <li><strong>Standing water</strong> (POLYGONs) become slightly reflective puddle
+                  meshes draped on the terrain, using <code>AAP_landscape_water_pool</code>
+                  with displacement turned off.</li>
+              <li><strong>Erosion channels</strong> get a darker dirt material
+                  (<code>AAP_landscape_soil_bed</code>) and a small displacement carve.</li>
+              <li><strong>Septic drainfield</strong> renders as a translucent yellow overlay so
+                  it's visible but doesn't dominate.</li>
+              <li><strong>Downspouts &amp; culverts</strong> become small geometry markers with
+                  arrow icons showing flow direction.</li>
+            </ul>
+            <p>
+              The result is a render that doubles as a drainage diagram — useful for permit review,
+              landscaping decisions, and explaining to a contractor why the swale on the west side
+              has to stay clear.
+            </p>
+
+            <h2>3. Integrating inputs into the renderings pipeline</h2>
+            <p>
+              Once you have photos, materials, and drainage data captured, Claude wires them into
+              the existing render pipeline. The flow is:
+            </p>
+
+            <div class="pp-step">
+              <span class="pp-step-num">1</span><strong>Upload raw assets</strong>
+              <p>
+                Drop into structured folders on Alpuca (<code>paca@192.168.1.200</code>). Claude
+                can rsync from your laptop or pull from a Supabase Storage bucket if you upload
+                via the admin Media tab.
+              </p>
+              <pre><code>~/Projects/alpacapps-3d/
+  property_data.json          ← from fetch_property_data.py
+  textures/                   ← AAP_* PBR sets
+  reference_photos/
+    structures/
+      main_house_front.jpg
+      main_house_back.jpg
+      ...
+    drainage/
+      flow_path_west_swale_001.jpg
+      ...
+  drainage_geojson/           ← exports from PostGIS
+  renders/v1/                 ← output PNGs</code></pre>
+            </div>
+
+            <div class="pp-step">
+              <span class="pp-step-num">2</span><strong>Push drainage observations into PostGIS</strong>
+              <p>
+                Either edit a CSV and ask Claude to bulk-insert via the Management API, or just
+                tell Claude in natural language: <em>"There's a 6-foot-wide standing water spot
+                30 feet northwest of the Back House after heavy rain, about 4 inches deep."</em>
+                Claude geocodes against the parcel boundary and writes the row.
+              </p>
+            </div>
+
+            <div class="pp-step">
+              <span class="pp-step-num">3</span><strong>Re-fetch &amp; render</strong>
+              <p>
+                <code>fetch_property_data.py</code> already pulls structures from PostGIS. Claude
+                extends it (or adds <code>fetch_drainage_data.py</code>) to also pull
+                <code>drainage_features</code>, then runs:
+              </p>
+              <pre><code>RENDER_PREVIEW=1 ssh paca@192.168.1.200 \
+  '/Applications/Blender.app/Contents/MacOS/Blender -b \
+   -P ~/Projects/alpacapps-3d/render_property.py'</code></pre>
+              <p>
+                Preview render is ~2 min on Alpuca M4. Drop <code>RENDER_PREVIEW=1</code> for the
+                4K hero (~15–45 min).
+              </p>
+            </div>
+
+            <div class="pp-step">
+              <span class="pp-step-num">4</span><strong>Publish to the Renderings tab</strong>
+              <p>
+                The final PNG is uploaded to Supabase Storage
+                (<code>housephotos/renders/&lt;date&gt;_&lt;view&gt;.jpg</code>) and added to the
+                <code>RENDERINGS</code> array in <code>spaces/admin/phyprop.js</code>. Push to
+                main, GitHub Pages deploys, and the new render appears one tab to the left under
+                Renderings.
+              </p>
+            </div>
+
+            <h2>4. How to talk to Claude to manage this</h2>
+            <p>
+              Most of the steps above are things you describe to Claude in this project rather
+              than running by hand. Here are the prompt patterns that work:
+            </p>
+
+            <h3>Adding a material from a photo</h3>
+            <pre><code>I just uploaded a photo of the Main House foundation stone to
+reference_photos/structures/main_house_foundation_detail.jpg.
+Find a matching PBR set on ambientCG, download it to
+textures/AAP_structure_main_house_stone/, tint the base color
+to match the photo, and update render_property.py to use it.</code></pre>
+
+            <h3>Recording a drainage observation</h3>
+            <pre><code>After yesterday's rain there's standing water about 8 ft long
+and 3 ft wide along the south edge of the gravel parking area,
+roughly 2 inches deep. Add it to drainage_features and link the
+photo I just uploaded to drainage/parking_standing_water_001.jpg.</code></pre>
+
+            <h3>Describing a flow path</h3>
+            <pre><code>Water from the Main House roof downspout on the NE corner runs
+about 25 ft northeast across the lawn, then turns east into the
+existing swale by the driveway. Add it as a flow_path linestring
+in drainage_features.</code></pre>
+
+            <h3>Producing a new render</h3>
+            <pre><code>Re-fetch property_data, render the bird's-eye view at 4K with
+the new drainage overlay turned on, and upload it to the
+Renderings tab.</code></pre>
+
+            <h3>What Claude needs from you (the only manual bits)</h3>
+            <ul>
+              <li>Take the photos and upload them (or share them in chat).</li>
+              <li>Describe drainage observations in plain English with rough distances.</li>
+              <li>Approve material picks before they're committed (Claude shows the ambientCG
+                  asset URL + a swatch comparison).</li>
+              <li>Approve the final render before it's published to the Renderings tab.</li>
+            </ul>
+
+            <p style="margin-top:1.5rem; color:#6b7280; font-size:0.8125rem;">
+              Source standards: <code>spaces/admin/devcontrol/devdocs/CAD-RENDER-PIPELINE.md</code>
+              (Part 2.5). Render script: <code>blender/render_property.py</code>.
+            </p>
+
+          </div>
+        </div><!-- /pp-panel-blendering -->
 
       </div>
     </main>
