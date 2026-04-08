@@ -1,12 +1,12 @@
 {
-  "version": "v260408.09 1:47p",
-  "release": 1286,
-  "sha": "51780c42e",
-  "fullSha": "51780c42e54bd8735f038e7aa37e4ebbd9755947",
+  "version": "v260408.10 1:50p",
+  "release": 1287,
+  "sha": "e0cf6bde5",
+  "fullSha": "e0cf6bde5ac22986f57260e6b915e20cc927382d",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm727z3",
-  "pushedAt": "2026-04-08T18:47:41+00:00",
-  "commits": [{"sha":"51780c42e","message":"docs(permitting): add compliance roadmap narrative for 160 Still Forest","author":"Jacqueline Giroux"}]
+  "machine": "runnervm35a4x",
+  "pushedAt": "2026-04-08T18:50:53+00:00",
+  "commits": [{"sha":"e0cf6bde5","message":"docs(permitting): add HTML wrapper for compliance roadmap","author":"Jacqueline Giroux"}]
 }
