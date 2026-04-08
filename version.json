@@ -1,12 +1,12 @@
 {
-  "version": "v260408.18 2:47p",
-  "release": 1295,
-  "sha": "0dfc7dd0b",
-  "fullSha": "0dfc7dd0b26b00a5c467369b2629ca04a20a1743",
-  "actor": "jackie61899280",
+  "version": "v260408.19 2:59p",
+  "release": 1296,
+  "sha": "807cba3a5",
+  "fullSha": "807cba3a53aa3835516ed37f9bc9ddfa7e2d0b35",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-08T19:47:05+00:00",
-  "commits": [{"sha":"0dfc7dd0b","message":"fix(permitting): remove Review Documents button from action bar","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-04-08T19:59:50+00:00",
+  "commits": [{"sha":"ace44a101","message":"Blender render pipeline: port sponic-garden quality standards","author":"Rahul"},{"sha":"69d842135","message":"PhyProp: add Blendering tab — photos→materials, drainage, Claude workflow","author":"Rahul"},{"sha":"daccf8216","message":"Merge remote-tracking branch 'origin/main' into agitated-nobel","author":"Rahul"},{"sha":"807cba3a5","message":"Merge pull request #115 from rsonnad/agitated-nobel","author":"Rahul"}]
 }
