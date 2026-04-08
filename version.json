@@ -1,12 +1,12 @@
 {
-  "version": "v260408.17 2:44p",
-  "release": 1294,
-  "sha": "bea5531d4",
-  "fullSha": "bea5531d4ca8ef20df16bfd2e418fdfcd4df2419",
+  "version": "v260408.18 2:47p",
+  "release": 1295,
+  "sha": "0dfc7dd0b",
+  "fullSha": "0dfc7dd0b26b00a5c467369b2629ca04a20a1743",
   "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-08T19:44:49+00:00",
-  "commits": [{"sha":"bea5531d4","message":"Revert \"fix(permitting): remove Review Documents button from action bar\"","author":"Jacqueline Giroux"}]
+  "pushedAt": "2026-04-08T19:47:05+00:00",
+  "commits": [{"sha":"0dfc7dd0b","message":"fix(permitting): remove Review Documents button from action bar","author":"Jacqueline Giroux"}]
 }
