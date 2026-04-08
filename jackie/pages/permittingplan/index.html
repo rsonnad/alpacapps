@@ -142,6 +142,8 @@
   </style>
 </head>
 <body>
+  <script>if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed-mode');</script>
+  <style>html.embed-mode #siteHeader { display: none !important; } html.embed-mode body { padding-top: 0 !important; }</style>
   <div id="siteHeader"></div>
   <span data-site-version style="display:none;">v260407.06 5:37p</span>
   <div id="toastContainer" class="toast-container"></div>
