@@ -1,12 +1,12 @@
 {
-  "version": "v260408.15 2:14p",
-  "release": 1292,
-  "sha": "af923bbf6",
-  "fullSha": "af923bbf65ac7e55609f950cf1d7a2bc8eeed259",
-  "actor": "rsonnad",
+  "version": "v260408.17 2:44p",
+  "release": 1294,
+  "sha": "bea5531d4",
+  "fullSha": "bea5531d4ca8ef20df16bfd2e418fdfcd4df2419",
+  "actor": "jackie61899280",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-08T19:14:25+00:00",
-  "commits": [{"sha":"af923bbf6","message":"phyprop: expand all structure details by default","author":"Rahul"}]
+  "machine": "runnervm727z3",
+  "pushedAt": "2026-04-08T19:44:49+00:00",
+  "commits": [{"sha":"bea5531d4","message":"Revert \"fix(permitting): remove Review Documents button from action bar\"","author":"Jacqueline Giroux"}]
 }
