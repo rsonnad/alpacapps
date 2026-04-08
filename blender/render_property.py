@@ -616,10 +616,41 @@ n_label.data.materials.append(arrow_mat)
 # ---------------------------------------------------------------------------
 scene = bpy.context.scene
 scene.render.engine = 'CYCLES'
-scene.cycles.samples = 128
+
+# Device — Metal GPU (Alpuca M4). Falls back gracefully if Metal unavailable.
+try:
+    prefs = bpy.context.preferences.addons['cycles'].preferences
+    prefs.compute_device_type = 'METAL'
+    prefs.get_devices()
+    for d in prefs.devices:
+        d.use = True
+    scene.cycles.device = 'GPU'
+except Exception as e:
+    print(f"Metal GPU init skipped: {e}")
+
+# Sampling — RENDER_PREVIEW=1 for fast 128-sample iteration
+PREVIEW = bool(int(os.environ.get('RENDER_PREVIEW', '0')))
+scene.cycles.samples = 128 if PREVIEW else 2048
+scene.cycles.use_adaptive_sampling = True
+scene.cycles.adaptive_threshold = 0.01
 scene.cycles.use_denoising = True
-scene.render.resolution_x = 2560
-scene.render.resolution_y = 1440
+scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+scene.cycles.tile_size = 256
+
+# Color management — AgX Punchy (per AlpacApps Blender Quality Standards)
+scene.view_settings.view_transform = 'AgX'
+try:
+    scene.view_settings.look = 'AgX - Punchy'
+except TypeError:
+    pass  # older Blender builds may not have Punchy look
+
+# Resolution — hero 4K, working HD via env var
+if PREVIEW:
+    scene.render.resolution_x = 1920
+    scene.render.resolution_y = 1080
+else:
+    scene.render.resolution_x = 3840
+    scene.render.resolution_y = 2160
 scene.render.resolution_percentage = 100
 scene.render.image_settings.file_format = 'PNG'
 

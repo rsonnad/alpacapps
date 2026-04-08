@@ -3,6 +3,7 @@
 > **Status:** Pipeline designed, awaiting on-site data collection
 > **Property:** 160 Still Forest Drive, Cedar Creek TX 78612 (Bastrop County)
 > **Tools:** Blender 4.5 + add-ons, QGIS 4.0, GDAL — all on Alpuca (192.168.1.200)
+> **Quality standards** in Part 2.5 below are adapted from sponic-garden's `docs/design/BLENDER-STANDARDS.md`.
 
 ---
 
@@ -329,19 +330,159 @@ Create multiple cameras matching the views you want to display:
 | West Tree Line | Eye level from driveway, looking west | Show the wooded buffer |
 | Pool Area | 50ft above, looking down at pool & deck | Amenity showcase |
 
+---
+
+## Part 2.5: AlpacApps Blender Quality Standards
+
+> Adapted from sponic-garden's `docs/design/BLENDER-STANDARDS.md`. **Unit difference:** sponic-garden uses 1 BU = 1 meter; AlpacApps uses **1 BU = 1 foot** (per Phase 3A). Where the source spec gives meters (e.g. Bevel 0.02 m), the foot equivalent is given here. Don't blindly copy meter values from the source doc.
+
+### 1. Render Engine
+
+| Setting | Value | bpy Path |
+|---------|-------|----------|
+| Engine | **Cycles** (never EEVEE for final) | `scene.render.engine = 'CYCLES'` |
+| Device | Metal (Alpuca M4 GPU) | `prefs.addons['cycles'].preferences.compute_device_type = 'METAL'` |
+| Samples | 2048 (preview: 128 via `RENDER_PREVIEW=1`) | `scene.cycles.samples = 2048` |
+| Adaptive sampling | ON, threshold 0.01 | `scene.cycles.use_adaptive_sampling = True` |
+| Denoiser | OIDN (OpenImageDenoise) | `scene.cycles.denoiser = 'OPENIMAGEDENOISE'` |
+| Color mgmt | **AgX** (not Filmic, not Standard) | `scene.view_settings.view_transform = 'AgX'` |
+| Look | Punchy | `scene.view_settings.look = 'AgX - Punchy'` |
+| Resolution (hero) | 3840×2160 | `scene.render.resolution_x = 3840` |
+| Resolution (working) | 1920×1080 | `scene.render.resolution_x = 1920` |
+| Output | PNG 16-bit (compositing), JPG 90% (web) | |
+| Tile size | 256×256 (Metal) | `scene.cycles.tile_size = 256` |
+
+The render-settings block in `blender/render_property.py` (§13) already encodes this. Materials/lighting/compositor pieces below live as a standard for the new manual scene built in Phase 3 — they replace, not augment, the procedural flat-box scene that Part 1 documents as broken.
+
+### 2. Materials (PBR Standard)
+
+#### Naming Convention
+```
+AAP_{category}_{name}
+```
+Examples: `AAP_structure_cedar_wall`, `AAP_landscape_grass_lawn`
+
+#### Required Maps
+Every material MUST have:
+- **Base Color** (albedo)
+- **Roughness**
+- **Normal Map** (minimum)
+- **Displacement** (for hero close-ups, use Micro-displacement with Adaptive Subdivision)
+
+#### Texture Sources (CC0 only)
+- [ambientCG.com](https://ambientcg.com) — PBR texture sets
+- [Poly Haven](https://polyhaven.com/textures) — textures + HDRIs
+- Procedural Noise/Voronoi nodes for quick iteration
+
+#### Material Presets
+
+| Preset | Base Color | Roughness | Notes |
+|--------|-----------|-----------|-------|
+| `AAP_structure_steel_frame` | #505055 | 0.3 | Metallic: 0.9 |
+| `AAP_structure_concrete_floor` | #9E9A95 | 0.9 | Normal map essential |
+| `AAP_structure_cedar_wall` | #8C6239 | 0.7 | Warm brown, wood grain |
+| `AAP_structure_glass_clear` | #C0E8DB | 0.05 | Alpha: 0.15, IOR: 1.52 |
+| `AAP_landscape_grass_lawn` | #2D6B1E | 0.85 | Noise variation for realism |
+| `AAP_landscape_gravel_path` | #9E8E7E | 0.95 | Displacement for texture |
+| `AAP_landscape_soil_bed` | #5C4033 | 0.92 | Dark earth tone |
+| `AAP_landscape_water_pool` | #1A5C78 | 0.05 | Glass BSDF, slight green tint |
+| `AAP_fixture_sauna_cedar` | #9A6B3A | 0.65 | Warm golden wood |
+| `AAP_fixture_hot_tub` | #E8E4DE | 0.4 | Light fiberglass shell |
+| `AAP_tech_screen` | #0A0A0D | 0.1 | Emission: 2.0 for active screen |
+| `AAP_tech_speaker` | #1A1A1A | 0.7 | Matte black |
+
+This PBR standard **replaces** the flat-color Principled BSDF nodes the current `render_property.py` emits.
+
+### 3. Lighting
+
+#### Outdoor Scenes
+- **World shader:** Nishita Sky Texture (primary sun source)
+  - Sun elevation: 45–60° ("golden afternoon")
+  - Sun rotation: -30° (west-facing light)
+  - Air density: 1.0, Dust density: 0.5
+- **HDRI overlay** (optional): Poly Haven outdoor HDRI for ambient fill
+  - Recommended: `kloofendal_48d_partly_cloudy_4k.hdr`
+- **Exposure control:** `scene.view_settings.exposure` (range -1 to +2)
+  - NEVER crank lamp intensity above 10.0; adjust exposure instead.
+- **No point lights** for outdoor scenes (sun + HDRI only).
+
+#### Interior Scenes
+- Area lights at window positions
+- Color temperature: 4500 K (warm)
+- Bounce light from ground/walls via Cycles GI
+
+### 4. Modeling Rules
+
+#### Scale
+- **1 Blender Unit = 1 foot** (AlpacApps convention; differs from sponic-garden's meters)
+- Apply scale (`Ctrl+A > Scale`) before any export or render.
+
+#### Geometry Quality
+| Rule | Why | How |
+|------|-----|-----|
+| Bevel ALL edges | Sharp 90° edges don't exist in reality; bevels catch specular highlights | Bevel modifier: width **0.066 ft** (~0.02 m), segments 3 |
+| Wall thickness ≥ 0.49 ft (~0.15 m) | Single-face walls are invisible from angles and look fake | Solidify modifier: thickness **0.49–1.0 ft** |
+| Ground contact required | Floating objects break immersion instantly | Raycast snap, or manually verify Z-min = 0 |
+| Support all canopies | Roofs/covers must have visible columns | Minimum 4 posts per covered structure |
+| No intersecting geometry | Overlapping faces cause Z-fighting | Boolean union or manual separation |
+
+#### Object Origins
+- Origin at **base center** of object (bottom face center) → Z=0 means "sitting on ground."
+
+### 5. Camera Conventions
+
+#### Naming
+```
+CAM_{view}_{purpose}
+```
+
+Map this onto the Phase 3G view list:
+
+| Camera | Focal Length | Type | Purpose |
+|--------|-------------|------|---------|
+| `CAM_aerial_overview` | N/A | Orthographic | Bird's eye / site plan |
+| `CAM_perspective_hero` | 35 mm | Perspective | Main marketing 3/4 shot (Main Cluster) |
+| `CAM_entrance_approach` | 35 mm | Perspective | Approach from Still Forest Dr |
+| `CAM_detail_pool` | 50 mm | Perspective, DOF f/2.8 | Pool & deck close-up |
+| `CAM_detail_treeline` | 50 mm | Perspective | West tree line |
+
+#### Settings
+- Sensor size: 36 mm (Full Frame equivalent)
+- Clip start: 0.1 ft (snap to scene-appropriate near plane), Clip end: 5000 ft
+- Depth of field ON for hero shots (f/2.8), OFF for orthographic.
+
+### 6. Quality Checklist
+
+**Run before EVERY final render:**
+
+- [ ] No floating objects (orbit scene, check from 4 cardinal directions)
+- [ ] All edges beveled (Bevel modifier on every mesh object)
+- [ ] All walls have thickness (Solidify modifier, ≥ 0.49 ft)
+- [ ] Every visible surface has a PBR material assigned
+- [ ] HDRI or Nishita sky background loaded (no gray void)
+- [ ] Ground plane extends beyond camera frustum edges
+- [ ] Cycles selected (NOT EEVEE)
+- [ ] AgX color management set (NOT Filmic or Standard)
+- [ ] OIDN denoiser enabled
+- [ ] Camera named with `CAM_` prefix and purpose
+- [ ] Scale applied on all objects (`Ctrl+A > Scale`)
+- [ ] Render resolution set (1920×1080 min for working, 3840×2160 for hero)
+- [ ] Output path configured and directory exists
+
+### 7. Compositor Post-Processing
+
+For that final 5% of realism:
+- **Glare** node — type: Fog Glow, threshold 2.0, quality High (soft bloom on bright areas)
+- **Lens Distortion** — dispersion 0.01 (subtle chromatic aberration)
+- **Vignette** — Ellipse Mask + Mix node, factor 0.15 (draws eye to center)
+
+---
+
 ### Phase 4: Render & Publish
 
 #### Step 4A: Render Settings
 
-```
-Engine: Cycles
-Samples: 256 (final) / 64 (preview)
-Denoising: OpenImageDenoise (OptiX if GPU available)
-Resolution: 3840×2160 (4K) for hero shots, 1920×1080 for secondary
-Color Management: Filmic (medium-high contrast)
-```
-
-Note: Almaca is Intel (no GPU Cycles acceleration). Expect 5-15 minutes per frame at 4K with Cycles CPU rendering. Consider EEVEE for faster preview renders.
+Use the **AlpacApps Blender Quality Standards** in Part 2.5 below — Cycles, 2048 samples (preview 128 via `RENDER_PREVIEW=1`), AgX Punchy color management, OIDN denoiser, 3840×2160 hero / 1920×1080 working. Render on **Alpuca (M4, Metal GPU)**, not Almaca (Intel CPU).
 
 #### Step 4B: Post-Processing
 
