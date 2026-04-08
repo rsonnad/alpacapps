@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Review Documents — 160 Still Forest Dr</title>
+  <link rel="icon" type="image/png" href="../../../favicon.png">
+  <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f5f0; --bg-card: #fff; --bg-alt: #f0ede5; --border: #e5e0d8; --radius: 8px;
+      --text: #1c1618; --text-muted: #8c8279; --accent: #d4883a; --accent-green: #16a34a;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .page-header { padding: 1.25rem 1.5rem; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .page-header h1 { font-size: 1.1rem; font-weight: 700; }
+    .page-content { max-width: 1000px; margin: 0 auto; padding: 1.25rem; }
+    .back-link { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--accent); text-decoration: none; font-size: 0.82rem; font-weight: 600; margin-bottom: 1rem; }
+    .back-link:hover { text-decoration: underline; }
+
+    .summary-bar {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.6rem; margin-bottom: 1.25rem;
+    }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+    }
+    .stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; }
+    .stat-value { font-size: 1.4rem; font-weight: 700; margin-top: 0.2rem; color: var(--accent-green); }
+
+    .search-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-row input {
+      flex: 1; min-width: 200px; padding: 0.55rem 0.8rem; border: 1px solid var(--border);
+      border-radius: var(--radius); font-family: inherit; font-size: 0.85rem; background: var(--bg-card);
+    }
+    .search-row input:focus { outline: none; border-color: var(--accent); }
+
+    .task-group {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.75rem; overflow: hidden;
+    }
+    .task-header {
+      display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem;
+      background: var(--bg-alt); border-bottom: 1px solid var(--border); cursor: pointer;
+      user-select: none;
+    }
+    .task-header::before { content: '▸'; font-size: 0.75rem; transition: transform 0.15s; }
+    .task-group.open .task-header::before { transform: rotate(90deg); }
+    .task-code {
+      font-size: 0.68rem; font-weight: 700; padding: 0.1rem 0.45rem;
+      background: var(--accent); color: #fff; border-radius: 4px;
+    }
+    .task-title { flex: 1; font-size: 0.88rem; font-weight: 600; }
+    .task-count {
+      font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+      background: var(--bg-card); padding: 0.15rem 0.55rem; border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .doc-list { padding: 0.5rem 1rem 0.75rem; display: none; }
+    .task-group.open .doc-list { display: block; }
+    .doc-row {
+      display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border); font-size: 0.8rem;
+    }
+    .doc-row:last-child { border-bottom: none; }
+    .doc-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .doc-name { flex: 1; color: var(--text); word-break: break-all; }
+    .doc-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+    .doc-btn {
+      font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.6rem; border-radius: 5px;
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn-open { background: var(--accent-green); color: #fff; }
+    .btn-dl { background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); }
+    .doc-btn:hover { opacity: 0.9; }
+
+    .empty, .loading {
+      text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .error {
+      padding: 0.75rem 1rem; background: #fef2f2; border: 1px solid #fecaca;
+      color: #991b1b; border-radius: var(--radius); font-size: 0.82rem; margin-bottom: 1rem;
+    }
+  </style>
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+</head>
+<body>
+  <div class="page-header">
+    <h1>Review Documents</h1>
+    <div style="font-size:0.75rem; color:var(--text-muted);">160 Still Forest Dr</div>
+  </div>
+
+  <div class="page-content">
+    <a href="/spaces/admin/phyprop.html#permittingplan" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Permitting Plan
+    </a>
+
+    <div class="summary-bar" id="summaryBar"></div>
+
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Search files by name or task…">
+    </div>
+
+    <div id="errorBox"></div>
+    <div id="content" class="loading">Loading documents…</div>
+  </div>
+
+  <div style="text-align:center; padding:1rem 0 0.5rem; font-size:0.65rem; color:#b0a89e;"><span data-site-version>v260408.04 12:29p</span></div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const supabase = createClient(
+      'https://aphrrfprbixmhissnjfn.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk'
+    );
+
+    const STORAGE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/permitting-documents';
+
+    const iconFor = (name) => {
+      const ext = (name.split('.').pop() || '').toLowerCase();
+      if (['pdf'].includes(ext)) return '📄';
+      if (['png','jpg','jpeg','gif','webp','svg'].includes(ext)) return '🖼️';
+      if (['doc','docx'].includes(ext)) return '📝';
+      if (['xls','xlsx','csv'].includes(ext)) return '📊';
+      if (['zip','tar','gz'].includes(ext)) return '🗜️';
+      return '📎';
+    };
+
+    const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    let allTasks = [];
+
+    function render(filter = '') {
+      const content = document.getElementById('content');
+      const q = filter.trim().toLowerCase();
+
+      const tasksWithDocs = allTasks
+        .filter(t => Array.isArray(t.storage_paths) && t.storage_paths.length)
+        .map(t => ({
+          ...t,
+          _docs: t.storage_paths.filter(p => !q || p.toLowerCase().includes(q) || (t.title||'').toLowerCase().includes(q) || (t.task_code||'').toLowerCase().includes(q))
+        }))
+        .filter(t => t._docs.length);
+
+      const totalDocs = tasksWithDocs.reduce((n, t) => n + t._docs.length, 0);
+      const totalTasks = tasksWithDocs.length;
+
+      document.getElementById('summaryBar').innerHTML = `
+        <div class="stat-card"><div class="stat-label">Documents</div><div class="stat-value">${totalDocs}</div></div>
+        <div class="stat-card"><div class="stat-label">Tasks w/ Docs</div><div class="stat-value">${totalTasks}</div></div>
+        <div class="stat-card"><div class="stat-label">Bucket</div><div class="stat-value" style="font-size:0.85rem; color:var(--text); font-weight:600;">permitting-documents</div></div>
+      `;
+
+      if (!tasksWithDocs.length) {
+        content.className = 'empty';
+        content.textContent = q ? 'No matching documents.' : 'No documents found in permit_tasks.';
+        return;
+      }
+
+      content.className = '';
+      content.innerHTML = tasksWithDocs.map((t, idx) => `
+        <div class="task-group ${idx === 0 ? 'open' : ''}">
+          <div class="task-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="task-code">${esc(t.task_code || '—')}</span>
+            <span class="task-title">${esc(t.title || 'Untitled task')}</span>
+            <span class="task-count">${t._docs.length} file${t._docs.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="doc-list">
+            ${t._docs.map(p => {
+              const name = p.split('/').pop() || p;
+              const url = `${STORAGE_URL}/${p}`;
+              return `
+                <div class="doc-row">
+                  <span class="doc-icon">${iconFor(name)}</span>
+                  <span class="doc-name">${esc(name)}</span>
+                  <div class="doc-actions">
+                    <a class="doc-btn btn-open" href="${esc(url)}" target="_blank" rel="noopener">Open</a>
+                    <a class="doc-btn btn-dl" href="${esc(url)}" download>Download</a>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from('permit_tasks')
+          .select('task_code,title,storage_paths,sort_order')
+          .order('sort_order', { ascending: true });
+        if (error) throw error;
+        allTasks = data || [];
+        render();
+      } catch (e) {
+        document.getElementById('content').style.display = 'none';
+        document.getElementById('errorBox').innerHTML = `<div class="error">Failed to load documents: ${esc(e.message || e)}</div>`;
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', (e) => render(e.target.value));
+    load();
+  </script>
+</body>
+</html>
