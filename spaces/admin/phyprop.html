@@ -123,6 +123,9 @@
     }
     .pp-tree-detail-grid dt { color: var(--text-muted, #6b7280); }
     .pp-tree-detail-grid dd { margin: 0; font-weight: 500; color: #1f2937; }
+    .pp-record-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .pp-record-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.875rem 1rem; }
+    .pp-record-title { font-weight: 600; font-size: 0.9375rem; margin-bottom: 0.5rem; color: #1f2937; }
     .pp-tree-children { display: none; }
     .pp-tree-children.open { display: block; }
     .pp-compliance-dot {
@@ -362,21 +365,14 @@
           <div class="pp-section">
             <h3 class="pp-section-title">Parcel</h3>
             <p class="pp-section-sub">Land parcel details from the 3D Property Digital Twin database</p>
-            <div id="parcelSummary" class="pp-stat-grid">
-              <div class="pp-stat"><div class="pp-stat-label">Loading...</div><div class="pp-stat-value">--</div></div>
-            </div>
+            <div id="parcelSummary"><div class="pp-empty">Loading...</div></div>
           </div>
 
           <!-- Parcel Edges -->
           <div class="pp-section">
             <h3 class="pp-section-title">Parcel Edges <span class="pp-count" id="edgesCount"></span></h3>
             <p class="pp-section-sub">Boundary edges with setback requirements</p>
-            <div class="pp-table-wrap">
-              <table class="pp-table">
-                <thead><tr><th>Side</th><th>Label</th><th>Length</th><th>Bearing</th><th>Road</th><th>Easement</th><th>Setback</th></tr></thead>
-                <tbody id="edgesBody"><tr><td colspan="7" class="pp-empty">Loading...</td></tr></tbody>
-              </table>
-            </div>
+            <div id="edgesContainer"><div class="pp-empty">Loading...</div></div>
           </div>
 
           <!-- Structures -->
@@ -392,36 +388,21 @@
           <div class="pp-section">
             <h3 class="pp-section-title">Utilities <span class="pp-count" id="utilitiesCount"></span></h3>
             <p class="pp-section-sub">Water, septic, electric, and fire protection systems</p>
-            <div class="pp-table-wrap">
-              <table class="pp-table">
-                <thead><tr><th>Type</th><th>Provider</th><th>System</th><th>Availability Letter</th></tr></thead>
-                <tbody id="utilitiesBody"><tr><td colspan="4" class="pp-empty">Loading...</td></tr></tbody>
-              </table>
-            </div>
+            <div id="utilitiesContainer"><div class="pp-empty">Loading...</div></div>
           </div>
 
           <!-- Impervious Cover -->
           <div class="pp-section">
             <h3 class="pp-section-title">Impervious Cover <span class="pp-count" id="imperviousCount"></span></h3>
             <p class="pp-section-sub">Tracked impervious surface areas for county compliance</p>
-            <div class="pp-table-wrap">
-              <table class="pp-table">
-                <thead><tr><th>Source</th><th>Type</th><th>Area (sq ft)</th></tr></thead>
-                <tbody id="imperviousBody"><tr><td colspan="3" class="pp-empty">Loading...</td></tr></tbody>
-              </table>
-            </div>
+            <div id="imperviousContainer"><div class="pp-empty">Loading...</div></div>
           </div>
 
           <!-- Zoning Rules -->
           <div class="pp-section">
             <h3 class="pp-section-title">Zoning Rules</h3>
             <p class="pp-section-sub">Bastrop County setback and coverage regulations</p>
-            <div class="pp-table-wrap">
-              <table class="pp-table">
-                <thead><tr><th>Rule</th><th>Category</th><th>Value</th><th>Notes</th></tr></thead>
-                <tbody id="zoningBody"><tr><td colspan="4" class="pp-empty">Loading...</td></tr></tbody>
-              </table>
-            </div>
+            <div id="zoningContainer"><div class="pp-empty">Loading...</div></div>
           </div>
 
         </div><!-- /pp-panel-structures -->

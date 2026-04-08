@@ -100,6 +100,22 @@ function setStat(id, val) {
   if (el) el.textContent = val;
 }
 
+// Generic full-record card list. fields = [[label, key|fn], ...]
+function renderRecordCards(rows, fields, titleFn) {
+  if (!rows || !rows.length) return '<div class="pp-empty">No records</div>';
+  return `<div class="pp-record-list">${rows.map(r => {
+    const title = typeof titleFn === 'function' ? titleFn(r) : esc(r[titleFn] || '--');
+    return `<div class="pp-record-card">
+      <div class="pp-record-title">${title}</div>
+      <dl class="pp-tree-detail-grid">${fields.map(([label, key]) => {
+        const v = typeof key === 'function' ? key(r) : r[key];
+        const display = v == null || v === '' ? '--' : (typeof v === 'boolean' ? (v ? 'Yes' : 'No') : esc(String(v)));
+        return `<dt>${esc(label)}</dt><dd>${display}</dd>`;
+      }).join('')}</dl>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 // =============================================
 // SPACES
 // =============================================
@@ -146,15 +162,26 @@ async function loadParcel() {
 
     const el = document.getElementById('parcelSummary');
     if (!data) { el.innerHTML = '<div class="pp-empty">No parcel data found</div>'; return; }
-
-    el.innerHTML = `
-      <div class="pp-stat"><div class="pp-stat-label">Name</div><div class="pp-stat-value" style="font-size:1rem;">${esc(data.name)}</div></div>
-      <div class="pp-stat"><div class="pp-stat-label">Acreage</div><div class="pp-stat-value">${data.acreage ?? '--'}</div></div>
-      <div class="pp-stat"><div class="pp-stat-label">Area (sq ft)</div><div class="pp-stat-value">${data.area_sqft ? Number(data.area_sqft).toLocaleString() : '--'}</div></div>
-      <div class="pp-stat"><div class="pp-stat-label">Flood Zone</div><div class="pp-stat-value" style="font-size:1rem;">${esc(data.flood_zone || '--')}</div></div>
-      <div class="pp-stat"><div class="pp-stat-label">ESD District</div><div class="pp-stat-value" style="font-size:1rem;">${esc(data.esd_district || '--')}</div></div>
-      <div class="pp-stat"><div class="pp-stat-label">Survey</div><div class="pp-stat-value" style="font-size:0.875rem;">${esc(data.survey_by || '--')} (${data.survey_date || '--'})</div></div>
-    `;
+    el.innerHTML = renderRecordCards([data], [
+      ['Name', 'name'],
+      ['Address', 'address'],
+      ['City', 'city'],
+      ['County', 'county'],
+      ['State', 'state'],
+      ['Zip', 'zip'],
+      ['Legal Description', 'legal_description'],
+      ['Parcel Number', 'parcel_number'],
+      ['Acreage', 'acreage'],
+      ['Area (sq ft)', r => r.area_sqft ? Number(r.area_sqft).toLocaleString() : '--'],
+      ['Ground Elevation (ft)', 'ground_elevation_ft'],
+      ['Flood Zone', 'flood_zone'],
+      ['In Floodplain', 'in_floodplain'],
+      ['Houston Toad Habitat', 'houston_toad_habitat'],
+      ['ESD District', 'esd_district'],
+      ['Survey Date', 'survey_date'],
+      ['Survey By', 'survey_by'],
+      ['Survey RPLS', 'survey_rpls'],
+    ], r => esc(r.name || 'Parcel'));
   } catch (err) {
     console.error('Parcel load error:', err);
   }
@@ -166,28 +193,27 @@ async function loadParcel() {
 
 async function loadEdges() {
   try {
-    const { data } = await supabase
-      .from('parcel_edges')
-      .select('*')
-      .order('edge_side');
-
-    const body = document.getElementById('edgesBody');
-    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="7" class="pp-empty">No edges found</td></tr>'; return; }
-
-    setCount('edgesCount', data.length);
-
-    body.innerHTML = data.map(e => `<tr>
-      <td><span class="pp-badge pp-badge-blue">${esc(e.edge_side)}</span></td>
-      <td style="font-weight:500;">${esc(e.edge_label || '--')}</td>
-      <td>${e.length_ft ? `${Number(e.length_ft).toFixed(1)} ft` : '--'}</td>
-      <td style="font-size:0.75rem;">${esc(e.bearing || '--')}</td>
-      <td>${e.is_road_frontage ? badge(e.road_name || 'Yes', 'green') : badge('No', 'gray')}</td>
-      <td>${e.has_easement ? badge(`${e.easement_type} (${e.easement_width_ft}')`, 'amber') : badge('None', 'gray')}</td>
-      <td>${e.setback_required_ft ? `${e.setback_required_ft} ft` : '--'}</td>
-    </tr>`).join('');
-  } catch (err) {
-    console.error('Edges load error:', err);
-  }
+    const { data } = await supabase.from('parcel_edges').select('*').order('edge_side');
+    const el = document.getElementById('edgesContainer');
+    setCount('edgesCount', data?.length || 0);
+    el.innerHTML = renderRecordCards(data, [
+      ['Side', 'edge_side'],
+      ['Label', 'edge_label'],
+      ['Length (ft)', 'length_ft'],
+      ['Bearing', 'bearing'],
+      ['Road Frontage', 'is_road_frontage'],
+      ['Road Name', 'road_name'],
+      ['Road Classification', 'road_classification'],
+      ['Road ROW (ft)', 'road_row_ft'],
+      ['Has Easement', 'has_easement'],
+      ['Easement Type', 'easement_type'],
+      ['Easement Width (ft)', 'easement_width_ft'],
+      ['Setback Required (ft)', 'setback_required_ft'],
+      ['Setback Label', 'setback_label'],
+      ['Adjoining Owner', 'adjoining_owner'],
+      ['Notes', 'notes'],
+    ], e => `${esc(e.edge_side)} — ${esc(e.edge_label || '')}`);
+  } catch (err) { console.error('Edges load error:', err); }
 }
 
 // =============================================
@@ -430,25 +456,21 @@ async function loadStructures() {
 
 async function loadUtilities() {
   try {
-    const { data } = await supabase
-      .from('property_utilities')
-      .select('*')
-      .order('utility_type');
-
-    const body = document.getElementById('utilitiesBody');
-    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="4" class="pp-empty">No utilities found</td></tr>'; return; }
-
-    setCount('utilitiesCount', data.length);
-
-    body.innerHTML = data.map(u => `<tr>
-      <td style="font-weight:500;">${esc(u.utility_type)}</td>
-      <td>${esc(u.provider || '--')}</td>
-      <td>${esc(u.system_type || '--')}</td>
-      <td>${badge(u.availability_letter_status || '--', u.availability_letter_status === 'obtained' ? 'green' : u.availability_letter_status === 'pending' ? 'amber' : 'gray')}</td>
-    </tr>`).join('');
-  } catch (err) {
-    console.error('Utilities load error:', err);
-  }
+    const { data } = await supabase.from('property_utilities').select('*').order('utility_type');
+    const el = document.getElementById('utilitiesContainer');
+    setCount('utilitiesCount', data?.length || 0);
+    el.innerHTML = renderRecordCards(data, [
+      ['Utility Type', 'utility_type'],
+      ['Provider', 'provider'],
+      ['Account Number', 'account_number'],
+      ['Status', 'status'],
+      ['System Type', 'system_type'],
+      ['Capacity', 'capacity'],
+      ['Location', 'location_description'],
+      ['Availability Letter', 'availability_letter_status'],
+      ['Notes', 'notes'],
+    ], u => esc(u.utility_type || '--'));
+  } catch (err) { console.error('Utilities load error:', err); }
 }
 
 // =============================================
@@ -459,22 +481,25 @@ async function loadImpervious() {
   try {
     const { data } = await supabase
       .from('impervious_cover')
-      .select('*, structure:structure_id(name)')
+      .select('*, structure:structure_id(name, space:space_id(name))')
       .order('id');
-
-    const body = document.getElementById('imperviousBody');
-    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="3" class="pp-empty">No impervious cover data</td></tr>'; return; }
-
-    setCount('imperviousCount', data.length);
-
-    body.innerHTML = data.map(ic => `<tr>
-      <td style="font-weight:500;">${esc(ic.structure?.name || ic.source_label || '--')}</td>
-      <td>${esc(ic.surface_type || '--')}</td>
-      <td>${ic.area_sqft ? `${Number(ic.area_sqft).toLocaleString()} sq ft` : '--'}</td>
-    </tr>`).join('');
-  } catch (err) {
-    console.error('Impervious load error:', err);
-  }
+    const el = document.getElementById('imperviousContainer');
+    setCount('imperviousCount', data?.length || 0);
+    el.innerHTML = renderRecordCards(data, [
+      ['Friendly Name', r => r.structure?.space?.name || '--'],
+      ['DB Name', r => r.structure?.name || '--'],
+      ['Surface Type', 'surface_type'],
+      ['Area (sq ft)', r => r.area_sqft ? Number(r.area_sqft).toLocaleString() : '--'],
+      ['Material', 'material'],
+      ['Notes', 'notes'],
+    ], r => {
+      const friendly = r.structure?.space?.name;
+      const db = r.structure?.name;
+      return friendly && friendly !== db
+        ? `${esc(friendly)} <span style="color:var(--text-muted);font-weight:400;font-size:0.8125rem;">(${esc(db || '')})</span>`
+        : esc(friendly || db || '--');
+    });
+  } catch (err) { console.error('Impervious load error:', err); }
 }
 
 // =============================================
@@ -483,23 +508,36 @@ async function loadImpervious() {
 
 async function loadZoning() {
   try {
-    const { data } = await supabase
-      .from('zoning_rules')
-      .select('*')
-      .order('id');
-
-    const body = document.getElementById('zoningBody');
-    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="4" class="pp-empty">No zoning rules found</td></tr>'; return; }
-
-    body.innerHTML = data.map(z => `<tr>
-      <td style="font-weight:500;">${esc(z.rule_name || z.name || '--')}</td>
-      <td>${badge(z.category || z.rule_type || '--', 'blue')}</td>
-      <td>${esc(z.value || z.rule_value || '--')}</td>
-      <td style="font-size:0.75rem;color:var(--text-muted);">${esc(z.notes || z.description || '--')}</td>
-    </tr>`).join('');
-  } catch (err) {
-    console.error('Zoning load error:', err);
-  }
+    const { data } = await supabase.from('zoning_rules').select('*').order('id');
+    const el = document.getElementById('zoningContainer');
+    el.innerHTML = renderRecordCards(data, [
+      ['Jurisdiction', 'jurisdiction'],
+      ['District Code', 'district_code'],
+      ['District Name', 'district_name'],
+      ['Rule Source', 'rule_source'],
+      ['Front Setback (ft)', 'front_setback_ft'],
+      ['Side Setback (ft)', 'side_setback_ft'],
+      ['Rear Setback (ft)', 'rear_setback_ft'],
+      ['Road Setback — Local/Rural (ft)', 'road_setback_local_rural_ft'],
+      ['Road Setback — Ranch (ft)', 'road_setback_ranch_ft'],
+      ['Road Setback — Collector (ft)', 'road_setback_collector_ft'],
+      ['Road Setback — Arterial (ft)', 'road_setback_arterial_ft'],
+      ['Lodging Road ROW Setback (ft)', 'lodging_road_row_setback_ft'],
+      ['Lodging Property Line Setback (ft)', 'lodging_property_line_setback_ft'],
+      ['Lodging Internal Road Setback (ft)', 'lodging_internal_road_setback_ft'],
+      ['Lodging Unit Separation (ft)', 'lodging_unit_separation_ft'],
+      ['Max Height (ft)', 'max_height_ft'],
+      ['Max Lot Coverage (%)', 'max_lot_coverage_pct'],
+      ['Max Impervious (%)', 'max_impervious_pct'],
+      ['Min Lot Size (sq ft)', 'min_lot_size_sqft'],
+      ['Exempt Structure (sq ft)', 'exempt_structure_sqft'],
+      ['Container Behind Primary', 'container_behind_primary'],
+      ['Container Screening Required', 'container_screening_required'],
+      ['Container Screening Height (ft)', 'container_screening_height_ft'],
+      ['Fire Separation (ft)', 'fire_separation_ft'],
+      ['Notes', 'notes'],
+    ], z => `${esc(z.jurisdiction || '')} — ${esc(z.district_name || z.district_code || '')}`);
+  } catch (err) { console.error('Zoning load error:', err); }
 }
 
 // =============================================
