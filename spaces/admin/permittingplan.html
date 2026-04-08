@@ -59,9 +59,29 @@
     .phase-section.collapsed .phase-chevron { transform: rotate(-90deg); }
     .phase-section.collapsed .phase-body { display: none; }
 
-    .task-row { display: grid; grid-template-columns: 28px 1fr 100px 80px; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-bottom: 1px solid #f3f4f6; font-size: 0.85rem; }
+    .task-row { display: grid; grid-template-columns: 28px 1fr 100px 80px 28px; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-bottom: 1px solid #f3f4f6; font-size: 0.85rem; }
     .task-row:last-child { border-bottom: none; }
     .task-row:hover { background: #fafaf8; }
+    .task-sop-toggle { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; color: var(--accent); transition: all 0.15s; }
+    .task-sop-toggle:hover { background: #fef3c7; }
+    .task-sop-toggle svg { transition: transform 0.2s; }
+    .task-sop-toggle.expanded svg { transform: rotate(180deg); }
+    .task-sop-toggle.placeholder { visibility: hidden; }
+    .task-sop-panel { background: #fffdf7; border-left: 3px solid var(--accent); padding: 1rem 1.25rem 1rem 1.5rem; border-bottom: 1px solid #f3f4f6; font-size: 0.82rem; line-height: 1.55; color: #3a322c; }
+    .task-sop-panel h1, .task-sop-panel h2, .task-sop-panel h3 { font-size: 0.88rem; font-weight: 700; margin: 0.75rem 0 0.3rem; color: #1c1618; }
+    .task-sop-panel h1:first-child, .task-sop-panel h2:first-child, .task-sop-panel h3:first-child { margin-top: 0; }
+    .task-sop-panel p { margin: 0.4rem 0; }
+    .task-sop-panel ul, .task-sop-panel ol { margin: 0.3rem 0 0.5rem 1.25rem; }
+    .task-sop-panel li { margin: 0.15rem 0; }
+    .task-sop-panel strong { color: #1c1618; font-weight: 700; }
+    .task-sop-panel code { background: #f3efe6; padding: 0.05rem 0.3rem; border-radius: 3px; font-size: 0.78rem; }
+    .task-sop-panel a { color: var(--accent); text-decoration: underline; }
+    .modal-sop-block { background: #fffdf7; border-left: 3px solid var(--accent); padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.8rem; line-height: 1.5; color: #3a322c; max-height: 300px; overflow-y: auto; }
+    .modal-sop-block h1, .modal-sop-block h2, .modal-sop-block h3 { font-size: 0.85rem; font-weight: 700; margin: 0.6rem 0 0.25rem; }
+    .modal-sop-block h1:first-child, .modal-sop-block h2:first-child, .modal-sop-block h3:first-child { margin-top: 0; }
+    .modal-sop-block p { margin: 0.3rem 0; }
+    .modal-sop-block ul, .modal-sop-block ol { margin: 0.25rem 0 0.4rem 1.2rem; }
+    .modal-sop-block strong { font-weight: 700; color: #1c1618; }
 
     .task-check { width: 18px; height: 18px; border: 2px solid #d1d5db; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
     .task-check.done { background: var(--available); border-color: var(--available); }
@@ -142,10 +162,18 @@
   </style>
 </head>
 <body>
-  <script>if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed-mode');</script>
+  <script>
+    // If accessed directly (not embedded), redirect to PhyProp subtab so the
+    // page shows under the proper Staff/PhyProp navigation chrome.
+    if (new URLSearchParams(location.search).get('embed') !== '1') {
+      location.replace('/spaces/admin/phyprop.html#permittingplan');
+    } else {
+      document.documentElement.classList.add('embed-mode');
+    }
+  </script>
   <style>html.embed-mode #siteHeader { display: none !important; } html.embed-mode body { padding-top: 0 !important; }</style>
   <div id="siteHeader"></div>
-  <span data-site-version style="display:none;">v260408.04 12:29p</span>
+  <span data-site-version style="display:none;">v260408.15 2:14p</span>
   <div id="toastContainer" class="toast-container"></div>
 
   <div id="appContent">
@@ -255,7 +283,11 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
           View Site Plan
         </a>
-        <!-- REMOVED: Development Description, PDF, County Application, Review Documents buttons — these docs are accessible from their task cards in the checklist below. Do NOT re-add these buttons. -->
+        <!-- REMOVED: Development Description, PDF, County Application buttons — these docs are accessible from their task cards in the checklist below. Do NOT re-add these buttons. -->
+        <a href="/jackie/pages/permittingplan/document-review.html" target="_blank" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#16a34a; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Review Documents
+        </a>
         <a href="/jackie/pages/permittingplan/priority-list.html" target="_blank" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; background:#7c3aed; color:#fff; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
           Priority List
@@ -268,6 +300,131 @@
       <div id="readinessBar" class="readiness-bar" style="display:none;"></div>
       <div class="permit-summary" id="summaryStats"></div>
       <div id="phasesContainer"></div>
+
+      <!-- Drainage & Stormwater Reference (Bastrop County rules + parcel-specific data) -->
+      <details class="phase-section" style="margin-top:1.25rem;">
+        <summary style="display:flex; align-items:center; gap:0.6rem; padding:0.75rem 1rem; background:var(--bg); border-bottom:1px solid var(--border); cursor:pointer; user-select:none; list-style:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <h3 style="font-size:0.95rem; font-weight:700; margin:0; flex:1;">Drainage &amp; Stormwater Reference</h3>
+          <span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">Bastrop County rules + NOAA depths</span>
+        </summary>
+        <div style="padding:1rem;">
+          <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 1rem;">Verified against Subdivision Regulations (2017) §VIII and the 2022 Lodging &amp; RV Park Infrastructure Requirements. Drives tasks B32, B35–B40.</p>
+
+          <!-- Why this applies -->
+          <div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem;">
+            <div style="font-size:0.78rem; color:#78350f;">
+              <strong>Why this applies:</strong> Per Texas Attorney General Opinion GA-1007 (May 13, 2013), lodging developments are legally classified as <em>subdivisions</em> under Texas Local Government Code Chapter 232. Any lot accommodating more than 2 lodging units (including tiny houses on foundations) requires an <strong>Infrastructure Development Plan (IDP)</strong> sealed by a Texas-licensed P.E. or RPLS, plus a sealed drainage study.
+            </div>
+          </div>
+
+          <!-- Key facts grid -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.75rem; margin-bottom:1rem;">
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Design Storms</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                <strong>25-year:</strong> drainage structures, culverts, closed conduits<br>
+                <strong>100-year:</strong> floodway, bridges, FFE certification<br>
+                <span style="color:#6b7280;">Per Subdivision Regs §VIII.3.a, §VIII.5</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">NOAA Atlas 14 — Cedar Creek (30.13°N, -97.46°W)</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                <strong>25-year, 24-hr:</strong> 4.46 in<br>
+                <strong>100-year, 24-hr:</strong> 6.06 in<br>
+                <span style="color:#6b7280;">Plug into Rational Method or TR-55</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Approved Calculation Methods</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                <strong>Rational Method</strong> — drainage area ≤ 400 ac ✅ <em>(applies)</em><br>
+                WinTR-55 — ≤ 2,000 ac<br>
+                TxDOT Hydraulic Design Manual<br>
+                HEC-HMS / HEC-RAS — larger basins
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Finished Floor Elevation</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                All buildings must sit <strong>≥ 2 ft above the 100-year water surface elevation</strong>.<br>
+                <span style="color:#16a34a; font-weight:600;">✓ Parcel is in FEMA Zone X (not in 100-yr floodplain)</span><br>
+                <span style="color:#6b7280;">Per §VIII.4.c</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Detention Pond — Conditional</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                Required <strong>only if</strong> TR-55 pre/post analysis shows adverse downstream flooding. <strong>NOT automatic.</strong><br>
+                <span style="color:#6b7280;">Per §VIII.6 — biggest cost variable in the engineering scope</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Channel Velocity Limits</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                <strong>Sandy soils:</strong> &gt; 4 ft/s requires concrete/rock retards<br>
+                <strong>Clay soils:</strong> &gt; 5 ft/s requires concrete/rock retards<br>
+                Unlined ditches must have established vegetation
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Setbacks (Lodging Rules §IV.8)</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                25 ft from public ROW (Still Forest Dr)<br>
+                15 ft from property line<br>
+                10 ft from internal road<br>
+                20 ft between lodging units
+              </div>
+            </div>
+
+            <div style="border:1px solid #e5e0d8; border-radius:8px; padding:0.75rem; background:#fff;">
+              <div style="font-size:0.65rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:0.4rem;">Cost Range</div>
+              <div style="font-size:0.82rem; line-height:1.5;">
+                Topo survey (RPLS): <strong>$2,500–$5,000</strong><br>
+                P.E. drainage + IDP: <strong>$4,000–$10,000</strong><br>
+                OSSF design: <strong>$1,500–$3,500</strong><br>
+                Detention (if triggered): <strong>+$2,000–$5,000</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Source documents -->
+          <h4 style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#6b7280; margin: 1.25rem 0 0.5rem;">Source Documents</h4>
+          <div style="font-size:0.8rem; line-height:1.7;">
+            <a href="https://www.bastropcounty.gov/upload/page/0145/docs/2022.09.12CourtAppdLodgingRVParkRequirements.pdf" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">📄 Lodging &amp; RV Park Infrastructure Requirements (2022)</a>
+            <a href="https://www.bastropcounty.gov/upload/page/0145/docs/SDRegsBookmarkedAdopted042417.pdf" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">📄 Subdivision Regulations §VIII (2017)</a>
+            <a href="https://www.bastropcounty.gov/upload/page/0145/docs/FLOOD%20DAMAGE%20PREVENTION%20ORDER%20-%20ADOPTED%207.14.2025.pdf" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">📄 Flood Damage Prevention Order (2025)</a><br>
+            <a href="https://www.bastropcounty.gov/page/ds.home" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">🌐 Bastrop County Dev Services</a>
+            <a href="https://hdsc.nws.noaa.gov/pfds/pfds_map_cont.html" target="_blank" rel="noopener" style="color:var(--accent); margin-right:1rem;">🌐 NOAA Atlas 14</a>
+            <a href="https://pels.texas.gov/lictype.html" target="_blank" rel="noopener" style="color:var(--accent);">🌐 TBPELS P.E. Lookup</a>
+            <div style="margin-top:0.5rem; color:#6b7280;">📞 Bastrop County Dev Services: (512) 581-7176 · 211 Jackson St, Bastrop TX</div>
+          </div>
+
+          <!-- Pre-app meeting questions -->
+          <h4 style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#6b7280; margin: 1.25rem 0 0.5rem;">Questions to Ask at Pre-Application Meeting</h4>
+          <ol style="font-size:0.8rem; line-height:1.7; padding-left:1.25rem; color:#374151;">
+            <li>Does the <strong>Rational Method</strong> suffice for our 1.7-ac parcel, or do you require TR-55?</li>
+            <li>Given our planned impervious cover, do you anticipate <strong>detention will be triggered</strong>?</li>
+            <li>Is <strong>Still Forest Dr county-maintained</strong> (driveway permit jurisdiction)?</li>
+            <li>Are there any <strong>known downstream drainage constraints</strong> on our discharge path?</li>
+            <li>Does long-term rental classify as commercial for drainage review, or residential? Does the answer change at a certain unit count?</li>
+            <li>Does our project need a full <strong>Drainage Study</strong> or just a <strong>Drainage Report</strong>?</li>
+            <li>Are there any <strong>karst / groundwater protection overlays</strong> affecting Cedar Creek parcels?</li>
+            <li>What is the current <strong>fee schedule</strong> for IDP review?</li>
+            <li>How many sets of plans + digital format requirements at submittal?</li>
+            <li>Does the county maintain a list of <strong>preferred local civil engineers</strong>?</li>
+          </ol>
+        </div>
+      </details>
+
       <!-- Next Phase: Building Permit -->
       <a href="building-permit.html" style="display:flex; align-items:center; gap:0.75rem; padding:1rem 1.25rem; background:#fff; border:2px solid #0d9488; border-radius:var(--radius); text-decoration:none; margin-top:1.25rem; transition:background 0.15s;" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='#fff'">
         <div style="width:40px; height:40px; background:#0d9488; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
@@ -286,7 +443,7 @@
 
   <div id="taskModalContainer"></div>
 
-  <div style="text-align:center; padding:1rem 0 0.5rem; font-size:0.65rem; color:#b0a89e;"><span data-site-version>v260408.04 12:29p</span></div>
+  <div style="text-align:center; padding:1rem 0 0.5rem; font-size:0.65rem; color:#b0a89e;"><span data-site-version>v260408.15 2:14p</span></div>
 
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
   <script type="module">
@@ -428,8 +585,26 @@
       }).join('');
     }
 
+    function getExpandedSops() {
+      try { return JSON.parse(localStorage.getItem('permit-sop-expanded') || '[]'); }
+      catch { return []; }
+    }
+    function setExpandedSops(ids) {
+      localStorage.setItem('permit-sop-expanded', JSON.stringify(ids));
+    }
+
     function renderTask(t) {
       const isDone = t.status === 'completed';
+      const hasSop = !!(t.sop_markdown && t.sop_markdown.trim());
+      const expanded = hasSop && getExpandedSops().includes(t.id);
+      const toggleBtn = hasSop
+        ? `<div class="task-sop-toggle ${expanded ? 'expanded' : ''}" title="Toggle SOP details" onclick="event.stopPropagation(); toggleSop('${t.id}')">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+           </div>`
+        : `<div class="task-sop-toggle placeholder"></div>`;
+      const sopPanel = hasSop && expanded
+        ? `<div class="task-sop-panel" data-sop-for="${t.id}">${renderMarkdown(t.sop_markdown)}</div>`
+        : '';
       return `<div class="task-row" data-task-id="${t.id}" onclick="openTaskModal('${t.id}')">
         <div class="task-check ${isDone ? 'done' : ''}" onclick="event.stopPropagation(); toggleTask('${t.id}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -441,7 +616,65 @@
         </div>
         <span class="task-status ${t.status}">${STATUS_LABELS[t.status] || t.status}</span>
         <span class="task-assignee">${t.assignee || ''}</span>
-      </div>`;
+        ${toggleBtn}
+      </div>${sopPanel}`;
+    }
+
+    window.toggleSop = function(taskId) {
+      const current = getExpandedSops();
+      const next = current.includes(taskId) ? current.filter(x => x !== taskId) : [...current, taskId];
+      setExpandedSops(next);
+      renderPhases();
+    };
+
+    // Minimal markdown → HTML (escape first, then tokenize).
+    function renderMarkdown(md) {
+      if (!md) return '';
+      let html = esc(md);
+      // Code spans
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // Bold
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      // Links [text](url)
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      // Headings
+      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      // Lists — group consecutive lines starting with "- " or "1. "
+      const lines = html.split('\n');
+      const out = [];
+      let listType = null;
+      let para = [];
+      const flushPara = () => {
+        if (para.length) { out.push('<p>' + para.join(' ') + '</p>'); para = []; }
+      };
+      const closeList = () => {
+        if (listType) { out.push('</' + listType + '>'); listType = null; }
+      };
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line) { flushPara(); closeList(); continue; }
+        if (/^<h[1-3]>/.test(line)) { flushPara(); closeList(); out.push(line); continue; }
+        const ul = line.match(/^-\s+(.+)$/);
+        const ol = line.match(/^\d+\.\s+(.+)$/);
+        if (ul) {
+          flushPara();
+          if (listType !== 'ul') { closeList(); out.push('<ul>'); listType = 'ul'; }
+          out.push('<li>' + ul[1] + '</li>');
+          continue;
+        }
+        if (ol) {
+          flushPara();
+          if (listType !== 'ol') { closeList(); out.push('<ol>'); listType = 'ol'; }
+          out.push('<li>' + ol[1] + '</li>');
+          continue;
+        }
+        closeList();
+        para.push(line);
+      }
+      flushPara(); closeList();
+      return out.join('\n');
     }
 
     function renderDocLinks(paths, taskCode) {
@@ -676,6 +909,7 @@
               <button class="task-modal-close" onclick="closeTaskModal()">&times;</button>
             </div>
             <div class="task-modal-body">
+              ${t.sop_markdown && t.sop_markdown.trim() ? `<div class="modal-sop-block">${renderMarkdown(t.sop_markdown)}</div>` : ''}
               <div class="field"><label>Status</label>
                 <select id="modalStatus">${Object.entries(STATUS_LABELS).map(([k,v]) => `<option value="${k}" ${t.status===k?'selected':''}>${v}</option>`).join('')}</select>
               </div>
