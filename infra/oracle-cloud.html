@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oracle Cloud ARM — Free Server Setup &amp; Auto-Provisioning</title>
+  <meta name="description" content="Step-by-step guide to creating an Oracle Cloud Always Free account and auto-provisioning an ARM server. Human and LLM readable.">
+  <!-- LLM INSTRUCTION: This page documents Oracle Cloud Always Free ARM provisioning.
+       It is designed to be parsed by both humans and LLMs for automation scripting.
+       Key sections: Account Setup, OCI CLI, SSH Keys, Auto-Provision Script, Post-Provision.
+       Machine-readable config blocks are marked with data-config attributes. -->
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --code-bg: #faf8f5;
+      --success: #6b8e5a;
+      --success-light: #eef5eb;
+      --warning-bg: #fceee9;
+      --warning-border: #c75b3a;
+      --claude-bg: #f3effc;
+      --claude-border: #7c6a9a;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-warm);
+      line-height: 1.7;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+    }
+    h1 span { color: var(--accent); }
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      max-width: 620px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(201,168,124,0.2);
+      margin-bottom: 1.5rem;
+    }
+
+    p { margin-bottom: 0.85rem; }
+    a { color: var(--accent); transition: color 0.2s; }
+    a:hover { color: #a08050; }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--accent-light);
+      color: #6b5230;
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.86em;
+    }
+    ol, ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.35rem; }
+    li::marker { color: var(--accent); font-weight: 600; }
+
+    /* Step cards */
+    .step {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .step h2 {
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Code blocks */
+    pre {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      margin: 1rem 0;
+      position: relative;
+    }
+    pre .comment { color: #6c7086; }
+    pre .string { color: #a6e3a1; }
+    pre .var { color: #89b4fa; }
+    pre .cmd { color: #f9e2af; }
+
+    /* Spec table */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    .spec-table th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      background: var(--accent-light);
+      border: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .spec-table td {
+      padding: 0.6rem 1rem;
+      border: 1px solid var(--border);
+    }
+    .spec-table tr:nth-child(even) td {
+      background: var(--bg-warm);
+    }
+
+    /* Info/warning boxes */
+    .info-box {
+      background: var(--claude-bg);
+      border: 1px solid var(--claude-border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    .info-box strong { color: var(--claude-border); }
+    .warn-box {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    .warn-box strong { color: var(--warning-border); }
+    .success-box {
+      background: var(--success-light);
+      border: 1px solid var(--success);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    .success-box strong { color: var(--success); }
+
+    /* Copy button */
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      color: #cdd6f4;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* TOC */
+    .toc {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .toc h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .toc ol { margin-bottom: 0; }
+    .toc li { margin-bottom: 0.25rem; }
+
+    /* Footer */
+    .footer-links {
+      text-align: center;
+      padding: 2rem 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .footer-links a { margin: 0 1rem; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      h1 { font-size: 1.7rem; }
+      .step { padding: 1.5rem; }
+      pre { padding: 1rem; font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="badge">Always Free Tier</div>
+  <h1>Oracle Cloud <span>ARM Server</span></h1>
+  <p class="subtitle">Create an Oracle Cloud account and auto-provision a free ARM server (up to 4 OCPUs, 24 GB RAM, 200 GB disk). This guide is written for both humans following along and LLMs scripting the automation.</p>
+
+  <!-- ============================================================
+       LLM PARSING GUIDE
+       ============================================================
+       This page has a predictable structure:
+       - Each <div class="step"> is a sequential setup step
+       - <pre data-config="..."> blocks contain copy-paste commands
+       - <table class="spec-table"> blocks contain structured specs
+       - The full provisioning script is in Step 5
+       - Post-provision resize commands are in Step 6
+       ============================================================ -->
+
+  <nav class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#what-you-get">What You Get (Free Tier Specs)</a></li>
+      <li><a href="#create-account">Create an Oracle Cloud Account</a></li>
+      <li><a href="#ssh-keys">Generate SSH Keys</a></li>
+      <li><a href="#oci-cli">Install &amp; Configure the OCI CLI</a></li>
+      <li><a href="#provisioning-script">The Auto-Provisioning Script</a></li>
+      <li><a href="#post-provision">Post-Provision: Resize &amp; Harden</a></li>
+      <li><a href="#launchd">Run on a Schedule (macOS LaunchAgent)</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+  </nav>
+
+
+  <!-- ==================== STEP 1 ==================== -->
+  <div class="step" id="what-you-get">
+    <h2><span class="step-num">1</span> What You Get (Free)</h2>
+
+    <p>Oracle's <strong>Always Free</strong> tier includes Ampere ARM instances that never expire. The total allocation per account:</p>
+
+    <table class="spec-table" data-config="always-free-specs">
+      <tr><th>Resource</th><th>Allocation</th></tr>
+      <tr><td>CPU</td><td>4 OCPUs (ARM Ampere A1)</td></tr>
+      <tr><td>Memory</td><td>24 GB</td></tr>
+      <tr><td>Boot Volume</td><td>200 GB (2x 47 GB default, or 1x 200 GB)</td></tr>
+      <tr><td>Network</td><td>4 Gbps aggregate, public IPv4</td></tr>
+      <tr><td>Outbound Data</td><td>10 TB / month</td></tr>
+      <tr><td>Shape</td><td><code>VM.Standard.A1.Flex</code></td></tr>
+      <tr><td>OS Options</td><td>Ubuntu, Oracle Linux, CentOS (ARM64)</td></tr>
+    </table>
+
+    <p>You can split the 4 OCPU / 24 GB across up to 4 instances, or use it all on one. This guide provisions a single max instance.</p>
+
+    <div class="info-box">
+      <strong>Why auto-provision?</strong> ARM capacity is limited. Oracle returns "Out of host capacity" most of the time. The script retries every 60 seconds, rotating across availability domains, until an instance lands. This can take hours or weeks.
+    </div>
+  </div>
+
+
+  <!-- ==================== STEP 2 ==================== -->
+  <div class="step" id="create-account">
+    <h2><span class="step-num">2</span> Create an Oracle Cloud Account</h2>
+
+    <ol>
+      <li>Go to <strong>cloud.oracle.com</strong> and click <strong>Sign Up</strong></li>
+      <li>Enter your email, name, and choose a <strong>Home Region</strong></li>
+    </ol>
+
+    <div class="warn-box">
+      <strong>Home Region is permanent.</strong> You cannot change it after signup. Pick a region close to your users or with good ARM availability. Regions with multiple availability domains (Phoenix, Ashburn, London, Frankfurt, Tokyo) give you more retry targets.
+    </div>
+
+    <ol start="3">
+      <li>Add a payment method (credit card required for verification — you will not be charged for Always Free resources)</li>
+      <li>Complete email verification and wait for account activation (usually instant, sometimes up to 30 minutes)</li>
+      <li>Sign in to the <strong>OCI Console</strong> at cloud.oracle.com</li>
+    </ol>
+
+    <p>Once signed in, note your <strong>Tenancy OCID</strong> from the Console:</p>
+    <pre data-config="find-tenancy-ocid"><span class="comment"># OCI Console → Profile (top-right) → Tenancy: &lt;name&gt;</span>
+<span class="comment"># Copy the OCID — looks like:</span>
+<span class="comment"># ocid1.tenancy.oc1..aaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span></pre>
+
+    <h3>Collect Required OCIDs</h3>
+    <p>You'll need four identifiers from the console. Here's where to find each:</p>
+
+    <table class="spec-table" data-config="required-ocids">
+      <tr><th>Value</th><th>Where to Find</th></tr>
+      <tr><td>Tenancy OCID</td><td>Profile menu → Tenancy → OCID</td></tr>
+      <tr><td>User OCID</td><td>Profile menu → My Profile → OCID</td></tr>
+      <tr><td>Compartment OCID</td><td>Identity → Compartments → root compartment OCID (same as tenancy for personal accounts)</td></tr>
+      <tr><td>Subnet OCID</td><td>Networking → Virtual Cloud Networks → your VCN → Subnets → public subnet OCID</td></tr>
+    </table>
+
+    <div class="info-box">
+      <strong>No VCN yet?</strong> Create one: Networking → Virtual Cloud Networks → Start VCN Wizard → "Create VCN with Internet Connectivity". This creates a public subnet with an internet gateway — exactly what you need.
+    </div>
+  </div>
+
+
+  <!-- ==================== STEP 3 ==================== -->
+  <div class="step" id="ssh-keys">
+    <h2><span class="step-num">3</span> Generate SSH Keys</h2>
+
+    <p>Create a dedicated key pair for your Oracle instance:</p>
+
+    <pre data-config="ssh-keygen"><span class="comment"># Generate an Ed25519 key (recommended) or RSA 4096</span>
+ssh-keygen -t ed25519 -f ~/.ssh/oracle_key -C "oracle-arm" -N ""
+
+<span class="comment"># Or RSA if your OCI image doesn't support Ed25519:</span>
+<span class="comment"># ssh-keygen -t rsa -b 4096 -f ~/.ssh/oracle_key -C "oracle-arm" -N ""</span>
+
+<span class="comment"># Verify both files exist</span>
+ls -la ~/.ssh/oracle_key ~/.ssh/oracle_key.pub</pre>
+
+    <p>The <code>.pub</code> file contents will be passed to the instance at creation. The private key stays on your machine.</p>
+  </div>
+
+
+  <!-- ==================== STEP 4 ==================== -->
+  <div class="step" id="oci-cli">
+    <h2><span class="step-num">4</span> Install &amp; Configure the OCI CLI</h2>
+
+    <pre data-config="install-oci-cli"><span class="comment"># macOS (Homebrew)</span>
+brew install oci-cli
+
+<span class="comment"># Linux / other</span>
+bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)"
+
+<span class="comment"># Verify</span>
+oci --version</pre>
+
+    <p>Run the setup wizard to generate your API key and config:</p>
+
+    <pre data-config="oci-setup"><span class="comment"># Interactive setup — generates ~/.oci/config and API keys</span>
+oci setup config
+
+<span class="comment"># You'll be prompted for:</span>
+<span class="comment">#   1. User OCID        → from Step 2</span>
+<span class="comment">#   2. Tenancy OCID     → from Step 2</span>
+<span class="comment">#   3. Home Region      → e.g., us-phoenix-1</span>
+<span class="comment">#   4. API key location → accept default ~/.oci/oci_api_key.pem</span></pre>
+
+    <div class="warn-box">
+      <strong>Upload your API public key.</strong> After <code>oci setup config</code>, you must add the generated public key to your OCI user:<br>
+      OCI Console → Profile → My Profile → API Keys → Add API Key → Paste Public Key<br>
+      Paste the contents of <code>~/.oci/oci_api_key_public.pem</code>
+    </div>
+
+    <p>Verify it works:</p>
+
+    <pre data-config="verify-oci"><span class="comment"># Should return your tenancy details without error</span>
+oci iam tenancy get --tenancy-id &lt;YOUR_TENANCY_OCID&gt;</pre>
+
+    <h3>Find the ARM Image OCID</h3>
+    <p>Get the latest Ubuntu ARM image for your region:</p>
+
+    <pre data-config="find-image"><span class="comment"># List Ubuntu ARM images in your region</span>
+oci compute image list \
+  --compartment-id &lt;YOUR_TENANCY_OCID&gt; \
+  --operating-system "Canonical Ubuntu" \
+  --shape "VM.Standard.A1.Flex" \
+  --sort-by TIMECREATED \
+  --sort-order DESC \
+  --query 'data[0:3].{id:id, name:"display-name", created:"time-created"}' \
+  --output table
+
+<span class="comment"># Copy the OCID of the image you want (usually the newest)</span></pre>
+
+    <h3>Find Availability Domains</h3>
+
+    <pre data-config="list-ads"><span class="comment"># List availability domains for your region</span>
+oci iam availability-domain list \
+  --compartment-id &lt;YOUR_TENANCY_OCID&gt; \
+  --query 'data[*].name' \
+  --raw-output
+
+<span class="comment"># Multi-AD regions (Phoenix, Ashburn, etc.) return 3 ADs</span>
+<span class="comment"># Single-AD regions return 1 AD</span></pre>
+  </div>
+
+
+  <!-- ==================== STEP 5 ==================== -->
+  <div class="step" id="provisioning-script">
+    <h2><span class="step-num">5</span> The Auto-Provisioning Script</h2>
+
+    <p>This script retries <code>oci compute instance launch</code> every 60 seconds, rotating through availability domains, until capacity opens. Save it as <code>~/bin/oracle-auto-provision.sh</code>.</p>
+
+    <div class="info-box">
+      <strong>LLM Note:</strong> To adapt this script, replace the 6 variables in the <code>CONFIGURATION</code> block below. All OCIDs were collected in Steps 2 and 4. The script is self-contained with no external dependencies beyond the OCI CLI.
+    </div>
+
+    <pre data-config="provisioning-script"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><span class="comment">#!/bin/bash</span>
+
+<span class="comment">########################################################################</span>
+<span class="comment"># Oracle Cloud Always Free ARM Auto-Provisioning Script</span>
+<span class="comment">########################################################################</span>
+<span class="comment"># Retries creating an ARM instance every 60s until capacity opens.</span>
+<span class="comment"># Rotates through all availability domains in the region.</span>
+<span class="comment">#</span>
+<span class="comment"># Usage:    chmod +x oracle-auto-provision.sh && ./oracle-auto-provision.sh</span>
+<span class="comment"># Monitor:  tail -f /tmp/oracle-provision.log</span>
+<span class="comment"># Stop:     kill $(cat /tmp/oracle-provision.pid)</span>
+<span class="comment">########################################################################</span>
+
+export SUPPRESS_LABEL_WARNING=True
+
+<span class="comment"># ====================== CONFIGURATION ======================</span>
+<span class="comment"># Replace these 6 values with your own OCIDs from Steps 2-4.</span>
+
+<span class="var">COMPARTMENT_ID</span>=<span class="string">"ocid1.tenancy.oc1..YOUR_TENANCY_OCID"</span>
+<span class="var">SUBNET_ID</span>=<span class="string">"ocid1.subnet.oc1.REGION.YOUR_SUBNET_OCID"</span>
+<span class="var">IMAGE_ID</span>=<span class="string">"ocid1.image.oc1.REGION.YOUR_IMAGE_OCID"</span>
+<span class="var">SSH_KEY_FILE</span>=<span class="string">"$HOME/.ssh/oracle_key.pub"</span>
+<span class="var">INSTANCE_NAME</span>=<span class="string">"my-arm-server"</span>
+<span class="var">SHAPE</span>=<span class="string">"VM.Standard.A1.Flex"</span>
+
+<span class="comment"># Shape config — full Always Free allocation</span>
+<span class="var">OCPUS</span>=4
+<span class="var">MEMORY_GB</span>=24
+<span class="var">BOOT_VOLUME_GB</span>=200
+
+<span class="comment"># Retry interval in seconds</span>
+<span class="var">RETRY_INTERVAL</span>=60
+
+<span class="comment"># Availability domains — run the command from Step 4 to find yours.</span>
+<span class="comment"># Single-AD regions: use just one entry. Multi-AD regions: list all.</span>
+<span class="var">ADS</span>=(
+  <span class="string">"YOUR-AD-1"</span>
+  <span class="comment"># "YOUR-AD-2"   # uncomment for multi-AD regions</span>
+  <span class="comment"># "YOUR-AD-3"   # uncomment for multi-AD regions</span>
+)
+
+<span class="comment"># Optional: email notification on success (requires RESEND_API_KEY env var)</span>
+<span class="var">NOTIFY_EMAIL</span>=<span class="string">""</span>  <span class="comment"># e.g., "you@example.com"</span>
+
+<span class="comment"># =================== END CONFIGURATION =====================</span>
+
+<span class="comment"># --- Single-instance lock (prevents duplicate scripts) ---</span>
+<span class="var">LOCKDIR</span>="/tmp/oracle-provision.lock"
+<span class="var">PIDFILE</span>="$LOCKDIR/pid"
+
+acquire_lock() {
+  if mkdir "$LOCKDIR" 2>/dev/null; then
+    echo $$ > "$PIDFILE"
+    return 0
+  fi
+  local old_pid
+  old_pid=$(cat "$PIDFILE" 2>/dev/null)
+  if [ -n "$old_pid" ] && kill -0 "$old_pid" 2>/dev/null; then
+    echo "Another instance is running (PID $old_pid). Exiting."
+    return 1
+  fi
+  rm -rf "$LOCKDIR"
+  if mkdir "$LOCKDIR" 2>/dev/null; then
+    echo $$ > "$PIDFILE"
+    return 0
+  fi
+  return 1
+}
+
+if ! acquire_lock; then
+  exit 0
+fi
+
+echo $$ > /tmp/oracle-provision.pid
+
+cleanup() { rm -rf "$LOCKDIR" /tmp/oracle-provision.pid; }
+trap cleanup EXIT
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
+
+<span class="var">AD_COUNT</span>=${#ADS[@]}
+<span class="var">AD_INDEX</span>=0
+
+log "=========================================="
+log "Oracle ARM Auto-Provisioning (PID $$)"
+log "$OCPUS OCPU, ${MEMORY_GB}GB RAM, ${BOOT_VOLUME_GB}GB boot"
+log "Retry every ${RETRY_INTERVAL}s across $AD_COUNT AD(s)"
+log "=========================================="
+
+<span class="var">attempt</span>=0
+while true; do
+  attempt=$((attempt + 1))
+  ad="${ADS[$AD_INDEX]}"
+  log "Attempt #$attempt — $ad"
+
+  result=$(oci compute instance launch \
+    --compartment-id "$COMPARTMENT_ID" \
+    --availability-domain "$ad" \
+    --shape "$SHAPE" \
+    --shape-config "{\"ocpus\":$OCPUS,\"memoryInGBs\":$MEMORY_GB}" \
+    --image-id "$IMAGE_ID" \
+    --subnet-id "$SUBNET_ID" \
+    --display-name "$INSTANCE_NAME" \
+    --assign-public-ip true \
+    --boot-volume-size-in-gbs "$BOOT_VOLUME_GB" \
+    --ssh-authorized-keys-file "$SSH_KEY_FILE" \
+    2>&amp;1) || true
+
+  if echo "$result" | grep -qi "out of.*capacity"; then
+    log "  Out of capacity — retrying"
+  elif echo "$result" | grep -qi "LimitExceeded"; then
+    log "  Limit exceeded — retrying"
+  elif echo "$result" | grep -qi "ServiceError\|RequestException"; then
+    msg=$(echo "$result" | grep '"message"' | head -1 | \
+      sed 's/.*"message": "\(.*\)".*/\1/')
+    log "  Error: $msg"
+  elif echo "$result" | grep -q '"lifecycle-state"'; then
+    <span class="comment"># Success — extract instance ID and wait for RUNNING</span>
+    instance_id=$(echo "$result" | \
+      python3 -c "import sys,json; print(json.load(sys.stdin)['data']['id'])" \
+      2>/dev/null)
+    log "  PROVISIONING! ID: $instance_id"
+    log "  Waiting for RUNNING state..."
+
+    oci compute instance get \
+      --instance-id "$instance_id" \
+      --wait-for-state RUNNING \
+      --wait-interval-seconds 15 > /dev/null 2>&amp;1 || true
+
+    sleep 10
+
+    public_ip=$(oci compute instance list-vnics \
+      --instance-id "$instance_id" \
+      --query 'data[0]."public-ip"' \
+      --raw-output 2>/dev/null)
+
+    log ""
+    log "=========================================="
+    log "INSTANCE CREATED!"
+    log "IP:  $public_ip"
+    log "SSH: ssh -i ~/.ssh/oracle_key ubuntu@$public_ip"
+    log "ID:  $instance_id"
+    log "=========================================="
+
+    <span class="comment"># Write details to file for other scripts to consume</span>
+    cat > /tmp/oracle-instance-details.txt &lt;&lt;EOF
+IP=$public_ip
+INSTANCE_ID=$instance_id
+SSH=ssh -i ~/.ssh/oracle_key ubuntu@$public_ip
+SHAPE=$OCPUS OCPU / ${MEMORY_GB}GB
+EOF
+
+    <span class="comment"># macOS notification</span>
+    osascript -e "display notification \"IP: $public_ip\" \
+      with title \"Oracle ARM Instance Created!\" \
+      sound name \"Glass\"" 2>/dev/null || true
+
+    <span class="comment"># Optional email notification</span>
+    if [ -n "$NOTIFY_EMAIL" ] && [ -n "${RESEND_API_KEY:-}" ]; then
+      curl -s -X POST "https://api.resend.com/emails" \
+        -H "Authorization: Bearer $RESEND_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"from\": \"noreply@yourdomain.com\",
+          \"to\": [\"$NOTIFY_EMAIL\"],
+          \"subject\": \"Oracle ARM Instance Provisioned!\",
+          \"html\": \"&lt;h2&gt;Oracle ARM Instance Created!&lt;/h2&gt;&lt;p&gt;&lt;b&gt;IP:&lt;/b&gt; ${public_ip}&lt;/p&gt;&lt;p&gt;&lt;b&gt;SSH:&lt;/b&gt; &lt;code&gt;ssh -i ~/.ssh/oracle_key ubuntu@${public_ip}&lt;/code&gt;&lt;/p&gt;\"
+        }" > /dev/null 2>&amp;1 \
+        && log "  Email sent to $NOTIFY_EMAIL" \
+        || log "  Email send failed"
+    fi
+
+    exit 0
+  else
+    log "  Unexpected: ${result:0:120}"
+  fi
+
+  AD_INDEX=$(( (AD_INDEX + 1) % AD_COUNT ))
+  sleep "$RETRY_INTERVAL"
+done</pre>
+
+    <pre data-config="make-executable"><span class="comment"># Save and make executable</span>
+chmod +x ~/bin/oracle-auto-provision.sh
+
+<span class="comment"># Run it (logs to stdout, redirect for background use)</span>
+~/bin/oracle-auto-provision.sh 2>&amp;1 | tee /tmp/oracle-provision.log
+
+<span class="comment"># Or run in background</span>
+nohup ~/bin/oracle-auto-provision.sh >> /tmp/oracle-provision.log 2>&amp;1 &amp;</pre>
+  </div>
+
+
+  <!-- ==================== STEP 6 ==================== -->
+  <div class="step" id="post-provision">
+    <h2><span class="step-num">6</span> Post-Provision: Resize &amp; Harden</h2>
+
+    <p>If you provisioned with a smaller shape to improve your odds (e.g., 1 OCPU / 6 GB), resize to the full allocation after creation:</p>
+
+    <pre data-config="resize-instance"><span class="comment"># Get your instance OCID</span>
+oci compute instance list \
+  --compartment-id &lt;YOUR_COMPARTMENT_OCID&gt; \
+  --lifecycle-state RUNNING \
+  --query 'data[*].{id:id, name:"display-name", ocpus:"shape-config".ocpus, mem:"shape-config"."memory-in-gbs"}' \
+  --output table
+
+<span class="comment"># Stop the instance</span>
+oci compute instance action \
+  --instance-id &lt;INSTANCE_OCID&gt; \
+  --action STOP
+
+<span class="comment"># Wait for STOPPED state, then resize</span>
+oci compute instance update \
+  --instance-id &lt;INSTANCE_OCID&gt; \
+  --shape "VM.Standard.A1.Flex" \
+  --shape-config '{"ocpus": 4, "memoryInGBs": 24}' \
+  --force
+
+<span class="comment"># Wait ~30 seconds for resize to apply, then start</span>
+oci compute instance action \
+  --instance-id &lt;INSTANCE_OCID&gt; \
+  --action START</pre>
+
+    <h3>Initial Server Setup</h3>
+
+    <pre data-config="server-setup"><span class="comment"># SSH in</span>
+ssh -i ~/.ssh/oracle_key ubuntu@&lt;PUBLIC_IP&gt;
+
+<span class="comment"># Update packages</span>
+sudo apt update && sudo apt upgrade -y
+
+<span class="comment"># Set hostname</span>
+sudo hostnamectl set-hostname my-arm-server
+
+<span class="comment"># Set timezone</span>
+sudo timedatectl set-timezone America/Chicago
+
+<span class="comment"># Enable firewall (allow SSH first!)</span>
+sudo iptables -I INPUT 1 -p tcp --dport 22 -j ACCEPT
+sudo iptables -I INPUT 2 -p tcp --dport 80 -j ACCEPT
+sudo iptables -I INPUT 3 -p tcp --dport 443 -j ACCEPT
+sudo netfilter-persistent save
+
+<span class="comment"># Install common tools</span>
+sudo apt install -y htop curl wget git unzip jq</pre>
+
+    <div class="warn-box">
+      <strong>Oracle security lists.</strong> In addition to <code>iptables</code> on the instance, you must also open ports in the OCI Console:<br>
+      Networking → Virtual Cloud Networks → your VCN → Security Lists → Default → Add Ingress Rules.<br>
+      Add TCP rules for ports 80 and 443 (source: 0.0.0.0/0).
+    </div>
+  </div>
+
+
+  <!-- ==================== STEP 7 ==================== -->
+  <div class="step" id="launchd">
+    <h2><span class="step-num">7</span> Run on a Schedule (macOS LaunchAgent)</h2>
+
+    <p>To have the script auto-start and retry continuously on your Mac:</p>
+
+    <pre data-config="launchd-plist"><span class="comment"># Create the LaunchAgent plist</span>
+cat > ~/Library/LaunchAgents/com.oracle.arm-provision.plist &lt;&lt;'EOF'
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+  &lt;key&gt;Label&lt;/key&gt;
+  &lt;string&gt;com.oracle.arm-provision&lt;/string&gt;
+
+  &lt;key&gt;ProgramArguments&lt;/key&gt;
+  &lt;array&gt;
+    &lt;string&gt;/bin/bash&lt;/string&gt;
+    &lt;string&gt;-c&lt;/string&gt;
+    &lt;string&gt;$HOME/bin/oracle-auto-provision.sh&lt;/string&gt;
+  &lt;/array&gt;
+
+  &lt;key&gt;StandardOutPath&lt;/key&gt;
+  &lt;string&gt;/tmp/oracle-provision.log&lt;/string&gt;
+  &lt;key&gt;StandardErrorPath&lt;/key&gt;
+  &lt;string&gt;/tmp/oracle-provision.log&lt;/string&gt;
+
+  &lt;key&gt;RunAtLoad&lt;/key&gt;
+  &lt;true/&gt;
+
+  &lt;!-- Restart every 5 minutes if it exits (covers crashes) --&gt;
+  &lt;key&gt;StartInterval&lt;/key&gt;
+  &lt;integer&gt;300&lt;/integer&gt;
+
+  &lt;!-- Don't restart if success flag exists --&gt;
+  &lt;key&gt;WatchPaths&lt;/key&gt;
+  &lt;array&gt;
+    &lt;string&gt;/tmp/oracle-instance-details.txt&lt;/string&gt;
+  &lt;/array&gt;
+
+  &lt;key&gt;EnvironmentVariables&lt;/key&gt;
+  &lt;dict&gt;
+    &lt;key&gt;PATH&lt;/key&gt;
+    &lt;string&gt;/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin&lt;/string&gt;
+    &lt;!-- Set RESEND_API_KEY here for email notifications --&gt;
+  &lt;/dict&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+EOF
+
+<span class="comment"># Load it</span>
+launchctl load ~/Library/LaunchAgents/com.oracle.arm-provision.plist
+
+<span class="comment"># Check status</span>
+launchctl list | grep oracle
+
+<span class="comment"># Stop and unload after provisioning</span>
+launchctl unload ~/Library/LaunchAgents/com.oracle.arm-provision.plist</pre>
+  </div>
+
+
+  <!-- ==================== STEP 8 ==================== -->
+  <div class="step" id="troubleshooting">
+    <h2><span class="step-num">8</span> Troubleshooting</h2>
+
+    <table class="spec-table">
+      <tr><th>Problem</th><th>Cause &amp; Fix</th></tr>
+      <tr>
+        <td><code>Out of host capacity</code></td>
+        <td>Normal — ARM is popular. The script will keep retrying. Can take hours to weeks. Try off-peak hours (early morning, weekends) or a different region.</td>
+      </tr>
+      <tr>
+        <td><code>LimitExceeded</code></td>
+        <td>You've hit the Always Free shape limit. Check if you already have ARM instances: <code>oci compute instance list --compartment-id ... --query 'data[?contains("shape",`A1`)]'</code></td>
+      </tr>
+      <tr>
+        <td><code>NotAuthenticated</code></td>
+        <td>API key not uploaded or expired. Re-run <code>oci setup config</code> and upload the public key to the OCI Console.</td>
+      </tr>
+      <tr>
+        <td><code>Authorization failed</code></td>
+        <td>User OCID or tenancy OCID is wrong in <code>~/.oci/config</code>. Double-check them in the Console.</td>
+      </tr>
+      <tr>
+        <td>Script exits immediately</td>
+        <td>Lock file exists from a previous run. Remove it: <code>rm -rf /tmp/oracle-provision.lock</code></td>
+      </tr>
+      <tr>
+        <td>Instance created but no public IP</td>
+        <td>Subnet may not auto-assign public IPs. Assign one manually: Compute → Instances → your instance → Attached VNICs → Primary VNIC → IPv4 → Edit → check "Public IP".</td>
+      </tr>
+      <tr>
+        <td>SSH connection refused</td>
+        <td>Wait 2-3 minutes after creation for cloud-init to finish. Check security lists allow TCP 22 inbound.</td>
+      </tr>
+      <tr>
+        <td><code>409 Conflict</code> during resize</td>
+        <td>Instance still processing a previous change. Wait 30-60 seconds and retry.</td>
+      </tr>
+    </table>
+
+    <div class="success-box">
+      <strong>Pro tips:</strong>
+      <ul style="margin-top:0.5rem; margin-bottom:0;">
+        <li>Provision with 1 OCPU / 6 GB initially (better capacity odds), then resize to 4 / 24 after creation</li>
+        <li>Each Oracle account gets the same free allocation — a second account in a different region doubles your capacity</li>
+        <li>The instance persists even if your free trial credits expire — Always Free resources are not terminated</li>
+      </ul>
+    </div>
+  </div>
+
+
+  <!-- ==================== LLM QUICK REFERENCE ==================== -->
+  <div class="step" id="llm-reference">
+    <h2>LLM Quick Reference</h2>
+
+    <div class="info-box">
+      <strong>For LLMs scripting this automation:</strong> The complete provisioning flow is 6 commands. Here they are in order, with all placeholders marked.
+    </div>
+
+    <pre data-config="llm-complete-flow"><span class="comment"># 1. Generate SSH key</span>
+ssh-keygen -t ed25519 -f ~/.ssh/oracle_key -C "oracle-arm" -N ""
+
+<span class="comment"># 2. Install OCI CLI</span>
+brew install oci-cli  <span class="comment"># macOS</span>
+
+<span class="comment"># 3. Configure OCI CLI (interactive — needs USER_OCID, TENANCY_OCID, REGION)</span>
+oci setup config
+
+<span class="comment"># 4. Upload API public key to OCI Console (manual step)</span>
+cat ~/.oci/oci_api_key_public.pem  <span class="comment"># copy this to Console → API Keys</span>
+
+<span class="comment"># 5. Find required values</span>
+<span class="comment"># ADs:</span>
+oci iam availability-domain list --compartment-id $TENANCY --query 'data[*].name'
+<span class="comment"># Image:</span>
+oci compute image list --compartment-id $TENANCY \
+  --operating-system "Canonical Ubuntu" --shape "VM.Standard.A1.Flex" \
+  --sort-by TIMECREATED --sort-order DESC --query 'data[0].id' --raw-output
+<span class="comment"># Subnet:</span>
+oci network subnet list --compartment-id $TENANCY --query 'data[0].id' --raw-output
+
+<span class="comment"># 6. Launch (single attempt — wrap in loop for auto-retry)</span>
+oci compute instance launch \
+  --compartment-id "$TENANCY" \
+  --availability-domain "$AD" \
+  --shape "VM.Standard.A1.Flex" \
+  --shape-config '{"ocpus":4,"memoryInGBs":24}' \
+  --image-id "$IMAGE" \
+  --subnet-id "$SUBNET" \
+  --display-name "my-arm-server" \
+  --assign-public-ip true \
+  --boot-volume-size-in-gbs 200 \
+  --ssh-authorized-keys-file ~/.ssh/oracle_key.pub
+
+<span class="comment"># Expected "Out of host capacity" responses are normal.</span>
+<span class="comment"># Retry every 60s, rotating ADs, until success.</span>
+<span class="comment"># On success: response contains "lifecycle-state": "PROVISIONING"</span>
+<span class="comment"># Then wait for RUNNING, extract public IP from list-vnics.</span></pre>
+  </div>
+
+
+  <!-- Footer -->
+  <div class="footer-links">
+    <a href="/infra/">AlpacApps Infra Hub</a>
+    <a href="/infra/setup-guide.html">Setup Guide</a>
+    <a href="/infra/updates.html">Feature Updates</a>
+    <a href="https://github.com/rsonnad/alpacapps-infra">Template Repo</a>
+  </div>
+
+</div>
+
+<script>
+function copyBlock(btn) {
+  var pre = btn.closest('pre');
+  var text = pre.textContent.replace(/^Copy\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
+
+<script type="module">
+  import { initPublicPage } from '/shared/public-shell.js';
+  initPublicPage({ transparent: false, light: false });
+</script>
+
+</body>
+</html>
