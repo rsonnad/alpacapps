@@ -1,12 +1,12 @@
 {
-  "version": "v260408.21 11:08p",
-  "release": 1298,
-  "sha": "bac116ce6",
-  "fullSha": "bac116ce6bbedc1d98d4d684cb8311c627e812dc",
+  "version": "v260409.01 11:27a",
+  "release": 1299,
+  "sha": "eb220bd5d",
+  "fullSha": "eb220bd5d073644c648ca1036b9118b439810fff",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-09T04:08:44+00:00",
-  "commits": [{"sha":"bac116ce6","message":"phyprop: rotate birds-eye into parcel-local frame to match survey orientation","author":"Rahul"}]
+  "pushedAt": "2026-04-09T16:27:03+00:00",
+  "commits": [{"sha":"eb220bd5d","message":"add AlpacApps infrastructure Q&A page for prospective builder","author":"Rahul"}]
 }

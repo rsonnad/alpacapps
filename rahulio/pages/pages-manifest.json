@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-04-09T04:09:32.495Z",
+  "generatedAt": "2026-04-09T16:27:57.377Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "alpacappsstackh.html",
+      "title": "AlpacApps Infrastructure Q&A",
+      "section": null,
+      "modifiedAt": "2026-04-09T16:27:03.000Z"
+    },
     {
       "path": "tmj/index.html",
       "title": "TMJ Self-Assessment Tool",
