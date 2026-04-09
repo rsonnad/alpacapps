@@ -1,12 +1,12 @@
 {
-  "version": "v260408.19 2:59p",
-  "release": 1296,
-  "sha": "807cba3a5",
-  "fullSha": "807cba3a53aa3835516ed37f9bc9ddfa7e2d0b35",
+  "version": "v260408.20 10:25p",
+  "release": 1297,
+  "sha": "4163e835f",
+  "fullSha": "4163e835fc831800b25c6c79cfa2b5d864c090c9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-08T19:59:50+00:00",
-  "commits": [{"sha":"ace44a101","message":"Blender render pipeline: port sponic-garden quality standards","author":"Rahul"},{"sha":"69d842135","message":"PhyProp: add Blendering tab — photos→materials, drainage, Claude workflow","author":"Rahul"},{"sha":"daccf8216","message":"Merge remote-tracking branch 'origin/main' into agitated-nobel","author":"Rahul"},{"sha":"807cba3a5","message":"Merge pull request #115 from rsonnad/agitated-nobel","author":"Rahul"}]
+  "pushedAt": "2026-04-09T03:25:07+00:00",
+  "commits": [{"sha":"4163e835f","message":"phyprop: add 2D birds-eye SVG proof from PostGIS footprints","author":"Rahul"}]
 }
