@@ -596,7 +596,127 @@ function renderCard(r, urlOverride) {
   </div>`;
 }
 
+async function loadBirdsEye() {
+  const el = document.getElementById('birdsEyeSvg');
+  if (!el) return;
+  try {
+    const [{ data: parcels }, { data: footprints }] = await Promise.all([
+      supabase.from('parcel_boundary_geojson').select('*'),
+      supabase.from('structure_footprints_geojson').select('*'),
+    ]);
+    if (!parcels?.length || !footprints?.length) { el.innerHTML = '<div class="pp-empty">No geometry data</div>'; return; }
+
+    // Collect every coord from parcel + footprints to compute bbox
+    const allCoords = [];
+    const walk = (g) => {
+      if (!g) return;
+      if (g.type === 'Polygon') g.coordinates.forEach(ring => ring.forEach(c => allCoords.push(c)));
+      else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => p.forEach(ring => ring.forEach(c => allCoords.push(c))));
+      else if (g.type === 'Point') allCoords.push(g.coordinates);
+    };
+    parcels.forEach(p => walk(p.boundary));
+    footprints.forEach(f => walk(f.footprint));
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    allCoords.forEach(([x, y]) => { if (x<minX)minX=x; if (y<minY)minY=y; if (x>maxX)maxX=x; if (y>maxY)maxY=y; });
+
+    // Equirectangular local projection (lat/lon → ft), origin at bbox min
+    const midLat = (minY + maxY) / 2;
+    const FT_PER_DEG_LAT = 364000;
+    const FT_PER_DEG_LON = 364000 * Math.cos(midLat * Math.PI / 180);
+    const project = ([lon, lat]) => [
+      (lon - minX) * FT_PER_DEG_LON,
+      (maxY - lat) * FT_PER_DEG_LAT, // flip Y so north is up
+    ];
+
+    const widthFt = (maxX - minX) * FT_PER_DEG_LON;
+    const heightFt = (maxY - minY) * FT_PER_DEG_LAT;
+    const PAD = 20;
+    const SCALE = 2.2; // px per ft
+    const W = Math.round(widthFt * SCALE + PAD * 2);
+    const H = Math.round(heightFt * SCALE + PAD * 2);
+
+    const polyPath = (ring) => ring.map((c, i) => {
+      const [x, y] = project(c);
+      return `${i===0?'M':'L'}${(x*SCALE+PAD).toFixed(1)},${(y*SCALE+PAD).toFixed(1)}`;
+    }).join(' ') + ' Z';
+
+    const geomToPath = (g) => {
+      if (!g) return '';
+      if (g.type === 'Polygon') return g.coordinates.map(polyPath).join(' ');
+      if (g.type === 'MultiPolygon') return g.coordinates.map(p => p.map(polyPath).join(' ')).join(' ');
+      return '';
+    };
+
+    // Color by category
+    const catColor = {
+      Building: '#fef3c7', Container: '#dbeafe', Trailer: '#fce7f3',
+      Deck: '#fed7aa', Amenity: '#d1fae5', Infrastructure: '#e5e7eb',
+    };
+    const strokeColor = (c) => ({ Building: '#b45309', Container: '#1e40af', Trailer: '#9d174d',
+      Deck: '#c2410c', Amenity: '#065f46', Infrastructure: '#374151' })[c] || '#374151';
+
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" style="max-width:100%;height:auto;font-family:system-ui,sans-serif;">`;
+    svg += `<rect width="${W}" height="${H}" fill="#f0fdf4"/>`;
+
+    // Parcel boundary
+    parcels.forEach(p => {
+      svg += `<path d="${geomToPath(p.boundary)}" fill="#ecfccb" stroke="#65a30d" stroke-width="2" stroke-dasharray="6 4"/>`;
+    });
+
+    // Structures
+    footprints.forEach(f => {
+      const fill = catColor[f.category] || '#e5e7eb';
+      const stroke = strokeColor(f.category);
+      svg += `<path d="${geomToPath(f.footprint)}" fill="${fill}" fill-opacity="0.85" stroke="${stroke}" stroke-width="1.5"/>`;
+    });
+
+    // Labels
+    footprints.forEach(f => {
+      if (!f.centroid) return;
+      const [cx, cy] = project(f.centroid.coordinates).map((v, i) => v * SCALE + PAD);
+      const label = f.friendly_name || f.name;
+      const dims = [f.width_ft, f.length_ft].filter(Boolean).map(n => Number(n).toFixed(0)).join('×');
+      svg += `<g text-anchor="middle" font-size="10" font-weight="600">
+        <text x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" fill="#111827" stroke="#fff" stroke-width="3" paint-order="stroke">${esc(label)}</text>
+        <text x="${cx.toFixed(1)}" y="${(cy+11).toFixed(1)}" fill="#4b5563" font-size="9" font-weight="400" stroke="#fff" stroke-width="3" paint-order="stroke">${dims ? dims + ' ft' : ''}</text>
+      </g>`;
+    });
+
+    // North arrow + scale
+    svg += `<g transform="translate(${W-60},30)">
+      <circle r="18" fill="#fff" stroke="#374151" stroke-width="1"/>
+      <path d="M0,-14 L6,10 L0,4 L-6,10 Z" fill="#111827"/>
+      <text y="-22" text-anchor="middle" font-size="10" font-weight="700">N</text>
+    </g>`;
+    const barFt = 50;
+    const barPx = barFt * SCALE;
+    svg += `<g transform="translate(${PAD},${H-PAD-10})">
+      <rect width="${barPx}" height="4" fill="#111827"/>
+      <text x="${barPx/2}" y="-4" text-anchor="middle" font-size="10" font-weight="600">${barFt} ft</text>
+    </g>`;
+
+    // Legend
+    const cats = [...new Set(footprints.map(f => f.category).filter(Boolean))];
+    if (cats.length) {
+      svg += `<g transform="translate(${PAD},${PAD})" font-size="10">`;
+      cats.forEach((c, i) => {
+        svg += `<rect x="0" y="${i*16}" width="12" height="12" fill="${catColor[c]||'#e5e7eb'}" stroke="${strokeColor(c)}"/>
+                <text x="18" y="${i*16+10}" fill="#111827">${esc(c)}</text>`;
+      });
+      svg += `</g>`;
+    }
+
+    svg += `</svg>`;
+    el.innerHTML = svg + `<div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted);">${footprints.length} structures · parcel ${parcels[0].acreage || '--'} ac · georeferenced from PostGIS EPSG:4326</div>`;
+  } catch (err) {
+    console.error('Birds-eye load error:', err);
+    el.innerHTML = `<div class="pp-empty">Error: ${esc(err.message)}</div>`;
+  }
+}
+
 async function loadRenderingsTab() {
+  loadBirdsEye();
   // Populate survey plats
   const surveyEl = document.getElementById('surveyGrid');
   surveyEl.innerHTML = SURVEY_PLATS.map(s => renderCard(s, s.url)).join('');
