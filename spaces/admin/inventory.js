@@ -908,7 +908,171 @@ async function loadDevices() {
 
 function renderDeviceView() {
   if (_deviceView === 'lighting') renderLightingDetail();
+  else if (_deviceView === 'kiosk-design') renderKioskDesign();
   else renderAllDevices();
+}
+
+function renderKioskDesign() {
+  const el = document.getElementById('devicesContent');
+  el.innerHTML = `
+  <div class="inv-section">
+    <h3 class="inv-section-title">Hall Kiosk — Device Design Document</h3>
+    <p class="inv-section-sub">Two devices share the hall kiosk web app: a Samsung tablet and a MacBook. Both load <code>alpacaplayhouse.com/kiosks/hall/</code>.</p>
+  </div>
+
+  <!-- ── Physical Devices ── -->
+  <div class="inv-section">
+    <h3 class="inv-section-title">Physical Devices <span class="inv-badge inv-badge-blue">2</span></h3>
+    <div class="inv-card-grid">
+      <div class="inv-card">
+        <h4>Entry Alpaca Tablet</h4>
+        <div class="inv-card-sub">Samsung Galaxy Tab A9 (SM-X210) &middot; Android 16</div>
+        <p>Wall-mounted tablet at the front hallway entrance. Runs a custom native Android kiosk app (Kotlin) wrapping a fullscreen WebView. LOCK_TASK mode prevents home/back/recents. Auto-launches on boot, auto-restarts on crash, auto-reloads on WiFi reconnect.</p>
+        <dl style="font-size:0.8125rem;margin-top:0.75rem;line-height:1.7">
+          <dt style="font-weight:600;color:#374151">Network</dt>
+          <dd>LAN: 192.168.1.239 &middot; Tailscale: 100.103.110.7</dd>
+          <dt style="font-weight:600;color:#374151">Remote Control</dt>
+          <dd>Kiosk HTTP API on port 2323 (pw: alpaca2323) &middot; ADB: <code>adb connect 100.103.110.7:5555</code></dd>
+          <dt style="font-weight:600;color:#374151">Settings</dt>
+          <dd>Triple-tap bottom-right to open settings (pw: 1234)</dd>
+          <dt style="font-weight:600;color:#374151">Extra Hardware</dt>
+          <dd>BRMesh key 9246 for 5 flood lights</dd>
+        </dl>
+      </div>
+      <div class="inv-card">
+        <h4>AlpineMac</h4>
+        <div class="inv-card-sub">MacBook Pro 2015 (Core i5 2.7 GHz, 8 GB) &middot; macOS 12.7.6 Monterey</div>
+        <p>Secondary kiosk display. Chrome kiosk auto-launches <code>alpacaplayhouse.com/kiosks/hall/</code> on login. Also runs a macOS Ken Burns screensaver with 114 AI-generated alpaca images (from <code>~/Pictures/AlpacaScreensaver/</code>), activated after 5 min idle.</p>
+        <dl style="font-size:0.8125rem;margin-top:0.75rem;line-height:1.7">
+          <dt style="font-weight:600;color:#374151">Network</dt>
+          <dd>LAN: 192.168.1.61 &middot; Tailscale: 100.67.3.39</dd>
+          <dt style="font-weight:600;color:#374151">SSH</dt>
+          <dd><code>ssh alpine@192.168.1.61</code> (key auth)</dd>
+          <dt style="font-weight:600;color:#374151">Screensaver Setup</dt>
+          <dd><code>bash ~/setup-screensaver.sh</code> &mdash; downloads from <code>image_gen_jobs</code> table</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3-View Rotation ── -->
+  <div class="inv-section">
+    <h3 class="inv-section-title">3-View Rotation Cycle</h3>
+    <p class="inv-section-sub">The kiosk automatically cycles through three views. Tapping any overlay dismisses it and shows the main kiosk for 2 minutes before resuming rotation.</p>
+    <div class="inv-table-wrap">
+      <table class="inv-table">
+        <thead><tr><th style="width:2rem">#</th><th>View</th><th>Duration</th><th>Source</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><strong>Kiosk Dashboard</strong></td>
+            <td>15 sec</td>
+            <td>Supabase (polled 60s)</td>
+            <td>Two-column layout: guestbook (left), current herd + events + alpaca fact + Ask the House + live subtitles (right). Main interactive view.</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>Network Dashboard</strong></td>
+            <td>15 sec</td>
+            <td>UniFi Controller</td>
+            <td>Embedded iframe of the UniFi network dashboard at <code>https://192.168.1.1</code>. Shows connected clients, bandwidth, and network health. Auto-closes after display period.</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>Alpaca Slideshow</strong></td>
+            <td>15 sec</td>
+            <td><code>image_gen_jobs</code> table</td>
+            <td>Full-screen AI-generated alpaca artwork with caption overlay. Pulls the 50 most recent completed images with "alpaca" in the prompt. New images generated daily by the image-gen worker.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;padding:1rem;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:0.8125rem;color:#92400e">
+      <strong>Timing constants</strong> (in <code>kiosk.js</code>):<br>
+      <code>ROTATION_SECONDS = 15</code> &mdash; each view displays for 15 seconds<br>
+      <code>TAP_DISMISS_SECONDS = 120</code> &mdash; after tap, kiosk view shows for 2 minutes before rotation resumes
+    </div>
+  </div>
+
+  <!-- ── Features ── -->
+  <div class="inv-section">
+    <h3 class="inv-section-title">Feature Matrix</h3>
+    <div class="inv-table-wrap">
+      <table class="inv-table">
+        <thead><tr><th>Feature</th><th>Data Source</th><th>Refresh</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Current Herd</strong></td><td><code>assignments</code> + <code>assignment_spaces</code></td><td>60s poll</td><td>Active occupants with "new" badge for recent arrivals</td></tr>
+          <tr><td><strong>Upcoming Events</strong></td><td><code>event_hosting_requests</code></td><td>60s poll</td><td>Next 3 approved events</td></tr>
+          <tr><td><strong>Guestbook</strong></td><td><code>guestbook_entries</code></td><td>60s poll</td><td>Text, video, and audio messages. Media uploaded to R2 via edge function.</td></tr>
+          <tr><td><strong>Alpaca Facts</strong></td><td><code>kiosk_facts</code> + 92 fallbacks</td><td>20s rotate</td><td>Daily generation via edge function; hardcoded fallbacks if DB/API fails</td></tr>
+          <tr><td><strong>Ask the House</strong></td><td>HAOS WebSocket (192.168.1.39:8123)</td><td>Real-time</td><td>Conversational AI via Home Assistant. Quick-action buttons for lights, music, temp.</td></tr>
+          <tr><td><strong>Live Subtitles</strong></td><td><code>ws://alpuca.local:8910</code></td><td>Real-time</td><td>Multi-language real-time translation. Language picker + font size controls.</td></tr>
+          <tr><td><strong>Slideshow</strong></td><td><code>image_gen_jobs</code></td><td>On rotation</td><td>50 most recent completed alpaca images. Cycles with caption from metadata.title.</td></tr>
+          <tr><td><strong>Network Dashboard</strong></td><td>UniFi Controller iframe</td><td>Live</td><td>Embedded UniFi console at 192.168.1.1</td></tr>
+          <tr><td><strong>Version Check</strong></td><td><code>version.json</code></td><td>5 min</td><td>Auto-reloads page when new version detected</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Architecture ── -->
+  <div class="inv-section">
+    <h3 class="inv-section-title">Architecture</h3>
+    <div class="inv-card-grid">
+      <div class="inv-card">
+        <h4>Web App</h4>
+        <div class="inv-card-sub">kiosks/hall/</div>
+        <p><strong>index.html</strong> &mdash; Structure: header, two-column main, footer, rotation overlays, HAOS chat overlay, subtitles overlay.<br>
+        <strong>kiosk.js</strong> &mdash; All logic: Supabase polling, guestbook recording/upload, fact rotation, HAOS WebSocket, 3-view rotation, subtitles, version check.<br>
+        <strong>kiosk.css</strong> &mdash; Dark theme (<code>#110e10</code> bg, <code>#e99c48</code> accent), anti-burn-in pixel shift (120s cycle).</p>
+      </div>
+      <div class="inv-card">
+        <h4>Android App</h4>
+        <div class="inv-card-sub">alpaca-kiosk/ (Kotlin)</div>
+        <p>Custom WebView wrapper with LOCK_TASK kiosk mode, HTTP API server (port 2323), JS bridge (<code>window.AlpacaKiosk</code>), photo booth, crash auto-restart, boot auto-launch. APK hosted on Cloudflare R2.</p>
+      </div>
+      <div class="inv-card">
+        <h4>TV Variant</h4>
+        <div class="inv-card-sub">kiosks/hall/tv.html</div>
+        <p>Large-screen variant for 1080p TVs. Four modes: dashboard (3-column), cameras (HLS grid), signage (full-screen message), slideshow (image carousel). Per-display config from <code>displays</code> table.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Image Pipeline ── -->
+  <div class="inv-section">
+    <h3 class="inv-section-title">Image Pipeline</h3>
+    <p class="inv-section-sub">How alpaca screensaver/slideshow images are generated and consumed.</p>
+    <div class="inv-table-wrap">
+      <table class="inv-table">
+        <thead><tr><th>Step</th><th>System</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td>1. Generate</td><td>image-gen worker (Hostinger)</td><td>Daily cron creates <code>image_gen_jobs</code> rows with alpaca art prompts. Worker calls Gemini API, uploads result to Supabase Storage (<code>housephotos/ai-gen/</code>).</td></tr>
+          <tr><td>2. Store</td><td>Supabase</td><td><code>image_gen_jobs</code> table: <code>prompt</code>, <code>result_url</code>, <code>metadata</code> (title, purpose), <code>status</code>. Currently 129 completed alpaca images.</td></tr>
+          <tr><td>3a. Kiosk slideshow</td><td>kiosk.js</td><td>Queries 50 most recent completed images where <code>prompt ILIKE '%alpaca%'</code>. Displays in rotation overlay with caption.</td></tr>
+          <tr><td>3b. macOS screensaver</td><td>setup-screensaver.sh</td><td>Downloads images with <code>batch_label = 'Alpaca Mac Screensaver'</code> to local folder. Ken Burns effect, 5 min idle activation.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Troubleshooting ── -->
+  <div class="inv-section">
+    <h3 class="inv-section-title">Troubleshooting</h3>
+    <div class="inv-table-wrap">
+      <table class="inv-table">
+        <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Slideshow never shows</td><td>Query on wrong column (<code>metadata->>prompt</code> vs <code>prompt</code>)</td><td>Fix query in kiosk.js to use <code>.ilike('prompt', '%alpaca%')</code></td></tr>
+          <tr><td>Network view doesn't appear</td><td><code>window.open()</code> popup blocked in WebView/kiosk</td><td>Replace with embedded iframe overlay</td></tr>
+          <tr><td>Blank screen on tablet</td><td>WebView crash or OOM</td><td>ADB: <code>adb connect 100.103.110.7:5555</code> then <code>adb shell am force-stop com.alpacaplayhouse.kiosk</code></td></tr>
+          <tr><td>macOS screensaver shows default</td><td>Images not downloaded</td><td>Run <code>bash ~/setup-screensaver.sh</code> on AlpineMac</td></tr>
+          <tr><td>Stale data</td><td>Polling stopped (tab hidden)</td><td>Page auto-resumes polling on visibility change. Force: reload via kiosk API <code>curl http://100.103.110.7:2323/reload</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  `;
 }
 
 function renderAllDevices() {

@@ -777,30 +777,32 @@ async function checkVersion() {
 }
 
 // =============================================
-// NETWORK HEALTH — open UniFi console in popup window
+// NETWORK HEALTH — embedded UniFi console iframe
 // =============================================
 const UNIFI_CONSOLE_URL = 'https://192.168.1.1/network/default/dashboard';
-const UNIFI_POPUP_SECONDS = 30;
-let unifiPopup = null;
+let networkHideTimer = null;
 
-function showUnifiConsole() {
-  // Close any existing popup
-  if (unifiPopup && !unifiPopup.closed) {
-    unifiPopup.close();
-  }
-  // Open fullscreen popup
-  unifiPopup = window.open(
-    UNIFI_CONSOLE_URL,
-    'unifi_console',
-    'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0,menubar=no,toolbar=no,location=no,status=no'
-  );
-  // Auto-close after 30s
-  setTimeout(() => {
-    if (unifiPopup && !unifiPopup.closed) {
-      unifiPopup.close();
-    }
-    unifiPopup = null;
-  }, UNIFI_POPUP_SECONDS * 1000);
+function showNetworkOverlay() {
+  if (networkHideTimer) { clearTimeout(networkHideTimer); networkHideTimer = null; }
+  const overlay = document.getElementById('networkOverlay');
+  const iframe = document.getElementById('networkIframe');
+  iframe.src = UNIFI_CONSOLE_URL;
+  overlay.style.display = '';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+  });
+}
+
+function hideNetworkOverlay() {
+  if (networkHideTimer) { clearTimeout(networkHideTimer); networkHideTimer = null; }
+  const overlay = document.getElementById('networkOverlay');
+  const iframe = document.getElementById('networkIframe');
+  overlay.classList.remove('visible');
+  networkHideTimer = setTimeout(() => {
+    overlay.style.display = 'none';
+    iframe.src = 'about:blank';
+    networkHideTimer = null;
+  }, 800);
 }
 
 // =============================================
@@ -820,9 +822,9 @@ async function loadSlideshowImages() {
   try {
     const { data } = await supabase
       .from('image_gen_jobs')
-      .select('result_url, metadata')
+      .select('result_url, metadata, prompt')
       .eq('status', 'completed')
-      .ilike('metadata->>prompt', '%alpaca%')
+      .ilike('prompt', '%alpaca%')
       .order('created_at', { ascending: false })
       .limit(50);
     if (data && data.length > 0) {
@@ -831,7 +833,7 @@ async function loadSlideshowImages() {
         caption: d.metadata?.title || '',
       }));
     }
-  } catch (_) { /* no images available */ }
+  } catch (e) { console.error('Failed to load slideshow images:', e); }
 }
 
 function showView(viewName) {
@@ -843,14 +845,13 @@ function showView(viewName) {
     if (viewName !== 'slideshow') slideshowOverlay.style.display = 'none';
   }, 800);
 
-  // Close UniFi popup when leaving network view
-  if (viewName !== 'network' && unifiPopup && !unifiPopup.closed) {
-    unifiPopup.close();
-    unifiPopup = null;
+  // Hide network overlay when leaving network view
+  if (viewName !== 'network') {
+    hideNetworkOverlay();
   }
 
   if (viewName === 'network') {
-    showUnifiConsole();
+    showNetworkOverlay();
   } else if (viewName === 'slideshow') {
     if (slideshowImages.length === 0) {
       // Skip slideshow if no images, advance to next view
@@ -1110,6 +1111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Rotation overlays: tap to dismiss
   document.getElementById('slideshowOverlay')?.addEventListener('click', onRotationTap);
+  document.getElementById('networkDismissBtn')?.addEventListener('click', onRotationTap);
 
   // Load dynamic data
   await refreshAll();
