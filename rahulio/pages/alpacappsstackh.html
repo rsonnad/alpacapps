@@ -251,6 +251,94 @@
     }
     .back-link:hover { color: var(--amber); }
 
+    /* ── Infra banner ── */
+    .infra-banner {
+      background: linear-gradient(135deg, #1a3a2a 0%, #2a5a3a 100%);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 3rem;
+      border: 1px solid rgba(122,158,126,0.3);
+    }
+    .infra-banner h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .infra-banner .infra-sub {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      margin-bottom: 1.5rem;
+    }
+    .infra-banner .infra-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .infra-banner .infra-card:last-child { margin-bottom: 0; }
+    .infra-banner .infra-q {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+      padding-left: 0.75rem;
+      border-left: 3px solid var(--sage);
+      line-height: 1.4;
+    }
+    .infra-banner .infra-a {
+      font-size: 0.85rem;
+      opacity: 0.92;
+      line-height: 1.65;
+    }
+    .infra-banner .infra-a p { margin-bottom: 0.6rem; }
+    .infra-banner .infra-a p:last-child { margin-bottom: 0; }
+    .infra-banner .infra-a ul {
+      margin: 0.4rem 0 0.6rem 1.25rem;
+      padding: 0;
+    }
+    .infra-banner .infra-a li { margin-bottom: 0.25rem; }
+    .infra-banner .infra-verdict {
+      background: rgba(122,158,126,0.2);
+      border: 1px solid rgba(122,158,126,0.3);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      margin-top: 0.6rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .infra-banner .infra-verdict-amber {
+      background: rgba(212,136,58,0.15);
+      border-color: rgba(212,136,58,0.3);
+    }
+    .infra-banner code {
+      background: rgba(255,255,255,0.12);
+      color: #b8e6c0;
+    }
+    .divider-label {
+      text-align: center;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .divider-label::before,
+    .divider-label::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: calc(50% - 100px);
+      height: 1px;
+      background: var(--border);
+    }
+    .divider-label::before { left: 0; }
+    .divider-label::after { right: 0; }
+
     @media (max-width: 600px) {
       .container { padding: 1.25rem 1rem 3rem; }
       .qa-card { padding: 1.25rem; }
@@ -268,6 +356,106 @@
 </header>
 
 <div class="container">
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- ALPACAPPS-INFRA (TEMPLATE REPO) -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="infra-banner">
+    <h2>alpacapps-infra</h2>
+    <p class="infra-sub">The template repo — what you'd actually clone. Answers scoped to the reusable scaffold only, excluding project-specific features.</p>
+
+    <div class="infra-card">
+      <div class="infra-q">What ships in the template vs. the full app?</div>
+      <div class="infra-a">
+        <p><strong>alpacapps-infra</strong> is a standalone template repo (<code>github.com/rsonnad/alpacapps-infra</code>) that projects clone and diverge from. It includes:</p>
+        <ul>
+          <li><strong>3 core services:</strong> GitHub Pages (hosting), Supabase (DB + auth + edge functions), Claude Code (dev agent)</li>
+          <li><strong>~10 core tables:</strong> <code>app_users</code>, <code>user_invitations</code>, <code>property_config</code>, <code>brand_config</code>, <code>spaces</code>, <code>people</code>, <code>assignments</code>, <code>media</code>, <code>document_index</code>, <code>role_permissions</code></li>
+          <li><strong>Centralized API:</strong> Single <code>/api</code> edge function with resource+action routing and role-based permission checks</li>
+          <li><strong>Shared services:</strong> <code>auth.js</code>, <code>config-loader.js</code>, <code>feature-registry.js</code>, <code>admin-shell.js</code>, <code>resident-shell.js</code>, <code>supabase.js</code></li>
+          <li><strong>Feature flag system:</strong> 8 core flags (always-on) + 13 optional flags (config-driven)</li>
+          <li><strong>Optional integrations:</strong> Stripe, Square, Resend (email), Telnyx (SMS), SignWell (e-sign) — deployed only if enabled</li>
+        </ul>
+        <p><strong>NOT in the template</strong> (project-specific): all IoT device tables (Tesla, Govee, Nest, LG, Anova, Glowforge), 3D property digital twin (PostGIS), native mobile apps, Discord/Telegram bots, Home Assistant, Airbnb sync, Vapi voice calling, Brave Search, PAI art generation, OpenClaw gateway.</p>
+        <div class="infra-verdict">The template is genuinely lean — ~10 tables, one API edge function, auth+config shell. Everything else is opt-in.</div>
+      </div>
+    </div>
+
+    <div class="infra-card">
+      <div class="infra-q">Is there a documented "clean base" profile in the template?</div>
+      <div class="infra-a">
+        <p><strong>Yes — the template IS the clean base.</strong> Unlike the full app (which has 37+ migrations), the template ships a bootstrap schema with just the core tables. An interactive setup wizard (<code>infra/index.html</code>) and infrastructure guide (<code>docs/alpacappsinfra.html</code>) walk you through enabling each optional service.</p>
+        <p>The template also has an <strong>upgrade mechanism:</strong> projects track <code>infra-upstream</code> as a git remote, allowing selective pulls of new infrastructure features without overwriting project-specific code.</p>
+        <div class="infra-verdict">Unlike the full app, the template has an explicit separation. You clone, configure, diverge.</div>
+      </div>
+    </div>
+
+    <div class="infra-card">
+      <div class="infra-q">How coupled is the template to PM vocabulary and single-tenant patterns?</div>
+      <div class="infra-a">
+        <p>The template still uses PM-origin naming: <code>spaces</code> (rental units), <code>people</code> (tenants), <code>assignments</code> (bookings). And config tables are singletons (<code>id=1</code>). This reflects the template's origin as a property management scaffold.</p>
+        <p>However, the coupling is <strong>shallower than the full app:</strong></p>
+        <ul>
+          <li>The centralized API pattern, feature flag system, brand config, and auth shell are domain-agnostic</li>
+          <li>Edge function patterns (webhook ingestion, payment processing, email templates) are reusable with different table names</li>
+          <li>The <code>feature-registry.js</code> toggle system means you can disable entire PM modules at the config level</li>
+          <li>An <code>orgs</code> table has been added in recent architecture work (multi-tenant prep)</li>
+        </ul>
+        <div class="infra-verdict infra-verdict-amber">Verdict: You'd still rename tables and refactor singletons to per-org. But it's 1-2 days of work on the template, not the week+ it would be on the full app.</div>
+      </div>
+    </div>
+
+    <div class="infra-card">
+      <div class="infra-q">Could I use alpacapps-infra as the starting point for a social platform?</div>
+      <div class="infra-a">
+        <p><strong>Yes — take the template, not the app.</strong> Here's what transfers cleanly:</p>
+        <ul>
+          <li><strong>Auth + roles:</strong> Google OAuth, JWT validation, 5-tier role system — works for any app</li>
+          <li><strong>Centralized API:</strong> Resource+action routing with permission checks — just add your resources</li>
+          <li><strong>Payment pipeline:</strong> Stripe PaymentIntent + webhook reconciliation — reusable as-is</li>
+          <li><strong>Email infra:</strong> Resend with branded templates, inbound webhook routing — swap the templates</li>
+          <li><strong>Feature flags:</strong> <code>feature_registry</code> pattern — add your own flags</li>
+          <li><strong>Brand system:</strong> DB-driven colors/fonts/logos — make it per-org</li>
+          <li><strong>CI/CD:</strong> GitHub Actions versioning, GitHub Pages deploy — works immediately</li>
+        </ul>
+        <p><strong>What you'd build from scratch:</strong> social graph, communities/groups, E2EE messaging, Dion's stateful agent backend, event discovery. None of these exist in the template.</p>
+        <div class="infra-verdict">Verdict: Clone alpacapps-infra (not alpacapps), rename the PM tables to your domain model, keep the infrastructure wiring. Faster than starting from zero, cleaner than forking the full app.</div>
+      </div>
+    </div>
+
+    <div class="infra-card">
+      <div class="infra-q">How does Dion (a stateful AI agent) fit into the template architecture?</div>
+      <div class="infra-a">
+        <p>The template's edge functions are <strong>stateless by design</strong> (Deno cold starts, 150s max execution). Dion needs persistent state, so it should be a <strong>separate service with its own Supabase service key</strong> — not an edge function.</p>
+        <p>The template already supports this pattern: the setup guide includes a Hostinger VPS configuration for persistent workers. PAI's Discord bot runs this way in the full app. Dion would follow the same topology:</p>
+        <ul>
+          <li>Persistent Node/Python process on a VPS or container</li>
+          <li>Supabase <code>service_role</code> key for DB access</li>
+          <li>Webhook endpoints for inbound events</li>
+          <li>Calls back into edge functions for email/SMS/payment actions</li>
+        </ul>
+        <div class="infra-verdict">Verdict: The template provides the database + API layer. Dion runs alongside it as a separate service. Clean separation, proven pattern.</div>
+      </div>
+    </div>
+
+    <div class="infra-card">
+      <div class="infra-q">What's the lock-in risk with the template's infrastructure choices?</div>
+      <div class="infra-a">
+        <p><strong>Minimal.</strong> Every layer is portable:</p>
+        <ul>
+          <li><strong>Supabase:</strong> Standard Postgres — dump and restore to any Postgres host</li>
+          <li><strong>Edge Functions:</strong> Deno/TypeScript — portable to Cloudflare Workers, AWS Lambda, or any Node runtime with minor changes</li>
+          <li><strong>GitHub Pages:</strong> Static HTML — deploy anywhere (Netlify, Vercel, S3, any CDN)</li>
+          <li><strong>R2 Storage:</strong> S3-compatible API — swap 4 env vars to move to AWS S3, Backblaze, MinIO</li>
+          <li><strong>Auth:</strong> Supabase Auth wraps standard JWT — replaceable with Auth0, Clerk, or custom</li>
+        </ul>
+        <p>The template doesn't use any proprietary Supabase features beyond standard Postgres + PostgREST + GoTrue auth.</p>
+        <div class="infra-verdict">Verdict: Zero proprietary lock-in. Every component has a standard migration path.</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="divider-label">Full AlpacApps answers below</p>
 
   <!-- ════════════════════════════════════════════ -->
   <!-- SCHEMA & COUPLING -->
