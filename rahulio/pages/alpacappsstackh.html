@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AlpacApps Infrastructure Q&A</title>
+  <meta name="description" content="Detailed technical answers to infrastructure questions about the AlpacApps scaffold — schema, Gemini, storage, multi-tenancy, messaging, and honest assessment.">
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --amber: #d4883a;
+      --amber-glow: #c07a30;
+      --amber-pale: #f5e6d0;
+      --cedar: #5a3e28;
+      --cedar-light: #7a5e48;
+      --cream: #faf9f6;
+      --cream-warm: #f5efe2;
+      --surface: #ffffff;
+      --border: #e8e2d8;
+      --border-light: #f0ebe3;
+      --text-dark: #2a2420;
+      --text-body: #4a4440;
+      --text-muted: #7a7470;
+      --sage: #7a9e7e;
+      --sage-bg: #f0f5f0;
+      --blue: #4a7ab5;
+      --blue-bg: #eef3fa;
+      --radius: 14px;
+      --radius-lg: 20px;
+      --shadow: 0 2px 12px rgba(90,62,40,0.06);
+      --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--text-body);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* ── Header ── */
+    .page-header {
+      background: var(--cedar);
+      color: #fff;
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+    .page-header h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .page-header .subtitle {
+      font-size: 0.95rem;
+      opacity: 0.75;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .page-header .date {
+      display: inline-block;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      background: rgba(255,255,255,0.12);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      opacity: 0.7;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 3rem;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--cedar);
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--amber);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--amber);
+      color: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Q&A Card ── */
+    .qa-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    .qa-card .question {
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      padding-left: 1rem;
+      border-left: 3px solid var(--amber);
+      line-height: 1.5;
+    }
+    .qa-card .answer {
+      font-size: 0.9rem;
+      color: var(--text-body);
+    }
+    .qa-card .answer p {
+      margin-bottom: 0.75rem;
+    }
+    .qa-card .answer p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ── Verdict box ── */
+    .verdict {
+      background: var(--sage-bg);
+      border: 1px solid var(--sage);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #3a5e3e;
+    }
+    .verdict-amber {
+      background: var(--amber-pale);
+      border-color: var(--amber);
+      color: #6a4e28;
+    }
+
+    /* ── Tables ── */
+    .schema-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin: 0.75rem 0;
+    }
+    .schema-table th {
+      background: var(--cream-warm);
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      font-weight: 600;
+      color: var(--cedar);
+      border-bottom: 2px solid var(--border);
+    }
+    .schema-table td {
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+    }
+    .schema-table tr:last-child td { border-bottom: none; }
+
+    /* ── Tag chips ── */
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tag-core { background: var(--sage-bg); color: #3a5e3e; }
+    .tag-pm { background: var(--amber-pale); color: #6a4e28; }
+    .tag-feature { background: var(--blue-bg); color: #3a5a8a; }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82em;
+      background: var(--cream-warm);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      color: var(--cedar);
+    }
+
+    /* ── Summary box ── */
+    .summary-box {
+      background: var(--cedar);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-top: 2rem;
+    }
+    .summary-box h3 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    .summary-box ul {
+      list-style: none;
+      padding: 0;
+    }
+    .summary-box li {
+      padding: 0.4rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    .summary-box li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.75rem;
+      width: 6px;
+      height: 6px;
+      background: var(--amber);
+      border-radius: 50%;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+    .back-link:hover { color: var(--amber); }
+
+    @media (max-width: 600px) {
+      .container { padding: 1.25rem 1rem 3rem; }
+      .qa-card { padding: 1.25rem; }
+      .schema-table { font-size: 0.75rem; }
+      .schema-table th, .schema-table td { padding: 0.35rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>AlpacApps Infrastructure Q&A</h1>
+  <p class="subtitle">Honest, detailed answers about the scaffold's architecture, coupling, and fit for a multi-tenant social platform.</p>
+  <span class="date">April 2026</span>
+</header>
+
+<div class="container">
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SCHEMA & COUPLING -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-icon">S</span> Schema & Coupling</h2>
+
+    <div class="qa-card">
+      <div class="question">Of the 68 Supabase migrations, which are foundational vs. Property Management-specific? Is there a documented "clean base" profile?</div>
+      <div class="answer">
+        <p>There are currently <strong>37 migration files</strong> (not 68 — that number may include seed scripts or earlier iterations). They break down cleanly into tiers:</p>
+        <table class="schema-table">
+          <thead><tr><th>Category</th><th>Count</th><th>Examples</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="tag tag-core">Core</span></td>
+              <td>~6</td>
+              <td><code>app_users</code>, <code>property_config</code>, <code>brand_config</code>, <code>feature_registry</code>, release versioning, notification subscriptions</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-pm">PM-Specific</span></td>
+              <td>~20</td>
+              <td><code>spaces</code>, <code>assignments</code>, <code>people</code>, <code>time_entries</code>, <code>payouts</code>, <code>vehicle_rentals</code>, Stripe/PayPal/Square, SignWell, identity verification, all IoT device tables (Govee, Nest, Tesla, LG, Anova, etc.), 3D digital twin (PostGIS parcels/structures)</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-feature">Feature</span></td>
+              <td>~11</td>
+              <td>PAI prompts, image gen jobs, voice calling (Vapi), staff invitation iterations, email compliance cron</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>There is <strong>no documented "clean base" profile</strong>. You would need to audit and strip manually. That said, the core layer is small — <code>app_users</code>, auth, <code>brand_config</code>, <code>property_config</code>, and <code>feature_registry</code> are the only tables the shared JS services depend on. Everything else is feature-flagged and could be dropped without breaking the shell.</p>
+        <div class="verdict">Verdict: Manual audit required, but the core is genuinely small (~6 tables). You could extract it in a day.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question">Do PM-specific tables share foreign keys or RLS policies with the core user/community/event layer? Or are they genuinely isolated?</div>
+      <div class="answer">
+        <p><strong>They share FKs, but the coupling is shallow.</strong> The main join point is <code>people.id</code> — nearly every PM table (<code>assignments</code>, <code>payouts</code>, <code>vehicle_rentals</code>, <code>identity_verifications</code>, <code>time_entries</code>) has a <code>person_id</code> FK back to <code>people</code>. Similarly, <code>app_users.person_id</code> links auth users to the <code>people</code> table.</p>
+        <p>IoT device tables (<code>govee_devices</code>, <code>nest_devices</code>, etc.) link to <code>spaces</code> via <code>space_id</code> for location context, but that's optional metadata — not a hard dependency.</p>
+        <p><strong>RLS is minimal on the client side.</strong> Trust enforcement happens in the centralized <code>api</code> edge function via JWT role checks (admin/staff/resident/associate), not through Supabase RLS policies. This means you wouldn't inherit RLS conflicts, but you also wouldn't inherit RLS protections — you'd need to build your own.</p>
+        <div class="verdict">Verdict: The coupling is through <code>people</code> and <code>spaces</code> — two tables you'd replace with your own user/community model. No deep RLS entanglement. Clean to separate.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question">What naming conventions and schema patterns are baked in? Would they conflict with a communities/events/social-graph/E2EE model?</div>
+      <div class="answer">
+        <p>Key patterns baked into the foundation:</p>
+        <p><strong>Naming:</strong> <code>people</code> (not <code>users</code> or <code>members</code>), <code>spaces</code> (not <code>rooms</code> or <code>venues</code>), <code>assignments</code> (not <code>bookings</code>). The <code>people</code> table uses a <code>type</code> enum (<code>tenant, staff, owner, airbnb_guest, associate, event_client, house_guest</code>) — very PM-specific vocabulary.</p>
+        <p><strong>Patterns:</strong> Singleton config tables (<code>property_config</code>, <code>brand_config</code>, <code>pai_config</code> — all <code>id=1</code>). JSONB blobs for flexible config. Centralized API pattern (single <code>/api</code> edge function with resource+action routing). Feature flags via <code>feature_registry</code>.</p>
+        <p><strong>Conflicts for your model:</strong></p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li><code>people</code> assumes physical residents/tenants — you'd want <code>members</code> or <code>profiles</code> for a social platform</li>
+          <li><code>spaces</code> means rental units — you'd want it to mean community spaces or channels</li>
+          <li>The singleton config pattern (<code>id=1</code>) is inherently single-tenant</li>
+          <li>No concept of "organization" or "community" as a first-class entity</li>
+        </ul>
+        <div class="verdict verdict-amber">Verdict: The naming would force awkward overloading. You'd spend more time renaming than building fresh. Take the patterns (centralized API, feature flags, JSONB config), not the table names.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- GEMINI / PAI -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-icon">G</span> Gemini / PAI</h2>
+
+    <div class="qa-card">
+      <div class="question">How deeply is Gemini integrated? Is removing it a config swap or a data migration?</div>
+      <div class="answer">
+        <p>Gemini is deeply integrated but <strong>has zero stored embeddings or vector columns</strong>. No pgvector, no embedding tables. All Gemini usage is real-time inference in edge functions:</p>
+        <table class="schema-table">
+          <thead><tr><th>Use Case</th><th>Edge Function</th><th>Touches DB?</th></tr></thead>
+          <tbody>
+            <tr><td>PAI chat/voice/email</td><td><code>alpaca-pai</code></td><td>Reads <code>faq_context_entries</code>, <code>document_index</code>, device tables. Writes to <code>faq_entries</code> (Q&A log)</td></tr>
+            <tr><td>Payment matching</td><td><code>record-payment</code></td><td>Reads <code>people</code>, <code>assignments</code>. Writes to <code>stripe_payments</code> / ledger</td></tr>
+            <tr><td>Image generation</td><td>Hostinger worker</td><td>Reads/writes <code>image_gen_jobs</code>, <code>media</code></td></tr>
+            <tr><td>Email classification</td><td><code>resend-inbound-webhook</code></td><td>Writes <code>route_action</code> to <code>inbound_emails</code></td></tr>
+            <tr><td>Resident Q&A</td><td><code>ask-question</code></td><td>Reads context from R2. Writes to <code>faq_entries</code></td></tr>
+          </tbody>
+        </table>
+        <p>API calls are logged to <code>api_usage_log</code> (vendor, category, tokens, cost) for spend tracking.</p>
+        <p>The PAI system (chat widget, voice, Discord bot, email classification) is the deepest integration — it has 15+ tools that call other edge functions for smart home control, data queries, web search. But it's all runtime, not stored state.</p>
+        <div class="verdict">Verdict: Removing Gemini is a config swap + deleting edge functions. Zero data migration needed. The <code>faq_context_entries</code> and <code>document_index</code> tables are Gemini-agnostic knowledge stores you could reuse with any LLM.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- STORAGE -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-icon">R</span> Storage</h2>
+
+    <div class="qa-card">
+      <div class="question">How tightly is R2 bound to Cloudflare infrastructure? Workers-to-R2 direct bindings, or just an S3-compatible endpoint?</div>
+      <div class="answer">
+        <p><strong>It's purely S3-compatible API access.</strong> No Workers bindings, no Cloudflare CDN integration, no Workers at all.</p>
+        <p>The setup:</p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li><strong>Endpoint:</strong> Standard <code>https://&lt;account_id&gt;.r2.cloudflarestorage.com</code></li>
+          <li><strong>Auth:</strong> AWS Signature V4 (standard S3 auth)</li>
+          <li><strong>Helper:</strong> <code>supabase/functions/_shared/r2-upload.ts</code> with <code>uploadToR2()</code>, <code>deleteFromR2()</code>, <code>getR2PublicUrl()</code></li>
+          <li><strong>Config:</strong> <code>r2_config</code> table stores account_id, bucket_name, public_url</li>
+          <li><strong>Public CDN:</strong> Cloudflare's free <code>pub-*.r2.dev</code> domain (auto-provisioned, not custom CDN config)</li>
+        </ul>
+        <p>Migrating to any S3-compatible service (AWS S3, Backblaze B2, MinIO, Supabase Storage) is literally changing four environment variables and the public URL prefix. No code rewrite.</p>
+        <div class="verdict">Verdict: Zero Cloudflare lock-in. Swap the endpoint and credentials, done.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- FORK POSTURE -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-icon">F</span> Fork Posture</h2>
+
+    <div class="qa-card">
+      <div class="question">How do teams use this — one-time fork or stay on upstream? What's your expectation for significant departures?</div>
+      <div class="answer">
+        <p>AlpacApps is currently <strong>a single-operator project, not a framework with downstream forks</strong>. The daily versioning (<code>v260408.21</code>) reflects continuous development for one production deployment (Alpaca Playhouse). There is no upstream/downstream relationship to manage.</p>
+        <p>For a team making significant departures (different mobile framework, E2EE, agentic backend), the right approach is:</p>
+        <p><strong>One-time fork, diverge freely.</strong> Specifically:</p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li>Take the <strong>patterns</strong>: centralized API edge function, feature flag system, brand/config singletons, webhook ingestion patterns, the shared service layer architecture</li>
+          <li>Take the <strong>integrations you need</strong>: Stripe payment flow, Resend email (43 templates as reference), Supabase auth setup</li>
+          <li>Drop everything PM-specific: spaces/assignments/people/IoT/vehicles/3D-property</li>
+          <li>Never look upstream again — the velocity here is property-management-focused and will diverge further</li>
+        </ul>
+        <div class="verdict">Verdict: Fork and diverge. This isn't a framework — it's a production app. Take the wiring patterns, not the domain model.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- MULTI-TENANCY -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-icon">M</span> Multi-Tenancy</h2>
+
+    <div class="qa-card">
+      <div class="question">Has anyone adapted this for multi-tenant deployment with strict data isolation?</div>
+      <div class="answer">
+        <p><strong>No.</strong> The system is single-tenant by design. There's nascent multi-<em>location</em> support (<code>people.residence_location</code> and <code>spaces.location</code> segregate Cedar Creek vs. Sharingwood), but this is <strong>not multi-tenancy</strong> — it's one operator managing two properties in one database.</p>
+        <p>Gotchas if you tried to adapt it:</p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li><strong>Singleton configs</strong> (<code>property_config</code>, <code>brand_config</code>, <code>pai_config</code> — all <code>id=1</code>) assume one property. You'd need to make these per-org.</li>
+          <li><strong>No RLS on client code.</strong> Data isolation is enforced by role checks in edge functions, not row-level security. For multi-tenant you'd need proper RLS with <code>org_id</code> on every table.</li>
+          <li><strong>Integration configs are global.</strong> <code>stripe_config</code>, <code>telnyx_config</code>, <code>r2_config</code> — all singletons. Multi-tenant would need per-org credential vaults.</li>
+          <li><strong>Edge functions assume single-tenant.</strong> The centralized API doesn't scope queries by organization — it trusts JWT roles.</li>
+        </ul>
+        <p>A <code>properties</code> table with <code>property_id</code> FKs is reserved in the schema design but <strong>not implemented</strong>.</p>
+        <div class="verdict verdict-amber">Verdict: Multi-tenancy would be a ground-up rebuild of the data access layer. Don't try to retrofit it — design it from scratch with <code>org_id</code> and RLS from day one.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- MESSAGING & AGENT ARCHITECTURE -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-icon">A</span> Messaging & Agent Architecture</h2>
+
+    <div class="qa-card">
+      <div class="question">Is there any existing pattern for system/agent senders (not just user-to-user) that could support E2EE messaging with an AI agent?</div>
+      <div class="answer">
+        <p>The scaffold has <strong>no real-time messaging system</strong>. All communication is notification-oriented:</p>
+        <table class="schema-table">
+          <thead><tr><th>Channel</th><th>Pattern</th><th>Direction</th></tr></thead>
+          <tbody>
+            <tr><td>Email (Resend)</td><td>43 templates, fire-and-forget</td><td>System &rarr; User</td></tr>
+            <tr><td>SMS (Telnyx)</td><td>Template-based, logged to <code>sms_messages</code></td><td>Bidirectional</td></tr>
+            <tr><td>Voice (Vapi)</td><td>Real-time calls, transcripts logged</td><td>Bidirectional</td></tr>
+            <tr><td>Discord/Telegram</td><td>Bot bridges to PAI edge function</td><td>Bidirectional</td></tr>
+            <tr><td>Notifications</td><td><code>notification_subscriptions</code> event system</td><td>System &rarr; User</td></tr>
+          </tbody>
+        </table>
+        <p>However, PAI (the AI agent) already operates as a <strong>system-level sender</strong> across all channels. The pattern for "agent sends as itself" exists in the email system (<code>SENDER_MAP.pai</code> defines PAI's from-address), the SMS system (sends from the property phone number), and Discord (bot identity). This is the closest analog to what Dion would need.</p>
+        <p>But for <strong>E2EE messaging with Signal Protocol</strong> — that's fully greenfield. Nothing in the scaffold handles key exchange, message encryption, or encrypted storage. You'd need:</p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li>A dedicated messaging service (not edge functions — you need persistent connections)</li>
+          <li>Key management tables (identity keys, pre-keys, signed pre-keys)</li>
+          <li>Encrypted message storage (opaque blobs, not queryable)</li>
+          <li>Agent key management (Dion needs its own Signal identity)</li>
+        </ul>
+        <div class="verdict verdict-amber">Verdict: The agent-as-sender pattern exists and is proven. E2EE messaging infrastructure is 100% greenfield.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question">How would a stateful agentic backend (Dion) fit alongside the scaffold's architecture?</div>
+      <div class="answer">
+        <p>The scaffold runs <strong>two agent architectures</strong> today that are relevant references:</p>
+        <p><strong>1. Cloud agents (Supabase edge functions)</strong> — stateless, request/response. PAI runs here. Each call gets context from DB, processes, responds. No persistent state between calls. Cost: ~$0.10-0.40/1M tokens (Gemini).</p>
+        <p><strong>2. Local agents (Alpuca Mac Mini)</strong> — Hermes runs as a persistent LaunchAgent service with its own config, tools, and allowed-user lists. Uses local Ollama models (free inference). Has persistent conversation state via filesystem.</p>
+        <p>For Dion as a stateful agentic backend:</p>
+        <p><strong>Recommendation: Completely separate service that plugs into Supabase independently.</strong> The scaffold's edge functions are stateless by design (Deno cold starts, 150s max execution). A stateful agent needs:</p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li>Persistent process (not edge functions) — a Node/Python service on a VPS or container</li>
+          <li>Its own <code>service_role</code> key for Supabase access</li>
+          <li>Webhook endpoints for inbound events (messages, triggers)</li>
+          <li>State management (conversation memory, task queues, tool results)</li>
+        </ul>
+        <p>The pattern already exists: PAI's Discord bot (<code>pai-discord/bot.js</code>) runs as a separate persistent service on a Hostinger VPS that calls back into Supabase edge functions. Dion would follow the same topology — separate service, shared database.</p>
+        <div class="verdict">Verdict: Separate service, shared Supabase. The pattern is proven (Discord bot, Hermes agents). Edge functions are the wrong host for stateful agents.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- HONEST ASSESSMENT -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-icon">!</span> Honest Assessment</h2>
+
+    <div class="qa-card">
+      <div class="question">If you were building a multi-tenant social platform — events, communities, social graph, E2EE messaging, AI agent — would you still start from this scaffold?</div>
+      <div class="answer">
+        <p><strong>No. I'd take the wiring, not the scaffold.</strong></p>
+        <p>Here's why, broken down honestly:</p>
+        <p><strong>What's genuinely valuable to take:</strong></p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li><strong>Supabase auth + JWT role system</strong> — the auth flow, role hierarchy (admin/staff/resident), and JWT validation patterns in edge functions are solid and reusable</li>
+          <li><strong>Stripe payment pipeline</strong> — PaymentIntent creation, webhook processing, ledger reconciliation. Battle-tested with real money.</li>
+          <li><strong>Centralized API pattern</strong> — single edge function with resource+action routing, permission checks. Clean pattern you'd want anyway.</li>
+          <li><strong>Email infrastructure</strong> — Resend setup with inbound webhook routing, 43 branded templates as reference, approval system</li>
+          <li><strong>Feature flag system</strong> — <code>feature_registry</code> table + <code>feature-registry.js</code> client-side gating</li>
+          <li><strong>Brand/config system</strong> — DB-driven branding (colors, fonts, logos, email templates) that could become per-org</li>
+          <li><strong>Agent-as-sender pattern</strong> — proven architecture for AI agents sending across email/SMS/Discord channels</li>
+        </ul>
+        <p><strong>What you'd throw away (and should):</strong></p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li>The entire PM domain model (<code>people</code>, <code>spaces</code>, <code>assignments</code>) — wrong vocabulary, wrong relationships</li>
+          <li>All IoT/device tables — 63 Govee lights, Tesla vehicles, Nest thermostats. Irrelevant.</li>
+          <li>3D property digital twin (PostGIS parcels, structures, zoning) — cool but not your domain</li>
+          <li>Singleton config tables — need to become per-org from day one</li>
+          <li>PAI (the AI assistant) — Dion has different personality, capabilities, and architectural needs</li>
+        </ul>
+        <p><strong>What you must build from scratch regardless:</strong></p>
+        <ul style="margin: 0.5rem 0 0.5rem 1.25rem;">
+          <li>Multi-tenant data model with RLS (<code>org_id</code> everywhere)</li>
+          <li>Social graph (follows, connections, groups)</li>
+          <li>E2EE messaging (Signal Protocol key management, encrypted storage)</li>
+          <li>Community/event model (not property/assignment)</li>
+          <li>Dion's stateful agent backend</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bottom line ── -->
+  <div class="summary-box">
+    <h3>Bottom Line</h3>
+    <ul>
+      <li><strong>Take the patterns, not the scaffold.</strong> The centralized API, payment pipeline, email infra, auth flow, and feature flags are worth extracting. The domain model is property management — it'll fight you at every turn.</li>
+      <li><strong>Estimated extraction time:</strong> 2-3 days to pull out the reusable wiring into a clean Supabase project. Faster than learning where the PM assumptions are buried and working around them.</li>
+      <li><strong>Zero lock-in risk:</strong> R2 is S3-compatible (swap endpoint), Gemini is runtime-only (swap model), Supabase is Postgres (portable). The scaffold doesn't trap you.</li>
+      <li><strong>Dion as a separate service is the right call.</strong> The edge function layer is stateless by design. Run Dion as a persistent service with its own Supabase service key.</li>
+      <li><strong>E2EE messaging is 100% greenfield.</strong> The scaffold has notification patterns, not real-time messaging. Build it clean.</li>
+    </ul>
+  </div>
+
+  <a href="/rahulio/" class="back-link">&larr; Back to rahulio</a>
+</div>
+
+</body>
+</html>
