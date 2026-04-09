@@ -606,31 +606,46 @@ async function loadBirdsEye() {
     ]);
     if (!parcels?.length || !footprints?.length) { el.innerHTML = '<div class="pp-empty">No geometry data</div>'; return; }
 
-    // Collect every coord from parcel + footprints to compute bbox
-    const allCoords = [];
-    const walk = (g) => {
-      if (!g) return;
-      if (g.type === 'Polygon') g.coordinates.forEach(ring => ring.forEach(c => allCoords.push(c)));
-      else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => p.forEach(ring => ring.forEach(c => allCoords.push(c))));
-      else if (g.type === 'Point') allCoords.push(g.coordinates);
-    };
-    parcels.forEach(p => walk(p.boundary));
-    footprints.forEach(f => walk(f.footprint));
+    // Build parcel-local frame. The lot is rotated ~27° on the globe; the survey
+    // draws it with south edge horizontal. We do the same by projecting every point
+    // onto the parcel's local (u, v) basis where:
+    //   u = unit vector along the south edge (SW → SE)
+    //   v = perpendicular to u, pointing toward the north edge (SW → NW)
+    // Distances are in feet. Then we flip v for screen (y-down).
+    const parcelRing = parcels[0].boundary.coordinates[0]; // outer ring [NW,NE,SE,SW,NW] or similar
+    // Identify the 4 corners by picking the 4 unique vertices, then classify by
+    // lat/lon extremes (lot is roughly N-S oriented after rotation — but the corners
+    // are still distinguishable: SW = min lat, NE = max lat, NW = min lon, SE = max lon).
+    const uniq = parcelRing.slice(0, -1);
+    const sw = uniq.reduce((a,b) => b[1] < a[1] ? b : a);
+    const ne = uniq.reduce((a,b) => b[1] > a[1] ? b : a);
+    const nw = uniq.reduce((a,b) => b[0] < a[0] ? b : a);
+    const se = uniq.reduce((a,b) => b[0] > a[0] ? b : a);
 
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    allCoords.forEach(([x, y]) => { if (x<minX)minX=x; if (y<minY)minY=y; if (x>maxX)maxX=x; if (y>maxY)maxY=y; });
-
-    // Equirectangular local projection (lat/lon → ft), origin at bbox min
-    const midLat = (minY + maxY) / 2;
+    const midLat = (sw[1] + ne[1]) / 2;
     const FT_PER_DEG_LAT = 364000;
     const FT_PER_DEG_LON = 364000 * Math.cos(midLat * Math.PI / 180);
-    const project = ([lon, lat]) => [
-      (lon - minX) * FT_PER_DEG_LON,
-      (maxY - lat) * FT_PER_DEG_LAT, // flip Y so north is up
+    // Convert a lon/lat to east/north feet relative to SW corner
+    const toFeet = ([lon, lat]) => [
+      (lon - sw[0]) * FT_PER_DEG_LON,
+      (lat - sw[1]) * FT_PER_DEG_LAT,
     ];
+    // u axis: SW → SE (south edge). v axis: SW → NW (west edge).
+    const seF = toFeet(se);
+    const nwF = toFeet(nw);
+    const uLen = Math.hypot(seF[0], seF[1]);
+    const vLen = Math.hypot(nwF[0], nwF[1]);
+    const ux = seF[0] / uLen, uy = seF[1] / uLen;
+    const vx = nwF[0] / vLen, vy = nwF[1] / vLen;
 
-    const widthFt = (maxX - minX) * FT_PER_DEG_LON;
-    const heightFt = (maxY - minY) * FT_PER_DEG_LAT;
+    const widthFt = uLen;
+    const heightFt = vLen;
+    const project = (lonlat) => {
+      const [ef, nf] = toFeet(lonlat);
+      const u = ef * ux + nf * uy;  // distance along south edge (0..widthFt)
+      const v = ef * vx + nf * vy;  // distance along west edge (0..heightFt)
+      return [u, heightFt - v];      // flip v so v=heightFt (north) is at top (y=0)
+    };
     const PAD = 20;
     const SCALE = 2.2; // px per ft
     const W = Math.round(widthFt * SCALE + PAD * 2);
@@ -683,11 +698,14 @@ async function loadBirdsEye() {
       </g>`;
     });
 
-    // North arrow + scale
-    svg += `<g transform="translate(${W-60},30)">
+    // North arrow — true north vector in local frame screen coords:
+    // north(east=0,north=1) → local (uy, -vy) after flipping v for screen.
+    const northAngleRad = Math.atan2(-vy, uy); // angle from +x axis (east-local)
+    const northDeg = northAngleRad * 180 / Math.PI - 90; // svg "up" is -90° from +x
+    svg += `<g transform="translate(${W-60},40) rotate(${northDeg.toFixed(1)})">
       <circle r="18" fill="#fff" stroke="#374151" stroke-width="1"/>
       <path d="M0,-14 L6,10 L0,4 L-6,10 Z" fill="#111827"/>
-      <text y="-22" text-anchor="middle" font-size="10" font-weight="700">N</text>
+      <text y="-22" text-anchor="middle" font-size="10" font-weight="700" transform="rotate(${(-northDeg).toFixed(1)})">N</text>
     </g>`;
     const barFt = 50;
     const barPx = barFt * SCALE;
