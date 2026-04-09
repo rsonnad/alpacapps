@@ -1,12 +1,12 @@
 {
-  "version": "v260408.20 10:25p",
-  "release": 1297,
-  "sha": "4163e835f",
-  "fullSha": "4163e835fc831800b25c6c79cfa2b5d864c090c9",
+  "version": "v260408.21 11:08p",
+  "release": 1298,
+  "sha": "bac116ce6",
+  "fullSha": "bac116ce6bbedc1d98d4d684cb8311c627e812dc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm727z3",
-  "pushedAt": "2026-04-09T03:25:07+00:00",
-  "commits": [{"sha":"4163e835f","message":"phyprop: add 2D birds-eye SVG proof from PostGIS footprints","author":"Rahul"}]
+  "pushedAt": "2026-04-09T04:08:44+00:00",
+  "commits": [{"sha":"bac116ce6","message":"phyprop: rotate birds-eye into parcel-local frame to match survey orientation","author":"Rahul"}]
 }
