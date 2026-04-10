@@ -1,12 +1,12 @@
 {
-  "version": "v260410.02 3:13a",
-  "release": 1304,
-  "sha": "31f9e34ca",
-  "fullSha": "31f9e34ca1fea55ed331d157253953f835de79f6",
+  "version": "v260410.03 4:15a",
+  "release": 1305,
+  "sha": "ecdba24a3",
+  "fullSha": "ecdba24a393fb6f5037d4b65f224eeba30cd9727",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-10T08:13:34+00:00",
-  "commits": [{"sha":"caf0f7fae","message":"docs: add site plan pipeline reference for georef and rendering sessions","author":"Rahul"},{"sha":"31f9e34ca","message":"Merge pull request #116 from rsonnad/elated-northcutt","author":"Rahul"}]
+  "pushedAt": "2026-04-10T09:15:50+00:00",
+  "commits": [{"sha":"ecdba24a3","message":"feat: add site plan iteration gallery + rendering log (#117)","author":"Rahul"}]
 }
