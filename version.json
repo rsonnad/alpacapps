@@ -1,12 +1,12 @@
 {
-  "version": "v260409.03 4:34p",
-  "release": 1301,
-  "sha": "afb7f58b3",
-  "fullSha": "afb7f58b3a26f6841d3dfd7ed4a2bddae8eaac4f",
+  "version": "v260409.04 11:25p",
+  "release": 1302,
+  "sha": "14ef10807",
+  "fullSha": "14ef10807d6eb8ade94706bd49867688210fc699",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-09T21:34:22+00:00",
-  "commits": [{"sha":"afb7f58b3","message":"add Oracle Cloud ARM auto-provisioning guide page","author":"Rahul"}]
+  "pushedAt": "2026-04-10T04:25:40+00:00",
+  "commits": [{"sha":"14ef10807","message":"add shareable Oracle ARM resource card + cross-link infra pages","author":"Rahul"}]
 }
