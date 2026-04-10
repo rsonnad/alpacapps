@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Plan Editor — 160 Still Forest Dr</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: #1a1a2e; color: #e0e0e0; }
+
+  .app { display: flex; height: 100vh; }
+
+  /* Left panel — structure list */
+  .panel {
+    width: 320px; min-width: 320px; background: #16213e; padding: 16px;
+    overflow-y: auto; border-right: 2px solid #0f3460;
+  }
+  .panel h2 { font-size: 16px; color: #e94560; margin-bottom: 12px; }
+  .panel p { font-size: 12px; color: #888; margin-bottom: 12px; line-height: 1.4; }
+
+  .struct-item {
+    padding: 8px 10px; margin-bottom: 4px; border-radius: 6px;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    border: 2px solid transparent; transition: all 0.15s;
+  }
+  .struct-item:hover { background: #1a2a4a; }
+  .struct-item.active { border-color: #e94560; background: #1a2a4a; }
+  .struct-item.placed { opacity: 0.6; }
+  .struct-item.placed .status { color: #4caf50; }
+
+  .struct-color {
+    width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .struct-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .struct-coords { font-size: 11px; color: #888; font-family: monospace; }
+  .status { font-size: 11px; }
+
+  .actions { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .actions button {
+    padding: 10px; border: none; border-radius: 6px; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all 0.15s;
+  }
+  .btn-save { background: #4caf50; color: white; }
+  .btn-save:hover { background: #45a049; }
+  .btn-export { background: #2196F3; color: white; }
+  .btn-export:hover { background: #1976D2; }
+  .btn-reset { background: #666; color: white; }
+  .btn-reset:hover { background: #555; }
+  .btn-undo { background: #ff9800; color: white; }
+  .btn-undo:hover { background: #e68a00; }
+
+  .score { margin-top: 12px; padding: 10px; background: #0f3460; border-radius: 6px; font-size: 12px; }
+  .score .label { color: #888; }
+  .score .value { color: #4caf50; font-weight: 700; font-size: 18px; }
+
+  /* Right — canvas area */
+  .canvas-area {
+    flex: 1; position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    background: #111;
+  }
+  .canvas-area canvas { cursor: crosshair; }
+
+  .toolbar {
+    position: absolute; top: 10px; left: 10px; display: flex; gap: 8px; z-index: 10;
+  }
+  .toolbar button {
+    padding: 6px 12px; background: rgba(0,0,0,0.7); color: #fff; border: 1px solid #444;
+    border-radius: 4px; cursor: pointer; font-size: 12px;
+  }
+  .toolbar button:hover { background: rgba(0,0,0,0.9); }
+
+  .coords-display {
+    position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7);
+    padding: 6px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; z-index: 10;
+  }
+
+  .toast {
+    position: fixed; top: 20px; right: 20px; background: #4caf50; color: white;
+    padding: 12px 20px; border-radius: 6px; font-size: 14px; z-index: 100;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { background: #e94560; }
+
+  .help-overlay {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.85); padding: 30px; border-radius: 12px;
+    text-align: center; z-index: 20; max-width: 500px;
+  }
+  .help-overlay h3 { color: #e94560; margin-bottom: 12px; }
+  .help-overlay p { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 8px; }
+  .help-overlay .keys { font-family: monospace; color: #4caf50; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <h2>🏗 Site Plan Editor</h2>
+    <p>Click a structure, then click on the satellite image to place it. Structures are drawn at their real size.</p>
+
+    <div id="structList"></div>
+
+    <div class="score">
+      <div class="label">Structures placed</div>
+      <div class="value" id="placedCount">0 / 14</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-undo" onclick="undoLast()">↩ Undo Last</button>
+      <button class="btn-save" onclick="saveToDB()">💾 Save to Database</button>
+      <button class="btn-export" onclick="exportJSON()">📋 Export JSON</button>
+      <button class="btn-reset" onclick="resetAll()">🔄 Reset All</button>
+    </div>
+
+    <div style="margin-top:16px; font-size:11px; color:#666;">
+      <b>Keyboard:</b> 1-9,0 = select structure, Z = undo, S = save, Arrow keys = nudge ±2ft
+    </div>
+  </div>
+
+  <div class="canvas-area">
+    <div class="toolbar">
+      <button onclick="zoomIn()">🔍+</button>
+      <button onclick="zoomOut()">🔍−</button>
+      <button onclick="zoomFit()">Fit</button>
+      <button onclick="toggleOverlay()">Toggle Outlines</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="coords-display" id="coordsDisplay">u: — v: —</div>
+    <div class="help-overlay" id="helpOverlay">
+      <h3>Load Satellite Image</h3>
+      <p>Drag & drop a satellite image of the property, or click below to select one.</p>
+      <p class="keys">The image should be a top-down view of 160 Still Forest Dr</p>
+      <p style="margin-top:16px">
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadImage(event)">
+        <button onclick="document.getElementById('fileInput').click()"
+                style="padding:10px 20px; background:#e94560; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">
+          Choose Image
+        </button>
+        <button onclick="loadFromURL()"
+                style="padding:10px 20px; background:#2196F3; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px; margin-left:8px;">
+          Use Stored Satellite
+        </button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================================
+// COORDINATE SYSTEM — SW origin, u along S edge, v along W edge
+// ============================================================================
+const PROP_WIDTH = 188;  // feet (u axis)
+const PROP_HEIGHT = 399; // feet (v axis)
+
+// ============================================================================
+// STRUCTURES
+// ============================================================================
+const STRUCTURES = [
+  { id: 1,  name: "Main House",        w: 45, h: 55,   orient: "v", color: "#8B7355", shape: "rect",  key: "1" },
+  { id: 2,  name: "Dog House",         w: 25, h: 30,   orient: "v", color: "#8B6914", shape: "rect",  key: "2" },
+  { id: 3,  name: "Spartan Trailer",   w: 10, h: 42,   orient: "v", color: "#D3D3D3", shape: "rect",  key: "3" },
+  { id: 4,  name: "South Container",   w: 8,  h: 40,   orient: "v", color: "#CC2222", shape: "rect",  key: "4" },
+  { id: 6,  name: "Parking Container", w: 8,  h: 40,   orient: "v", color: "#2255CC", shape: "rect",  key: "5" },
+  { id: 7,  name: "Spa Deck",          w: 30, h: 24,   orient: "v", color: "#CD853F", shape: "rect",  key: "6" },
+  { id: 8,  name: "Cadillac Container",w: 8,  h: 40,   orient: "s", color: "#C4A882", shape: "rect",  key: "7" },
+  { id: 9,  name: "Outhouse",          w: 17, h: 17,   orient: "v", color: "#8B7D6B", shape: "rect",  key: "8" },
+  { id: 10, name: "Fuego Trailer",     w: 7.4,h: 20.4, orient: "v", color: "#FFD700", shape: "rect",  key: "9" },
+  { id: 11, name: "Sauna",             w: 7,  h: 7,    orient: "v", color: "#B8860B", shape: "rect",  key: "0" },
+  { id: 12, name: "Pond",              w: 33, h: 50,   orient: "v", color: "#1a3a5c", shape: "oval",  key: "q" },
+  { id: 13, name: "NE Parking Lot",    w: 50, h: 80,   orient: "v", color: "#A0957D", shape: "rect",  key: "w" },
+  { id: 14, name: "Septic System",     w: 30, h: 50,   orient: "v", color: "#555555", shape: "rect",  key: "e" },
+  { id: 15, name: "Water Well",        w: 3,  h: 3,    orient: "v", color: "#336699", shape: "rect",  key: "r" },
+];
+
+const LABELS = { 1:"MH",2:"DH",3:"ST",4:"SC",6:"PC",7:"SD",8:"CC",9:"OH",10:"FT",11:"Sa",12:"Pond",13:"Pkg",14:"Sep",15:"WW" };
+
+// State
+let positions = {};       // { id: { u, v } }
+let activeStructId = null;
+let undoStack = [];
+let bgImage = null;
+let showOutlines = true;
+
+// Canvas state
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let zoom = 1;
+let panX = 0, panY = 0;
+let isDragging = false, dragStartX = 0, dragStartY = 0, dragStartPanX = 0, dragStartPanY = 0;
+
+// Image-to-property mapping (set by corner calibration)
+// Default: assume image maps to full property with margins
+let imgToUV = null; // Will be set after corner calibration or auto-fit
+
+// ============================================================================
+// CORNER CALIBRATION
+// ============================================================================
+// The satellite image doesn't perfectly align to the u/v grid because
+// the property is a parallelogram and the photo has extra area around it.
+// We need 4 corner clicks to calibrate the mapping.
+let calibrationMode = false;
+let calibrationCorners = []; // [{px, py}] for SW, SE, NE, NW
+const CORNER_NAMES = ['SW (bottom-left, near road)', 'SE (bottom-right, near road)',
+                       'NE (top-right)', 'NW (top-left)'];
+const CORNER_UV = [[0, 0], [PROP_WIDTH, 0], [PROP_WIDTH, PROP_HEIGHT], [0, PROP_HEIGHT]];
+
+function startCalibration() {
+  calibrationMode = true;
+  calibrationCorners = [];
+  showToast(`Click the ${CORNER_NAMES[0]} corner of the property`);
+  redraw();
+}
+
+function finishCalibration() {
+  calibrationMode = false;
+  // Build bilinear mapping from 4 corners
+  // For each pixel (px, py), find u/v using inverse bilinear interpolation
+  // Store the 4 corner pixel positions
+  imgToUV = {
+    sw: calibrationCorners[0],
+    se: calibrationCorners[1],
+    ne: calibrationCorners[2],
+    nw: calibrationCorners[3],
+  };
+  // Save to localStorage
+  localStorage.setItem('siteplan_calibration', JSON.stringify(imgToUV));
+  showToast('Calibration complete! Now click structures to place them.', false);
+  redraw();
+}
+
+function pixelToUV(px, py) {
+  if (!imgToUV) return null;
+  // Inverse bilinear interpolation
+  // Given 4 corner points mapping to (0,0), (W,0), (W,H), (0,H)
+  // Find (u,v) for pixel (px, py)
+  const { sw, se, ne, nw } = imgToUV;
+
+  // Parametric: P = (1-s)*(1-t)*SW + s*(1-t)*SE + s*t*NE + (1-s)*t*NW
+  // Solve for s, t given P = (px, py)
+  // Use iterative Newton's method
+  let s = 0.5, t = 0.5;
+  for (let iter = 0; iter < 20; iter++) {
+    const fx = (1-s)*(1-t)*sw.px + s*(1-t)*se.px + s*t*ne.px + (1-s)*t*nw.px - px;
+    const fy = (1-s)*(1-t)*sw.py + s*(1-t)*se.py + s*t*ne.py + (1-s)*t*nw.py - py;
+
+    const dfs_x = -(1-t)*sw.px + (1-t)*se.px + t*ne.px - t*nw.px;
+    const dfs_y = -(1-t)*sw.py + (1-t)*se.py + t*ne.py - t*nw.py;
+    const dft_x = -(1-s)*sw.px - s*se.px + s*ne.px + (1-s)*nw.px;
+    const dft_y = -(1-s)*sw.py - s*se.py + s*ne.py + (1-s)*nw.py;
+
+    const det = dfs_x * dft_y - dfs_y * dft_x;
+    if (Math.abs(det) < 1e-10) break;
+
+    s -= (fx * dft_y - fy * dft_x) / det;
+    t -= (dfs_x * fy - dfs_y * fx) / det;
+  }
+
+  return { u: Math.round(s * PROP_WIDTH * 10) / 10, v: Math.round(t * PROP_HEIGHT * 10) / 10 };
+}
+
+function uvToPixel(u, v) {
+  if (!imgToUV) return null;
+  const { sw, se, ne, nw } = imgToUV;
+  const s = u / PROP_WIDTH;
+  const t = v / PROP_HEIGHT;
+  return {
+    px: (1-s)*(1-t)*sw.px + s*(1-t)*se.px + s*t*ne.px + (1-s)*t*nw.px,
+    py: (1-s)*(1-t)*sw.py + s*(1-t)*se.py + s*t*ne.py + (1-s)*t*nw.py,
+  };
+}
+
+// ============================================================================
+// RENDERING
+// ============================================================================
+
+function redraw() {
+  if (!bgImage) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const cw = canvas.parentElement.clientWidth;
+  const ch = canvas.parentElement.clientHeight;
+  canvas.width = cw * dpr;
+  canvas.height = ch * dpr;
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ctx.clearRect(0, 0, cw, ch);
+  ctx.save();
+  ctx.translate(panX, panY);
+  ctx.scale(zoom, zoom);
+
+  // Draw satellite image
+  ctx.drawImage(bgImage, 0, 0);
+
+  // Draw calibration corners if set
+  if (imgToUV) {
+    const corners = [imgToUV.sw, imgToUV.se, imgToUV.ne, imgToUV.nw];
+    // Property boundary
+    ctx.beginPath();
+    ctx.moveTo(corners[0].px, corners[0].py);
+    for (let i = 1; i < 4; i++) ctx.lineTo(corners[i].px, corners[i].py);
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(255,255,0,0.5)';
+    ctx.lineWidth = 2 / zoom;
+    ctx.stroke();
+
+    // Corner markers
+    corners.forEach((c, i) => {
+      ctx.beginPath();
+      ctx.arc(c.px, c.py, 5/zoom, 0, Math.PI*2);
+      ctx.fillStyle = '#ff0';
+      ctx.fill();
+    });
+  }
+
+  // Draw calibration progress
+  if (calibrationMode && calibrationCorners.length > 0) {
+    ctx.beginPath();
+    ctx.moveTo(calibrationCorners[0].px, calibrationCorners[0].py);
+    calibrationCorners.forEach(c => ctx.lineTo(c.px, c.py));
+    ctx.strokeStyle = '#ff0';
+    ctx.lineWidth = 2/zoom;
+    ctx.stroke();
+    calibrationCorners.forEach(c => {
+      ctx.beginPath();
+      ctx.arc(c.px, c.py, 6/zoom, 0, Math.PI*2);
+      ctx.fillStyle = '#e94560';
+      ctx.fill();
+    });
+  }
+
+  // Draw placed structures
+  if (showOutlines && imgToUV) {
+    STRUCTURES.forEach(s => {
+      const pos = positions[s.id];
+      if (!pos) return;
+
+      const center = uvToPixel(pos.u, pos.v);
+      if (!center) return;
+
+      const isActive = s.id === activeStructId;
+
+      // Compute corner offsets in pixels
+      let hw, hh;
+      if (s.orient === 's') { hw = s.h / 2; hh = s.w / 2; }
+      else { hw = s.w / 2; hh = s.h / 2; }
+
+      // Get pixel positions for the 4 corners of the structure
+      const tl = uvToPixel(pos.u - hw, pos.v + hh);
+      const tr = uvToPixel(pos.u + hw, pos.v + hh);
+      const br = uvToPixel(pos.u + hw, pos.v - hh);
+      const bl = uvToPixel(pos.u - hw, pos.v - hh);
+
+      if (!tl || !tr || !br || !bl) return;
+
+      // Fill
+      ctx.beginPath();
+      if (s.shape === 'oval') {
+        const cx = center.px, cy = center.py;
+        const rx = Math.abs(tr.px - tl.px) / 2;
+        const ry = Math.abs(tl.py - bl.py) / 2;
+        ctx.ellipse(cx, cy, rx || 1, ry || 1, 0, 0, Math.PI * 2);
+      } else {
+        ctx.moveTo(tl.px, tl.py);
+        ctx.lineTo(tr.px, tr.py);
+        ctx.lineTo(br.px, br.py);
+        ctx.lineTo(bl.px, bl.py);
+        ctx.closePath();
+      }
+
+      ctx.fillStyle = s.color + '40';
+      ctx.fill();
+      ctx.strokeStyle = isActive ? '#e94560' : '#ffffff';
+      ctx.lineWidth = (isActive ? 3 : 1.5) / zoom;
+      ctx.stroke();
+
+      // Label
+      const label = LABELS[s.id] || s.name.substring(0, 3);
+      const fontSize = Math.max(10, 14 / zoom);
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.fillStyle = '#000';
+      const tw = ctx.measureText(label).width;
+      ctx.fillRect(center.px - tw/2 - 3, center.py - fontSize/2 - 2, tw + 6, fontSize + 4);
+      ctx.fillStyle = '#ff0';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, center.px, center.py);
+    });
+  }
+
+  ctx.restore();
+}
+
+// ============================================================================
+// EVENT HANDLERS
+// ============================================================================
+
+function canvasToImage(cx, cy) {
+  return { px: (cx - panX) / zoom, py: (cy - panY) / zoom };
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    // Middle click or alt+click = pan
+    isDragging = true;
+    dragStartX = e.offsetX;
+    dragStartY = e.offsetY;
+    dragStartPanX = panX;
+    dragStartPanY = panY;
+    canvas.style.cursor = 'grabbing';
+    return;
+  }
+
+  if (e.button === 0) {
+    const img = canvasToImage(e.offsetX, e.offsetY);
+
+    if (calibrationMode) {
+      calibrationCorners.push(img);
+      if (calibrationCorners.length < 4) {
+        showToast(`Click the ${CORNER_NAMES[calibrationCorners.length]} corner`);
+      } else {
+        finishCalibration();
+      }
+      redraw();
+      return;
+    }
+
+    if (!imgToUV) {
+      showToast('Please calibrate first — click "Calibrate Corners"', true);
+      return;
+    }
+
+    if (activeStructId === null) {
+      showToast('Select a structure from the left panel first', true);
+      return;
+    }
+
+    const uv = pixelToUV(img.px, img.py);
+    if (!uv) return;
+
+    // Save undo
+    undoStack.push({ id: activeStructId, prev: positions[activeStructId] ? { ...positions[activeStructId] } : null });
+
+    positions[activeStructId] = { u: uv.u, v: uv.v };
+    updateList();
+    redraw();
+
+    // Auto-advance to next unplaced structure
+    const currentIdx = STRUCTURES.findIndex(s => s.id === activeStructId);
+    for (let i = 1; i <= STRUCTURES.length; i++) {
+      const next = STRUCTURES[(currentIdx + i) % STRUCTURES.length];
+      if (!positions[next.id]) {
+        selectStructure(next.id);
+        return;
+      }
+    }
+    showToast(`All structures placed! Review and save.`);
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    panX = dragStartPanX + (e.offsetX - dragStartX);
+    panY = dragStartPanY + (e.offsetY - dragStartY);
+    redraw();
+    return;
+  }
+
+  if (imgToUV) {
+    const img = canvasToImage(e.offsetX, e.offsetY);
+    const uv = pixelToUV(img.px, img.py);
+    if (uv) {
+      document.getElementById('coordsDisplay').textContent =
+        `u: ${uv.u.toFixed(1)}  v: ${uv.v.toFixed(1)}  (${Math.round(uv.u)}ft from SW along road, ${Math.round(uv.v)}ft north)`;
+    }
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  isDragging = false;
+  canvas.style.cursor = 'crosshair';
+});
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.15 : 0.87;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  panX = mx - (mx - panX) * factor;
+  panY = my - (my - panY) * factor;
+  zoom *= factor;
+  redraw();
+});
+
+document.addEventListener('keydown', (e) => {
+  const key = e.key.toLowerCase();
+
+  // Number keys select structures
+  const struct = STRUCTURES.find(s => s.key === key);
+  if (struct) { selectStructure(struct.id); return; }
+
+  // Z = undo
+  if (key === 'z' && !e.metaKey) { undoLast(); return; }
+
+  // S = save
+  if (key === 's' && !e.metaKey) { e.preventDefault(); saveToDB(); return; }
+
+  // Arrow keys nudge active structure
+  if (activeStructId && positions[activeStructId] && ['arrowup','arrowdown','arrowleft','arrowright'].includes(key)) {
+    e.preventDefault();
+    const nudge = e.shiftKey ? 5 : 2;
+    const pos = positions[activeStructId];
+    undoStack.push({ id: activeStructId, prev: { ...pos } });
+
+    if (key === 'arrowleft')  pos.u -= nudge;
+    if (key === 'arrowright') pos.u += nudge;
+    if (key === 'arrowup')    pos.v += nudge;
+    if (key === 'arrowdown')  pos.v -= nudge;
+
+    pos.u = Math.round(pos.u * 10) / 10;
+    pos.v = Math.round(pos.v * 10) / 10;
+    updateList();
+    redraw();
+  }
+});
+
+// ============================================================================
+// UI FUNCTIONS
+// ============================================================================
+
+function selectStructure(id) {
+  activeStructId = id;
+  document.querySelectorAll('.struct-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.id) === id);
+  });
+  const s = STRUCTURES.find(s => s.id === id);
+  if (s) showToast(`Selected: ${s.name} — click on image to place`, false);
+  redraw();
+}
+
+function buildList() {
+  const list = document.getElementById('structList');
+  list.innerHTML = '';
+  STRUCTURES.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'struct-item';
+    div.dataset.id = s.id;
+    div.onclick = () => selectStructure(s.id);
+
+    const pos = positions[s.id];
+    const coordsStr = pos ? `(${pos.u.toFixed(0)}, ${pos.v.toFixed(0)})` : '—';
+    const statusStr = pos ? '✓' : '○';
+
+    div.innerHTML = `
+      <div class="struct-color" style="background:${s.color}"></div>
+      <span class="struct-name">${s.name} <span style="color:#666;font-size:10px">[${s.key}]</span></span>
+      <span class="struct-coords">${coordsStr}</span>
+      <span class="status">${statusStr}</span>
+    `;
+    if (pos) div.classList.add('placed');
+    list.appendChild(div);
+  });
+}
+
+function updateList() {
+  const placed = Object.keys(positions).length;
+  document.getElementById('placedCount').textContent = `${placed} / ${STRUCTURES.length}`;
+
+  document.querySelectorAll('.struct-item').forEach(el => {
+    const id = parseInt(el.dataset.id);
+    const pos = positions[id];
+    el.classList.toggle('placed', !!pos);
+    el.classList.toggle('active', id === activeStructId);
+    el.querySelector('.struct-coords').textContent = pos ? `(${pos.u.toFixed(0)}, ${pos.v.toFixed(0)})` : '—';
+    el.querySelector('.status').textContent = pos ? '✓' : '○';
+  });
+}
+
+function undoLast() {
+  if (undoStack.length === 0) { showToast('Nothing to undo', true); return; }
+  const { id, prev } = undoStack.pop();
+  if (prev) positions[id] = prev;
+  else delete positions[id];
+  updateList();
+  redraw();
+  showToast('Undone');
+}
+
+function resetAll() {
+  if (!confirm('Reset all placed structures?')) return;
+  positions = {};
+  undoStack = [];
+  updateList();
+  redraw();
+}
+
+function toggleOverlay() {
+  showOutlines = !showOutlines;
+  redraw();
+}
+
+function zoomIn() { zoom *= 1.3; redraw(); }
+function zoomOut() { zoom /= 1.3; redraw(); }
+function zoomFit() {
+  if (!bgImage) return;
+  const cw = canvas.parentElement.clientWidth;
+  const ch = canvas.parentElement.clientHeight;
+  zoom = Math.min(cw / bgImage.width, ch / bgImage.height) * 0.95;
+  panX = (cw - bgImage.width * zoom) / 2;
+  panY = (ch - bgImage.height * zoom) / 2;
+  redraw();
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 2500);
+}
+
+// ============================================================================
+// IMAGE LOADING
+// ============================================================================
+
+function loadImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => setupImage(e.target.result);
+  reader.readAsDataURL(file);
+}
+
+function loadFromURL() {
+  const url = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/renderings/siteplan-overlay-satellite.png';
+  // Actually load the raw satellite
+  const satUrl = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/reference/satellite_topdown.jpg';
+  showToast('Loading satellite image...');
+  setupImage(satUrl);
+}
+
+function setupImage(src) {
+  document.getElementById('helpOverlay').style.display = 'none';
+  bgImage = new window.Image();
+  bgImage.crossOrigin = 'anonymous';
+  bgImage.onload = () => {
+    zoomFit();
+    // Check for saved calibration
+    const saved = localStorage.getItem('siteplan_calibration');
+    if (saved) {
+      imgToUV = JSON.parse(saved);
+      showToast('Loaded saved calibration. Click structures to place.');
+    } else {
+      showToast('Image loaded! Click "Calibrate Corners" to set property boundary.', false);
+    }
+    // Check for saved positions
+    const savedPos = localStorage.getItem('siteplan_positions');
+    if (savedPos) {
+      positions = JSON.parse(savedPos);
+      updateList();
+    }
+    redraw();
+  };
+  bgImage.onerror = () => showToast('Failed to load image. Try drag & drop.', true);
+  bgImage.src = src;
+}
+
+// Drag & drop
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', (e) => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (ev) => setupImage(ev.target.result);
+    reader.readAsDataURL(file);
+  }
+});
+
+// ============================================================================
+// SAVE / EXPORT
+// ============================================================================
+
+async function saveToDB() {
+  const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+
+  // GPS coordinate math (same as Python)
+  const SW = [-97.4598027, 30.1305679];
+  const SE = [-97.4595314, 30.1310274];
+  const NW = [-97.4609315, 30.1310636];
+
+  const midLat = (SW[1] + 30.1315233) / 2;
+  const FT_PER_DEG_LAT = 364000;
+  const FT_PER_DEG_LON = 364000 * Math.cos(midLat * Math.PI / 180);
+
+  const se_ft = [(SE[0]-SW[0])*FT_PER_DEG_LON, (SE[1]-SW[1])*FT_PER_DEG_LAT];
+  const nw_ft = [(NW[0]-SW[0])*FT_PER_DEG_LON, (NW[1]-SW[1])*FT_PER_DEG_LAT];
+  const s_len = Math.hypot(...se_ft);
+  const w_len = Math.hypot(...nw_ft);
+  const ux = se_ft[0]/s_len, uy = se_ft[1]/s_len;
+  const vx = nw_ft[0]/w_len, vy = nw_ft[1]/w_len;
+
+  function localToLonLat(u, v) {
+    const ef = u*ux + v*vx;
+    const nf = u*uy + v*vy;
+    return [+(SW[0] + ef/FT_PER_DEG_LON).toFixed(7), +(SW[1] + nf/FT_PER_DEG_LAT).toFixed(7)];
+  }
+
+  function makeRect(cu, cv, w, h, orient) {
+    let hw, hh;
+    if (orient === 's') { hw = h/2; hh = w/2; } else { hw = w/2; hh = h/2; }
+    const corners = [[cu-hw,cv-hh],[cu+hw,cv-hh],[cu+hw,cv+hh],[cu-hw,cv+hh]];
+    const gps = corners.map(([u,v]) => localToLonLat(u,v));
+    gps.push(gps[0]);
+    return gps;
+  }
+
+  function makeOval(cu, cv, w, h) {
+    const pts = [];
+    for (let i = 0; i < 24; i++) {
+      const a = 2*Math.PI*i/24;
+      pts.push(localToLonLat(cu+w/2*Math.cos(a), cv+h/2*Math.sin(a)));
+    }
+    pts.push(pts[0]);
+    return pts;
+  }
+
+  let updated = 0;
+  for (const s of STRUCTURES) {
+    const pos = positions[s.id];
+    if (!pos) continue;
+
+    const ring = s.shape === 'oval'
+      ? makeOval(pos.u, pos.v, s.w, s.h)
+      : makeRect(pos.u, pos.v, s.w, s.h, s.orient);
+
+    const [clon, clat] = localToLonLat(pos.u, pos.v);
+
+    const body = {
+      footprint_geom: { type: 'Polygon', coordinates: [ring], crs: { type: 'name', properties: { name: 'EPSG:4326' }}},
+      centroid_geom: { type: 'Point', coordinates: [clon, clat], crs: { type: 'name', properties: { name: 'EPSG:4326' }}},
+    };
+
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/rest/v1/structures?id=eq.${s.id}`, {
+        method: 'PATCH',
+        headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}`,
+                   'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify(body),
+      });
+      if (resp.ok) updated++;
+    } catch (e) { console.error(`Failed for #${s.id}:`, e); }
+  }
+
+  // Save positions to localStorage
+  localStorage.setItem('siteplan_positions', JSON.stringify(positions));
+
+  showToast(`Saved ${updated}/${Object.keys(positions).length} structures to database!`);
+}
+
+function exportJSON() {
+  const data = STRUCTURES.map(s => {
+    const pos = positions[s.id];
+    return { id: s.id, name: s.name, u: pos?.u ?? null, v: pos?.v ?? null, w: s.w, h: s.h, orient: s.orient };
+  }).filter(s => s.u !== null);
+
+  const json = JSON.stringify(data, null, 2);
+  navigator.clipboard.writeText(json).then(() => showToast('JSON copied to clipboard!'));
+  console.log(json);
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+
+buildList();
+
+// Add calibrate button to toolbar
+const toolbar = document.querySelector('.toolbar');
+const calBtn = document.createElement('button');
+calBtn.textContent = '📐 Calibrate Corners';
+calBtn.onclick = startCalibration;
+toolbar.appendChild(calBtn);
+
+// Resize handler
+window.addEventListener('resize', () => { if (bgImage) redraw(); });
+</script>
+</body>
+</html>
