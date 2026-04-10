@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oracle ARM Server — Free Cloud Resource Card</title>
+  <meta name="description" content="Shareable resource card for a free Oracle Cloud ARM server: 4 OCPUs, 24 GB RAM, 200 GB disk, no expiration.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --success: #6b8e5a;
+      --success-light: #eef5eb;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-warm);
+      line-height: 1.7;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+    h1 { font-size: 2.2rem; font-weight: 400; margin-bottom: 0.5rem; line-height: 1.2; }
+    h1 span { color: var(--accent); }
+    h2 { font-size: 1.4rem; font-weight: 400; margin-bottom: 0.75rem; }
+    h3 { font-size: 1.1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+    .subtitle { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 2rem; max-width: 620px; }
+    p { margin-bottom: 0.85rem; }
+    a { color: var(--accent); }
+    code { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--accent-light); color: #6b5230; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.86em; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.35rem; }
+    li::marker { color: var(--accent); font-weight: 600; }
+
+    .card {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    .spec-table th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      background: var(--accent-light);
+      border: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .spec-table td {
+      padding: 0.6rem 1rem;
+      border: 1px solid var(--border);
+    }
+    .spec-table tr:nth-child(even) td { background: var(--bg-warm); }
+
+    .hero-stat {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .stat {
+      text-align: center;
+      padding: 1.25rem 0.75rem;
+      background: var(--accent-light);
+      border-radius: 10px;
+      border: 1px solid rgba(201,168,124,0.2);
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 0.25rem;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin: 0.15rem 0.25rem;
+    }
+    .tag-green { background: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+    .tag-amber { background: var(--accent-light); color: #8a6d3b; border: 1px solid rgba(201,168,124,0.4); }
+    .tag-muted { background: #f0f0f0; color: #666; border: 1px solid #ddd; }
+
+    .use-case {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.5rem 1rem;
+      align-items: start;
+      margin: 0.75rem 0;
+      padding: 0.75rem 1rem;
+      background: var(--bg-warm);
+      border-radius: 8px;
+    }
+    .use-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .use-title { font-weight: 600; margin-bottom: 0.15rem; }
+    .use-desc { font-size: 0.88rem; color: var(--text-muted); }
+
+    .footer-links {
+      text-align: center;
+      padding: 2rem 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .footer-links a { margin: 0 1rem; }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.7rem; }
+      .card { padding: 1.5rem; }
+      .hero-stat { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Free Cloud Server — <span>Resource Card</span></h1>
+  <p class="subtitle">Oracle Cloud Always Free ARM server. No trial. No expiration. No credit card charges. Yours to use permanently.</p>
+
+  <!-- ==================== SPECS ==================== -->
+  <div class="card">
+    <h2>Hardware Specs</h2>
+
+    <div class="hero-stat">
+      <div class="stat">
+        <div class="stat-value">4</div>
+        <div class="stat-label">ARM OCPUs</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">24 GB</div>
+        <div class="stat-label">RAM</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">200 GB</div>
+        <div class="stat-label">SSD Disk</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">$0</div>
+        <div class="stat-label">Forever</div>
+      </div>
+    </div>
+
+    <table class="spec-table">
+      <tr><th>Spec</th><th>Detail</th></tr>
+      <tr><td>Processor</td><td>Ampere Altra A1 @ 3.0 GHz (ARM64 / aarch64)</td></tr>
+      <tr><td>OCPUs</td><td>4 (each OCPU = 1 physical core, no hyperthreading)</td></tr>
+      <tr><td>Memory</td><td>24 GB DDR4</td></tr>
+      <tr><td>Boot Volume</td><td>200 GB block storage (SSD-backed, configurable up to 200 GB free)</td></tr>
+      <tr><td>Network</td><td>4 Gbps aggregate bandwidth</td></tr>
+      <tr><td>Public IP</td><td>1x static IPv4 (included free)</td></tr>
+      <tr><td>Egress</td><td>10 TB / month outbound</td></tr>
+      <tr><td>Region</td><td>US-Phoenix (us-phoenix-1) — also available in 40+ global regions</td></tr>
+      <tr><td>OS</td><td>Ubuntu 22.04 LTS (or Oracle Linux, CentOS — all ARM64)</td></tr>
+      <tr><td>Hypervisor</td><td>KVM (VM.Standard.A1.Flex shape)</td></tr>
+      <tr><td>Tier</td><td>Always Free — no trial expiration, no charges</td></tr>
+    </table>
+  </div>
+
+  <!-- ==================== WHAT IT CAN RUN ==================== -->
+  <div class="card">
+    <h2>What This Can Run</h2>
+    <p>4 ARM cores and 24 GB RAM is substantial. For context, this matches a $50-80/month VPS from most providers. Here's what fits comfortably:</p>
+
+    <h3>Fits Easily (low resource)</h3>
+    <div class="use-case">
+      <div class="use-icon">1</div>
+      <div><div class="use-title">Web applications &amp; APIs</div><div class="use-desc">Node.js, Python, Go, Rust servers. Handles thousands of concurrent connections. Run multiple apps behind Caddy/Nginx reverse proxy.</div></div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">2</div>
+      <div><div class="use-title">Background workers &amp; pollers</div><div class="use-desc">Cron jobs, queue consumers, API pollers, webhook processors. Run 10+ workers simultaneously without contention.</div></div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">3</div>
+      <div><div class="use-title">Databases</div><div class="use-desc">PostgreSQL, MySQL, SQLite, Redis, MongoDB. 24 GB RAM means generous buffer pools and in-memory caching.</div></div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">4</div>
+      <div><div class="use-title">Docker containers</div><div class="use-desc">Run 10-20 lightweight containers with Docker Compose. ARM64 images are widely available (all official images support ARM).</div></div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">5</div>
+      <div><div class="use-title">CI/CD runners</div><div class="use-desc">GitHub Actions self-hosted runner, GitLab Runner, Drone CI. Free compute for builds and tests.</div></div>
+    </div>
+
+    <h3>Fits Well (moderate resource)</h3>
+    <div class="use-case">
+      <div class="use-icon">6</div>
+      <div><div class="use-title">Chat bots &amp; messaging gateways</div><div class="use-desc">Discord, Telegram, Slack, WhatsApp bots. WebSocket connections are lightweight; 24 GB handles thousands of concurrent sessions.</div></div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">7</div>
+      <div><div class="use-title">Monitoring &amp; observability</div><div class="use-desc">Uptime Kuma, Grafana, Prometheus, Loki. Full monitoring stack for your other services.</div></div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">8</div>
+      <div><div class="use-title">Media processing</div><div class="use-desc">FFmpeg transcoding, image resizing, PDF generation. ARM NEON SIMD handles media workloads efficiently.</div></div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">9</div>
+      <div><div class="use-title">Reverse proxy &amp; tunneling</div><div class="use-desc">Caddy, Nginx, Cloudflare Tunnel, WireGuard/Tailscale VPN hub. Acts as a public entry point for private services.</div></div>
+    </div>
+
+    <h3>Possible but Tight (high resource)</h3>
+    <div class="use-case">
+      <div class="use-icon">10</div>
+      <div><div class="use-title">Small LLMs (1-7B parameters)</div><div class="use-desc">Ollama with quantized models (Q4): Phi-3 mini, Qwen 2.5 7B, Llama 3 8B. Expect 2-5 tokens/sec — usable for async tasks, not real-time chat.</div></div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">11</div>
+      <div><div class="use-title">Full-text search engines</div><div class="use-desc">Elasticsearch or Meilisearch with moderate indexes (~5-10 GB). Works for internal search, not high-traffic public search.</div></div>
+    </div>
+  </div>
+
+  <!-- ==================== LIMITATIONS ==================== -->
+  <div class="card">
+    <h2>Limitations &amp; Considerations</h2>
+
+    <table class="spec-table">
+      <tr><th>Factor</th><th>Detail</th></tr>
+      <tr>
+        <td>Architecture</td>
+        <td><strong>ARM64 only</strong> — most modern software supports ARM, but some legacy x86 binaries won't run. Check Docker Hub for <code>linux/arm64</code> tags.</td>
+      </tr>
+      <tr>
+        <td>No GPU</td>
+        <td>CPU-only compute. No CUDA, no GPU acceleration. LLM inference is slow. Use cloud APIs (Gemini, Claude, OpenAI) for real-time AI.</td>
+      </tr>
+      <tr>
+        <td>Disk I/O</td>
+        <td>Block storage, not local NVMe. Adequate for most workloads but not ideal for write-heavy databases at scale.</td>
+      </tr>
+      <tr>
+        <td>Capacity</td>
+        <td>ARM instances are hard to get. Initial provisioning requires a retry script (may take hours to weeks). Once running, the instance persists.</td>
+      </tr>
+      <tr>
+        <td>SLA</td>
+        <td>No SLA on Always Free tier. Oracle can reclaim idle instances (rare, but possible). Not recommended as sole production host for critical services.</td>
+      </tr>
+      <tr>
+        <td>Networking</td>
+        <td>Oracle security lists (firewall) must be configured in the OCI Console in addition to iptables on the instance. Ports are closed by default.</td>
+      </tr>
+      <tr>
+        <td>Support</td>
+        <td>Community support only on free tier. No Oracle support tickets.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ==================== COMPARISON ==================== -->
+  <div class="card">
+    <h2>Cost Comparison</h2>
+    <p>What you'd pay for equivalent specs elsewhere:</p>
+
+    <table class="spec-table">
+      <tr><th>Provider</th><th>Equivalent</th><th>Monthly Cost</th></tr>
+      <tr><td>Oracle Always Free</td><td>4 OCPU / 24 GB / 200 GB</td><td><strong>$0</strong></td></tr>
+      <tr><td>AWS (t4g.xlarge)</td><td>4 vCPU / 16 GB</td><td>~$98</td></tr>
+      <tr><td>DigitalOcean</td><td>4 vCPU / 24 GB</td><td>~$96</td></tr>
+      <tr><td>Hetzner (CAX31)</td><td>8 vCPU / 16 GB</td><td>~$14</td></tr>
+      <tr><td>Linode</td><td>4 vCPU / 24 GB</td><td>~$96</td></tr>
+      <tr><td>Vultr</td><td>4 vCPU / 24 GB</td><td>~$96</td></tr>
+    </table>
+
+    <p style="font-size:0.88rem; color:var(--text-muted);">Hetzner is the closest affordable alternative. Oracle's free tier beats it on RAM (24 vs 16 GB) and cost ($0 vs $14/mo).</p>
+  </div>
+
+  <!-- ==================== GOOD FIT ==================== -->
+  <div class="card">
+    <h2>Is This Server Right for Your Project?</h2>
+
+    <h3>Great fit if you need:</h3>
+    <div style="margin: 0.5rem 0 1rem;">
+      <span class="tag tag-green">Always-on API server</span>
+      <span class="tag tag-green">Background job workers</span>
+      <span class="tag tag-green">Database hosting</span>
+      <span class="tag tag-green">Docker containers</span>
+      <span class="tag tag-green">CI/CD runner</span>
+      <span class="tag tag-green">Webhook processor</span>
+      <span class="tag tag-green">Bot hosting</span>
+      <span class="tag tag-green">VPN/tunnel endpoint</span>
+      <span class="tag tag-green">Monitoring stack</span>
+      <span class="tag tag-green">Dev/staging server</span>
+    </div>
+
+    <h3>Not ideal if you need:</h3>
+    <div style="margin: 0.5rem 0 1rem;">
+      <span class="tag tag-muted">GPU compute</span>
+      <span class="tag tag-muted">Large LLM inference</span>
+      <span class="tag tag-muted">x86-only software</span>
+      <span class="tag tag-muted">Enterprise SLA</span>
+      <span class="tag tag-muted">High-IOPS storage</span>
+    </div>
+  </div>
+
+  <!-- ==================== HOW TO GET ONE ==================== -->
+  <div class="card">
+    <h2>Want Your Own?</h2>
+    <p>Every Oracle Cloud account gets the same 4 OCPU / 24 GB free allocation. Sign up at <strong>cloud.oracle.com</strong> — credit card for verification only, never charged.</p>
+    <p>Full setup guide with auto-provisioning script: <a href="/infra/oracle-cloud.html">Oracle Cloud ARM Setup Guide</a></p>
+  </div>
+
+  <div class="footer-links">
+    <a href="/infra/">Infra Hub</a>
+    <a href="/infra/oracle-cloud.html">Setup Guide</a>
+    <a href="/infra/updates.html">Feature Updates</a>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initPublicPage } from '/shared/public-shell.js';
+  initPublicPage({ transparent: false, light: false });
+</script>
+
+</body>
+</html>
