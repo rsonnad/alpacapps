@@ -767,6 +767,31 @@ async function loadRenderingsTab() {
   }
 
   el.innerHTML = allRenderings.map(r => renderCard(r)).join('');
+
+  // Populate site plan iterations (siteplan-iter-* files from storage)
+  const iterEl = document.getElementById('iterationsGrid');
+  if (iterEl) {
+    const iterFiles = (files || [])
+      .filter(f => f.name.startsWith('siteplan-iter-'))
+      .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+
+    document.getElementById('iterCount').textContent = `(${iterFiles.length})`;
+
+    if (!iterFiles.length) {
+      iterEl.innerHTML = '<div class="pp-empty">No iterations yet. Autonomous process running on Alpuca...</div>';
+    } else {
+      iterEl.innerHTML = iterFiles.map(f => {
+        const num = f.name.match(/iter-(\d+)/)?.[1] || '?';
+        return renderCard({
+          title: `Iteration ${parseInt(num)}`,
+          description: f.name,
+          file: `renderings/${f.name}`,
+          date: f.created_at ? new Date(f.created_at).toISOString().slice(0, 16).replace('T', ' ') : '--',
+          tags: ['auto'],
+        });
+      }).join('');
+    }
+  }
 }
 
 // =============================================
