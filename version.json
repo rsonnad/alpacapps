@@ -1,12 +1,12 @@
 {
-  "version": "v260410.06 3:27p",
-  "release": 1308,
-  "sha": "688b46898",
-  "fullSha": "688b468986e6d3b2072366704bbe0d20c15f4aba",
+  "version": "v260410.07 4:55p",
+  "release": 1309,
+  "sha": "3662888cd",
+  "fullSha": "3662888cda709f754e3931cb591410772f8e5afe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-10T20:27:01+00:00",
-  "commits": [{"sha":"688b46898","message":"Increase font size on /lost page","author":"Rahul"}]
+  "pushedAt": "2026-04-10T21:55:04+00:00",
+  "commits": [{"sha":"3662888cd","message":"Add standard nav and version to /lost page","author":"Rahul"}]
 }
