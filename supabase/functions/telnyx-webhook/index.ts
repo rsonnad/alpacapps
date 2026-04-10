@@ -190,6 +190,41 @@ serve(async (req) => {
       console.error("Error storing inbound SMS:", insertError);
     }
 
+    // Forward inbound SMS to admin email via Resend
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (resendApiKey) {
+      try {
+        const senderLabel = personName || from;
+        const subject = `📱 SMS from ${senderLabel}: ${body.substring(0, 50)}${body.length > 50 ? "…" : ""}`;
+        const htmlBody = `
+          <div style="font-family: sans-serif; max-width: 500px;">
+            <p style="color: #666; margin: 0;">Inbound SMS to +1 (737) 747-4737</p>
+            <hr style="border: none; border-top: 1px solid #eee;">
+            <p><strong>From:</strong> ${senderLabel}${personName ? ` (${from})` : ""}</p>
+            <p style="font-size: 18px; background: #f5f5f5; padding: 12px; border-radius: 8px;">${body}</p>
+            ${mediaUrls.length > 0 ? `<p><strong>Media:</strong> ${mediaUrls.map(u => `<a href="${u}">${u}</a>`).join("<br>")}</p>` : ""}
+            <p style="color: #999; font-size: 12px;">${new Date().toLocaleString("en-US", { timeZone: "America/Chicago" })}</p>
+          </div>`;
+
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "PAI at the Alpaca Playhouse <pai@alpacaplayhouse.com>",
+            to: ["alpacaplayhouse@gmail.com"],
+            subject,
+            html: htmlBody,
+          }),
+        });
+        console.log("Forwarded inbound SMS to email");
+      } catch (emailErr) {
+        console.error("Email forward failed:", emailErr.message);
+      }
+    }
+
     // Return 200 OK (Telnyx expects JSON response)
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
