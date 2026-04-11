@@ -13,6 +13,7 @@ export const ALL_ADMIN_TABS = [
   { id: 'sms', label: 'SMS', href: 'sms-messages.html', permission: 'view_sms', section: 'staff', feature: 'sms' },
   { id: 'purchases', label: 'Purchases', href: 'purchases.html', permission: 'view_purchases', section: 'staff' },
   { id: 'hours', label: 'Workstuff', href: 'worktracking.html', permission: 'view_hours', section: 'staff', feature: 'associates' },
+  { id: 'payments', label: 'Payments', href: 'payments.html', permission: 'view_hours', section: 'staff', feature: 'associates' },
   { id: 'faq', label: 'FAQ/AI', href: 'faq.html', permission: 'view_faq', section: 'staff', feature: 'pai' },
   { id: 'voice', label: 'Concierge', href: 'voice.html', permission: 'view_voice', section: 'staff', feature: 'voice' },
   { id: 'todo', label: 'Todo', href: 'devcontrol/#planlist', permission: 'view_todo', section: 'staff' },

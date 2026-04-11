@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Payments - Alpaca Playhouse Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <link rel="stylesheet" href="../../styles/site.css">
+  <link rel="stylesheet" href="../../styles/tailwind.out.css">
+  <style>
+    /* Balance banner */
+    .balance-banner { display: flex; align-items: center; gap: 1.5rem; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #bbf7d0; border-radius: var(--radius); padding: 1rem 1.5rem; margin-bottom: 1.5rem; }
+    .balance-banner .balance-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
+    .balance-banner .balance-value { font-size: 1.75rem; font-weight: 800; color: #16a34a; }
+    .balance-banner .balance-note { font-size: 0.75rem; color: #64748b; }
+
+    /* Associate cards */
+    .associate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.25rem; }
+    .pay-card { background: var(--bg-card, #fff); border: 1px solid #e5e7eb; border-radius: var(--radius); overflow: hidden; }
+    .pay-card.has-unpaid { border-color: #fbbf24; border-width: 2px; }
+    .pay-card-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #f3f4f6; }
+    .pay-card-header h3 { margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .pay-card-header .connect-badge { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 0.15rem 0.4rem; border-radius: 4px; }
+    .pay-card-header .connect-badge.connected { background: #d1fae5; color: #065f46; }
+    .pay-card-header .connect-badge.not-connected { background: #fef3c7; color: #92400e; }
+    .pay-card-header .rate-tag { font-size: 0.85rem; color: #0f766e; font-weight: 700; }
+
+    .pay-card-body { padding: 1rem 1.25rem; }
+
+    /* Unpaid entries table inside card */
+    .unpaid-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 0.75rem; }
+    .unpaid-table th { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 2px solid #e5e7eb; font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .unpaid-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid #f3f4f6; }
+    .unpaid-table tr:last-child td { border-bottom: none; }
+    .unpaid-table .cb { width: 28px; text-align: center; }
+
+    /* Totals row */
+    .pay-card-footer { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; background: #f9fafb; border-top: 1px solid #e5e7eb; }
+    .pay-card-footer .total-label { font-size: 0.8rem; color: var(--text-muted); }
+    .pay-card-footer .total-amount { font-size: 1.25rem; font-weight: 800; color: #dc2626; }
+    .pay-card-footer .btn-pay { background: #16a34a; color: #fff; border: none; padding: 0.5rem 1.25rem; border-radius: var(--radius); cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
+    .pay-card-footer .btn-pay:disabled { opacity: 0.4; cursor: not-allowed; }
+    .pay-card-footer .btn-pay:hover:not(:disabled) { background: #15803d; }
+
+    /* No unpaid state */
+    .pay-card .all-paid { text-align: center; padding: 1.5rem 1rem; color: #16a34a; font-size: 0.85rem; }
+    .pay-card .all-paid svg { margin-bottom: 0.25rem; }
+
+    /* Recent payouts */
+    .payouts-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .payouts-table th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 2px solid #e5e7eb; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .payouts-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #f3f4f6; }
+
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
+    .badge.completed { background: #d1fae5; color: #065f46; }
+    .badge.pending { background: #fef3c7; color: #92400e; }
+    .badge.processing { background: #dbeafe; color: #1e40af; }
+    .badge.failed { background: #fee2e2; color: #991b1b; }
+
+    /* Section headers */
+    .section { margin-bottom: 2rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .section-header h2 { margin: 0; font-size: 1.1rem; font-weight: 700; }
+
+    /* Modal */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; }
+    .modal-backdrop.open { display: flex; }
+    .modal { background: #fff; border-radius: 8px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { margin: 0 0 1rem; }
+    .modal .form-row { margin-bottom: 0.75rem; }
+    .modal .form-row label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase; }
+    .modal .form-row textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; box-sizing: border-box; resize: vertical; min-height: 60px; }
+    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+    .modal-actions button { padding: 0.4rem 1rem; border-radius: var(--radius); font-size: 0.85rem; cursor: pointer; }
+    .modal-actions .btn-cancel { background: #f3f4f6; border: 1px solid #d1d5db; color: var(--text); }
+    .modal-actions .btn-confirm { background: #16a34a; border: none; color: #fff; font-weight: 600; }
+    .modal-actions .btn-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .pay-summary-line { display: flex; justify-content: space-between; padding: 0.3rem 0; font-size: 0.85rem; }
+    .pay-summary-line.total { border-top: 2px solid #e5e7eb; margin-top: 0.5rem; padding-top: 0.5rem; font-weight: 700; font-size: 1rem; }
+    .pay-warning { background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius); padding: 0.75rem; font-size: 0.8rem; color: #92400e; margin-top: 0.75rem; }
+
+    @media (max-width: 768px) {
+      .associate-grid { grid-template-columns: 1fr; }
+      .balance-banner { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    }
+  </style>
+  <script type="module" src="../../shared/version-info.js"></script>
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay__logo">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 28%22%3E%3Ctext x=%220%22 y=%2220%22 font-size=%2216%22 font-family=%22Arial,sans-serif%22 fill=%22%231f1720%22%3EAlpaca%3C/text%3E%3C/svg%3E'">
+    </div>
+    <div class="spinner spinner--sm"></div>
+  </div>
+
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
+
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none"></span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <div class="manage-tabs"></div>
+
+    <div class="manage-container">
+      <!-- Stripe Balance -->
+      <div class="balance-banner" id="balanceBanner">
+        <div>
+          <div class="balance-label">Stripe Available Balance</div>
+          <div class="balance-value" id="stripeBalance">--</div>
+        </div>
+        <div class="balance-note" id="balanceNote">Loading balance...</div>
+      </div>
+
+      <!-- Associates with unpaid hours -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Associate Payments</h2>
+          <button class="btn-pay" id="btnPayAll" disabled style="background:#16a34a;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:var(--radius);cursor:pointer;font-weight:700;font-size:0.85rem;">
+            Pay All Unpaid
+          </button>
+        </div>
+        <div class="associate-grid" id="associateGrid">
+          <div style="color:var(--text-muted);">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Recent Payouts -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Recent Payouts</h2>
+        </div>
+        <div class="table-scroll">
+          <table class="payouts-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Associate</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th>Transfer ID</th>
+              </tr>
+            </thead>
+            <tbody id="payoutsBody">
+              <tr><td colspan="6" style="color:var(--text-muted);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pay Confirmation Modal -->
+  <div class="modal-backdrop" id="payModal">
+    <div class="modal">
+      <h3 id="payModalTitle">Confirm Payment</h3>
+      <div id="payModalSummary"></div>
+      <div id="payModalWarning"></div>
+      <div class="form-row">
+        <label>Notes (optional)</label>
+        <textarea id="payNotes" placeholder="e.g. Weekly payment Apr 3-10"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="payCancel">Cancel</button>
+        <button class="btn-confirm" id="payConfirm">Send Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/instant-chrome.js"></script>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module" src="payments.js"></script>
+</body>
+</html>
