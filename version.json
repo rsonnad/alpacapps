@@ -1,12 +1,12 @@
 {
-  "version": "v260410.12 11:26p",
-  "release": 1314,
-  "sha": "06e93ae08",
-  "fullSha": "06e93ae087683690a70d63152a6cc6b5184981c1",
+  "version": "v260410.13 11:58p",
+  "release": 1315,
+  "sha": "f8cf82c71",
+  "fullSha": "f8cf82c716cc645e6014a989985e813ae9e34686",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-11T04:26:55+00:00",
-  "commits": [{"sha":"06e93ae08","message":"Fix playlist creation endpoint to use /me/playlists","author":"Rahul"}]
+  "pushedAt": "2026-04-11T04:58:27+00:00",
+  "commits": [{"sha":"f8cf82c71","message":"Add Spotify API docs and fix playlist auth bypass","author":"Rahul"}]
 }
