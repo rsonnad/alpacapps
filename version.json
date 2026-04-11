@@ -1,12 +1,12 @@
 {
-  "version": "v260410.10 11:02p",
-  "release": 1312,
-  "sha": "b5ed71cc5",
-  "fullSha": "b5ed71cc52cc05ac4da0d0a48e3e3bbf5e22d5f4",
+  "version": "v260410.11 11:08p",
+  "release": 1313,
+  "sha": "78fe0e187",
+  "fullSha": "78fe0e187b2e047ee7ff9162a7ecaf0e2931b894",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-11T04:02:10+00:00",
-  "commits": [{"sha":"abf5196c8","message":"Add Spotify OAuth + playlist creation","author":"Rahul"},{"sha":"8555caa0b","message":"Fix Spotify OAuth auth bypass and sonos page visibility","author":"Rahul"},{"sha":"b5ed71cc5","message":"Resolve merge conflict in sonos.html — keep fixed button","author":"Rahul"}]
+  "pushedAt": "2026-04-11T04:08:46+00:00",
+  "commits": [{"sha":"78fe0e187","message":"Fix duplicate body parse crash + hero text inline styles","author":"Rahul"}]
 }
