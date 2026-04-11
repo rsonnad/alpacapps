@@ -60,8 +60,8 @@ curl -s -X POST "https://api.spotify.com/v1/me/playlists" \
   -H "Content-Type: application/json" \
   -d '{"name":"My Playlist","description":"...","public":true}'
 
-# Add tracks (BLOCKED in Dev Mode)
-curl -s -X POST "https://api.spotify.com/v1/playlists/{playlist_id}/tracks" \
+# Add tracks (use /items not /tracks — Feb 2026 API change)
+curl -s -X POST "https://api.spotify.com/v1/playlists/{playlist_id}/items" \
   -H "Authorization: Bearer $SPOTIFY_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"uris":["spotify:track:XXXXX"]}'
@@ -126,18 +126,28 @@ Note: spotipy is subject to the same Dev Mode restrictions as direct API calls.
 4. Both are saved back to `spotify_config`
 5. Access tokens expire after 1 hour; refresh tokens are long-lived
 
-## Dev Mode vs Extended Quota
+## February 2026 API Changes (IMPORTANT)
 
-| Feature | Dev Mode | Extended Quota |
-|---------|----------|---------------|
-| Search tracks | Yes | Yes |
-| Get user profile | Yes | Yes |
-| Create playlists | Yes | Yes |
-| **Add tracks to playlists** | **No (403)** | Yes |
-| **Modify playlists** | **No (403)** | Yes |
-| Max users | 25 | Unlimited |
+Spotify renamed several endpoints in Feb 2026. Key change for playlists:
 
-**To request Extended Quota:** Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) → select app → look for quota/extension settings. As of 2026-04, this option may not be visible for all apps — Spotify has changed their developer program structure.
+| Old endpoint | New endpoint |
+|-------------|-------------|
+| `POST /playlists/{id}/tracks` | `POST /playlists/{id}/items` |
+| `GET /playlists/{id}/tracks` | `GET /playlists/{id}/items` |
+| `DELETE /playlists/{id}/tracks` | `DELETE /playlists/{id}/items` |
+
+Other changes: search limit reduced to 10, batch endpoints removed, `popularity`/`followers` fields removed. See [migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide).
+
+## Dev Mode Limits
+
+| Feature | Dev Mode |
+|---------|----------|
+| Search tracks | Yes (max 10 results) |
+| Get user profile | Yes |
+| Create playlists | Yes |
+| Add items to playlists | Yes (via `/items` endpoint) |
+| Max users | 25 |
+| Batch endpoints | Removed |
 
 ## Credentials
 
