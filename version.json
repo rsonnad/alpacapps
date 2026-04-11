@@ -1,12 +1,12 @@
 {
-  "version": "v260411.02 1:33a",
-  "release": 1317,
-  "sha": "87e5888b5",
-  "fullSha": "87e5888b5708462129060ccadbfce42ff3f5f08e",
+  "version": "v260411.03 1:34a",
+  "release": 1318,
+  "sha": "bd51ddd90",
+  "fullSha": "bd51ddd90dabec25c20ebcb81030832b364bcbea",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-11T06:33:41+00:00",
-  "commits": [{"sha":"87e5888b5","message":"Fix Spotify playlist endpoint: /tracks → /items (Feb 2026 API change)","author":"Rahul"}]
+  "pushedAt": "2026-04-11T06:34:47+00:00",
+  "commits": [{"sha":"bd51ddd90","message":"Update spotifyapi.md with Feb 2026 API changes and correct Dev Mode info","author":"Rahul"}]
 }
