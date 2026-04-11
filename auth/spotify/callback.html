@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Spotify Authorization</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #faf9f7;
+      color: #2d3142;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .success { color: #1DB954; }
+    .error { color: #d32f2f; }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #1DB954;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    a { color: #2d3142; }
+    .detail { font-size: 0.85rem; color: #888; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <h2>Spotify Authorization</h2>
+    <div class="spinner"></div>
+    <p>Connecting your Spotify account...</p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+
+    const card = document.getElementById('card');
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+
+    async function exchangeCode() {
+      if (error) {
+        card.innerHTML = `
+          <h2 class="error">Authorization Failed</h2>
+          <p>${params.get('error_description') || error}</p>
+          <p><a href="/residents/sonos.html">Back to Sonos</a></p>
+        `;
+        return;
+      }
+
+      if (!code) {
+        card.innerHTML = `
+          <h2 class="error">No Code Received</h2>
+          <p>Spotify did not return an authorization code.</p>
+          <p><a href="/residents/sonos.html">Back to Sonos</a></p>
+        `;
+        return;
+      }
+
+      try {
+        const fnUrl = SUPABASE_URL + '/functions/v1/sonos-control';
+        const fnRes = await fetch(fnUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            action: 'spotify-exchange-code',
+            code: code,
+          }),
+        });
+
+        let data = null;
+        try { data = await fnRes.json(); } catch(_) {}
+
+        if (!fnRes.ok || data?.error) {
+          throw new Error(data?.error || `HTTP ${fnRes.status}`);
+        }
+
+        const userName = data?.spotify_user || 'your account';
+        card.innerHTML = `
+          <h2 class="success">Spotify Connected!</h2>
+          <p>Successfully linked <strong>${userName}</strong>. You can now create playlists from the Sonos page.</p>
+          <p><a href="/residents/sonos.html">Back to Sonos</a></p>
+        `;
+
+        setTimeout(() => { window.location.href = '/residents/sonos.html'; }, 3000);
+      } catch (err) {
+        console.error('Spotify token exchange failed:', err);
+        card.innerHTML = `
+          <h2 class="error">Connection Failed</h2>
+          <p>${err.message}</p>
+          <p>Please try again from the <a href="/residents/sonos.html">Sonos page</a>.</p>
+          <p class="detail">If this keeps happening, the authorization code may have expired. Try connecting again.</p>
+        `;
+      }
+    }
+
+    exchangeCode();
+  </script>
+</body>
+</html>

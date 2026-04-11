@@ -1375,6 +1375,13 @@ function setupSpotifySearch() {
   if (!form) return;
 
   populateSpotifyZones();
+  checkSpotifyConnection();
+
+  // Connect button
+  document.getElementById('spotifyConnectBtn')?.addEventListener('click', connectSpotify);
+
+  // Playlist button
+  document.getElementById('spotifyPlaylistBtn')?.addEventListener('click', createSpotifyPlaylist);
 
   // Search form submit
   form.addEventListener('submit', async (e) => {
@@ -1508,10 +1515,78 @@ function renderSpotifyResults() {
 
 function updatePlayBtn() {
   const btn = document.getElementById('spotifyPlayBtn');
+  const plBtn = document.getElementById('spotifyPlaylistBtn');
   if (!btn) return;
   const count = spotifySelected.size;
   btn.disabled = count === 0;
   btn.textContent = count > 1 ? `▶ ${count}` : '▶';
+  if (plBtn) {
+    plBtn.disabled = count === 0;
+    plBtn.textContent = count > 0 ? `+ Playlist (${count})` : '+ Playlist';
+  }
+}
+
+// Spotify account connection status
+let spotifyConnected = false;
+
+async function checkSpotifyConnection() {
+  const statusEl = document.getElementById('spotifyAccountStatus');
+  const connectBar = document.getElementById('spotifyConnectBar');
+  const plBtn = document.getElementById('spotifyPlaylistBtn');
+  try {
+    const data = await sonosApi('spotify-status', {});
+    spotifyConnected = data.connected;
+    if (statusEl) {
+      statusEl.textContent = data.connected ? `Connected: ${data.user}` : '';
+      statusEl.style.color = data.connected ? '#1DB954' : '#888';
+    }
+    if (connectBar) connectBar.classList.toggle('hidden', data.connected);
+    if (plBtn) plBtn.style.display = data.connected ? '' : 'none';
+  } catch (_) {
+    if (connectBar) connectBar.classList.remove('hidden');
+    if (plBtn) plBtn.style.display = 'none';
+  }
+}
+
+async function connectSpotify() {
+  try {
+    const data = await sonosApi('spotify-auth-url', {});
+    if (data.url) window.location.href = data.url;
+  } catch (err) {
+    showToast('Failed to start Spotify auth: ' + err.message, 'error');
+  }
+}
+
+async function createSpotifyPlaylist() {
+  const selected = spotifyResults.filter((_, i) => spotifySelected.has(i));
+  const trackUris = selected.filter(s => s.uri && s.uri.startsWith('spotify:track:')).map(s => s.uri);
+  if (trackUris.length === 0) {
+    showToast('Select at least one track (songs only for playlists)', 'error');
+    return;
+  }
+  const name = prompt('Playlist name:', `AlpacApps Playlist ${new Date().toLocaleDateString()}`);
+  if (!name) return;
+
+  const plBtn = document.getElementById('spotifyPlaylistBtn');
+  if (plBtn) { plBtn.disabled = true; plBtn.textContent = 'Creating...'; }
+
+  try {
+    const data = await sonosApi('spotify-create-playlist', {
+      name,
+      tracks: trackUris,
+      description: 'Created via AlpacApps',
+    });
+    if (data.playlist_url) {
+      showToast(`Playlist created! ${data.track_count} tracks`, 'success');
+      window.open(data.playlist_url, '_blank');
+    } else {
+      showToast('Playlist created!', 'success');
+    }
+  } catch (err) {
+    showToast('Playlist creation failed: ' + err.message, 'error');
+  } finally {
+    updatePlayBtn();
+  }
 }
 
 
