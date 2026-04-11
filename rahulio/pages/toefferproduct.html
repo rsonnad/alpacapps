@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI for Financial Product Management — Study Program</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #faf9f6;
+            --dark: #1c1618;
+            --amber: #d4883a;
+            --amber-light: #f5e6d3;
+            --amber-glow: rgba(212, 136, 58, 0.12);
+            --slate: #8a7f76;
+            --border: #e8e4df;
+            --white: #ffffff;
+            --green: #2d8a4e;
+            --green-bg: #e8f5e9;
+            --blue: #2563eb;
+            --blue-bg: #eff6ff;
+            --purple: #7c3aed;
+            --purple-bg: #f3f0ff;
+            --rose: #be185d;
+            --rose-bg: #fff1f2;
+            --teal: #0d9488;
+            --teal-bg: #f0fdfa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--cream);
+            color: var(--dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, #1c1618 0%, #2d2226 50%, #3d2e33 100%);
+            color: #fff;
+            padding: 3.5rem 1.5rem 3rem;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(212, 136, 58, 0.2);
+            color: var(--amber);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.35rem 1rem;
+            border-radius: 100px;
+            margin-bottom: 1.25rem;
+        }
+        .hero h1 {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+        }
+        .hero h1 span { color: var(--amber); }
+        .hero p {
+            color: #b8aea6;
+            font-size: 1.05rem;
+            max-width: 540px;
+            margin: 0 auto;
+        }
+
+        /* ── Container ── */
+        .container {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ── Program Overview ── */
+        .overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: -1.5rem 0 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        .overview-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        .overview-card .num {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--amber);
+        }
+        .overview-card .label {
+            font-size: 0.82rem;
+            color: var(--slate);
+            margin-top: 0.15rem;
+        }
+
+        /* ── Section ── */
+        .week-section { margin-bottom: 2.5rem; }
+        .week-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .week-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .week-header h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .week-header .week-time {
+            margin-left: auto;
+            font-size: 0.78rem;
+            color: var(--slate);
+            white-space: nowrap;
+        }
+
+        /* ── Chunk Card ── */
+        .chunk {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .chunk:hover {
+            border-color: var(--amber);
+            box-shadow: 0 2px 12px var(--amber-glow);
+        }
+        .chunk-toggle {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+        }
+        .chunk-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .chunk-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--dark);
+        }
+        .chunk-time {
+            font-size: 0.75rem;
+            color: var(--slate);
+            margin-top: 0.1rem;
+        }
+        .chunk-chevron {
+            margin-left: auto;
+            color: var(--slate);
+            transition: transform 0.2s;
+            font-size: 0.85rem;
+        }
+        .chunk.open .chunk-chevron { transform: rotate(180deg); }
+
+        .chunk-body {
+            display: none;
+            padding: 0 1.25rem 1.25rem;
+            font-size: 0.9rem;
+            color: #4a4046;
+            line-height: 1.7;
+        }
+        .chunk.open .chunk-body { display: block; }
+
+        .chunk-body h4 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+            margin: 1rem 0 0.4rem;
+        }
+        .chunk-body h4:first-child { margin-top: 0; }
+
+        .chunk-body ul {
+            padding-left: 1.25rem;
+            margin: 0.3rem 0;
+        }
+        .chunk-body li { margin-bottom: 0.3rem; }
+        .chunk-body li::marker { color: var(--amber); }
+
+        .chunk-body p { margin: 0.4rem 0; }
+
+        .callout {
+            background: var(--amber-light);
+            border-left: 3px solid var(--amber);
+            border-radius: 0 8px 8px 0;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            margin: 0.75rem 0;
+        }
+        .callout strong { color: var(--dark); }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: #f0ece7;
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.82em;
+        }
+
+        .tool-tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.2rem 0.55rem;
+            border-radius: 100px;
+            margin: 0.15rem 0.2rem 0.15rem 0;
+        }
+        .tool-tag.claude { background: #fde7cc; color: #9a5b18; }
+        .tool-tag.copilot { background: #dbeafe; color: #1e40af; }
+        .tool-tag.cursor { background: #ede9fe; color: #5b21b6; }
+        .tool-tag.chatgpt { background: #d1fae5; color: #065f46; }
+        .tool-tag.gemini { background: #fce7f3; color: #9d174d; }
+        .tool-tag.v0 { background: #f0f0f0; color: #333; }
+        .tool-tag.antigravity { background: #e0f2fe; color: #075985; }
+
+        /* ── Color Themes per Week ── */
+        .theme-green .week-num { background: var(--green-bg); color: var(--green); }
+        .theme-green .chunk-icon { background: var(--green-bg); color: var(--green); }
+
+        .theme-blue .week-num { background: var(--blue-bg); color: var(--blue); }
+        .theme-blue .chunk-icon { background: var(--blue-bg); color: var(--blue); }
+
+        .theme-purple .week-num { background: var(--purple-bg); color: var(--purple); }
+        .theme-purple .chunk-icon { background: var(--purple-bg); color: var(--purple); }
+
+        .theme-rose .week-num { background: var(--rose-bg); color: var(--rose); }
+        .theme-rose .chunk-icon { background: var(--rose-bg); color: var(--rose); }
+
+        .theme-teal .week-num { background: var(--teal-bg); color: var(--teal); }
+        .theme-teal .chunk-icon { background: var(--teal-bg); color: var(--teal); }
+
+        .theme-amber .week-num { background: var(--amber-light); color: var(--amber); }
+        .theme-amber .chunk-icon { background: var(--amber-light); color: var(--amber); }
+
+        /* ── Progress tracker ── */
+        .progress-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0.6rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .progress-bar .label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--slate);
+            white-space: nowrap;
+        }
+        .progress-track {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--amber), #e8a855);
+            border-radius: 100px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        .progress-pct {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--amber);
+            min-width: 32px;
+            text-align: right;
+        }
+
+        /* ── Checkbox ── */
+        .chunk-check {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .chunk-check:checked {
+            background: var(--green);
+            border-color: var(--green);
+        }
+        .chunk-check:checked::after {
+            content: '✓';
+            position: absolute;
+            top: -1px;
+            left: 2px;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 2rem 1.5rem 3rem;
+            color: var(--slate);
+            font-size: 0.82rem;
+        }
+        footer a { color: var(--amber); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .hero { padding: 2.5rem 1.25rem 2rem; }
+            .overview { grid-template-columns: repeat(2, 1fr); }
+            .week-header .week-time { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+    <div class="hero-badge">Self-Paced Study Program</div>
+    <h1>AI Tools for <span>Financial Services</span><br>Product Management</h1>
+    <p>A practical, bite-sized guide to using Claude, Antigravity, and other leading AI tools for product managers integrating third-party solutions.</p>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress-bar">
+    <span class="label">Progress</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-pct" id="progressPct">0%</span>
+</div>
+
+<!-- Overview Cards -->
+<div class="container">
+    <div class="overview">
+        <div class="overview-card">
+            <div class="num">6</div>
+            <div class="label">Weeks</div>
+        </div>
+        <div class="overview-card">
+            <div class="num">30</div>
+            <div class="label">Bite-Sized Lessons</div>
+        </div>
+        <div class="overview-card">
+            <div class="num">15–20</div>
+            <div class="label">Min per Lesson</div>
+        </div>
+    </div>
+
+    <!-- ═══════════ WEEK 1 ═══════════ -->
+    <div class="week-section theme-green">
+        <div class="week-header">
+            <div class="week-num">W1</div>
+            <div>
+                <h2>AI Foundations for Product Managers</h2>
+            </div>
+            <span class="week-time">~90 min total</span>
+        </div>
+
+        <div class="chunk" data-chunk="1">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🧠</div>
+                <div>
+                    <div class="chunk-title">What Is Generative AI? (The Non-Technical Version)</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>What You'll Learn</h4>
+                <p>Generative AI refers to systems that <strong>create new content</strong> — text, code, images, data analysis — based on patterns learned from vast amounts of existing data. Unlike traditional software that follows explicit rules ("if X then Y"), generative AI models predict what comes next based on context you provide.</p>
+
+                <h4>Key Concepts</h4>
+                <ul>
+                    <li><strong>Large Language Models (LLMs)</strong> — The engines behind tools like Claude and ChatGPT. They process your text input (called a "prompt") and generate relevant output. Think of them as extremely well-read assistants that can synthesize information.</li>
+                    <li><strong>Prompts</strong> — The instructions you give to an AI tool. The quality of your output depends heavily on the clarity and specificity of your prompt. This is the single most important skill you'll develop.</li>
+                    <li><strong>Tokens</strong> — How AI models measure text length. Roughly 1 token ≈ ¾ of a word. This matters because models have a "context window" (how much text they can consider at once).</li>
+                    <li><strong>Hallucinations</strong> — When an AI generates plausible-sounding but incorrect information. In financial services, this is a critical risk to manage. Always verify AI outputs against authoritative sources.</li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Financial Services Context:</strong> In your world, AI isn't replacing product managers — it's amplifying what you can do. You'll move faster on market research, vendor evaluations, spec writing, and compliance documentation while keeping human judgment on final decisions.
+                </div>
+
+                <h4>Try It Now</h4>
+                <p>Open <a href="https://claude.ai" target="_blank">claude.ai</a> (free tier available) and type: <code>Explain the difference between an API and a webhook as if I'm a product manager, not an engineer.</code> Notice how the response adjusts to your specified audience.</p>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🗺️</div>
+                <div>
+                    <div class="chunk-title">The AI Tool Landscape: Who's Who</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Major AI Tools You Should Know</h4>
+                <ul>
+                    <li><span class="tool-tag claude">Claude</span> <strong>By Anthropic</strong> — Excels at long-document analysis, nuanced reasoning, and careful writing. Best for: reading vendor contracts, drafting PRDs, analyzing compliance docs. Known for being more cautious and accurate than alternatives.</li>
+                    <li><span class="tool-tag antigravity">Antigravity</span> <strong>AI-powered product management platform</strong> — Purpose-built for PMs. Helps with roadmap prioritization, feature scoping, stakeholder communication, and competitive analysis. Integrates AI into the PM workflow rather than being a general chat tool.</li>
+                    <li><span class="tool-tag chatgpt">ChatGPT</span> <strong>By OpenAI</strong> — The most widely-known AI assistant. Good for brainstorming, quick research, and general writing. Has a large plugin ecosystem.</li>
+                    <li><span class="tool-tag copilot">Microsoft Copilot</span> <strong>By Microsoft</strong> — Embedded in Microsoft 365 apps (Word, Excel, PowerPoint, Teams). If your company uses Microsoft, this is the easiest on-ramp since it works inside tools you already use.</li>
+                    <li><span class="tool-tag gemini">Google Gemini</span> <strong>By Google</strong> — Strong at search-connected tasks and data analysis. Integrated into Google Workspace.</li>
+                    <li><span class="tool-tag cursor">Cursor / Windsurf</span> <strong>AI Code Editors</strong> — If you work closely with engineering, these help you read and understand code, even if you don't write it yourself.</li>
+                </ul>
+
+                <h4>How to Choose</h4>
+                <p>You don't need to pick just one. Most PMs use 2–3 tools depending on the task. A good starter combo for financial services PM work:</p>
+                <ul>
+                    <li><strong>Claude</strong> for deep analysis, writing, and compliance-sensitive work</li>
+                    <li><strong>Antigravity</strong> for structured PM workflows and roadmap tasks</li>
+                    <li><strong>Copilot</strong> for day-to-day Office work (if your org uses M365)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🔐</div>
+                <div>
+                    <div class="chunk-title">AI + Financial Services: Compliance & Data Rules</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Why This Matters First</h4>
+                <p>Before you start using AI tools in financial services, you <strong>must</strong> understand the guardrails. Financial services is one of the most regulated industries, and misusing AI can create serious legal exposure.</p>
+
+                <h4>Rules to Live By</h4>
+                <ul>
+                    <li><strong>Never paste customer PII into public AI tools.</strong> Names, account numbers, SSNs, addresses — none of it goes into Claude, ChatGPT, or any external AI tool unless your company has an enterprise agreement with data protections in place.</li>
+                    <li><strong>Check your company's AI policy.</strong> Most financial institutions now have one. If yours doesn't, flag it — you'll be ahead of the curve.</li>
+                    <li><strong>Enterprise vs. consumer tiers matter.</strong> Enterprise plans (Claude for Enterprise, ChatGPT Enterprise, Copilot for M365) typically include contractual guarantees that your data won't be used to train models. Consumer/free tiers usually do not.</li>
+                    <li><strong>Audit trail thinking.</strong> If a regulator asks "how did you arrive at this decision?" you need to be able to explain it. AI-assisted ≠ AI-decided.</li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Practical tip:</strong> Create a personal "safe/not-safe" list. Safe: publicly available market data, your own draft text, hypothetical scenarios. Not safe: anything with real customer data, internal financial figures, proprietary trading strategies, or unreleased product details.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">✍️</div>
+                <div>
+                    <div class="chunk-title">Your First Prompts: Getting Good Results</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Prompt Framework: CRAFT</h4>
+                <p>Use this framework every time you interact with an AI tool:</p>
+                <ul>
+                    <li><strong>C — Context:</strong> Tell the AI who you are and what situation you're in. <em>"I'm a product manager at a mid-size bank evaluating payment processing vendors."</em></li>
+                    <li><strong>R — Role:</strong> Tell the AI who it should be. <em>"Act as a senior fintech analyst."</em></li>
+                    <li><strong>A — Ask:</strong> State exactly what you want. <em>"Compare Stripe, Adyen, and Marqeta across these 5 dimensions..."</em></li>
+                    <li><strong>F — Format:</strong> Specify how you want the output. <em>"Present this as a comparison table with pros/cons."</em></li>
+                    <li><strong>T — Tone:</strong> Set the communication style. <em>"Write this for a C-suite audience — concise, no jargon."</em></li>
+                </ul>
+
+                <h4>Example: Bad vs. Good Prompt</h4>
+                <p><strong>Bad:</strong> <code>Tell me about payment APIs</code></p>
+                <p><strong>Good:</strong> <code>I'm a PM at a regional bank exploring whether to integrate Plaid's transaction API for our small business customers. Summarize Plaid's key capabilities, pricing model, compliance certifications (SOC 2, PCI), and the top 3 risks I should raise with our compliance team. Format as bullet points.</code></p>
+
+                <h4>Try It Now</h4>
+                <p>Open Claude and write a CRAFT prompt about a real integration question you're facing at work (using only public information). Compare the result to a vague one-sentence prompt on the same topic.</p>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🏋️</div>
+                <div>
+                    <div class="chunk-title">Week 1 Exercise: Vendor Quick-Assessment</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Task</h4>
+                <p>Pick a real third-party product your company uses or is evaluating (e.g., a payments provider, KYC service, data aggregator). Use Claude or ChatGPT to generate:</p>
+                <ol>
+                    <li>A one-page vendor capability summary</li>
+                    <li>Five questions to ask the vendor in your next meeting</li>
+                    <li>Three integration risks specific to financial services</li>
+                </ol>
+
+                <h4>What to Notice</h4>
+                <ul>
+                    <li>How much faster was this vs. doing it manually?</li>
+                    <li>What did the AI get wrong or miss? (It will miss things — that's normal.)</li>
+                    <li>How did you need to refine your prompt to get useful output?</li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Remember:</strong> The goal isn't to blindly use AI output. It's to get a strong first draft in minutes that you then refine with your domain expertise. AI handles the 70% — you add the critical 30%.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ WEEK 2 ═══════════ -->
+    <div class="week-section theme-blue">
+        <div class="week-header">
+            <div class="week-num">W2</div>
+            <div>
+                <h2>Deep Dive: Claude for Product Work</h2>
+            </div>
+            <span class="week-time">~90 min total</span>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">📄</div>
+                <div>
+                    <div class="chunk-title">Claude's Killer Feature: Document Analysis</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Why Claude Stands Out for PMs</h4>
+                <p>Claude can process extremely long documents — up to 200K tokens (~150K words, or a 500-page document) in a single conversation. This is a game-changer for product managers who deal with:</p>
+                <ul>
+                    <li><strong>Vendor contracts & SOWs</strong> — Upload the full document and ask Claude to extract key terms, SLAs, liability clauses, and pricing structures.</li>
+                    <li><strong>API documentation</strong> — Feed it a vendor's API docs and ask "What data can we pull from this API for our small business dashboard?"</li>
+                    <li><strong>Regulatory filings</strong> — Summarize lengthy compliance documents into actionable requirements for your product team.</li>
+                    <li><strong>Competitive analysis</strong> — Upload multiple competitors' public materials and ask for a structured comparison.</li>
+                </ul>
+
+                <h4>How to Upload Documents</h4>
+                <p>On <a href="https://claude.ai" target="_blank">claude.ai</a>, click the paperclip icon to attach files (PDF, DOCX, TXT, CSV). Then reference the document in your prompt: <code>Based on the attached vendor agreement, list all SLA commitments and their penalty clauses.</code></p>
+
+                <div class="callout">
+                    <strong>Data safety reminder:</strong> Only upload documents that are appropriate per your company's AI usage policy. When in doubt, redact customer data first or use hypothetical examples.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">📋</div>
+                <div>
+                    <div class="chunk-title">Writing PRDs and Feature Specs with Claude</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Workflow</h4>
+                <p>Instead of starting from a blank page, use Claude as a collaborative drafting partner:</p>
+                <ol>
+                    <li><strong>Brain dump first.</strong> Type out everything you know about the feature in rough notes — don't worry about structure.</li>
+                    <li><strong>Ask Claude to structure it.</strong> <code>Turn these rough notes into a PRD following this template: [Problem Statement, User Stories, Requirements, Success Metrics, Risks, Timeline].</code></li>
+                    <li><strong>Iterate.</strong> Ask Claude to strengthen weak sections: <code>The success metrics section is too vague. Suggest 3 specific, measurable KPIs for a payment integration feature at a bank.</code></li>
+                    <li><strong>Challenge it.</strong> <code>What am I missing? What edge cases or failure modes should I add to the requirements?</code></li>
+                </ol>
+
+                <h4>Example Prompt for 3rd-Party Integration PRD</h4>
+                <p><code>I'm writing a PRD for integrating [Vendor X]'s identity verification API into our customer onboarding flow. Our users are small business owners applying for business checking accounts. Draft a PRD that covers: the problem we're solving, integration requirements, data flow (what we send to the vendor, what we get back), compliance considerations for KYC/AML, success metrics, and rollback plan if the integration fails. Keep it under 2 pages.</code></p>
+
+                <div class="callout">
+                    <strong>Pro tip:</strong> Save your best prompts in a personal "prompt library" doc. Over time, you'll build reusable templates for common PM documents.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">💬</div>
+                <div>
+                    <div class="chunk-title">Claude Projects & Conversations: Staying Organized</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Projects (Claude Pro/Team Feature)</h4>
+                <p>Claude's <strong>Projects</strong> feature lets you create a persistent workspace with pre-loaded context. This is extremely useful for ongoing product work:</p>
+                <ul>
+                    <li><strong>Create a project per initiative.</strong> E.g., "Plaid Integration Q3" or "Vendor Evaluation — KYC Providers."</li>
+                    <li><strong>Add reference documents</strong> to the project's knowledge base. Claude will reference them in every conversation within that project.</li>
+                    <li><strong>Set custom instructions</strong> (called "Project Instructions") that tell Claude your role, your company's context, and how you want responses formatted.</li>
+                </ul>
+
+                <h4>Sample Project Instructions</h4>
+                <p><code>You are helping a product manager at a mid-size US bank. Our customers are small businesses (1-50 employees). We operate under OCC and state banking regulations. When suggesting integrations, always flag compliance implications. Format responses with headers and bullet points. Be specific about technical requirements but explain them in business terms.</code></p>
+
+                <h4>Conversation Best Practices</h4>
+                <ul>
+                    <li>Start new conversations for new topics — don't mix vendor evaluation with sprint planning in one thread.</li>
+                    <li>Use follow-up messages to refine, not restart. Claude remembers everything in the current conversation.</li>
+                    <li>When a conversation gets long, ask Claude to <code>Summarize our key decisions and open questions so far</code> before continuing.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🔗</div>
+                <div>
+                    <div class="chunk-title">Using Claude to Understand APIs & Integrations</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Why PMs Need to Understand APIs</h4>
+                <p>When your job involves integrating third-party products, you don't need to write code — but you need to understand what's possible, how data flows, and where the risks are. Claude can be your API translator.</p>
+
+                <h4>Practical Exercises</h4>
+                <ul>
+                    <li><strong>Decode API docs:</strong> <code>Here is the Plaid Transactions API documentation. Explain in plain English: what data can we get, what do we need to send, and what are the rate limits? I'm a PM, not an engineer.</code></li>
+                    <li><strong>Map data flows:</strong> <code>Draw me an ASCII diagram showing how data flows between our app, Plaid's API, and the customer's bank. Include what happens when the connection fails.</code></li>
+                    <li><strong>Spot integration risks:</strong> <code>Based on this API documentation, what are the top 5 things that could go wrong during integration? For each risk, suggest a mitigation we should include in our requirements.</code></li>
+                    <li><strong>Translate for stakeholders:</strong> <code>Our engineering team sent me this technical spec for the Vendor X integration. Rewrite the key points for our VP of Product — focus on business impact, timeline risks, and resource needs.</code></li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Antigravity tip:</strong> If you're using Antigravity alongside Claude, use Antigravity to manage the overall integration initiative (tracking, prioritization, stakeholder updates) and Claude for deep-dive analysis on specific technical questions.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🏋️</div>
+                <div>
+                    <div class="chunk-title">Week 2 Exercise: Integration Analysis</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Task</h4>
+                <p>Choose a publicly available fintech API (Plaid, Stripe, Marqeta, Alloy, Sardine — any that interests you). Use Claude to:</p>
+                <ol>
+                    <li>Summarize the API's core capabilities in PM-friendly language</li>
+                    <li>Create a data flow diagram (ask for ASCII or Mermaid format)</li>
+                    <li>List 5 questions you'd ask the vendor before committing</li>
+                    <li>Draft a one-paragraph executive summary for your VP</li>
+                </ol>
+                <p>This entire exercise should take about 20 minutes. Notice how you're essentially doing what might take half a day of manual research.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ WEEK 3 ═══════════ -->
+    <div class="week-section theme-purple">
+        <div class="week-header">
+            <div class="week-num">W3</div>
+            <div>
+                <h2>Antigravity & PM-Specific AI Tools</h2>
+            </div>
+            <span class="week-time">~90 min total</span>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🚀</div>
+                <div>
+                    <div class="chunk-title">Antigravity: AI Built for Product Managers</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>What Makes It Different</h4>
+                <p>While Claude and ChatGPT are general-purpose AI assistants, <strong>Antigravity</strong> is specifically designed for the product management workflow. Think of it as the difference between a general contractor and a specialist — both can help, but the specialist knows your domain's specific needs.</p>
+
+                <h4>Core Capabilities</h4>
+                <ul>
+                    <li><strong>Roadmap Intelligence:</strong> Feed it your product backlog and get AI-powered prioritization suggestions based on impact, effort, and strategic alignment. It considers dependencies and resource constraints that general AI tools miss.</li>
+                    <li><strong>Feature Scoping:</strong> Describe a feature idea and Antigravity breaks it into user stories, acceptance criteria, and technical considerations — all formatted for your engineering team's workflow.</li>
+                    <li><strong>Stakeholder Communication:</strong> Generate status updates, executive summaries, and presentation decks tailored to different audiences (engineering, leadership, customers) from the same source material.</li>
+                    <li><strong>Competitive Intelligence:</strong> Track and analyze competitor product changes, helping you maintain a living competitive landscape document.</li>
+                </ul>
+
+                <h4>Financial Services Use Cases</h4>
+                <ul>
+                    <li>Prioritizing which third-party integrations to build next based on customer demand data</li>
+                    <li>Generating integration requirement documents with compliance checkboxes</li>
+                    <li>Creating vendor comparison matrices that include regulatory fit scores</li>
+                    <li>Building business cases for new partnerships with ROI projections</li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Getting started:</strong> Visit Antigravity's website to explore their current offering. PM-specific AI tools are evolving rapidly — the landscape in 2026 includes several strong options. Evaluate based on your team's specific workflow needs.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">📊</div>
+                <div>
+                    <div class="chunk-title">AI for Market Research & Competitive Analysis</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Old Way vs. The AI Way</h4>
+                <p><strong>Old way:</strong> Spend 2 days Googling competitors, reading analyst reports, building a spreadsheet. <strong>AI way:</strong> Spend 30 minutes getting a strong first draft, then refine with your domain knowledge.</p>
+
+                <h4>Workflow</h4>
+                <ol>
+                    <li><strong>Initial landscape scan</strong> (Claude or Gemini): <code>List the top 10 identity verification providers for US banks. For each, include: founded year, key customers in banking, pricing model, SOC 2/PCI status, and unique differentiator.</code></li>
+                    <li><strong>Deep dive on shortlist</strong> (Claude with uploaded docs): Upload each vendor's public documentation and ask for a structured comparison across your specific evaluation criteria.</li>
+                    <li><strong>Gap analysis</strong> (Antigravity or Claude): <code>Based on our current product capabilities [describe them], which of these vendors fills gaps vs. overlaps with what we already have?</code></li>
+                    <li><strong>Executive brief</strong> (Claude): <code>Write a 1-page executive summary recommending our top 2 vendors with a "why now" argument for each.</code></li>
+                </ol>
+
+                <div class="callout">
+                    <strong>Critical reminder:</strong> AI tools' training data has a cutoff date. Always verify pricing, partnerships, and recent news through the vendors' actual websites and recent press releases. Use AI for structure and analysis — use primary sources for facts.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🤝</div>
+                <div>
+                    <div class="chunk-title">AI for Vendor Evaluation & Due Diligence</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Building a Vendor Scorecard with AI</h4>
+                <p>When evaluating third-party products for integration, use AI to build and maintain a structured evaluation framework:</p>
+
+                <h4>Step 1: Generate Your Evaluation Criteria</h4>
+                <p><code>I'm evaluating third-party [category] providers for a US bank. Generate an evaluation scorecard with weighted criteria across these dimensions: (1) Technical fit — API quality, scalability, uptime SLA (2) Compliance — SOC 2 Type II, PCI DSS, bank-grade encryption (3) Business — pricing, contract flexibility, customer support (4) Strategic — market position, innovation roadmap, reference customers in banking. Weight compliance highest for financial services.</code></p>
+
+                <h4>Step 2: Fill In Vendor Data</h4>
+                <p>For each shortlisted vendor, feed their public materials to Claude and ask it to score against your criteria with evidence.</p>
+
+                <h4>Step 3: Generate the Decision Document</h4>
+                <p><code>Based on these scores and our discussion, draft a vendor recommendation memo that includes: recommendation, runner-up, key risks of the recommended vendor, mitigation plan, and proposed pilot scope.</code></p>
+
+                <div class="callout">
+                    <strong>Antigravity integration:</strong> If using Antigravity, you can feed vendor evaluation data directly into your product roadmap to automatically link integration initiatives to business outcomes and track progress.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">📝</div>
+                <div>
+                    <div class="chunk-title">AI-Assisted Stakeholder Communication</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Tailoring Messages to Your Audience</h4>
+                <p>One of AI's most practical PM uses: taking the same information and reformatting it for different audiences in seconds.</p>
+
+                <h4>The Multi-Audience Prompt</h4>
+                <p><code>Here's a status update on our Plaid integration: [paste your raw notes]. Rewrite this for three audiences: (1) Engineering team — focus on technical blockers, dependencies, and next sprint tasks (2) VP of Product — focus on timeline, business impact, and decisions needed (3) Customer success team — focus on what customers will see, when, and how to handle questions. Each version should be under 150 words.</code></p>
+
+                <h4>More Communication Templates</h4>
+                <ul>
+                    <li><strong>Meeting prep:</strong> <code>I have a vendor meeting with [Company] tomorrow about their [product]. Based on what we've discussed, generate an agenda and list of questions to ask. Include one "curveball" question that tests their technical depth.</code></li>
+                    <li><strong>Risk escalation:</strong> <code>Our [integration] is 2 weeks behind schedule due to [reason]. Draft a risk escalation email to my VP that explains the impact, proposes two options for getting back on track, and recommends one with reasoning.</code></li>
+                    <li><strong>Go/No-Go memo:</strong> <code>Based on our pilot results [describe], draft a Go/No-Go recommendation for full rollout. Include criteria we evaluated, results, risks of proceeding, and risks of delaying.</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🏋️</div>
+                <div>
+                    <div class="chunk-title">Week 3 Exercise: Full Vendor Evaluation</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Task</h4>
+                <p>Run a mock vendor evaluation for a fintech integration using AI tools end-to-end:</p>
+                <ol>
+                    <li>Pick a category (payments, identity, lending, data aggregation)</li>
+                    <li>Use Claude/Gemini for initial market scan (3 vendors)</li>
+                    <li>Use Claude to build a weighted scorecard</li>
+                    <li>Generate a 1-page recommendation memo</li>
+                    <li>Create tailored summaries for 2 different stakeholders</li>
+                </ol>
+                <p>Track how long this takes. Compare to how long this would take without AI tools. Most PMs report a <strong>3-5x speed improvement</strong> on this type of work.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ WEEK 4 ═══════════ -->
+    <div class="week-section theme-rose">
+        <div class="week-header">
+            <div class="week-num">W4</div>
+            <div>
+                <h2>Advanced Prompting & Workflow Automation</h2>
+            </div>
+            <span class="week-time">~90 min total</span>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🎯</div>
+                <div>
+                    <div class="chunk-title">Advanced Prompting: Chain of Thought & Few-Shot</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Beyond Basic Prompting</h4>
+                <p>Now that you're comfortable with CRAFT prompts, here are two powerful techniques that dramatically improve AI output quality:</p>
+
+                <h4>Chain of Thought (CoT)</h4>
+                <p>Ask the AI to <strong>show its reasoning step by step</strong> before giving a final answer. This is especially valuable for complex financial decisions.</p>
+                <p><code>We're deciding whether to build our own fraud detection system or integrate a third-party solution. Think through this step by step: consider build cost, time to market, ongoing maintenance, compliance implications, competitive advantage, and total cost of ownership over 3 years. Then give your recommendation.</code></p>
+                <p><strong>Why it works:</strong> When AI shows its work, it catches more edge cases and produces more nuanced analysis. It also makes the reasoning auditable — critical in financial services.</p>
+
+                <h4>Few-Shot Prompting</h4>
+                <p>Show the AI <strong>examples of what good output looks like</strong> before asking for new output.</p>
+                <p><code>Here's how I write user stories for our team: [paste 2-3 real examples]. Now write 5 user stories for our new [feature] following the same format, level of detail, and acceptance criteria style.</code></p>
+                <p><strong>Why it works:</strong> Instead of describing your format in abstract terms, you show the AI exactly what you want. The output will closely match your examples' style and depth.</p>
+
+                <div class="callout">
+                    <strong>Combining techniques:</strong> You can use CRAFT + CoT + Few-Shot together. Give context and role (CRAFT), show examples (Few-Shot), and ask for step-by-step reasoning (CoT). This triple-stack produces the highest quality output.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🔄</div>
+                <div>
+                    <div class="chunk-title">Building Reusable Prompt Templates</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Your Personal Prompt Library</h4>
+                <p>After a few weeks of AI use, you'll notice you're doing the same types of tasks repeatedly. Build templates for these — it's one of the highest-ROI activities for an AI-powered PM.</p>
+
+                <h4>Templates to Build</h4>
+                <ul>
+                    <li><strong>Vendor Quick Assessment:</strong> <code>[Vendor name] offers [product category]. I need: (1) 3-sentence overview (2) Top 3 capabilities relevant to [your use case] (3) Pricing model (4) Compliance certifications (5) Known limitations (6) 3 questions for the sales call.</code></li>
+                    <li><strong>Integration PRD Kickoff:</strong> <code>Draft a PRD outline for integrating [Vendor API] into [our product area]. Include: problem statement, user impact, technical requirements (what data flows where), compliance requirements for [regulation], success metrics, and risks.</code></li>
+                    <li><strong>Sprint Review Prep:</strong> <code>Here are the tickets we completed this sprint: [list]. Generate: (1) A demo script for stakeholders (2) Key metrics to highlight (3) Any items that need follow-up next sprint.</code></li>
+                    <li><strong>Customer Impact Assessment:</strong> <code>We're adding [feature/integration]. For our [customer segment], describe: (1) What changes for them (2) Migration steps if any (3) FAQ they'll likely ask (4) Draft customer communication.</code></li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Where to store templates:</strong> A simple Google Doc, Notion page, or even a Claude Project with your templates in the Project Instructions. The key is having them findable when you need them.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">⚡</div>
+                <div>
+                    <div class="chunk-title">Microsoft Copilot for Day-to-Day PM Work</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Where Copilot Fits In</h4>
+                <p>If your company uses Microsoft 365, Copilot is the tool you'll use most frequently because it's <strong>embedded where you already work</strong>. It won't replace Claude for deep analysis, but it eliminates friction on daily tasks.</p>
+
+                <h4>High-Value PM Use Cases</h4>
+                <ul>
+                    <li><strong>Teams Meetings:</strong> Copilot can summarize meetings, extract action items, and list decisions made — even if you joined late. After a vendor call: <code>/recap — list all commitments made by both sides and any open questions.</code></li>
+                    <li><strong>Excel:</strong> Analyze integration data, customer usage patterns, or vendor pricing comparisons using natural language. <code>Create a pivot table showing API call volume by customer segment and month.</code></li>
+                    <li><strong>PowerPoint:</strong> Turn your Claude-written briefs into presentation decks. <code>Create a 5-slide deck from this document for a board-level audience. Use our company template.</code></li>
+                    <li><strong>Outlook:</strong> Draft and refine emails. <code>Write a follow-up email to [Vendor] summarizing today's meeting and listing our 3 open items. Professional but warm tone.</code></li>
+                    <li><strong>Word:</strong> Draft and reformat documents. <code>Turn this bullet-point list of requirements into a formal integration requirements document with numbered sections.</code></li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Copilot vs. Claude:</strong> Use Copilot for quick, in-app tasks (emails, slide tweaks, meeting notes). Use Claude for complex analysis, document review, and strategic thinking. They complement each other.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🔌</div>
+                <div>
+                    <div class="chunk-title">Connecting AI Tools to Your Workflow</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Building Your AI Stack</h4>
+                <p>The most effective approach isn't using one tool for everything — it's knowing which tool to reach for at each stage of your PM workflow:</p>
+
+                <table style="width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.75rem 0;">
+                    <tr style="background:var(--amber-light);">
+                        <th style="text-align:left; padding:0.5rem; border:1px solid var(--border);">PM Activity</th>
+                        <th style="text-align:left; padding:0.5rem; border:1px solid var(--border);">Best Tool</th>
+                        <th style="text-align:left; padding:0.5rem; border:1px solid var(--border);">Why</th>
+                    </tr>
+                    <tr><td style="padding:0.5rem; border:1px solid var(--border);">Deep research & analysis</td><td style="padding:0.5rem; border:1px solid var(--border);">Claude</td><td style="padding:0.5rem; border:1px solid var(--border);">Best at long documents, nuanced reasoning</td></tr>
+                    <tr><td style="padding:0.5rem; border:1px solid var(--border);">Roadmap & prioritization</td><td style="padding:0.5rem; border:1px solid var(--border);">Antigravity</td><td style="padding:0.5rem; border:1px solid var(--border);">PM-specific context and frameworks</td></tr>
+                    <tr><td style="padding:0.5rem; border:1px solid var(--border);">Quick emails & slides</td><td style="padding:0.5rem; border:1px solid var(--border);">Copilot</td><td style="padding:0.5rem; border:1px solid var(--border);">Already inside your Office apps</td></tr>
+                    <tr><td style="padding:0.5rem; border:1px solid var(--border);">Data & search queries</td><td style="padding:0.5rem; border:1px solid var(--border);">Gemini</td><td style="padding:0.5rem; border:1px solid var(--border);">Strong search integration, live data</td></tr>
+                    <tr><td style="padding:0.5rem; border:1px solid var(--border);">Brainstorming & ideation</td><td style="padding:0.5rem; border:1px solid var(--border);">ChatGPT / Claude</td><td style="padding:0.5rem; border:1px solid var(--border);">Both excel at creative exploration</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🏋️</div>
+                <div>
+                    <div class="chunk-title">Week 4 Exercise: Build Your Prompt Library</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Task</h4>
+                <p>Create a personal prompt library document with at least 5 reusable templates for tasks you do regularly. For each template:</p>
+                <ol>
+                    <li>Write the prompt template with [brackets] for variable parts</li>
+                    <li>Test it in Claude with a real example</li>
+                    <li>Refine based on the output quality</li>
+                    <li>Note which AI tool works best for that template</li>
+                </ol>
+                <p>This library will become one of your most valuable PM assets. Update it weekly as you discover new patterns.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ WEEK 5 ═══════════ -->
+    <div class="week-section theme-teal">
+        <div class="week-header">
+            <div class="week-num">W5</div>
+            <div>
+                <h2>AI for Integration Planning & Execution</h2>
+            </div>
+            <span class="week-time">~90 min total</span>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🗂️</div>
+                <div>
+                    <div class="chunk-title">Mapping Integration Dependencies with AI</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Why This Matters</h4>
+                <p>Third-party integrations in financial services are rarely simple. They involve multiple teams (engineering, compliance, legal, ops), external dependencies (vendor timelines, certifications), and regulatory gates. AI can help you map and manage this complexity.</p>
+
+                <h4>Dependency Mapping Prompt</h4>
+                <p><code>I'm planning the integration of [Vendor]'s [product] into our [system]. Help me create a dependency map. For each workstream below, list: prerequisites, team responsible, estimated duration, and what blocks/is blocked by other workstreams. Workstreams: (1) Legal/contract review (2) Compliance/security assessment (3) API integration development (4) Testing & QA (5) Customer migration (6) Internal training. Present as a table and then identify the critical path.</code></p>
+
+                <h4>Using AI for Timeline Planning</h4>
+                <p><code>Given these dependencies [paste your map], create a realistic integration timeline. Flag any risks where parallel workstreams could conflict. Assume: legal review takes 4-6 weeks in financial services, compliance assessment needs SOC 2 Type II report review, and we have 2 backend engineers available.</code></p>
+
+                <div class="callout">
+                    <strong>Reality check:</strong> AI timelines are optimistic baselines. In financial services, add buffer for compliance review cycles, legal back-and-forth, and vendor responsiveness. A good rule: take the AI estimate and add 30-50% for regulated environment friction.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🛡️</div>
+                <div>
+                    <div class="chunk-title">AI for Compliance & Risk Documentation</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Making Compliance Work Faster, Not Shortcuts</h4>
+                <p>AI doesn't replace your compliance team — but it dramatically reduces the time <em>you</em> spend preparing materials for them.</p>
+
+                <h4>Pre-Compliance Checklist Generation</h4>
+                <p><code>We're integrating a third-party [KYC/payments/data] provider at a US bank. Generate a pre-integration compliance checklist that covers: data handling (where customer data goes, encryption, retention), regulatory requirements (BSA/AML, GLBA, state regulations), vendor risk management (FFIEC guidance), business continuity (what happens if vendor goes down), and audit requirements. Format as a checklist I can share with our compliance team.</code></p>
+
+                <h4>Risk Register Building</h4>
+                <p><code>For our [Vendor] integration, create a risk register with columns: Risk ID, Description, Category (Technical/Compliance/Operational/Reputational), Likelihood (High/Medium/Low), Impact (High/Medium/Low), Mitigation Strategy, Owner, Status. Generate 10-15 risks specific to a [category] integration in banking.</code></p>
+
+                <h4>Compliance Q&A Prep</h4>
+                <p><code>Our compliance team will review this integration proposal next week. Based on the integration plan I've described, what are the top 10 questions they're likely to ask? For each question, draft a prepared response I can customize.</code></p>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">📈</div>
+                <div>
+                    <div class="chunk-title">Building Business Cases with AI</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The AI-Assisted Business Case</h4>
+                <p>Use Claude to build financially rigorous business cases for integration investments:</p>
+
+                <p><code>Help me build a business case for integrating [Vendor]'s [product]. Here are my inputs: Implementation cost: $[X] (engineering time) + $[Y] (vendor fees). Expected benefits: [describe — faster onboarding, reduced fraud, new revenue stream]. Customer base affected: [N] business customers. Build a 3-year TCO model, ROI calculation, and break-even analysis. Include a sensitivity analysis: what happens if adoption is 50% of forecast? Present in a format suitable for a CFO review.</code></p>
+
+                <h4>Key Business Case Components AI Can Draft</h4>
+                <ul>
+                    <li><strong>Executive summary</strong> — The "why now" in 3 sentences</li>
+                    <li><strong>Market context</strong> — Competitive pressure, customer demand signals</li>
+                    <li><strong>Financial model</strong> — Costs, revenue impact, ROI, payback period</li>
+                    <li><strong>Risk/mitigation</strong> — What could go wrong and our plan</li>
+                    <li><strong>Go-to-market</strong> — How customers will adopt this</li>
+                    <li><strong>Resource ask</strong> — What you need (people, budget, timeline)</li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Important:</strong> AI can structure the business case and do the math, but the <em>inputs</em> (costs, expected adoption rates, revenue projections) need to come from you and your stakeholders. Garbage in = garbage out, even with AI.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">👥</div>
+                <div>
+                    <div class="chunk-title">AI for Customer Research & Feedback Analysis</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Analyzing Customer Feedback at Scale</h4>
+                <p>When deciding which integrations to prioritize, customer data is gold. AI helps you process it faster:</p>
+
+                <h4>Techniques</h4>
+                <ul>
+                    <li><strong>Feedback categorization:</strong> <code>Here are 50 customer support tickets mentioning payment issues [paste or upload]. Categorize each by: root cause, severity, frequency, and which of our current vendors is involved. Identify the top 3 patterns.</code></li>
+                    <li><strong>Interview synthesis:</strong> <code>I conducted 8 customer interviews about their needs for [feature area]. Here are my raw notes [paste]. Synthesize into: top themes (with frequency), direct quotes that illustrate each theme, and surprising insights I might have missed.</code></li>
+                    <li><strong>Survey analysis:</strong> <code>Analyze these NPS survey responses [paste]. Group by sentiment, identify the top 5 drivers of negative scores, and suggest 3 product improvements that could move the needle.</code></li>
+                    <li><strong>Feature request prioritization:</strong> <code>Here are 30 feature requests from our business banking customers [paste]. Score each by: frequency of request, revenue impact (based on requesting customer size), alignment with our strategy, and implementation complexity. Recommend the top 5 to build next quarter.</code></li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Data privacy:</strong> When analyzing customer feedback, make sure to anonymize or redact any personally identifiable information before pasting into AI tools. Replace names with "Customer A/B/C" and remove account numbers.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🏋️</div>
+                <div>
+                    <div class="chunk-title">Week 5 Exercise: Integration Business Case</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Task</h4>
+                <p>Build a complete business case for a third-party integration using AI tools:</p>
+                <ol>
+                    <li>Choose a real or hypothetical integration for your business customers</li>
+                    <li>Use Claude to generate a dependency map and timeline</li>
+                    <li>Build a pre-compliance checklist</li>
+                    <li>Create a 3-year TCO and ROI model</li>
+                    <li>Draft the executive summary</li>
+                </ol>
+                <p>The entire deliverable should be something you could actually present to leadership. That's the bar — AI gets you to "presentable" in under an hour.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ WEEK 6 ═══════════ -->
+    <div class="week-section theme-amber">
+        <div class="week-header">
+            <div class="week-num">W6</div>
+            <div>
+                <h2>Putting It All Together & What's Next</h2>
+            </div>
+            <span class="week-time">~90 min total</span>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🧩</div>
+                <div>
+                    <div class="chunk-title">Your AI-Powered PM Workflow (End-to-End)</div>
+                    <div class="chunk-time">20 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Complete Integration PM Workflow</h4>
+                <p>Here's how everything you've learned connects into a real workflow for managing third-party product integrations:</p>
+
+                <ol>
+                    <li><strong>Discovery</strong> (Claude + Gemini) — Market scan, vendor research, competitive analysis. Use Claude for deep-dive vendor docs, Gemini for web-connected research.</li>
+                    <li><strong>Evaluation</strong> (Claude + Antigravity) — Vendor scorecards, technical assessment, compliance pre-check. Use Antigravity to link evaluation to strategic priorities.</li>
+                    <li><strong>Planning</strong> (Claude) — PRD, dependency mapping, timeline, risk register. Claude's long context handles complex planning docs.</li>
+                    <li><strong>Business Case</strong> (Claude) — TCO, ROI, executive brief. Chain-of-thought prompting for financial modeling.</li>
+                    <li><strong>Execution</strong> (Copilot + Claude) — Sprint communication, status updates, stakeholder management. Copilot for quick updates, Claude for detailed analysis.</li>
+                    <li><strong>Launch</strong> (Claude + Antigravity) — Customer communication, training materials, success metrics tracking.</li>
+                    <li><strong>Iterate</strong> (Claude) — Feedback analysis, performance review, optimization recommendations.</li>
+                </ol>
+
+                <div class="callout">
+                    <strong>Key insight:</strong> AI doesn't change <em>what</em> product managers do — it changes how fast and how thoroughly you can do it. The PM judgment, stakeholder relationships, and strategic thinking are still 100% you. AI handles the heavy lifting on research, writing, and analysis.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">⚠️</div>
+                <div>
+                    <div class="chunk-title">Common Pitfalls & How to Avoid Them</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>Mistakes New AI Users Make</h4>
+                <ul>
+                    <li><strong>Over-trusting AI output.</strong> AI sounds confident even when wrong. Always verify facts, especially numbers, dates, vendor claims, and regulatory details. Treat AI output as a first draft from a smart intern — helpful but needs review.</li>
+                    <li><strong>Under-specifying prompts.</strong> "Write me a PRD" gives generic output. "Write me a PRD for [specific feature] at [specific type of company] for [specific customer segment]" gives useful output. Specificity is everything.</li>
+                    <li><strong>Ignoring data privacy.</strong> In the excitement of a new tool, it's easy to paste sensitive data. Build the habit of scanning your prompt for PII before hitting enter.</li>
+                    <li><strong>Trying to automate judgment.</strong> AI can analyze options and present tradeoffs. It should not make the final call on strategic decisions, vendor selection, or customer-impacting changes. That's your job.</li>
+                    <li><strong>Not iterating.</strong> Your first prompt rarely gets the best output. Think of AI conversations as collaborative — refine, push back, ask for alternatives. "That's too generic, make it more specific to mid-market banks" is a perfectly valid follow-up.</li>
+                    <li><strong>Tool hopping.</strong> Pick 2-3 tools and go deep rather than surface-level with 7 tools. Mastery of Claude alone will cover 80% of your AI-assisted PM needs.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">📚</div>
+                <div>
+                    <div class="chunk-title">Staying Current: The AI Landscape Is Moving Fast</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>How to Keep Up Without Drowning</h4>
+                <p>AI tools are evolving weekly. Here's a sustainable approach to staying current:</p>
+
+                <h4>Weekly (15 min)</h4>
+                <ul>
+                    <li>Check Anthropic's blog for Claude updates</li>
+                    <li>Skim one AI-focused newsletter (suggestions: The Neuron, Ben's Bites, or Lenny's Newsletter AI section)</li>
+                </ul>
+
+                <h4>Monthly (1 hour)</h4>
+                <ul>
+                    <li>Try one new AI feature or tool you haven't used before</li>
+                    <li>Review and update your prompt library</li>
+                    <li>Share a useful AI workflow with your team</li>
+                </ul>
+
+                <h4>Quarterly (half day)</h4>
+                <ul>
+                    <li>Reassess your AI tool stack — is there a better tool for any of your core workflows?</li>
+                    <li>Review your company's AI policy for updates</li>
+                    <li>Evaluate new PM-specific tools (the Antigravity category is growing fast)</li>
+                </ul>
+
+                <h4>Resources</h4>
+                <ul>
+                    <li><strong>Anthropic's prompt engineering guide</strong> — The definitive resource for getting better at prompting Claude</li>
+                    <li><strong>Lenny's Newsletter</strong> — Product management focus with regular AI coverage</li>
+                    <li><strong>Financial services AI communities</strong> — Look for fintech-specific AI groups on LinkedIn</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🔮</div>
+                <div>
+                    <div class="chunk-title">What's Coming: AI Agents & Autonomous Workflows</div>
+                    <div class="chunk-time">15 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Next Wave</h4>
+                <p>Today's AI tools mostly work in a request-response pattern: you ask, AI answers. The next generation — <strong>AI agents</strong> — can take multi-step actions on your behalf:</p>
+
+                <ul>
+                    <li><strong>Claude Code & Computer Use:</strong> Anthropic's tools that let AI interact with your computer, run code, and take actions across applications. Imagine telling Claude "review our Jira backlog, identify integration-related tickets, and draft a prioritized list with effort estimates."</li>
+                    <li><strong>Multi-tool orchestration:</strong> AI that can use multiple SaaS tools in sequence — pull data from Salesforce, analyze it, update your roadmap tool, and draft a Slack summary — all from a single instruction.</li>
+                    <li><strong>Specialized financial AI:</strong> Purpose-built models trained on financial services data, regulations, and workflows. These will understand compliance nuance far better than general models.</li>
+                </ul>
+
+                <h4>What This Means for PMs</h4>
+                <p>The PMs who learn to work with AI tools now will be best positioned to leverage agents when they mature. The core skills are the same: clear communication (prompting), good judgment (knowing when to trust AI), and domain expertise (the financial services knowledge AI can't replace).</p>
+
+                <div class="callout">
+                    <strong>Your competitive advantage:</strong> Most product managers in financial services are still not using AI tools effectively. By completing this program, you're already ahead. The key is consistent practice — use AI every day, even for small tasks, and your skill compounds quickly.
+                </div>
+            </div>
+        </div>
+
+        <div class="chunk">
+            <button class="chunk-toggle" onclick="toggleChunk(this)">
+                <input type="checkbox" class="chunk-check" onclick="event.stopPropagation(); updateProgress()">
+                <div class="chunk-icon">🏋️</div>
+                <div>
+                    <div class="chunk-title">Final Exercise: Capstone Project</div>
+                    <div class="chunk-time">25 min</div>
+                </div>
+                <span class="chunk-chevron">▼</span>
+            </button>
+            <div class="chunk-body">
+                <h4>The Challenge</h4>
+                <p>Complete an end-to-end integration initiative using everything you've learned. Choose a real third-party product your company could integrate for business customers, then use AI tools to produce:</p>
+
+                <ol>
+                    <li><strong>Market scan</strong> — 3 vendor options with comparison matrix</li>
+                    <li><strong>Vendor deep-dive</strong> — Detailed analysis of your top pick</li>
+                    <li><strong>PRD</strong> — Full product requirements document</li>
+                    <li><strong>Compliance pre-check</strong> — Checklist for your compliance team</li>
+                    <li><strong>Business case</strong> — 3-year TCO, ROI, executive summary</li>
+                    <li><strong>Stakeholder comms</strong> — Tailored messages for 3 audiences</li>
+                    <li><strong>Launch plan</strong> — Customer communication and success metrics</li>
+                </ol>
+
+                <p>Track your total time. Most graduates of this program complete this capstone in <strong>2-3 hours</strong> — work that would have taken 2-3 weeks without AI tools.</p>
+
+                <div class="callout">
+                    <strong>Congratulations!</strong> You now have a practical, repeatable workflow for using AI tools in financial services product management. The most important thing from here: <strong>use these tools every single day.</strong> Skill compounds with practice.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>Built for financial services product managers learning AI tools.</p>
+    <p style="margin-top:0.5rem;">Progress is saved in your browser. <a href="#" onclick="if(confirm('Reset all progress?')){localStorage.removeItem('toefferProgress');location.reload()}return false">Reset progress</a></p>
+</footer>
+
+<script>
+function toggleChunk(btn) {
+    const chunk = btn.closest('.chunk');
+    chunk.classList.toggle('open');
+}
+
+function updateProgress() {
+    const checks = document.querySelectorAll('.chunk-check');
+    const checked = document.querySelectorAll('.chunk-check:checked');
+    const pct = Math.round((checked.length / checks.length) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+    // Save
+    const state = Array.from(checks).map(c => c.checked);
+    localStorage.setItem('toefferProgress', JSON.stringify(state));
+}
+
+// Restore progress
+(function() {
+    const saved = localStorage.getItem('toefferProgress');
+    if (saved) {
+        const state = JSON.parse(saved);
+        const checks = document.querySelectorAll('.chunk-check');
+        state.forEach((val, i) => { if (checks[i]) checks[i].checked = val; });
+        updateProgress();
+    }
+})();
+</script>
+</body>
+</html>
