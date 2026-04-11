@@ -56,8 +56,9 @@
 
           <!-- Spotify Search -->
           <aside class="sonos-search-card">
-            <div class="sonos-search__header">
+            <div class="sonos-search__header" style="display:flex;align-items:center;justify-content:space-between;">
               <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Search Spotify</h3>
+              <span id="spotifyAccountStatus" style="font-size:0.75rem;color:#888;"></span>
             </div>
             <form id="spotifySearchForm" class="sonos-search__form" autocomplete="off">
               <div class="sonos-search__row">
@@ -81,6 +82,11 @@
                 <option value="">Zone...</option>
               </select>
               <button type="button" class="sonos-search__btn sonos-search__btn--play" id="spotifyPlayBtn" title="Play selected" disabled>▶</button>
+              <button type="button" class="sonos-search__btn" id="spotifyPlaylistBtn" title="Create playlist from selected" style="margin-left:4px;font-size:0.7rem;padding:4px 8px;" disabled>+ Playlist</button>
+            </div>
+            <!-- Spotify Connect / Playlist status -->
+            <div id="spotifyConnectBar" class="hidden" style="padding:8px 0;text-align:center;">
+              <button type="button" id="spotifyConnectBtn" class="sonos-search__btn" style="background:#1DB954;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:0.8rem;">Connect Spotify Account</button>
             </div>
           </aside>
 

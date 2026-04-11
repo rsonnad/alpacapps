@@ -34,6 +34,10 @@ interface SonosRequest {
     | "musicsearch"
     | "spotify-search"
     | "spotify-play"
+    | "spotify-auth-url"
+    | "spotify-exchange-code"
+    | "spotify-status"
+    | "spotify-create-playlist"
     | "run-schedules";
   room?: string;
   value?: number | string;
@@ -148,6 +152,54 @@ async function getSpotifyToken(supabase: any): Promise<string> {
   spotifyToken = data.access_token;
   spotifyTokenExpiresAt = Date.now() + data.expires_in * 1000;
   return spotifyToken!;
+}
+
+const SPOTIFY_SCOPES = "playlist-modify-public playlist-modify-private user-read-private";
+const SPOTIFY_REDIRECT_URI = "https://alpacaplayhouse.com/auth/spotify/callback";
+
+// Get a user-scoped Spotify token using the stored refresh_token
+let spotifyUserToken: string | null = null;
+let spotifyUserTokenExpiresAt = 0;
+
+async function getSpotifyUserToken(supabase: any): Promise<string> {
+  if (spotifyUserToken && Date.now() < spotifyUserTokenExpiresAt - 60_000) {
+    return spotifyUserToken;
+  }
+  const { data: config, error } = await supabase
+    .from("spotify_config")
+    .select("client_id, client_secret, refresh_token, is_active")
+    .eq("id", 1)
+    .single();
+  if (error || !config) throw new Error("Spotify config not found");
+  if (!config.is_active) throw new Error("Spotify integration is disabled");
+  if (!config.refresh_token) throw new Error("Spotify account not connected. Please connect via the Sonos page.");
+
+  const resp = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${btoa(`${config.client_id}:${config.client_secret}`)}`,
+    },
+    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(config.refresh_token)}`,
+  });
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`Spotify user token refresh failed ${resp.status}: ${errText}`);
+  }
+  const data = await resp.json();
+  spotifyUserToken = data.access_token;
+  spotifyUserTokenExpiresAt = Date.now() + data.expires_in * 1000;
+
+  // Update stored access_token and potentially new refresh_token
+  const updates: Record<string, any> = {
+    access_token: data.access_token,
+    token_expires_at: new Date(spotifyUserTokenExpiresAt).toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  if (data.refresh_token) updates.refresh_token = data.refresh_token;
+  await supabase.from("spotify_config").update(updates).eq("id", 1);
+
+  return spotifyUserToken!;
 }
 
 function formatDuration(ms: number): string {
@@ -1320,6 +1372,185 @@ serve(async (req) => {
           audio_url: previewUrlData.publicUrl,
           duration_secs: Math.ceil(previewPcm.length / (24000 * 2)),
         });
+      }
+
+      // =============================================
+      // Spotify OAuth & Playlist Actions
+      // =============================================
+
+      case "spotify-auth-url": {
+        // Generate the Spotify authorization URL for user-level OAuth
+        const { data: config } = await supabase
+          .from("spotify_config")
+          .select("client_id")
+          .eq("id", 1)
+          .single();
+        if (!config?.client_id) return jsonResponse(req, { error: "Spotify client_id not configured" }, 500);
+        const state = crypto.randomUUID();
+        const authParams = new URLSearchParams({
+          response_type: "code",
+          client_id: config.client_id,
+          scope: SPOTIFY_SCOPES,
+          redirect_uri: SPOTIFY_REDIRECT_URI,
+          state,
+          show_dialog: "true",
+        });
+        return jsonResponse(req, {
+          url: `https://accounts.spotify.com/authorize?${authParams}`,
+          state,
+        });
+      }
+
+      case "spotify-exchange-code": {
+        // Exchange authorization code for tokens and store them
+        const authCode = body.code;
+        if (!authCode) return jsonResponse(req, { error: "Missing code" }, 400);
+        const { data: config } = await supabase
+          .from("spotify_config")
+          .select("client_id, client_secret")
+          .eq("id", 1)
+          .single();
+        if (!config) return jsonResponse(req, { error: "Spotify config not found" }, 500);
+
+        const tokenResp = await fetch("https://accounts.spotify.com/api/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${btoa(`${config.client_id}:${config.client_secret}`)}`,
+          },
+          body: new URLSearchParams({
+            grant_type: "authorization_code",
+            code: authCode,
+            redirect_uri: SPOTIFY_REDIRECT_URI,
+          }).toString(),
+        });
+        if (!tokenResp.ok) {
+          const errText = await tokenResp.text();
+          return jsonResponse(req, { error: `Token exchange failed: ${errText}` }, tokenResp.status);
+        }
+        const tokenData = await tokenResp.json();
+
+        // Get the user's Spotify profile
+        const profileResp = await fetch("https://api.spotify.com/v1/me", {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+        const profile = profileResp.ok ? await profileResp.json() : null;
+
+        const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
+        await supabase.from("spotify_config").update({
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+          token_expires_at: expiresAt,
+          updated_at: new Date().toISOString(),
+        }).eq("id", 1);
+
+        // Clear cached tokens so next call uses fresh ones
+        spotifyUserToken = null;
+        spotifyUserTokenExpiresAt = 0;
+
+        return jsonResponse(req, {
+          success: true,
+          spotify_user: profile?.display_name || profile?.id || "connected",
+          spotify_user_id: profile?.id,
+        });
+      }
+
+      case "spotify-status": {
+        // Check if Spotify user OAuth is connected
+        const { data: config } = await supabase
+          .from("spotify_config")
+          .select("refresh_token, is_active, updated_at")
+          .eq("id", 1)
+          .single();
+        const connected = !!(config?.refresh_token && config?.is_active);
+        if (connected) {
+          try {
+            const token = await getSpotifyUserToken(supabase);
+            const meResp = await fetch("https://api.spotify.com/v1/me", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (meResp.ok) {
+              const me = await meResp.json();
+              return jsonResponse(req, { connected: true, user: me.display_name, user_id: me.id });
+            }
+          } catch (_) { /* fall through */ }
+        }
+        return jsonResponse(req, { connected: false });
+      }
+
+      case "spotify-create-playlist": {
+        const playlistName = body.name;
+        const trackUris: string[] = body.tracks || [];
+        if (!playlistName) return jsonResponse(req, { error: "Missing playlist name" }, 400);
+        if (!trackUris.length) return jsonResponse(req, { error: "No tracks provided" }, 400);
+
+        try {
+          const token = await getSpotifyUserToken(supabase);
+
+          // Get user ID
+          const meResp = await fetch("https://api.spotify.com/v1/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!meResp.ok) throw new Error("Failed to get Spotify user profile");
+          const me = await meResp.json();
+
+          // Create the playlist
+          const createResp = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: playlistName,
+              description: body.description || "Created via AlpacApps",
+              public: body.public !== false,
+            }),
+          });
+          if (!createResp.ok) {
+            const errText = await createResp.text();
+            throw new Error(`Failed to create playlist: ${errText}`);
+          }
+          const playlist = await createResp.json();
+
+          // Add tracks in batches of 100 (Spotify API limit)
+          for (let i = 0; i < trackUris.length; i += 100) {
+            const batch = trackUris.slice(i, i + 100);
+            const addResp = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ uris: batch }),
+            });
+            if (!addResp.ok) {
+              const errText = await addResp.text();
+              console.error(`Failed to add tracks batch ${i}:`, errText);
+            }
+          }
+
+          await logApiUsage(supabase, {
+            vendor: "spotify",
+            category: "playlist_management",
+            endpoint: "create_playlist",
+            units: 1 + Math.ceil(trackUris.length / 100),
+            unit_type: "api_calls",
+            estimated_cost_usd: 0,
+            metadata: { playlist_name: playlistName, track_count: trackUris.length, playlist_id: playlist.id },
+            app_user_id: userId,
+          });
+
+          return jsonResponse(req, {
+            success: true,
+            playlist_id: playlist.id,
+            playlist_url: playlist.external_urls?.spotify,
+            track_count: trackUris.length,
+          });
+        } catch (err) {
+          console.error("Playlist creation error:", err.message);
+          return jsonResponse(req, { error: err.message }, 500);
+        }
       }
 
       default:
