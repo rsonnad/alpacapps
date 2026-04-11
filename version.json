@@ -1,12 +1,12 @@
 {
-  "version": "v260410.08 10:44p",
-  "release": 1310,
-  "sha": "21e399010",
-  "fullSha": "21e399010ae3d3edf053bfb2f36d8a2fc4517a27",
+  "version": "v260410.09 10:50p",
+  "release": 1311,
+  "sha": "7a98149c7",
+  "fullSha": "7a98149c79328f26d16e86f820bddbb33992fccc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-11T03:44:07+00:00",
-  "commits": [{"sha":"21e399010","message":"Add payments portal for one-click Stripe associate payouts","author":"Rahul"}]
+  "pushedAt": "2026-04-11T03:50:58+00:00",
+  "commits": [{"sha":"7a98149c7","message":"Add Spotify OAuth + playlist creation","author":"Rahul"}]
 }
