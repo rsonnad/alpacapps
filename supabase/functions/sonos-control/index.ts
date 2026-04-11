@@ -1518,9 +1518,10 @@ serve(async (req) => {
           const playlist = await createResp.json();
 
           // Add tracks in batches of 100 (Spotify API limit)
+          // Note: endpoint renamed from /tracks to /items in Feb 2026
           for (let i = 0; i < trackUris.length; i += 100) {
             const batch = trackUris.slice(i, i + 100);
-            const addResp = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
+            const addResp = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/items`, {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${token}`,
