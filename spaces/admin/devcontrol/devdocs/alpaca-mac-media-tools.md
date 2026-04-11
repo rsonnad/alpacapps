@@ -160,6 +160,53 @@ yt-dlp --write-subs --sub-lang en "URL"
 yt-dlp -o "%(playlist_index)s-%(title)s.%(ext)s" "PLAYLIST_URL"
 ```
 
+### ReClip — Web-Based Media Downloader
+
+Self-hosted web UI for downloading video/audio from 1000+ sites (YouTube, TikTok, Instagram, Twitter/X, Reddit, etc.). Built on yt-dlp + ffmpeg with a Flask frontend.
+
+- **Source:** https://github.com/averygan/reclip
+- **Install path:** `~/reclip/` (venv at `~/reclip/venv/`)
+- **LaunchAgent:** `~/Library/LaunchAgents/com.alpaca.reclip.plist`
+- **Log:** `~/logs/reclip.log`
+- **Port:** 8899
+- **Installed:** 2026-04-10
+
+#### Access
+
+| Network | URL |
+|---------|-----|
+| LAN | http://192.168.1.200:8899 |
+| Tailscale | http://100.74.59.97:8899 |
+| On Alpuca | http://localhost:8899 |
+
+#### Usage
+
+1. Open the web UI in a browser
+2. Paste one or more video/audio URLs
+3. Choose MP4 (video) or MP3 (audio)
+4. Click **Fetch** to retrieve metadata and thumbnails
+5. Select quality/resolution, then **Download** (or **Download All** for batch)
+
+#### Management
+
+```bash
+# Check status
+launchctl list | grep reclip
+
+# View logs
+ssh paca@192.168.1.200 "tail -50 ~/logs/reclip.log"
+
+# Restart
+ssh paca@192.168.1.200 "launchctl unload ~/Library/LaunchAgents/com.alpaca.reclip.plist && launchctl load ~/Library/LaunchAgents/com.alpaca.reclip.plist"
+
+# Update reclip
+ssh paca@192.168.1.200 "cd ~/reclip && git pull"
+# Then restart (above)
+
+# Update yt-dlp (for new site support / fixes)
+ssh paca@192.168.1.200 "brew upgrade yt-dlp"
+```
+
 ---
 
 ## Also Installed (CAD/GIS)
