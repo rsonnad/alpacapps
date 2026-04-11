@@ -712,8 +712,16 @@ serve(async (req) => {
     const isCronCall = !!(cronSecret && cronHeader && await timingSafeEqual(cronHeader, cronSecret));
     let userId: string | null = null;
 
+    // Proxy config (Sonos fallback + announce/EQ path)
+    const proxyUrl = Deno.env.get("SONOS_PROXY_URL");
+    const proxySecret = Deno.env.get("SONOS_PROXY_SECRET");
+    const maUrl = Deno.env.get("MUSIC_ASSISTANT_URL");
+    const maToken = Deno.env.get("MUSIC_ASSISTANT_TOKEN");
+    const useMa = parseBooleanEnv(Deno.env.get("USE_MUSIC_ASSISTANT"), true);
+
+    const body: SonosRequest = await req.json();
+
     // Spotify OAuth actions can use anon key (no user session yet during callback)
-    const body: SonosRequest = await req.clone().json().catch(() => ({} as SonosRequest));
     const spotifyOAuthActions = ["spotify-auth-url", "spotify-exchange-code", "spotify-status"];
     const isSpotifyOAuth = spotifyOAuthActions.includes(body.action);
 
@@ -733,15 +741,6 @@ serve(async (req) => {
         return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
     }
-
-    // Proxy config (Sonos fallback + announce/EQ path)
-    const proxyUrl = Deno.env.get("SONOS_PROXY_URL");
-    const proxySecret = Deno.env.get("SONOS_PROXY_SECRET");
-    const maUrl = Deno.env.get("MUSIC_ASSISTANT_URL");
-    const maToken = Deno.env.get("MUSIC_ASSISTANT_TOKEN");
-    const useMa = parseBooleanEnv(Deno.env.get("USE_MUSIC_ASSISTANT"), true);
-
-    const body: SonosRequest = await req.json();
     const { action } = body;
 
     // =============================================
