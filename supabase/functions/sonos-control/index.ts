@@ -1498,8 +1498,8 @@ serve(async (req) => {
           if (!meResp.ok) throw new Error("Failed to get Spotify user profile");
           const me = await meResp.json();
 
-          // Create the playlist
-          const createResp = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
+          // Create the playlist (use /me/playlists — /users/{id}/playlists returns 403 in dev mode)
+          const createResp = await fetch("https://api.spotify.com/v1/me/playlists", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
