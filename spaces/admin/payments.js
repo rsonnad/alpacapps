@@ -137,7 +137,7 @@ function renderAssociateCards() {
   });
 
   let totalUnpaidAll = 0;
-  const cards = [];
+  const rows = [];
 
   for (const assoc of sorted) {
     const entries = unpaidByAssociate[assoc.id] || [];
@@ -155,43 +155,52 @@ function renderAssociateCards() {
     }
     totalUnpaidAll += totalAmount;
 
-    const card = document.createElement('div');
-    card.className = `pay-card${entries.length > 0 ? ' has-unpaid' : ''}`;
+    const row = document.createElement('div');
+    row.className = `pay-row${entries.length > 0 ? ' has-unpaid' : ''}`;
 
-    // Header
-    card.innerHTML = `
-      <div class="pay-card-header">
-        <h3>
-          ${name}
-          <span class="connect-badge ${hasConnect ? 'connected' : 'not-connected'}">
-            ${hasConnect ? 'Stripe Connected' : 'No Stripe'}
-          </span>
-        </h3>
+    // Right side: either unpaid summary or "all paid"
+    let rightHtml;
+    if (entries.length === 0) {
+      rightHtml = `
+        <span class="paid-check">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          All paid
+        </span>
         <span class="rate-tag">$${rate.toFixed(2)}/hr</span>
+      `;
+    } else {
+      rightHtml = `
+        <span class="unpaid-meta">${entries.length} entries &middot; ${totalHours.toFixed(1)}h</span>
+        <span class="unpaid-amount">$${totalAmount.toFixed(2)}</span>
+        <span class="rate-tag">$${rate.toFixed(2)}/hr</span>
+        <span class="expand-icon">&#9654;</span>
+      `;
+    }
+
+    row.innerHTML = `
+      <div class="pay-row-header">
+        <div class="row-left">
+          <h3>${name}</h3>
+          <span class="connect-badge ${hasConnect ? 'connected' : 'not-connected'}">
+            ${hasConnect ? 'Stripe' : 'No Stripe'}
+          </span>
+        </div>
+        <div class="row-right">
+          ${rightHtml}
+        </div>
       </div>
     `;
 
-    if (entries.length === 0) {
-      card.innerHTML += `
-        <div class="all-paid">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <div>All paid up</div>
-        </div>
-      `;
-    } else {
-      // Entries table
-      let tableHtml = `
-        <div class="pay-card-body">
-          <table class="unpaid-table">
-            <thead><tr>
-              <th class="cb"><input type="checkbox" data-select-all="${assoc.id}" checked></th>
-              <th>Date</th>
-              <th>Hours</th>
-              <th>Amount</th>
-              <th>Description</th>
-            </tr></thead>
-            <tbody>
-      `;
+    // Expandable detail with entries table + pay button
+    if (entries.length > 0) {
+      let detailHtml = `<div class="pay-row-detail"><table class="unpaid-table">
+        <thead><tr>
+          <th class="cb"><input type="checkbox" data-select-all="${assoc.id}" checked></th>
+          <th>Date</th>
+          <th>Hours</th>
+          <th>Amount</th>
+          <th>Description</th>
+        </tr></thead><tbody>`;
 
       for (const e of entries) {
         const mins = parseFloat(e.duration_minutes) || 0;
@@ -201,53 +210,66 @@ function renderAssociateCards() {
         const date = new Date(e.clock_in).toLocaleDateString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric' });
         const desc = e.description || '';
 
-        tableHtml += `
-          <tr>
-            <td class="cb"><input type="checkbox" data-entry-id="${e.id}" data-assoc-id="${assoc.id}" checked></td>
-            <td>${date}</td>
-            <td>${hrs.toFixed(2)}h</td>
-            <td>$${amt.toFixed(2)}</td>
-            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${desc.replace(/"/g, '&quot;')}">${desc}</td>
-          </tr>
-        `;
+        detailHtml += `<tr>
+          <td class="cb"><input type="checkbox" data-entry-id="${e.id}" data-assoc-id="${assoc.id}" checked></td>
+          <td>${date}</td>
+          <td>${hrs.toFixed(2)}h</td>
+          <td>$${amt.toFixed(2)}</td>
+          <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${desc.replace(/"/g, '&quot;')}">${desc}</td>
+        </tr>`;
       }
 
-      tableHtml += '</tbody></table></div>';
-      card.innerHTML += tableHtml;
-
-      // Footer with pay button
-      card.innerHTML += `
-        <div class="pay-card-footer">
-          <div>
-            <div class="total-label">${entries.length} entries &middot; ${totalHours.toFixed(2)}h</div>
-            <div class="total-amount">$${totalAmount.toFixed(2)}</div>
-          </div>
+      detailHtml += `</tbody></table>
+        <div class="pay-row-actions">
           <button class="btn-pay" data-pay-assoc="${assoc.id}" ${!hasConnect ? 'disabled title="Stripe Connect not set up"' : ''}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-            Pay via Stripe
+            Pay $${totalAmount.toFixed(2)} via Stripe
           </button>
         </div>
-      `;
+      </div>`;
+
+      row.innerHTML += detailHtml;
     }
 
-    cards.push(card);
+    rows.push(row);
   }
 
   grid.innerHTML = '';
-  if (cards.length === 0) {
+  if (rows.length === 0) {
     grid.innerHTML = '<div style="color:var(--text-muted);">No active associates found.</div>';
   } else {
-    cards.forEach(c => grid.appendChild(c));
+    rows.forEach(r => grid.appendChild(r));
   }
+
+  // Wire up row expand/collapse
+  grid.querySelectorAll('.pay-row-header').forEach(header => {
+    header.addEventListener('click', (e) => {
+      // Don't toggle if clicking a checkbox
+      if (e.target.tagName === 'INPUT') return;
+      const row = header.closest('.pay-row');
+      if (row.querySelector('.pay-row-detail')) {
+        row.classList.toggle('expanded');
+      }
+    });
+  });
+
+  // Auto-expand rows with unpaid entries
+  grid.querySelectorAll('.pay-row.has-unpaid').forEach(row => {
+    row.classList.add('expanded');
+  });
 
   // Wire up pay buttons
   grid.querySelectorAll('[data-pay-assoc]').forEach(btn => {
-    btn.addEventListener('click', () => openPayModal(btn.dataset.payAssoc));
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPayModal(btn.dataset.payAssoc);
+    });
   });
 
   // Wire up select-all checkboxes
   grid.querySelectorAll('[data-select-all]').forEach(cb => {
-    cb.addEventListener('change', () => {
+    cb.addEventListener('change', (e) => {
+      e.stopPropagation();
       const assocId = cb.dataset.selectAll;
       grid.querySelectorAll(`[data-assoc-id="${assocId}"]`).forEach(ecb => {
         ecb.checked = cb.checked;
