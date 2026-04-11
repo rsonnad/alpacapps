@@ -712,7 +712,12 @@ serve(async (req) => {
     const isCronCall = !!(cronSecret && cronHeader && await timingSafeEqual(cronHeader, cronSecret));
     let userId: string | null = null;
 
-    if (!isInternalCall && !isCronCall) {
+    // Spotify OAuth actions can use anon key (no user session yet during callback)
+    const body: SonosRequest = await req.clone().json().catch(() => ({} as SonosRequest));
+    const spotifyOAuthActions = ["spotify-auth-url", "spotify-exchange-code", "spotify-status"];
+    const isSpotifyOAuth = spotifyOAuthActions.includes(body.action);
+
+    if (!isInternalCall && !isCronCall && !isSpotifyOAuth) {
       const {
         data: { user },
         error: authError,
