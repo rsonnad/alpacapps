@@ -17,6 +17,7 @@
 > - `spaces/admin/devcontrol/devdocs/SECRETS-GUIDE.md` — **load for:** Bitwarden CLI, secrets management, bw-read helper, API key storage, credential access patterns
 > - `spaces/admin/devcontrol/devdocs/LOCAL-AI-SETUP.md` — **load for:** local AI models, Ollama, Atomic Chat, Qwen setup
 > - `spaces/admin/devcontrol/devdocs/clawlikeagents.md` — **load for:** AI agents overview, AlpaClaw, PAI, Hermes, model routing, adding new agents
+> - `spaces/admin/devcontrol/devdocs/spotifyapi.md` — **load for:** Spotify API, playlist creation, OAuth flow, token refresh, Dev Mode limitations
 > - `ARCHITECTURE.md` — **load for:** system architecture, component relationships, module boundaries, data flow
 > - `API.md` — **load for:** REST endpoints, edge functions, API calls, request/response formats
 > - `PRODUCTDESIGN.md` — **load for:** product decisions, UX philosophy, business model, feature prioritization

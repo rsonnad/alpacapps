@@ -722,7 +722,7 @@ serve(async (req) => {
     const body: SonosRequest = await req.json();
 
     // Spotify OAuth actions can use anon key (no user session yet during callback)
-    const spotifyOAuthActions = ["spotify-auth-url", "spotify-exchange-code", "spotify-status"];
+    const spotifyOAuthActions = ["spotify-auth-url", "spotify-exchange-code", "spotify-status", "spotify-create-playlist"];
     const isSpotifyOAuth = spotifyOAuthActions.includes(body.action);
 
     if (!isInternalCall && !isCronCall && !isSpotifyOAuth) {
