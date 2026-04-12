@@ -2,7 +2,7 @@
  * Spaces - Admin page for managing spaces
  */
 
-import { supabase, SUPABASE_URL } from '../../shared/supabase.js';
+import { supabase } from '../../shared/supabase.js';
 import { mediaService } from '../../shared/media-service.js';
 import {
   formatDateAustin,
@@ -869,14 +869,16 @@ function showSpaceDetail(spaceId) {
   document.getElementById('detailSpaceName').innerHTML = headerHtml;
 
   const shareUrl = space.slug
-    ? `${SUPABASE_URL}/functions/v1/share-space?space=${encodeURIComponent(space.slug)}`
+    ? `https://alpacaplayhouse.com/spaces/?space=${encodeURIComponent(space.slug)}`
     : `https://alpacaplayhouse.com/spaces/?id=${space.id}`;
   const headerButtonsHtml = `
-    <button class="btn-secondary" onclick="copyShareLink(this, '${shareUrl.replace(/'/g, "\\'")}')" title="Copy share link">🔗 Share</button>
     ${isAdmin ? `
       <button class="btn-primary" onclick="openEditSpace('${space.id}'); document.getElementById('spaceDetailModal').classList.add('hidden');">Edit Space</button>
       <button class="btn-secondary" onclick="openPhotoUpload('${space.id}', '${space.name.replace(/'/g, "\\'")}'); document.getElementById('spaceDetailModal').classList.add('hidden');">Add Images</button>
     ` : ''}
+    <button class="share-btn" onclick="copyShareLink(this)" title="Share this space" data-share-url="${shareUrl}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+    </button>
   `;
   document.getElementById('detailHeaderButtons').innerHTML = headerButtonsHtml;
 
@@ -2136,15 +2138,18 @@ async function deleteMedia() {
 // =============================================
 // GLOBAL FUNCTION EXPORTS
 // =============================================
-window.copyShareLink = async function(btn, url) {
+window.copyShareLink = async function(btn) {
+  const url = btn.dataset.shareUrl;
   try {
-    await navigator.clipboard.writeText(url);
-    const orig = btn.textContent;
-    btn.textContent = '✓ Copied!';
-    setTimeout(() => { btn.textContent = orig; }, 2000);
-  } catch (e) {
-    showToast('Failed to copy link', 'error');
-  }
+    if (navigator.share) {
+      await navigator.share({ title: document.getElementById('detailSpaceName').textContent, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      btn.classList.add('copied');
+      btn.title = 'Link copied!';
+      setTimeout(() => { btn.classList.remove('copied'); btn.title = 'Share this space'; }, 2000);
+    }
+  } catch (e) { /* user cancelled share dialog */ }
 };
 window.showSpaceDetail = showSpaceDetail;
 window.openEditSpace = openEditSpace;
