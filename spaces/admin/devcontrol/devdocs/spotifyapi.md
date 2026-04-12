@@ -9,7 +9,7 @@
 | **Edge function** | `sonos-control` — handles all Spotify actions |
 | **Callback URL** | `https://alpacaplayhouse.com/auth/spotify/callback.html` |
 | **Scopes** | `playlist-modify-public playlist-modify-private user-read-private` |
-| **Dev mode limit** | Creating playlists works; **adding tracks returns 403** until Extended Quota Mode is approved |
+| **Connected account** | Rahul Lio (user ID: sonnad, Spotify Premium) |
 
 ## Architecture
 
@@ -24,29 +24,65 @@ Tokens auto-refresh: `getSpotifyUserToken()` in the edge function reads the refr
 
 ## Creating Playlists — Fastest Path
 
-### Method 1: Edge Function (API)
+### Method 1: Edge Function (RECOMMENDED — fully working)
 
-**Works now:** playlist creation. **Blocked:** adding tracks (Dev Mode 403).
+This is the simplest and most reliable method. Creates playlist AND adds tracks in one call.
 
 ```bash
-# Create empty playlist
+# Get anon key (or set SUPABASE_ANON_KEY env var)
+export BW_SESSION=$(~/bin/bw-unlock 2>/dev/null)
+SUPABASE_ANON_KEY=$(bw get item "Supabase — Dashboard" --session "$BW_SESSION" 2>/dev/null \
+  | python3 -c "import sys,json; fields=json.load(sys.stdin).get('fields',[]); print(next((f['value'] for f in fields if f['name']=='Anon Key'),''))")
+
+# Create playlist with tracks (all in one call)
 curl -s -X POST "https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/sonos-control" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
   -d '{
     "action": "spotify-create-playlist",
-    "name": "My Playlist",
-    "description": "Created via AlpacApps",
+    "name": "My Playlist Name",
+    "description": "Optional description",
     "tracks": ["spotify:track:XXXXX", "spotify:track:YYYYY"]
-  }'
+  }' | python3 -m json.tool
 ```
 
-Once Extended Quota Mode is approved, tracks will be added automatically in batches of 100.
+**Response:**
+```json
+{
+    "success": true,
+    "playlist_id": "4ORErLxPFoX06n75HdmOSy",
+    "playlist_url": "https://open.spotify.com/playlist/4ORErLxPFoX06n75HdmOSy",
+    "track_count": 36
+}
+```
 
-### Method 2: Direct Spotify API (requires valid user token)
+**Key field:** `tracks` (array of `spotify:track:` URIs). NOT `trackUris`.
+
+### Finding Track URIs
+
+Search via the edge function:
 
 ```bash
-# Get fresh token from DB
+curl -s -X POST "https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/sonos-control" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -d '{"action":"spotify-search","query":"Dire Wolf Grateful Dead Reckoning","type":"track"}' \
+  | python3 -m json.tool
+```
+
+**Note:** Dev Mode limits search to **10 results max**. Use specific queries (artist + song + album) for best results.
+
+### Method 2: Direct Spotify API
+
+For cases where you need more control (e.g., modifying existing playlists):
+
+```bash
+# Get fresh token — refresh via edge function first, then read from DB
+curl -s -X POST "https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/sonos-control" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -d '{"action":"spotify-status"}' > /dev/null
+
 SPOTIFY_TOKEN=$(curl -s -X POST \
   -H "Authorization: Bearer $MGMT_TOKEN" \
   -H "Content-Type: application/json" \
@@ -60,53 +96,27 @@ curl -s -X POST "https://api.spotify.com/v1/me/playlists" \
   -H "Content-Type: application/json" \
   -d '{"name":"My Playlist","description":"...","public":true}'
 
-# Add tracks (use /items not /tracks — Feb 2026 API change)
+# Add tracks — MUST use /items (not /tracks, renamed Feb 2026)
 curl -s -X POST "https://api.spotify.com/v1/playlists/{playlist_id}/items" \
   -H "Authorization: Bearer $SPOTIFY_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"uris":["spotify:track:XXXXX"]}'
+  -d '{"uris":["spotify:track:XXXXX","spotify:track:YYYYY"]}'
+
+# Delete a playlist (unfollow)
+curl -s -X DELETE "https://api.spotify.com/v1/playlists/{playlist_id}/followers" \
+  -H "Authorization: Bearer $SPOTIFY_TOKEN"
 ```
 
-### Method 3: Search + Bulk Add via UI (workaround for Dev Mode)
+## Workflow: Bulk Playlist Creation (proven recipe)
 
-When the API can't add tracks, use search to find URIs, then paste them into the Spotify desktop app:
+This is the exact workflow used to create the Reckoning Show playlists (36 tracks each):
 
-```bash
-# Search for a track
-curl -s -X POST "https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/sonos-control" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-  -d '{"action":"spotify-search","query":"Dire Wolf Grateful Dead Reckoning","type":"track"}'
-```
+1. **Search for tracks** — use `spotify-search` action via edge function. Search one song at a time, pick the best URI from results.
+2. **Collect URIs** — gather all `spotify:track:` URIs into an array.
+3. **Create playlist** — single `spotify-create-playlist` call with all URIs. The edge function handles batching (100 tracks per API call).
+4. **Verify** — check the response's `track_count` matches your input array length.
 
-Then in the Spotify desktop app: right-click a song → "Add to Playlist" → select your playlist.
-
-**Bulk shortcut:** In the Spotify desktop app, you can paste Spotify URIs directly into a playlist. Copy a URI like `spotify:track:7rLRoUv0PMTcHz0lOfpnti` and Cmd+V into the playlist view.
-
-### Method 4: spotipy (Python, for scripting)
-
-```bash
-pip install spotipy
-```
-
-```python
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
-
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-    client_id="YOUR_CLIENT_ID",
-    client_secret="YOUR_CLIENT_SECRET",
-    redirect_uri="https://alpacaplayhouse.com/auth/spotify/callback.html",
-    scope="playlist-modify-public playlist-modify-private"
-))
-
-# Create and populate in one go
-playlist = sp.user_playlist_create(sp.me()['id'], "My Playlist", public=True)
-track_uris = ["spotify:track:XXXXX", ...]
-sp.playlist_add_items(playlist['id'], track_uris)
-```
-
-Note: spotipy is subject to the same Dev Mode restrictions as direct API calls.
+**Gotcha:** The edge function silently logs (but doesn't fail) if individual track batches error. Always verify `track_count` in the response.
 
 ## Available Edge Function Actions
 
@@ -115,8 +125,10 @@ Note: spotipy is subject to the same Dev Mode restrictions as direct API calls.
 | `spotify-auth-url` | Yes | Returns Spotify OAuth URL for user to authorize |
 | `spotify-exchange-code` | Yes | Exchanges OAuth code for tokens, stores in DB |
 | `spotify-status` | Yes | Returns connection status + user info |
-| `spotify-create-playlist` | Yes | Creates playlist, adds tracks (if permitted) |
-| `spotify-search` | No | Searches Spotify catalog (uses client credentials) |
+| `spotify-create-playlist` | Yes | Creates playlist + adds tracks in one call |
+| `spotify-search` | No | Searches Spotify catalog (requires user JWT) |
+
+**Auth bypass** means the action works with just the Supabase anon key — no user JWT session needed. This is critical for CLI/scripting use.
 
 ## Token Refresh Flow
 
@@ -124,38 +136,49 @@ Note: spotipy is subject to the same Dev Mode restrictions as direct API calls.
 2. POSTs to `https://accounts.spotify.com/api/token` with `grant_type=refresh_token`
 3. Spotify returns new `access_token` (and optionally new `refresh_token`)
 4. Both are saved back to `spotify_config`
-5. Access tokens expire after 1 hour; refresh tokens are long-lived
+5. Access tokens expire after **1 hour**; refresh tokens are long-lived
 
-## February 2026 API Changes (IMPORTANT)
+## February 2026 API Changes (CRITICAL)
 
-Spotify renamed several endpoints in Feb 2026. Key change for playlists:
+Spotify renamed several endpoints in Feb 2026. **Using old endpoints returns 403.**
 
-| Old endpoint | New endpoint |
-|-------------|-------------|
+| Old endpoint (BROKEN) | New endpoint (USE THIS) |
+|----------------------|------------------------|
 | `POST /playlists/{id}/tracks` | `POST /playlists/{id}/items` |
 | `GET /playlists/{id}/tracks` | `GET /playlists/{id}/items` |
 | `DELETE /playlists/{id}/tracks` | `DELETE /playlists/{id}/items` |
+| `GET /playlists/{id}` → `tracks` field | Now returns `items` field |
 
-Other changes: search limit reduced to 10, batch endpoints removed, `popularity`/`followers` fields removed. See [migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide).
+Other changes:
+- Search limit reduced from 50 to **10 results max**
+- Batch endpoints removed (`GET /tracks`, `/albums`, `/artists`)
+- `popularity`, `followers`, `external_ids` fields removed
+- `GET /users/{id}` removed — use `GET /me` instead
+- Playlist creation: use `POST /me/playlists` (not `/users/{id}/playlists`)
+
+See [migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide).
 
 ## Dev Mode Limits
 
-| Feature | Dev Mode |
-|---------|----------|
+| Feature | Works in Dev Mode? |
+|---------|--------------------|
 | Search tracks | Yes (max 10 results) |
-| Get user profile | Yes |
-| Create playlists | Yes |
-| Add items to playlists | Yes (via `/items` endpoint) |
-| Max users | 25 |
-| Batch endpoints | Removed |
+| Get user profile (`/me`) | Yes |
+| Create playlists (`/me/playlists`) | Yes |
+| Add items to playlists (`/items`) | Yes |
+| Delete/unfollow playlists | Yes |
+| Max registered users | 25 |
+| Batch endpoints | Removed entirely |
+
+**Dev Mode is sufficient** for our use case. Extended Quota Mode is only needed for >25 users or removed batch endpoints.
 
 ## Credentials
 
-All stored in Bitwarden item **"Spotify — AlpacApps"**:
-- `Client ID`
-- `Client Secret`
-
-OAuth tokens stored in Supabase `spotify_config` table (auto-refreshed by edge function).
+| Item | Location |
+|------|----------|
+| Client ID, Client Secret | Bitwarden: **"Spotify — AlpacApps"** |
+| OAuth tokens | Supabase `spotify_config` table (auto-refreshed) |
+| Supabase Anon Key | Bitwarden: **"Supabase — Dashboard"** → `Anon Key` field |
 
 ## Key Files
 
@@ -165,3 +188,10 @@ OAuth tokens stored in Supabase `spotify_config` table (auto-refreshed by edge f
 | `residents/sonos.html` | UI with Spotify search + connect button |
 | `residents/sonos.js` | Client-side Spotify functions |
 | `auth/spotify/callback.html` | OAuth callback page |
+
+## Playlists Created
+
+| Playlist | ID | Tracks |
+|----------|-----|--------|
+| Gillian Welch and Dave Rawlings Reckoning Show Songs | `4ORErLxPFoX06n75HdmOSy` | 36 (GD originals, Reckoning album bias) |
+| Reckoning Show Songs — Cover Versions | `7MQ3uhiq5UQTYyFpDLwEaS` | 36 (cover artists, tribute bands, original songwriters) |
