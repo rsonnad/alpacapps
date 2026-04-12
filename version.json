@@ -1,12 +1,12 @@
 {
-  "version": "v260411.06 7:19p",
-  "release": 1321,
-  "sha": "709fd6f22",
-  "fullSha": "709fd6f222f9f032fc2945d973265d13de509067",
+  "version": "v260411.07 9:12p",
+  "release": 1322,
+  "sha": "8566823e1",
+  "fullSha": "8566823e11afaa4d95761322f596d130d8fb1c9e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-12T00:19:18+00:00",
-  "commits": [{"sha":"709fd6f22","message":"Add delete and mark-as-paid actions to payments page","author":"Rahul"}]
+  "pushedAt": "2026-04-12T02:12:15+00:00",
+  "commits": [{"sha":"5db1f64f1","message":"Redesign payments page: full-width rows with expand/collapse","author":"Rahul"},{"sha":"c76432216","message":"Add delete and mark-as-paid actions to payments page","author":"Rahul"},{"sha":"ee1effff8","message":"Change delete to soft-hide with is_hidden flag on time_entries","author":"Rahul"},{"sha":"8566823e1","message":"Merge branch 'confident-meitner'","author":"Rahul"}]
 }
