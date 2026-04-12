@@ -1,12 +1,12 @@
 {
-  "version": "v260412.04 5:47p",
-  "release": 1327,
-  "sha": "637e8046c",
-  "fullSha": "637e8046c0b487ac943b068de55c58505bc22dc8",
+  "version": "v260412.05 6:13p",
+  "release": 1328,
+  "sha": "8e3a00dae",
+  "fullSha": "8e3a00dae05a428ab8d098b0e8808a79cb9cd501",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-12T22:47:57+00:00",
-  "commits": [{"sha":"637e8046c","message":"Update vehicle owners/drivers and email both owner + drivers on low battery","author":"Rahul"}]
+  "pushedAt": "2026-04-12T23:13:42+00:00",
+  "commits": [{"sha":"8e3a00dae","message":"Add vehicle snapshot history page with daily table view","author":"Rahul"}]
 }
