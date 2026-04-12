@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <link rel="preconnect" href="https://aphrrfprbixmhissnjfn.supabase.co">
-  <title>Vehicles - AlpacAPPs Residents</title>
+  <title>Vehicle History - AlpacAPPs Residents</title>
   <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
@@ -13,16 +13,13 @@
   <link rel="stylesheet" href="../spaces/admin/styles.css?v=5">
   <link rel="stylesheet" href="../spaces/admin/manage-shared.css?v=5">
   <link rel="stylesheet" href="residents.css?v=5">
-  <link rel="stylesheet" href="/vendor/leaflet-1.9.4.css">
   <script type="module" src="../shared/version-info.js"></script>
   <link rel="stylesheet" href="../styles/site.css">
   <link rel="stylesheet" href="../styles/tailwind.out.css">
 </head>
 <body>
-  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <!-- Loading overlay -->
   <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-overlay__logo">
       <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
@@ -31,10 +28,8 @@
     <div class="spinner spinner--sm"></div>
   </div>
 
-  <!-- Access denied (populated by JS) -->
   <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
 
-  <!-- Main app content -->
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
@@ -45,49 +40,44 @@
       <a href="/spaces/admin/" class="context-switcher-btn">Staff</a>
     </div>
 
-    <!-- Tab Navigation -->
     <div class="manage-tabs" id="tabNav"></div>
 
-    <!-- Main Content -->
     <main class="manage-content cars-page">
-
-      <!-- Fleet Section -->
-      <section class="section" id="fleetSection">
-        <div class="section-header" style="display:flex;align-items:center;gap:1rem;">
-          <h2>Vehicles</h2>
-          <a href="car-history.html" style="font-size:0.8rem;color:var(--accent);text-decoration:none;margin-left:auto;">View History &rarr;</a>
+      <section class="section">
+        <div class="section-header" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <h2>Vehicle History</h2>
+          <a href="cars.html" style="font-size:0.85rem;color:var(--accent);text-decoration:none;">&larr; Back to Vehicles</a>
         </div>
         <div class="section-body">
-          <div id="addVehicleCta" style="display:none;margin-bottom:1rem;">
-            <a href="profile.html#vehicles" style="font-size:0.9rem;color:var(--accent);">+ Add your vehicle to your profile</a>
+          <!-- Controls -->
+          <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;margin-bottom:1.5rem;">
+            <select id="vehicleSelect" style="padding:0.5rem 0.75rem;border:1px solid var(--border,#ddd);border-radius:8px;font-size:0.9rem;background:var(--card-bg,#fff);">
+              <option value="">All vehicles</option>
+            </select>
+            <input type="date" id="dateSelect" style="padding:0.5rem 0.75rem;border:1px solid var(--border,#ddd);border-radius:8px;font-size:0.9rem;background:var(--card-bg,#fff);">
+            <button id="loadBtn" style="padding:0.5rem 1rem;border:none;border-radius:8px;background:var(--accent,#d4883a);color:#fff;font-size:0.9rem;cursor:pointer;">Load</button>
+            <span id="resultCount" style="font-size:0.8rem;color:var(--text-muted);"></span>
           </div>
-          <div class="car-grid" id="carGrid">
-            <!-- Rendered by cars.js -->
+
+          <!-- Table -->
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+            <table id="historyTable" style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+              <thead>
+                <tr id="tableHead" style="background:var(--card-bg,#fff);border-bottom:2px solid var(--border,#ddd);"></tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <div id="emptyState" style="display:none;text-align:center;padding:3rem 1rem;color:var(--text-muted);">
+            No snapshot data yet. Data is recorded every 30 minutes when vehicles are online.
           </div>
         </div>
       </section>
-
-      <!-- Vehicle Connectivity -->
-      <section class="section" id="teslaSettingsSection" style="display:none;">
-        <div class="section-header">
-          <h2>Vehicle Connectivity</h2>
-        </div>
-        <div class="section-body">
-          <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:1rem;">
-            Connect your Tesla account to enable live vehicle data, lock/unlock, and charging management.
-          </p>
-          <div id="teslaAccountsList"></div>
-        </div>
-      </section>
-
     </main>
   </div>
 
-  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
   <script src="../shared/instant-chrome.js"></script>
-
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
-  <script src="/vendor/leaflet-1.9.4.js"></script>
-  <script type="module" src="cars.js"></script>
+  <script type="module" src="car-history.js"></script>
 </body>
 </html>
