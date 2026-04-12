@@ -30,13 +30,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch active vehicles with owner info
+    // Fetch active vehicles with owner + drivers info
     const { data: vehicles, error: vErr } = await supabase
       .from('vehicles')
       .select(`
         id, name, make, model, year, color,
         owner_id, last_state, last_synced_at, vehicle_state,
-        owner:owner_id ( id, first_name, last_name, email )
+        owner:owner_id ( id, first_name, last_name, email ),
+        vehicle_drivers ( person:person_id ( id, first_name, last_name, email ) )
       `)
       .eq('is_active', true)
       .not('last_state', 'is', null);
@@ -60,11 +61,17 @@ Deno.serve(async (req) => {
     for (const vehicle of vehicles) {
       const state = vehicle.last_state as Record<string, unknown> | null;
       const owner = vehicle.owner as { id: string; first_name: string; last_name: string; email: string } | null;
+      const drivers = ((vehicle as any).vehicle_drivers || [])
+        .map((vd: any) => vd.person as { id: string; first_name: string; last_name: string; email: string } | null)
+        .filter((p: any) => p?.email && p.id !== owner?.id);
 
       if (!state || !owner?.email) {
         skipped++;
         continue;
       }
+
+      // Collect all recipients (owner + drivers)
+      const allRecipients = [owner.email, ...drivers.map((d: any) => d.email)];
 
       const batteryLevel = state.battery_level as number | null;
       const chargingState = state.charging_state as string | null;
@@ -168,7 +175,7 @@ This is an automated nightly check. You will only receive this email when your v
           },
           body: JSON.stringify({
             from: SENDER_MAP.auto.from,
-            to: [owner.email],
+            to: allRecipients,
             reply_to: SENDER_MAP.auto.reply_to,
             subject: `${vehicle.name} is at ${batteryLevel}% battery - plug in tonight?`,
             html: finalHtml,
