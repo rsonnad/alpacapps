@@ -57,6 +57,7 @@ async function loadAssociatesAndEntries() {
     .from('time_entries')
     .select('*, associate:associate_id(id, app_user_id, hourly_rate, stripe_connect_account_id, app_user:app_user_id(display_name, first_name, last_name))')
     .eq('is_paid', false)
+    .eq('is_hidden', false)
     .not('clock_out', 'is', null)
     .order('clock_in', { ascending: true });
 
@@ -219,7 +220,7 @@ function renderAssociateCards() {
           <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${desc.replace(/"/g, '&quot;')}">${desc}</td>
           <td class="row-actions">
             <button class="btn-icon btn-mark-paid-single" data-entry-id="${e.id}" title="Mark as paid (no Stripe)">&#10003;</button>
-            <button class="btn-icon btn-delete-entry" data-entry-id="${e.id}" title="Delete entry">&times;</button>
+            <button class="btn-icon btn-hide-entry" data-entry-id="${e.id}" title="Hide entry">&times;</button>
           </td>
         </tr>`;
       }
@@ -230,9 +231,9 @@ function renderAssociateCards() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             Mark Selected as Paid
           </button>
-          <button class="btn-delete-selected" data-delete-assoc="${assoc.id}">
+          <button class="btn-hide-selected" data-hide-assoc="${assoc.id}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-            Delete Selected
+            Hide Selected
           </button>
           <button class="btn-pay" data-pay-assoc="${assoc.id}" ${!hasConnect ? 'disabled title="Stripe Connect not set up"' : ''}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
@@ -299,7 +300,7 @@ function renderAssociateCards() {
   });
 
   // Wire up single delete buttons (x per row)
-  grid.querySelectorAll('.btn-delete-entry').forEach(btn => {
+  grid.querySelectorAll('.btn-hide-entry').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       deleteEntries([btn.dataset.entryId]);
@@ -318,10 +319,10 @@ function renderAssociateCards() {
   });
 
   // Wire up bulk delete
-  grid.querySelectorAll('[data-delete-assoc]').forEach(btn => {
+  grid.querySelectorAll('[data-hide-assoc]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const assocId = btn.dataset.deleteAssoc;
+      const assocId = btn.dataset.hideAssoc;
       const ids = getSelectedEntryIds(assocId);
       if (ids.length === 0) { showToast('No entries selected', 'error'); return; }
       deleteEntries(ids);
@@ -587,19 +588,33 @@ async function markEntriesAsPaid(entryIds) {
 }
 
 async function deleteEntries(entryIds) {
-  if (!confirm(`Delete ${entryIds.length} time entry/entries? This cannot be undone.`)) return;
-
   try {
     const { error } = await supabase
       .from('time_entries')
-      .delete()
+      .update({ is_hidden: true, updated_at: new Date().toISOString() })
       .in('id', entryIds);
 
     if (error) throw error;
-    showToast(`${entryIds.length} entry/entries deleted`, 'success');
+    showToast(`${entryIds.length} entry/entries hidden`, 'success');
     await loadAssociatesAndEntries();
   } catch (err) {
-    console.error('Delete error:', err);
+    console.error('Hide error:', err);
+    showToast(`Error: ${err.message}`, 'error');
+  }
+}
+
+async function unhideEntries(entryIds) {
+  try {
+    const { error } = await supabase
+      .from('time_entries')
+      .update({ is_hidden: false, updated_at: new Date().toISOString() })
+      .in('id', entryIds);
+
+    if (error) throw error;
+    showToast(`${entryIds.length} entry/entries restored`, 'success');
+    await loadAssociatesAndEntries();
+  } catch (err) {
+    console.error('Unhide error:', err);
     showToast(`Error: ${err.message}`, 'error');
   }
 }
