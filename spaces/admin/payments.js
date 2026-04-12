@@ -200,6 +200,7 @@ function renderAssociateCards() {
           <th>Hours</th>
           <th>Amount</th>
           <th>Description</th>
+          <th></th>
         </tr></thead><tbody>`;
 
       for (const e of entries) {
@@ -216,11 +217,23 @@ function renderAssociateCards() {
           <td>${hrs.toFixed(2)}h</td>
           <td>$${amt.toFixed(2)}</td>
           <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${desc.replace(/"/g, '&quot;')}">${desc}</td>
+          <td class="row-actions">
+            <button class="btn-icon btn-mark-paid-single" data-entry-id="${e.id}" title="Mark as paid (no Stripe)">&#10003;</button>
+            <button class="btn-icon btn-delete-entry" data-entry-id="${e.id}" title="Delete entry">&times;</button>
+          </td>
         </tr>`;
       }
 
       detailHtml += `</tbody></table>
         <div class="pay-row-actions">
+          <button class="btn-mark-paid-bulk" data-mark-assoc="${assoc.id}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Mark Selected as Paid
+          </button>
+          <button class="btn-delete-selected" data-delete-assoc="${assoc.id}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            Delete Selected
+          </button>
           <button class="btn-pay" data-pay-assoc="${assoc.id}" ${!hasConnect ? 'disabled title="Stripe Connect not set up"' : ''}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             Pay $${totalAmount.toFixed(2)} via Stripe
@@ -274,6 +287,44 @@ function renderAssociateCards() {
       grid.querySelectorAll(`[data-assoc-id="${assocId}"]`).forEach(ecb => {
         ecb.checked = cb.checked;
       });
+    });
+  });
+
+  // Wire up single mark-as-paid buttons (checkmark per row)
+  grid.querySelectorAll('.btn-mark-paid-single').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      markEntriesAsPaid([btn.dataset.entryId]);
+    });
+  });
+
+  // Wire up single delete buttons (x per row)
+  grid.querySelectorAll('.btn-delete-entry').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteEntries([btn.dataset.entryId]);
+    });
+  });
+
+  // Wire up bulk mark-as-paid
+  grid.querySelectorAll('[data-mark-assoc]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const assocId = btn.dataset.markAssoc;
+      const ids = getSelectedEntryIds(assocId);
+      if (ids.length === 0) { showToast('No entries selected', 'error'); return; }
+      markEntriesAsPaid(ids);
+    });
+  });
+
+  // Wire up bulk delete
+  grid.querySelectorAll('[data-delete-assoc]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const assocId = btn.dataset.deleteAssoc;
+      const ids = getSelectedEntryIds(assocId);
+      if (ids.length === 0) { showToast('No entries selected', 'error'); return; }
+      deleteEntries(ids);
     });
   });
 
@@ -503,6 +554,54 @@ async function payAll() {
   if (failCount > 0) showToast(`${failCount} payment(s) failed`, 'error');
 
   await loadAll();
+}
+
+// =============================================
+// ENTRY ACTIONS
+// =============================================
+function getSelectedEntryIds(assocId) {
+  const grid = document.getElementById('associateGrid');
+  const ids = [];
+  grid.querySelectorAll(`[data-assoc-id="${assocId}"]:checked`).forEach(cb => {
+    ids.push(cb.dataset.entryId);
+  });
+  return ids;
+}
+
+async function markEntriesAsPaid(entryIds) {
+  if (!confirm(`Mark ${entryIds.length} entry/entries as paid (without sending a Stripe payment)?`)) return;
+
+  try {
+    const { error } = await supabase
+      .from('time_entries')
+      .update({ is_paid: true, updated_at: new Date().toISOString() })
+      .in('id', entryIds);
+
+    if (error) throw error;
+    showToast(`${entryIds.length} entry/entries marked as paid`, 'success');
+    await loadAssociatesAndEntries();
+  } catch (err) {
+    console.error('Mark paid error:', err);
+    showToast(`Error: ${err.message}`, 'error');
+  }
+}
+
+async function deleteEntries(entryIds) {
+  if (!confirm(`Delete ${entryIds.length} time entry/entries? This cannot be undone.`)) return;
+
+  try {
+    const { error } = await supabase
+      .from('time_entries')
+      .delete()
+      .in('id', entryIds);
+
+    if (error) throw error;
+    showToast(`${entryIds.length} entry/entries deleted`, 'success');
+    await loadAssociatesAndEntries();
+  } catch (err) {
+    console.error('Delete error:', err);
+    showToast(`Error: ${err.message}`, 'error');
+  }
 }
 
 // =============================================
