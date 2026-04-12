@@ -21,7 +21,8 @@ import { createClient } from '@supabase/supabase-js';
 // ============================================
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '300000'); // 5 min
+const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '600000'); // 10 min
+const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '1800000'); // 30 min
 const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '2000'); // 2s between API calls
 
 const TESLA_TOKEN_URL = 'https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token';
@@ -329,6 +330,72 @@ function parseVehicleState(data) {
 }
 
 // ============================================
+// Snapshot logging (every 30 min per vehicle)
+// ============================================
+const lastSnapshotTime = new Map(); // vehicleId -> timestamp
+
+function shouldTakeSnapshot(vehicleId) {
+  const last = lastSnapshotTime.get(vehicleId);
+  if (!last) return true;
+  return Date.now() - last >= SNAPSHOT_INTERVAL_MS;
+}
+
+async function insertSnapshot(vehicleId, vehicleState, state) {
+  // Compute open doors/windows arrays
+  const doorsOpen = [];
+  if (state.df) doorsOpen.push('driver_front');
+  if (state.pf) doorsOpen.push('passenger_front');
+  if (state.dr) doorsOpen.push('driver_rear');
+  if (state.pr) doorsOpen.push('passenger_rear');
+  if (state.ft) doorsOpen.push('frunk');
+  if (state.rt) doorsOpen.push('trunk');
+
+  const windowsOpen = [];
+  if (state.fd_window) windowsOpen.push('driver_front');
+  if (state.fp_window) windowsOpen.push('passenger_front');
+  if (state.rd_window) windowsOpen.push('driver_rear');
+  if (state.rp_window) windowsOpen.push('passenger_rear');
+
+  const { error } = await supabase
+    .from('tesla_vehicle_snapshots')
+    .insert({
+      vehicle_id: vehicleId,
+      vehicle_state: vehicleState,
+      battery_level: state.battery_level,
+      battery_range_mi: state.battery_range_mi,
+      charging_state: state.charging_state,
+      charge_limit_soc: state.charge_limit_soc,
+      charge_rate_mph: state.charge_rate_mph,
+      charger_power_kw: state.charger_power_kw,
+      odometer_mi: state.odometer_mi,
+      inside_temp_f: state.inside_temp_f,
+      outside_temp_f: state.outside_temp_f,
+      climate_on: state.climate_on,
+      locked: state.locked,
+      sentry_mode: state.sentry_mode,
+      latitude: state.latitude,
+      longitude: state.longitude,
+      speed_mph: state.speed_mph,
+      heading: state.heading,
+      software_version: state.software_version,
+      tpms_fl_psi: state.tpms_fl_psi,
+      tpms_fr_psi: state.tpms_fr_psi,
+      tpms_rl_psi: state.tpms_rl_psi,
+      tpms_rr_psi: state.tpms_rr_psi,
+      doors_open: doorsOpen.length ? doorsOpen : null,
+      windows_open: windowsOpen.length ? windowsOpen : null,
+      full_state: state,
+    });
+
+  if (error) {
+    log('error', 'Snapshot insert failed', { vehicleId, error: error.message });
+  } else {
+    lastSnapshotTime.set(vehicleId, Date.now());
+    log('info', 'Snapshot recorded', { vehicleId, battery: state.battery_level });
+  }
+}
+
+// ============================================
 // Poll a single account
 // ============================================
 async function pollAccount(account) {
@@ -531,6 +598,11 @@ async function pollAccount(account) {
         battery: state.battery_level,
         state: 'online',
       });
+
+      // Log snapshot every 30 minutes
+      if (shouldTakeSnapshot(dbVehicle.id)) {
+        await insertSnapshot(dbVehicle.id, 'online', state);
+      }
     } catch (err) {
       log('error', 'Vehicle data fetch failed', {
         name: dbVehicle.name,
@@ -609,6 +681,7 @@ async function pollAllAccounts() {
 async function main() {
   log('info', 'Tesla poller starting', {
     pollInterval: `${POLL_INTERVAL_MS / 1000}s`,
+    snapshotInterval: `${SNAPSHOT_INTERVAL_MS / 1000}s`,
     apiDelay: `${API_DELAY_MS}ms`,
     defaultApiBase: DEFAULT_FLEET_API_BASE,
     tokenUrl: TESLA_TOKEN_URL,
