@@ -2,7 +2,7 @@
  * Spaces - Admin page for managing spaces
  */
 
-import { supabase } from '../../shared/supabase.js';
+import { supabase, SUPABASE_URL } from '../../shared/supabase.js';
 import { mediaService } from '../../shared/media-service.js';
 import {
   formatDateAustin,
@@ -868,10 +868,16 @@ function showSpaceDetail(spaceId) {
     : space.name;
   document.getElementById('detailSpaceName').innerHTML = headerHtml;
 
-  const headerButtonsHtml = isAdmin ? `
-    <button class="btn-primary" onclick="openEditSpace('${space.id}'); document.getElementById('spaceDetailModal').classList.add('hidden');">Edit Space</button>
-    <button class="btn-secondary" onclick="openPhotoUpload('${space.id}', '${space.name.replace(/'/g, "\\'")}'); document.getElementById('spaceDetailModal').classList.add('hidden');">Add Images</button>
-  ` : '';
+  const shareUrl = space.slug
+    ? `${SUPABASE_URL}/functions/v1/share-space?space=${encodeURIComponent(space.slug)}`
+    : `https://alpacaplayhouse.com/spaces/?id=${space.id}`;
+  const headerButtonsHtml = `
+    <button class="btn-secondary" onclick="copyShareLink(this, '${shareUrl.replace(/'/g, "\\'")}')" title="Copy share link">🔗 Share</button>
+    ${isAdmin ? `
+      <button class="btn-primary" onclick="openEditSpace('${space.id}'); document.getElementById('spaceDetailModal').classList.add('hidden');">Edit Space</button>
+      <button class="btn-secondary" onclick="openPhotoUpload('${space.id}', '${space.name.replace(/'/g, "\\'")}'); document.getElementById('spaceDetailModal').classList.add('hidden');">Add Images</button>
+    ` : ''}
+  `;
   document.getElementById('detailHeaderButtons').innerHTML = headerButtonsHtml;
 
   const isOccupied = !!space.currentAssignment;
@@ -2130,6 +2136,16 @@ async function deleteMedia() {
 // =============================================
 // GLOBAL FUNCTION EXPORTS
 // =============================================
+window.copyShareLink = async function(btn, url) {
+  try {
+    await navigator.clipboard.writeText(url);
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  } catch (e) {
+    showToast('Failed to copy link', 'error');
+  }
+};
 window.showSpaceDetail = showSpaceDetail;
 window.openEditSpace = openEditSpace;
 window.openPhotoUpload = openPhotoUpload;
