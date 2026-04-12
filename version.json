@@ -1,12 +1,12 @@
 {
-  "version": "v260412.02 3:21p",
-  "release": 1325,
-  "sha": "8785c9887",
-  "fullSha": "8785c98875c2b6f23de005544fa6bcd4a56ed02f",
+  "version": "v260412.03 5:42p",
+  "release": 1326,
+  "sha": "44305072c",
+  "fullSha": "44305072ce53544fc45e5b0d5c26c78e63335421",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-12T20:21:43+00:00",
-  "commits": [{"sha":"8785c9887","message":"Fix share button: use public URL + match icon style from public view","author":"Rahul"}]
+  "pushedAt": "2026-04-12T22:42:25+00:00",
+  "commits": [{"sha":"44305072c","message":"Add Tesla vehicle snapshots table, 30-min logging, and nightly low-battery email","author":"Rahul"}]
 }
