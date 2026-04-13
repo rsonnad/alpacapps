@@ -1,5 +1,7 @@
 # AlpacApps — Project Directives
 
+Codex will review your output once you are done.
+
 > **On-demand docs — load when the task matches:**
 > - `spaces/admin/devcontrol/devdocs/CREDENTIALS.md` — **load for:** SQL queries, deploying functions, SSH, API calls
 > - `spaces/admin/devcontrol/devdocs/SCHEMA.md` — **load for:** writing queries, modifying tables, debugging data
