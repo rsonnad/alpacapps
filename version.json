@@ -1,12 +1,12 @@
 {
-  "version": "v260412.07 6:23p",
-  "release": 1330,
-  "sha": "fedd281c9",
-  "fullSha": "fedd281c94116887aad2e1ac9f9ad5fde72196aa",
+  "version": "v260412.08 10:13p",
+  "release": 1331,
+  "sha": "9f8eb38bb",
+  "fullSha": "9f8eb38bb209bd3d0343413b7788fc77902f5319",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-12T23:23:15+00:00",
-  "commits": [{"sha":"fedd281c9","message":"Add clipboard-checkmarks icon for Test Suite tab","author":"Rahul"}]
+  "pushedAt": "2026-04-13T03:13:05+00:00",
+  "commits": [{"sha":"6867f3ac4","message":"feat: add quick photo upload buttons above task list on Tasks tab","author":"Claude"},{"sha":"4fddbec3d","message":"feat: add Photo AI tab — snap photos, analyze with Gemini, route through PAI","author":"Claude"},{"sha":"774be7c8d","message":"fix: include associates/ dir in mobile Capacitor build","author":"Claude"},{"sha":"9f8eb38bb","message":"feat: add visible email field to Photo AI tab","author":"Claude"}]
 }
