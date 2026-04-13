@@ -1,12 +1,12 @@
 {
-  "version": "v260412.08 10:13p",
-  "release": 1331,
-  "sha": "9f8eb38bb",
-  "fullSha": "9f8eb38bb209bd3d0343413b7788fc77902f5319",
+  "version": "v260413.01 12:57a",
+  "release": 1332,
+  "sha": "5d9270708",
+  "fullSha": "5d92707089b1da59561f4194434d90e7c611b412",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-13T03:13:05+00:00",
-  "commits": [{"sha":"6867f3ac4","message":"feat: add quick photo upload buttons above task list on Tasks tab","author":"Claude"},{"sha":"4fddbec3d","message":"feat: add Photo AI tab — snap photos, analyze with Gemini, route through PAI","author":"Claude"},{"sha":"774be7c8d","message":"fix: include associates/ dir in mobile Capacitor build","author":"Claude"},{"sha":"9f8eb38bb","message":"feat: add visible email field to Photo AI tab","author":"Claude"}]
+  "pushedAt": "2026-04-13T05:57:53+00:00",
+  "commits": [{"sha":"291851a75","message":"security: add .env* patterns to .gitignore","author":"Rahul"},{"sha":"5d9270708","message":"Merge pull request #120 from rsonnad/relaxed-swartz","author":"Rahul"}]
 }
