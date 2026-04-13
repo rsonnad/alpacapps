@@ -1437,6 +1437,27 @@ tr:last-child td {
   line-height: 1.6;
 }
 
+.aggregated-summary {
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.aggregated-summary p {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.child-room-details {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: -0.25rem 0 0.75rem 0;
+}
+
 .detail-section.detail-photos {
   background: none;
   padding: 0;

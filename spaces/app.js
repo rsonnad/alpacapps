@@ -745,7 +745,8 @@ function displaySpaceDetail(space) {
   console.log('Ancestor sections:', ancestorPhotoSections.map(s => s.name));
 
   // Find child spaces (spaces whose parent is this space)
-  const childSpaces = spaces.filter(s => s.parent?.name === space.name && s.photos && s.photos.length > 0);
+  const allChildSpaces = spaces.filter(s => s.parent?.name === space.name);
+  const childSpaces = allChildSpaces.filter(s => s.photos && s.photos.length > 0);
   console.log('Child spaces with photos:', childSpaces.map(s => s.name));
 
   // Combine all photos for lightbox gallery (space photos first, then children, then ancestors)
@@ -777,12 +778,23 @@ function displaySpaceDetail(space) {
     `;
   }
 
-  // Build child spaces photos HTML (each child gets its own section)
+  // Build child spaces photos HTML (each child gets its own section with room details)
   let childPhotosHtml = '';
   childSpaces.forEach(child => {
+    const childBeds = getBedSummary(child);
+    const childBath = (child.can_be_dwelling && ((child.bath_privacy && child.bath_privacy !== 'none') || child.bath_fixture))
+      ? `${(child.bath_privacy && child.bath_privacy !== 'none') ? child.bath_privacy : ''}${child.bath_fixture ? ` (${child.bath_fixture})` : ''}`
+      : '';
+    const childDetails = [
+      child.sq_footage ? `${child.sq_footage} sq ft` : '',
+      childBeds ? `Beds: ${childBeds}` : '',
+      childBath ? `Bath: ${childBath}` : '',
+    ].filter(Boolean);
+
     childPhotosHtml += `
       <div class="detail-section detail-photos">
-        <h3>${child.name} Photos</h3>
+        <h3>${child.name}</h3>
+        ${childDetails.length ? `<p class="child-room-details">${childDetails.join(' · ')}</p>` : ''}
         <div class="detail-photos-grid">
           ${child.photos.map(p => `
             <div class="detail-photo" onclick="openLightbox('${p.url}')" style="cursor: zoom-in;">
@@ -817,7 +829,32 @@ function displaySpaceDetail(space) {
   const availFromStr = space.isAvailable ? 'Now' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
   const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Ongoing';
 
+  // Build aggregated summary for parent spaces with children
+  let aggregatedSummaryHtml = '';
+  if (allChildSpaces.length > 0) {
+    const dwellingChildren = allChildSpaces.filter(c => c.can_be_dwelling);
+    const totalBedrooms = dwellingChildren.length;
+    const totalBeds = allChildSpaces.reduce((sum, c) =>
+      sum + (c.beds_king || 0) + (c.beds_queen || 0) + (c.beds_double || 0) + (c.beds_twin || 0) + (c.beds_folding || 0), 0);
+    const bathChildren = allChildSpaces.filter(c => c.bath_privacy && c.bath_privacy !== 'none');
+    const totalBaths = bathChildren.length;
+
+    const summaryParts = [];
+    if (totalBedrooms > 0) summaryParts.push(`${totalBedrooms} bedroom${totalBedrooms !== 1 ? 's' : ''}`);
+    if (totalBeds > 0) summaryParts.push(`${totalBeds} bed${totalBeds !== 1 ? 's' : ''}`);
+    if (totalBaths > 0) summaryParts.push(`${totalBaths} bath${totalBaths !== 1 ? 's' : ''}`);
+
+    if (summaryParts.length > 0) {
+      aggregatedSummaryHtml = `
+        <div class="detail-section detail-full-width aggregated-summary">
+          <p>${summaryParts.join(' · ')}</p>
+        </div>
+      `;
+    }
+  }
+
   document.getElementById('spaceDetailBody').innerHTML = `
+    ${aggregatedSummaryHtml}
     <div class="detail-grid">
       <div class="detail-section">
         <h3>Details</h3>
