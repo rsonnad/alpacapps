@@ -626,9 +626,21 @@ async function uploadMediaEntry(blob, type) {
 // =============================================
 // HAOS CONVERSATION AGENT
 // =============================================
-const HAOS_BASE_URL = 'http://192.168.1.39:8123';
-const HAOS_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxN2FlNmMyNTdhYWY0NGMxODBjZmMxOWU3ZDBiZWExMiIsImlhdCI6MTc3NDE1NTUzNSwiZXhwIjoyMDg5NTE1NTM1fQ.MdIZq95i9pJBKuKxn_aeyrK1O55JbMhsgtnM7GcTkXQ';
+let HAOS_BASE_URL = '';
+let HAOS_TOKEN = '';
 let haosConversationId = null;
+
+// Fetch HAOS config from Supabase at startup (no hardcoded token)
+async function loadHaosConfig() {
+  try {
+    const { data, error } = await supabase.rpc('get_kiosk_haos_config');
+    if (error) throw error;
+    HAOS_BASE_URL = data?.base_url || '';
+    HAOS_TOKEN = data?.token || '';
+  } catch (err) {
+    console.error('Failed to load HAOS config:', err);
+  }
+}
 let haosIsLoading = false;
 
 function openHaosChat() {
@@ -669,6 +681,10 @@ function removeHaosLoading() {
 
 async function sendHaosMessage(text) {
   if (!text.trim() || haosIsLoading) return;
+  if (!HAOS_BASE_URL || !HAOS_TOKEN) {
+    appendHaosMessage('Home Assistant is not configured yet. Please wait a moment and try again.', 'assistant');
+    return;
+  }
   haosIsLoading = true;
 
   const input = document.getElementById('haosInput');
@@ -1062,6 +1078,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load fact once (doesn't change during the day)
   loadFacts();
+
+  // Load HAOS config from DB (token not hardcoded)
+  loadHaosConfig();
 
   // Version check + auto-reload every 5 min
   checkVersion();
