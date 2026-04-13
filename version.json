@@ -1,12 +1,12 @@
 {
-  "version": "v260413.02 1:01a",
-  "release": 1333,
-  "sha": "23635bc5f",
-  "fullSha": "23635bc5f245b2a9fb21fa849226ca45ef4db3e5",
+  "version": "v260413.03 12:39p",
+  "release": 1334,
+  "sha": "086c085c4",
+  "fullSha": "086c085c4cf3845b6e6de040be7bdae35fab25bb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-13T06:01:47+00:00",
-  "commits": [{"sha":"297ea40a3","message":"security: remove hardcoded HAOS token from kiosk, fetch from DB","author":"Rahul"},{"sha":"23635bc5f","message":"Merge pull request #121 from rsonnad/relaxed-swartz","author":"Rahul"}]
+  "pushedAt": "2026-04-13T17:39:57+00:00",
+  "commits": [{"sha":"086c085c4","message":"feat: add aggregated room/bed/bath summary and per-room details to space modals (#122)","author":"Rahul"}]
 }
