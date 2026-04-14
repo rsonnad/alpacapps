@@ -161,13 +161,147 @@ echo 0 > /sys/devices/virtual/net/br0/bridge/multicast_snooping
 | UDP | 32768-65535 | Audio streaming |
 | UDP | 5353 | mDNS |
 
-### TODO: Add DHCP Reservations
+### DHCP Reservations (DONE — 2026-04-13)
 
-No Sonos speakers have static DHCP reservations. When speakers get new IPs during renewal,
-it can cause temporary grouping failures. Current WiZ bulb reservations exist (192.168.1.160-167)
-but zero Sonos reservations. Add these when speaker MACs/IPs are stable.
+All 14 Sonos speakers now have static DHCP reservations in the 192.168.1.170-183 range.
+Speakers will pick up new IPs on next DHCP renewal or after power cycle.
+
+| Speaker | Reserved IP | MAC |
+|---------|------------|-----|
+| Living Sound | 192.168.1.170 | 00:0e:58:ab:6e:c6 |
+| MasterBlaster | 192.168.1.171 | 00:0e:58:ae:51:9a |
+| Dining Sound | 192.168.1.172 | 00:0e:58:13:7a:8c |
+| DJ | 192.168.1.173 | 00:0e:58:a1:21:46 |
+| Outhouse | 192.168.1.174 | 00:0e:58:30:9a:48 |
+| Front Outside | 192.168.1.175 | 00:0e:58:20:07:ca |
+| SkyBalcony | 192.168.1.176 | 00:0e:58:24:46:d6 |
+| Skyloft Sound | 192.168.1.177 | 00:0e:58:a1:2a:1a |
+| Pequeno | 192.168.1.178 | b8:e9:37:a2:34:82 |
+| Backyard | 192.168.1.179 | b8:e9:37:92:72:fc |
+| SwimSpa | 192.168.1.180 | 00:0e:58:2d:67:9c |
+| saunaHiFi | 192.168.1.181 | b8:e9:37:93:cb:ec |
+| garage outdoors | 192.168.1.182 | 00:0e:58:10:d6:d6 |
+| Garage Bridge | 192.168.1.183 | 00:0e:58:21:e8:e0 |
+
+WiZ bulb reservations remain at 192.168.1.160-167.
 
 ## Troubleshooting History
+
+### 2026-04-13: Living Sound & Dining Sound cutting out from Spotify
+
+**Symptoms:** Music stops after playing directly from Spotify on Living Sound and Dining Sound. Multi-zone grouped playback unreliable.
+
+**Settings snapshot (BEFORE — pulled from API 2026-04-13):**
+
+WLAN: Black Rock City:
+
+| Setting | Value |
+|---------|-------|
+| mcastenhance_enabled | false |
+| bss_transition | true |
+| fast_roaming_enabled | false |
+| dtim_ng (2.4GHz) | 1 |
+| dtim_na (5GHz) | 3 |
+| l2_isolation | false |
+| proxy_arp | false |
+| uapsd_enabled | false |
+| group_rekey | 0 |
+| iapp_enabled | true |
+| wpa_mode | wpa2 |
+| wpa3_support / transition / pmf | false / false / disabled |
+| no2ghz_oui | true |
+| enhanced_iot | false |
+
+Network: Default:
+
+| Setting | Value |
+|---------|-------|
+| igmp_snooping | false |
+| mdns_enabled | true |
+| Sonos DHCP reservations | NONE |
+
+Switch: US8P60 Skyloft Closet:
+
+| Setting | Value |
+|---------|-------|
+| stp_priority | 8192 |
+| All ports stp_port_mode | edge |
+
+UDM Pro: port_overrides = [] (no custom config)
+
+AP 2.4GHz channels (all 20MHz width):
+
+| AP | Channel |
+|----|---------|
+| Living Room U6 | 1 |
+| Skyloft | 1 |
+| Garage Mahal | 1 |
+| Sauna Cabinet | 6 |
+| Outhouse | 6 |
+| Laundry Hall | 6 |
+| Spartan | 11 |
+| Doghouse | 11 |
+
+Kernel (UNKNOWN — SSH password changed, access denied):
+
+| Setting | Last known (2026-04-01) | Current |
+|---------|------------------------|---------|
+| multicast_snooping | 0 | UNKNOWN (resets on reboot) |
+| multicast_querier | 0 | UNKNOWN (resets on reboot) |
+
+**Analysis:** Three likely causes:
+1. Kernel multicast_snooping may have reset to 1 (ON) after a UDM reboot, while controller shows OFF — the exact mismatch that caused the April 1 outage
+2. SonosNet bridge conflict: Living Sound (wired) activates SonosNet mesh on 2.4GHz, interfering with WiFi-only Dining Sound when grouped
+3. No Sonos DHCP reservations — IP churn during renewal can break active groups
+
+**Planned fixes (pending SSH access):**
+1. Verify/fix kernel multicast_snooping=0 and multicast_querier=0
+2. Install persistent boot script at /data/on_boot.d/10-multicast-snooping-off.sh
+3. Add DHCP reservations for all 14 Sonos speakers
+4. Verify SonosNet channel doesn't overlap with nearby APs (check via speaker:1400/support/review)
+5. Confirm wired speakers (Living Sound, MasterBlaster, saunaHiFi) connect through US8P60, not UDM Pro ports 1-8
+
+**Root cause found — SonosNet channel 1 collision:**
+
+SonosNet topology dump (`http://<speaker>:1400/support/review`) revealed:
+- SonosNet home channel = **1 (2412 MHz)** for ALL speakers
+- UniFi APs on channel 1: Living Room U6, Skyloft, Garage Mahal
+- Living Sound and Dining Sound are both near the Living Room U6 AP
+- When Spotify streams to both, SonosNet mesh + UniFi WiFi fight on same frequency → packet loss → cutouts
+
+Speaker connection details (from diagnostics):
+
+| Speaker | Operating Ch | Noise Floor | Connection | Notes |
+|---------|-------------|-------------|------------|-------|
+| Living Sound | N/A (wired primary) | N/A | Wired 100FD | SonosNet root bridge |
+| Dining Sound | 1 | -96 dBm | Wired+WiFi | Has active ethernet! |
+| garage outdoors | 1 | -104 dBm | Wired+WiFi | Also has active ethernet |
+| MasterBlaster | 1 | -90 dBm | WiFi | |
+| DJ | 1 | -92 dBm | WiFi | |
+| SwimSpa | 11 | -92 dBm | WiFi | Only one on ch11 |
+| Backyard Sound | 1 | -91 dBm | WiFi | |
+
+**Fixes applied (2026-04-13):**
+
+| Fix | Method | Status |
+|-----|--------|--------|
+| Boot persistence script | `/data/on_boot.d/10-multicast-snooping-off.sh` on UDM Pro | DONE |
+| DHCP reservations for all 14 Sonos | MongoDB update to networkconf (.170-.183 range) | DONE |
+| Kernel multicast_snooping verified | SSH check: `multicast_snooping=0`, `multicast_querier=0` | CONFIRMED OK |
+
+**Remaining fixes (requires user action):**
+
+| Fix | How | Why |
+|-----|-----|-----|
+| **Change SonosNet to channel 11** | Sonos app → Settings → System → SonosNet Channel → 11 | Eliminates ch1 collision with 3 APs |
+| **OR: Go all-WiFi** | Unplug ethernet from Living Sound, Dining Sound, garage outdoors | Kills SonosNet entirely, no channel conflict |
+| Reboot all speakers after DHCP change | Power cycle speakers one by one | They'll pick up new static IPs (.170-.183) |
+
+**Recommendation:** Change SonosNet channel to 11 first. If cutouts persist, go all-WiFi (unplug all ethernet cables from Sonos speakers). The WiFi signal strength is good across all speakers (-42 to -54 dBm for most), so all-WiFi should be reliable.
+
+**SSH gotcha resolved:** SSH was failing because `sshpass` can't handle UDM Pro fw 5.0.16 `keyboard-interactive` auth. Must use `expect` instead. Recipe updated in `service-access.md`.
+
+---
 
 ### 2026-04-01: Full revert to pre-3/27 + kernel snooping fix
 
