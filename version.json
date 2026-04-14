@@ -1,12 +1,12 @@
 {
-  "version": "v260413.04 7:40p",
-  "release": 1335,
-  "sha": "bb79fc8a9",
-  "fullSha": "bb79fc8a9cc0070f455e9d3f60a18be180d1c813",
+  "version": "v260413.05 10:07p",
+  "release": 1336,
+  "sha": "a4285035c",
+  "fullSha": "a4285035ccc77dbe910549b727cc844e712808db",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-14T00:40:57+00:00",
-  "commits": [{"sha":"bb79fc8a9","message":"docs: Sonos multi-zone fix — DHCP reservations, boot script, channel conflict diagnosis","author":"Rahul"}]
+  "pushedAt": "2026-04-14T03:07:52+00:00",
+  "commits": [{"sha":"a4285035c","message":"add alpu.ca/kidsaudio shortlink → Google Drive","author":"Paca"}]
 }
