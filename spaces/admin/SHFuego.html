@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Safiyya Haider — Fuego Trailer | Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <link rel="stylesheet" href="../styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="manage-shared.css?v=1">
+  <link rel="stylesheet" href="../../styles/site.css">
+  <style>
+    /* SHFuego page styles — financial content uses sans-serif per PATTERNS.md */
+    .sh-page { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .sh-header { margin-bottom: 2rem; }
+    .sh-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem; color: var(--text, #2a1f23); }
+    .sh-header .sh-subtitle { font-size: 0.85rem; color: var(--text-muted, #7d6f74); }
+    .sh-back { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--text-muted); text-decoration: none; margin-bottom: 1rem; }
+    .sh-back:hover { color: var(--accent, #c8956c); }
+
+    /* Summary cards */
+    .sh-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .sh-card { background: var(--bg-card, #fff); border: 1px solid var(--border, #e6e2d9); border-radius: var(--radius, 8px); padding: 1rem 1.25rem; }
+    .sh-card-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 0.35rem; }
+    .sh-card-value { font-size: 1.5rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+    .sh-card-value.positive { color: #16a34a; }
+    .sh-card-value.negative { color: #dc2626; }
+    .sh-card-value.warning { color: #d97706; }
+    .sh-card-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    /* Lease info */
+    .sh-lease { background: var(--bg-card, #fff); border: 1px solid var(--border); border-radius: var(--radius, 8px); padding: 1.25rem; margin-bottom: 2rem; }
+    .sh-lease h2 { font-size: 1rem; font-weight: 700; margin: 0 0 0.75rem; }
+    .sh-lease-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2rem; font-size: 0.85rem; }
+    .sh-lease-row { display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
+    .sh-lease-row:last-child { border-bottom: none; }
+    .sh-lease-label { color: var(--text-muted); }
+    .sh-lease-val { font-weight: 600; color: var(--text); }
+    .sh-status-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .sh-status-badge.active { background: #dcfce7; color: #16a34a; }
+    .sh-status-badge.ended { background: #fee2e2; color: #dc2626; }
+
+    /* Month breakdown table */
+    .sh-months { background: var(--bg-card, #fff); border: 1px solid var(--border); border-radius: var(--radius, 8px); padding: 1.25rem; margin-bottom: 2rem; }
+    .sh-months h2 { font-size: 1rem; font-weight: 700; margin: 0 0 0.75rem; }
+    .sh-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .sh-table th { text-align: left; padding: 0.5rem 0.75rem; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    .sh-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .sh-table tbody tr:hover { background: var(--bg, #f6f5f0); }
+    .sh-table .amt { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+    .sh-table .amt.paid { color: #16a34a; }
+    .sh-table .amt.owed { color: #dc2626; }
+    .sh-table .amt.zero { color: var(--text-muted); }
+    .sh-table th.right { text-align: right; }
+    .sh-badge-paid { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 999px; font-size: 0.65rem; font-weight: 600; background: #dcfce7; color: #16a34a; }
+    .sh-badge-unpaid { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 999px; font-size: 0.65rem; font-weight: 600; background: #fee2e2; color: #dc2626; }
+    .sh-badge-partial { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 999px; font-size: 0.65rem; font-weight: 600; background: #fef3c7; color: #d97706; }
+    .sh-badge-future { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 999px; font-size: 0.65rem; font-weight: 600; background: var(--bg, #f6f5f0); color: var(--text-muted); }
+
+    /* Transactions */
+    .sh-tx { background: var(--bg-card, #fff); border: 1px solid var(--border); border-radius: var(--radius, 8px); padding: 1.25rem; margin-bottom: 2rem; }
+    .sh-tx h2 { font-size: 1rem; font-weight: 700; margin: 0 0 0.75rem; }
+    .sh-empty { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
+
+    /* Footer */
+    .sh-footer { text-align: center; font-size: 0.72rem; color: var(--text-muted); padding: 1rem 0; }
+
+    @media (max-width: 600px) {
+      .sh-lease-grid { grid-template-columns: 1fr; }
+      .sh-summary { grid-template-columns: 1fr 1fr; }
+      .sh-table { font-size: 0.78rem; }
+      .sh-table th, .sh-table td { padding: 0.4rem 0.5rem; }
+    }
+  </style>
+  <script type="module" src="../../shared/version-info.js"></script>
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay__logo">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 28%22%3E%3Ctext x=%220%22 y=%2220%22 font-size=%2216%22 font-family=%22Arial,sans-serif%22 fill=%22%231f1720%22%3EAlpaca%3C/text%3E%3C/svg%3E'">
+    </div>
+    <div class="spinner spinner--sm"></div>
+  </div>
+
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
+
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <div class="manage-tabs"></div>
+
+    <div class="sh-page">
+      <a href="accounting.html" class="sh-back">&larr; Back to Accounting</a>
+
+      <div class="sh-header">
+        <h1 id="tenantName">Loading...</h1>
+        <div class="sh-subtitle" id="tenantSubtitle"></div>
+      </div>
+
+      <div class="sh-summary" id="summaryCards">
+        <div class="sh-card"><div class="sh-card-label">Loading</div><div class="sh-card-value">...</div></div>
+      </div>
+
+      <div class="sh-lease" id="leaseInfo">
+        <h2>Lease Details</h2>
+        <div class="sh-lease-grid" id="leaseGrid">Loading...</div>
+      </div>
+
+      <div class="sh-months" id="monthBreakdown">
+        <h2>Monthly Breakdown</h2>
+        <div id="monthTable">Loading...</div>
+      </div>
+
+      <div class="sh-tx" id="transactionsSection">
+        <h2>Payment History</h2>
+        <div id="txList">Loading...</div>
+      </div>
+
+      <div class="sh-footer">
+        Alpaca Playhouse &mdash; Tenant Financial Summary
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/instant-chrome.js"></script>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module" src="SHFuego.js"></script>
+</body>
+</html>

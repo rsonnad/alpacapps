@@ -2695,6 +2695,8 @@ async function autoRecordDeposit(
   const today = now.split("T")[0];
   let remaining = parsed.amount;
   const personName = `${application.person.first_name} ${application.person.last_name}`;
+  let ledgerEntriesCreated = 0;
+  let ledgerErrors: string[] = [];
 
   // Deduplicate: check if this confirmation number was already recorded
   if (parsed.confirmationNumber) {
@@ -2745,7 +2747,7 @@ async function autoRecordDeposit(
       })
       .eq("id", application.id);
 
-    await supabase.from("ledger").insert({
+    const { error: moveInLedgerErr } = await supabase.from("ledger").insert({
       direction: "income",
       category: "move_in_deposit",
       amount: applyAmt,
@@ -2759,6 +2761,8 @@ async function autoRecordDeposit(
       description: `Move-in deposit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
       recorded_by: "system:zelle-email",
     });
+    if (moveInLedgerErr) { console.error("CRITICAL: Move-in deposit ledger insert failed:", moveInLedgerErr); ledgerErrors.push(`move_in_deposit: ${moveInLedgerErr.message}`); }
+    else ledgerEntriesCreated++;
 
     remaining -= applyAmt;
     console.log(`Recorded move-in deposit: $${applyAmt} for ${personName}`);
@@ -2794,7 +2798,7 @@ async function autoRecordDeposit(
       })
       .eq("id", application.id);
 
-    await supabase.from("ledger").insert({
+    const { error: secLedgerErr } = await supabase.from("ledger").insert({
       direction: "income",
       category: "security_deposit",
       amount: applyAmt,
@@ -2808,6 +2812,8 @@ async function autoRecordDeposit(
       description: `Security deposit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
       recorded_by: "system:zelle-email",
     });
+    if (secLedgerErr) { console.error("CRITICAL: Security deposit ledger insert failed:", secLedgerErr); ledgerErrors.push(`security_deposit: ${secLedgerErr.message}`); }
+    else ledgerEntriesCreated++;
 
     remaining -= applyAmt;
     console.log(`Recorded security deposit: $${applyAmt} for ${personName}`);
@@ -2851,7 +2857,7 @@ async function autoRecordDeposit(
       .select()
       .single();
 
-    await supabase.from("ledger").insert({
+    const { error: overpayLedgerErr } = await supabase.from("ledger").insert({
       direction: "income",
       category: "rent",
       amount: overpayment,
@@ -2865,6 +2871,8 @@ async function autoRecordDeposit(
       description: `Rent prepayment / overpayment credit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
       recorded_by: "system:zelle-email",
     });
+    if (overpayLedgerErr) { console.error("CRITICAL: Overpayment ledger insert failed:", overpayLedgerErr); ledgerErrors.push(`rent_overpayment: ${overpayLedgerErr.message}`); }
+    else ledgerEntriesCreated++;
 
     console.log(`Recorded overpayment credit: $${overpayment.toFixed(2)} for ${personName}`);
   }
@@ -2890,14 +2898,19 @@ async function autoRecordDeposit(
     });
   }
 
-  // Notify admin
-  await sendPaymentNotification(resendApiKey, "auto_recorded", {
+  // Notify admin — flag if ledger entries failed
+  if (ledgerErrors.length > 0) {
+    console.error(`CRITICAL: ${ledgerErrors.length} ledger insert(s) failed for ${personName} conf#${parsed.confirmationNumber}:`, ledgerErrors);
+  }
+  const notificationType = ledgerEntriesCreated > 0 ? "auto_recorded" : (ledgerErrors.length > 0 ? "ledger_failed" : "auto_recorded");
+  await sendPaymentNotification(resendApiKey, notificationType, {
     parsed,
     personName,
     applicationId: application.id,
     overpayment,
     moveInRecorded: moveInUnpaid,
     securityRecorded: securityUnpaid,
+    ledgerErrors: ledgerErrors.length > 0 ? ledgerErrors : undefined,
   });
 }
 
@@ -3143,6 +3156,24 @@ async function sendPaymentNotification(
         </div>
         <p style="color:#666;font-size:0.85rem;">Or record manually in the <a href="${adminUrl}">accounting dashboard</a>.</p>
         ${details.pendingApps ? `<p><strong>Current applications with pending deposits:</strong></p><ul>${details.pendingApps}</ul>` : ""}
+      </div>
+    `;
+  } else if (type === "ledger_failed") {
+    const errList = (details.ledgerErrors || []).map((e: string) => `<li>${e}</li>`).join("");
+    subject = `CRITICAL: Zelle Payment Ledger Failed: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#dc2626;">&#x1F6A8; Payment Received But Ledger Insert Failed</h2>
+        <p>A Zelle payment was matched to <strong>${personName}</strong> and rental_payments was updated, but the <strong>ledger entry could not be created</strong>. This payment will NOT appear in accounting until manually recorded.</p>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>
+          ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Confirmation #</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
+        </table>
+        <p style="margin-top:12px;"><strong>Errors:</strong></p>
+        <ul style="color:#dc2626;">${errList}</ul>
+        <p><a href="https://alpacaplayhouse.com/spaces/admin/accounting.html" style="display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">Record Manually in Accounting</a></p>
       </div>
     `;
   } else if (type === "duplicate") {
