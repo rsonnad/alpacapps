@@ -1,12 +1,12 @@
 {
-  "version": "v260414.01 2:55p",
-  "release": 1337,
-  "sha": "7e6f8abea",
-  "fullSha": "7e6f8abead7fd5556f9811bac0271f6a455cea2e",
+  "version": "v260416.01 12:53a",
+  "release": 1338,
+  "sha": "5f646792b",
+  "fullSha": "5f646792b8b7a8799e141ffc2b2ef15cb0fd0c9d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-14T19:55:03+00:00",
-  "commits": [{"sha":"7e6f8abea","message":"Add Safiyya Haider financial status page + fix Zelle ledger recording","author":"Rahul"}]
+  "machine": "runnervmeorf1",
+  "pushedAt": "2026-04-16T05:53:54+00:00",
+  "commits": [{"sha":"5f646792b","message":"Fix Hall kiosk slideshow and network status","author":"Rahul"}]
 }
