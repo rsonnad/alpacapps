@@ -500,24 +500,51 @@ Mongo writes bypass alpacaauto's read-only REST role (which 403s on PUT). Use th
 | wlan_band | both | recommend 2g-only for a dedicated Sonos SSID |
 | band_steering | not set (off) ✓ | disable |
 
-### Remaining known problems (no config fix — physical/RF)
+### Additional fix applied (2026-04-16, after user sign-off)
 
-- **Channel 1 congestion.** Three UniFi APs (Living Room U6, Skyloft, Garage Mahal) are all on 2.4GHz channel 1. All 11 wireless Sonos clustered on those 3 APs → all fighting for the same 20 MHz slice. Garage Mahal (ch1) is overloaded with 4 weak-signal Sonos stuck to it.
-  - **Proposed:** move **Garage Mahal AP** from ch1 → ch11 (Doghouse is offline; Spartan on ch11 is far enough). Its 4 Sonos clients will follow to ch11 on next roam, relieving ch1.
-  - **Caution:** if SonosNet is re-activated in future, ch11 will collide. Currently Sonos is in WiFi mode (no SonosNet), so ch11 is safe for APs.
-- **Sticky-client problem on Garage Mahal.** Four Sonos on one AP, three with retry >39% despite two being close to stronger APs (.47 at -41 dBm should roam to Skyloft). Options:
-  - Raise `minrate_ng_data_rate_kbps` from 6000 → 12000. Forces weak clients to roam. **Risky on S1** — they don't roam well. Don't apply blind.
-  - Physically power-cycle the three worst speakers (.220 Pequeno, .99 SwimSpa area, .42) to force fresh AP association. User noted Sauna HiFi / SwimSpa aren't currently on.
-- **UDM Pro internal-switch limitation.** The 2 wired Sonos (ports 5, 8) sit on the UDM's dumb bridge with no STP processing. Low risk at only 2 devices, but per doc the "gold standard" is to move them to the US8P60 (Skyloft Closet) which has STP mode already correctly set to `stp` with priority 8192 and all ports in edge mode ✓.
+**Moved Garage Mahal AP (78:8a:20:50:c2:8b) from 2.4GHz ch1 → ch11.**
 
-### Deferred settings (not applied — need user decision)
+Mongo edit alone didn't propagate — controller caches the device's `radio_table` in memory. Had to:
+1. `db.device.updateOne({mac:"78:8a:20:50:c2:8b"},{$set:{"radio_table.$[ng].channel":"11"}})` (or equivalent positional update on `radio.ng`)
+2. `db.device.updateOne(...,{$set:{cfgversion:"0000000000000000"}})` to invalidate cached config hash
+3. `systemctl restart unifi.service` on the UDM Pro — ~45s API outage, WiFi kept running during.
+4. On next inform (~30-60s post-restart), controller pushed ch11 to AP.
+
+**Post-change channel distribution (11 wireless Sonos):**
+- ch1 (Living Room U6 + Skyloft): 7 clients (down from 11)
+- ch6 (Outhouse + Laundry Hall): **4 clients (up from 1)** — Garage Mahal's 3 sticky clients roamed to Laundry Hall on ch6, plus .220 picked up Outhouse
+- ch11 (Garage Mahal): 0 — clients scattered on roam as expected (they had weak signal to Garage Mahal anyway)
+
+**Post-change retry rates:**
+
+| IP | AP (new) | Signal | Retry % | Δ from before |
+|----|----------|--------|---------|---------------|
+| 192.168.1.47  | Laundry Hall (ch6) | -53 | **5.0%** | ✓ was 18.7% on Garage Mahal |
+| 192.168.1.193 | Skyloft (ch1) | -51 | **1.2%** | ✓ was 3.9% |
+| 192.168.1.42  | Laundry Hall (ch6) | -77 | 59.0% | ~ was 39.1% (similar weak RF) |
+| 192.168.1.99  | Laundry Hall (ch6) | -76 | 68.5% | ~ was 61.7% |
+| 192.168.1.220 | Outhouse (ch6) | -81 | 69.6% | ~ was 63.7% |
+| 192.168.1.29  | Living Room (ch1) | -62 | 17.8% | ↑ was 15.0% |
+| 192.168.1.191 | Living Room (ch1) | -42 | 12.6% | ~ was 9.3% |
+
+**Verdict:** ch1 congestion relieved. `.47` improved dramatically (got it off sticky Garage Mahal). Three weak-signal speakers (`.42`, `.99`, `.220`) still have 59–70% retry rates regardless of AP — they're in RF dead zones and need physical remediation.
+
+### Remaining problems — physical/RF, no config fix
+
+- **Three speakers in RF dead zones:** `.42`, `.99`, `.220` all sit at –76 to –81 dBm on their closest AP with >59% retry rate. Any AP will fail them.
+  - **Action required (physical):** identify locations of these three speakers (MACs: b8:e9:37:93:cb:ec, 00:0e:58:2d:67:9c, 00:0e:58:21:e8:e0). Need an extra AP or Sonos Boost near them, or move the speaker closer to an existing AP.
+  - Previously noted: these appeared tied to Pequeno / SwimSpa region. Sauna HFi and SwimSpa speakers reported as "not on" so the cutouts there may also be power state, not network.
+- **Wired Sonos on UDM Pro ports 5,8** (MasterBlaster, `.156`). Only 2 devices so low loop risk, but gold-standard is to re-wire them to the US8P60 (Skyloft Closet switch — already `stp_version=stp`, priority 8192, all ports edge-mode ✓). Physical rewiring, user decision.
+
+### Deferred settings (not applied — user decision)
 
 | Setting | Current | Doc rec | Why deferred |
 |---------|---------|---------|--------------|
-| Global STP mode | RSTP (UniFi default, per-switch; US8P60 already `stp`) | STP (802.1D) on all | US8P60 is already STP. UDM Pro internal bridge doesn't do STP anyway. Low impact. |
-| Move wired Sonos off UDM Pro → US8P60 | Ports 5,8 on UDM | Wire into managed switch | Physical rewiring — user decision |
-| Move Garage Mahal AP to ch11 | ch1 | anything but ch1 | Will shift 4 clients — recommend but ask first |
-| Enable mcastenhance on BRC | false | true (multicast→unicast on WiFi) | Doc warns S1 conflicts; keep off until tested |
+| Global STP mode on non-US8P60 | RSTP | STP (802.1D) | US8P60 is already `stp`. Other APs/switches: Flex Minis don't expose STP, UDM internal bridge doesn't STP. Marginal impact. |
+| Move wired Sonos → US8P60 | UDM ports 5,8 | Managed switch | Physical rewire |
+| Raise `minrate_ng_data_rate_kbps` 6→12 Mbps on BRC | 6000 | 12000 | **Risky on S1** — may disconnect weak clients permanently. Skip until tested. |
+| Enable `mcastenhance_enabled` on BRC | false | true | Doc warns S1 conflicts; keep off. |
+| Add extra 2.4GHz AP near Pequeno/SwimSpa | n/a | — | Physical install |
 
 ### Ports the Sonos S1 + UniFi doc says must be allowed (cross-VLAN only — we're single-VLAN, so n/a today)
 
