@@ -1,12 +1,12 @@
 {
-  "version": "v260416.06 2:26a",
-  "release": 1343,
-  "sha": "9fb474d98",
-  "fullSha": "9fb474d982fc6dc986a7515c0d42fb7e74c7996c",
+  "version": "v260416.07 2:57a",
+  "release": 1344,
+  "sha": "ae3baf3c7",
+  "fullSha": "ae3baf3c7b41d6fb1607130ca7e842b38d2d5e9b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-16T07:26:53+00:00",
-  "commits": [{"sha":"9b2d72b85","message":"Move signature pad inline below last signature line in document","author":"Rahul"},{"sha":"705e7f731","message":"Add Signatures admin tab showing signed document audit log","author":"Rahul"},{"sha":"9fb474d98","message":"Merge branch 'eloquent-gauss'","author":"Rahul"}]
+  "pushedAt": "2026-04-16T07:57:41+00:00",
+  "commits": [{"sha":"efe54b68a","message":"Fix Signatures admin page: proper init pattern, separate JS file","author":"Rahul"},{"sha":"ae3baf3c7","message":"Merge branch 'eloquent-gauss'","author":"Rahul"}]
 }
