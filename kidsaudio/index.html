@@ -1,11 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta http-equiv="refresh" content="0;url=https://drive.google.com/drive/folders/1QEXx5YYUE2looMDPeN8G7rKQia7l7VRA?usp=drive_link">
-<title>Redirecting...</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="4;url=https://drive.google.com/drive/folders/1QEXx5YYUE2looMDPeN8G7rKQia7l7VRA?usp=drive_link">
+<title>Kids Audio Library</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Fredoka:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ff6b9d, #ffa751, #ffe259, #7ec8e3, #c471ed, #ff6b9d);
+    background-size: 400% 400%;
+    animation: gradientShift 6s ease infinite;
+    overflow: hidden;
+    font-family: 'Fredoka', sans-serif;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .container {
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .emoji-row {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: bounce 1s ease infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  .emoji-row span {
+    display: inline-block;
+    margin: 0 0.3rem;
+  }
+  .emoji-row span:nth-child(1) { animation: bounce 1s ease infinite 0s; }
+  .emoji-row span:nth-child(2) { animation: bounce 1s ease infinite 0.15s; }
+  .emoji-row span:nth-child(3) { animation: bounce 1s ease infinite 0.3s; }
+  .emoji-row span:nth-child(4) { animation: bounce 1s ease infinite 0.45s; }
+  .emoji-row span:nth-child(5) { animation: bounce 1s ease infinite 0.6s; }
+
+  h1 {
+    font-family: 'Bubblegum Sans', cursive;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    color: #fff;
+    text-shadow: 3px 3px 0 #e84393, 6px 6px 0 rgba(0,0,0,0.1);
+    line-height: 1.3;
+    margin-bottom: 1.5rem;
+    animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) both;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    color: rgba(255,255,255,0.9);
+    font-weight: 400;
+    animation: fadeIn 1s ease 0.4s both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .progress-bar {
+    width: 200px;
+    height: 12px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 999px;
+    margin: 2rem auto 0;
+    overflow: hidden;
+    animation: fadeIn 1s ease 0.6s both;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 999px;
+    animation: fillUp 4s linear forwards;
+  }
+
+  @keyframes fillUp {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
+
+  /* floating shapes */
+  .shape {
+    position: fixed;
+    border-radius: 50%;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+  .shape:nth-child(1) { width: 120px; height: 120px; background: #ff6b6b; top: 10%; left: 5%; animation: float 4s ease-in-out infinite; }
+  .shape:nth-child(2) { width: 80px; height: 80px; background: #ffd93d; top: 60%; right: 10%; animation: float 5s ease-in-out infinite 1s; }
+  .shape:nth-child(3) { width: 150px; height: 150px; background: #6bcb77; bottom: 10%; left: 15%; animation: float 6s ease-in-out infinite 0.5s; }
+  .shape:nth-child(4) { width: 60px; height: 60px; background: #4d96ff; top: 20%; right: 20%; animation: float 3.5s ease-in-out infinite 1.5s; }
+  .shape:nth-child(5) { width: 100px; height: 100px; background: #ff6bcb; bottom: 25%; right: 5%; animation: float 4.5s ease-in-out infinite 0.8s; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-30px) rotate(10deg); }
+  }
+</style>
 </head>
 <body>
-<script>window.location.replace("https://drive.google.com/drive/folders/1QEXx5YYUE2looMDPeN8G7rKQia7l7VRA?usp=drive_link");</script>
-<p>Redirecting to <a href="https://drive.google.com/drive/folders/1QEXx5YYUE2looMDPeN8G7rKQia7l7VRA?usp=drive_link">Kids Audio</a>...</p>
+
+<div class="shape"></div>
+<div class="shape"></div>
+<div class="shape"></div>
+<div class="shape"></div>
+<div class="shape"></div>
+
+<div class="container">
+  <div class="emoji-row">
+    <span>📚</span><span>🎧</span><span>✨</span><span>🦄</span><span>🎵</span>
+  </div>
+  <h1>Welcome to the most incredible<br>library of children's audio</h1>
+  <p class="subtitle">Taking you there now&hellip;</p>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+</div>
+
+<script>
+  setTimeout(function() {
+    window.location.replace("https://drive.google.com/drive/folders/1QEXx5YYUE2looMDPeN8G7rKQia7l7VRA?usp=drive_link");
+  }, 4000);
+</script>
 </body>
 </html>
