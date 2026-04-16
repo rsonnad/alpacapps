@@ -1,12 +1,12 @@
 {
-  "version": "v260416.08 5:14a",
-  "release": 1345,
-  "sha": "4c7e51436",
-  "fullSha": "4c7e514368d3431a676ae55afcdd133ae4ab046e",
+  "version": "v260416.09 3:53p",
+  "release": 1346,
+  "sha": "57fb268a0",
+  "fullSha": "57fb268a00a98d8a0f5e88083a4ea3fba772db9b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-16T10:14:05+00:00",
-  "commits": [{"sha":"4c7e51436","message":"fun splash page for kidsaudio shortlink","author":"Paca"}]
+  "machine": "runnervmeorf1",
+  "pushedAt": "2026-04-16T20:53:48+00:00",
+  "commits": [{"sha":"57fb268a0","message":"docs(sonos): log 2026-04-16 UDM Pro deep-dive fixes","author":"Rahul"}]
 }
