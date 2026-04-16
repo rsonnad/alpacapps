@@ -1,12 +1,12 @@
 {
-  "version": "v260416.05 2:17a",
-  "release": 1342,
-  "sha": "4b9dc5300",
-  "fullSha": "4b9dc530018a1cf0d246c0e6df4b6b3583301742",
+  "version": "v260416.06 2:26a",
+  "release": 1343,
+  "sha": "9fb474d98",
+  "fullSha": "9fb474d982fc6dc986a7515c0d42fb7e74c7996c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-16T07:17:13+00:00",
-  "commits": [{"sha":"4b9dc5300","message":"Store full document HTML in audit log for reconstruction","author":"Rahul"}]
+  "machine": "runnervmeorf1",
+  "pushedAt": "2026-04-16T07:26:53+00:00",
+  "commits": [{"sha":"9b2d72b85","message":"Move signature pad inline below last signature line in document","author":"Rahul"},{"sha":"705e7f731","message":"Add Signatures admin tab showing signed document audit log","author":"Rahul"},{"sha":"9fb474d98","message":"Merge branch 'eloquent-gauss'","author":"Rahul"}]
 }
