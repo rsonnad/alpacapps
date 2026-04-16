@@ -1,12 +1,12 @@
 {
-  "version": "v260416.09 3:53p",
-  "release": 1346,
-  "sha": "57fb268a0",
-  "fullSha": "57fb268a00a98d8a0f5e88083a4ea3fba772db9b",
+  "version": "v260416.10 4:18p",
+  "release": 1347,
+  "sha": "fb2687ab5",
+  "fullSha": "fb2687ab5d685c0a37eac19f2c6ab70e59154cbe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-16T20:53:48+00:00",
-  "commits": [{"sha":"57fb268a0","message":"docs(sonos): log 2026-04-16 UDM Pro deep-dive fixes","author":"Rahul"}]
+  "machine": "runnervm35a4x",
+  "pushedAt": "2026-04-16T21:18:53+00:00",
+  "commits": [{"sha":"fb2687ab5","message":"fix: point email template image URLs from dead Supabase storage to R2","author":"Paca"}]
 }
