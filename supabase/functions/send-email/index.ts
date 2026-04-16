@@ -791,7 +791,7 @@ the Alpaca Playhouse property AI agent`
       };
       const roleLabel = roleLabels[data.role as string] ?? "a user";
       const roleDescription = roleDescriptions[data.role as string] ?? "access to the platform";
-      const bannerUrl = "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/invite-banner-ghibli.png";
+      const bannerUrl = "https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/invite-banner-ghibli.png";
       return {
         subject: "You're Invited to Alpaca Playhouse",
         html: `

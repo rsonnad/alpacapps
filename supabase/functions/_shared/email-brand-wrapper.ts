@@ -45,7 +45,7 @@ const FALLBACK = {
     font_stack: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },
   logos: {
-    base_url: 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos',
+    base_url: 'https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos',
     icon_light: 'alpaca-head-white-transparent.png',
     wordmark_light: 'wordmark-white-transparent.png',
   },
