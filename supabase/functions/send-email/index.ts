@@ -2405,6 +2405,45 @@ async function getRenderedTemplate(
     }
   }
 
+  // Pre-render work session photos so DB template can include them via {{_photos_html}} / {{_photos_text}}
+  if (type === "work_checkout_summary") {
+    const photos: any[] = Array.isArray(data.photos) ? data.photos : [];
+    const beforePhotos = photos.filter((p: any) => p.type === 'before');
+    const progressPhotos = photos.filter((p: any) => p.type === 'progress');
+    const afterPhotos = photos.filter((p: any) => p.type === 'after');
+    const buildSection = (label: string, items: any[]) => {
+      if (!items.length) return '';
+      const cellWidth = Math.floor(100 / Math.min(items.length, 3));
+      const cells = items.map((p: any) => `
+        <td style="width:${cellWidth}%;padding:0 4px 4px 0;vertical-align:top;">
+          <img src="${p.url}" alt="${(p.caption || label).toString().replace(/"/g, '&quot;')}" width="170" style="display:block;width:100%;max-width:170px;height:auto;border-radius:6px;border:1px solid #e6e2d9;" />
+          ${p.caption ? `<p style="margin:4px 0 0;font-size:11px;color:#7d6f74;">${p.caption}</p>` : ''}
+        </td>`).join('');
+      return `
+        <tr>
+          <td style="padding:0 0 16px;">
+            <p style="margin:0 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">${label} Photos</p>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>${cells}</tr>
+            </table>
+          </td>
+        </tr>`;
+    };
+    if (photos.length > 0) {
+      data._photos_html = `
+        <p style="margin:0 0 12px;font-weight:600;font-size:16px;">Work Photos</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          ${buildSection('Before', beforePhotos)}
+          ${buildSection('Progress', progressPhotos)}
+          ${buildSection('After', afterPhotos)}
+        </table>`;
+      data._photos_text = `\nPhotos: ${photos.length} photo(s) uploaded (view in HTML email)`;
+    } else {
+      data._photos_html = `<p style="color:#7d6f74;font-size:13px;font-style:italic;margin:0 0 16px;">No photos were uploaded for this session.</p>`;
+      data._photos_text = `\nNo photos uploaded for this session.`;
+    }
+  }
+
   // 1. Try DB template (cached)
   const cached = templateCache.get(type);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
