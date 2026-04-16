@@ -1,12 +1,12 @@
 {
-  "version": "v260416.12 4:35p",
-  "release": 1349,
-  "sha": "2b5906956",
-  "fullSha": "2b59069561583fef9776b4cd0c2be82c9ff3712c",
+  "version": "v260416.13 6:11p",
+  "release": 1350,
+  "sha": "be1c968e3",
+  "fullSha": "be1c968e36be476fb293c041325f8e3f141d9135",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-16T21:35:05+00:00",
-  "commits": [{"sha":"2b5906956","message":"fix: work checkout email — pre-render photos into {{_photos_html}} so DB template can display them","author":"Paca"}]
+  "pushedAt": "2026-04-16T23:11:59+00:00",
+  "commits": [{"sha":"be1c968e3","message":"fix(infra): repoint hero banner to R2 (Supabase URL 404s post-migration)","author":"Rahul"}]
 }
