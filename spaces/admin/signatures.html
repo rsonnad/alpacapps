@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Signatures - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <link rel="stylesheet" href="../styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="manage-shared.css?v=5">
+  <link rel="stylesheet" href="../../styles/site.css">
+  <link rel="stylesheet" href="../../styles/tailwind.out.css">
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay__logo">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
+      <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 28%22%3E%3Ctext x=%220%22 y=%2220%22 font-size=%2216%22 font-family=%22Arial,sans-serif%22 fill=%22%231f1720%22%3EAlpaca%3C/text%3E%3C/svg%3E'">
+    </div>
+    <div class="spinner spinner--sm"></div>
+  </div>
+
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
+
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+    <span data-site-version style="display:none"></span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <main class="manage-content" style="max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem;">
+      <section style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.4rem; font-weight: 600; color: #2d3024;">Signed Documents</h1>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 0.25rem;">Audit log of all electronically signed documents</p>
+        </div>
+        <button id="refreshBtn" class="btn-small btn-primary" onclick="loadSignatures()">Refresh</button>
+      </section>
+
+      <!-- Summary cards -->
+      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: white; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 0.05em;">Total Signatures</div>
+          <div id="statTotal" style="font-size: 1.6rem; font-weight: 700; color: #2d3024; margin-top: 0.25rem;">--</div>
+        </div>
+        <div style="background: white; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 0.05em;">Rental Agreements</div>
+          <div id="statRentals" style="font-size: 1.6rem; font-weight: 700; color: #3d8b7a; margin-top: 0.25rem;">--</div>
+        </div>
+        <div style="background: white; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 0.05em;">Event Waivers</div>
+          <div id="statEvents" style="font-size: 1.6rem; font-weight: 700; color: #e8a94a; margin-top: 0.25rem;">--</div>
+        </div>
+        <div style="background: white; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 0.05em;">Latest Signature</div>
+          <div id="statLatest" style="font-size: 1rem; font-weight: 600; color: #2d3024; margin-top: 0.25rem;">--</div>
+        </div>
+      </section>
+
+      <!-- Table -->
+      <section style="background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden;">
+        <div id="sigTableContainer" style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+            <thead>
+              <tr style="background: #f8f8f5; border-bottom: 2px solid #e8e8e0;">
+                <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #555;">Signer</th>
+                <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #555;">Role</th>
+                <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #555;">Type</th>
+                <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #555;">Signed At</th>
+                <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #555;">IP Address</th>
+                <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #555;">Doc Hash</th>
+                <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #555;">Signature</th>
+                <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #555;">Document</th>
+              </tr>
+            </thead>
+            <tbody id="sigTableBody">
+              <tr><td colspan="8" style="padding: 2rem; text-align: center; color: #999;">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Document preview modal -->
+  <div id="docModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; overflow-y:auto;">
+    <div style="max-width:800px; margin:2rem auto; background:white; border-radius:12px; padding:2rem; position:relative;">
+      <button onclick="closeDocModal()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;">&times;</button>
+      <div id="docModalContent" style="line-height:1.6;"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+    import { supabase } from '../../shared/supabase.js';
+
+    // Make functions available globally for onclick handlers
+    window.loadSignatures = loadSignatures;
+    window.viewDocument = viewDocument;
+    window.viewSignature = viewSignature;
+    window.closeDocModal = closeDocModal;
+
+    initAdminPage('signatures');
+
+    // Load on auth ready
+    document.addEventListener('adminReady', loadSignatures);
+    // Fallback: load after short delay
+    setTimeout(() => {
+      if (document.getElementById('sigTableBody').innerHTML.includes('Loading')) {
+        loadSignatures();
+      }
+    }, 2000);
+
+    async function loadSignatures() {
+      try {
+        const { data, error } = await supabase
+          .from('signature_audit_log')
+          .select('*')
+          .order('signed_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Update stats
+        document.getElementById('statTotal').textContent = data.length;
+        document.getElementById('statRentals').textContent = data.filter(r => r.document_type === 'rental').length;
+        document.getElementById('statEvents').textContent = data.filter(r => r.document_type === 'event').length;
+        if (data.length > 0) {
+          const latest = new Date(data[0].signed_at);
+          document.getElementById('statLatest').textContent = latest.toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+          });
+        }
+
+        // Render table
+        const tbody = document.getElementById('sigTableBody');
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="padding:2rem; text-align:center; color:#999;">No signatures yet</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map(row => {
+          const signedAt = new Date(row.signed_at).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit'
+          });
+          const hashShort = row.document_hash ? row.document_hash.substring(0, 12) + '...' : '—';
+          const roleBadge = row.signer_role === 'landlord'
+            ? '<span style="background:#e8f4f0; color:#2e7566; padding:2px 8px; border-radius:4px; font-size:0.75rem;">Landlord</span>'
+            : '<span style="background:#f0f0eb; color:#555; padding:2px 8px; border-radius:4px; font-size:0.75rem;">Tenant</span>';
+          const typeBadge = row.document_type === 'rental'
+            ? '<span style="background:#e8f4f0; color:#3d8b7a; padding:2px 8px; border-radius:4px; font-size:0.75rem;">Rental</span>'
+            : '<span style="background:#fff3e0; color:#8b6914; padding:2px 8px; border-radius:4px; font-size:0.75rem;">Event</span>';
+          const sigPreview = row.signature_image_url
+            ? `<img src="${row.signature_image_url}" style="max-height:30px; max-width:80px; cursor:pointer; border:1px solid #eee; border-radius:4px;" onclick="viewSignature('${row.signature_image_url}')" title="Click to enlarge">`
+            : '—';
+          const docBtn = row.document_html
+            ? `<button onclick="viewDocument(${data.indexOf(row)})" style="background:#3d8b7a; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:0.75rem; cursor:pointer;">View</button>`
+            : '—';
+
+          return `<tr style="border-bottom:1px solid #f0f0eb;">
+            <td style="padding:0.6rem 1rem;">
+              <div style="font-weight:500;">${esc(row.signer_name)}</div>
+              <div style="font-size:0.75rem; color:#888;">${esc(row.signer_email)}</div>
+            </td>
+            <td style="padding:0.6rem 1rem;">${roleBadge}</td>
+            <td style="padding:0.6rem 1rem;">${typeBadge}</td>
+            <td style="padding:0.6rem 1rem; white-space:nowrap;">${signedAt}</td>
+            <td style="padding:0.6rem 1rem; font-family:monospace; font-size:0.8rem;">${esc(row.ip_address || '—')}</td>
+            <td style="padding:0.6rem 1rem; font-family:monospace; font-size:0.8rem;" title="${esc(row.document_hash || '')}">${hashShort}</td>
+            <td style="padding:0.6rem 1rem;">${sigPreview}</td>
+            <td style="padding:0.6rem 1rem;">${docBtn}</td>
+          </tr>`;
+        }).join('');
+
+        // Store data globally for document viewing
+        window._sigData = data;
+
+      } catch (err) {
+        console.error('Failed to load signatures:', err);
+        showToast('Failed to load signatures: ' + err.message, 'error');
+      }
+    }
+
+    function viewDocument(index) {
+      const row = window._sigData[index];
+      if (!row || !row.document_html) return;
+      document.getElementById('docModalContent').innerHTML =
+        `<div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid #eee; font-size:0.85rem; color:#666;">
+          <strong>${esc(row.signer_name)}</strong> &middot; ${esc(row.signer_email)} &middot; ${new Date(row.signed_at).toLocaleString()}
+          ${row.document_hash ? `<br>Hash: <code style="font-size:0.75rem;">${esc(row.document_hash)}</code>` : ''}
+        </div>` + row.document_html;
+      document.getElementById('docModal').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function viewSignature(url) {
+      document.getElementById('docModalContent').innerHTML =
+        `<div style="text-align:center;"><img src="${url}" style="max-width:100%; border:1px solid #eee; border-radius:8px;"></div>`;
+      document.getElementById('docModal').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDocModal() {
+      document.getElementById('docModal').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    // Close modal on escape or backdrop click
+    document.getElementById('docModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('docModal')) closeDocModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDocModal();
+    });
+
+    function esc(s) {
+      if (!s) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+  </script>
+</body>
+</html>
