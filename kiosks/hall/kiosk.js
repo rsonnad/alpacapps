@@ -5,7 +5,7 @@
  * Video/audio guestbook recording with R2 upload.
  */
 
-import { supabase, SUPABASE_URL } from '../../shared/supabase.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
 
 const POLL_INTERVAL = 60_000;        // 60s data refresh
 
@@ -793,30 +793,30 @@ async function checkVersion() {
 }
 
 // =============================================
-// NETWORK HEALTH — open UniFi console in popup window
+// NETWORK HEALTH — inline status indicator
 // =============================================
-const UNIFI_CONSOLE_URL = 'https://192.168.1.1/network/default/dashboard';
-const UNIFI_POPUP_SECONDS = 30;
-let unifiPopup = null;
-
-function showUnifiConsole() {
-  // Close any existing popup
-  if (unifiPopup && !unifiPopup.closed) {
-    unifiPopup.close();
-  }
-  // Open fullscreen popup
-  unifiPopup = window.open(
-    UNIFI_CONSOLE_URL,
-    'unifi_console',
-    'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0,menubar=no,toolbar=no,location=no,status=no'
-  );
-  // Auto-close after 30s
-  setTimeout(() => {
-    if (unifiPopup && !unifiPopup.closed) {
-      unifiPopup.close();
+async function checkNetworkHealth() {
+  const subtitle = document.getElementById('netSubtitle');
+  const icon = document.querySelector('.net-icon');
+  if (!subtitle) return;
+  try {
+    const start = Date.now();
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/brand_config?select=id&limit=1`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY },
+      signal: AbortSignal.timeout(5000),
+    });
+    const latency = Date.now() - start;
+    if (resp.ok) {
+      subtitle.textContent = `Online \u2022 ${latency}ms`;
+      if (icon) icon.style.color = 'var(--kiosk-green, #4ade80)';
+    } else {
+      subtitle.textContent = 'Degraded';
+      if (icon) icon.style.color = 'var(--kiosk-yellow, #facc15)';
     }
-    unifiPopup = null;
-  }, UNIFI_POPUP_SECONDS * 1000);
+  } catch {
+    subtitle.textContent = 'Offline';
+    if (icon) icon.style.color = 'var(--kiosk-red, #f87171)';
+  }
 }
 
 // =============================================
@@ -825,8 +825,9 @@ function showUnifiConsole() {
 // =============================================
 const ROTATION_SECONDS = 15;          // each view shows for 15s
 const TAP_DISMISS_SECONDS = 120;      // 2 min kiosk after user taps
-// Views cycle: KIOSK → NETWORK → SLIDESHOW → KIOSK → ...
-const ROTATION_VIEWS = ['kiosk', 'network', 'slideshow'];
+// Views cycle: KIOSK → SLIDESHOW → KIOSK → ...
+// (network popup removed — browsers block window.open on kiosk tablets)
+const ROTATION_VIEWS = ['kiosk', 'slideshow'];
 let rotationTimer = null;
 let rotationIndex = 0;  // start at kiosk
 let slideshowImages = [];
@@ -838,7 +839,7 @@ async function loadSlideshowImages() {
       .from('image_gen_jobs')
       .select('result_url, metadata')
       .eq('status', 'completed')
-      .ilike('metadata->>prompt', '%alpaca%')
+      .not('result_url', 'is', null)
       .order('created_at', { ascending: false })
       .limit(50);
     if (data && data.length > 0) {
@@ -859,15 +860,7 @@ function showView(viewName) {
     if (viewName !== 'slideshow') slideshowOverlay.style.display = 'none';
   }, 800);
 
-  // Close UniFi popup when leaving network view
-  if (viewName !== 'network' && unifiPopup && !unifiPopup.closed) {
-    unifiPopup.close();
-    unifiPopup = null;
-  }
-
-  if (viewName === 'network') {
-    showUnifiConsole();
-  } else if (viewName === 'slideshow') {
+  if (viewName === 'slideshow') {
     if (slideshowImages.length === 0) {
       // Skip slideshow if no images, advance to next view
       scheduleNextView();
@@ -1064,6 +1057,7 @@ async function refreshAll() {
     loadEvents(),
     loadGuestbook(),
     loadPaiCount(),
+    checkNetworkHealth(),
   ]);
 }
 
