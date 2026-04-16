@@ -141,7 +141,7 @@ function appendMessage(role, text, actions, isError = false) {
   let html = '';
 
   if (!isUser) {
-    html += `<img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png"
+    html += `<img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-black-transparent.png"
                   alt="PAI" class="askpai-msg-avatar">`;
   }
 
@@ -175,7 +175,7 @@ function showTypingIndicator() {
   const div = document.createElement('div');
   div.className = 'askpai-msg askpai-msg--ai askpai-typing';
   div.innerHTML = `
-    <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png"
+    <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-black-transparent.png"
          alt="PAI" class="askpai-msg-avatar">
     <div class="askpai-msg-content">
       <div class="askpai-msg-name">PAI</div>

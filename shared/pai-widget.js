@@ -46,7 +46,7 @@ function injectHTML() {
     <div id="paiPanel" class="pai-panel hidden">
       <div class="pai-panel__header">
         <div class="pai-panel__title">
-          <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png"
+          <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-black-transparent.png"
                alt="" class="pai-panel__avatar">
           <span>PAI</span>
           <span class="pai-panel__subtitle">Prompt Alpaca Intelligence</span>

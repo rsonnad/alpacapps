@@ -56,7 +56,7 @@ SET
 
   <!-- Alpaca art banner -->
   <div style="padding:0;">
-    <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/invite-banner-ghibli.png" alt="Alpaca Playhouse" style="width:100%;display:block;" />
+    <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/invite-banner-ghibli.png" alt="Alpaca Playhouse" style="width:100%;display:block;" />
   </div>
 
   <!-- Footer -->

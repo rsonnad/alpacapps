@@ -38,7 +38,7 @@ SET
     <p style="color:#94a3b8;font-size:13px;text-align:center;margin:24px 0 0;">Questions? Just reply to this email — PAI, our AI assistant, is happy to help.</p>
   </div>
   <div style="padding:0;">
-    <img src="https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/ai-gen/invite-banner-ghibli.png" alt="Alpaca Playhouse" style="width:100%;display:block;" />
+    <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/invite-banner-ghibli.png" alt="Alpaca Playhouse" style="width:100%;display:block;" />
   </div>
   <div style="background:#f8fafc;padding:20px 32px;text-align:center;border-top:1px solid #e2e8f0;">
     <p style="margin:0;color:#94a3b8;font-size:12px;">Alpaca Playhouse &bull; 160 Still Forest Dr, Cedar Creek, TX 78612</p>

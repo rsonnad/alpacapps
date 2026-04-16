@@ -14,8 +14,8 @@ enum AppTheme {
     static let dark = text
 
     // Logo URLs
-    static let logoLightURL = URL(string: "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-black-transparent.png")!
-    static let logoDarkURL = URL(string: "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/alpaca-head-white-transparent.png")!
-    static let wordmarkLightURL = URL(string: "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-black-transparent.png")!
-    static let wordmarkDarkURL = URL(string: "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/logos/wordmark-white-transparent.png")!
+    static let logoLightURL = URL(string: "https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-black-transparent.png")!
+    static let logoDarkURL = URL(string: "https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-white-transparent.png")!
+    static let wordmarkLightURL = URL(string: "https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/wordmark-black-transparent.png")!
+    static let wordmarkDarkURL = URL(string: "https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/wordmark-white-transparent.png")!
 }
