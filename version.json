@@ -1,12 +1,12 @@
 {
-  "version": "v260416.04 2:14a",
-  "release": 1341,
-  "sha": "a0f541bc3",
-  "fullSha": "a0f541bc3469ed31c36c4f8181659280f7b637e1",
+  "version": "v260416.05 2:17a",
+  "release": 1342,
+  "sha": "4b9dc5300",
+  "fullSha": "4b9dc530018a1cf0d246c0e6df4b6b3583301742",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-16T07:14:03+00:00",
-  "commits": [{"sha":"a0f541bc3","message":"Replace SignWell with native HTML e-signature system","author":"Rahul"}]
+  "pushedAt": "2026-04-16T07:17:13+00:00",
+  "commits": [{"sha":"4b9dc5300","message":"Store full document HTML in audit log for reconstruction","author":"Rahul"}]
 }
