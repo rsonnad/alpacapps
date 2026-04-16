@@ -5,7 +5,7 @@ import { supabase } from '../../shared/supabase.js';
 import { eventService } from '../../shared/event-service.js';
 import { eventTemplateService } from '../../shared/event-template-service.js';
 import { pdfService } from '../../shared/pdf-service.js';
-import { signwellService } from '../../shared/signwell-service.js';
+import { nativeSigningService } from '../../shared/native-signing-service.js';
 import {
   getAustinToday,
   formatDateAustin,
@@ -544,7 +544,7 @@ async function updateEventDocumentsTabState(req) {
     document.getElementById('eventSignatureStatusText').textContent = 'Agreement signed!';
     document.getElementById('eventSignedPdfSection').style.display = 'block';
     document.getElementById('eventSignedPdfLink').href = req.signed_pdf_url;
-  } else if (status === 'sent' && req.signwell_document_id) {
+  } else if (status === 'sent') {
     generateSection.style.display = 'none';
     pdfSection.style.display = 'block';
     signatureSection.style.display = 'block';
@@ -889,12 +889,11 @@ async function sendEventForSignature() {
     btn.disabled = true;
 
     const recipientName = `${req.person.first_name} ${req.person.last_name}`;
-    await signwellService.sendForSignature(
+    await nativeSigningService.sendEventForSignature(
       currentEventRequestId,
-      req.agreement_document_url,
       req.person.email,
       recipientName,
-      'event'
+      req.event_name || 'Event'
     );
 
     allEventRequests = await eventService.getRequests();

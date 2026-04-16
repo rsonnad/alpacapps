@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <title>Sign Document - Alpaca Playhouse</title>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.2.0/dist/signature_pad.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: #f5f5f0;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .site-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 2rem;
+      background: #2d3024;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-nav__logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    .site-nav__icon { height: 32px; width: auto; }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 4rem;
+    }
+
+    /* Document display */
+    .document-card {
+      background: white;
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    .document-card h1 { font-size: 1.4rem; margin-bottom: 0.5rem; color: #2d3024; }
+    .document-card h2 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; color: #2d3024; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; }
+    .document-card h3 { font-size: 1rem; margin: 1rem 0 0.4rem; color: #444; }
+    .document-card p { margin-bottom: 0.6rem; }
+    .document-card ul { margin: 0.5rem 0 0.5rem 1.5rem; }
+    .document-card li { margin-bottom: 0.3rem; }
+    .document-card hr { border: none; border-top: 1px solid #ddd; margin: 1.5rem 0; }
+    .document-card strong { color: #2d3024; }
+    .document-card br { display: block; content: ""; margin-top: 0.3rem; }
+
+    .waiver-separator {
+      background: #fff3e0;
+      border: 2px solid #e8a94a;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin: 2rem 0;
+      text-align: center;
+      font-weight: 600;
+      color: #8b6914;
+    }
+
+    /* Signature section */
+    .signature-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+      border: 2px solid #3d8b7a;
+    }
+    .signature-section h2 {
+      color: #3d8b7a;
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
+    .signature-section p {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .canvas-wrapper {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      background: #fafafa;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .canvas-wrapper.active { border-color: #3d8b7a; background: #fff; }
+    #signatureCanvas {
+      width: 100%;
+      height: 200px;
+      display: block;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .canvas-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #bbb;
+      font-size: 1rem;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .canvas-wrapper.active .canvas-placeholder { opacity: 0; }
+
+    .sig-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .btn-clear {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #f5f5f5;
+      color: #666;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-clear:hover { background: #eee; }
+
+    .consent-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #f0f7f5;
+      border-radius: 8px;
+    }
+    .consent-check input[type="checkbox"] {
+      margin-top: 3px;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .consent-check label {
+      font-size: 0.9rem;
+      color: #333;
+      cursor: pointer;
+      line-height: 1.5;
+    }
+
+    .btn-sign {
+      width: 100%;
+      padding: 1rem;
+      background: #3d8b7a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-sign:hover:not(:disabled) { background: #2e7566; }
+    .btn-sign:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* States */
+    .loading-state, .error-state, .success-state {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .loading-state {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #eee; border-top: 3px solid #3d8b7a;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-state {
+      background: #fff5f5;
+      border-radius: 12px;
+      border: 1px solid #ffccc7;
+      padding: 3rem 2rem;
+    }
+    .error-state h2 { color: #cf1322; margin-bottom: 0.5rem; }
+
+    .success-state {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 3rem 2rem;
+    }
+    .success-state .checkmark {
+      width: 60px; height: 60px;
+      background: #3d8b7a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      color: white;
+      font-size: 2rem;
+    }
+    .success-state h2 { color: #3d8b7a; margin-bottom: 0.5rem; }
+    .success-state p { color: #666; }
+
+    /* Progress bar for document scroll */
+    .progress-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #eee;
+      z-index: 99;
+    }
+    .progress-bar__fill {
+      height: 100%;
+      background: #3d8b7a;
+      width: 0%;
+      transition: width 0.1s;
+    }
+
+    @media (max-width: 600px) {
+      .document-card { padding: 1.5rem; }
+      .signature-section { padding: 1.5rem; }
+      .site-nav { padding: 0.75rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="https://alpacaplayhouse.com" class="site-nav__logo">
+    <img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" class="site-nav__icon">
+    <span>Alpaca Playhouse</span>
+  </a>
+</nav>
+
+<div class="container">
+  <!-- Loading state -->
+  <div id="loadingState" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading your document...</p>
+  </div>
+
+  <!-- Error state -->
+  <div id="errorState" class="error-state" style="display: none;">
+    <h2>Unable to load document</h2>
+    <p id="errorMessage">Something went wrong.</p>
+    <p style="margin-top: 1rem; color: #888; font-size: 0.85rem;">
+      Please contact <a href="mailto:team@alpacaplayhouse.com">team@alpacaplayhouse.com</a> for assistance.
+    </p>
+  </div>
+
+  <!-- Document + Signature -->
+  <div id="documentView" style="display: none;">
+    <!-- Lease agreement -->
+    <div id="leaseDocument" class="document-card"></div>
+
+    <!-- Waiver (if any) -->
+    <div id="waiverSeparator" class="waiver-separator" style="display: none;">
+      WAIVER OF LIABILITY — Please read and sign below
+    </div>
+    <div id="waiverDocument" class="document-card" style="display: none;"></div>
+
+    <!-- Signature section -->
+    <div class="signature-section" id="signatureSection">
+      <h2>Sign Below</h2>
+      <p>Draw your signature in the box below using your mouse, finger, or stylus.</p>
+
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <canvas id="signatureCanvas"></canvas>
+        <span class="canvas-placeholder">Draw your signature here</span>
+      </div>
+
+      <div class="sig-actions">
+        <button class="btn-clear" onclick="clearSignature()">Clear Signature</button>
+      </div>
+
+      <div class="consent-check">
+        <input type="checkbox" id="consentCheckbox">
+        <label for="consentCheckbox">
+          I, <strong id="signerNameDisplay">—</strong>, have read and agree to the terms of this document.
+          I understand that my electronic signature has the same legal effect as a handwritten signature
+          under the ESIGN Act and the Texas Uniform Electronic Transactions Act.
+        </label>
+      </div>
+
+      <button class="btn-sign" id="signBtn" disabled onclick="submitSignature()">
+        Sign Document
+      </button>
+    </div>
+  </div>
+
+  <!-- Success state -->
+  <div id="successState" class="success-state" style="display: none;">
+    <div class="checkmark">&#10003;</div>
+    <h2>Document Signed Successfully</h2>
+    <p>A confirmation email with your signed document details has been sent to <strong id="successEmail">your email</strong>.</p>
+    <p style="margin-top: 1rem; color: #888; font-size: 0.85rem;">
+      You may close this page. If you have questions, contact <a href="mailto:team@alpacaplayhouse.com">team@alpacaplayhouse.com</a>.
+    </p>
+  </div>
+</div>
+
+<div class="progress-bar" id="progressBar" style="display: none;">
+  <div class="progress-bar__fill" id="progressFill"></div>
+</div>
+
+<script>
+const SUPABASE_FUNCTIONS_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1';
+
+let signaturePad = null;
+let documentData = null;
+
+// ── Init ───────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', init);
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+
+  if (!token) {
+    showError('No signing token found. Please use the link from your email.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/get-signing-document`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showError(err.error || `Error loading document (${res.status})`);
+      return;
+    }
+
+    documentData = await res.json();
+    documentData._token = token;
+
+    renderDocument();
+    initSignaturePad();
+    initScrollTracking();
+
+  } catch (err) {
+    console.error('Init error:', err);
+    showError('Could not connect to the server. Please try again later.');
+  }
+}
+
+// ── Render ──────────────────────────────────────────────────────────
+
+function renderDocument() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('documentView').style.display = 'block';
+  document.getElementById('progressBar').style.display = 'block';
+
+  // Render lease/agreement HTML
+  document.getElementById('leaseDocument').innerHTML = documentData.document_html;
+
+  // Remove any "Signature: ___" lines from the rendered HTML since we have our own signature pad
+  cleanSignatureLines('leaseDocument');
+
+  // Render waiver if present
+  if (documentData.waiver_html) {
+    document.getElementById('waiverSeparator').style.display = 'block';
+    document.getElementById('waiverDocument').style.display = 'block';
+    document.getElementById('waiverDocument').innerHTML = documentData.waiver_html;
+    cleanSignatureLines('waiverDocument');
+  }
+
+  // Set signer name
+  document.getElementById('signerNameDisplay').textContent = documentData.signer_name;
+
+  // Update page title
+  const docLabel = documentData.document_type === 'rental' ? 'Lease Agreement' : 'Event Agreement';
+  document.title = `Sign ${docLabel} - Alpaca Playhouse`;
+}
+
+function cleanSignatureLines(elementId) {
+  const el = document.getElementById(elementId);
+  // Remove paragraphs that contain "Signature: ___" or "Date: ___" or "Name: " placeholder lines
+  const paragraphs = el.querySelectorAll('p');
+  paragraphs.forEach(p => {
+    const text = p.textContent.trim();
+    if (text.match(/^(Signature|Date):\s*_+$/)) {
+      p.style.display = 'none';
+    }
+  });
+}
+
+// ── Signature Pad ──────────────────────────────────────────────────
+
+function initSignaturePad() {
+  const canvas = document.getElementById('signatureCanvas');
+  const wrapper = document.getElementById('canvasWrapper');
+
+  // Set canvas size to match display size
+  function resizeCanvas() {
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    if (signaturePad) signaturePad.clear();
+  }
+
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  signaturePad = new SignaturePad(canvas, {
+    backgroundColor: 'rgba(255, 255, 255, 0)',
+    penColor: '#1a1a2e',
+    minWidth: 1,
+    maxWidth: 3,
+  });
+
+  signaturePad.addEventListener('beginStroke', () => {
+    wrapper.classList.add('active');
+    updateSignButton();
+  });
+
+  signaturePad.addEventListener('endStroke', () => {
+    updateSignButton();
+  });
+
+  // Consent checkbox
+  document.getElementById('consentCheckbox').addEventListener('change', updateSignButton);
+}
+
+function clearSignature() {
+  if (signaturePad) {
+    signaturePad.clear();
+    document.getElementById('canvasWrapper').classList.remove('active');
+    updateSignButton();
+  }
+}
+
+function updateSignButton() {
+  const hasSignature = signaturePad && !signaturePad.isEmpty();
+  const hasConsent = document.getElementById('consentCheckbox').checked;
+  document.getElementById('signBtn').disabled = !(hasSignature && hasConsent);
+}
+
+// ── Scroll tracking ────────────────────────────────────────────────
+
+function initScrollTracking() {
+  const fill = document.getElementById('progressFill');
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 100;
+    fill.style.width = progress + '%';
+  });
+}
+
+// ── Submit ──────────────────────────────────────────────────────────
+
+async function submitSignature() {
+  const btn = document.getElementById('signBtn');
+  btn.disabled = true;
+  btn.textContent = 'Signing...';
+
+  try {
+    // Get signature image as base64 PNG
+    const signatureImage = signaturePad.toDataURL('image/png');
+
+    // Compute SHA-256 hash of the document HTML the signer saw
+    const fullDocumentText = document.getElementById('leaseDocument').innerHTML
+      + (documentData.waiver_html || '');
+    const documentHash = await sha256(fullDocumentText);
+
+    const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/process-signature`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: documentData._token,
+        signature_image: signatureImage,
+        document_hash: documentHash,
+        signer_name: documentData.signer_name,
+        signer_email: documentData.signer_email,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Signing failed (${res.status})`);
+    }
+
+    // Show success
+    document.getElementById('documentView').style.display = 'none';
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('successState').style.display = 'block';
+    document.getElementById('successEmail').textContent = documentData.signer_email;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (err) {
+    console.error('Submit error:', err);
+    btn.textContent = 'Sign Document';
+    btn.disabled = false;
+    alert('Error: ' + err.message + '\n\nPlease try again. If the problem persists, contact team@alpacaplayhouse.com');
+  }
+}
+
+// ── Crypto helper ──────────────────────────────────────────────────
+
+async function sha256(text) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ── Error/state helpers ────────────────────────────────────────────
+
+function showError(message) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'block';
+  document.getElementById('errorMessage').textContent = message;
+}
+</script>
+
+</body>
+</html>

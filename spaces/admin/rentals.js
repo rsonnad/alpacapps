@@ -7,7 +7,7 @@ import { emailService } from '../../shared/email-service.js';
 import { smsService } from '../../shared/sms-service.js';
 import { leaseTemplateService } from '../../shared/lease-template-service.js';
 import { pdfService } from '../../shared/pdf-service.js';
-import { signwellService } from '../../shared/signwell-service.js';
+import { nativeSigningService } from '../../shared/native-signing-service.js';
 import { identityService } from '../../shared/identity-service.js';
 import {
   getAustinToday,
@@ -2132,109 +2132,62 @@ window.sendForSignatureAction = async function() {
 };
 
 /**
- * Re-create SignWell document when old one no longer exists (404).
- * If no PDF exists, auto-generates one from the template first.
- * Creates a new document, updates the DB, and refreshes the UI.
+ * Re-send signing link for an application.
+ * Uses native signing — generates a new token and emails the tenant.
  */
-async function recreateSignwellDocument(app) {
+async function resendSigningLink(app) {
   if (!app.person?.email) {
     showToast('Applicant has no email address on file', 'error');
     return false;
   }
 
-  let pdfUrl = app.agreement_document_url;
-
-  // If no PDF URL, regenerate from template
-  let pageCount = currentLeasePageCount || app.lease_page_count;
-  if (!pdfUrl) {
-    showToast('Regenerating lease PDF...', 'info');
-    const template = await leaseTemplateService.getActiveTemplate();
-    const agreementData = await rentalService.getAgreementData(app.id);
-    if (!template || !agreementData) {
-      showToast('Cannot regenerate PDF — no template or terms data. Fill in Terms first.', 'error');
-      return false;
-    }
-    const parsedContent = leaseTemplateService.parseTemplate(template.content, agreementData);
-    const result = await pdfService.generateAndUploadLeasePdf(
-      parsedContent, app.id, { tenantName: agreementData.tenantName }
-    );
-    await rentalService.updateAgreementStatus(app.id, 'generated', result.url);
-    pdfUrl = result.url;
-    pageCount = result.pageCount;
-    currentLeasePageCount = pageCount;
-    currentSignaturePositions = result.signaturePositions || null;
-  }
-
-  showToast('Creating new signature request...', 'info');
+  showToast('Sending new signing link...', 'info');
   const recipientName = `${app.person.first_name} ${app.person.last_name}`;
-  await signwellService.sendForSignature(app.id, pdfUrl, app.person.email, recipientName, pageCount, {
-    signaturePositions: currentSignaturePositions,
-  });
+  await nativeSigningService.sendForSignature(app.id, app.person.email, recipientName);
   await loadApplications();
   openRentalDetail(currentApplicationId, getActiveDetailTab());
-  showToast('New signature request sent to tenant', 'success');
+  showToast('Signing link sent to tenant', 'success');
   return true;
 }
 
 window.resendSignatureAction = async function() {
   if (!currentApplicationId) return;
   const app = allApplications.find(a => a.id === currentApplicationId);
-  if (!app?.signwell_document_id) {
-    showToast('No SignWell document found — use Manual Document Entry to update status', 'error');
+  if (!app?.person?.email) {
+    showToast('Applicant has no email address on file', 'error');
     return;
   }
   const btn = document.querySelector('[onclick="resendSignatureAction()"]');
   if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
   try {
-    await signwellService.sendReminder(app.signwell_document_id);
-    showToast('Signing reminder sent to tenant', 'success');
-    if (btn) { btn.textContent = 'Sent ✓'; setTimeout(() => { btn.textContent = 'Resend Request'; btn.disabled = false; }, 3000); }
+    const recipientName = `${app.person.first_name} ${app.person.last_name}`;
+    await nativeSigningService.resendSigningLink(app.id, app.person.email, recipientName);
+    showToast('New signing link sent to tenant', 'success');
+    if (btn) { btn.textContent = 'Sent ✓'; setTimeout(() => { btn.textContent = 'Resend Link'; btn.disabled = false; }, 3000); }
   } catch (error) {
-    if (error.status === 404) {
-      try {
-        await recreateSignwellDocument(app);
-      } catch (e) {
-        showToast('Error re-creating document: ' + e.message, 'error');
-        if (btn) { btn.textContent = 'Resend Request'; btn.disabled = false; }
-      }
-    } else {
-      showToast('Error: ' + error.message, 'error');
-      if (btn) { btn.textContent = 'Resend Request'; btn.disabled = false; }
-    }
+    showToast('Error: ' + error.message, 'error');
+    if (btn) { btn.textContent = 'Resend Link'; btn.disabled = false; }
   }
 };
 
 window.checkSignatureStatusAction = async function() {
   if (!currentApplicationId) return;
-  const app = allApplications.find(a => a.id === currentApplicationId);
-  if (!app?.signwell_document_id) {
-    showToast('No SignWell document found', 'error');
-    return;
-  }
   const btn = document.querySelector('[onclick="checkSignatureStatusAction()"]');
   if (btn) { btn.textContent = 'Checking...'; btn.disabled = true; }
   try {
-    const status = await signwellService.getDocumentStatus(app.signwell_document_id);
-    const recipientStatus = status.recipients?.[0]?.status || 'unknown';
-    if (status.completed && !app.signed_pdf_url) {
+    const status = await nativeSigningService.checkSigningStatus(currentApplicationId);
+    if (status.agreement_status === 'signed') {
       showToast('Document is signed! Refreshing...', 'success');
-      await rentalService.updateAgreementStatus(currentApplicationId, 'signed');
       await loadApplications();
       openRentalDetail(currentApplicationId, getActiveDetailTab());
+    } else if (status.signing_token) {
+      showToast('Signing link active — awaiting tenant signature', 'info');
     } else {
-      showToast(`SignWell status: ${recipientStatus}`, 'info');
+      showToast(`Status: ${status.agreement_status}`, 'info');
     }
   } catch (error) {
     console.error('Error checking status:', error);
-    if (error.status === 404) {
-      try {
-        await recreateSignwellDocument(app);
-      } catch (e) {
-        showToast('Error re-creating document: ' + e.message, 'error');
-      }
-    } else {
-      showToast('Error: ' + error.message, 'error');
-    }
+    showToast('Error: ' + error.message, 'error');
   } finally {
     if (btn) { btn.textContent = 'Check Status'; btn.disabled = false; }
   }
@@ -2765,7 +2718,7 @@ async function updateDocumentsTabState(app) {
     document.getElementById('signedPdfSection').style.display = 'block';
     document.getElementById('signedPdfLink').href = app.signed_pdf_url;
     document.getElementById('signedPdfFilename').textContent = getLeaseDisplayFilename(app, true);
-  } else if (status === 'sent' && app.signwell_document_id) {
+  } else if (status === 'sent') {
     // Show signature pending status with the unsigned PDF link
     generateSection.style.display = 'none';
     pdfSection.style.display = 'block';
@@ -3091,7 +3044,7 @@ async function generateLeasePdf() {
       currentAgreementData
     );
 
-    // Generate lease-only PDF first to determine its page count (for SignWell field placement)
+    // Generate lease-only PDF first to determine its page count
     const leaseOnlyResult = await pdfService.generateLeasePdf(parsedContent, 'temp.pdf');
     const leaseOnlyPageCount = leaseOnlyResult.pageCount;
     let hasWaiver = false;
@@ -3128,7 +3081,7 @@ async function generateLeasePdf() {
 
     // Update application with PDF URL and page counts
     await rentalService.updateAgreementStatus(currentApplicationId, 'generated', url);
-    // Store both total page count and lease-only page count for SignWell signature placement
+    // Store page counts for reference
     const updateData = { lease_page_count: pageCount };
     if (hasWaiver) {
       updateData.lease_only_page_count = leaseOnlyPageCount;
@@ -3176,22 +3129,12 @@ async function sendForSignature() {
     btn.textContent = 'Sending...';
     btn.disabled = true;
 
-    // Send document to SignWell for signing
+    // Send signing link to tenant (native e-signature)
     const recipientName = `${app.person.first_name} ${app.person.last_name}`;
-    const totalPageCount = currentLeasePageCount || app.lease_page_count;
-    const leaseOnlyPages = app.lease_only_page_count || totalPageCount;
-    const hasWaiver = leaseOnlyPages < totalPageCount;
-    const document = await signwellService.sendForSignature(
+    const signingResult = await nativeSigningService.sendForSignature(
       currentApplicationId,
-      app.agreement_document_url,
       app.person.email,
       recipientName,
-      totalPageCount,
-      {
-        leaseSignaturePage: leaseOnlyPages,
-        waiverSignaturePage: hasWaiver ? totalPageCount : null,
-        signaturePositions: currentSignaturePositions,
-      }
     );
 
     // Also send a notification email via Resend
@@ -3575,40 +3518,26 @@ function setupEventListeners() {
 
   // Signature tracking buttons
   document.getElementById('checkSignatureStatusBtn')?.addEventListener('click', async () => {
-    const app = allApplications.find(a => a.id === currentApplicationId);
-    if (!app?.signwell_document_id) {
-      showToast('No SignWell document found', 'error');
-      return;
-    }
     const btn = document.getElementById('checkSignatureStatusBtn');
     const originalText = btn.textContent;
     btn.textContent = 'Checking...';
     btn.disabled = true;
     try {
-      const status = await signwellService.getDocumentStatus(app.signwell_document_id);
-      const recipientStatus = status.recipients?.[0]?.status || 'unknown';
-      if (status.completed) {
+      const status = await nativeSigningService.checkSigningStatus(currentApplicationId);
+      if (status.agreement_status === 'signed') {
         showToast('Document is signed! Refreshing...', 'success');
-        await rentalService.updateAgreementStatus(currentApplicationId, 'signed');
         await loadApplications();
         openRentalDetail(currentApplicationId, 'documents');
-      } else {
+      } else if (status.signing_token) {
         document.getElementById('signatureStatusText').textContent =
-          `Awaiting signature (status: ${recipientStatus})`;
-        showToast(`Status: ${recipientStatus}`, 'info');
+          'Signing link active — awaiting tenant signature';
+        showToast('Awaiting tenant signature', 'info');
+      } else {
+        showToast(`Status: ${status.agreement_status}`, 'info');
       }
     } catch (error) {
       console.error('Error checking signature status:', error);
-      if (error.status === 404) {
-        try {
-          await recreateSignwellDocument(app);
-          return; // UI already refreshed by recreateSignwellDocument
-        } catch (e) {
-          showToast('Error re-creating document: ' + e.message, 'error');
-        }
-      } else {
-        showToast('Error: ' + error.message, 'error');
-      }
+      showToast('Error: ' + error.message, 'error');
     } finally {
       btn.textContent = originalText;
       btn.disabled = false;
@@ -3617,8 +3546,8 @@ function setupEventListeners() {
 
   document.getElementById('resendSignatureBtn')?.addEventListener('click', async () => {
     const app = allApplications.find(a => a.id === currentApplicationId);
-    if (!app?.signwell_document_id) {
-      showToast('No SignWell document found', 'error');
+    if (!app?.person?.email) {
+      showToast('No email on file', 'error');
       return;
     }
     const btn = document.getElementById('resendSignatureBtn');
@@ -3626,8 +3555,9 @@ function setupEventListeners() {
     btn.textContent = 'Sending...';
     btn.disabled = true;
     try {
-      await signwellService.sendReminder(app.signwell_document_id);
-      showToast('Signing reminder sent to tenant', 'success');
+      const recipientName = `${app.person.first_name} ${app.person.last_name}`;
+      await nativeSigningService.resendSigningLink(app.id, app.person.email, recipientName);
+      showToast('New signing link sent to tenant', 'success');
       // 30s cooldown to prevent spamming the tenant
       let seconds = 30;
       btn.textContent = `Sent (${seconds}s)`;
@@ -3642,16 +3572,8 @@ function setupEventListeners() {
         }
       }, 1000);
     } catch (error) {
-      console.error('Error sending reminder:', error);
-      if (error.status === 404) {
-        try {
-          await recreateSignwellDocument(app);
-        } catch (e) {
-          showToast('Error re-creating document: ' + e.message, 'error');
-        }
-      } else {
-        showToast('Error: ' + error.message, 'error');
-      }
+      console.error('Error resending signing link:', error);
+      showToast('Error: ' + error.message, 'error');
       btn.textContent = originalText;
       btn.disabled = false;
     }
