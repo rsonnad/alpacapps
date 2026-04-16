@@ -74,13 +74,11 @@
       color: #8b6914;
     }
 
-    /* Signature section */
+    /* Signature section — renders inline inside the document card */
     .signature-section {
-      background: white;
-      border-radius: 12px;
-      padding: 2rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-      border: 2px solid #3d8b7a;
+      padding: 2rem 0 0;
+      margin-top: 1.5rem;
+      border-top: 2px solid #3d8b7a;
     }
     .signature-section h2 {
       color: #3d8b7a;
@@ -388,6 +386,22 @@ function renderDocument() {
     document.getElementById('waiverDocument').style.display = 'block';
     document.getElementById('waiverDocument').innerHTML = documentData.waiver_html;
     cleanSignatureLines('waiverDocument');
+  }
+
+  // Move signature section inside the last document card, right after the last signature placeholder
+  const sigSection = document.getElementById('signatureSection');
+  const targetCard = documentData.waiver_html
+    ? document.getElementById('waiverDocument')
+    : document.getElementById('leaseDocument');
+
+  // Find the last "Signature: ___" paragraph (hidden by cleanSignatureLines) to anchor after
+  const hiddenSigLines = targetCard.querySelectorAll('p[style*="display: none"]');
+  if (hiddenSigLines.length > 0) {
+    const lastSigLine = hiddenSigLines[hiddenSigLines.length - 1];
+    lastSigLine.after(sigSection);
+  } else {
+    // No signature placeholders found — just append to the end of the card
+    targetCard.appendChild(sigSection);
   }
 
   // Set signer name
