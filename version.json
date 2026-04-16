@@ -1,12 +1,12 @@
 {
-  "version": "v260416.10 4:18p",
-  "release": 1347,
-  "sha": "fb2687ab5",
-  "fullSha": "fb2687ab5d685c0a37eac19f2c6ab70e59154cbe",
+  "version": "v260416.11 4:22p",
+  "release": 1348,
+  "sha": "dba674d7a",
+  "fullSha": "dba674d7a1d7b595e46e06e36640ed9d1ad48d10",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-16T21:18:53+00:00",
-  "commits": [{"sha":"fb2687ab5","message":"fix: point email template image URLs from dead Supabase storage to R2","author":"Paca"}]
+  "pushedAt": "2026-04-16T21:22:59+00:00",
+  "commits": [{"sha":"dba674d7a","message":"docs(sonos): Garage Mahal AP moved ch1→ch11, log retry results","author":"Rahul"}]
 }
