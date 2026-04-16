@@ -490,6 +490,10 @@ async function submitSignature() {
       + (documentData.waiver_html || '');
     const documentHash = await sha256(fullDocumentText);
 
+    // Include the full document HTML for archival/reconstruction
+    const fullDocumentHtml = document.getElementById('leaseDocument').innerHTML
+      + (documentData.waiver_html ? '\n<!-- WAIVER -->\n' + document.getElementById('waiverDocument').innerHTML : '');
+
     const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/process-signature`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -497,6 +501,7 @@ async function submitSignature() {
         token: documentData._token,
         signature_image: signatureImage,
         document_hash: documentHash,
+        document_html: fullDocumentHtml,
         signer_name: documentData.signer_name,
         signer_email: documentData.signer_email,
       }),

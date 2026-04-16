@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body = await req.json();
-    const { token, signature_image, document_hash, signer_name, signer_email } = body;
+    const { token, signature_image, document_hash, signer_name, signer_email, document_html } = body;
 
     if (!token || !signature_image || !document_hash) {
       return jsonError('Missing required fields', 400);
@@ -130,7 +130,8 @@ Deno.serve(async (req) => {
 
     // ── Record audit log ───────────────────────────────────────────
 
-    const auditEntry = {
+    // ── Record tenant audit entry ───────────────────────────────────
+    const tenantAuditEntry = {
       document_type: docType,
       rental_application_id: docType === 'rental' ? app.id : null,
       event_hosting_request_id: docType === 'event' ? app.id : null,
@@ -141,16 +142,35 @@ Deno.serve(async (req) => {
       user_agent: userAgent,
       document_hash,
       signature_image_url: signatureImageUrl,
+      document_html: document_html || null,
       signed_at: signedAt,
     };
 
     const { error: auditErr } = await supabase
       .from('signature_audit_log')
-      .insert(auditEntry);
+      .insert(tenantAuditEntry);
 
     if (auditErr) {
       console.error('Audit log error:', auditErr);
-      // Non-fatal — continue processing
+    }
+
+    // ── Record landlord auto-signature ─────────────────────────────
+    // The landlord pre-authorizes by sending the document for signing.
+    // Their signature is recorded automatically when the tenant signs.
+    if (docType === 'rental') {
+      const landlordAudit = {
+        document_type: docType,
+        rental_application_id: app.id,
+        signer_name: 'Rahul Sonnad',
+        signer_email: 'alpacaplayhouse@gmail.com',
+        signer_role: 'landlord',
+        ip_address: 'auto-signed (pre-authorized at send)',
+        user_agent: 'AlpacApps Native Signing System',
+        document_hash,
+        document_html: document_html || null,
+        signed_at: signedAt,
+      };
+      await supabase.from('signature_audit_log').insert(landlordAudit);
     }
 
     // ── Update application status ──────────────────────────────────
