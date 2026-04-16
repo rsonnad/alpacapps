@@ -1,12 +1,12 @@
 {
-  "version": "v260416.11 4:22p",
-  "release": 1348,
-  "sha": "dba674d7a",
-  "fullSha": "dba674d7a1d7b595e46e06e36640ed9d1ad48d10",
+  "version": "v260416.12 4:35p",
+  "release": 1349,
+  "sha": "2b5906956",
+  "fullSha": "2b59069561583fef9776b4cd0c2be82c9ff3712c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-16T21:22:59+00:00",
-  "commits": [{"sha":"dba674d7a","message":"docs(sonos): Garage Mahal AP moved ch1→ch11, log retry results","author":"Rahul"}]
+  "pushedAt": "2026-04-16T21:35:05+00:00",
+  "commits": [{"sha":"2b5906956","message":"fix: work checkout email — pre-render photos into {{_photos_html}} so DB template can display them","author":"Paca"}]
 }
