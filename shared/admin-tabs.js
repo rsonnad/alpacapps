@@ -25,6 +25,7 @@ export const ALL_ADMIN_TABS = [
   { id: 'passwords', label: 'Passwords', href: 'passwords.html', permission: 'view_passwords', section: 'admin' },
   { id: 'settings', label: 'Settings', href: 'settings.html', permission: 'view_settings', section: 'admin' },
   { id: 'releases', label: 'Releases', href: 'releases.html', permission: 'view_settings', section: 'admin' },
+  { id: 'signatures', label: 'Signatures', href: 'signatures.html', permission: 'view_rentals', section: 'admin' },
   { id: 'templates', label: 'Templates', href: 'templates.html', permission: 'view_templates', section: 'admin', feature: 'documents' },
   { id: 'brand', label: 'Brand', href: 'brand.html', permission: 'view_settings', section: 'admin' },
   { id: 'accounting', label: 'Accounting', href: 'accounting.html', permission: 'view_accounting', section: 'admin' },
