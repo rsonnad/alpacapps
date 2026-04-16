@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-04-16T23:12:49.776Z",
+  "generatedAt": "2026-04-16T23:18:10.620Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "ninja.html",
+      "title": "AI Software Ninja Workshop — Alpaca Playhouse",
+      "section": null,
+      "modifiedAt": "2026-04-16T23:17:23.000Z"
+    },
     {
       "path": "toefferproduct.html",
       "title": "AI for Financial Product Management — Study Program",
@@ -162,12 +168,6 @@
       "modifiedAt": "2026-03-19T01:13:44.000Z"
     },
     {
-      "path": "ninja.html",
-      "title": "AI Software Ninja Workshop — Alpaca Playhouse",
-      "section": null,
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
-    },
-    {
       "path": "thaivisa/index.html",
       "title": "Thai Visa Strategy Guide",
       "section": null,
@@ -198,6 +198,12 @@
       "modifiedAt": "2026-03-26T16:13:07.000Z"
     },
     {
+      "path": "iaw/index.html",
+      "title": "Welcome to the Alpachuasca Playhouse",
+      "section": "Projects",
+      "modifiedAt": "2026-04-16T23:17:23.000Z"
+    },
+    {
       "path": "bandb/index.html",
       "title": "The Animist Apothecary — Bodywork + Botanicals",
       "section": "Projects",
@@ -208,12 +214,6 @@
       "title": "Sloop — Alpaca Playhouse",
       "section": "Projects",
       "modifiedAt": "2026-03-26T16:13:07.000Z"
-    },
-    {
-      "path": "iaw/index.html",
-      "title": "Welcome to the Alpachuasca Playhouse",
-      "section": "Projects",
-      "modifiedAt": "2026-03-19T01:13:44.000Z"
     }
   ]
 }
