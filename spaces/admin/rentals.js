@@ -1438,10 +1438,14 @@ function renderApplicationsPane(app, guidance, actions) {
       ${!allFilled ? '<div class="action-pane-hint">Fill in the Terms tab below to continue.</div>' : ''}
     `;
 
+    const requireLease = (typeof app.require_lease === 'boolean') ? app.require_lease : true;
+    const primaryLabel = requireLease ? 'Approve &amp; Send Rental Agreement' : 'Approve Application';
+    const primaryHandler = requireLease ? 'approveAndSendAgreement()' : 'approveApplication()';
     actions.innerHTML = allFilled
-      ? `<button class="btn-primary action-pane-cta" onclick="approveApplication()">Approve Application</button>
+      ? `<button class="btn-primary action-pane-cta" onclick="${primaryHandler}">${primaryLabel}</button>
+         ${requireLease ? '<button class="btn-secondary" onclick="approveApplication()">Approve Only</button>' : ''}
          <button class="btn-secondary" onclick="denyApplication()">Deny</button>`
-      : `<button class="btn-primary action-pane-cta" disabled>Approve Application</button>
+      : `<button class="btn-primary action-pane-cta" disabled>${primaryLabel}</button>
          <button class="btn-secondary" onclick="switchDetailTab('terms')">Go to Terms</button>
          <button class="btn-secondary" onclick="denyApplication()">Deny</button>`;
   }
@@ -1463,7 +1467,8 @@ function renderApprovedPane(app, guidance, actions) {
       </div>
     `;
     actions.innerHTML = `
-      <button class="btn-primary action-pane-cta" onclick="generateAgreement()">Generate Agreement</button>
+      <button class="btn-primary action-pane-cta" onclick="generateAndSendAgreement()">Generate &amp; Send Rental Agreement</button>
+      <button class="btn-secondary" onclick="generateAgreement()">Generate Only</button>
       <button class="btn-secondary" onclick="switchDetailTab('terms')">Edit Terms</button>
     `;
   } else {
@@ -1981,6 +1986,86 @@ window.generateAgreement = async function() {
     await generateLeasePdf();
     switchDetailTab('documents');
   } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+    restore();
+  }
+};
+
+// Combined: generate the agreement PDF (if not yet generated) AND send it for signature.
+// Used at Stage 3 (Approved) to collapse the two-click flow into one action.
+window.generateAndSendAgreement = async function() {
+  if (!currentApplicationId) return;
+  const restore = setActionPaneLoading('Generating & sending...');
+  try {
+    const app = allApplications.find(a => a.id === currentApplicationId);
+    if (!app?.person?.email) {
+      showToast('Applicant has no email on file — cannot send for signature', 'error');
+      restore();
+      return;
+    }
+    if (!app.agreement_document_url || app.agreement_status !== 'generated') {
+      await generateLeasePdf();
+    }
+    await sendForSignature();
+  } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+    restore();
+  }
+};
+
+// Combined: approve the application AND generate AND send the rental agreement.
+// Used at Stage 2 (Applications) to collapse the three-step flow into one action.
+window.approveAndSendAgreement = async function() {
+  if (!currentApplicationId) return;
+
+  const spaceId = document.getElementById('termSpace').value;
+  const rate = parseFloat(document.getElementById('termRate').value);
+  const moveInDate = document.getElementById('termMoveIn').value;
+  if (!spaceId || isNaN(rate) || rate < 0 || !moveInDate) {
+    showToast('Please fill in Space, Rate, and Move-in Date on the Terms tab', 'warning');
+    switchDetailTab('terms');
+    return;
+  }
+
+  const app = allApplications.find(a => a.id === currentApplicationId);
+  if (!app?.person?.email) {
+    showToast('Applicant has no email on file — cannot send agreement', 'error');
+    return;
+  }
+
+  const requireLease = document.getElementById('termRequireLease')?.checked !== false;
+  if (!requireLease) {
+    // No lease needed — fall back to regular approval flow.
+    return window.approveApplication();
+  }
+
+  const confirmMsg = `Approve ${app.person.first_name} ${app.person.last_name} and send the rental agreement to ${app.person.email}?\n\nThis will:\n  • Approve the application\n  • Generate the lease PDF\n  • Email a signing link + deposit instructions`;
+  if (!confirm(confirmMsg)) return;
+
+  const restore = setActionPaneLoading('Approving & sending...');
+  try {
+    // Step 1: approve (saves terms, flips status, sends approval email)
+    const rateTerm = document.getElementById('termRateTerm').value;
+    const leaseEndDate = document.getElementById('termLeaseEnd').value || null;
+    const noticePeriod = document.getElementById('termNoticePeriod').value;
+    const securityDeposit = parseFloat(document.getElementById('termSecurityDeposit').value) || 0;
+    const additionalTerms = document.getElementById('termAdditionalTerms').value.trim() || null;
+
+    await rentalService.approveApplication(currentApplicationId, {
+      spaceId, rate, rateTerm, moveInDate, leaseEndDate, noticePeriod,
+      securityDepositAmount: securityDeposit, additionalTerms,
+    });
+    await loadApplications();
+
+    // Step 2: generate the lease PDF
+    await generateLeasePdf();
+
+    // Step 3: send for signature (also sends deposit request + ID verification link)
+    await sendForSignature();
+
+    showToast('Approved & rental agreement sent to tenant', 'success');
+  } catch (error) {
+    console.error('approveAndSendAgreement failed:', error);
     showToast('Error: ' + error.message, 'error');
     restore();
   }
@@ -3024,9 +3109,8 @@ function markdownToHtml(markdown) {
 async function generateLeasePdf() {
   if (!currentApplicationId) return;
   const btn = document.getElementById('generatePdfBtn');
-  const originalText = btn.textContent;
-  btn.textContent = 'Generating...';
-  btn.disabled = true;
+  const originalText = btn ? btn.textContent : null;
+  if (btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
 
   try {
     // Always refresh template and data to get latest terms
@@ -3098,8 +3182,7 @@ async function generateLeasePdf() {
     console.error('Error generating PDF:', e);
     showToast('Error generating PDF: ' + e.message, 'error');
   } finally {
-    btn.textContent = originalText;
-    btn.disabled = false;
+    if (btn) { btn.textContent = originalText; btn.disabled = false; }
   }
 }
 
@@ -3123,11 +3206,10 @@ async function sendForSignature() {
   }
 
   const btn = document.getElementById('sendForSignatureBtn');
-  const originalText = btn.textContent;
+  const originalText = btn ? btn.textContent : null;
 
   try {
-    btn.textContent = 'Sending...';
-    btn.disabled = true;
+    if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
 
     // Send signing link to tenant (native e-signature)
     const recipientName = `${app.person.first_name} ${app.person.last_name}`;
@@ -3183,8 +3265,7 @@ async function sendForSignature() {
     console.error('Error sending for signature:', error);
     showToast('Error: ' + error.message, 'error');
   } finally {
-    btn.textContent = originalText;
-    btn.disabled = false;
+    if (btn) { btn.textContent = originalText; btn.disabled = false; }
   }
 }
 
