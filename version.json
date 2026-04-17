@@ -1,12 +1,12 @@
 {
-  "version": "v260417.01 1:13a",
-  "release": 1353,
-  "sha": "42b770e31",
-  "fullSha": "42b770e31cad80550688127d8369016cca71b74d",
+  "version": "v260417.02 1:15a",
+  "release": 1354,
+  "sha": "12a94081f",
+  "fullSha": "12a94081f20267af19dd00e077b89261e926ad36",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-17T06:13:53+00:00",
-  "commits": [{"sha":"42b770e31","message":"docs: update kiosk setup runbook with Tailscale device names and API commands","author":"Claude"}]
+  "pushedAt": "2026-04-17T06:15:33+00:00",
+  "commits": [{"sha":"12a94081f","message":"docs: rewrite kiosk setup runbook targeting Alpuca (Tailscale-connected machine)","author":"Claude"}]
 }
