@@ -1,12 +1,12 @@
 {
-  "version": "v260417.02 1:15a",
-  "release": 1354,
-  "sha": "12a94081f",
-  "fullSha": "12a94081f20267af19dd00e077b89261e926ad36",
+  "version": "v260417.03 12:46p",
+  "release": 1355,
+  "sha": "fc8609a0f",
+  "fullSha": "fc8609a0fa66c11fe78e5e4079585eb000575355",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-17T06:15:33+00:00",
-  "commits": [{"sha":"12a94081f","message":"docs: rewrite kiosk setup runbook targeting Alpuca (Tailscale-connected machine)","author":"Claude"}]
+  "machine": "runnervmeorf1",
+  "pushedAt": "2026-04-17T17:46:19+00:00",
+  "commits": [{"sha":"a657e0a8a","message":"rentals: combined Approve & Send Rental Agreement button","author":"Rahul"},{"sha":"fc8609a0f","message":"Merge vibrant-liskov-391b7b: combined Approve & Send Rental Agreement","author":"Rahul"}]
 }
