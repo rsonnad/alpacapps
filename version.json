@@ -1,12 +1,12 @@
 {
-  "version": "v260416.14 6:17p",
-  "release": 1351,
-  "sha": "fdada0517",
-  "fullSha": "fdada05176e69ba26d1f7731f0ff1f7bca24c6e9",
+  "version": "v260416.15 7:40p",
+  "release": 1352,
+  "sha": "a2a12f74e",
+  "fullSha": "a2a12f74e777c642e2f8f1a00602cbb05493941c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-16T23:17:23+00:00",
-  "commits": [{"sha":"fdada0517","message":"fix: bulk-swap remaining Supabase housephotos URLs to R2 (post 2026-04-15 migration)","author":"Rahul"}]
+  "pushedAt": "2026-04-17T00:40:37+00:00",
+  "commits": [{"sha":"a2a12f74e","message":"docs(infra): clarify step 2 is Claude Chat, not Claude Code","author":"Rahul"}]
 }
