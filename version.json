@@ -1,12 +1,12 @@
 {
-  "version": "v260416.15 7:40p",
-  "release": 1352,
-  "sha": "a2a12f74e",
-  "fullSha": "a2a12f74e777c642e2f8f1a00602cbb05493941c",
+  "version": "v260417.01 1:13a",
+  "release": 1353,
+  "sha": "42b770e31",
+  "fullSha": "42b770e31cad80550688127d8369016cca71b74d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm35a4x",
-  "pushedAt": "2026-04-17T00:40:37+00:00",
-  "commits": [{"sha":"a2a12f74e","message":"docs(infra): clarify step 2 is Claude Chat, not Claude Code","author":"Rahul"}]
+  "pushedAt": "2026-04-17T06:13:53+00:00",
+  "commits": [{"sha":"42b770e31","message":"docs: update kiosk setup runbook with Tailscale device names and API commands","author":"Claude"}]
 }
