@@ -1384,13 +1384,16 @@ function renderCommunityFitPane(app, guidance, actions) {
 
   if (app.invited_to_apply_at) {
     actions.innerHTML = `
-      <span class="action-pane-waiting"><span class="waiting-dot"></span> Invited ${rentalService.formatDate(app.invited_to_apply_at)}</span>
-      <button class="btn-secondary" onclick="inviteToApplyAction()">Re-send Link</button>
+      <button class="btn-primary action-pane-cta" onclick="approveAndSendAgreement()">Approve &amp; Send Rental Agreement</button>
+      <button class="btn-secondary" onclick="switchDetailTab('terms')">Set Terms</button>
+      <button class="btn-secondary" onclick="inviteToApplyAction()">Re-send Application Link</button>
       <button class="btn-secondary" onclick="denyApplication()">Deny</button>
+      <span class="action-pane-waiting"><span class="waiting-dot"></span> Invited ${rentalService.formatDate(app.invited_to_apply_at)}</span>
     `;
   } else {
     actions.innerHTML = `
       <button class="btn-primary action-pane-cta" onclick="inviteToApplyAction()">Invite to Apply</button>
+      <button class="btn-secondary" onclick="approveAndSendAgreement()">Skip — Approve &amp; Send Agreement</button>
       <button class="btn-secondary" onclick="denyApplication()">Deny</button>
     `;
   }
