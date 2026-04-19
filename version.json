@@ -1,12 +1,12 @@
 {
-  "version": "v260418.02 8:27p",
-  "release": 1357,
-  "sha": "a8c50dc84",
-  "fullSha": "a8c50dc84d59826e62dc4c08e570220805eeefa9",
+  "version": "v260418.03 8:31p",
+  "release": 1358,
+  "sha": "1cdf6e1a3",
+  "fullSha": "1cdf6e1a3c80f680bd85bfe08871e73486c15ef2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T01:27:44+00:00",
-  "commits": [{"sha":"a8c50dc84","message":"sponic garden: add Flux Overview page with YouTube placeholder","author":"Rahul"}]
+  "pushedAt": "2026-04-19T01:31:31+00:00",
+  "commits": [{"sha":"1cdf6e1a3","message":"1517app: move Flux Overview page, strip breadcrumb link","author":"Rahul"}]
 }
