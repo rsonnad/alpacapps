@@ -179,8 +179,9 @@ function getPipelineStage(application) {
   // Completed - has assignment
   if (application.move_in_confirmed_at) return 'complete';
 
-  // Ready for move-in
-  if (application.deposit_status === DEPOSIT_STATUS.CONFIRMED) return 'ready';
+  // Ready for move-in — deposit confirmed, or deposit not required
+  if (application.deposit_status === DEPOSIT_STATUS.CONFIRMED ||
+      application.require_deposit === false) return 'ready';
 
   // Deposit stage
   if ([DEPOSIT_STATUS.REQUESTED, DEPOSIT_STATUS.PARTIAL, DEPOSIT_STATUS.RECEIVED].includes(application.deposit_status)) {
@@ -399,6 +400,7 @@ async function saveTerms(applicationId, terms) {
     noticePeriod = '30_days',
     additionalTerms = null,
     requireLease,
+    requireDeposit,
     checkInTime,
     checkOutTime,
   } = terms;
@@ -435,6 +437,7 @@ async function saveTerms(applicationId, terms) {
   }
   if (additionalTerms !== undefined) updateData.additional_terms = additionalTerms;
   if (requireLease !== undefined) updateData.require_lease = requireLease;
+  if (requireDeposit !== undefined) updateData.require_deposit = requireDeposit;
   if (checkInTime !== undefined) updateData.check_in_time = checkInTime || null;
   if (checkOutTime !== undefined) updateData.check_out_time = checkOutTime || null;
 
@@ -1197,9 +1200,9 @@ async function confirmMoveIn(applicationId) {
   const app = await getApplication(applicationId);
   if (!app) throw new Error('Application not found');
 
-  // Validate requirements
-  if (app.deposit_status !== DEPOSIT_STATUS.CONFIRMED) {
-    throw new Error('Deposit must be confirmed before move-in');
+  // Validate requirements — deposit can be skipped when require_deposit is false
+  if (app.require_deposit !== false && app.deposit_status !== DEPOSIT_STATUS.CONFIRMED) {
+    throw new Error('Deposit must be confirmed before move-in (or uncheck "Require deposit" in Terms)');
   }
 
   if (app.require_lease !== false && app.agreement_status !== AGREEMENT_STATUS.SIGNED) {

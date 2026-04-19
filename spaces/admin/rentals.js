@@ -1131,6 +1131,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   document.getElementById('termCheckInTime').value = app.check_in_time || '';
   document.getElementById('termCheckOutTime').value = app.check_out_time || '';
   document.getElementById('termRequireLease').checked = app.require_lease !== false;
+  document.getElementById('termRequireDeposit').checked = app.require_deposit !== false;
 
   // Show "Recalc nightly deposits" button only for nightly apps with both dates set.
   // This exists so already-approved nightly applications (created before the
@@ -1645,21 +1646,26 @@ function updateRentalStatusTracker(app) {
   // Deposit step — calculate total due for display
   const depositStep = document.getElementById('detailTrackerDeposit');
   const depositDetail = document.getElementById('detailTrackerDepositDetail');
-  const depStatus = app.deposit_status || 'pending';
-  const moveInAmt = app.move_in_deposit_amount || app.approved_rate || 0;
-  const secAmt = app.security_deposit_amount || 0;
-  const appFeeCredit = (app.application_fee_paid && app.application_fee_amount > 0) ? app.application_fee_amount : 0;
-  const totalDueForTracker = Math.max(0, (moveInAmt + secAmt) - appFeeCredit);
-  const amountStr = totalDueForTracker > 0 ? ` — ${rentalService.formatCurrency(totalDueForTracker)} due` : '';
-  const depLabels = {
-    pending: `Not started${amountStr}`,
-    requested: `Requested${amountStr}`,
-    partial: `Partial${amountStr}`,
-    received: 'Received',
-    confirmed: 'Confirmed ✓',
-  };
-  depositStep.className = 'tracker-step ' + (depStatus === 'confirmed' ? 'complete' : (depStatus !== 'pending' ? 'active' : 'pending'));
-  depositDetail.textContent = depLabels[depStatus] || depStatus;
+  if (app.require_deposit === false) {
+    depositStep.className = 'tracker-step complete';
+    depositDetail.textContent = 'Not required (short-term)';
+  } else {
+    const depStatus = app.deposit_status || 'pending';
+    const moveInAmt = app.move_in_deposit_amount || app.approved_rate || 0;
+    const secAmt = app.security_deposit_amount || 0;
+    const appFeeCredit = (app.application_fee_paid && app.application_fee_amount > 0) ? app.application_fee_amount : 0;
+    const totalDueForTracker = Math.max(0, (moveInAmt + secAmt) - appFeeCredit);
+    const amountStr = totalDueForTracker > 0 ? ` — ${rentalService.formatCurrency(totalDueForTracker)} due` : '';
+    const depLabels = {
+      pending: `Not started${amountStr}`,
+      requested: `Requested${amountStr}`,
+      partial: `Partial${amountStr}`,
+      received: 'Received',
+      confirmed: 'Confirmed ✓',
+    };
+    depositStep.className = 'tracker-step ' + (depStatus === 'confirmed' ? 'complete' : (depStatus !== 'pending' ? 'active' : 'pending'));
+    depositDetail.textContent = depLabels[depStatus] || depStatus;
+  }
 
   // Move-in step
   const moveInStep = document.getElementById('detailTrackerMoveIn');
@@ -2136,6 +2142,7 @@ function getTermsFormData() {
     reservationDepositAmount: parseFloat(document.getElementById('termReservationDeposit').value) || 0,
     additionalTerms: document.getElementById('termAdditionalTerms').value.trim() || null,
     requireLease: document.getElementById('termRequireLease').checked,
+    requireDeposit: document.getElementById('termRequireDeposit').checked,
     checkInTime: document.getElementById('termCheckInTime').value || null,
     checkOutTime: document.getElementById('termCheckOutTime').value || null,
   };
@@ -2160,7 +2167,7 @@ function setupTermsAutoSave() {
   const formFields = [
     'termSpace', 'termRate', 'termRateTerm', 'termMoveIn',
     'termLeaseEnd', 'termNoticePeriod', 'termSecurityDeposit', 'termReservationDeposit', 'termAdditionalTerms',
-    'termCheckInTime', 'termCheckOutTime', 'termRequireLease'
+    'termCheckInTime', 'termCheckOutTime', 'termRequireLease', 'termRequireDeposit'
   ];
 
   formFields.forEach(fieldId => {
