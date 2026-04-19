@@ -1,12 +1,12 @@
 {
-  "version": "v260418.05 8:44p",
-  "release": 1360,
-  "sha": "b0abce3ca",
-  "fullSha": "b0abce3ca86322d322b23b6ca755672e21a63806",
+  "version": "v260418.06 8:50p",
+  "release": 1361,
+  "sha": "94ee580e8",
+  "fullSha": "94ee580e8762c230d32366724a2be67d68b3e367",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T01:44:47+00:00",
-  "commits": [{"sha":"b0abce3ca","message":"1517app: add prompt block above video placeholder","author":"Rahul"}]
+  "pushedAt": "2026-04-19T01:50:58+00:00",
+  "commits": [{"sha":"94ee580e8","message":"1517app: embed Sponic Gardens overview video from Supabase storage","author":"Rahul"}]
 }
