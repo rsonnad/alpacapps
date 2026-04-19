@@ -332,10 +332,17 @@ async function approveApplication(applicationId, terms) {
     additionalTerms = null,
   } = terms;
 
-  // Move-in deposit is always 1 period's rent
-  const moveInDepositAmount = rate;
-  // Reservation deposit defaults to 1 month's rent if not specified
-  const finalReservationDeposit = reservationDepositAmount ?? rate;
+  // Move-in deposit: nights × rate for nightly stays with both dates set,
+  // otherwise one period's rent.
+  let moveInDepositAmount = rate;
+  if (rateTerm === 'nightly' && moveInDate && leaseEndDate && rate) {
+    const nights = Math.max(1, Math.round((new Date(leaseEndDate) - new Date(moveInDate)) / 86400000));
+    moveInDepositAmount = nights * rate;
+  }
+  // Reservation deposit defaults to $0 for nightly stays (doesn't apply to
+  // short trips — the full stay is paid up front), otherwise one period's rent.
+  const reservationDefault = rateTerm === 'nightly' ? 0 : rate;
+  const finalReservationDeposit = reservationDepositAmount ?? reservationDefault;
 
   const { data, error } = await supabase
     .from('rental_applications')
@@ -396,8 +403,15 @@ async function saveTerms(applicationId, terms) {
     checkOutTime,
   } = terms;
 
-  // Move-in deposit is always 1 period's rent
-  const moveInDepositAmount = rate || 0;
+  // Move-in deposit: nights × rate for nightly stays with both dates, else one period's rent
+  let moveInDepositAmount = rate || 0;
+  if (rateTerm === 'nightly' && moveInDate && leaseEndDate && rate) {
+    const nights = Math.max(1, Math.round((new Date(leaseEndDate) - new Date(moveInDate)) / 86400000));
+    moveInDepositAmount = nights * rate;
+  }
+
+  // Reservation deposit default: $0 for nightly, one period's rent otherwise
+  const reservationDefault = rateTerm === 'nightly' ? 0 : (rate || 0);
 
   const updateData = {
     updated_at: new Date().toISOString(),
@@ -413,11 +427,11 @@ async function saveTerms(applicationId, terms) {
   if (noticePeriod) updateData.notice_period = noticePeriod;
   if (rate != null && rate !== '') updateData.move_in_deposit_amount = moveInDepositAmount;
   if (securityDepositAmount !== undefined) updateData.security_deposit_amount = securityDepositAmount;
-  // Reservation deposit: save explicitly set value, or default to rate if rate is set
+  // Reservation deposit: save explicitly set value, or fall back to default (0 for nightly)
   if (reservationDepositAmount !== undefined) {
-    updateData.reservation_deposit_amount = reservationDepositAmount ?? (rate || 0);
+    updateData.reservation_deposit_amount = reservationDepositAmount ?? reservationDefault;
   } else if (rate != null && rate !== '') {
-    updateData.reservation_deposit_amount = rate;
+    updateData.reservation_deposit_amount = reservationDefault;
   }
   if (additionalTerms !== undefined) updateData.additional_terms = additionalTerms;
   if (requireLease !== undefined) updateData.require_lease = requireLease;
@@ -433,6 +447,42 @@ async function saveTerms(applicationId, terms) {
 
   if (error) throw error;
   return data;
+}
+
+/**
+ * Recompute deposits for an already-approved nightly application.
+ * Sets move_in_deposit_amount = nights × rate and reservation_deposit_amount = 0.
+ * Only meaningful for nightly rate with both move-in and lease-end dates set.
+ * Returns { updated: true, nights, moveInDeposit } on success, or { updated: false, reason }
+ * if the application isn't eligible for recalc.
+ */
+async function recalcNightlyDeposits(applicationId) {
+  const app = await getApplication(applicationId);
+  if (!app) return { updated: false, reason: 'Application not found' };
+  if (app.approved_rate_term !== 'nightly') {
+    return { updated: false, reason: 'Not a nightly rate — recalc only applies to nightly stays' };
+  }
+  if (!app.approved_rate || !app.approved_move_in || !app.approved_lease_end) {
+    return { updated: false, reason: 'Need rate, move-in date, and lease-end date set' };
+  }
+
+  const nights = Math.max(1, Math.round(
+    (new Date(app.approved_lease_end) - new Date(app.approved_move_in)) / 86400000
+  ));
+  const moveInDeposit = nights * app.approved_rate;
+
+  const { error } = await supabase
+    .from('rental_applications')
+    .update({
+      move_in_deposit_amount: moveInDeposit,
+      reservation_deposit_amount: 0,
+      updated_at: new Date().toISOString(),
+      ...activityStamp(),
+    })
+    .eq('id', applicationId);
+
+  if (error) throw error;
+  return { updated: true, nights, moveInDeposit };
 }
 
 /**
@@ -1473,6 +1523,7 @@ export const rentalService = {
   startReview,
   approveApplication,
   saveTerms,
+  recalcNightlyDeposits,
   denyApplication,
   archiveApplication,
   unarchiveApplication,

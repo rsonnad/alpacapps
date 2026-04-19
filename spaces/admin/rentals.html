@@ -298,8 +298,9 @@
                 <label for="termAdditionalTerms">Additional Terms</label>
                 <textarea id="termAdditionalTerms" rows="4" placeholder="Any additional terms..."></textarea>
               </div>
-              <div class="terms-save-row" style="margin-top: 1rem; display: flex; align-items: center; gap: 1rem;">
+              <div class="terms-save-row" style="margin-top: 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                 <button type="button" id="saveTermsBtn" class="btn-small btn-primary">Save Terms</button>
+                <button type="button" id="recalcNightlyBtn" class="btn-small btn-secondary hidden" title="Recompute move-in deposit as nights × rate and reset reservation deposit to $0">Recalc nightly deposits</button>
                 <span id="termsSaveStatus" class="save-status"></span>
               </div>
             </form>

@@ -1132,6 +1132,17 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   document.getElementById('termCheckOutTime').value = app.check_out_time || '';
   document.getElementById('termRequireLease').checked = app.require_lease !== false;
 
+  // Show "Recalc nightly deposits" button only for nightly apps with both dates set.
+  // This exists so already-approved nightly applications (created before the
+  // nights × rate logic landed) can be updated in one click.
+  const recalcBtn = document.getElementById('recalcNightlyBtn');
+  if (recalcBtn) {
+    const isNightly = (app.approved_rate_term || 'monthly') === 'nightly';
+    const hasDates = !!(app.approved_move_in && app.approved_lease_end);
+    const hasRate = app.approved_rate != null && app.approved_rate !== '';
+    recalcBtn.classList.toggle('hidden', !(isNightly && hasDates && hasRate));
+  }
+
   // ===== DOCUMENTS TAB =====
   const statusDisplay = document.getElementById('agreementStatusDisplay');
   const agStatusVal = app.agreement_status || 'pending';
@@ -2166,6 +2177,31 @@ function setupTermsAutoSave() {
   document.getElementById('saveTermsBtn')?.addEventListener('click', () => {
     clearTimeout(termsAutoSaveTimeout);
     saveTerms();
+  });
+
+  // Recalc nightly deposits button — updates existing applications to the new
+  // nights × rate math without needing to re-enter form values.
+  document.getElementById('recalcNightlyBtn')?.addEventListener('click', async () => {
+    if (!currentApplicationId) return;
+    const btn = document.getElementById('recalcNightlyBtn');
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Recalculating...';
+    try {
+      const result = await rentalService.recalcNightlyDeposits(currentApplicationId);
+      if (!result.updated) {
+        showToast(result.reason || 'Cannot recalculate', 'error');
+        return;
+      }
+      showToast(`Updated: ${result.nights} nights × rate = $${result.moveInDeposit} move-in deposit, $0 reservation deposit`, 'success');
+      await loadApplications();
+      openRentalDetail(currentApplicationId, 'terms');
+    } catch (error) {
+      showToast('Error: ' + error.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
   });
 }
 
