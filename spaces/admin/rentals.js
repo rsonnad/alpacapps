@@ -1646,15 +1646,16 @@ function updateRentalStatusTracker(app) {
   // Deposit step — calculate total due for display
   const depositStep = document.getElementById('detailTrackerDeposit');
   const depositDetail = document.getElementById('detailTrackerDepositDetail');
+  // Hoist depStatus and totalDueForTracker so the move-in step below can read them
+  const depStatus = app.require_deposit === false ? 'confirmed' : (app.deposit_status || 'pending');
+  const moveInAmt = app.move_in_deposit_amount || app.approved_rate || 0;
+  const secAmt = app.security_deposit_amount || 0;
+  const appFeeCredit = (app.application_fee_paid && app.application_fee_amount > 0) ? app.application_fee_amount : 0;
+  const totalDueForTracker = app.require_deposit === false ? 0 : Math.max(0, (moveInAmt + secAmt) - appFeeCredit);
   if (app.require_deposit === false) {
     depositStep.className = 'tracker-step complete';
     depositDetail.textContent = 'Not required (short-term)';
   } else {
-    const depStatus = app.deposit_status || 'pending';
-    const moveInAmt = app.move_in_deposit_amount || app.approved_rate || 0;
-    const secAmt = app.security_deposit_amount || 0;
-    const appFeeCredit = (app.application_fee_paid && app.application_fee_amount > 0) ? app.application_fee_amount : 0;
-    const totalDueForTracker = Math.max(0, (moveInAmt + secAmt) - appFeeCredit);
     const amountStr = totalDueForTracker > 0 ? ` — ${rentalService.formatCurrency(totalDueForTracker)} due` : '';
     const depLabels = {
       pending: `Not started${amountStr}`,
