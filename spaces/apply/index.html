@@ -993,8 +993,8 @@
                 <input type="tel" id="phone" name="phone" placeholder="With + country code" required>
               </div>
               <div class="form-group">
-                <label for="date_of_birth">How old are you?</label>
-                <input type="text" id="date_of_birth" name="date_of_birth" placeholder="e.g. 28">
+                <label for="date_of_birth">How old are you? <span class="required">*</span></label>
+                <input type="text" id="date_of_birth" name="date_of_birth" placeholder="e.g. 28" required>
               </div>
               <div class="form-group full-width">
                 <label for="coliving_experience">Do you have experience with co-living? <span class="required">*</span></label>
@@ -1025,14 +1025,18 @@
                 </select>
               </div>
               <div class="form-group full-width">
-                <label for="volunteer_interest">Would you like to contribute your time and skills to support Alpaca operations?</label>
-                <select id="volunteer_interest" name="volunteer_interest">
+                <label for="volunteer_interest">Would you like to contribute your time and skills to support Alpaca operations? <span class="required">*</span></label>
+                <select id="volunteer_interest" name="volunteer_interest" required>
                   <option value="">Select an option</option>
                   <option value="yes_actively">Yes, I'd love to actively contribute</option>
                   <option value="yes_sometimes">Yes, sometimes when I can</option>
                   <option value="maybe">Maybe, I'd like to learn more</option>
                   <option value="no">Not at this time</option>
                 </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="pets_inquiry">Do you have any animals? <span class="required">*</span></label>
+                <textarea id="pets_inquiry" name="pets_inquiry" rows="2" placeholder="e.g. 2 cats, 1 medium dog — or 'None'" required></textarea>
               </div>
               <div class="form-group full-width">
                 <label for="photo_upload">Include your photo if you'd like</label>
@@ -1752,7 +1756,7 @@
       if (!phone) { document.getElementById('phone').classList.add('error'); hasError = true; }
 
       // Validate required community fit fields
-      const requiredFields = ['coliving_experience', 'life_focus', 'visiting_guide_response', 'desired_timeframe', 'preferred_accommodation', 'referral_source'];
+      const requiredFields = ['date_of_birth', 'coliving_experience', 'life_focus', 'visiting_guide_response', 'desired_timeframe', 'preferred_accommodation', 'volunteer_interest', 'pets_inquiry', 'referral_source'];
       for (const field of requiredFields) {
         if (!getValue(field)) {
           document.getElementById(field).classList.add('error');
@@ -1815,6 +1819,7 @@
           desired_timeframe: getValue('desired_timeframe'),
           preferred_accommodation: getValue('preferred_accommodation'),
           volunteer_interest: getValue('volunteer_interest') || null,
+          pets: getValue('pets_inquiry'),
           photo_url: photoUrl,
           referral_source: getValue('referral_source'),
           instagram: getValue('s1_instagram') || null,
@@ -2371,6 +2376,7 @@
           document.getElementById('desired_timeframe').value = 'Starting March 2030, for 6+ months';
           document.getElementById('preferred_accommodation').value = 'private_room';
           document.getElementById('volunteer_interest').value = 'yes_sometimes';
+          document.getElementById('pets_inquiry').value = 'None';
           document.getElementById('referral_source').value = 'Testing';
           console.log('Test data filled for Step 1');
         }
