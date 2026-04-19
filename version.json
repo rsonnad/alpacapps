@@ -1,12 +1,12 @@
 {
-  "version": "v260419.03 3:22a",
-  "release": 1364,
-  "sha": "9a9971cc4",
-  "fullSha": "9a9971cc41c12df97ae6ac427070e86fecfbe6f3",
+  "version": "v260419.04 4:51a",
+  "release": 1365,
+  "sha": "14cf7f8d1",
+  "fullSha": "14cf7f8d12121dc42dc4a8226f0179be7a683de8",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T08:22:21+00:00",
-  "commits": [{"sha":"9a9971cc4","message":"rentals: nightly stays charge full stay total, not one night","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-19T09:51:57+00:00",
+  "commits": [{"sha":"14cf7f8d1","message":"rentals: add require_deposit flag to skip deposit stage for short-term stays","author":"Sonia Wendorff"}]
 }
