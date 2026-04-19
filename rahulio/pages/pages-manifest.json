@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-04-18T20:49:40.368Z",
+  "generatedAt": "2026-04-19T01:28:39.316Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "sponic-garden/flux-overview.html",
+      "title": "Sponic Gardens Flux Overview",
+      "section": null,
+      "modifiedAt": "2026-04-19T01:27:44.000Z"
+    },
     {
       "path": "ninja.html",
       "title": "AI Software Ninja Workshop — Alpaca Playhouse",
