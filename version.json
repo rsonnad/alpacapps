@@ -1,12 +1,12 @@
 {
-  "version": "v260419.06 11:23a",
-  "release": 1367,
-  "sha": "d91e0cd52",
-  "fullSha": "d91e0cd52f692c3c4bc1aaf09871d2d067d84f9f",
+  "version": "v260419.07 11:41a",
+  "release": 1368,
+  "sha": "7c27865eb",
+  "fullSha": "7c27865eba98d0fa5f9fc7309e7bbd09d4645240",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T16:23:41+00:00",
-  "commits": [{"sha":"d91e0cd52","message":"rentals: include per-space resident guide in move-in confirmation email","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-19T16:41:28+00:00",
+  "commits": [{"sha":"7c27865eb","message":"fix: rentals row clicks broken — depStatus scoped inside else block","author":"Sonia Wendorff"}]
 }
