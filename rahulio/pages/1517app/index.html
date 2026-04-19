@@ -114,6 +114,26 @@
       font-style: italic;
     }
 
+    .prompt-block {
+      margin-bottom: 1.75rem;
+    }
+    .prompt-label {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .prompt-text {
+      font-style: italic;
+      color: var(--text-dim);
+      border-left: 3px solid var(--green);
+      padding: 0.6rem 0.9rem;
+      background: rgba(45, 106, 30, 0.05);
+      border-radius: 0 6px 6px 0;
+      line-height: 1.6;
+    }
+
     .note {
       text-align: center;
       margin-top: 1.5rem;
@@ -129,6 +149,11 @@
   </header>
 
   <main class="container">
+    <section class="prompt-block">
+      <p class="prompt-label">Prompt used for the video creation:</p>
+      <blockquote class="prompt-text">Create an overview video of Sponic Gardens based on the home page using google gemini. This should be 2 minutes. Use a nice narrative voice from Google TTS API. You can use the existing images in the video also.</blockquote>
+    </section>
+
     <!-- YouTube placeholder: replace data-video-id (or swap this div for an <iframe> with the embed URL) when the video is live. -->
     <div class="video-frame" data-video-id="">
       <div class="placeholder">
