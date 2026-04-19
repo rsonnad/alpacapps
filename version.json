@@ -1,12 +1,12 @@
 {
-  "version": "v260419.02 3:09a",
-  "release": 1363,
-  "sha": "2a1f9dfab",
-  "fullSha": "2a1f9dfab9fe86f6168bdde3d385797146937274",
-  "actor": "rsonnad",
+  "version": "v260419.03 3:22a",
+  "release": 1364,
+  "sha": "9a9971cc4",
+  "fullSha": "9a9971cc41c12df97ae6ac427070e86fecfbe6f3",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T08:09:51+00:00",
-  "commits": [{"sha":"2a1f9dfab","message":"Update spaces/ical/spartan-trailer.ics [automated]","author":"Rahul"}]
+  "pushedAt": "2026-04-19T08:22:21+00:00",
+  "commits": [{"sha":"9a9971cc4","message":"rentals: nightly stays charge full stay total, not one night","author":"Sonia Wendorff"}]
 }
