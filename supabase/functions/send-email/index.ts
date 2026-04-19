@@ -493,6 +493,17 @@ the Alpaca Playhouse property AI agent`
           })
         : '';
 
+      // Resident guide section — space-specific onboarding notes from staff
+      const residentGuideSection = data.resident_guide
+        ? `<div style="background:#f8f9fa;border-left:4px solid ${B.accent};border-radius:4px;padding:16px 20px;margin:20px 0;">
+            <p style="margin:0 0 10px;font-weight:700;font-size:14px;color:${B.text};">Your Space Guide</p>
+            <div style="color:${B.text};font-size:13px;line-height:1.7;white-space:pre-wrap;">${data.resident_guide.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+          </div>`
+        : '';
+      const residentGuideText = data.resident_guide
+        ? `\n--- YOUR SPACE GUIDE ---\n${data.resident_guide}\n`
+        : '';
+
       // Pass space image as extraImages for the brand wrapper gallery
       const _extraImages: string[] = [];
       if (data.space_image_url) _extraImages.push(data.space_image_url);
@@ -507,6 +518,8 @@ the Alpaca Playhouse property AI agent`
           ${dataTable(detailRowData, { heading: 'Reservation Details' })}
 
           ${miPaymentSection}
+
+          ${residentGuideSection}
 
           ${calloutBox(`<span style="font-size:13px;color:${B.text};line-height:1.5;">&#128218; Please re-familiarize yourself with our <a href="https://alpacaplayhouse.com/visiting" style="color:${B.accent};font-weight:600;">visiting &amp; operational guidelines</a> &mdash; which also has a map link to the property.</span>`)}
 
@@ -523,7 +536,7 @@ We're excited that you have chosen to come to the Alpaca Playhouse.
 ${dataTableText(detailRowData)}
 
 ${showPaymentMethods ? paymentMethodsText(data._payment_methods_raw, { memoText: 'rent' }) : ''}
-
+${residentGuideText}
 Please re-familiarize yourself with our operational guidelines: https://alpacaplayhouse.com/visiting
 
 Reminder: Please don't give the address out to potential guests. Instead, send them the visiting link so they can read the guidelines first.

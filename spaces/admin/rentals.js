@@ -398,7 +398,7 @@ async function loadCalendarData() {
     if (allSpaces.length === 0) {
       const { data: spacesData } = await supabase
         .from('spaces')
-        .select('id, name, can_be_dwelling, monthly_rate, is_archived')
+        .select('id, name, can_be_dwelling, monthly_rate, is_archived, resident_guide')
         .eq('is_archived', false);
       if (spacesData) {
         allSpaces = spacesData;
@@ -2367,7 +2367,7 @@ window.confirmMoveIn = async function() {
       const space = allSpaces.find(s => s.id === app.approved_space_id);
       const emailResult = await emailService.sendMoveInConfirmed({
         person: app.person,
-        space: { name: space?.name },
+        space: { name: space?.name, resident_guide: space?.resident_guide || null },
         approved_move_in_date: app.approved_move_in,
         approved_lease_end: app.approved_lease_end,
         approved_rate: app.approved_rate,

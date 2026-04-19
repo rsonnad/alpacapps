@@ -253,6 +253,7 @@ export const emailService = {
       is_monthly: isMonthly,
       check_in_time: application.check_in_time || null,
       check_out_time: application.check_out_time || null,
+      resident_guide: application.space?.resident_guide || null,
     });
   },
 
