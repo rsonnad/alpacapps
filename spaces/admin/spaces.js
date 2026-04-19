@@ -1118,6 +1118,7 @@ async function openEditSpace(spaceId) {
   document.getElementById('editLocation').value = space.location || '';
   document.getElementById('editType').value = space.type || '';
   document.getElementById('editDescription').value = space.description || '';
+  document.getElementById('editResidentGuide').value = space.resident_guide || '';
   document.getElementById('editMonthlyRate').value = space.monthly_rate || '';
   document.getElementById('editWeeklyRate').value = space.weekly_rate || '';
   document.getElementById('editNightlyRate').value = space.nightly_rate || '';
@@ -1299,6 +1300,7 @@ async function handleEditSpaceSubmit() {
       location: getVal('editLocation'),
       type: getVal('editType'),
       description: getVal('editDescription'),
+      resident_guide: getVal('editResidentGuide') || null,
       monthly_rate: getInt('editMonthlyRate'),
       weekly_rate: getInt('editWeeklyRate'),
       nightly_rate: getInt('editNightlyRate'),
