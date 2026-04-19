@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sponic Gardens Flux Overview</title>
+  <meta property="og:title" content="Sponic Gardens Flux Overview">
+  <meta property="og:description" content="Video overview of the Sponic Gardens Flux system.">
+  <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
+
+    :root {
+      --bg: #f4f7f1;
+      --surface: #ffffff;
+      --border: #c4d4ba;
+      --text: #1a2412;
+      --text-dim: #4a6040;
+      --text-muted: #7a9168;
+      --green: #2d6a1e;
+      --vine: #1a4d2e;
+      --radius-lg: 14px;
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, #d8e8ca 0%, #dde8d2 35%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero .breadcrumb {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .hero .breadcrumb a { color: var(--green); text-decoration: none; }
+    .hero .breadcrumb a:hover { text-decoration: underline; }
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.4rem;
+      font-weight: 400;
+      color: var(--vine);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.35rem;
+    }
+    .hero .tagline {
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--text-dim);
+    }
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 1.8rem; }
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+
+    .video-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #0c1509;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #a8c79a;
+    }
+    .video-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .placeholder {
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .placeholder .icon {
+      font-family: 'DM Serif Display', serif;
+      font-size: 3rem;
+      color: #4fd1c5;
+      margin-bottom: 0.5rem;
+    }
+    .placeholder .label {
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7aa47a;
+    }
+    .placeholder .sub {
+      font-size: 0.95rem;
+      margin-top: 0.35rem;
+      color: #a8c79a;
+      font-style: italic;
+    }
+
+    .note {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="breadcrumb">
+      <a href="/rahulio/pages/sponic-garden/">Sponic Garden</a> / Flux Overview
+    </div>
+    <h1>Sponic Gardens Flux Overview</h1>
+    <p class="tagline">Video walkthrough coming soon</p>
+  </header>
+
+  <main class="container">
+    <!-- YouTube placeholder: replace data-video-id (or swap this div for an <iframe> with the embed URL) when the video is live. -->
+    <div class="video-frame" data-video-id="">
+      <div class="placeholder">
+        <div class="icon">▶</div>
+        <div class="label">YouTube video placeholder</div>
+        <div class="sub">This space reserved for the Flux overview video.</div>
+      </div>
+    </div>
+    <p class="note">Check back soon — the Flux overview video will be embedded here.</p>
+  </main>
+</body>
+</html>
