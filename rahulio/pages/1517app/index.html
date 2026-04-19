@@ -84,12 +84,14 @@
       justify-content: center;
       color: #a8c79a;
     }
-    .video-frame iframe {
+    .video-frame iframe,
+    .video-frame video {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       border: 0;
+      background: #000;
     }
     .placeholder {
       text-align: center;
@@ -154,15 +156,15 @@
       <blockquote class="prompt-text">Create an overview video of Sponic Gardens based on the home page using google gemini. This should be 2 minutes. Use a nice narrative voice from Google TTS API. You can use the existing images in the video also.</blockquote>
     </section>
 
-    <!-- YouTube placeholder: replace data-video-id (or swap this div for an <iframe> with the embed URL) when the video is live. -->
-    <div class="video-frame" data-video-id="">
-      <div class="placeholder">
-        <div class="icon">▶</div>
-        <div class="label">YouTube video placeholder</div>
-        <div class="sub">This space reserved for the Flux overview video.</div>
-      </div>
+    <div class="video-frame">
+      <video
+        controls
+        preload="metadata"
+        playsinline
+        src="https://xumcmantignrocihtrdx.supabase.co/storage/v1/object/public/videos/sponic-gardens-overview-2min.mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
-    <p class="note">Check back soon — the Flux overview video will be embedded here.</p>
   </main>
 </body>
 </html>
