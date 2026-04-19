@@ -1,12 +1,12 @@
 {
-  "version": "v260419.01 2:39a",
-  "release": 1362,
-  "sha": "7be1ee325",
-  "fullSha": "7be1ee32513931b9154bc6318561987d4114654f",
-  "actor": "wensonia",
+  "version": "v260419.02 3:09a",
+  "release": 1363,
+  "sha": "2a1f9dfab",
+  "fullSha": "2a1f9dfab9fe86f6168bdde3d385797146937274",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T07:39:44+00:00",
-  "commits": [{"sha":"7be1ee325","message":"apply: add pets question, enforce required fields on Community Fit","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-19T08:09:51+00:00",
+  "commits": [{"sha":"2a1f9dfab","message":"Update spaces/ical/spartan-trailer.ics [automated]","author":"Rahul"}]
 }
