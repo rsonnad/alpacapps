@@ -1,12 +1,12 @@
 {
-  "version": "v260419.04 4:51a",
-  "release": 1365,
-  "sha": "14cf7f8d1",
-  "fullSha": "14cf7f8d12121dc42dc4a8226f0179be7a683de8",
+  "version": "v260419.05 11:05a",
+  "release": 1366,
+  "sha": "07df35789",
+  "fullSha": "07df357897a11027c3d9cfe6545184eb533b7e30",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T09:51:57+00:00",
-  "commits": [{"sha":"14cf7f8d1","message":"rentals: add require_deposit flag to skip deposit stage for short-term stays","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-19T16:05:13+00:00",
+  "commits": [{"sha":"07df35789","message":"spaces: add resident_guide field to space edit form","author":"Sonia Wendorff"}]
 }
