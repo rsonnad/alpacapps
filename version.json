@@ -1,12 +1,12 @@
 {
-  "version": "v260419.05 11:05a",
-  "release": 1366,
-  "sha": "07df35789",
-  "fullSha": "07df357897a11027c3d9cfe6545184eb533b7e30",
+  "version": "v260419.06 11:23a",
+  "release": 1367,
+  "sha": "d91e0cd52",
+  "fullSha": "d91e0cd52f692c3c4bc1aaf09871d2d067d84f9f",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T16:05:13+00:00",
-  "commits": [{"sha":"07df35789","message":"spaces: add resident_guide field to space edit form","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-19T16:23:41+00:00",
+  "commits": [{"sha":"d91e0cd52","message":"rentals: include per-space resident guide in move-in confirmation email","author":"Sonia Wendorff"}]
 }
