@@ -36,7 +36,30 @@ BEGIN
     RETURN;
   END IF;
 
+  -- Build the set of space_ids the caller should see codes for:
+  --   1. Each space they're directly assigned to
+  --   2. The parent of each assigned space, but only if that parent is not
+  --      a root-level space (i.e. Playhouse, Sharingwood Basement). This
+  --      lets a Fishbowl resident see the Spartan Trailer outer-door code
+  --      and a Skyloft Bed resident see the Skyloft room code, without
+  --      leaking any Playhouse-level codes that might exist.
   RETURN QUERY
+  WITH assigned AS (
+    SELECT asp.space_id
+      FROM assignments a
+      JOIN assignment_spaces asp ON asp.assignment_id = a.id
+     WHERE a.person_id = _person_id
+       AND a.status::text IN ('active', 'pending_contract', 'contract_sent')
+  ),
+  accessible AS (
+    SELECT space_id FROM assigned
+    UNION
+    SELECT s.parent_id
+      FROM spaces s
+      JOIN spaces p ON p.id = s.parent_id
+     WHERE s.id IN (SELECT space_id FROM assigned)
+       AND p.parent_id IS NOT NULL  -- skip root parents (Playhouse, Sharingwood)
+  )
   SELECT
     pv.space_id,
     s.name          AS space_name,
@@ -45,18 +68,10 @@ BEGIN
     pv.password,
     pv.notes
   FROM password_vault pv
-  JOIN spaces s
-    ON s.id = pv.space_id
+  JOIN spaces s ON s.id = pv.space_id
   WHERE pv.category = 'house'
     AND pv.is_active = TRUE
-    AND pv.space_id IN (
-      SELECT asp.space_id
-        FROM assignments a
-        JOIN assignment_spaces asp
-          ON asp.assignment_id = a.id
-       WHERE a.person_id = _person_id
-         AND a.status::text IN ('active', 'pending_contract', 'contract_sent')
-    )
+    AND pv.space_id IN (SELECT space_id FROM accessible)
   ORDER BY s.name, pv.display_order NULLS LAST, pv.service;
 END;
 $$;

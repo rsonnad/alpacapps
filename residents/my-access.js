@@ -37,8 +37,9 @@ async function loadAccessCodes() {
   if (!data || data.length === 0) {
     list.innerHTML = `
       <div class="access-empty">
-        <p style="margin:0 0 0.5rem;"><strong>No active space assignment.</strong></p>
-        <p style="margin:0;">If this looks wrong, text Jon at <a href="sms:+12396665815">(239) 666-5815</a> or email <a href="mailto:pai@alpacaplayhouse.com">pai@alpacaplayhouse.com</a>.</p>
+        <p style="margin:0 0 0.5rem;"><strong>No codes on file for your space.</strong></p>
+        <p style="margin:0 0 0.5rem;">Your space might use a physical key (not a keypad), or you may not have an active assignment yet.</p>
+        <p style="margin:0;">Either way, text Jon at <a href="sms:+12396665815">(239) 666-5815</a> or email <a href="mailto:pai@alpacaplayhouse.com">pai@alpacaplayhouse.com</a> and we'll sort it out.</p>
       </div>`;
     return;
   }
