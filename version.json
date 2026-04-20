@@ -1,12 +1,12 @@
 {
-  "version": "v260420.04 4:22p",
-  "release": 1372,
-  "sha": "0d616f4ab",
-  "fullSha": "0d616f4ab9ac336e64054a92169b324f8dc1dba1",
+  "version": "v260420.05 4:36p",
+  "release": 1373,
+  "sha": "c2e04c76d",
+  "fullSha": "c2e04c76d18d911aae1891bb57869f0c9dcf55be",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-20T21:22:09+00:00",
-  "commits": [{"sha":"0d616f4ab","message":"rentals: consolidate resident sections — Active + Past Residents","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-20T21:36:07+00:00",
+  "commits": [{"sha":"c2e04c76d","message":"rentals: add Stay Connected section (WhatsApp + contacts) to move-in house rules","author":"Sonia Wendorff"}]
 }
