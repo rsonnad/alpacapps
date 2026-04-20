@@ -1,12 +1,12 @@
 {
-  "version": "v260420.08 5:37p",
-  "release": 1376,
-  "sha": "6e43adcec",
-  "fullSha": "6e43adcec001e3d85ab5ec102579dfcb61184376",
+  "version": "v260420.09 6:23p",
+  "release": 1377,
+  "sha": "b5c39bf0a",
+  "fullSha": "b5c39bf0ae36dd9dcc2438c0d9d15aa5790b6b64",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-20T22:37:49+00:00",
-  "commits": [{"sha":"6e43adcec","message":"residents: My Access page — shows door codes for assigned spaces (auth-gated)","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-20T23:23:01+00:00",
+  "commits": [{"sha":"b5c39bf0a","message":"my-access: walk one level up the space hierarchy for codes + softer empty state","author":"Sonia Wendorff"}]
 }
