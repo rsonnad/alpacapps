@@ -1,12 +1,12 @@
 {
-  "version": "v260419.07 11:41a",
-  "release": 1368,
-  "sha": "7c27865eb",
-  "fullSha": "7c27865eba98d0fa5f9fc7309e7bbd09d4645240",
+  "version": "v260420.01 3:16p",
+  "release": 1369,
+  "sha": "faa16b0f3",
+  "fullSha": "faa16b0f344426c7a35be42bee35b2cdf457081f",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-19T16:41:28+00:00",
-  "commits": [{"sha":"7c27865eb","message":"fix: rentals row clicks broken — depStatus scoped inside else block","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-20T20:16:14+00:00",
+  "commits": [{"sha":"faa16b0f3","message":"rentals: add global house-rules section to move-in email + prefill per-space resident-guide template","author":"Sonia Wendorff"}]
 }
