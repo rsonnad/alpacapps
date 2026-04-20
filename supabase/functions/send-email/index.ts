@@ -524,7 +524,9 @@ the Alpaca Playhouse property AI agent`
       const checkInDisplay = data.check_in_time === 'flexible' ? 'Flexible (no set time)' : (data.check_in_time || null);
       const checkOutDisplay = data.check_out_time === 'flexible' ? 'Flexible (no set time)' : (data.check_out_time || null);
       const showRentDue = isPaid && isMonthly;
-      const showPaymentMethods = isPaid;
+      // Only monthly residents need recurring payment instructions — short-term
+      // stays are already fully prepaid by the time this email goes out.
+      const showPaymentMethods = isPaid && isMonthly;
 
       // Space link
       const spaceLink = data.space_id
