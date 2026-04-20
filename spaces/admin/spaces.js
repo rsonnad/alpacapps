@@ -59,7 +59,7 @@ const DEFAULT_HOUSE_RULES_MD = `Please read the [Visiting Guide](https://alpacap
 • **WhatsApp community (essential — please join!)** — [Tap to join the resident group](https://chat.whatsapp.com/Ce6KL2dMi3L5AU56rOIYRy?mode=gi_t). This is our primary way of keeping in touch. Other residents and staff need a way to reach you for check-ins, updates, and community coordination.
 • **Ask PAI first** — our AI assistant handles most questions. Email pai@alpacaplayhouse.com, text (737) 747-4737, or call (737) 225-9525.
 • **Jon — on-site house engineer** — if you can't find the answer autonomously or PAI can't help, Jon lives on-site and can troubleshoot anything in person. Text him at (239) 666-5815.
-• **Urgent / can't find the place** — Text Rahul at (424) 234-1750.`;
+• **Urgent** — Text Rahul at (424) 234-1750.`;
 
 let universalHouseRulesMd = null;
 
