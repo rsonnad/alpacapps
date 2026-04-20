@@ -17,7 +17,15 @@ SET
 • **Never share the address** — if guests are coming, send them alpacaplayhouse.com/visiting. Not the address. Ever.
 • **Quiet hours** — before 9am and after 9:30pm.
 • **Clean up immediately** — no personal items on kitchen or living room counters.
-• **Wifi** — Black Rock City / popopopo$$::text)
+• **Wifi** — Black Rock City / popopopo
+
+**Stay connected — reach us any time:**
+
+• **WhatsApp community** — [Join the resident group](https://wa.me/14242341750) for quick questions and chat with other residents.
+• **Call** — (737) 225-9525
+• **Text / SMS** — (737) 747-4737
+• **Email** — pai@alpacaplayhouse.com
+• **Urgent / can't find the place** — Text (424) 234-1750$$::text)
   ),
   updated_at = now()
 WHERE id = 1
