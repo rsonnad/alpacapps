@@ -1,12 +1,12 @@
 {
-  "version": "v260420.07 5:22p",
-  "release": 1375,
-  "sha": "e0d3ff32b",
-  "fullSha": "e0d3ff32bc71f4ccbec13894d6b6a916e300c455",
+  "version": "v260420.08 5:37p",
+  "release": 1376,
+  "sha": "6e43adcec",
+  "fullSha": "6e43adcec001e3d85ab5ec102579dfcb61184376",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-20T22:22:22+00:00",
-  "commits": [{"sha":"e0d3ff32b","message":"rentals: trim \"Urgent\" bullet in move-in house rules","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-20T22:37:49+00:00",
+  "commits": [{"sha":"6e43adcec","message":"residents: My Access page — shows door codes for assigned spaces (auth-gated)","author":"Sonia Wendorff"}]
 }
