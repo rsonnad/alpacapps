@@ -1,12 +1,12 @@
 {
-  "version": "v260420.05 4:36p",
-  "release": 1373,
-  "sha": "c2e04c76d",
-  "fullSha": "c2e04c76d18d911aae1891bb57869f0c9dcf55be",
+  "version": "v260420.06 5:15p",
+  "release": 1374,
+  "sha": "d2048cf78",
+  "fullSha": "d2048cf784180322312e647c85a8719a9fd74cd4",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-20T21:36:07+00:00",
-  "commits": [{"sha":"c2e04c76d","message":"rentals: add Stay Connected section (WhatsApp + contacts) to move-in house rules","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-20T22:15:57+00:00",
+  "commits": [{"sha":"d2048cf78","message":"rentals: tiered contact section in move-in house rules (WhatsApp → PAI → Jon → Rahul)","author":"Sonia Wendorff"}]
 }
