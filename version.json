@@ -1,12 +1,12 @@
 {
-  "version": "v260420.03 4:10p",
-  "release": 1371,
-  "sha": "c828cf4c8",
-  "fullSha": "c828cf4c8308a6af287f66b9a94e647e6beb74bb",
+  "version": "v260420.04 4:22p",
+  "release": 1372,
+  "sha": "0d616f4ab",
+  "fullSha": "0d616f4ab9ac336e64054a92169b324f8dc1dba1",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-20T21:10:31+00:00",
-  "commits": [{"sha":"c828cf4c8","message":"rentals: add Active/Past Residents sections to pipeline","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-20T21:22:09+00:00",
+  "commits": [{"sha":"0d616f4ab","message":"rentals: consolidate resident sections — Active + Past Residents","author":"Sonia Wendorff"}]
 }
