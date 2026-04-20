@@ -39,6 +39,118 @@ let currentSort = { column: 'monthly_rate', direction: 'desc' };
 
 const RESIDENT_GUIDE_TEMPLATE = '• AC: \n• Heating: \n• Bathroom: \n• Wifi: \n• Music: \n• Lights: \n• Notes: ';
 
+// Universal house rules (editable via the "General House Info" modal).
+// DEFAULT matches the fallback baked into the send-email edge function.
+const DEFAULT_HOUSE_RULES_MD = `Please read the [Visiting Guide](https://alpacaplayhouse.com/visiting) and [Community](https://alpacaplayhouse.com/community) pages before arrival — they cover parking, house rules, and culture in full.
+
+**At a glance:**
+
+• **Parking** — gravel lot on the right when you enter the gate. If full, across the street to the left past two houses. Never on the grass, never in front of neighbors, never by the sauna or garage.
+• **Gates** — always keep the back fence gates closed. Always.
+• **No meat inside the house** — store in the doghouse fridge, cook on the back patio grills.
+• **No alcohol on property.**
+• **Never share the address** — if guests are coming, send them alpacaplayhouse.com/visiting. Not the address. Ever.
+• **Quiet hours** — before 9am and after 9:30pm.
+• **Clean up immediately** — no personal items on kitchen or living room counters.
+• **Wifi** — Black Rock City / popopopo`;
+
+let universalHouseRulesMd = null;
+
+function escapeHouseHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Mirrors renderHouseRulesMarkdown in supabase/functions/send-email/index.ts.
+// Supports **bold**, [text](url), and bullet lines (•, -, *).
+function renderHouseRulesMd(md) {
+  if (!md) return '';
+  const inline = (s) =>
+    escapeHouseHtml(s)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--accent, #d4883a);font-weight:600;">$1</a>');
+  return md.split(/\n\s*\n/).map((block) => {
+    const lines = block.split('\n').map((l) => l.replace(/\r$/, '')).filter((l) => l.trim().length > 0);
+    if (lines.length === 0) return '';
+    if (lines.every((l) => /^[•\-*]\s+/.test(l.trim()))) {
+      const items = lines
+        .map((l) => inline(l.trim().replace(/^[•\-*]\s+/, '')))
+        .map((t) => `<li style="margin:0 0 4px;">${t}</li>`)
+        .join('');
+      return `<ul style="margin:0 0 8px;padding-left:20px;line-height:1.65;">${items}</ul>`;
+    }
+    return `<p style="margin:0 0 10px;line-height:1.6;">${lines.map(inline).join('<br>')}</p>`;
+  }).join('');
+}
+
+async function loadUniversalHouseRules() {
+  try {
+    const { data, error } = await supabase
+      .from('brand_config')
+      .select('config')
+      .eq('id', 1)
+      .single();
+    if (data && !error) {
+      const fromDb = data.config && typeof data.config.move_in_house_rules === 'string' ? data.config.move_in_house_rules.trim() : '';
+      universalHouseRulesMd = fromDb || DEFAULT_HOUSE_RULES_MD;
+      return;
+    }
+  } catch (e) {
+    console.warn('Failed to load brand_config for house rules:', e);
+  }
+  universalHouseRulesMd = DEFAULT_HOUSE_RULES_MD;
+}
+
+function renderHouseInfoPreview() {
+  const el = document.getElementById('houseInfoPreview');
+  if (!el) return;
+  el.innerHTML = renderHouseRulesMd(universalHouseRulesMd || DEFAULT_HOUSE_RULES_MD);
+}
+
+function openHouseInfoEditor() {
+  const ta = document.getElementById('houseInfoTextarea');
+  const live = document.getElementById('houseInfoLivePreview');
+  if (!ta || !live) return;
+  ta.value = universalHouseRulesMd || DEFAULT_HOUSE_RULES_MD;
+  live.innerHTML = renderHouseRulesMd(ta.value);
+  document.getElementById('houseInfoEditorModal').classList.remove('hidden');
+}
+
+function closeHouseInfoEditor() {
+  document.getElementById('houseInfoEditorModal').classList.add('hidden');
+}
+
+async function saveHouseInfoEditor() {
+  const ta = document.getElementById('houseInfoTextarea');
+  if (!ta) return;
+  const newMd = ta.value.trim();
+  const btn = document.getElementById('saveHouseInfoBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    // jsonb merge: reads current config, merges the new key, writes back.
+    const { data: current, error: readErr } = await supabase
+      .from('brand_config')
+      .select('config')
+      .eq('id', 1)
+      .single();
+    if (readErr) throw readErr;
+    const newConfig = { ...(current?.config || {}), move_in_house_rules: newMd };
+    const { error: updateErr } = await supabase
+      .from('brand_config')
+      .update({ config: newConfig, updated_at: new Date().toISOString() })
+      .eq('id', 1);
+    if (updateErr) throw updateErr;
+    universalHouseRulesMd = newMd;
+    renderHouseInfoPreview();
+    showToast('General house info saved — applies to all move-in emails');
+    closeHouseInfoEditor();
+  } catch (e) {
+    console.error('Failed to save house info:', e);
+    showToast(`Failed to save: ${e?.message || e}`, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save for all spaces'; }
+  }
+}
+
 // Photo upload state
 let currentUploadSpaceId = null;
 let currentUploadContext = null;
@@ -70,6 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     onReady: (state) => {
       authState = state;
       loadSpacesData();
+      loadUniversalHouseRules();
     }
   });
 
@@ -838,6 +951,25 @@ function setupSpaceModals() {
     }
   });
 
+  // General house info editor modal handlers
+  document.getElementById('openHouseInfoEditor')?.addEventListener('click', openHouseInfoEditor);
+  document.getElementById('closeHouseInfoEditor')?.addEventListener('click', closeHouseInfoEditor);
+  document.getElementById('cancelHouseInfo')?.addEventListener('click', closeHouseInfoEditor);
+  document.getElementById('saveHouseInfoBtn')?.addEventListener('click', saveHouseInfoEditor);
+  document.getElementById('resetHouseInfoBtn')?.addEventListener('click', () => {
+    const ta = document.getElementById('houseInfoTextarea');
+    const live = document.getElementById('houseInfoLivePreview');
+    if (ta) ta.value = DEFAULT_HOUSE_RULES_MD;
+    if (live) live.innerHTML = renderHouseRulesMd(DEFAULT_HOUSE_RULES_MD);
+  });
+  document.getElementById('houseInfoTextarea')?.addEventListener('input', (e) => {
+    const live = document.getElementById('houseInfoLivePreview');
+    if (live) live.innerHTML = renderHouseRulesMd(e.target.value);
+  });
+  document.getElementById('houseInfoEditorModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'houseInfoEditorModal') closeHouseInfoEditor();
+  });
+
   // Media detail modal handlers
   setupMediaDetailModal();
 }
@@ -1121,6 +1253,7 @@ async function openEditSpace(spaceId) {
   document.getElementById('editType').value = space.type || '';
   document.getElementById('editDescription').value = space.description || '';
   document.getElementById('editResidentGuide').value = space.resident_guide || RESIDENT_GUIDE_TEMPLATE;
+  renderHouseInfoPreview();
   document.getElementById('editMonthlyRate').value = space.monthly_rate || '';
   document.getElementById('editWeeklyRate').value = space.weekly_rate || '';
   document.getElementById('editNightlyRate').value = space.nightly_rate || '';

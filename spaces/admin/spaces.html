@@ -621,8 +621,16 @@
           </div>
 
           <div class="form-group">
-            <label for="editResidentGuide">Resident Guide <span style="font-weight: 400; color: var(--text-muted); font-size: 0.85rem;">— included in move-in email</span></label>
+            <label for="editResidentGuide">Resident Guide <span style="font-weight: 400; color: var(--text-muted); font-size: 0.85rem;">— this space's guide, included in move-in email</span></label>
             <textarea id="editResidentGuide" rows="10" placeholder="• AC: &#10;• Heating: &#10;• Bathroom: &#10;• Wifi: &#10;• Music: &#10;• Lights: &#10;• Notes: "></textarea>
+          </div>
+
+          <div class="form-group">
+            <label style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;flex-wrap:wrap;">
+              <span>General House Info <span style="font-weight: 400; color: var(--text-muted); font-size: 0.85rem;">— shared across every move-in email</span></span>
+              <button type="button" id="openHouseInfoEditor" class="btn-secondary" style="font-size:0.85rem;padding:0.35rem 0.75rem;">Edit general house info →</button>
+            </label>
+            <div id="houseInfoPreview" style="background:var(--bg-muted, #f8f5ef);border:1px solid var(--border, #e6e2d9);border-radius:8px;padding:12px 16px;font-size:0.85rem;line-height:1.6;color:var(--text-muted, #7d6f74);max-height:220px;overflow-y:auto;">Loading shared house info…</div>
           </div>
 
           <div class="form-grid form-grid-3">
@@ -778,6 +786,34 @@
         <button type="button" id="archiveSpaceBtn" class="btn-danger" style="margin-right: auto;">Archive Space</button>
         <button type="button" id="cancelEditSpace" class="btn-secondary">Cancel</button>
         <button type="button" id="submitEditSpace" class="btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- General House Info Editor (universal across spaces) -->
+  <div id="houseInfoEditorModal" class="modal hidden">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2>General House Info <span style="font-weight:400;color:var(--text-muted);font-size:0.85rem;">— shown in every move-in email</span></h2>
+        <button class="modal-close" id="closeHouseInfoEditor">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin:0 0 0.75rem;color:var(--text-muted);font-size:0.9rem;">Edits here apply to <strong>every</strong> space's move-in confirmation email. Supports <code>**bold**</code>, <code>[link text](https://url)</code>, and lines starting with <code>•</code> become bullet lists.</p>
+
+        <div class="form-group">
+          <label for="houseInfoTextarea">Markdown content</label>
+          <textarea id="houseInfoTextarea" rows="16" style="font-family:var(--font-mono, ui-monospace, monospace);font-size:0.9rem;line-height:1.55;"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Live preview</label>
+          <div id="houseInfoLivePreview" style="background:var(--bg-muted, #f8f5ef);border:1px solid var(--border, #e6e2d9);border-radius:8px;padding:16px 20px;font-size:0.9rem;line-height:1.65;color:var(--text, #2a1f23);max-height:320px;overflow-y:auto;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="resetHouseInfoBtn" class="btn-secondary" style="margin-right:auto;" title="Replace the textarea with the hardcoded default — does not save">Reset to default</button>
+        <button type="button" id="cancelHouseInfo" class="btn-secondary">Cancel</button>
+        <button type="button" id="saveHouseInfoBtn" class="btn-primary">Save for all spaces</button>
       </div>
     </div>
   </div>

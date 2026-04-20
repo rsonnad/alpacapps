@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { renderTemplate, SENDER_MAP } from "../_shared/template-engine.ts";
-import { wrapEmailHtml } from "../_shared/email-brand-wrapper.ts";
+import { wrapEmailHtml, loadBrandConfig } from "../_shared/email-brand-wrapper.ts";
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import {
   paymentMethodsBlock,
@@ -116,6 +116,55 @@ interface EmailTemplate {
   subject: string;
   html: string;
   text: string;
+}
+
+// =============================================
+// Move-in house rules — universal template
+// =============================================
+// Editable in brand_config.config.move_in_house_rules (JSONB). Admins change via
+// the "Edit general house info" modal in spaces/admin/spaces.html. This hardcoded
+// default is the fallback for when the DB key is missing (pre-migration) or DB
+// fetch fails.
+const DEFAULT_MOVE_IN_HOUSE_RULES_MD = `Please read the [Visiting Guide](https://alpacaplayhouse.com/visiting) and [Community](https://alpacaplayhouse.com/community) pages before arrival — they cover parking, house rules, and culture in full.
+
+**At a glance:**
+
+• **Parking** — gravel lot on the right when you enter the gate. If full, across the street to the left past two houses. Never on the grass, never in front of neighbors, never by the sauna or garage.
+• **Gates** — always keep the back fence gates closed. Always.
+• **No meat inside the house** — store in the doghouse fridge, cook on the back patio grills.
+• **No alcohol on property.**
+• **Never share the address** — if guests are coming, send them alpacaplayhouse.com/visiting. Not the address. Ever.
+• **Quiet hours** — before 9am and after 9:30pm.
+• **Clean up immediately** — no personal items on kitchen or living room counters.
+• **Wifi** — Black Rock City / popopopo`;
+
+// Minimal markdown renderer — supports **bold**, [label](url), and `•|-|*` bullet lines.
+// HTML-escapes raw content before applying inline formatting so admin input can't
+// inject tags. Paragraphs are split on blank lines.
+function renderHouseRulesMarkdown(md: string, accent: string, text: string, textMuted: string): string {
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const inline = (s: string) =>
+    esc(s)
+      .replace(/\*\*(.+?)\*\*/g, `<strong>$1</strong>`)
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, `<a href="$2" style="color:${accent};font-weight:600;">$1</a>`);
+  const blocks = md.split(/\n\s*\n/);
+  return blocks.map(block => {
+    const lines = block.split('\n').map(l => l.replace(/\r$/, '')).filter(l => l.trim().length > 0);
+    if (lines.length === 0) return '';
+    if (lines.every(l => /^[•\-*]\s+/.test(l.trim()))) {
+      const items = lines.map(l => inline(l.trim().replace(/^[•\-*]\s+/, ''))).map(t => `<li style="margin:0 0 4px;">${t}</li>`).join('');
+      return `<ul style="margin:0 0 8px;padding-left:20px;color:${text};font-size:13px;line-height:1.7;">${items}</ul>`;
+    }
+    const joined = lines.map(inline).join('<br>');
+    return `<p style="margin:0 0 10px;color:${textMuted};font-size:13px;line-height:1.6;">${joined}</p>`;
+  }).join('');
+}
+
+// Strip markdown for plain-text email version.
+function stripHouseRulesMarkdown(md: string): string {
+  return md
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)');
 }
 
 // Format "09:30:00" → "9:30 AM"
@@ -504,36 +553,23 @@ the Alpaca Playhouse property AI agent`
         ? `\n--- YOUR SPACE GUIDE${data.space_name ? ` — ${data.space_name}` : ''} ---\n${data.resident_guide}\n`
         : '';
 
-      // Global house rules section — universal for all spaces
+      // Global house rules section — universal for all spaces.
+      // Body is pre-rendered from brand_config in getRenderedTemplate() above;
+      // this just wraps it in the card chrome. data._house_rules_html may be
+      // undefined when getTemplate is called directly in a non-send context,
+      // so fall back to the default markdown rendered inline.
+      const houseRulesBodyHtml = data._house_rules_html
+        || renderHouseRulesMarkdown(DEFAULT_MOVE_IN_HOUSE_RULES_MD, B.accent, B.text, B.textMuted);
+      const houseRulesBodyText = data._house_rules_text
+        || stripHouseRulesMarkdown(DEFAULT_MOVE_IN_HOUSE_RULES_MD);
       const houseRulesSection = `<div style="background:#f8f9fa;border-left:4px solid ${B.accent};border-radius:4px;padding:16px 20px;margin:20px 0;">
             <p style="margin:0 0 10px;font-weight:700;font-size:14px;color:${B.text};">The House — What You Need to Know</p>
-            <p style="margin:0 0 12px;color:${B.textMuted};font-size:13px;line-height:1.6;">Please read the <a href="https://alpacaplayhouse.com/visiting" style="color:${B.accent};font-weight:600;">Visiting Guide</a> and <a href="https://alpacaplayhouse.com/community" style="color:${B.accent};font-weight:600;">Community</a> pages before arrival — they cover parking, house rules, and culture in full.</p>
-            <p style="margin:0 0 8px;font-weight:600;font-size:13px;color:${B.text};">At a glance:</p>
-            <ul style="margin:0;padding-left:20px;color:${B.text};font-size:13px;line-height:1.7;">
-              <li><strong>Parking</strong> — gravel lot on the right when you enter the gate. If full, across the street to the left past two houses. Never on the grass, never in front of neighbors, never by the sauna or garage.</li>
-              <li><strong>Gates</strong> — always keep the back fence gates closed. Always.</li>
-              <li><strong>No meat inside the house</strong> — store in the doghouse fridge, cook on the back patio grills.</li>
-              <li><strong>No alcohol on property.</strong></li>
-              <li><strong>Never share the address</strong> — if guests are coming, send them alpacaplayhouse.com/visiting. Not the address. Ever.</li>
-              <li><strong>Quiet hours</strong> — before 9am and after 9:30pm.</li>
-              <li><strong>Clean up immediately</strong> — no personal items on kitchen or living room counters.</li>
-              <li><strong>Wifi</strong> — Black Rock City / popopopo</li>
-            </ul>
+            ${houseRulesBodyHtml}
           </div>`;
       const houseRulesText = `
 --- THE HOUSE — WHAT YOU NEED TO KNOW ---
 
-Please read the Visiting Guide (https://alpacaplayhouse.com/visiting) and Community (https://alpacaplayhouse.com/community) pages before arrival — they cover parking, house rules, and culture in full.
-
-At a glance:
-• Parking — gravel lot on the right when you enter the gate. If full, across the street to the left past two houses. Never on the grass, never in front of neighbors, never by the sauna or garage.
-• Gates — always keep the back fence gates closed. Always.
-• No meat inside the house — store in the doghouse fridge, cook on the back patio grills.
-• No alcohol on property.
-• Never share the address — if guests are coming, send them alpacaplayhouse.com/visiting. Not the address. Ever.
-• Quiet hours — before 9am and after 9:30pm.
-• Clean up immediately — no personal items on kitchen or living room counters.
-• Wifi — Black Rock City / popopopo
+${houseRulesBodyText}
 `;
 
       // Pass space image as extraImages for the brand wrapper gallery
@@ -2442,6 +2478,22 @@ async function getRenderedTemplate(
     data._payment_methods_text = pm.text;
     if (!data._payment_methods_raw) {
       data._payment_methods_raw = pm.raw;
+    }
+  }
+
+  // Universal house rules (editable in brand_config) — injected for move-in email.
+  if (type === "move_in_confirmed") {
+    try {
+      const brandConfig = await loadBrandConfig();
+      const md = (brandConfig && typeof brandConfig.move_in_house_rules === 'string' && brandConfig.move_in_house_rules.trim())
+        ? brandConfig.move_in_house_rules
+        : DEFAULT_MOVE_IN_HOUSE_RULES_MD;
+      data._house_rules_html = renderHouseRulesMarkdown(md, '#d4883a', '#2a1f23', '#7d6f74');
+      data._house_rules_text = stripHouseRulesMarkdown(md);
+    } catch (e) {
+      console.warn('Failed to render house rules, using default:', e);
+      data._house_rules_html = renderHouseRulesMarkdown(DEFAULT_MOVE_IN_HOUSE_RULES_MD, '#d4883a', '#2a1f23', '#7d6f74');
+      data._house_rules_text = stripHouseRulesMarkdown(DEFAULT_MOVE_IN_HOUSE_RULES_MD);
     }
   }
 
