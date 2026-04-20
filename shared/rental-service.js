@@ -176,8 +176,11 @@ async function getApplication(applicationId) {
  * Determine pipeline stage for an application
  */
 function getPipelineStage(application) {
-  // Completed - has assignment
-  if (application.move_in_confirmed_at) return 'complete';
+  // Past resident — stay has ended (moved out)
+  if (application.stay_ended_at) return 'past_resident';
+
+  // Active resident — moved in, currently staying
+  if (application.move_in_confirmed_at) return 'active_resident';
 
   // Ready for move-in — deposit confirmed, or deposit not required
   if (application.deposit_status === DEPOSIT_STATUS.CONFIRMED ||
@@ -1309,6 +1312,70 @@ async function confirmMoveIn(applicationId) {
   return { application: updatedApp, assignment };
 }
 
+/**
+ * Mark a resident's stay as ended (moved out).
+ * Also marks any linked assignment as completed.
+ */
+async function endStay(applicationId) {
+  const app = await getApplication(applicationId);
+  if (!app) throw new Error('Application not found');
+
+  const { data: updated, error } = await supabase
+    .from('rental_applications')
+    .update({
+      stay_ended_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ...activityStamp(),
+    })
+    .eq('id', applicationId)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  if (app.assignment_id) {
+    await supabase
+      .from('assignments')
+      .update({ status: 'completed' })
+      .eq('id', app.assignment_id);
+  }
+
+  triggerIcalRegeneration();
+  return updated;
+}
+
+/**
+ * Reopen a past resident's stay (undo endStay).
+ * Restores assignment to active if it was completed.
+ */
+async function reopenStay(applicationId) {
+  const app = await getApplication(applicationId);
+  if (!app) throw new Error('Application not found');
+
+  const { data: updated, error } = await supabase
+    .from('rental_applications')
+    .update({
+      stay_ended_at: null,
+      updated_at: new Date().toISOString(),
+      ...activityStamp(),
+    })
+    .eq('id', applicationId)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  if (app.assignment_id && app.assignment?.status === 'completed') {
+    await supabase
+      .from('assignments')
+      .update({ status: 'active' })
+      .eq('id', app.assignment_id);
+  }
+
+  triggerIcalRegeneration();
+  return updated;
+}
+
 // =============================================
 // PAYMENT METHODS
 // =============================================
@@ -1554,6 +1621,8 @@ export const rentalService = {
 
   // Move-in
   confirmMoveIn,
+  endStay,
+  reopenStay,
 
   // Payment methods
   getPaymentMethods,

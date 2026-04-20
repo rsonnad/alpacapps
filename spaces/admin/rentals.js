@@ -184,10 +184,15 @@ const STAGE_LABELS = {
   contract: 'Contract',
   deposit: 'Deposit',
   ready: 'Ready',
+  active_resident: 'Active Residents',
+  past_resident: 'Past Residents',
 };
 
+// Stages that default to collapsed when no preference is stored
+const DEFAULT_COLLAPSED = new Set(['past_resident']);
+
 function renderPipeline() {
-  const stages = ['community_fit', 'applications', 'approved', 'contract', 'deposit', 'ready'];
+  const stages = ['community_fit', 'applications', 'approved', 'contract', 'deposit', 'ready', 'active_resident', 'past_resident'];
   const container = document.getElementById('rentalPipeline');
   if (!container) return;
 
@@ -207,7 +212,7 @@ function renderPipeline() {
 
   container.innerHTML = stages.map(stage => {
     const apps = grouped[stage] || [];
-    const isCollapsed = collapsed[stage] === true;
+    const isCollapsed = stage in collapsed ? collapsed[stage] === true : DEFAULT_COLLAPSED.has(stage);
     return `
       <div class="pipeline-section" data-stage="${stage}">
         <div class="pipeline-section-header" data-toggle="${stage}">
@@ -1777,6 +1782,15 @@ function updateRentalActions(app) {
         buttons.push('<button class="btn-primary" disabled title="Agreement must be signed first" style="opacity:0.5;cursor:not-allowed;">Confirm Move-in</button>');
       }
       break;
+
+    case 'active_resident':
+      buttons.push('<button class="btn-primary" onclick="endStayAction()">Mark Stay Ended</button>');
+      break;
+
+    case 'past_resident':
+      buttons.push('<span class="tracker-inline-status complete">&#10003; Stay ended ' + rentalService.formatDate(app.stay_ended_at) + '</span>');
+      buttons.push('<button class="btn-secondary" onclick="reopenStayAction()">Reopen Stay</button>');
+      break;
   }
 
   // Add approve button if under review
@@ -2384,6 +2398,36 @@ window.confirmMoveIn = async function() {
       showToast('Move-in confirmed! Assignment created.', 'success');
     }
 
+    closeRentalDetail();
+  } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+    restore();
+  }
+};
+
+window.endStayAction = async function() {
+  if (!currentApplicationId) return;
+  if (!confirm('Mark stay as ended? This moves the resident to Past Residents.')) return;
+  const restore = setActionPaneLoading('Ending stay...');
+  try {
+    await rentalService.endStay(currentApplicationId);
+    await loadApplications();
+    showToast('Stay ended. Moved to Past Residents.', 'success');
+    closeRentalDetail();
+  } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+    restore();
+  }
+};
+
+window.reopenStayAction = async function() {
+  if (!currentApplicationId) return;
+  if (!confirm('Reopen stay? This moves the resident back to Active Residents.')) return;
+  const restore = setActionPaneLoading('Reopening...');
+  try {
+    await rentalService.reopenStay(currentApplicationId);
+    await loadApplications();
+    showToast('Stay reopened. Moved to Active Residents.', 'success');
     closeRentalDetail();
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
