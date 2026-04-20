@@ -37,6 +37,8 @@ let storageUsage = null;
 let currentView = 'table';  // 'card' or 'table' - default to table
 let currentSort = { column: 'monthly_rate', direction: 'desc' };
 
+const RESIDENT_GUIDE_TEMPLATE = '• AC: \n• Heating: \n• Bathroom: \n• Wifi: \n• Music: \n• Lights: \n• Notes: ';
+
 // Photo upload state
 let currentUploadSpaceId = null;
 let currentUploadContext = null;
@@ -1118,7 +1120,7 @@ async function openEditSpace(spaceId) {
   document.getElementById('editLocation').value = space.location || '';
   document.getElementById('editType').value = space.type || '';
   document.getElementById('editDescription').value = space.description || '';
-  document.getElementById('editResidentGuide').value = space.resident_guide || '';
+  document.getElementById('editResidentGuide').value = space.resident_guide || RESIDENT_GUIDE_TEMPLATE;
   document.getElementById('editMonthlyRate').value = space.monthly_rate || '';
   document.getElementById('editWeeklyRate').value = space.weekly_rate || '';
   document.getElementById('editNightlyRate').value = space.nightly_rate || '';
@@ -1300,7 +1302,10 @@ async function handleEditSpaceSubmit() {
       location: getVal('editLocation'),
       type: getVal('editType'),
       description: getVal('editDescription'),
-      resident_guide: getVal('editResidentGuide') || null,
+      resident_guide: (() => {
+        const v = getVal('editResidentGuide');
+        return (!v || v === RESIDENT_GUIDE_TEMPLATE.trim()) ? null : v;
+      })(),
       monthly_rate: getInt('editMonthlyRate'),
       weekly_rate: getInt('editWeeklyRate'),
       nightly_rate: getInt('editNightlyRate'),

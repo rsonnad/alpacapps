@@ -496,13 +496,45 @@ the Alpaca Playhouse property AI agent`
       // Resident guide section — space-specific onboarding notes from staff
       const residentGuideSection = data.resident_guide
         ? `<div style="background:#f8f9fa;border-left:4px solid ${B.accent};border-radius:4px;padding:16px 20px;margin:20px 0;">
-            <p style="margin:0 0 10px;font-weight:700;font-size:14px;color:${B.text};">Your Space Guide</p>
+            <p style="margin:0 0 10px;font-weight:700;font-size:14px;color:${B.text};">Your Space Guide${data.space_name ? ` — ${data.space_name}` : ''}</p>
             <div style="color:${B.text};font-size:13px;line-height:1.7;white-space:pre-wrap;">${data.resident_guide.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
           </div>`
         : '';
       const residentGuideText = data.resident_guide
-        ? `\n--- YOUR SPACE GUIDE ---\n${data.resident_guide}\n`
+        ? `\n--- YOUR SPACE GUIDE${data.space_name ? ` — ${data.space_name}` : ''} ---\n${data.resident_guide}\n`
         : '';
+
+      // Global house rules section — universal for all spaces
+      const houseRulesSection = `<div style="background:#f8f9fa;border-left:4px solid ${B.accent};border-radius:4px;padding:16px 20px;margin:20px 0;">
+            <p style="margin:0 0 10px;font-weight:700;font-size:14px;color:${B.text};">The House — What You Need to Know</p>
+            <p style="margin:0 0 12px;color:${B.textMuted};font-size:13px;line-height:1.6;">Please read the <a href="https://alpacaplayhouse.com/visiting" style="color:${B.accent};font-weight:600;">Visiting Guide</a> and <a href="https://alpacaplayhouse.com/community" style="color:${B.accent};font-weight:600;">Community</a> pages before arrival — they cover parking, house rules, and culture in full.</p>
+            <p style="margin:0 0 8px;font-weight:600;font-size:13px;color:${B.text};">At a glance:</p>
+            <ul style="margin:0;padding-left:20px;color:${B.text};font-size:13px;line-height:1.7;">
+              <li><strong>Parking</strong> — gravel lot on the right when you enter the gate. If full, across the street to the left past two houses. Never on the grass, never in front of neighbors, never by the sauna or garage.</li>
+              <li><strong>Gates</strong> — always keep the back fence gates closed. Always.</li>
+              <li><strong>No meat inside the house</strong> — store in the doghouse fridge, cook on the back patio grills.</li>
+              <li><strong>No alcohol on property.</strong></li>
+              <li><strong>Never share the address</strong> — if guests are coming, send them alpacaplayhouse.com/visiting. Not the address. Ever.</li>
+              <li><strong>Quiet hours</strong> — before 9am and after 9:30pm.</li>
+              <li><strong>Clean up immediately</strong> — no personal items on kitchen or living room counters.</li>
+              <li><strong>Wifi</strong> — Black Rock City / popopopo</li>
+            </ul>
+          </div>`;
+      const houseRulesText = `
+--- THE HOUSE — WHAT YOU NEED TO KNOW ---
+
+Please read the Visiting Guide (https://alpacaplayhouse.com/visiting) and Community (https://alpacaplayhouse.com/community) pages before arrival — they cover parking, house rules, and culture in full.
+
+At a glance:
+• Parking — gravel lot on the right when you enter the gate. If full, across the street to the left past two houses. Never on the grass, never in front of neighbors, never by the sauna or garage.
+• Gates — always keep the back fence gates closed. Always.
+• No meat inside the house — store in the doghouse fridge, cook on the back patio grills.
+• No alcohol on property.
+• Never share the address — if guests are coming, send them alpacaplayhouse.com/visiting. Not the address. Ever.
+• Quiet hours — before 9am and after 9:30pm.
+• Clean up immediately — no personal items on kitchen or living room counters.
+• Wifi — Black Rock City / popopopo
+`;
 
       // Pass space image as extraImages for the brand wrapper gallery
       const _extraImages: string[] = [];
@@ -521,9 +553,7 @@ the Alpaca Playhouse property AI agent`
 
           ${residentGuideSection}
 
-          ${calloutBox(`<span style="font-size:13px;color:${B.text};line-height:1.5;">&#128218; Please re-familiarize yourself with our <a href="https://alpacaplayhouse.com/visiting" style="color:${B.accent};font-weight:600;">visiting &amp; operational guidelines</a> &mdash; which also has a map link to the property.</span>`)}
-
-          ${calloutBox(`<p style="margin:0;color:${B.textMuted};font-size:12px;line-height:1.5;"><strong style="color:${B.text};">Reminder:</strong> Please don't give the address out to potential guests. Instead, send them the visiting link above so they can read the guidelines first.</p>`, 'warning')}
+          ${houseRulesSection}
 
           <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 4px;">If you have any questions or need anything, don't hesitate to reach out!</p>
         `,
@@ -537,10 +567,7 @@ ${dataTableText(detailRowData)}
 
 ${showPaymentMethods ? paymentMethodsText(data._payment_methods_raw, { memoText: 'rent' }) : ''}
 ${residentGuideText}
-Please re-familiarize yourself with our operational guidelines: https://alpacaplayhouse.com/visiting
-
-Reminder: Please don't give the address out to potential guests. Instead, send them the visiting link so they can read the guidelines first.
-
+${houseRulesText}
 Yours generatively,
 PAI
 the Alpaca Playhouse property AI agent`
