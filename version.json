@@ -1,12 +1,12 @@
 {
-  "version": "v260420.09 6:23p",
-  "release": 1377,
-  "sha": "b5c39bf0a",
-  "fullSha": "b5c39bf0ae36dd9dcc2438c0d9d15aa5790b6b64",
+  "version": "v260420.10 6:38p",
+  "release": 1378,
+  "sha": "619dda86a",
+  "fullSha": "619dda86a35c452834128f3303fa352ec071c8ed",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-20T23:23:01+00:00",
-  "commits": [{"sha":"b5c39bf0a","message":"my-access: walk one level up the space hierarchy for codes + softer empty state","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-20T23:38:07+00:00",
+  "commits": [{"sha":"619dda86a","message":"move-in email: hide payment methods for short-term stays","author":"Sonia Wendorff"}]
 }
