@@ -596,6 +596,13 @@ ${houseRulesBodyText}
 
           ${residentGuideSection}
 
+          <div style="background:#f8f9fa;border-left:4px solid ${B.accent};border-radius:4px;padding:16px 20px;margin:20px 0;">
+            <p style="margin:0 0 8px;font-weight:700;font-size:14px;color:${B.text};">Your Access Codes</p>
+            <p style="margin:0 0 12px;color:${B.textMuted};font-size:13px;line-height:1.5;">We don't send door codes by email. Log in at the link below to see the codes for your assigned space.</p>
+            <a href="https://alpacaplayhouse.com/residents/my-access.html" style="display:inline-block;padding:10px 20px;background:${B.accent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;font-size:13px;">View my access codes →</a>
+            <p style="margin:12px 0 0;color:${B.textMuted};font-size:12px;line-height:1.5;">Log in with <strong>${data.email || 'the email this was sent to'}</strong>. If you have trouble, text PAI at <a href="sms:+17377474737" style="color:${B.accent};">(737) 747-4737</a>.</p>
+          </div>
+
           ${houseRulesSection}
 
           <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 4px;">If you have any questions or need anything, don't hesitate to reach out!</p>
@@ -610,6 +617,14 @@ ${dataTableText(detailRowData)}
 
 ${showPaymentMethods ? paymentMethodsText(data._payment_methods_raw, { memoText: 'rent' }) : ''}
 ${residentGuideText}
+--- YOUR ACCESS CODES ---
+
+We don't send door codes by email. Log in at the link below to see the codes for your assigned space:
+
+https://alpacaplayhouse.com/residents/my-access.html
+
+Log in with ${data.email || 'the email this was sent to'}. If you have trouble, text PAI at (737) 747-4737.
+
 ${houseRulesText}
 Yours generatively,
 PAI

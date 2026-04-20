@@ -48,6 +48,7 @@ const TAB_ICONS = {
   bookkeeping:_i('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'),
   media:      _i('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'),
   askpai:     _i('<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>'),
+  'my-access':_i('<path d="M7 11V7a5 5 0 0110 0v4"/><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/>'),
 };
 
 const DEVICE_SUBTABS = [
@@ -64,6 +65,7 @@ const DEVICE_SUBTABS = [
 
 const RESIDENT_CORE_TABS = [
   { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
+  { id: 'my-access', label: 'My Access', href: 'my-access.html', permission: 'view_profile' },
   { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
   { id: 'media', label: 'Imagery', href: 'media.html', permission: 'view_profile' },
   { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile', feature: 'pai' },
@@ -71,6 +73,7 @@ const RESIDENT_CORE_TABS = [
 
 const RESIDENT_STAFF_TABS = [
   { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
+  { id: 'my-access', label: 'My Access', href: 'my-access.html', permission: 'view_profile' },
   { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
   { id: 'media', label: 'Imagery', href: 'media.html', permission: 'view_profile' },
   { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile', feature: 'pai' },

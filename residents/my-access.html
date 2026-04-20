@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="preconnect" href="https://aphrrfprbixmhissnjfn.supabase.co">
+  <title>My Access — AlpacAPPs Residents</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <link rel="stylesheet" href="../spaces/styles.css?v=5">
+  <link rel="stylesheet" href="../spaces/admin/styles.css?v=5">
+  <link rel="stylesheet" href="../spaces/admin/manage-shared.css?v=5">
+  <link rel="stylesheet" href="residents.css?v=5">
+  <style>
+    .access-card {
+      background: var(--surface, #fff);
+      border: 1px solid var(--border, #e6e2d9);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .access-card h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .access-card .service-label {
+      font-size: 0.8rem;
+      color: var(--text-muted, #7d6f74);
+      margin-bottom: 0.5rem;
+    }
+    .access-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.35rem;
+    }
+    .access-code {
+      font-family: var(--font-mono, ui-monospace, monospace);
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 0.35rem 0.65rem;
+      background: var(--bg-muted, #f8f5ef);
+      border: 1px solid var(--border, #e6e2d9);
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      user-select: all;
+    }
+    .access-code.masked {
+      letter-spacing: 0.15em;
+    }
+    .access-notes {
+      color: var(--text-muted, #7d6f74);
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+      line-height: 1.5;
+    }
+    .access-empty {
+      padding: 2rem 1.25rem;
+      text-align: center;
+      color: var(--text-muted, #7d6f74);
+      border: 1px dashed var(--border, #e6e2d9);
+      border-radius: 8px;
+    }
+    .access-security-note {
+      font-size: 0.85rem;
+      color: var(--text-muted, #7d6f74);
+      line-height: 1.55;
+      padding: 0.75rem 1rem;
+      background: var(--bg-muted, #f8f5ef);
+      border-left: 3px solid var(--accent, #d4883a);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+  </style>
+  <script type="module" src="../shared/version-info.js"></script>
+  <link rel="stylesheet" href="../styles/site.css">
+  <link rel="stylesheet" href="../styles/tailwind.out.css">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay__logo">
+      <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40">
+      <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28">
+    </div>
+    <div class="spinner spinner--sm"></div>
+  </div>
+
+  <!-- Access denied (populated by JS) -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a class="context-switcher-btn active">Resident</a>
+      <a href="/spaces/admin/" class="context-switcher-btn">Staff</a>
+    </div>
+
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <main class="manage-content profile-page">
+      <section class="section">
+        <div class="section-header">
+          <h2>Your Access Codes</h2>
+        </div>
+        <div class="section-body" style="padding: 1rem 1.5rem;">
+          <p class="access-security-note">
+            These codes are for <strong>your assigned spaces only</strong>. Please don't share or screenshot — if a code is compromised, text Jon at <a href="sms:+12396665815">(239) 666-5815</a> so we can rotate it.
+          </p>
+          <div id="accessList">
+            <div class="access-empty">Loading your access codes…</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="my-access.js?v=1"></script>
+</body>
+</html>
