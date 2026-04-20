@@ -37,6 +37,7 @@ let allApplications = [];
 let allPeople = [];
 let allPaymentMethods = [];
 let calendarAssignments = [];
+let pastResidents = []; // completed assignments + stay-ended applications with no linked assignment
 let currentApplicationId = null;
 let currentAssignmentId = null;
 
@@ -115,6 +116,7 @@ async function loadRentals() {
     loadPeople(),
     loadPaymentMethods(),
     loadCalendarData(),
+    loadPastResidents(),
     loadAirbnbRentals(),
   ]);
   populateRentalDropdowns();
@@ -189,10 +191,12 @@ const STAGE_LABELS = {
 };
 
 // Stages that default to collapsed when no preference is stored
-const DEFAULT_COLLAPSED = new Set(['past_resident']);
+const DEFAULT_COLLAPSED = new Set();
 
 function renderPipeline() {
-  const stages = ['community_fit', 'applications', 'approved', 'contract', 'deposit', 'ready', 'active_resident', 'past_resident'];
+  // active_resident / past_resident are rendered in the "Active Residents" and
+  // "Past Residents" sections below the pipeline, not as pipeline stages.
+  const stages = ['community_fit', 'applications', 'approved', 'contract', 'deposit', 'ready'];
   const container = document.getElementById('rentalPipeline');
   if (!container) return;
 
@@ -591,6 +595,156 @@ function renderAssignmentsTable() {
     row.addEventListener('click', () => {
       const assignmentId = row.dataset.assignmentId;
       openAssignmentDetail(assignmentId);
+    });
+  });
+}
+
+async function loadPastResidents() {
+  try {
+    if (allSpaces.length === 0) {
+      const { data: spacesData } = await supabase
+        .from('spaces')
+        .select('id, name, can_be_dwelling, monthly_rate, is_archived, resident_guide')
+        .eq('is_archived', false);
+      if (spacesData) allSpaces = spacesData;
+    }
+
+    // Completed assignments (tenants who moved out)
+    const { data: completedAssignments, error: assignErr } = await supabase
+      .from('assignments')
+      .select(`
+        *,
+        person:person_id(id, first_name, last_name, email, phone),
+        assignment_spaces(space_id)
+      `)
+      .eq('status', 'completed')
+      .eq('type', 'dwelling')
+      .order('end_date', { ascending: false, nullsFirst: false });
+    if (assignErr) throw assignErr;
+
+    // Orphan applications: stay ended but no linked assignment (e.g., short-term guests
+    // marked done without going through the assignment flow)
+    const { data: orphanApps, error: appErr } = await supabase
+      .from('rental_applications')
+      .select(`
+        *,
+        person:person_id(id, first_name, last_name, email, phone),
+        approved_space:approved_space_id(id, name),
+        desired_space:desired_space_id(id, name)
+      `)
+      .not('stay_ended_at', 'is', null)
+      .is('assignment_id', null)
+      .order('stay_ended_at', { ascending: false });
+    if (appErr) throw appErr;
+
+    pastResidents = [
+      ...(completedAssignments || []).map(a => ({ kind: 'assignment', record: a })),
+      ...(orphanApps || []).map(a => ({ kind: 'application', record: a })),
+    ].sort((a, b) => {
+      const aDate = a.kind === 'assignment' ? (a.record.end_date || '') : (a.record.stay_ended_at || '');
+      const bDate = b.kind === 'assignment' ? (b.record.end_date || '') : (b.record.stay_ended_at || '');
+      return bDate.localeCompare(aDate);
+    });
+
+    renderPastResidentsTable();
+  } catch (error) {
+    console.error('Error loading past residents:', error);
+    const container = document.getElementById('pastResidentsTableContainer');
+    if (container) {
+      container.innerHTML = '<div class="calendar-loading" style="color: var(--danger);">Error loading past residents</div>';
+    }
+  }
+}
+
+function renderPastResidentsTable() {
+  const container = document.getElementById('pastResidentsTableContainer');
+  const countEl = document.getElementById('pastResidentsCount');
+  if (!container) return;
+
+  if (countEl) countEl.textContent = pastResidents.length;
+
+  if (pastResidents.length === 0) {
+    container.innerHTML = '<div class="calendar-empty">No past residents yet</div>';
+    return;
+  }
+
+  let html = `
+    <div class="table-scroll-wrapper">
+    <table class="data-table assignments-table">
+      <thead>
+        <tr>
+          <th>Tenant</th>
+          <th>Space</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  pastResidents.forEach(entry => {
+    const rec = entry.record;
+    const person = rec.person || {};
+    const rawTenantName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+    const tenantName = isDemoUser() ? redactString(rawTenantName, 'name') : rawTenantName;
+    const demoClass = isDemoUser() ? ' demo-redacted' : '';
+
+    let spaceNames, startDate, endDate, rawRate, rowData;
+    if (entry.kind === 'assignment') {
+      const spaceIds = rec.assignment_spaces?.map(as => as.space_id) || [];
+      spaceNames = spaceIds.map(id => allSpaces.find(s => s.id === id)?.name || 'Unknown').join(', ') || 'None';
+      startDate = rec.start_date ? formatDateAustin(rec.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+      endDate = rec.end_date ? formatDateAustin(rec.end_date, { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+      rawRate = rec.rate_amount
+        ? `$${rec.rate_amount}/${rec.rate_term || 'mo'}`
+        : (rec.monthly_rent ? `$${rec.monthly_rent}/mo` : '-');
+      rowData = `data-past-kind="assignment" data-assignment-id="${rec.id}"`;
+    } else {
+      spaceNames = rec.approved_space?.name || rec.desired_space?.name || '-';
+      startDate = rec.approved_move_in
+        ? formatDateAustin(rec.approved_move_in, { month: 'short', day: 'numeric', year: 'numeric' })
+        : (rec.move_in_confirmed_at ? formatDateAustin(rec.move_in_confirmed_at, { month: 'short', day: 'numeric', year: 'numeric' }) : '-');
+      endDate = rec.stay_ended_at
+        ? formatDateAustin(rec.stay_ended_at, { month: 'short', day: 'numeric', year: 'numeric' })
+        : '-';
+      rawRate = rec.approved_rate ? `$${rec.approved_rate}/${rec.approved_rate_term || 'mo'}` : '-';
+      rowData = `data-past-kind="application" data-application-id="${rec.id}"`;
+    }
+    const rate = isDemoUser() && rawRate !== '-' ? redactString(rawRate, 'amount') : rawRate;
+
+    html += `
+      <tr class="clickable-row" ${rowData}>
+        <td>
+          <div class="tenant-cell">
+            <strong class="${demoClass}">${tenantName}</strong>
+            ${person.email ? `<div class="tenant-email${isDemoUser() ? ' demo-redacted' : ''}">${isDemoUser() ? redactString(person.email, 'email') : person.email}</div>` : ''}
+          </div>
+        </td>
+        <td>${spaceNames}</td>
+        <td>${startDate}</td>
+        <td>${endDate}</td>
+        <td class="${demoClass}">${rate}</td>
+      </tr>
+    `;
+  });
+
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+
+  container.querySelectorAll('.clickable-row').forEach(row => {
+    row.addEventListener('click', () => {
+      if (row.dataset.pastKind === 'assignment') {
+        // Temporarily merge into calendarAssignments so openAssignmentDetail can find it
+        const id = row.dataset.assignmentId;
+        const entry = pastResidents.find(e => e.kind === 'assignment' && e.record.id === id);
+        if (entry && !calendarAssignments.find(a => a.id === id)) {
+          calendarAssignments.push(entry.record);
+        }
+        openAssignmentDetail(id);
+      } else {
+        openRentalDetail(row.dataset.applicationId);
+      }
     });
   });
 }

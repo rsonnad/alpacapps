@@ -2,6 +2,24 @@
  * Rentals Tab Styles - Pipeline/Kanban view for rental applications
  */
 
+/* Past Residents — light red tint to visually separate from active rentals */
+.past-residents-section {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius, 8px);
+  overflow: hidden;
+}
+.past-residents-section > summary.section-header {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.past-residents-section > summary.section-header h2 {
+  color: #991b1b;
+}
+.past-residents-section[open] > summary.section-header {
+  border-bottom: 1px solid #fecaca;
+}
+
 /* =============================================
    VERTICAL PIPELINE VIEW
    ============================================= */

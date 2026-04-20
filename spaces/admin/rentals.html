@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="../styles.css?v=5">
   <link rel="stylesheet" href="styles.css?v=5">
   <link rel="stylesheet" href="manage-shared.css?v=1">
-  <link rel="stylesheet" href="rentals.css?v=3">
+  <link rel="stylesheet" href="rentals.css?v=4">
   <link rel="stylesheet" href="../../styles/site.css">
   <link rel="stylesheet" href="../../styles/tailwind.out.css">
 </head>
@@ -461,18 +461,31 @@
           </div>
         </details>
 
-        <!-- Active & Upcoming Assignments Table -->
+        <!-- Active Residents Table (currently-living + upcoming move-ins) -->
         <div class="section" style="margin-top: 1.5rem;">
           <div class="section-header">
-            <h2>Active & Upcoming Assignments</h2>
+            <h2>Active Residents</h2>
             <span id="assignmentsCount" class="text-muted">0</span>
           </div>
           <div class="section-body">
             <div id="assignmentsTableContainer">
-              <div class="calendar-loading">Loading assignments...</div>
+              <div class="calendar-loading">Loading residents...</div>
             </div>
           </div>
         </div>
+
+        <!-- Past Residents Table -->
+        <details class="section past-residents-section" style="margin-top: 1.5rem;">
+          <summary class="section-header" style="cursor: pointer;">
+            <h2>Past Residents</h2>
+            <span id="pastResidentsCount" class="text-muted">0</span>
+          </summary>
+          <div class="section-body">
+            <div id="pastResidentsTableContainer">
+              <div class="calendar-loading">Loading past residents...</div>
+            </div>
+          </div>
+        </details>
 
         <!-- Reservations Calendar Section -->
         <div class="section" style="margin-top: 1.5rem;">
