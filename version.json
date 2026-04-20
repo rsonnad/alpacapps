@@ -1,12 +1,12 @@
 {
-  "version": "v260420.01 3:16p",
-  "release": 1369,
-  "sha": "faa16b0f3",
-  "fullSha": "faa16b0f344426c7a35be42bee35b2cdf457081f",
+  "version": "v260420.02 3:59p",
+  "release": 1370,
+  "sha": "4283d7300",
+  "fullSha": "4283d7300541b82650ccc4c7c17b3aa170d10ae3",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-20T20:16:14+00:00",
-  "commits": [{"sha":"faa16b0f3","message":"rentals: add global house-rules section to move-in email + prefill per-space resident-guide template","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-20T20:59:26+00:00",
+  "commits": [{"sha":"4283d7300","message":"rentals: universal house-info template editable from the Spaces admin","author":"Sonia Wendorff"}]
 }
