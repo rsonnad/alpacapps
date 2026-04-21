@@ -1,12 +1,12 @@
 {
-  "version": "v260421.01 11:01a",
-  "release": 1381,
-  "sha": "fe05ff8db",
-  "fullSha": "fe05ff8dbbbcb017db128316b9a8105442ad7d94",
-  "actor": "wensonia",
+  "version": "v260421.02 12:52p",
+  "release": 1382,
+  "sha": "e538ac888",
+  "fullSha": "e538ac888d05ca5b0ac7fdcac5481f637b5055e4",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-21T16:01:32+00:00",
-  "commits": [{"sha":"fe05ff8db","message":"rental signing: allow png/jpeg in lease-documents bucket + fix waiver ref","author":"Sonia Wendorff"}]
+  "machine": "runnervm04xxt",
+  "pushedAt": "2026-04-21T17:52:17+00:00",
+  "commits": [{"sha":"e538ac888","message":"fix(projects): allow photo upload while creating a task","author":"Paca"}]
 }
