@@ -15,6 +15,7 @@ let modalDataLoaded = false;
 let editingTaskId = null;
 let taskThumbnails = {};
 let searchDebounce = null;
+let pendingPhotos = []; // [{ mediaId, url }] staged before task creation
 
 // ---- Init ----
 initAssociatePage({
@@ -311,6 +312,12 @@ function bindEvents() {
     const btn = e.target.closest('.photo-remove');
     if (!btn) return;
     e.stopPropagation();
+    const pendingIdx = btn.dataset.pendingIndex;
+    if (pendingIdx !== undefined) {
+      pendingPhotos[parseInt(pendingIdx)] = null;
+      btn.closest('.task-photo-thumb').remove();
+      return;
+    }
     const photoId = btn.dataset.photoId;
     if (!photoId) return;
     try {
@@ -397,6 +404,7 @@ async function openAddModal() {
   document.getElementById('newLocationLabel').value = '';
   document.getElementById('newStatus').value = 'open';
   document.getElementById('taskPhotos').innerHTML = '';
+  pendingPhotos = [];
 
   await ensureModalData();
 
@@ -419,6 +427,7 @@ async function openEditModal(task) {
   document.getElementById('newSpace').value = task.space_id || '';
   document.getElementById('newLocationLabel').value = task.location_label || '';
   document.getElementById('newStatus').value = task.status || 'open';
+  pendingPhotos = [];
 
   await ensureModalData();
 
@@ -453,7 +462,7 @@ function isModalDirty() {
   const assignee = document.getElementById('newAssignee').value;
   const space = document.getElementById('newSpace').value;
   const locationLabel = document.getElementById('newLocationLabel').value.trim();
-  return !!(title || notes || description || priority || assignee || space || locationLabel);
+  return !!(title || notes || description || priority || assignee || space || locationLabel || pendingPhotos.length);
 }
 
 function closeModal(force = false) {
@@ -506,7 +515,18 @@ async function handleSaveProject(e) {
       showToast('Project updated', 'success');
     } else {
       payload.status = 'open';
-      await projectService.createTask(payload);
+      const created = await projectService.createTask(payload);
+      if (pendingPhotos.length && created?.id) {
+        for (const p of pendingPhotos) {
+          if (!p) continue;
+          try {
+            await projectService.addTaskPhoto(created.id, p.mediaId);
+          } catch (err) {
+            console.error('Failed to attach pending photo:', err);
+          }
+        }
+      }
+      pendingPhotos = [];
       showToast('Project created', 'success');
     }
 
@@ -547,11 +567,7 @@ async function handlePhotoUpload(e) {
   if (!files.length) return;
 
   const taskId = document.getElementById('editTaskId').value;
-  if (!taskId) {
-    showToast('Create the project first, then add photos by editing it', 'info');
-    e.target.value = '';
-    return;
-  }
+  const container = document.getElementById('taskPhotos');
 
   for (const file of files) {
     if (!file.type.startsWith('image/')) continue;
@@ -559,8 +575,18 @@ async function handlePhotoUpload(e) {
     try {
       const result = await mediaService.upload(file, { category: 'projects' });
       if (!result.success) throw new Error(result.error || 'Upload failed');
-      await projectService.addTaskPhoto(taskId, result.media.id);
-      await loadTaskPhotos(taskId);
+      if (taskId) {
+        await projectService.addTaskPhoto(taskId, result.media.id);
+        await loadTaskPhotos(taskId);
+      } else {
+        pendingPhotos.push({ mediaId: result.media.id, url: result.media.url });
+        const idx = pendingPhotos.length - 1;
+        const div = document.createElement('div');
+        div.className = 'task-photo-thumb';
+        div.innerHTML = `<img src="${esc(result.media.url)}" loading="lazy">
+          <button class="photo-remove" data-pending-index="${idx}" title="Remove">&times;</button>`;
+        container.appendChild(div);
+      }
       showToast('Photo added', 'success');
     } catch (err) {
       showToast('Photo upload failed: ' + err.message, 'error');
