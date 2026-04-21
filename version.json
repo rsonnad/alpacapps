@@ -1,12 +1,12 @@
 {
-  "version": "v260420.11 7:21p",
-  "release": 1379,
-  "sha": "ecc63a278",
-  "fullSha": "ecc63a278ba628fba598d67be743a5b31c3fdcae",
+  "version": "v260420.12 7:25p",
+  "release": 1380,
+  "sha": "f382620bd",
+  "fullSha": "f382620bda26db2de52ee078cd5849ad47b5417b",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-21T00:21:05+00:00",
-  "commits": [{"sha":"ecc63a278","message":"move-in email: stronger section headings + bolded guide labels + green Stay Connected card","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-21T00:25:06+00:00",
+  "commits": [{"sha":"f382620bd","message":"signing page: send Supabase anon key to fix 401 on document load","author":"Sonia Wendorff"}]
 }
