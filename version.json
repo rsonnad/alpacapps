@@ -1,12 +1,12 @@
 {
-  "version": "v260420.12 7:25p",
-  "release": 1380,
-  "sha": "f382620bd",
-  "fullSha": "f382620bda26db2de52ee078cd5849ad47b5417b",
+  "version": "v260421.01 11:01a",
+  "release": 1381,
+  "sha": "fe05ff8db",
+  "fullSha": "fe05ff8dbbbcb017db128316b9a8105442ad7d94",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-21T00:25:06+00:00",
-  "commits": [{"sha":"f382620bd","message":"signing page: send Supabase anon key to fix 401 on document load","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-21T16:01:32+00:00",
+  "commits": [{"sha":"fe05ff8db","message":"rental signing: allow png/jpeg in lease-documents bucket + fix waiver ref","author":"Sonia Wendorff"}]
 }
