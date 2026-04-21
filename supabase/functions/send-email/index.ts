@@ -174,6 +174,39 @@ function stripHouseRulesMarkdown(md: string): string {
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)');
 }
 
+// Render a per-space resident guide (bullet lines like "• AC: text") as a
+// styled HTML list with the label portion bolded.
+function renderResidentGuideBullets(text: string, textColor: string): string {
+  if (!text) return '';
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const items = text
+    .split('\n')
+    .map(l => l.replace(/\r$/, ''))
+    .filter(l => l.trim().length > 0)
+    .map((raw) => {
+      const stripped = raw.trim().replace(/^[•\-*]\s+/, '');
+      const m = stripped.match(/^([^:]+):\s*(.*)$/);
+      if (m) {
+        return `<li style="margin:0 0 6px;"><strong>${esc(m[1])}:</strong> ${esc(m[2])}</li>`;
+      }
+      return `<li style="margin:0 0 6px;">${esc(stripped)}</li>`;
+    })
+    .join('');
+  return `<ul style="margin:0;padding-left:20px;color:${textColor};font-size:13.5px;line-height:1.7;">${items}</ul>`;
+}
+
+// Splits `move_in_house_rules` markdown at the "Stay connected" sub-heading
+// so each half can render as a separately-styled card.
+function splitHouseRulesAndStayConnected(md: string): { rules: string; stayConnected: string | null } {
+  const match = md.match(/\n\s*\*\*Stay connected[^*]*\*\*\s*\n+/i);
+  if (!match || match.index === undefined) {
+    return { rules: md.trim(), stayConnected: null };
+  }
+  const before = md.slice(0, match.index).trim();
+  const after = md.slice(match.index + match[0].length).trim();
+  return { rules: before, stayConnected: after };
+}
+
 // Format "09:30:00" → "9:30 AM"
 function formatTime12(time: string): string {
   if (!time) return '';
@@ -551,35 +584,52 @@ the Alpaca Playhouse property AI agent`
           })
         : '';
 
-      // Resident guide section — space-specific onboarding notes from staff
+      // Resident guide section — space-specific onboarding notes from staff.
+      // Bullet lines like "• AC: text" get their label portion bolded.
       const residentGuideSection = data.resident_guide
-        ? `<div style="background:#f8f9fa;border-left:4px solid ${B.accent};border-radius:4px;padding:16px 20px;margin:20px 0;">
-            <p style="margin:0 0 10px;font-weight:700;font-size:14px;color:${B.text};">Your Space Guide${data.space_name ? ` — ${data.space_name}` : ''}</p>
-            <div style="color:${B.text};font-size:13px;line-height:1.7;white-space:pre-wrap;">${data.resident_guide.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+        ? `<div style="background:${B.bgMuted};border:1px solid ${B.border};border-left:4px solid ${B.accent};border-radius:6px;padding:20px 24px;margin:24px 0;">
+            <h2 style="margin:0 0 14px;font-weight:700;font-size:17px;color:${B.text};line-height:1.3;">Your Space Guide${data.space_name ? ` &mdash; ${data.space_name}` : ''}</h2>
+            ${renderResidentGuideBullets(data.resident_guide, B.text)}
           </div>`
         : '';
       const residentGuideText = data.resident_guide
         ? `\n--- YOUR SPACE GUIDE${data.space_name ? ` — ${data.space_name}` : ''} ---\n${data.resident_guide}\n`
         : '';
 
-      // Global house rules section — universal for all spaces.
+      // Global house rules + Stay Connected — universal for all spaces.
       // Body is pre-rendered from brand_config in getRenderedTemplate() above;
-      // this just wraps it in the card chrome. data._house_rules_html may be
-      // undefined when getTemplate is called directly in a non-send context,
-      // so fall back to the default markdown rendered inline.
+      // here we just wrap it in card chrome. The two sections get different
+      // accent colors (orange for rules, green for contacts).
+      const _fallbackSplit = splitHouseRulesAndStayConnected(DEFAULT_MOVE_IN_HOUSE_RULES_MD);
       const houseRulesBodyHtml = data._house_rules_html
-        || renderHouseRulesMarkdown(DEFAULT_MOVE_IN_HOUSE_RULES_MD, B.accent, B.text, B.textMuted);
+        || renderHouseRulesMarkdown(_fallbackSplit.rules, B.accent, B.text, B.textMuted);
       const houseRulesBodyText = data._house_rules_text
-        || stripHouseRulesMarkdown(DEFAULT_MOVE_IN_HOUSE_RULES_MD);
-      const houseRulesSection = `<div style="background:#f8f9fa;border-left:4px solid ${B.accent};border-radius:4px;padding:16px 20px;margin:20px 0;">
-            <p style="margin:0 0 10px;font-weight:700;font-size:14px;color:${B.text};">The House — What You Need to Know</p>
+        || stripHouseRulesMarkdown(_fallbackSplit.rules);
+      const stayConnectedBodyHtml = data._stay_connected_html !== undefined
+        ? data._stay_connected_html
+        : (_fallbackSplit.stayConnected ? renderHouseRulesMarkdown(_fallbackSplit.stayConnected, B.success, B.text, B.textMuted) : '');
+      const stayConnectedBodyText = data._stay_connected_text !== undefined
+        ? data._stay_connected_text
+        : (_fallbackSplit.stayConnected ? stripHouseRulesMarkdown(_fallbackSplit.stayConnected) : '');
+
+      const houseRulesSection = `<div style="background:${B.bgMuted};border:1px solid ${B.border};border-left:4px solid ${B.accent};border-radius:6px;padding:20px 24px;margin:24px 0;">
+            <h2 style="margin:0 0 14px;font-weight:700;font-size:17px;color:${B.text};line-height:1.3;">The House &mdash; What You Need to Know</h2>
             ${houseRulesBodyHtml}
           </div>`;
+      const stayConnectedSection = stayConnectedBodyHtml
+        ? `<div style="background:#f1faea;border:1px solid #cfe6b8;border-left:4px solid ${B.success};border-radius:6px;padding:20px 24px;margin:24px 0;">
+            <h2 style="margin:0 0 14px;font-weight:700;font-size:17px;color:${B.success};line-height:1.3;">Stay Connected</h2>
+            ${stayConnectedBodyHtml}
+          </div>`
+        : '';
       const houseRulesText = `
 --- THE HOUSE — WHAT YOU NEED TO KNOW ---
 
 ${houseRulesBodyText}
 `;
+      const stayConnectedText = stayConnectedBodyText
+        ? `\n--- STAY CONNECTED ---\n\n${stayConnectedBodyText}\n`
+        : '';
 
       // Pass space image as extraImages for the brand wrapper gallery
       const _extraImages: string[] = [];
@@ -598,14 +648,16 @@ ${houseRulesBodyText}
 
           ${residentGuideSection}
 
-          <div style="background:#f8f9fa;border-left:4px solid ${B.accent};border-radius:4px;padding:16px 20px;margin:20px 0;">
-            <p style="margin:0 0 8px;font-weight:700;font-size:14px;color:${B.text};">Your Access Codes</p>
-            <p style="margin:0 0 12px;color:${B.textMuted};font-size:13px;line-height:1.5;">We don't send door codes by email. Log in at the link below to see the codes for your assigned space.</p>
-            <a href="https://alpacaplayhouse.com/residents/my-access.html" style="display:inline-block;padding:10px 20px;background:${B.accent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;font-size:13px;">View my access codes →</a>
-            <p style="margin:12px 0 0;color:${B.textMuted};font-size:12px;line-height:1.5;">Log in with <strong>${data.email || 'the email this was sent to'}</strong>. If you have trouble, text PAI at <a href="sms:+17377474737" style="color:${B.accent};">(737) 747-4737</a>.</p>
+          <div style="background:${B.bgMuted};border:1px solid ${B.border};border-left:4px solid ${B.accent};border-radius:6px;padding:20px 24px;margin:24px 0;">
+            <h2 style="margin:0 0 10px;font-weight:700;font-size:17px;color:${B.text};line-height:1.3;">Your Access Codes</h2>
+            <p style="margin:0 0 14px;color:${B.textMuted};font-size:13.5px;line-height:1.55;">We don't send door codes by email. Log in at the link below to see the codes for your assigned space.</p>
+            <a href="https://alpacaplayhouse.com/residents/my-access.html" style="display:inline-block;padding:10px 22px;background:${B.accent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;font-size:13.5px;">View my access codes &rarr;</a>
+            <p style="margin:14px 0 0;color:${B.textMuted};font-size:12.5px;line-height:1.55;">Log in with <strong>${data.email || 'the email this was sent to'}</strong>. If you have trouble, text PAI at <a href="sms:+17377474737" style="color:${B.accent};">(737) 747-4737</a>.</p>
           </div>
 
           ${houseRulesSection}
+
+          ${stayConnectedSection}
 
           <p style="color:${B.textMuted};font-size:14px;line-height:1.5;margin:0 0 4px;">If you have any questions or need anything, don't hesitate to reach out!</p>
         `,
@@ -628,6 +680,7 @@ https://alpacaplayhouse.com/residents/my-access.html
 Log in with ${data.email || 'the email this was sent to'}. If you have trouble, text PAI at (737) 747-4737.
 
 ${houseRulesText}
+${stayConnectedText}
 Yours generatively,
 PAI
 the Alpaca Playhouse property AI agent`
@@ -2506,18 +2559,30 @@ async function getRenderedTemplate(
   }
 
   // Universal house rules (editable in brand_config) — injected for move-in email.
+  // Splits into two cards in the email: the rules (orange accent) and the
+  // Stay Connected contact block (green accent).
   if (type === "move_in_confirmed") {
     try {
       const brandConfig = await loadBrandConfig();
       const md = (brandConfig && typeof brandConfig.move_in_house_rules === 'string' && brandConfig.move_in_house_rules.trim())
         ? brandConfig.move_in_house_rules
         : DEFAULT_MOVE_IN_HOUSE_RULES_MD;
-      data._house_rules_html = renderHouseRulesMarkdown(md, '#d4883a', '#2a1f23', '#7d6f74');
-      data._house_rules_text = stripHouseRulesMarkdown(md);
+      const { rules, stayConnected } = splitHouseRulesAndStayConnected(md);
+      data._house_rules_html = renderHouseRulesMarkdown(rules, '#d4883a', '#2a1f23', '#7d6f74');
+      data._house_rules_text = stripHouseRulesMarkdown(rules);
+      data._stay_connected_html = stayConnected
+        ? renderHouseRulesMarkdown(stayConnected, '#54a326', '#2a1f23', '#7d6f74')
+        : '';
+      data._stay_connected_text = stayConnected ? stripHouseRulesMarkdown(stayConnected) : '';
     } catch (e) {
       console.warn('Failed to render house rules, using default:', e);
-      data._house_rules_html = renderHouseRulesMarkdown(DEFAULT_MOVE_IN_HOUSE_RULES_MD, '#d4883a', '#2a1f23', '#7d6f74');
-      data._house_rules_text = stripHouseRulesMarkdown(DEFAULT_MOVE_IN_HOUSE_RULES_MD);
+      const { rules, stayConnected } = splitHouseRulesAndStayConnected(DEFAULT_MOVE_IN_HOUSE_RULES_MD);
+      data._house_rules_html = renderHouseRulesMarkdown(rules, '#d4883a', '#2a1f23', '#7d6f74');
+      data._house_rules_text = stripHouseRulesMarkdown(rules);
+      data._stay_connected_html = stayConnected
+        ? renderHouseRulesMarkdown(stayConnected, '#54a326', '#2a1f23', '#7d6f74')
+        : '';
+      data._stay_connected_text = stayConnected ? stripHouseRulesMarkdown(stayConnected) : '';
     }
   }
 
