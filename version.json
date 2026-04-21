@@ -1,12 +1,12 @@
 {
-  "version": "v260421.02 12:52p",
-  "release": 1382,
-  "sha": "e538ac888",
-  "fullSha": "e538ac888d05ca5b0ac7fdcac5481f637b5055e4",
+  "version": "v260421.03 1:31p",
+  "release": 1383,
+  "sha": "884693da5",
+  "fullSha": "884693da5874c03bd2b51cd9999eaee6322f0121",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm04xxt",
-  "pushedAt": "2026-04-21T17:52:17+00:00",
-  "commits": [{"sha":"e538ac888","message":"fix(projects): allow photo upload while creating a task","author":"Paca"}]
+  "machine": "runnervmeorf1",
+  "pushedAt": "2026-04-21T18:31:28+00:00",
+  "commits": [{"sha":"884693da5","message":"docs(haos): warn not to delete ~/homeassistant-vm on Alpuca","author":"Paca"}]
 }
