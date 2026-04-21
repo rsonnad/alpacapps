@@ -29,6 +29,9 @@
                     (Spartan)     (IPP)          (Spartan)
 ```
 
+> ⚠️ **CRITICAL — DO NOT DELETE `~/homeassistant-vm/` on Alpuca.**
+> The ~20 GB `haos_generic-aarch64-*.img` disk image IS the live HAOS filesystem — all lights, Sonos, thermostats, and automations depend on it. The file's mtime will update continuously while HAOS runs. If you're doing disk cleanup on Alpuca (hostname `Alpuca.local` / `192.168.1.200`), skip this directory entirely. Verify VM health: `curl -s -o /dev/null -w "%{http_code}\n" http://192.168.1.39:8123/` should return `200`, and `pgrep -fl qemu-system-aarch64` should show a live QEMU process.
+
 **Not yet integrated** (need HACS or credentials):
 - Govee lights (non-garage, ~41 devices) — needs HACS + Govee LAN/Cloud
 - Nest thermostats (3) — needs Google Device Access API
