@@ -1,12 +1,12 @@
 {
-  "version": "v260420.10 6:38p",
-  "release": 1378,
-  "sha": "619dda86a",
-  "fullSha": "619dda86a35c452834128f3303fa352ec071c8ed",
+  "version": "v260420.11 7:21p",
+  "release": 1379,
+  "sha": "ecc63a278",
+  "fullSha": "ecc63a278ba628fba598d67be743a5b31c3fdcae",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-20T23:38:07+00:00",
-  "commits": [{"sha":"619dda86a","message":"move-in email: hide payment methods for short-term stays","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-21T00:21:05+00:00",
+  "commits": [{"sha":"ecc63a278","message":"move-in email: stronger section headings + bolded guide labels + green Stay Connected card","author":"Sonia Wendorff"}]
 }
