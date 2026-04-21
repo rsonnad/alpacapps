@@ -199,8 +199,8 @@ Deno.serve(async (req) => {
           await supabase.from('waiver_signatures').insert({
             waiver_type: 'renter_waiver',
             template_version: waiverTemplate?.version || 1,
-            signer_name: signer_name || auditEntry.signer_name,
-            signer_email: signer_email || auditEntry.signer_email,
+            signer_name: signer_name || tenantAuditEntry.signer_name,
+            signer_email: signer_email || tenantAuditEntry.signer_email,
             person_id: person?.id || null,
             rental_application_id: app.id,
             signed_pdf_url: signatureImageUrl, // Link to signature for now
