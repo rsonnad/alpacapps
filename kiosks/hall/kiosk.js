@@ -122,7 +122,7 @@ async function loadOccupants() {
       .from('assignments')
       .select(`
         id, start_date, end_date, status,
-        person:person_id(first_name),
+        person:person_id(first_name, residence_location),
         assignment_spaces(space:space_id(name))
       `)
       .eq('status', 'active');
@@ -137,6 +137,10 @@ async function loadOccupants() {
       if (!a.start_date) return false;
       if (a.start_date > today) return false;
       if (a.end_date && a.end_date < today) return false;
+      // Entry tablet is at the Playhouse (cedar_creek). Hide people who
+      // live at other residences like Sharingwood. NULL = show (legacy default).
+      const loc = a.person?.residence_location;
+      if (loc && loc !== 'cedar_creek') return false;
       return true;
     });
 
