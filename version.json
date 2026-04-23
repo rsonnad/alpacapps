@@ -1,12 +1,12 @@
 {
-  "version": "v260421.03 1:31p",
-  "release": 1383,
-  "sha": "884693da5",
-  "fullSha": "884693da5874c03bd2b51cd9999eaee6322f0121",
+  "version": "v260423.01 6:12p",
+  "release": 1384,
+  "sha": "67b87177b",
+  "fullSha": "67b87177bdb25321f9ad40c53243ef0bcba7b7a6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-21T18:31:28+00:00",
-  "commits": [{"sha":"884693da5","message":"docs(haos): warn not to delete ~/homeassistant-vm on Alpuca","author":"Paca"}]
+  "pushedAt": "2026-04-23T23:12:26+00:00",
+  "commits": [{"sha":"67b87177b","message":"fix(kiosk): hide non-cedar_creek residents from entry tablet","author":"Rahul"}]
 }
