@@ -1,12 +1,12 @@
 {
-  "version": "v260423.01 6:12p",
-  "release": 1384,
-  "sha": "67b87177b",
-  "fullSha": "67b87177bdb25321f9ad40c53243ef0bcba7b7a6",
+  "version": "v260426.01 1:49p",
+  "release": 1385,
+  "sha": "c3515c80a",
+  "fullSha": "c3515c80ac6c37846f88216fcb0019f7c2ff0a87",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-23T23:12:26+00:00",
-  "commits": [{"sha":"67b87177b","message":"fix(kiosk): hide non-cedar_creek residents from entry tablet","author":"Rahul"}]
+  "pushedAt": "2026-04-26T18:49:09+00:00",
+  "commits": [{"sha":"c3515c80a","message":"docs: fix drift across CLAUDE.md, README.md, ARCHITECTURE.md, CHANGELOG, HOMEAUTOMATION","author":"Paca"}]
 }
