@@ -19,7 +19,7 @@
 9. **Lease Template System** - Database-driven lease generation with placeholders
    - Templates stored in `lease_templates` table with markdown + `{{placeholders}}`
    - PDF generation via jsPDF (client-side)
-   - SignWell integration for e-signatures
+   - **Native HTML e-signature system** (replaced SignWell, Apr 2026) — inline signature pad in `spaces/signing/index.html`, signed document HTML archived per submission, full audit log via `process-signature` edge function. Dedicated **Signatures** admin tab. Legacy `signwell-webhook` edge function and `signwell_*` schema fields are retained for historical records but unused for new signings.
    - Settings tab in manage.html for template editing
 10. **Rental Pipeline** - Kanban-style rental application workflow
    - Stages: Applications → Approved → Contract → Deposit → Ready
@@ -48,7 +48,7 @@
    - Forwarded emails preserve original sender name, set reply-to to original sender
 15. **Home Automation System** - Sonos + UniFi programmatic control
    - Alpaca Mac (macOS 12.7.6) runs as home server on Black Rock City WiFi
-   - node-sonos-http-api discovers and controls 12 Sonos zones
+   - node-sonos-http-api discovers and controls 14 Sonos zones (see `SONOSAUTOMATION.md` for full inventory)
    - Custom `balance.js` action added for L/R balance control (uses SOAP LF/RF channels)
    - Proxy chain: Browser → Supabase edge function → nginx on DO droplet (port 8055) → Alpaca Mac via Tailscale
    - `SONOS_PROXY_URL` and `SONOS_PROXY_SECRET` stored as Supabase secrets
@@ -365,4 +365,29 @@
    - **Camera**: MJPEG stream at port 8080 (proxied via Caddy/Tailscale)
    - **Network**: LAN IP 192.168.1.106, TCP 8899 (G-code), 8080 (MJPEG camera)
    - **Cost**: $0 (direct TCP, no cloud API)
+
+50. **Tesla Fleet API Migration** (Apr 2026) - Replaced dead Tesla Owner API with official Fleet API
+    - Edge functions: `tesla-command` for control, `tesla-battery-reminder` for low-battery email alerts
+    - Daily snapshots stored for 6 vehicles (Casper, Delphi, Sloop, Cygnus, Kimba, Brisa Branca)
+    - Vehicle snapshot history surfaced on cars page
+
+51. **Spotify OAuth + Playlist Creation** (Apr 2026) - Authenticated Spotify control
+    - OAuth flow + token refresh; playlist CRUD
+    - Fixed Feb 2026 API breaking change (`/tracks` → `/items`)
+    - Dev Mode limitations documented in `docs/spotifyapi.md`
+
+52. **Physical Property (PhyProp) Module** (Apr 2026) - Property visualization layer
+    - Georeferenced site plans, SVG birds-eye render from PostGIS
+    - Blender integration for material analysis; iteration gallery + rendering log
+    - Document review subpage; manual placement editor
+
+53. **Test Suite Admin Page** (Apr 2026) - Nightly health check framework
+    - `run-nightly-tests` edge function executes scheduled smoke tests
+    - Results surfaced in admin Test Suite page
+
+54. **Sonos Network Stabilization** (Apr 2026) - UDM Pro tuning + Garage Mahal AP retune
+    - DHCP reservations for all 14 Sonos speakers (192.168.1.170-183 range)
+    - Garage Mahal AP moved from ch1 → ch11 to reduce 2.4 GHz contention
+    - STP/IGMP changes + revert documented in `SONOSAUTOMATION.md`
+    - Three RF dead-zone speakers identified (.42, .99, .220) — physical remediation needed
 

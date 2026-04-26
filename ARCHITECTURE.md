@@ -39,7 +39,7 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
         │                                 │
         │  ┌─────────────────────────┐    │
         │  │    Edge Functions       │    │
-        │  │  (67 serverless funcs)  │    │
+        │  │  (72 serverless funcs)  │    │
         │  │  incl. Centralized API  │    │
         │  └─────────────────────────┘    │
         │                                 │
@@ -159,7 +159,7 @@ alpacapps/
 │   ├── version-info.js     # Version badge click handler
 │   └── timezone.js         # Timezone utilities (Austin/Chicago)
 │
-├── supabase/               # Supabase Edge Functions (67 functions)
+├── supabase/               # Supabase Edge Functions (72 functions)
 │   └── functions/
 │       ├── _shared/           # Shared modules across edge functions
 │       │   ├── permissions.ts      # Permission checking helpers

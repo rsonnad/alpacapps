@@ -1,7 +1,7 @@
 # AlpacApps — Project Directives
 
 > **On-demand docs — load when the task matches:**
-> - `spaces/admin/devcontrol/devdocs/CREDENTIALS.md` — **load for:** SQL queries, deploying functions, SSH, API calls
+> - `docs/CREDENTIALS.md` — **load for:** SQL queries, deploying functions, SSH, API calls
 > - `spaces/admin/devcontrol/devdocs/SCHEMA.md` — **load for:** writing queries, modifying tables, debugging data
 > - `spaces/admin/devcontrol/devdocs/PATTERNS.md` — **load for:** writing UI code, Tailwind styling, code review, testing
 > - `spaces/admin/devcontrol/devdocs/KEY-FILES.md` — **load for:** finding files, understanding project structure
@@ -42,7 +42,7 @@
 - Tailwind: use `aap-*` tokens (see `spaces/admin/devcontrol/devdocs/PATTERNS.md` for full list). Run `npm run css:build` after new classes.
 - Claude CLI as subprocess, never Anthropic API. Edge functions use Gemini.
 - **Infra hero banner:** `infra/index.html` and `docs/alpacappsinfra.html` use a full-width banner card hero (wide alpaca image on top, text below). Do NOT replace with dark full-bleed hero or side-by-side layout. Look for the `⚠️ HERO BANNER` comment.
-- **Permitting Est. Cost link:** In `jackie/pages/permittingplan/index.html`, the Est. Cost value and Estimated Total value MUST link to `cost-estimate-breakdown.html`. Do NOT remove these links. Look for `⚠️ KEEP` comments.
+- **Permitting Est. Cost link:** In `spaces/admin/permittingplan.html`, the Est. Cost value and Estimated Total value MUST link to `cost-estimate-breakdown.html`. Do NOT remove these links. Look for `⚠️ KEEP` comments.
 
 ## Device Control Protocol
 

@@ -45,5 +45,5 @@ Tables used:
 - `people` - tenants, staff, guests
 - `assignments` - bookings/leases
 - `assignment_spaces` - links assignments to spaces
-- `photos` / `photo_spaces` - space images
+- `media` / `media_spaces` - space images and videos
 - `photo_requests` - pending photo requests

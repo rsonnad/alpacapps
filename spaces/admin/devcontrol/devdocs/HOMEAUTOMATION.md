@@ -21,7 +21,7 @@
               ┌─────────┘    │    │    │    │    │    └─────────┐
               ▼              ▼    │    ▼    │    ▼              ▼
          WiZ Bulbs      Sonos │  Cast  │  TP-Link      Music Assistant
-         (16/26)      (9 speakers)    │        │       (192.168.1.200:8095)
+         (16/26)     (14 speakers)    │        │       (192.168.1.200:8095)
                               │       │        │
                          ┌────┘       │        └────┐
                          ▼            ▼             ▼
@@ -186,7 +186,7 @@ HAOS successfully migrated from Rahul M4 Airtop to Alpuca (Mac mini M4).
 | Integration | Count | Status | Notes |
 |-------------|-------|--------|-------|
 | **WiZ** | 16 bulbs | Loaded | RGBW Tunable, auto-discovered via UDP |
-| **Sonos** | 9 speakers | Loaded | All rooms working |
+| **Sonos** | 14 speakers | Loaded | All rooms working — see `SONOSAUTOMATION.md` for full inventory |
 | **Google Cast** | 2 devices | Loaded | Jon + 1 other |
 | **TP-Link** | 3 devices | Loaded | Cabin 1 KL135, Nook HS220, Stair Landing HS210 |
 | **Music Assistant** | 1 entry | Loaded | Connected to Almaca :8095 |
@@ -217,7 +217,7 @@ WiZ RGBW Tunable bulbs communicate via UDP port 38899, auto-discovered by HA. 16
 
 > **Full entity list, room assignments, and control commands → `docs/LIGHTINGAUTOMATION.md`**
 
-### 4.2 Sonos Speakers (9 speakers, 22 entities)
+### 4.2 Sonos Speakers (14 speakers — see `SONOSAUTOMATION.md` for full inventory)
 
 | Room | Entity | State |
 |------|--------|-------|
