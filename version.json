@@ -1,12 +1,12 @@
 {
-  "version": "v260427.06 3:18p",
-  "release": 1391,
-  "sha": "69338e3fd",
-  "fullSha": "69338e3fd25767a757ecdcc34dde66e63f447b42",
+  "version": "v260427.07 3:24p",
+  "release": 1392,
+  "sha": "1626afa73",
+  "fullSha": "1626afa736fa9a0dcdd265870daefdb25fb2b564",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-27T20:18:09+00:00",
-  "commits": [{"sha":"69338e3fd","message":"chore(rahulio): move consent-irony block below summary","author":"Rahul"}]
+  "pushedAt": "2026-04-27T20:24:13+00:00",
+  "commits": [{"sha":"1626afa73","message":"feat(rahulio,header): Encyclopedia Claude title + restore site logos","author":"Rahul"}]
 }
