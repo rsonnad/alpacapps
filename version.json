@@ -1,12 +1,12 @@
 {
-  "version": "v260427.01 12:59a",
-  "release": 1386,
-  "sha": "01096486b",
-  "fullSha": "01096486be4f8a595eefb572a38c3447b2fb1ea7",
+  "version": "v260427.02 2:02p",
+  "release": 1387,
+  "sha": "ab236ec18",
+  "fullSha": "ab236ec18751afbef2fc7f17acf9e2d07020abdc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-27T05:59:39+00:00",
-  "commits": [{"sha":"7caca6a22","message":"security(edge-functions): re-enable Telnyx sig verify, escape signing-template XSS, sanitize PAI prompt inputs","author":"Paca"},{"sha":"c39fab677","message":"chore(a11y, seo, scripts): heading hierarchy, meta tags, SRI hash, shell hardening","author":"Paca"},{"sha":"01096486b","message":"chore(deps): npm audit fix — basic-ftp 5.2.0→5.3.0, picomatch 4.0.3→4.0.4","author":"Paca"}]
+  "pushedAt": "2026-04-27T19:02:56+00:00",
+  "commits": [{"sha":"ab236ec18","message":"feat(spaces): add lock_type field — admin editor + public detail view","author":"Rahul"}]
 }
