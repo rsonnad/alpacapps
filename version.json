@@ -1,12 +1,12 @@
 {
-  "version": "v260427.09 3:31p",
-  "release": 1394,
-  "sha": "f9e860f6f",
-  "fullSha": "f9e860f6fa44f23b158eeeca7b543430fd03078f",
+  "version": "v260427.10 4:35p",
+  "release": 1395,
+  "sha": "ec87433d0",
+  "fullSha": "ec87433d017d3841ebf0b1b4b82e7cf4a61c880e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-27T20:31:16+00:00",
-  "commits": [{"sha":"f9e860f6f","message":"chore(rahulio): sharpen offer item #3 + buyout-rationale framing","author":"Rahul"}]
+  "pushedAt": "2026-04-27T21:35:03+00:00",
+  "commits": [{"sha":"ec87433d0","message":"chore(rahulio): retitle case to \"non-consensual fuzzy coat heist\"","author":"Rahul"}]
 }
