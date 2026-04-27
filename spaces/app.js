@@ -141,7 +141,7 @@ async function loadData(retryCount = 0) {
         id, name, slug, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
-        min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event,
+        min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event, lock_type,
         parent_id,
         parent:parent_id(name, slug),
         space_amenities(amenity:amenity_id(name)),
@@ -673,7 +673,7 @@ async function fetchAndShowSpace(spaceId) {
         id, name, slug, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
-        min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event,
+        min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event, lock_type,
         parent:parent_id(name, slug),
         space_amenities(amenity:amenity_id(name)),
         media_spaces(display_order, is_primary, media:media_id(id, url, caption))
@@ -863,6 +863,7 @@ function displaySpaceDetail(space) {
         <p><strong>Beds:</strong> ${getBedSummary(space) || 'N/A'}</p>
         ${space.can_be_dwelling && ((space.bath_privacy && space.bath_privacy !== 'none') || space.bath_fixture) ? `<p><strong>Bathroom:</strong> ${(space.bath_privacy && space.bath_privacy !== 'none') ? space.bath_privacy : ''}${space.bath_fixture ? ` (${space.bath_fixture})` : ''}</p>` : ''}
         <p><strong>Capacity:</strong> ${space.min_residents || 1}-${space.max_residents || '?'} residents</p>
+        ${space.lock_type ? `<p><strong>Lock:</strong> ${space.lock_type}</p>` : ''}
       </div>
       <div class="detail-section">
         <h3>Availability</h3>

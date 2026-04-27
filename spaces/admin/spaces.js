@@ -1266,6 +1266,7 @@ async function openEditSpace(spaceId) {
   document.getElementById('editNightlyRate').value = space.nightly_rate || '';
   document.getElementById('editRentalTerm').value = space.rental_term || '';
   document.getElementById('editStandardDeposit').value = space.standard_deposit || '';
+  document.getElementById('editLockType').value = space.lock_type || '';
   document.getElementById('editSqFootage').value = space.sq_footage || '';
   document.getElementById('editMinResidents').value = space.min_residents || 1;
   document.getElementById('editMaxResidents').value = space.max_residents || '';
@@ -1451,6 +1452,7 @@ async function handleEditSpaceSubmit() {
       nightly_rate: getInt('editNightlyRate'),
       rental_term: getVal('editRentalTerm'),
       standard_deposit: getVal('editStandardDeposit'),
+      lock_type: getVal('editLockType'),
       sq_footage: getInt('editSqFootage'),
       min_residents: getInt('editMinResidents') || 1,
       max_residents: getInt('editMaxResidents'),
