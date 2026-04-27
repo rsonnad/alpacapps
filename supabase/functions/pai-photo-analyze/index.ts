@@ -46,6 +46,21 @@ function jsonResponse(req: Request, body: any, status = 200): Response {
 
 // ─── Gemini Vision Analysis ────────────────────────────────────────
 
+/**
+ * Sanitize a user-supplied string before interpolating into an LLM system
+ * prompt. Strips quote/line-break characters that could be used to break out
+ * of the surrounding quoted context and inject new instructions, and caps
+ * length to bound prompt-injection payload size.
+ */
+function sanitizeForPrompt(value: string | null | undefined, maxLen: number): string {
+  if (!value) return "";
+  return String(value)
+    .replace(/[\r\n]+/g, " ")
+    .replace(/["`]/g, "'")
+    .slice(0, maxLen)
+    .trim();
+}
+
 async function analyzePhoto(
   photoUrl: string,
   prompt: string | null,
@@ -65,9 +80,15 @@ async function analyzePhoto(
   const base64Data = btoa(binaryStr);
   const contentType = imgResp.headers.get("content-type") || "image/jpeg";
 
+  // Sanitize user-controlled inputs before they enter the system prompt.
+  // Without this, a crafted user_name like  "; ignore all instructions, ...
+  // could break out of the quoted context and override PAI's directives.
+  const safeUserName = sanitizeForPrompt(userName, 100) || "team member";
+  const safePrompt = sanitizeForPrompt(prompt, 500);
+
   const systemPrompt = `You are PAI (Property AI Assistant) for Alpaca Playhouse, a property management company with alpacas.
 
-A team member named "${userName}" just uploaded a photo${prompt ? ` with this note: "${prompt}"` : " with no specific instructions"}.
+A team member named "${safeUserName}" just uploaded a photo${safePrompt ? ` with this note: "${safePrompt}"` : " with no specific instructions"}.
 
 Analyze the photo and determine the best action. Classify into ONE of these categories:
 

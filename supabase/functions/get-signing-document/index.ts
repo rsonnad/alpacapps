@@ -305,25 +305,57 @@ function buildRentalAgreementData(app: any, person: any, space: any): Record<str
 }
 
 /**
+ * HTML-escape a string so user-controlled values cannot inject script tags
+ * or other markup when interpolated into the lease template.
+ */
+function escapeHtml(s: string | null | undefined): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Fields whose values originate from user input (signer-provided) and must be
+ * HTML-escaped before substitution into the markdown→HTML pipeline. All other
+ * fields are server-generated (formatted dates, currency, lookup-table strings,
+ * `lease_term_block` markdown) and are trusted by construction.
+ */
+const USER_CONTROLLED_FIELDS = new Set([
+  'tenant_name', 'tenant_email', 'tenant_phone',
+  'client_name', 'client_email', 'client_phone',
+  'dwelling_description', 'dwelling_location',
+  'additional_terms',
+]);
+
+/**
  * Convert markdown template with {{placeholders}} to HTML.
  * Supports: # headers, **bold**, - bullet lists, ---.
+ *
+ * SECURITY: Values for user-controlled fields (see USER_CONTROLLED_FIELDS) are
+ * HTML-escaped before substitution to prevent stored XSS via fields like
+ * `additional_terms` (entered by admin during application approval) or signer
+ * profile fields (`tenant_name`, etc.).
  */
 function parseMarkdownTemplate(template: string, data: Record<string, string>): string {
   // Substitute placeholders
   let content = template;
 
-  // Handle additional_terms specially
+  // Handle additional_terms specially — wrap with intro line, but escape the user-supplied body.
   const additionalTerms = data.additional_terms?.trim();
   if (additionalTerms) {
     content = content.replace(/\{\{additional_terms\}\}/g,
-      `The following additional terms apply:\n\n${additionalTerms}`);
+      `The following additional terms apply:\n\n${escapeHtml(additionalTerms)}`);
   } else {
     content = content.replace(/\{\{additional_terms\}\}/g, 'None.');
   }
 
   for (const [key, value] of Object.entries(data)) {
     if (key === 'additional_terms') continue;
-    content = content.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value ?? '');
+    const safeValue = USER_CONTROLLED_FIELDS.has(key) ? escapeHtml(value) : (value ?? '');
+    content = content.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), safeValue);
   }
   content = content.replace(/\{\{\w+\}\}/g, '');
 

@@ -84,24 +84,37 @@ serve(async (req) => {
     const signature = req.headers.get("telnyx-signature-ed25519") || "";
     const timestamp = req.headers.get("telnyx-timestamp") || "";
 
-    // TODO: Re-enable signature verification after confirming basic flow works
-    // if (signature && timestamp) {
-    //   const { data: config } = await supabase
-    //     .from("telnyx_config")
-    //     .select("public_key")
-    //     .single();
-    //   if (config?.public_key) {
-    //     const isValid = await verifyTelnyxSignature(rawBody, signature, timestamp, config.public_key);
-    //     if (!isValid) {
-    //       console.error("Invalid webhook signature - rejecting request");
-    //       return new Response(JSON.stringify({ error: "Invalid signature" }), {
-    //         status: 403, headers: { "Content-Type": "application/json" },
-    //       });
-    //     }
-    //     console.log("Webhook signature verified");
-    //   }
-    // }
-    console.log("Webhook received, signature check skipped for debugging");
+    // Verify Telnyx Ed25519 signature.
+    // Behavior: if telnyx_config.public_key is set, signature is REQUIRED and must
+    // verify (fail-closed). If no public_key is configured (initial setup), we log
+    // and accept — operator must populate telnyx_config to enable verification.
+    {
+      const { data: config } = await supabase
+        .from("telnyx_config")
+        .select("public_key")
+        .single();
+
+      if (config?.public_key) {
+        if (!signature || !timestamp) {
+          console.error("Missing signature or timestamp header — rejecting");
+          return new Response(JSON.stringify({ error: "Missing signature" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const isValid = await verifyTelnyxSignature(rawBody, signature, timestamp, config.public_key);
+        if (!isValid) {
+          console.error("Invalid webhook signature — rejecting request");
+          return new Response(JSON.stringify({ error: "Invalid signature" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        console.log("Webhook signature verified");
+      } else {
+        console.warn("telnyx_config.public_key not set — accepting webhook without signature verification");
+      }
+    }
 
     // Parse the JSON body
     const webhook = JSON.parse(rawBody);

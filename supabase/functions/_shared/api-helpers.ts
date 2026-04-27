@@ -64,7 +64,16 @@ export const corsHeadersOpen: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-/** @deprecated Use getCorsHeaders(req) for origin-restricted CORS. */
+/**
+ * Wildcard CORS for the centralized internal API gateway (`functions/api`).
+ * Acceptable here because every endpoint requires a Bearer JWT or service-role
+ * key — there is no cookie/session auth, so a wildcard `Access-Control-Allow-Origin`
+ * does not introduce CSRF risk (the attacker would still need a valid JWT,
+ * which they cannot read from another origin).
+ *
+ * For new edge functions, prefer `getCorsHeaders(req)` which restricts to the
+ * AlpacApps origin allowlist.
+ */
 export const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
