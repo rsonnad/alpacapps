@@ -1,12 +1,12 @@
 {
-  "version": "v260427.05 3:13p",
-  "release": 1390,
-  "sha": "a9ee3bba1",
-  "fullSha": "a9ee3bba1f6705dc73d229f13c61749326844544",
+  "version": "v260427.06 3:18p",
+  "release": 1391,
+  "sha": "69338e3fd",
+  "fullSha": "69338e3fd25767a757ecdcc34dde66e63f447b42",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-27T20:13:39+00:00",
-  "commits": [{"sha":"a9ee3bba1","message":"chore(rahulio): sharpen final offer line — \"definitely worth \\$60\"","author":"Rahul"}]
+  "pushedAt": "2026-04-27T20:18:09+00:00",
+  "commits": [{"sha":"69338e3fd","message":"chore(rahulio): move consent-irony block below summary","author":"Rahul"}]
 }
