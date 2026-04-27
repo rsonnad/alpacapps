@@ -12,6 +12,11 @@
 # Stop:    kill $(cat /tmp/oracle-provision.pid)
 #######################################################################
 
+# Note: -e is intentionally omitted because the main loop relies on the
+# `oci ... || true` pattern to keep retrying on per-attempt failures.
+# -u catches typos in variable names; pipefail catches mid-pipe failures.
+set -uo pipefail
+
 export SUPPRESS_LABEL_WARNING=True
 echo $$ > /tmp/oracle-provision.pid
 
