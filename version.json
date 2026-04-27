@@ -1,12 +1,12 @@
 {
-  "version": "v260427.08 3:28p",
-  "release": 1393,
-  "sha": "8c05b373a",
-  "fullSha": "8c05b373ab3fcbfc9ebd05b8711c23fbb7e71c1e",
+  "version": "v260427.09 3:31p",
+  "release": 1394,
+  "sha": "f9e860f6f",
+  "fullSha": "f9e860f6fa44f23b158eeeca7b543430fd03078f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-27T20:28:04+00:00",
-  "commits": [{"sha":"8c05b373a","message":"chore(rahulio): refine price-tag wording — \"not worn after purchase\"","author":"Rahul"}]
+  "pushedAt": "2026-04-27T20:31:16+00:00",
+  "commits": [{"sha":"f9e860f6f","message":"chore(rahulio): sharpen offer item #3 + buyout-rationale framing","author":"Rahul"}]
 }
