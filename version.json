@@ -1,12 +1,12 @@
 {
-  "version": "v260427.07 3:24p",
-  "release": 1392,
-  "sha": "1626afa73",
-  "fullSha": "1626afa736fa9a0dcdd265870daefdb25fb2b564",
+  "version": "v260427.08 3:28p",
+  "release": 1393,
+  "sha": "8c05b373a",
+  "fullSha": "8c05b373ab3fcbfc9ebd05b8711c23fbb7e71c1e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-27T20:24:13+00:00",
-  "commits": [{"sha":"1626afa73","message":"feat(rahulio,header): Encyclopedia Claude title + restore site logos","author":"Rahul"}]
+  "pushedAt": "2026-04-27T20:28:04+00:00",
+  "commits": [{"sha":"8c05b373a","message":"chore(rahulio): refine price-tag wording — \"not worn after purchase\"","author":"Rahul"}]
 }
