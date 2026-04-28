@@ -1,12 +1,12 @@
 {
-  "version": "v260427.12 10:53p",
-  "release": 1397,
-  "sha": "20bb0bccf",
-  "fullSha": "20bb0bccf56b3f2433dbcaaf6c4a7c0c4e2ff7c5",
+  "version": "v260427.13 11:53p",
+  "release": 1398,
+  "sha": "ac100683f",
+  "fullSha": "ac100683ff933e4fb2e9e03afe6fc46a231594e0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-28T03:53:26+00:00",
-  "commits": [{"sha":"20bb0bccf","message":"chore(rahulio): note \\$30/night was already below market rate","author":"Rahul"}]
+  "pushedAt": "2026-04-28T04:53:13+00:00",
+  "commits": [{"sha":"ac100683f","message":"docs(lighting): note Nabu Casa expiry + add dining alias","author":"Rahul"}]
 }
