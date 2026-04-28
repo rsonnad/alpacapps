@@ -63,7 +63,7 @@
         card.innerHTML = `
           <h2 class="error">Authorization Failed</h2>
           <p>${params.get('error_description') || error}</p>
-          <p><a href="/residents/sonos.html">Back to Sonos</a></p>
+          <p><a href="/devices/sonos.html">Back to Sonos</a></p>
         `;
         return;
       }
@@ -72,7 +72,7 @@
         card.innerHTML = `
           <h2 class="error">No Code Received</h2>
           <p>Spotify did not return an authorization code.</p>
-          <p><a href="/residents/sonos.html">Back to Sonos</a></p>
+          <p><a href="/devices/sonos.html">Back to Sonos</a></p>
         `;
         return;
       }
@@ -103,16 +103,16 @@
         card.innerHTML = `
           <h2 class="success">Spotify Connected!</h2>
           <p>Successfully linked <strong>${userName}</strong>. You can now create playlists from the Sonos page.</p>
-          <p><a href="/residents/sonos.html">Back to Sonos</a></p>
+          <p><a href="/devices/sonos.html">Back to Sonos</a></p>
         `;
 
-        setTimeout(() => { window.location.href = '/residents/sonos.html'; }, 3000);
+        setTimeout(() => { window.location.href = '/devices/sonos.html'; }, 3000);
       } catch (err) {
         console.error('Spotify token exchange failed:', err);
         card.innerHTML = `
           <h2 class="error">Connection Failed</h2>
           <p>${err.message}</p>
-          <p>Please try again from the <a href="/residents/sonos.html">Sonos page</a>.</p>
+          <p>Please try again from the <a href="/devices/sonos.html">Sonos page</a>.</p>
           <p class="detail">If this keeps happening, the authorization code may have expired. Try connecting again.</p>
         `;
       }

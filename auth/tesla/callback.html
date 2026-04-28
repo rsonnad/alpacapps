@@ -69,7 +69,7 @@
         card.innerHTML = `
           <h2 class="error">Authorization Failed</h2>
           <p>${params.get('error_description') || error}</p>
-          <p><a href="/residents/cars.html">Back to Cars</a></p>
+          <p><a href="/devices/cars.html">Back to Cars</a></p>
         `;
         return;
       }
@@ -78,7 +78,7 @@
         card.innerHTML = `
           <h2 class="error">No Code Received</h2>
           <p>Tesla did not return an authorization code.</p>
-          <p><a href="/residents/cars.html">Back to Cars</a></p>
+          <p><a href="/devices/cars.html">Back to Cars</a></p>
         `;
         return;
       }
@@ -87,7 +87,7 @@
         card.innerHTML = `
           <h2 class="error">Missing Account ID</h2>
           <p>Could not identify which account to connect. Please try again from the Cars page.</p>
-          <p><a href="/residents/cars.html">Back to Cars</a></p>
+          <p><a href="/devices/cars.html">Back to Cars</a></p>
         `;
         return;
       }
@@ -129,7 +129,7 @@
 
         const backUrl = isProfileFlow
           ? `/residents/profile.html?tesla_connected=${accountId}`
-          : '/residents/cars.html';
+          : '/devices/cars.html';
         const backLabel = isProfileFlow ? 'Back to Profile' : 'Back to Cars';
 
         card.innerHTML = `
@@ -143,7 +143,7 @@
       } catch (err) {
         console.error('Token exchange failed:', err);
 
-        const backUrl = isProfileFlow ? '/residents/profile.html' : '/residents/cars.html';
+        const backUrl = isProfileFlow ? '/residents/profile.html' : '/devices/cars.html';
         const backLabel = isProfileFlow ? 'Profile' : 'Cars page';
 
         card.innerHTML = `

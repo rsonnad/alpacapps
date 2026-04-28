@@ -15,6 +15,11 @@ import { supabaseHealth } from '../shared/supabase-health.js';
 // =============================================
 const NEST_CONTROL_URL = `${SUPABASE_URL}/functions/v1/nest-control`;
 const POLL_INTERVAL_MS = 30000;
+// NOTE: This URI is registered with Google Cloud Console for the Nest project.
+// It MUST match the registered URI exactly. /404.html redirects /residents/climate.html
+// → /devices/climate.html so OAuth still lands on the right page after Phase 2.
+// To finish migration: register /devices/climate.html in Google Cloud OAuth client
+// settings, then update this constant.
 const NEST_OAUTH_REDIRECT_URI = 'https://alpacaplayhouse.com/residents/climate.html';
 
 // =============================================

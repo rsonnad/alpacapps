@@ -25,18 +25,18 @@ export const ROUTES = {
     contact:   '/contact/',
   },
 
-  // Devices nav tab — Phase 2 will move these from /residents/* to /devices/*
+  // Devices nav tab — moved to /devices/* in Phase 2.
   devices: {
-    list:       '/residents/devices.html',
-    lighting:   '/residents/lighting.html',
-    music:      '/residents/sonos.html',
-    cameras:    '/residents/cameras.html',
-    climate:    '/residents/climate.html',
-    appliances: '/residents/appliances.html',
-    laundry:    '/residents/laundry.html',     // legacy alias / redirect stub for appliances
-    cars:       '/residents/cars.html',
-    sensors:    '/residents/sensors.html',
-    printer:    '/residents/3dprinter.html',
+    list:       '/devices/devices.html',
+    lighting:   '/devices/lighting.html',
+    music:      '/devices/sonos.html',
+    cameras:    '/devices/cameras.html',
+    climate:    '/devices/climate.html',
+    appliances: '/devices/appliances.html',
+    laundry:    '/devices/laundry.html',     // legacy alias / redirect stub for appliances
+    cars:       '/devices/cars.html',
+    sensors:    '/devices/sensors.html',
+    printer:    '/devices/3dprinter.html',
   },
 
   // Residents nav tab — resident-personal pages (stay in /residents/ across all phases)

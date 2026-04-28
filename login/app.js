@@ -80,7 +80,7 @@ function getRedirectTarget(role) {
   }
   // Resident/associate users go to resident area by default (not admin)
   else if (target === '/spaces/admin/' && ['resident', 'associate'].includes(role)) {
-    target = '/residents/cameras.html';
+    target = '/devices/cameras.html';
   }
   return target;
 }
