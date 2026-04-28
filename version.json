@@ -1,12 +1,12 @@
 {
-  "version": "v260428.09 4:39p",
-  "release": 1407,
-  "sha": "876d12d85",
-  "fullSha": "876d12d857ad038301d264ee853efc415cb1ad31",
+  "version": "v260428.10 4:48p",
+  "release": 1408,
+  "sha": "fc87b5c7e",
+  "fullSha": "fc87b5c7ec68fc08b435811f2c773f64a80379eb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-28T21:39:01+00:00",
-  "commits": [{"sha":"876d12d85","message":"chore(rahulio): drop \"not qualified to coach\" framings; keep hypocrisy","author":"Rahul"}]
+  "pushedAt": "2026-04-28T21:48:34+00:00",
+  "commits": [{"sha":"fc87b5c7e","message":"chore(rahulio): tighten buyout offer wording — keep edge, drop ad hominem","author":"Rahul"}]
 }
