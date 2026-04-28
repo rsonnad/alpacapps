@@ -1,12 +1,12 @@
 {
-  "version": "v260428.07 4:16p",
-  "release": 1405,
-  "sha": "2f68c44c0",
-  "fullSha": "2f68c44c0b709be7a4143b7bfbc9e8015a3a973e",
+  "version": "v260428.08 4:20p",
+  "release": 1406,
+  "sha": "6f28f0b36",
+  "fullSha": "6f28f0b36670f0c13881e82b37761278a8c91a5c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-28T21:16:16+00:00",
-  "commits": [{"sha":"2f68c44c0","message":"chore(rahulio): expand subtitle — emotional energy from people who wanted to help","author":"Rahul"}]
+  "pushedAt": "2026-04-28T21:20:32+00:00",
+  "commits": [{"sha":"6f28f0b36","message":"feat(rahulio): rename to /chelsae-zirna-jacket-theft.html, drop old paths","author":"Rahul"}]
 }
