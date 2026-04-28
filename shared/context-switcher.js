@@ -9,6 +9,7 @@
 import { hasAnyPermission, hasPermission } from './auth.js';
 import { getEnabledFeatures } from './feature-registry.js';
 import { ALL_ADMIN_TABS } from './admin-tabs.js';
+import { ROUTES } from './routes.js';
 
 // =============================================
 // CANONICAL PERMISSION KEY LISTS
@@ -56,7 +57,8 @@ export async function renderContextSwitcher({ activeSection = 'resident', userRo
     return;
   }
 
-  // Resolve Staff/Admin hrefs to first accessible tab (feature-flag aware)
+  // Resolve Staff/Admin hrefs to first accessible tab (feature-flag aware).
+  // ALL_ADMIN_TABS hrefs are now absolute paths from ROUTES — no prefix needed.
   const enabledFeatures = await getEnabledFeatures();
   const firstStaffTab = ALL_ADMIN_TABS.find(t =>
     t.section === 'staff' && (!t.feature || enabledFeatures[t.feature]) && hasAnyPermission(t.permission)
@@ -64,23 +66,19 @@ export async function renderContextSwitcher({ activeSection = 'resident', userRo
   const firstAdminTab = ALL_ADMIN_TABS.find(t =>
     t.section === 'admin' && (!t.feature || enabledFeatures[t.feature]) && hasAnyPermission(t.permission)
   );
-  const staffHref = firstStaffTab
-    ? (firstStaffTab.href.startsWith('/') ? firstStaffTab.href : `/spaces/admin/${firstStaffTab.href}`)
-    : '/spaces/admin/';
-  const adminHref = firstAdminTab
-    ? (firstAdminTab.href.startsWith('/') ? firstAdminTab.href : `/spaces/admin/${firstAdminTab.href}`)
-    : '/spaces/admin/users.html';
+  const staffHref = firstStaffTab ? firstStaffTab.href : ROUTES.staff.base;
+  const adminHref = firstAdminTab ? firstAdminTab.href : ROUTES.admin.users;
 
   // Build tabs — only show tabs the user has access to
   const tabs = [];
-  if (hasDevicePerms) tabs.push({ id: 'devices', label: 'Devices', href: '/residents/devices.html' });
-  tabs.push({ id: 'resident', label: 'Residents', href: '/residents/' });
+  if (hasDevicePerms) tabs.push({ id: 'devices', label: 'Devices', href: ROUTES.devices.list });
+  tabs.push({ id: 'resident', label: 'Residents', href: ROUTES.residents.home });
   if (hasAssociatePerms || ['staff', 'admin', 'oracle'].includes(userRole)) {
-    tabs.push({ id: 'associate', label: 'Associates', href: '/associates/worktracking.html' });
+    tabs.push({ id: 'associate', label: 'Associates', href: ROUTES.associates.worktracking });
   }
   if (hasStaffPerms) tabs.push({ id: 'staff', label: 'Staff', href: staffHref });
   if (hasAdminPerms) tabs.push({ id: 'admin', label: 'Admin', href: adminHref });
-  if (hasDevControlPerm) tabs.push({ id: 'devcontrol', label: 'DevControl', href: '/spaces/admin/devcontrol/' });
+  if (hasDevControlPerm) tabs.push({ id: 'devcontrol', label: 'DevControl', href: ROUTES.devcontrol.home });
 
   // Hide if only one tab (nothing to switch between)
   if (tabs.length <= 1) {

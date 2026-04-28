@@ -4,8 +4,9 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { ROUTES, absoluteUrl, SITE_ORIGIN } from "../_shared/routes.ts";
 
-const SITE_URL = "https://alpacaplayhouse.com";
+const SITE_URL = SITE_ORIGIN;
 const SITE_NAME = "Alpaca Playhouse";
 const DEFAULT_IMAGE = "https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/housephotos/branding/alpaca-head-dark.png";
 const DEFAULT_DESCRIPTION = "Unique rental and event spaces at Austin's Alpaca Playhouse — creative living for adventurous souls.";
@@ -18,11 +19,11 @@ serve(async (req: Request) => {
   if (!slug) {
     return new Response(null, {
       status: 302,
-      headers: { Location: `${SITE_URL}/spaces/` },
+      headers: { Location: absoluteUrl(ROUTES.rentals.home) },
     });
   }
 
-  const canonicalUrl = `${SITE_URL}/spaces/?space=${encodeURIComponent(slug)}`;
+  const canonicalUrl = `${absoluteUrl(ROUTES.rentals.home)}?space=${encodeURIComponent(slug)}`;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

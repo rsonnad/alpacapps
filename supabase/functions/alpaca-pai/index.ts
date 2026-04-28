@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 // =============================================
 // Types
 // =============================================
@@ -459,14 +460,14 @@ You can control smart home devices AND answer questions about the property. If s
 
 VALID SITE URLS (ONLY share these — NEVER invent URLs):
 - Property homepage: https://alpacaplayhouse.com/
-- Available spaces: https://alpacaplayhouse.com/spaces/
-- Cameras: https://alpacaplayhouse.com/residents/cameras.html
-- Climate: https://alpacaplayhouse.com/residents/climate.html
-- Lighting: https://alpacaplayhouse.com/residents/lighting.html
-- Music: https://alpacaplayhouse.com/residents/sonos.html
-- Laundry: https://alpacaplayhouse.com/residents/laundry.html
-- Vehicles: https://alpacaplayhouse.com/residents/cars.html
-- Profile: https://alpacaplayhouse.com/residents/profile.html
+- Available spaces: ${absoluteUrl(ROUTES.rentals.home)}
+- Cameras: ${absoluteUrl(ROUTES.devices.cameras)}
+- Climate: ${absoluteUrl(ROUTES.devices.climate)}
+- Lighting: ${absoluteUrl(ROUTES.devices.lighting)}
+- Music: ${absoluteUrl(ROUTES.devices.music)}
+- Laundry: ${absoluteUrl(ROUTES.devices.laundry)}
+- Vehicles: ${absoluteUrl(ROUTES.devices.cars)}
+- Profile: ${absoluteUrl(ROUTES.residents.profile)}
 - Pay: https://alpacaplayhouse.com/pay/
 - Emergency contacts: https://alpacaplayhouse.com/lost.html
 - Personal directory pages: https://alpacaplayhouse.com/{slug} (where {slug} is a person's URL slug from their profile)
@@ -563,7 +564,7 @@ Note: Sleeping vehicles will be woken automatically (takes ~30 seconds). Use get
     for (const c of scope.cameras) {
       parts.push(`- "${c.name}" (${c.location}${c.protectId ? `, snapshot_id: ${c.protectId}` : ""})`);
     }
-    parts.push(`View live feeds at: https://alpacaplayhouse.com/residents/cameras.html
+    parts.push(`View live feeds at: ${absoluteUrl(ROUTES.devices.cameras)}
 When users ask about cameras, list the available cameras and provide the link above. The cameras page supports multiple quality levels (low/med/high), PTZ controls, snapshots, and fullscreen viewing.
 You can take camera snapshots using the take_snapshot tool — useful when someone asks "what does the backyard look like right now?" or "can you check the front door?".`);
   }
@@ -2809,7 +2810,7 @@ async function executeToolCall(
               data: {
                 question: `${question}\n\nPAI's attempted answer: ${attemptedAnswer}\nReason flagged: ${reason}`,
                 user_email: userEmail || "Not provided",
-                faq_admin_url: "https://alpacaplayhouse.com/spaces/admin/faq.html",
+                faq_admin_url: absoluteUrl(ROUTES.staff.faq),
               },
             }),
           });
@@ -4030,7 +4031,7 @@ async function checkMonthlySpendAlert(
             <h2>Monthly API Spend Alert</h2>
             <p>Gemini API spending for <strong>${month}</strong> has reached <strong>$${totalSpend.toFixed(2)}</strong>, exceeding the $${MONTHLY_SPEND_ALERT_THRESHOLD.toFixed(2)} threshold.</p>
             <p>This is driven by PAI chat using <strong>Gemini 2.5 Pro</strong>.</p>
-            <p>Review usage at the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">Accounting Dashboard</a>.</p>
+            <p>Review usage at the <a href="${absoluteUrl(ROUTES.admin.accounting)}">Accounting Dashboard</a>.</p>
             <p style="color: #888; font-size: 12px;">This alert is sent once per month when the threshold is crossed.</p>
           `,
         },

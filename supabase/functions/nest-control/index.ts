@@ -5,6 +5,7 @@ import { logApiUsage } from "../_shared/api-usage-log.ts";
 import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 const SDM_BASE_URL = "https://smartdevicemanagement.googleapis.com/v1";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
@@ -123,7 +124,7 @@ serve(async (req) => {
           grant_type: "authorization_code",
           redirect_uri:
             body.redirectUri ||
-            "https://alpacaplayhouse.com/residents/climate.html",
+            absoluteUrl(ROUTES.devices.climate),
         }),
       });
 

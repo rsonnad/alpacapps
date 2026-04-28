@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CONTEXT_URL = `${SUPABASE_URL}/storage/v1/object/public/site-content/context.json`;
@@ -114,7 +115,7 @@ IMPORTANT INSTRUCTIONS:
 3. At the end of your response, include a confidence assessment in this exact format on a new line:
    CONFIDENCE: HIGH (if you're very confident the answer is accurate based on context)
    CONFIDENCE: LOW (if you're unsure, making assumptions, or the context doesn't cover this topic)
-4. For rental inquiries, mention they can apply at https://alpacaplayhouse.com/spaces/apply/
+4. For rental inquiries, mention they can apply at ${absoluteUrl(ROUTES.rentals.apply)}
 5. For event hosting, mention they can apply at https://alpacaplayhouse.com/events/
 6. Keep responses under 200 words unless more detail is needed.
 7. If someone asks you to PERFORM AN ACTION (turn on/off lights, play music, control thermostats, lock/unlock cars, etc.), politely explain that you can only answer questions — you cannot control devices or take actions. If they are a current resident, suggest they use the resident portal at https://alpacaplayhouse.com/residents/ for smart home controls.

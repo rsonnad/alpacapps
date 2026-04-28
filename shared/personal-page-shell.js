@@ -10,6 +10,7 @@ import { supabase } from './supabase.js';
 import { initAuth, getAuthState, signOut, onAuthStateChange } from './auth.js';
 import { renderHeader, initSiteComponents, initPublicHeaderAuth } from './site-components.js';
 import { setupVersionInfo } from './version-info.js';
+import { ROUTES } from './routes.js';
 
 // ── Constants ──────────────────────────────────────────────────────────
 const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demo: 2, resident: 1, associate: 1, public: 0 };
@@ -560,7 +561,7 @@ function renderUserMenu(state) {
   const isResident = ['admin', 'oracle', 'staff', 'resident', 'associate'].includes(role);
   let navLinks = '';
   if (isResident) {
-    navLinks += `<a href="/spaces/admin/rentals.html" class="user-menu-item">Intranet</a>`;
+    navLinks += `<a href="${ROUTES.staff.rentals}" class="user-menu-item">Intranet</a>`;
   }
 
   authEl.innerHTML = `
@@ -568,7 +569,7 @@ function renderUserMenu(state) {
       ${avatarHtml}<span class="user-profile-name">${esc(name)}</span>
     </button>
     <div class="user-menu-dropdown hidden">
-      <a href="/residents/profile.html" class="user-menu-item">Profile</a>
+      <a href="${ROUTES.residents.profile}" class="user-menu-item">Profile</a>
       ${navLinks}
       <button class="user-menu-item user-menu-signout" id="ppSignOutBtn">Sign Out</button>
     </div>`;

@@ -10,6 +10,7 @@ import { errorLogger } from './error-logger.js';
 import { setupVersionInfo } from './version-info.js';
 import { renderHeader, initSiteComponents } from './site-components.js';
 import { renderContextSwitcher } from './context-switcher.js';
+import { ROUTES } from './routes.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -177,7 +178,7 @@ function renderAccessDenied(state, activeTab) {
       <div class="unauthorized-actions" style="flex-direction:column;align-items:stretch">
         <button id="requestAccessBtn" class="btn-secondary" style="background:var(--accent,#d4883a);color:#fff;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600">Request Access</button>
         <div style="display:flex;gap:0.75rem;justify-content:center">
-          <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+          <a href="${ROUTES.public.rentals}" class="btn-secondary">View Public Spaces</a>
           <button id="signOutBtn" class="btn-secondary">Sign Out</button>
         </div>
       </div>

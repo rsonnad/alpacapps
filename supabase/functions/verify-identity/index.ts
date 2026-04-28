@@ -13,6 +13,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) });
@@ -407,8 +408,8 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
         } else {
           const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'alpacaautomatic@gmail.com';
           const adminUrl = isAssociateContext
-            ? `https://rsonnad.github.io/alpacapps/spaces/admin/worktracking.html`
-            : `https://rsonnad.github.io/alpacapps/spaces/admin/rentals.html`;
+            ? absoluteUrl(ROUTES.staff.worktracking)
+            : absoluteUrl(ROUTES.staff.rentals);
           await fetch(`${supabaseUrl}/functions/v1/send-email`, {
             method: 'POST',
             headers: {

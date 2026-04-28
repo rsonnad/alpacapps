@@ -14,6 +14,7 @@ import { renderHeader, initSiteComponents } from './site-components.js';
 import { initNavTabList, scrollActiveIntoView } from './tab-utils.js';
 import { getEnabledFeatures } from './feature-registry.js';
 import { STAFF_PERMISSION_KEYS, ADMIN_PERMISSION_KEYS, DEVICE_PERMISSION_KEYS, renderContextSwitcher } from './context-switcher.js';
+import { ROUTES } from './routes.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -51,32 +52,35 @@ const TAB_ICONS = {
   'my-access':_i('<path d="M7 11V7a5 5 0 0110 0v4"/><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/>'),
 };
 
+// Hrefs are absolute paths sourced from ./routes.js. To move a page,
+// edit /shared/routes.js — every tab here picks up the change.
 const DEVICE_SUBTABS = [
-  { id: 'list', label: 'List', href: 'devices.html', permissionsAny: DEVICE_PERMISSION_KEYS },
-  { id: 'homeauto', label: 'Lighting', href: 'lighting.html', permission: 'view_lighting', feature: 'lighting' },
-  { id: 'music', label: 'Music', href: 'sonos.html', permission: 'view_music', feature: 'music' },
-  { id: 'cameras', label: 'Cameras', href: 'cameras.html', permission: 'view_cameras', feature: 'cameras' },
-  { id: 'climate', label: 'Climate', href: 'climate.html', permission: 'view_climate', feature: 'climate' },
-  { id: 'appliances', label: 'Appliances', href: 'appliances.html', permission: 'view_laundry', feature: 'oven' },
-  { id: 'cars', label: 'Cars', href: 'cars.html', permission: 'view_cars', feature: 'vehicles' },
-  { id: 'sensors', label: 'Sensors', href: 'sensors.html', permission: 'view_cameras', feature: 'cameras' },
-  { id: 'printer3d', label: '3D Printer', href: '3dprinter.html', permission: 'view_printer', feature: 'printer_3d' },
+  { id: 'list',       label: 'List',       href: ROUTES.devices.list,       permissionsAny: DEVICE_PERMISSION_KEYS },
+  { id: 'homeauto',   label: 'Lighting',   href: ROUTES.devices.lighting,   permission: 'view_lighting', feature: 'lighting' },
+  { id: 'music',      label: 'Music',      href: ROUTES.devices.music,      permission: 'view_music',    feature: 'music' },
+  { id: 'cameras',    label: 'Cameras',    href: ROUTES.devices.cameras,    permission: 'view_cameras',  feature: 'cameras' },
+  { id: 'climate',    label: 'Climate',    href: ROUTES.devices.climate,    permission: 'view_climate',  feature: 'climate' },
+  { id: 'appliances', label: 'Appliances', href: ROUTES.devices.appliances, permission: 'view_laundry',  feature: 'oven' },
+  { id: 'cars',       label: 'Cars',       href: ROUTES.devices.cars,       permission: 'view_cars',     feature: 'vehicles' },
+  { id: 'sensors',    label: 'Sensors',    href: ROUTES.devices.sensors,    permission: 'view_cameras',  feature: 'cameras' },
+  { id: 'printer3d',  label: '3D Printer', href: ROUTES.devices.printer,    permission: 'view_printer',  feature: 'printer_3d' },
 ];
 
+// my-access.html stays in /residents/ — not yet in ROUTES (legacy page; add when moved).
 const RESIDENT_CORE_TABS = [
-  { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
-  { id: 'my-access', label: 'My Access', href: 'my-access.html', permission: 'view_profile' },
-  { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
-  { id: 'media', label: 'Imagery', href: 'media.html', permission: 'view_profile' },
-  { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile', feature: 'pai' },
+  { id: 'profile',     label: 'Profile',     href: ROUTES.residents.profile,     permission: 'view_profile' },
+  { id: 'my-access',   label: 'My Access',   href: '/residents/my-access.html',  permission: 'view_profile' },
+  { id: 'bookkeeping', label: 'Bookkeeping', href: ROUTES.residents.bookkeeping, permission: 'view_profile' },
+  { id: 'media',       label: 'Imagery',     href: ROUTES.residents.media,       permission: 'view_profile' },
+  { id: 'askpai',      label: 'Ask PAI',     href: ROUTES.residents.askPai,      permission: 'view_profile', feature: 'pai' },
 ];
 
 const RESIDENT_STAFF_TABS = [
-  { id: 'profile', label: 'Profile', href: 'profile.html', permission: 'view_profile' },
-  { id: 'my-access', label: 'My Access', href: 'my-access.html', permission: 'view_profile' },
-  { id: 'bookkeeping', label: 'Bookkeeping', href: 'bookkeeping.html', permission: 'view_profile' },
-  { id: 'media', label: 'Imagery', href: 'media.html', permission: 'view_profile' },
-  { id: 'askpai', label: 'Ask PAI', href: 'ask-pai.html', permission: 'view_profile', feature: 'pai' },
+  { id: 'profile',     label: 'Profile',     href: ROUTES.residents.profile,     permission: 'view_profile' },
+  { id: 'my-access',   label: 'My Access',   href: '/residents/my-access.html',  permission: 'view_profile' },
+  { id: 'bookkeeping', label: 'Bookkeeping', href: ROUTES.residents.bookkeeping, permission: 'view_profile' },
+  { id: 'media',       label: 'Imagery',     href: ROUTES.residents.media,       permission: 'view_profile' },
+  { id: 'askpai',      label: 'Ask PAI',     href: ROUTES.residents.askPai,      permission: 'view_profile', feature: 'pai' },
 ];
 
 // =============================================
@@ -268,7 +272,7 @@ function renderUserInfo(el, appUser, profileHref) {
   const role = appUser.role || '';
   const isStaffOrAdmin = ['admin', 'oracle', 'staff'].includes(role);
   const manageLink = isStaffOrAdmin
-    ? `<a href="/spaces/admin/spaces.html" class="user-menu-item">Manage</a>`
+    ? `<a href="${ROUTES.staff.spaces}" class="user-menu-item">Manage</a>`
     : '';
 
   el.innerHTML = `
@@ -362,7 +366,7 @@ function renderAccessDenied(state, activeTab) {
       <div class="unauthorized-actions" style="flex-direction:column;align-items:stretch">
         <button id="requestAccessBtn" class="btn-secondary" style="background:var(--accent,#d4883a);color:#fff;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600">Request Access</button>
         <div style="display:flex;gap:0.75rem;justify-content:center">
-          <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+          <a href="${ROUTES.public.rentals}" class="btn-secondary">View Public Spaces</a>
           <button id="signOutBtn" class="btn-secondary">Sign Out</button>
         </div>
       </div>

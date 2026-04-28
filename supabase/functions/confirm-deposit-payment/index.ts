@@ -10,6 +10,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
 
@@ -248,7 +249,7 @@ Deno.serve(async (req) => {
       .eq("id", conf.id);
 
     // Send notification to admin
-    const adminUrl = `https://alpacaplayhouse.com/spaces/admin/rentals.html#applicant=${application.id}`;
+    const adminUrl = `${absoluteUrl(ROUTES.staff.rentals)}#applicant=${application.id}`;
     const overpayStr = remaining > 0 ? `<p style="color:#e74c3c;"><strong>Overpayment:</strong> $${remaining.toFixed(2)} exceeds deposits owed.</p>` : "";
 
     try {

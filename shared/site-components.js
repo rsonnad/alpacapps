@@ -6,6 +6,7 @@
  */
 
 import { initAuth, getAuthState, signOut } from './auth.js';
+import { ROUTES } from './routes.js';
 
 // =============================================
 // CONFIGURATION
@@ -33,20 +34,21 @@ const IMAGES = {
 // Change this if deploying to a different subdirectory
 const BASE_PATH = '';
 
-// Navigation links - unified across all pages
-// Logo clicks to Home, so Home is not in the nav
+// Navigation links - unified across all pages.
+// Hrefs are sourced from /shared/routes.js so future folder renames are 1-file edits.
+// Logo clicks to Home, so Home is not in the nav.
 const NAV_LINKS = [
-  { text: 'Visiting', href: `${BASE_PATH}/visiting/` },
-  { text: 'Rentals', href: `${BASE_PATH}/spaces/` },
-  { text: 'Events', href: `${BASE_PATH}/events/` },
-  { text: 'Community', href: `${BASE_PATH}/community/` },
-  { text: 'Photos', href: `${BASE_PATH}/photos/` },
-  { text: 'Contact', href: `${BASE_PATH}/contact/` },
+  { text: 'Visiting',  href: `${BASE_PATH}${ROUTES.public.visiting}` },
+  { text: 'Rentals',   href: `${BASE_PATH}${ROUTES.public.rentals}` },
+  { text: 'Events',    href: `${BASE_PATH}${ROUTES.public.events}` },
+  { text: 'Community', href: `${BASE_PATH}${ROUTES.public.community}` },
+  { text: 'Photos',    href: `${BASE_PATH}${ROUTES.public.photos}` },
+  { text: 'Contact',   href: `${BASE_PATH}${ROUTES.public.contact}` },
 ];
 
 // Mistiq link - only shown on Mistiq pages
 const MISTIQ_LINK = { text: 'Mistiq', href: `${BASE_PATH}/mistiq/` };
-const AUTH_LINK = { text: 'Sign In', href: `${BASE_PATH}/login/` };
+const AUTH_LINK = { text: 'Sign In', href: `${BASE_PATH}${ROUTES.auth.login}` };
 
 // =============================================
 // HEADER COMPONENT
@@ -388,7 +390,7 @@ function renderUserMenuHTML(appUser, profileHref) {
 
   let navLinks = '';
   if (isResident) {
-    navLinks += `<a href="/spaces/admin/rentals.html" class="user-menu-item">Intranet</a>`;
+    navLinks += `<a href="${ROUTES.staff.rentals}" class="user-menu-item">Intranet</a>`;
   }
 
   return `
@@ -409,7 +411,7 @@ function renderUserMenuHTML(appUser, profileHref) {
  * @param {string} options.signInLinkId - ID of Sign In link to hide when signed in
  * @param {string} [options.profileHref='/residents/profile.html'] - Profile link for dropdown
  */
-export async function initPublicHeaderAuth({ authContainerId, signInLinkId, profileHref = '/residents/profile.html' }) {
+export async function initPublicHeaderAuth({ authContainerId, signInLinkId, profileHref = ROUTES.residents.profile }) {
   const authEl = document.getElementById(authContainerId);
   const signInEl = document.getElementById(signInLinkId);
   if (!authEl) return;
@@ -435,9 +437,9 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
         // Build mobile nav items for authenticated user
         const mobileItems = [];
         if (isResident) {
-          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/spaces/admin/rentals.html" class="aap-mobile-nav__link">Intranet</a></li>`);
+          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="${ROUTES.staff.rentals}" class="aap-mobile-nav__link">Intranet</a></li>`);
         }
-        mobileItems.push(`<li class="aap-mobile-nav__item"><a href="/residents/profile.html" class="aap-mobile-nav__link">Profile</a></li>`);
+        mobileItems.push(`<li class="aap-mobile-nav__item"><a href="${ROUTES.residents.profile}" class="aap-mobile-nav__link">Profile</a></li>`);
         mobileItems.push(`<li class="aap-mobile-nav__item"><button class="aap-mobile-nav__link aap-mobile-nav__signout" id="mobileSignOutBtn" style="background:none;border:none;color:#c0392b;cursor:pointer;font:inherit;padding:inherit;width:100%;text-align:left;">Sign Out</button></li>`);
 
         mobileLi.outerHTML = mobileItems.join('');

@@ -13,6 +13,7 @@ import { initNavTabList, scrollActiveIntoView } from './tab-utils.js';
 import { getEnabledFeatures } from './feature-registry.js';
 import { ALL_ADMIN_TABS } from './admin-tabs.js';
 import { STAFF_PERMISSION_KEYS, ADMIN_PERMISSION_KEYS, renderContextSwitcher } from './context-switcher.js';
+import { ROUTES } from './routes.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -200,7 +201,7 @@ function renderUserInfo(el, appUser, profileHref) {
     </button>
     <div class="user-menu-dropdown hidden">
       <a href="${profileHref}" class="user-menu-item">Profile</a>
-      <a href="/residents/lighting.html" class="user-menu-item">Intranet</a>
+      <a href="${ROUTES.devices.lighting}" class="user-menu-item">Intranet</a>
       <button class="user-menu-item user-menu-signout" id="headerSignOutBtn">Sign Out</button>
     </div>`;
 
@@ -288,7 +289,7 @@ function renderAccessDenied(state, activeTab) {
       <div class="unauthorized-actions" style="flex-direction:column;align-items:stretch">
         <button id="requestAccessBtn" class="btn-secondary" style="background:var(--accent,#d4883a);color:#fff;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600">Request Access</button>
         <div style="display:flex;gap:0.75rem;justify-content:center">
-          <a href="/spaces/" class="btn-secondary">View Public Spaces</a>
+          <a href="${ROUTES.public.rentals}" class="btn-secondary">View Public Spaces</a>
           <button id="signOutBtn" class="btn-secondary">Sign Out</button>
         </div>
       </div>

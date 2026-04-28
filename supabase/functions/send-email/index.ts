@@ -15,6 +15,7 @@ import {
   type DataRow,
   type PaymentMethod,
 } from "../_shared/email-components.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -563,7 +564,7 @@ the Alpaca Playhouse property AI agent`
 
       // Space link
       const spaceLink = data.space_id
-        ? `<a href="https://alpacaplayhouse.com/spaces/?id=${data.space_id}" style="color:${B.accent};font-weight:600;text-decoration:none;">${data.space_name}</a>`
+        ? `<a href="${absoluteUrl(ROUTES.rentals.home)}?id=${data.space_id}" style="color:${B.accent};font-weight:600;text-decoration:none;">${data.space_name}</a>`
         : `<strong>${data.space_name}</strong>`;
 
       // Build detail rows using shared dataTable component
@@ -651,7 +652,7 @@ ${houseRulesBodyText}
           <div style="background:${B.bgMuted};border:1px solid ${B.border};border-left:4px solid ${B.accent};border-radius:6px;padding:20px 24px;margin:24px 0;">
             <h2 style="margin:0 0 10px;font-weight:700;font-size:17px;color:${B.text};line-height:1.3;">Your Access Codes</h2>
             <p style="margin:0 0 14px;color:${B.textMuted};font-size:13.5px;line-height:1.55;">We don't send door codes by email. Log in at the link below to see the codes for your assigned space.</p>
-            <a href="https://alpacaplayhouse.com/residents/my-access.html" style="display:inline-block;padding:10px 22px;background:${B.accent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;font-size:13.5px;">View my access codes &rarr;</a>
+            <a href="${absoluteUrl(ROUTES.residents.myAccess)}" style="display:inline-block;padding:10px 22px;background:${B.accent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;font-size:13.5px;">View my access codes &rarr;</a>
             <p style="margin:14px 0 0;color:${B.textMuted};font-size:12.5px;line-height:1.55;">Log in with <strong>${data.email || 'the email this was sent to'}</strong>. If you have trouble, text PAI at <a href="sms:+17377474737" style="color:${B.accent};">(737) 747-4737</a>.</p>
           </div>
 
@@ -675,7 +676,7 @@ ${residentGuideText}
 
 We don't send door codes by email. Log in at the link below to see the codes for your assigned space:
 
-https://alpacaplayhouse.com/residents/my-access.html
+${absoluteUrl(ROUTES.residents.myAccess)}
 
 Log in with ${data.email || 'the email this was sent to'}. If you have trouble, text PAI at (737) 747-4737.
 
@@ -1035,8 +1036,8 @@ Alpaca Playhouse • 160 Still Forest Dr, Cedar Creek, TX 78612`
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p>When you're ready, you can also:</p>
           <ul style="line-height: 1.8;">
-            <li><a href="https://alpacaplayhouse.com/spaces/apply/">Apply for a rental space</a></li>
-            <li><a href="https://alpacaplayhouse.com/spaces/hostevent/">Host an event</a></li>
+            <li><a href="${absoluteUrl(ROUTES.rentals.apply)}">Apply for a rental space</a></li>
+            <li><a href="${absoluteUrl(ROUTES.rentals.hostEvent)}">Host an event</a></li>
           </ul>
           <p>If you have any questions or would like to schedule a tour, just reply to this email.</p>
         `,
@@ -1053,8 +1054,8 @@ You'll be able to see photos, amenities, pricing, and availability for all of ou
 This link is personal to you and will expire in 14 days.
 
 When you're ready, you can also:
-- Apply for a rental space: https://alpacaplayhouse.com/spaces/apply/
-- Host an event: https://alpacaplayhouse.com/spaces/hostevent/
+- Apply for a rental space: ${absoluteUrl(ROUTES.rentals.apply)}
+- Host an event: ${absoluteUrl(ROUTES.rentals.hostEvent)}
 
 If you have any questions or would like to schedule a tour, just reply to this email.
 
@@ -1070,7 +1071,7 @@ the Alpaca Playhouse property AI agent`
         html: `
           <h2>Great news, ${data.first_name}!</h2>
           <p>Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and feel you would be a great fit for the Alpaca Playhouse community. We would love to invite you to apply for a rental space when you are ready and have clarity on your dates.</p>
-          <p>Please review the <a href="https://rsonnad.github.io/alpacapps/spaces/">available spaces here</a> or click the button below to finish your application.</p>
+          <p>Please review the <a href="${absoluteUrl(ROUTES.rentals.home)}">available spaces here</a> or click the button below to finish your application.</p>
           <p style="margin: 30px 0; text-align: center;">
             <a href="${data.continue_url}" style="background:${B.accent}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">Complete Your Application</a>
           </p>
@@ -1080,7 +1081,7 @@ the Alpaca Playhouse property AI agent`
 
 Thank you for your interest in joining the Alpaca Playhouse community. We've reviewed your inquiry and feel you would be a great fit for the Alpaca Playhouse community. We would love to invite you to apply for a rental space when you are ready and have clarity on your dates.
 
-Please review the available spaces here: https://rsonnad.github.io/alpacapps/spaces/
+Please review the available spaces here: ${absoluteUrl(ROUTES.rentals.home)}
 
 Or complete your application here: ${data.continue_url}
 
@@ -1100,7 +1101,7 @@ the Alpaca Playhouse property AI agent`
           <p>A new event hosting request has been submitted.</p>
 
           <p style="margin: 20px 0;">
-            <a href="https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#events" style="background:${B.accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Events Pipeline</a>
+            <a href="${absoluteUrl(ROUTES.staff.manage)}#events" style="background:${B.accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Events Pipeline</a>
           </p>
 
           ${dataTable([
@@ -1136,7 +1137,7 @@ the Alpaca Playhouse property AI agent`
         `,
         text: `New Event Hosting Request
 
-View in Events Pipeline: https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#events
+View in Events Pipeline: ${absoluteUrl(ROUTES.staff.manage)}#events
 
 HOST INFORMATION
 Name: ${data.first_name} ${data.last_name}
@@ -1175,7 +1176,7 @@ All required acknowledgments have been confirmed by the applicant.`
           <p>A new rental application has been submitted.</p>
 
           <p style="margin: 20px 0;">
-            <a href="https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#rentals" style="background:${B.accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Rentals Pipeline</a>
+            <a href="${absoluteUrl(ROUTES.staff.manage)}#rentals" style="background:${B.accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">View in Rentals Pipeline</a>
           </p>
 
           ${dataTable([
@@ -1211,7 +1212,7 @@ All required acknowledgments have been confirmed by the applicant.`
         `,
         text: `New Rental Application
 
-View in Rentals Pipeline: https://rsonnad.github.io/alpacapps/spaces/admin/manage.html#rentals
+View in Rentals Pipeline: ${absoluteUrl(ROUTES.staff.manage)}#rentals
 
 APPLICANT INFORMATION
 Name: ${data.first_name} ${data.last_name}
@@ -1316,7 +1317,7 @@ ${data.message || 'No message'}`
             { label: 'Page', value: `<a href="${data.page_url}">${data.page_name}</a>` },
           ])}
           ${data.message ? `<div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border-left: 4px solid #d4883a; margin: 16px 0; white-space: pre-wrap;">${data.message}</div>` : ''}
-          <p style="margin-top: 20px;"><a href="https://alpacaplayhouse.com/spaces/admin/users.html" style="background: #d4883a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">Manage Users</a></p>
+          <p style="margin-top: 20px;"><a href="${absoluteUrl(ROUTES.admin.users)}" style="background: #d4883a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">Manage Users</a></p>
         `,
         text: `Access Request
 
@@ -1329,7 +1330,7 @@ Page: ${data.page_name}
 URL: ${data.page_url}
 ${data.message ? `\nMessage: ${data.message}` : ''}
 
-Manage users: https://alpacaplayhouse.com/spaces/admin/users.html`
+Manage users: ${absoluteUrl(ROUTES.admin.users)}`
       };
 
     // ===== COMMUNITY FIT INQUIRY =====
@@ -1372,7 +1373,7 @@ Manage users: https://alpacaplayhouse.com/spaces/admin/users.html`
             <img src="${data.photo_url}" style="max-width: 200px; border-radius: 8px; border: 1px solid #eee;" />
             ` : ''}
 
-            <p style="margin-top: 24px;"><a href="https://alpacaplayhouse.com/spaces/admin/rentals.html" style="background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">View in Rentals Pipeline</a></p>
+            <p style="margin-top: 24px;"><a href="${absoluteUrl(ROUTES.staff.rentals)}" style="background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">View in Rentals Pipeline</a></p>
           </div>
         `,
         text: `${data.name || 'Someone'} submitted an inquiry from alpacaplayhouse.com
@@ -1488,7 +1489,7 @@ You'll receive another email when the fix is deployed or if we need to escalate 
           ${data.fix_commit_sha ? `<p><strong>Commit:</strong> <a href="https://github.com/rsonnad/alpacapps/commit/${data.fix_commit_sha}">${data.fix_commit_sha.substring(0, 7)}</a></p>` : ''}
 
           <p>The fix is live now. Please verify at:<br>
-          <a href="${data.page_url || 'https://rsonnad.github.io/alpacapps/spaces/'}" style="background: #27ae60; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 8px;">View Live Site</a></p>
+          <a href="${data.page_url || '${absoluteUrl(ROUTES.rentals.home)}'}" style="background: #27ae60; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 8px;">View Live Site</a></p>
 
           <p style="color: #666; font-size: 13px; margin-top: 20px;">If the fix doesn't look right, submit another bug report and we'll take another look.</p>
         `,
@@ -1508,7 +1509,7 @@ ${data.fix_summary || 'The issue has been resolved.'}
 ${data.fix_commit_sha ? `Commit: https://github.com/rsonnad/alpacapps/commit/${data.fix_commit_sha}` : ''}
 
 The fix is live now. Please verify at:
-${data.page_url || 'https://rsonnad.github.io/alpacapps/spaces/'}
+${data.page_url || '${absoluteUrl(ROUTES.rentals.home)}'}
 
 If the fix doesn't look right, submit another bug report and we'll take another look.`
       };
@@ -1616,7 +1617,7 @@ If the fix doesn't look right, submit another bug report and we'll take another 
           ${data.notes ? `<p><strong>Notes:</strong> ${data.notes}</p>` : ''}
 
           <div style="margin: 20px 0;">
-            <a href="https://alpacaplayhouse.com/spaces/admin/appdev.html" style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 10px;">Review in App Dev Console</a>
+            <a href="${absoluteUrl(ROUTES.staff.appdev)}" style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 10px;">Review in App Dev Console</a>
             ${compareUrl ? `<a href="${compareUrl}" style="background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">View Diff on GitHub</a>` : ''}
           </div>
 
@@ -1645,7 +1646,7 @@ RISK ASSESSMENT:
 
 ${data.notes ? `Notes: ${data.notes}` : ''}
 
-Review in App Dev Console: https://alpacaplayhouse.com/spaces/admin/appdev.html
+Review in App Dev Console: ${absoluteUrl(ROUTES.staff.appdev)}
 ${compareUrl ? `View diff: ${compareUrl}` : ''}
 
 To deploy: click "Approve & Merge" in the App Dev console, or merge the branch manually on GitHub.
@@ -1955,7 +1956,7 @@ This is an automated reply from PAI at Alpaca Playhouse.`
           <ul>${fileListHtml}</ul>
 
           <p>Files have been uploaded to R2 and added to the <strong>document index</strong> as <strong>inactive</strong> (pending admin review).</p>
-          <p><a href="${data.admin_url || 'https://alpacaplayhouse.com/spaces/admin/manage.html'}" style="background: #3d8b7a; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Review in Admin</a></p>
+          <p><a href="${data.admin_url || absoluteUrl(ROUTES.staff.manage)}" style="background: #3d8b7a; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Review in Admin</a></p>
         `,
         text: `PAI Document Upload
 

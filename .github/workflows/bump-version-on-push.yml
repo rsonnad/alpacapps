@@ -35,6 +35,9 @@ jobs:
       - name: Build Tailwind CSS
         run: npm ci && npm run css:build
 
+      - name: Check route constants are in sync (shared/routes.js ↔ supabase/functions/_shared/routes.ts)
+        run: node scripts/sync-routes.js --check
+
       - name: Regenerate Rahulio pages manifest
         run: npm run rahulio-pages-manifest
 

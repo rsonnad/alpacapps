@@ -18,6 +18,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { ROUTES } from "../_shared/routes.ts";
 // Email configuration
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'alpacaautomatic@gmail.com';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -41,12 +42,13 @@ const IGNORED_CATEGORIES = [
   'info',  // Info-level logs are not bugs
 ];
 
-// Pages/paths involving sensitive systems — high risk
+// Pages/paths involving sensitive systems — high risk.
+// Sourced from ROUTES so they auto-update when pages move (Phases 1-4).
 const HIGH_RISK_PATHS = [
-  '/spaces/admin/settings',   // System settings
-  '/spaces/admin/users',      // User management
-  '/spaces/admin/accounting', // Financial data
-  '/associates/',             // Associate payments/hours
+  ROUTES.admin.settings,    // System settings
+  ROUTES.admin.users,       // User management
+  ROUTES.admin.accounting,  // Financial data
+  ROUTES.associates.home,   // Associate payments/hours
 ];
 
 // Edge function / API error patterns — high risk (server-side issue)

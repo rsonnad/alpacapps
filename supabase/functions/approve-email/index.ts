@@ -12,6 +12,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 const CONFIRM_PAGE = "https://alpacaplayhouse.com/admin/email-confirm.html";
@@ -239,7 +240,7 @@ async function processPayrollApproval(html: string, supabaseUrl: string, supabas
             _raw_html: `<h2 style="color:#c62828;">Payout Failed</h2>
               <p>The payroll approval for <strong>${meta.associate_name}</strong> ($${amount.toFixed(2)}) was approved, but the Stripe payout failed:</p>
               <p style="background:#ffebee;padding:12px;border-radius:8px;font-family:monospace;">${payoutResult.error}</p>
-              <p>You can retry the payout manually from the <a href="https://alpacaplayhouse.com/spaces/admin/worktracking.html">Work Tracking</a> page.</p>`,
+              <p>You can retry the payout manually from the <a href="${absoluteUrl(ROUTES.staff.worktracking)}">Work Tracking</a> page.</p>`,
           },
         }),
       });

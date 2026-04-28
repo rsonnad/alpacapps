@@ -1,6 +1,8 @@
 // Chat Widget for Alpaca Playhouse
 // Uses Edge Function proxy to call Gemini API (keeps API key secure)
 
+import { ROUTES, absoluteUrl } from './routes.js';
+
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
 const ASK_QUESTION_URL = `${SUPABASE_URL}/functions/v1/ask-question`;
@@ -111,7 +113,7 @@ async function sendAdminNotification(question, userEmail) {
         data: {
           question,
           user_email: userEmail || 'Not provided',
-          faq_admin_url: 'https://alpacaplayhouse.com/spaces/admin/faq.html'
+          faq_admin_url: absoluteUrl(ROUTES.staff.faq)
         }
       })
     });

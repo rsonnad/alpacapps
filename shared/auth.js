@@ -1,5 +1,6 @@
 // Authentication module with Google OAuth and email/password support
 import { supabase } from './supabase.js';
+import { ROUTES } from './routes.js';
 
 // Timeout configuration
 const AUTH_TIMEOUT_MS = 15000; // 15 seconds for auth operations
@@ -497,7 +498,7 @@ export async function signInWithGoogle(redirectTo) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: redirectTo || window.location.origin + '/spaces/admin/',
+      redirectTo: redirectTo || window.location.origin + ROUTES.staff.base,
       queryParams: {
         prompt: 'select_account',
       },

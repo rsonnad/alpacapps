@@ -10,6 +10,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { wrapEmailHtml } from "../_shared/email-brand-wrapper.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 
 interface TestResult {
   test_name: string;
@@ -375,7 +376,7 @@ Deno.serve(async (req) => {
         <thead><tr style="background:#f6f5f0"><th style="padding:8px 12px;text-align:left">Status</th><th style="padding:8px 12px;text-align:left">Test</th><th style="padding:8px 12px;text-align:left">Message</th></tr></thead>
         <tbody>${failRows}${warnRows}</tbody>
       </table>
-      <p style="margin-top:16px"><a href="https://alpacaplayhouse.com/spaces/admin/test-suite.html">View full results</a></p>
+      <p style="margin-top:16px"><a href="${absoluteUrl(ROUTES.admin.testSuite)}">View full results</a></p>
     `;
 
     const sender = SENDER_MAP['system'] || { from: 'Alpaca Automaton <auto@alpacaplayhouse.com>', reply_to: '' };

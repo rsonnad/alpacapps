@@ -18,6 +18,7 @@ import {
   type OutboundEmailMeta,
 } from "../_shared/email-classifier.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
+import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
 
@@ -629,8 +630,8 @@ async function handleClauderoEmail(
 
   // Send acknowledgment reply
   const ackText = parentRequest
-    ? `Got it — I'll look at the context from ${versionMatch ? `version ${`v${versionMatch[1]}`}` : `your previous build`} and process your feedback. You can track progress at https://alpacaplayhouse.com/spaces/admin/appdev.html`
-    : `Got it — I'll process your request. You can track progress at https://alpacaplayhouse.com/spaces/admin/appdev.html`;
+    ? `Got it — I'll look at the context from ${versionMatch ? `version ${`v${versionMatch[1]}`}` : `your previous build`} and process your feedback. You can track progress at ${absoluteUrl(ROUTES.staff.appdev)}`
+    : `Got it — I'll process your request. You can track progress at ${absoluteUrl(ROUTES.staff.appdev)}`;
 
   await sendClauderoReply(resendApiKey, senderEmail, ackText, subject, messageBody);
 }
@@ -1163,7 +1164,7 @@ async function sendPaiDocumentNotification(
         message_body: messageBody,
         files,
         file_count: files.length,
-        admin_url: "https://alpacaplayhouse.com/spaces/admin/manage.html",
+        admin_url: absoluteUrl(ROUTES.staff.manage),
       },
       sender_type: "auto",
     }),
@@ -1411,7 +1412,7 @@ Guidelines:
             <hr>
             <p><strong>Task ID:</strong> ${data.id}</p>
             <p>To approve, update the task status to "pending" in the database or via the admin console.</p>
-            <p><a href="https://alpacaplayhouse.com/spaces/admin/appdev.html" style="display:inline-block;padding:10px 20px;background:#22c55e;color:white;border-radius:6px;text-decoration:none">Review in Admin</a></p>`,
+            <p><a href="${absoluteUrl(ROUTES.staff.appdev)}" style="display:inline-block;padding:10px 20px;background:#22c55e;color:white;border-radius:6px;text-decoration:none">Review in Admin</a></p>`,
         }),
       });
     } catch (e) {
@@ -1666,7 +1667,7 @@ async function handlePaiEmail(
       await sendPaiReply(
         resendApiKey,
         senderEmail,
-        `Thank you for sending ${processedReceipts.length === 1 ? "the receipt" : `${processedReceipts.length} receipts`}! I've processed and logged:\n\n${receiptsList}\n\nYou can view all purchases at https://alpacaplayhouse.com/spaces/admin/purchases.html`,
+        `Thank you for sending ${processedReceipts.length === 1 ? "the receipt" : `${processedReceipts.length} receipts`}! I've processed and logged:\n\n${receiptsList}\n\nYou can view all purchases at ${absoluteUrl(ROUTES.staff.purchases)}`,
         subject,
         bodyText || bodyHtml || ""
       );
@@ -2289,7 +2290,7 @@ async function handleOutboundZellePayment(
         <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Zelle outbound (${outbound.bank})</td></tr>
         <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${categoryLabel}</td></tr>
       </table>
-      <p style="color:#666;font-size:0.85rem;margin-top:12px;">This outbound payment was auto-recorded in the ledger. Verify the category in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
+      <p style="color:#666;font-size:0.85rem;margin-top:12px;">This outbound payment was auto-recorded in the ledger. Verify the category in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a>.</p>
     </div>
   `;
 
@@ -3092,7 +3093,7 @@ async function sendPaymentNotification(
 ): Promise<void> {
   const adminEmail = "team@alpacaplayhouse.com";
   const { parsed, personName, applicationId } = details;
-  const adminUrl = `https://alpacaplayhouse.com/spaces/admin/rentals.html#applicant=${applicationId}`;
+  const adminUrl = `${absoluteUrl(ROUTES.staff.rentals)}#applicant=${applicationId}`;
 
   let subject = "";
   let html = "";
@@ -3173,7 +3174,7 @@ async function sendPaymentNotification(
         </table>
         <p style="margin-top:12px;"><strong>Errors:</strong></p>
         <ul style="color:#dc2626;">${errList}</ul>
-        <p><a href="https://alpacaplayhouse.com/spaces/admin/accounting.html" style="display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">Record Manually in Accounting</a></p>
+        <p><a href="${absoluteUrl(ROUTES.admin.accounting)}" style="display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">Record Manually in Accounting</a></p>
       </div>
     `;
   } else if (type === "duplicate") {
@@ -3329,7 +3330,7 @@ async function handlePaymentEmail(
                 What for (rent/deposit/other): <br>
                 Payment method (Coinbase/Zelle/Venmo/other): <br>
               </div>
-              <p style="color:#666;font-size:0.85rem;margin-top:12px;">Or record manually in the <a href="https://alpacaplayhouse.com/spaces/admin/accounting.html">accounting dashboard</a>.</p>
+              <p style="color:#666;font-size:0.85rem;margin-top:12px;">Or record manually in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a>.</p>
             </div>
           `,
         }),
