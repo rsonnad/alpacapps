@@ -1,12 +1,12 @@
 {
-  "version": "v260428.10 4:48p",
-  "release": 1408,
-  "sha": "fc87b5c7e",
-  "fullSha": "fc87b5c7ec68fc08b435811f2c773f64a80379eb",
+  "version": "v260428.11 4:52p",
+  "release": 1409,
+  "sha": "f39969f8b",
+  "fullSha": "f39969f8b58a0e053c19f17023715b163c5fd814",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-28T21:48:34+00:00",
-  "commits": [{"sha":"fc87b5c7e","message":"chore(rahulio): tighten buyout offer wording — keep edge, drop ad hominem","author":"Rahul"}]
+  "pushedAt": "2026-04-28T21:52:10+00:00",
+  "commits": [{"sha":"f39969f8b","message":"chore(rahulio): tweak item-5 wording — \"all future interactions\"","author":"Rahul"}]
 }
