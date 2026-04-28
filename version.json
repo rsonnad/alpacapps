@@ -1,12 +1,12 @@
 {
-  "version": "v260427.13 11:53p",
-  "release": 1398,
-  "sha": "ac100683f",
-  "fullSha": "ac100683ff933e4fb2e9e03afe6fc46a231594e0",
+  "version": "v260428.01 1:26a",
+  "release": 1399,
+  "sha": "c726e89f2",
+  "fullSha": "c726e89f26947d7e1026f56081f7047740125c8b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-28T04:53:13+00:00",
-  "commits": [{"sha":"ac100683f","message":"docs(lighting): note Nabu Casa expiry + add dining alias","author":"Rahul"}]
+  "pushedAt": "2026-04-28T06:26:56+00:00",
+  "commits": [{"sha":"c726e89f2","message":"refactor(routes): introduce ROUTES abstraction layer (Phase 0 of folder reorg)","author":"Paca"}]
 }
