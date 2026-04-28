@@ -2,9 +2,9 @@
  * DevControl — AI development tools and activity dashboard
  * Sub-tabs: Overview, Releases, Sessions, Tokens, Context, Backups
  */
-import { supabase } from '../../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../../shared/admin-shell.js';
-import { getAuthState } from '../../../shared/auth.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { getAuthState } from '../shared/auth.js';
 
 // ═══════════════════════════════════════════════════════════
 // CONFIG — project-specific values

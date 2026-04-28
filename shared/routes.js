@@ -98,9 +98,9 @@ export const ROUTES = {
     alpaclaw:      '/spaces/admin/alpaclaw.html',
   },
 
-  // DevControl nav tab — Phase 1 will move this from /spaces/admin/devcontrol/ to /devcontrol/
+  // DevControl nav tab — moved to /devcontrol/ in Phase 1.
   devcontrol: {
-    home: '/spaces/admin/devcontrol/',
+    home: '/devcontrol/',
   },
 
   // Public rentals deep links — Phase 4 will rename /spaces/* to /rentals/*.

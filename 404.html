@@ -41,15 +41,24 @@
       '/mistiq/': '/mistiq/index.html',
       '/mistiq/apply': '/mistiq/apply/',
       '/mistiq/apply/': '/mistiq/apply/index.html',
-      // Spaces app
-      '/spaces': '/spaces/',
-      '/spaces/': '/spaces/index.html',
-      '/spaces/admin': '/spaces/admin/',
-      '/spaces/admin/': '/spaces/admin/index.html',
-      '/spaces/events': '/spaces/hostevent/',
-      '/spaces/events/': '/spaces/hostevent/',
-      '/spaces/hostevent': '/spaces/hostevent/',
-      '/spaces/hostevent/': '/spaces/hostevent/index.html',
+      // Spaces app — Phase 4 renamed /spaces/ → /rentals/. Keep these forever for old links.
+      '/spaces': '/rentals/',
+      '/spaces/': '/rentals/',
+      '/spaces/events': '/rentals/hostevent/',
+      '/spaces/events/': '/rentals/hostevent/',
+      '/spaces/hostevent': '/rentals/hostevent/',
+      // Rentals (Phase 4 destination)
+      '/rentals': '/rentals/',
+      '/rentals/': '/rentals/index.html',
+      '/rentals/hostevent': '/rentals/hostevent/',
+      '/rentals/hostevent/': '/rentals/hostevent/index.html',
+      // Phase 1–3 new top-level folders
+      '/staff': '/staff/',
+      '/admin': '/admin/',
+      '/devices': '/devices/',
+      '/devices/': '/devices/devices.html',
+      '/devcontrol': '/devcontrol/',
+      '/devcontrol/': '/devcontrol/index.html',
       '/login': '/login/',
       '/login/': '/login/index.html',
       // Tesla OAuth callback
@@ -57,12 +66,56 @@
       // Kiosk/display
       '/kioskhall': '/kiosks/hall/',
       '/kiosks/hall/': '/kiosks/hall/index.html',
-      // Claude sessions (now in devcontrol)
-      '/sessions': '/spaces/admin/devcontrol/',
-      '/sessions/': '/spaces/admin/devcontrol/',
+      // Claude sessions (alias for devcontrol)
+      '/sessions': '/devcontrol/',
+      '/sessions/': '/devcontrol/',
     };
 
-    // Reserved top-level paths (existing directories/files — never treat as user slugs)
+    // Page-level redirects from old → new locations (Phases 1–4).
+    // Permanent: emails, QR codes, and external bookmarks live forever.
+    // Order matters — first match wins, so list specific entries before broad prefixes.
+    // Functions can split a single old prefix into multiple new prefixes by sub-path,
+    // and return null to fall through to the next rule (or the user-slug check).
+    const STAFF_PAGES = new Set([
+      'spaces.html','rentals.html','reservations.html','events.html','media.html',
+      'sms-messages.html','purchases.html','worktracking.html','payments.html',
+      'faq.html','voice.html','phyprop.html','inventory.html','appdev.html',
+      'manage.html'
+    ]);
+    const ADMIN_PAGES = new Set([
+      'users.html','passwords.html','settings.html','releases.html',
+      'signatures.html','templates.html','brand.html','accounting.html',
+      'notifications.html','testdev.html','test-suite.html','alpaclaw.html'
+    ]);
+    const DEVICE_PAGES = new Set([
+      'devices.html','lighting.html','sonos.html','cameras.html','climate.html',
+      'appliances.html','laundry.html','cars.html','car-history.html',
+      'sensors.html','3dprinter.html','thermostat.js','washer-qr.svg'
+    ]);
+
+    const pathPrefixRedirects = [
+      // Phase 1: DevControl
+      { from: '/spaces/admin/devcontrol/', to: function(rest) { return '/devcontrol/' + rest; } },
+      { from: '/spaces/admin/devcontrol',  to: function(rest) { return '/devcontrol/' + rest; } },
+      // Phase 2: Devices — only map known device files; non-device /residents/* still resolves directly
+      { from: '/residents/', to: function(rest) {
+          var firstSeg = rest.split(/[?#]/)[0].split('/')[0];
+          return DEVICE_PAGES.has(firstSeg) ? '/devices/' + rest : null;
+      } },
+      // Phase 3: Staff/Admin split
+      { from: '/spaces/admin/', to: function(rest) {
+          var firstSeg = rest.split(/[?#]/)[0].split('/')[0];
+          if (STAFF_PAGES.has(firstSeg)) return '/staff/' + rest;
+          if (ADMIN_PAGES.has(firstSeg)) return '/admin/' + rest;
+          // Fall through: shared admin assets (styles.css, manage-shared.css, etc.) stay put for now
+          return null;
+      } },
+      // Phase 4: Rentals (must come AFTER /spaces/admin/ — broader prefix)
+      { from: '/spaces/', to: function(rest) { return '/rentals/' + rest; } },
+    ];
+
+    // Reserved top-level paths (existing directories/files — never treat as user slugs).
+    // Old folders ('spaces') stay reserved so they keep redirecting and never collide with user slugs.
     const RESERVED_PATHS = [
       'spaces', 'residents', 'associates', 'login', 'shared', 'mobile',
       'supabase', 'auth', 'scripts', 'visiting', 'visiting-1', 'lost',
@@ -72,21 +125,41 @@
       'bug-reporter-extension', 'bug-reporter-firefox', 'bug-fixer',
       'feature-builder', 'camera-event-poller', 'image-gen',
       'lg-poller', 'tesla-poller', 'spirit-whisper-worker',
-      'migrations', '.well-known', 'alpacapps', 'sessions'
+      'migrations', '.well-known', 'alpacapps', 'sessions',
+      // Phase 1–4 new top-level folders
+      'devcontrol', 'devices', 'staff', 'admin', 'rentals'
     ];
 
-    // Check if it's a known path (preserve query params AND hash for OAuth callbacks)
+    // Resolve a redirect target via prefix engine. Returns null if no rule matches.
+    function resolvePrefixRedirect(p) {
+      for (var i = 0; i < pathPrefixRedirects.length; i++) {
+        var rule = pathPrefixRedirects[i];
+        if (p.indexOf(rule.from) === 0) {
+          var rest = p.slice(rule.from.length);
+          var target = typeof rule.to === 'function' ? rule.to(rest) : rule.to;
+          if (target) return target;
+        }
+      }
+      return null;
+    }
+
+    // Check exact path first, then prefix engine, then user-slug fallback.
     if (validPaths[path]) {
       window.location.replace(validPaths[path] + window.location.search + window.location.hash);
     } else {
-      // Check if this is a user slug (single root-level segment like /haydn)
-      const segments = path.replace(/^\/|\/$/g, '').split('/');
-      if (segments.length === 1 && segments[0] && !RESERVED_PATHS.includes(segments[0].toLowerCase())) {
-        // Looks like a personal directory URL — redirect to directory template
-        window.location.replace('/directory/?slug=' + encodeURIComponent(segments[0].toLowerCase()));
+      var prefixTarget = resolvePrefixRedirect(path);
+      if (prefixTarget) {
+        window.location.replace(prefixTarget + window.location.search + window.location.hash);
       } else {
-        // Unknown path — show the 404 page
-        document.getElementById('notFoundPage').style.display = 'flex';
+        // Check if this is a user slug (single root-level segment like /haydn)
+        const segments = path.replace(/^\/|\/$/g, '').split('/');
+        if (segments.length === 1 && segments[0] && !RESERVED_PATHS.includes(segments[0].toLowerCase())) {
+          // Looks like a personal directory URL — redirect to directory template
+          window.location.replace('/directory/?slug=' + encodeURIComponent(segments[0].toLowerCase()));
+        } else {
+          // Unknown path — show the 404 page
+          document.getElementById('notFoundPage').style.display = 'flex';
+        }
       }
     }
   </script>
