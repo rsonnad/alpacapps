@@ -1,12 +1,12 @@
 {
-  "version": "v260427.10 4:35p",
-  "release": 1395,
-  "sha": "ec87433d0",
-  "fullSha": "ec87433d017d3841ebf0b1b4b82e7cf4a61c880e",
+  "version": "v260427.11 10:49p",
+  "release": 1396,
+  "sha": "52188d860",
+  "fullSha": "52188d86078cf3b49a10715d828c09e32ef47eed",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-27T21:35:03+00:00",
-  "commits": [{"sha":"ec87433d0","message":"chore(rahulio): retitle case to \"non-consensual fuzzy coat heist\"","author":"Rahul"}]
+  "machine": "runnervmhkfpo",
+  "pushedAt": "2026-04-28T03:49:51+00:00",
+  "commits": [{"sha":"52188d860","message":"feat(rahulio,seo): return-logistics block + sitemap entry + subtitle update","author":"Rahul"}]
 }
