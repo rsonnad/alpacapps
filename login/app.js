@@ -26,7 +26,7 @@ const signUpPane = document.getElementById('signUpPane');
 const urlParams = new URLSearchParams(window.location.search);
 const redirectUrl = urlParams.get('redirect')
   || localStorage.getItem('genalpaca-login-redirect')
-  || '/spaces/admin/';
+  || '/staff/';
 
 console.log('[LOGIN]', 'Page loaded', { redirectUrl, href: window.location.href });
 
@@ -79,7 +79,7 @@ function getRedirectTarget(role) {
     target = '/spaces/';
   }
   // Resident/associate users go to resident area by default (not admin)
-  else if (target === '/spaces/admin/' && ['resident', 'associate'].includes(role)) {
+  else if (target === '/staff/' && ['resident', 'associate'].includes(role)) {
     target = '/devices/cameras.html';
   }
   return target;

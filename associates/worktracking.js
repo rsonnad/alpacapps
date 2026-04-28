@@ -1142,9 +1142,9 @@ async function handleRequestPayment() {
     }
     body += `</table>`;
     if (hasRateMismatch) {
-      body += `<p style="color:#92400e;"><strong>Action needed:</strong> Some entries were recorded at the wrong rate. Go to <a href="https://alpacaplayhouse.com/spaces/admin/worktracking.html">Admin Hours</a>, filter by ${escapeHtml(name)}, select all unpaid entries, and click "Recalc" to update them to the current rate. Then "Mark Selected as Paid" to process payment.</p>`;
+      body += `<p style="color:#92400e;"><strong>Action needed:</strong> Some entries were recorded at the wrong rate. Go to <a href="https://alpacaplayhouse.com/staff/worktracking.html">Admin Hours</a>, filter by ${escapeHtml(name)}, select all unpaid entries, and click "Recalc" to update them to the current rate. Then "Mark Selected as Paid" to process payment.</p>`;
     } else {
-      body += `<p>Go to <a href="https://alpacaplayhouse.com/spaces/admin/worktracking.html">Admin Hours</a> to review and process payment.</p>`;
+      body += `<p>Go to <a href="https://alpacaplayhouse.com/staff/worktracking.html">Admin Hours</a> to review and process payment.</p>`;
     }
 
     const result = await sendEmail('custom', adminEmail, {

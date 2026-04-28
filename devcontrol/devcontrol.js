@@ -109,7 +109,7 @@ function loadOverview() {
       const target = card.dataset.goto;
       if (target.startsWith('_')) {
         // External link cards
-        if (target === '_devdocs') window.location.href = '/spaces/admin/devcontrol/devdocs/';
+        if (target === '_devdocs') window.location.href = '/devcontrol/devdocs/';
       } else {
         switchTab(target);
       }
@@ -1052,7 +1052,7 @@ async function loadContext() {
       // Try rendered HTML companion first
       const mdName = ghPath.split('/').pop();
       const htmlName = mdName.replace('.md', '.html');
-      const renderedUrl = `/spaces/admin/devcontrol/devdocs/rendered/${htmlName}`;
+      const renderedUrl = `/devcontrol/devdocs/rendered/${htmlName}`;
       try {
         const renderedRes = await fetch(renderedUrl);
         if (renderedRes.ok) {

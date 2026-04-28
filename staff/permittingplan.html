@@ -166,7 +166,7 @@
     // If accessed directly (not embedded), redirect to PhyProp subtab so the
     // page shows under the proper Staff/PhyProp navigation chrome.
     if (new URLSearchParams(location.search).get('embed') !== '1') {
-      location.replace('/spaces/admin/phyprop.html#permittingplan');
+      location.replace('/staff/phyprop.html#permittingplan');
     } else {
       document.documentElement.classList.add('embed-mode');
     }

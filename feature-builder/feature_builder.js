@@ -472,7 +472,7 @@ You MUST output a JSON object as your FINAL response with these keys:
   "testing_instructions": "Step-by-step instructions for testing",
   "files_created": [],
   "files_modified": ["spaces/admin/appdev.js"],
-  "page_url": "/spaces/admin/appdev.html",
+  "page_url": "/staff/appdev.html",
   "risk_assessment": {
     "decision": "auto_merge or needs_review",
     "reason": "Explanation of risk level",

@@ -1,12 +1,12 @@
 /**
  * Directory Tab Navigation
  * Services remains as a public standalone page.
- * Lighting and Devices have moved to /spaces/admin/inventory.html#devices (behind auth).
+ * Lighting and Devices have moved to /staff/inventory.html#devices (behind auth).
  */
 import { initNavTabList, scrollActiveIntoView } from '../shared/tab-utils.js';
 
 const TABS = [
-  { id: 'devices',   label: 'All Devices (Staff)',  href: '/spaces/admin/inventory.html#devices' },
+  { id: 'devices',   label: 'All Devices (Staff)',  href: '/staff/inventory.html#devices' },
   { id: 'services',  label: 'Services',             href: '/directory/services.html' },
 ];
 
