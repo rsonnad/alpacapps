@@ -24,7 +24,7 @@ On Alpuca or via SSH. No entity IDs needed.
 ssh paca@192.168.1.200 "~/lights.sh kitchen,living red"
 ```
 
-**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `facade`, `sauna`, `cabins-fence`, `garage`, `garage-ceiling`, `garage-dj`, `garage-dj-strip`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
+**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `dining`, `facade`, `sauna`, `cabins-fence`, `garage`, `garage-ceiling`, `garage-dj`, `garage-dj-strip`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
 **Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, `NNNNk` (e.g. `2700k`), or `#RRGGBB` hex
 **Brightness:** Optional percentage, e.g. `50%`. Default is 100%.
 
@@ -652,7 +652,7 @@ HAOS → Nabu Casa (Home Assistant Cloud) → Amazon Alexa Smart Home Skill
 
 All `light` entities in HAOS are automatically exposed to Alexa via Nabu Casa. No per-entity configuration needed.
 
-- **Nabu Casa account:** active (trial subscription)
+- **Nabu Casa account:** ⚠️ **SUBSCRIPTION EXPIRED (confirmed 2026-04-27)** — `binary_sensor.remote_ui` is `unavailable`; HA core log shows repeated `hass_nabucasa.api.CloudApiNonRetryableError: Subscription has expired` from `alexa_api.access_token`. **All Alexa control of HAOS-routed lights (Skyloft, Kitchen, Master Bath, Stairs, Living Room, Dining, etc.) is broken until renewed.** Govee-skill devices (Garage Mahal, Outhouse, Cedar, Fishbowl, Tea Lounge) are unaffected — those go through the Govee Home skill directly.
 - **Alexa enabled:** `true` (in `.storage/cloud` on HAOS)
 - **Remote URL:** `7nwydzudzhis82jcmf1mfzezaaw3hvgu.ui.nabu.casa`
 
