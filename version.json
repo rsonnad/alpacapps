@@ -1,12 +1,12 @@
 {
-  "version": "v260427.11 10:49p",
-  "release": 1396,
-  "sha": "52188d860",
-  "fullSha": "52188d86078cf3b49a10715d828c09e32ef47eed",
+  "version": "v260427.12 10:53p",
+  "release": 1397,
+  "sha": "20bb0bccf",
+  "fullSha": "20bb0bccf56b3f2433dbcaaf6c4a7c0c4e2ff7c5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmhkfpo",
-  "pushedAt": "2026-04-28T03:49:51+00:00",
-  "commits": [{"sha":"52188d860","message":"feat(rahulio,seo): return-logistics block + sitemap entry + subtitle update","author":"Rahul"}]
+  "machine": "runnervmeorf1",
+  "pushedAt": "2026-04-28T03:53:26+00:00",
+  "commits": [{"sha":"20bb0bccf","message":"chore(rahulio): note \\$30/night was already below market rate","author":"Rahul"}]
 }
