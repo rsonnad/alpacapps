@@ -816,9 +816,111 @@
       </div>
     </div>
 
+    <!-- ══ COMMENT FORM ══ -->
+    <div class="section" style="margin-top: 3rem;">
+      <div class="section-title">
+        <span class="badge badge-event">Comments</span>
+        G. Have something to say? Use the form.
+      </div>
+      <p style="font-size: 0.9rem; color: var(--text-soft); margin-bottom: 1rem;">
+        Comments are not displayed on this page. Submitted comments are emailed directly to Rahul, who reads them and decides whether and how to respond. <strong>An email address is required to submit</strong> &mdash; anonymous submissions are not accepted.
+      </p>
+
+      <form id="jcForm" class="card" style="padding: 1.25rem 1.5rem;" novalidate>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+          <label style="display: block;">
+            <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); display: block; margin-bottom: 0.3rem;">Name <span style="font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-muted);">(optional)</span></span>
+            <input type="text" id="jcName" maxlength="80" autocomplete="name" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: inherit; background: var(--surface);">
+          </label>
+          <label style="display: block;">
+            <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); display: block; margin-bottom: 0.3rem;">Email <span style="color: var(--red);">*</span></span>
+            <input type="email" id="jcEmail" required autocomplete="email" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: inherit; background: var(--surface);">
+          </label>
+        </div>
+        <label style="display: block; margin-bottom: 0.85rem;">
+          <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); display: block; margin-bottom: 0.3rem;">Comment <span style="color: var(--red);">*</span></span>
+          <textarea id="jcComment" required maxlength="4000" rows="6" style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: inherit; background: var(--surface); resize: vertical; min-height: 120px;"></textarea>
+        </label>
+        <input type="text" id="jcHp" name="website" autocomplete="off" tabindex="-1" style="position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0;" aria-hidden="true">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div id="jcStatus" style="font-size: 0.85rem; color: var(--text-dim); flex: 1; min-width: 200px;"></div>
+          <button type="submit" id="jcSubmit" style="padding: 0.6rem 1.25rem; background: var(--text); color: var(--bg); border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 0.15s;">
+            Submit comment
+          </button>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.85rem; line-height: 1.5;">
+          Your email will be used only so Rahul can reply if he chooses to. It is not displayed on the page, not added to any list, and not shared. Submissions are emailed directly to him.
+        </p>
+      </form>
+    </div>
+
     <div class="footer">
       Statement prepared April 27, 2026 &middot; <a href="/rahulio" style="color: var(--text-dim);">rahulio</a>
     </div>
+
+    <script type="module">
+      import { supabase } from '/shared/supabase.js';
+
+      const form = document.getElementById('jcForm');
+      const statusEl = document.getElementById('jcStatus');
+      const submitBtn = document.getElementById('jcSubmit');
+      const renderedAt = Date.now();
+      if (form) {
+        const setStatus = (msg, color) => {
+          statusEl.textContent = msg;
+          statusEl.style.color = color || '';
+        };
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('jcName').value.trim();
+          const email = document.getElementById('jcEmail').value.trim();
+          const comment = document.getElementById('jcComment').value.trim();
+          const hp = document.getElementById('jcHp').value;
+
+          if (hp) {
+            setStatus('Thanks — your comment was received.', 'var(--green)');
+            form.reset();
+            return;
+          }
+          if (Date.now() - renderedAt < 2000) {
+            setStatus('Please take a moment before submitting.', 'var(--red)');
+            return;
+          }
+          if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setStatus('A valid email is required.', 'var(--red)');
+            return;
+          }
+          if (!comment || comment.length < 2) {
+            setStatus('Comment is required.', 'var(--red)');
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.6';
+          setStatus('Sending…', 'var(--text-dim)');
+
+          try {
+            const { data, error } = await supabase.functions.invoke('jacket-comment', {
+              body: { name, email, comment, hp },
+            });
+            if (error) throw error;
+            if (data?.ok) {
+              setStatus('Thanks — your comment was sent to Rahul.', 'var(--green)');
+              form.reset();
+            } else {
+              setStatus((data && data.error) || 'Something went wrong. Please try again.', 'var(--red)');
+              submitBtn.disabled = false;
+              submitBtn.style.opacity = '1';
+            }
+          } catch (err) {
+            setStatus(err?.message || 'Network error. Please try again.', 'var(--red)');
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+          }
+        });
+      }
+    </script>
 
   </div>
 
