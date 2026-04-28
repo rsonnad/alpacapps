@@ -1,12 +1,12 @@
 {
-  "version": "v260428.04 4:07p",
-  "release": 1402,
-  "sha": "a84d1bfa6",
-  "fullSha": "a84d1bfa61b9c12bcdf76e21832b3308a830881f",
+  "version": "v260428.05 4:11p",
+  "release": 1403,
+  "sha": "7d3692eb9",
+  "fullSha": "7d3692eb964e3d2dc45b82283ecde2c5c0a5c3bd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-28T21:07:45+00:00",
-  "commits": [{"sha":"a84d1bfa6","message":"chore(rahulio): trim comment-form copy","author":"Rahul"}]
+  "pushedAt": "2026-04-28T21:11:45+00:00",
+  "commits": [{"sha":"7d3692eb9","message":"chore(rahulio): remove signature line from offer card","author":"Rahul"}]
 }
