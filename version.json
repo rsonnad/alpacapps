@@ -1,12 +1,12 @@
 {
-  "version": "v260428.05 4:11p",
-  "release": 1403,
-  "sha": "7d3692eb9",
-  "fullSha": "7d3692eb964e3d2dc45b82283ecde2c5c0a5c3bd",
+  "version": "v260428.07 4:16p",
+  "release": 1405,
+  "sha": "2f68c44c0",
+  "fullSha": "2f68c44c0b709be7a4143b7bfbc9e8015a3a973e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-28T21:11:45+00:00",
-  "commits": [{"sha":"7d3692eb9","message":"chore(rahulio): remove signature line from offer card","author":"Rahul"}]
+  "pushedAt": "2026-04-28T21:16:16+00:00",
+  "commits": [{"sha":"2f68c44c0","message":"chore(rahulio): expand subtitle — emotional energy from people who wanted to help","author":"Rahul"}]
 }
