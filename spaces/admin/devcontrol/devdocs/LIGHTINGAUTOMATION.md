@@ -652,7 +652,7 @@ HAOS → Nabu Casa (Home Assistant Cloud) → Amazon Alexa Smart Home Skill
 
 All `light` entities in HAOS are automatically exposed to Alexa via Nabu Casa. No per-entity configuration needed.
 
-- **Nabu Casa account:** ⚠️ **SUBSCRIPTION EXPIRED (confirmed 2026-04-27)** — `binary_sensor.remote_ui` is `unavailable`; HA core log shows repeated `hass_nabucasa.api.CloudApiNonRetryableError: Subscription has expired` from `alexa_api.access_token`. **All Alexa control of HAOS-routed lights (Skyloft, Kitchen, Master Bath, Stairs, Living Room, Dining, etc.) is broken until renewed.** Govee-skill devices (Garage Mahal, Outhouse, Cedar, Fishbowl, Tea Lounge) are unaffected — those go through the Govee Home skill directly.
+- **Nabu Casa account:** `alpacaplayhouse@gmail.com` (Bitwarden: "Nabu Casa — Home Assistant Cloud", id `19ef51de`), portal https://account.nabucasa.com/. Subscription active (~$6.85/mo). If `binary_sensor.remote_ui` goes `unavailable` and HA log spams `CloudApiNonRetryableError: Subscription has expired` while the account portal shows the sub is fine, it's a stale HAOS token — not an expired sub. Fix via REST (verified 2026-04-29): `POST /api/cloud/logout` then `POST /api/cloud/login` with `{email,password}`. Or via UI: Settings → Home Assistant Cloud → Sign Out → Sign In. Recipe in `memory/service-access.md`.
 - **Alexa enabled:** `true` (in `.storage/cloud` on HAOS)
 - **Remote URL:** `7nwydzudzhis82jcmf1mfzezaaw3hvgu.ui.nabu.casa`
 
