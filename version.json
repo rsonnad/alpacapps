@@ -1,12 +1,12 @@
 {
-  "version": "v260428.11 4:52p",
-  "release": 1409,
-  "sha": "f39969f8b",
-  "fullSha": "f39969f8b58a0e053c19f17023715b163c5fd814",
-  "actor": "rsonnad",
+  "version": "v260428.12 9:03p",
+  "release": 1410,
+  "sha": "e4a658832",
+  "fullSha": "e4a658832e3022c777f44f2306b15b26fa23309b",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-28T21:52:10+00:00",
-  "commits": [{"sha":"f39969f8b","message":"chore(rahulio): tweak item-5 wording — \"all future interactions\"","author":"Rahul"}]
+  "pushedAt": "2026-04-29T02:03:02+00:00",
+  "commits": [{"sha":"9f4572649","message":"feat(rahulio): integrate Sonia↔Chelsae transcript across the page","author":"Sonia Wendorff"},{"sha":"0244d6dcd","message":"chore(rahulio): timeline rows — verbatim quotes only, strip commentary","author":"Sonia Wendorff"},{"sha":"e4a658832","message":"chore(rahulio): timeline — add all consequential Sonia-thread messages","author":"Sonia Wendorff"}]
 }
