@@ -1,12 +1,12 @@
 {
-  "version": "v260429.01 10:44a",
-  "release": 1414,
-  "sha": "131cf1fb3",
-  "fullSha": "131cf1fb3894de5dcb7b5d7002896495d4cb01b9",
-  "actor": "rsonnad",
+  "version": "v260429.02 1:36p",
+  "release": 1415,
+  "sha": "795a7e440",
+  "fullSha": "795a7e4408f4a3c82b58b538de1a259b88509214",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-29T15:44:14+00:00",
-  "commits": [{"sha":"131cf1fb3","message":"docs(lighting): correct Nabu Casa \"expired\" note — was stale HAOS token","author":"Rahul"}]
+  "pushedAt": "2026-04-29T18:36:21+00:00",
+  "commits": [{"sha":"7e1325171","message":"feat(donate): add /donate/ subpage and link from /visiting/","author":"Sonia Wendorff"},{"sha":"795a7e440","message":"docs(visiting): expand house-rules nudge — friends must read guide","author":"Sonia Wendorff"}]
 }
