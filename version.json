@@ -1,12 +1,12 @@
 {
-  "version": "v260428.12 9:03p",
-  "release": 1410,
-  "sha": "e4a658832",
-  "fullSha": "e4a658832e3022c777f44f2306b15b26fa23309b",
-  "actor": "wensonia",
+  "version": "v260428.13 9:36p",
+  "release": 1411,
+  "sha": "398e0caeb",
+  "fullSha": "398e0caeb03b8a840be0242eb53f18adf8832ac3",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-29T02:03:02+00:00",
-  "commits": [{"sha":"9f4572649","message":"feat(rahulio): integrate Sonia↔Chelsae transcript across the page","author":"Sonia Wendorff"},{"sha":"0244d6dcd","message":"chore(rahulio): timeline rows — verbatim quotes only, strip commentary","author":"Sonia Wendorff"},{"sha":"e4a658832","message":"chore(rahulio): timeline — add all consequential Sonia-thread messages","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-29T02:36:59+00:00",
+  "commits": [{"sha":"398e0caeb","message":"chore(rahulio): redact Mr. S — anonymize the third-party guest","author":"Rahul"}]
 }
