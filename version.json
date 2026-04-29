@@ -1,12 +1,12 @@
 {
-  "version": "v260429.02 1:36p",
-  "release": 1415,
-  "sha": "795a7e440",
-  "fullSha": "795a7e4408f4a3c82b58b538de1a259b88509214",
+  "version": "v260429.03 1:49p",
+  "release": 1416,
+  "sha": "f838302df",
+  "fullSha": "f838302df2c53baa063254987ffb09cc0e0bbf0b",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-29T18:36:21+00:00",
-  "commits": [{"sha":"7e1325171","message":"feat(donate): add /donate/ subpage and link from /visiting/","author":"Sonia Wendorff"},{"sha":"795a7e440","message":"docs(visiting): expand house-rules nudge — friends must read guide","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-04-29T18:49:03+00:00",
+  "commits": [{"sha":"f838302df","message":"fix(donate): correct payment handles from payment_methods table","author":"Sonia Wendorff"}]
 }
