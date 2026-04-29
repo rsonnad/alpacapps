@@ -1,12 +1,12 @@
 {
-  "version": "v260429.04 4:45p",
-  "release": 1417,
-  "sha": "f0cf964cc",
-  "fullSha": "f0cf964cc5e3db15c1f59babcf60694d1f16f828",
+  "version": "v260429.05 4:57p",
+  "release": 1418,
+  "sha": "44ed03f4e",
+  "fullSha": "44ed03f4e0eaf8267fad2eebbccd2f995fdf5a5f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-04-29T21:45:48+00:00",
-  "commits": [{"sha":"b88906078","message":"refactor(folders): Phase 1 — move /spaces/admin/devcontrol/ → /devcontrol/","author":"Paca"},{"sha":"68c251923","message":"refactor(folders): Phase 2 — move /residents/{device-pages} → /devices/","author":"Paca"},{"sha":"caf3e9eef","message":"refactor(folders): Phase 3 — split /spaces/admin/ → /staff/ + /admin/","author":"Paca"},{"sha":"f0cf964cc","message":"refactor(folders): Phase 4 — rename /spaces/ → /rentals/","author":"Paca"}]
+  "pushedAt": "2026-04-29T21:57:13+00:00",
+  "commits": [{"sha":"44ed03f4e","message":"docs: add person→associate_profiles ID routing to CLAUDE.md and SCHEMA.md","author":"Rahul"}]
 }
