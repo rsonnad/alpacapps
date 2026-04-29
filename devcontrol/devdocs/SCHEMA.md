@@ -435,6 +435,22 @@ service_connections    - Infra connection recipes for SSH/API/S3 services
 
 ## Data Lookup Routing
 
+### Person vs Associate ID — CRITICAL
+
+`people.id` (= `app_users.id`) and `associate_profiles.id` are **DIFFERENT UUIDs** for the same human. Every work-related table (`time_entries`, `associate_schedules`, `work_photos`, `schedule_edits`, `payouts`) FKs to `associate_profiles.id` — NOT to `people.id`.
+
+To resolve both for a given person:
+```sql
+SELECT u.id AS person_id, ap.id AS associate_profile_id, u.display_name, u.email
+FROM app_users u
+LEFT JOIN associate_profiles ap ON ap.app_user_id = u.id
+WHERE u.email ILIKE '...' OR u.display_name ILIKE '...';
+```
+
+If a query for an active associate's work data returns empty, **suspect wrong-ID first** — querying with `people.id` instead of `associate_profiles.id` silently returns 0 rows.
+
+### Routing table
+
 When user asks about property data, query via Management API. Route by topic:
 
 | Question about... | table | key filters | join / notes |
@@ -442,6 +458,11 @@ When user asks about property data, query via Management API. Route by topic:
 | Door codes, WiFi, passwords, PINs | `password_vault` | `category='house'` for physical | JOIN `spaces` ON `space_id` for room name |
 | Room info, rates, availability | `spaces` | `is_archived=false` | `type` = Dwelling/Amenity/Event |
 | Tenants, guests, contacts | `people` | — | JOIN `assignments` for bookings |
+| Person profile (any named human) | `app_users` + `associate_profiles` | `email` / `display_name` | Get BOTH `people.id` AND `associate_profiles.id` — see "Person vs Associate ID" above |
+| Associate currently clocked in? | `time_entries` | `associate_id=<profile_id>`, `clock_out IS NULL` | `associate_id` = `associate_profiles.id` (NOT `people.id`) |
+| Associate's schedule | `associate_schedules` | `associate_id=<profile_id>`, `schedule_date BETWEEN ...` | `associate_id` = `associate_profiles.id` |
+| Associate's time entries / hours | `time_entries` | `associate_id=<profile_id>` | `associate_id` = `associate_profiles.id` |
+| Before/after work photos | `work_photos` | `associate_id=<profile_id>`, `work_date=...` | `photo_type IN ('before','progress','after')` |
 | Bookings, stays, move-in/out | `assignments` | `status` | JOIN `people` on `person_id`, JOIN `spaces` on `space_id` |
 | Thermostats, temperature, HVAC | `nest_devices` | `is_active=true` | — |
 | Vehicles, Tesla, battery | `vehicles` | `is_active=true` | — |

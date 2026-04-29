@@ -24,6 +24,35 @@
 > - `spaces/admin/devcontrol/devdocs/home-assistant-lighting-design.md` — **load for:** HAOS lighting architecture, entity naming, automation templates, migration status
 > - `spaces/admin/devcontrol/devdocs/REMOTE-ACCESS.md` — **load for:** SSH tunneling, remote access to Alpuca/UDM Pro, Tailscale, Cloudflare tunnel, port forwarding
 
+## Person Lookup Routing
+
+When the user names a person (e.g. "is X working?", "what's X's schedule?", "what did X do yesterday?"):
+
+1. **Resolve identity in BOTH IDs** — they are different UUIDs:
+   - `people.id` = `app_users.id` — the person/auth identity
+   - `associate_profiles.id` — what every work table FKs to
+
+   ```sql
+   SELECT u.id AS person_id, ap.id AS associate_profile_id, u.display_name
+   FROM app_users u
+   LEFT JOIN associate_profiles ap ON ap.app_user_id = u.id
+   WHERE u.email ILIKE '...' OR u.display_name ILIKE '...';
+   ```
+
+2. **For ANY work data, use `associate_profiles.id` — NEVER `people.id`:**
+   - `time_entries.associate_id` → `associate_profiles.id`
+   - `associate_schedules.associate_id` → `associate_profiles.id`
+   - `work_photos.associate_id` → `associate_profiles.id`
+   - `schedule_edits.associate_id` → `associate_profiles.id`
+   - `payouts.associate_id` → `associate_profiles.id`
+
+3. **Common queries:**
+   - "Working now?" → `time_entries WHERE associate_id=<profile_id> AND clock_out IS NULL`
+   - "This week's schedule?" → `associate_schedules WHERE associate_id=<profile_id> AND schedule_date BETWEEN <mon> AND <sun>`
+   - "Yesterday's photos?" → `work_photos WHERE associate_id=<profile_id> AND work_date=<date>`
+
+4. **If a result is unexpectedly empty for an active associate, suspect wrong-ID first** before reporting "no records".
+
 ## Mandatory Behaviors
 
 1. After code changes: end response with `vYYMMDD.NN H:MMa [model]` + affected URLs (read `version.json`)
