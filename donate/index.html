@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <title>Donate — The Austin Alpaca Playhouse</title>
+  <meta name="description" content="Loved your stay? Share some love. Donate to the Austin Alpaca Playhouse via Zelle, Venmo, or PayPal.">
+  <link rel="canonical" href="https://alpacaplayhouse.com/donate/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alpacaplayhouse.com/donate/">
+  <meta property="og:title" content="Donate — The Austin Alpaca Playhouse">
+  <meta property="og:description" content="Loved your stay? Share some love. Donate to the Austin Alpaca Playhouse via Zelle, Venmo, or PayPal.">
+  <meta property="og:site_name" content="Austin Alpaca Playhouse">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://alpacaplayhouse.com/shared/og-visiting-v2.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Donate — The Austin Alpaca Playhouse">
+  <meta name="twitter:description" content="Loved your stay? Share some love. Donate to the Austin Alpaca Playhouse via Zelle, Venmo, or PayPal.">
+  <meta name="twitter:image" content="https://alpacaplayhouse.com/shared/og-visiting-v2.jpg">
+
+  <!-- JSON-LD: BreadcrumbList -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://alpacaplayhouse.com/"},{"@type":"ListItem","position":2,"name":"Visiting","item":"https://alpacaplayhouse.com/visiting/"},{"@type":"ListItem","position":3,"name":"Donate","item":"https://alpacaplayhouse.com/donate/"}]}
+  </script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+
+  <style>
+    .donate-methods {
+      display: grid;
+      gap: 1rem;
+      margin: 1.5rem 0 2rem;
+    }
+    .donate-method {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: #fff;
+      border: 1px solid #e5e1d6;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s, transform 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .donate-method:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    .donate-method__badge {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 72px;
+      height: 32px;
+      padding: 0 0.75rem;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.875rem;
+      letter-spacing: 0.02em;
+    }
+    .donate-method__badge--zelle  { background: #6c1cd3; }
+    .donate-method__badge--venmo  { background: #3d95ce; }
+    .donate-method__badge--paypal { background: #003087; }
+    .donate-method__handle {
+      flex: 1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 1rem;
+      word-break: break-all;
+    }
+    .donate-method__arrow {
+      flex-shrink: 0;
+      opacity: 0.4;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .donate-method:hover .donate-method__arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  </style>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+  <span data-site-version style="display:none;">v260429.01 10:44a</span>
+  <div id="siteHeader"></div>
+
+  <!-- Hero Section -->
+  <section class="aap-hero aap-hero--short" style="background-image: url('https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/site/hero-alpacas.jpeg')">
+    <div class="aap-hero__content">
+      <h1 class="aap-hero__title">Share Some Love</h1>
+      <p class="aap-hero__subtitle">Donations to the Austin Alpaca Playhouse</p>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <div class="aap-content">
+    <p class="aap-highlight" style="text-align: center; font-size: 1.15rem;">
+      We share the space for free. If you enjoyed your stay,<br>
+      donations help keep the Alpaca Dreams running.
+    </p>
+
+    <p>Pick whichever is easiest for you. Tap a row to open the app, or copy the handle.</p>
+
+    <div class="donate-methods">
+      <a class="donate-method" href="mailto:alpacaplayhouse@gmail.com?subject=Donation" rel="noopener">
+        <span class="donate-method__badge donate-method__badge--zelle">Zelle</span>
+        <span class="donate-method__handle">alpacaplayhouse@gmail.com</span>
+        <svg class="donate-method__arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+
+      <a class="donate-method" href="https://venmo.com/AlpacaPlayhouse" target="_blank" rel="noopener">
+        <span class="donate-method__badge donate-method__badge--venmo">Venmo</span>
+        <span class="donate-method__handle">@AlpacaPlayhouse</span>
+        <svg class="donate-method__arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+
+      <a class="donate-method" href="https://paypal.me/alpacaplayhouse" target="_blank" rel="noopener">
+        <span class="donate-method__badge donate-method__badge--paypal">PayPal</span>
+        <span class="donate-method__handle">paypal.me/alpacaplayhouse</span>
+        <svg class="donate-method__arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <p>Prefer to help in another way? You can also <strong>ask us about things you can do around the house</strong> — there's always a project or two that could use a hand. Email <a href="mailto:pai@alpacaplayhouse.com">pai@alpacaplayhouse.com</a> or text <a href="sms:+17377474737">(737) 747-4737</a>.</p>
+
+    <p style="margin-top: 2rem;"><a href="/visiting/">← Back to Visiting</a></p>
+  </div>
+
+  <!-- Footer -->
+  <footer class="aap-footer">
+    <div class="aap-footer__content">
+      <div class="aap-footer__logo">
+        <img width="21" height="30" src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-footer__icon">
+            <img width="22" height="22" src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse Austin" class="aap-footer__wordmark">
+      </div>
+
+      <div class="aap-footer__social">
+        <a href="https://www.facebook.com/alpacaplayhouse" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+          </svg>
+        </a>
+        <a href="https://instagram.com/alpacaplayhouseatx" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="18" cy="6" r="1" fill="currentColor"/>
+          </svg>
+        </a>
+      </div>
+
+      <p class="aap-footer__copyright">
+        © 2025 Austin Alpaca Playhouse. All rights reserved.<br>
+        160 Still Forest Drive, Cedar Creek, TX 78612
+      </p>
+    </div>
+  </footer>
+
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module" src="../shared/version-info.js"></script>
+  <script type="module">
+    import { initPublicPage } from '../shared/public-shell.js';
+
+    initPublicPage({ transparent: true, light: true, activePage: '/visiting/' });
+  </script>
+</body>
+</html>
