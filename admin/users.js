@@ -572,7 +572,7 @@ function closeInviteModal() {
 }
 
 function showProspectLinkModal(token, name, email) {
-  const url = `https://alpacaplayhouse.com/spaces/?access=${token}`;
+  const url = `https://alpacaplayhouse.com/rentals/?access=${token}`;
   const firstName = name && name !== 'Prospect' ? name.split(' ')[0] : '';
 
   const inviteText = `Hi${firstName ? ' ' + firstName : ''},
@@ -586,8 +586,8 @@ ${url}
 You'll be able to see photos, amenities, pricing, and availability for all of our spaces. This link is personal to you and will expire in 14 days.
 
 When you're ready, you can also:
-• Apply for a rental space: https://alpacaplayhouse.com/spaces/apply/
-• Host an event: https://alpacaplayhouse.com/spaces/hostevent/
+• Apply for a rental space: https://alpacaplayhouse.com/rentals/apply/
+• Host an event: https://alpacaplayhouse.com/rentals/hostevent/
 
 If you have any questions or would like to schedule a tour, feel free to reply to this message or email team@alpacaplayhouse.com.
 
@@ -640,7 +640,7 @@ async function sendInviteEmail() {
   try {
     // Handle prospect emails differently
     if (currentInviteRole === 'prospect' && currentProspectToken) {
-      const accessUrl = `https://alpacaplayhouse.com/spaces/?access=${currentProspectToken}`;
+      const accessUrl = `https://alpacaplayhouse.com/rentals/?access=${currentProspectToken}`;
       const emailResult = await emailService.sendProspectInvitation(currentInviteEmail, currentProspectName, accessUrl);
 
       if (emailResult.success) {

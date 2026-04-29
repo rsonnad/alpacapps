@@ -933,8 +933,8 @@
     </a>
     <ul class="site-nav__links">
       <li><a href="/visiting/">Visiting</a></li>
-      <li><a href="/spaces/" class="active">Rentals</a></li>
-      <li><a href="/spaces/hostevent/">Events</a></li>
+      <li><a href="/rentals/" class="active">Rentals</a></li>
+      <li><a href="/rentals/hostevent/">Events</a></li>
       <li><a href="/community/">Community</a></li>
       <li><a href="/photos/">Photos</a></li>
       <li><a href="/contact/">Contact</a></li>
@@ -949,8 +949,8 @@
     <button class="site-nav-mobile__close" id="siteNavMobileClose">&times;</button>
     <ul class="site-nav-mobile__links">
       <li><a href="/visiting/">Visiting</a></li>
-      <li><a href="/spaces/" class="active">Rentals</a></li>
-      <li><a href="/spaces/hostevent/">Events</a></li>
+      <li><a href="/rentals/" class="active">Rentals</a></li>
+      <li><a href="/rentals/hostevent/">Events</a></li>
       <li><a href="/community/">Community</a></li>
       <li><a href="/photos/">Photos</a></li>
       <li><a href="/contact/">Contact</a></li>
@@ -1043,10 +1043,22 @@
                 <input type="file" id="photo_upload" name="photo_upload" accept="image/*" style="font-size: 0.9rem;">
                 <div class="hint">A casual photo helps us put a face to the name</div>
               </div>
-              <div class="form-group full-width">
-                <label for="referral_source">How did you find this form? <span class="required">*</span></label>
-                <input type="text" id="referral_source" name="referral_source" placeholder="e.g. Friend, Google, Social Media" required>
-              </div>
+               <div class="form-group full-width">
+                 <label for="referral_source">How did you find this form? <span class="required">*</span></label>
+                 <input type="text" id="referral_source" name="referral_source" placeholder="e.g. Friend, Google, Social Media" required>
+               </div>
+               
+               <!-- Staff Assignment (Internal Use Only) -->
+               <div class="form-group full-width staff-only-field">
+                 <label for="staff_assigned">Assigned Staff Member <span class="required">*</span></label>
+                 <select id="staff_assigned" name="staff_assigned" required>
+                   <option value="">Select staff member</option>
+                   <option value="alpaca_admin">Alpaca Admin</option>
+                   <option value="pai">Pai</option>
+                   <option value="community_manager">Community Manager</option>
+                   <option value="operations">Operations Team</option>
+                 </select>
+               </div>
             </div>
           </div>
 
@@ -1070,19 +1082,37 @@
           </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- STEP 2: Full Application       -->
-        <!-- (shown via ?continue=<app_id>) -->
-        <!-- ============================== -->
-        <div id="step2Sections" class="hidden">
-          <!-- Welcome banner -->
-          <div class="form-section">
-            <h2>Complete Your Application</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">
-              Welcome back, <strong id="step2Name"></strong>! We're excited to move forward.
-              Please fill in the remaining details to complete your full application.
-            </p>
-          </div>
+         <!-- ============================== -->
+         <!-- STEP 2: Full Application       -->
+         <!-- (shown via ?continue=<app_id>) -->
+         <!-- ============================== -->
+         <div id="step2Sections" class="hidden">
+           <!-- Welcome banner -->
+           <div class="form-section">
+             <h2>Complete Your Application</h2>
+             <p style="color: var(--text-muted); font-size: 0.9rem;">
+               Welcome back, <strong id="step2Name"></strong>! We're excited to move forward.
+               Please fill in the remaining details to complete your full application.
+             </p>
+           </div>
+           
+           <!-- Staff Assignment (Internal Use Only) -->
+           <div class="form-section">
+             <h2>Staff Assignment</h2>
+             <p style="color: var(--text-muted); font-size: 0.9rem;">
+               Internal use only - select the staff member handling this application
+             </p>
+             <div class="form-group full-width">
+               <label for="staff_assigned">Assigned Staff Member <span class="required">*</span></label>
+               <select id="staff_assigned" name="staff_assigned" required>
+                 <option value="">Select staff member</option>
+                 <option value="alpaca_admin">Alpaca Admin</option>
+                 <option value="pai">Pai</option>
+                 <option value="community_manager">Community Manager</option>
+                 <option value="operations">Operations Team</option>
+               </select>
+             </div>
+           </div>
 
           <!-- Desired Housing -->
           <div class="form-section">

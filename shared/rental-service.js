@@ -1565,7 +1565,7 @@ async function inviteToApply(applicationId) {
 
   if (error) throw error;
 
-  const continueUrl = `https://rsonnad.github.io/alpacapps/spaces/apply/?continue=${applicationId}`;
+  const continueUrl = `https://alpacaplayhouse.com/rentals/apply/?continue=${applicationId}`;
 
   return {
     application: data,

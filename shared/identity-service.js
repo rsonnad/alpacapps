@@ -29,7 +29,7 @@ export const identityService = {
 
     if (error) throw error;
 
-    const uploadUrl = `https://rsonnad.github.io/alpacapps/spaces/verify.html?token=${token.token}`;
+    const uploadUrl = `https://alpacaplayhouse.com/rentals/verify.html?token=${token.token}`;
 
     // Update application status
     await supabase
@@ -179,7 +179,7 @@ export const identityService = {
 
     if (error) throw error;
 
-    const uploadUrl = `https://alpacaplayhouse.com/spaces/verify.html?token=${token.token}`;
+    const uploadUrl = `https://alpacaplayhouse.com/rentals/verify.html?token=${token.token}`;
 
     // Update associate profile status
     await supabase

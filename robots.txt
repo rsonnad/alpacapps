@@ -3,6 +3,9 @@ Allow: /
 Disallow: /login/
 Disallow: /kioskhall/
 Disallow: /mobile/
-Disallow: /spaces/admin/
+Disallow: /staff/
+Disallow: /admin/
+Disallow: /devcontrol/
+Disallow: /devices/
 Disallow: /mistiq/
 Sitemap: https://alpacaplayhouse.com/sitemap.xml

@@ -13,7 +13,7 @@
 
 import { supabase } from './supabase.js';
 
-const SIGNING_PAGE_BASE = 'https://alpacaplayhouse.com/spaces/signing/';
+const SIGNING_PAGE_BASE = 'https://alpacaplayhouse.com/rentals/signing/';
 const SUPABASE_FUNCTIONS_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1';
 
 // Token expires in 14 days

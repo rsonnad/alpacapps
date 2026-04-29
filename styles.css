@@ -507,6 +507,16 @@ tr:last-child td {
   display: none !important;
 }
 
+/* Hide staff-only fields from public view */
+.staff-only-field {
+  display: none !important;
+}
+
+/* Show staff-only fields in admin mode */
+body.admin-mode .staff-only-field {
+  display: block !important;
+}
+
 /* Modal */
 .modal {
   position: fixed;

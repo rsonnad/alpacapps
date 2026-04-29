@@ -1010,8 +1010,8 @@ function showSpaceDetail(spaceId) {
   document.getElementById('detailSpaceName').innerHTML = headerHtml;
 
   const shareUrl = space.slug
-    ? `https://alpacaplayhouse.com/spaces/?space=${encodeURIComponent(space.slug)}`
-    : `https://alpacaplayhouse.com/spaces/?id=${space.id}`;
+    ? `https://alpacaplayhouse.com/rentals/?space=${encodeURIComponent(space.slug)}`
+    : `https://alpacaplayhouse.com/rentals/?id=${space.id}`;
   const headerButtonsHtml = `
     ${isAdmin ? `
       <button class="btn-primary" onclick="openEditSpace('${space.id}'); document.getElementById('spaceDetailModal').classList.add('hidden');">Edit Space</button>

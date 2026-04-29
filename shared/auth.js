@@ -690,7 +690,7 @@ export function requireAuth(redirectUrl = '/login/') {
  * @param {string} redirectUrl - URL to redirect to if unauthorized
  * @returns {boolean} True if user has required role
  */
-export function requireRole(role, redirectUrl = '/spaces/') {
+export function requireRole(role, redirectUrl = '/rentals/') {
   const state = getAuthState();
 
   if (!state.isAuthenticated) {

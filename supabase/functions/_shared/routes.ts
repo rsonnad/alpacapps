@@ -18,7 +18,7 @@ export const ROUTES = {
   public: {
     home:      '/',
     visiting:  '/visiting/',
-    rentals:   '/spaces/',          // Phase 4 → '/rentals/'
+    rentals:   '/rentals/',         // moved from /spaces/ in Phase 4
     events:    '/events/',
     community: '/community/',
     photos:    '/photos/',
@@ -100,17 +100,17 @@ export const ROUTES = {
     home: '/devcontrol/',
   },
 
-  // Public rentals deep links — Phase 4 will rename /spaces/* to /rentals/*.
+  // Public rentals deep links — moved from /spaces/* to /rentals/* in Phase 4.
   // Keep ROUTES.public.rentals === ROUTES.rentals.home in lockstep.
   rentals: {
-    home:      '/spaces/',
-    apply:     '/spaces/apply/',
-    hostEvent: '/spaces/hostevent/',
-    book:      '/spaces/book/',
-    signing:   '/spaces/signing/',
-    ical:      '/spaces/ical/',
-    verify:    '/spaces/verify.html',
-    w9:        '/spaces/w9.html',
+    home:      '/rentals/',
+    apply:     '/rentals/apply/',
+    hostEvent: '/rentals/hostevent/',
+    book:      '/rentals/book/',
+    signing:   '/rentals/signing/',
+    ical:      '/rentals/ical/',
+    verify:    '/rentals/verify.html',
+    w9:        '/rentals/w9.html',
   },
 
   // Auth & callbacks (no nav tab)

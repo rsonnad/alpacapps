@@ -76,7 +76,7 @@ function getRedirectTarget(role) {
   let target = redirectUrl;
   // Public users always go to consumer spaces view
   if (['public'].includes(role)) {
-    target = '/spaces/';
+    target = '/rentals/';
   }
   // Resident/associate users go to resident area by default (not admin)
   else if (target === '/staff/' && ['resident', 'associate'].includes(role)) {

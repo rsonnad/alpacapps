@@ -533,10 +533,10 @@ async function checkAuth() {
       bar.className = 'auth-bar signed-in';
       bar.innerHTML = `Signed in as ${session.user.email} · Test buttons active`;
     } else {
-      bar.innerHTML = `Not signed in · <a href="/spaces/index.html">Sign in on main app</a> to enable Test buttons`;
+      bar.innerHTML = `Not signed in · <a href="/rentals/index.html">Sign in on main app</a> to enable Test buttons`;
     }
   } catch {
-    bar.innerHTML = `Auth check failed · <a href="/spaces/index.html">Sign in on main app</a> to enable Test buttons`;
+    bar.innerHTML = `Auth check failed · <a href="/rentals/index.html">Sign in on main app</a> to enable Test buttons`;
   }
 }
 

@@ -3104,7 +3104,7 @@ async function updateIdentityVerificationUI(app) {
     try {
       const token = await identityService.getUploadToken(app.id);
       if (token) {
-        const uploadUrl = `https://rsonnad.github.io/alpacapps/spaces/verify.html?token=${token.token}`;
+        const uploadUrl = `https://alpacaplayhouse.com/rentals/verify.html?token=${token.token}`;
         const expiresDate = new Date(token.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         tokenInfo = `
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
@@ -3264,7 +3264,7 @@ async function resendIdEmail(app) {
       return;
     }
 
-    const uploadUrl = `https://rsonnad.github.io/alpacapps/spaces/verify.html?token=${token.token}`;
+    const uploadUrl = `https://alpacaplayhouse.com/rentals/verify.html?token=${token.token}`;
     const person = app.person || {};
 
     if (person.email) {
