@@ -1,12 +1,12 @@
 {
-  "version": "v260430.02 9:49p",
-  "release": 1420,
-  "sha": "df9d6c12b",
-  "fullSha": "df9d6c12b0990ebb3bdb94c6c96d30b2aabfc483",
+  "version": "v260430.03 10:18p",
+  "release": 1421,
+  "sha": "78b4392ae",
+  "fullSha": "78b4392aeca6ca61d2bd14ff2b670b04cdb8bae5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T02:49:44+00:00",
-  "commits": [{"sha":"df9d6c12b","message":"fix(refactor): stub /staff/, /admin/, /devices/ index.html + admin/test-suite.js supabase","author":"Paca"}]
+  "pushedAt": "2026-05-01T03:18:19+00:00",
+  "commits": [{"sha":"78b4392ae","message":"fix(backend): repair 8 schema-drift bugs surfaced by browser QA","author":"Paca"}]
 }
