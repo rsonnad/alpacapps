@@ -1,12 +1,12 @@
 {
-  "version": "v260430.01 9:34p",
-  "release": 1419,
-  "sha": "a76c61809",
-  "fullSha": "a76c61809d192fb56e8ab9e8c342ac9e0f24df65",
+  "version": "v260430.02 9:49p",
+  "release": 1420,
+  "sha": "df9d6c12b",
+  "fullSha": "df9d6c12b0990ebb3bdb94c6c96d30b2aabfc483",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T02:34:36+00:00",
-  "commits": [{"sha":"a76c61809","message":"fix(refactor): repair stale path refs from Phase 1-4 folder rename","author":"Paca"}]
+  "pushedAt": "2026-05-01T02:49:44+00:00",
+  "commits": [{"sha":"df9d6c12b","message":"fix(refactor): stub /staff/, /admin/, /devices/ index.html + admin/test-suite.js supabase","author":"Paca"}]
 }
