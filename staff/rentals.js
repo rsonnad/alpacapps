@@ -36,6 +36,7 @@ let allSpaces = [];
 let allApplications = [];
 let allPeople = [];
 let allPaymentMethods = [];
+let allStaffMembers = [];
 let calendarAssignments = [];
 let pastResidents = []; // completed assignments + stay-ended applications with no linked assignment
 let currentApplicationId = null;
@@ -83,6 +84,34 @@ function extractAgeFromNotes(notes) {
   return m ? m[1] : null;
 }
 
+function renderStaffAssignedSelect(app) {
+  const select = document.getElementById('detailStaffAssigned');
+  if (!select) return;
+  const options = ['<option value="">— Unassigned</option>']
+    .concat(allStaffMembers.map(s => {
+      const label = s.display_name || s.email || s.id;
+      return `<option value="${s.id}">${label}</option>`;
+    }));
+  select.innerHTML = options.join('');
+  select.value = app.assigned_staff_id || '';
+  select.onchange = async () => {
+    const newId = select.value || null;
+    try {
+      const { error } = await supabase
+        .from('rental_applications')
+        .update({ assigned_staff_id: newId })
+        .eq('id', app.id);
+      if (error) throw error;
+      app.assigned_staff_id = newId;
+      showToast('Staff assignment saved', 'success');
+    } catch (e) {
+      console.error('Error saving staff assignment:', e);
+      showToast('Failed to save assignment', 'error');
+      select.value = app.assigned_staff_id || '';
+    }
+  };
+}
+
 // =============================================
 // INITIALIZATION
 // =============================================
@@ -122,6 +151,7 @@ async function loadRentals() {
   await Promise.all([
     loadApplications(),
     loadPeople(),
+    loadStaffMembers(),
     loadPaymentMethods(),
     loadCalendarData(),
     loadPastResidents(),
@@ -153,6 +183,20 @@ async function loadPeople() {
     allPeople = data || [];
   } catch (error) {
     console.error('Error loading people:', error);
+  }
+}
+
+async function loadStaffMembers() {
+  try {
+    const { data, error } = await supabase
+      .from('app_users')
+      .select('id, display_name, email, role')
+      .in('role', ['admin', 'staff'])
+      .order('display_name');
+    if (error) throw error;
+    allStaffMembers = data || [];
+  } catch (error) {
+    console.error('Error loading staff members:', error);
   }
 }
 
@@ -1230,6 +1274,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   document.getElementById('detailVolunteerInterest').textContent =
     VOLUNTEER_LABELS[person.volunteer_interest] || person.volunteer_interest || '-';
   document.getElementById('detailReferralSource').textContent = person.referral_source || '-';
+  renderStaffAssignedSelect(app);
   document.getElementById('detailColivingExp').textContent = person.coliving_experience || '-';
   document.getElementById('detailLifeFocus').textContent = person.life_focus || '-';
   document.getElementById('detailVisitingGuide').textContent = person.visiting_guide_response || '-';
