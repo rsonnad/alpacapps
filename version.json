@@ -1,12 +1,12 @@
 {
-  "version": "v260501.02 3:56p",
-  "release": 1425,
-  "sha": "dead46b8f",
-  "fullSha": "dead46b8fb0e6a273caa8824c922ed93339c6c1c",
+  "version": "v260501.03 4:44p",
+  "release": 1426,
+  "sha": "5d8f9d4e6",
+  "fullSha": "5d8f9d4e6e0e8b74db3f9d811af1243cecc9b3c8",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T20:56:14+00:00",
-  "commits": [{"sha":"dead46b8f","message":"feat(rentals/apply): add gender field + make demographic/property fields mandatory","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-05-01T21:44:42+00:00",
+  "commits": [{"sha":"5d8f9d4e6","message":"fix(staff/rentals): surface referral_source + age in applicant detail","author":"Sonia Wendorff"}]
 }
