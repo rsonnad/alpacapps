@@ -1,14 +1,14 @@
 // Reservations Page - Admin Dashboard
 // Manages space reservation requests from residents
 
-import { reservationService } from '../../shared/reservation-service.js';
+import { reservationService } from '../shared/reservation-service.js';
 import {
   formatDateAustin
-} from '../../shared/timezone.js';
+} from '../shared/timezone.js';
 import {
   showToast,
   initAdminPage
-} from '../../shared/admin-shell.js';
+} from '../shared/admin-shell.js';
 
 // =============================================
 // STATE

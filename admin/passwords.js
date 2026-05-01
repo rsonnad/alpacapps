@@ -2,9 +2,9 @@
  * Password Vault - Admin-only credential storage with copy-to-clipboard
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
 
 // =============================================
 // STATE

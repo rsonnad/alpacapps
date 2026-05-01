@@ -1,4 +1,4 @@
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
 
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
 let supabaseClient = null;

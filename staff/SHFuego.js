@@ -3,8 +3,8 @@
  * Queries live data from Supabase: people, assignments, ledger, rental_payments
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
 
 const PERSON_ID = '433e74fd-0058-4bff-ba15-e0384b163260';
 const SPACE_ID = '14d17e18-b271-409c-b99e-ab74018b23a2';

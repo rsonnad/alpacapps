@@ -1,10 +1,10 @@
 // User Management - Admin only
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { emailService } from '../../shared/email-service.js';
-import { formatDateAustin, getAustinToday } from '../../shared/timezone.js';
-import { hasPermission } from '../../shared/auth.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { emailService } from '../shared/email-service.js';
+import { formatDateAustin, getAustinToday } from '../shared/timezone.js';
+import { hasPermission } from '../shared/auth.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
 
 // Timeout configuration
 const DB_TIMEOUT_MS = 10000; // 10 seconds for database operations

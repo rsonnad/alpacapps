@@ -1,14 +1,14 @@
 // Rentals Page - Admin Dashboard
 // Manages rental applications, pipeline, calendar, deposits, and Airbnb sync
 
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
-import { rentalService } from '../../shared/rental-service.js';
-import { emailService } from '../../shared/email-service.js';
-import { smsService } from '../../shared/sms-service.js';
-import { leaseTemplateService } from '../../shared/lease-template-service.js';
-import { pdfService } from '../../shared/pdf-service.js';
-import { nativeSigningService } from '../../shared/native-signing-service.js';
-import { identityService } from '../../shared/identity-service.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
+import { rentalService } from '../shared/rental-service.js';
+import { emailService } from '../shared/email-service.js';
+import { smsService } from '../shared/sms-service.js';
+import { leaseTemplateService } from '../shared/lease-template-service.js';
+import { pdfService } from '../shared/pdf-service.js';
+import { nativeSigningService } from '../shared/native-signing-service.js';
+import { identityService } from '../shared/identity-service.js';
 import {
   getAustinToday,
   getAustinTodayISO,
@@ -18,14 +18,14 @@ import {
   getAustinWeekday,
   isSameAustinDay,
   formatDateTimeFull
-} from '../../shared/timezone.js';
+} from '../shared/timezone.js';
 import {
   showToast,
   initAdminPage,
   setupLightbox
-} from '../../shared/admin-shell.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
-import { initTabList } from '../../shared/tab-utils.js';
+} from '../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
+import { initTabList } from '../shared/tab-utils.js';
 
 // =============================================
 // STATE

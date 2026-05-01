@@ -3,13 +3,13 @@
  * Two-panel layout: sidebar navigation + editor panel
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { leaseTemplateService } from '../../shared/lease-template-service.js';
-import { eventTemplateService } from '../../shared/event-template-service.js';
-import { worktradeTemplateService } from '../../shared/worktrade-template-service.js';
-import { emailTemplateService, renderTemplate } from '../../shared/email-template-service.js';
-import { formatDateAustin } from '../../shared/timezone.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { leaseTemplateService } from '../shared/lease-template-service.js';
+import { eventTemplateService } from '../shared/event-template-service.js';
+import { worktradeTemplateService } from '../shared/worktrade-template-service.js';
+import { emailTemplateService, renderTemplate } from '../shared/email-template-service.js';
+import { formatDateAustin } from '../shared/timezone.js';
 
 // =============================================
 // STATE

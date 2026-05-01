@@ -1,15 +1,15 @@
 /**
  * Admin Hours Page - Manage associate time entries, rates, and payments
  */
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { getAuthState } from '../../shared/auth.js';
-import { supabase } from '../../shared/supabase.js';
-import { hoursService, HoursService } from '../../shared/hours-service.js';
-import { PAYMENT_METHOD_LABELS } from '../../shared/accounting-service.js';
-import { payoutService } from '../../shared/payout-service.js';
-import { identityService } from '../../shared/identity-service.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
-import { AUSTIN_TIMEZONE } from '../../shared/timezone.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { getAuthState } from '../shared/auth.js';
+import { supabase } from '../shared/supabase.js';
+import { hoursService, HoursService } from '../shared/hours-service.js';
+import { PAYMENT_METHOD_LABELS } from '../shared/accounting-service.js';
+import { payoutService } from '../shared/payout-service.js';
+import { identityService } from '../shared/identity-service.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
+import { AUSTIN_TIMEZONE } from '../shared/timezone.js';
 
 // State
 let associates = [];

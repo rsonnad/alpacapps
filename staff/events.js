@@ -1,23 +1,23 @@
 // Events Page - Admin Dashboard
 // Manages event requests, pipeline, calendar, and event agreements
 
-import { supabase } from '../../shared/supabase.js';
-import { eventService } from '../../shared/event-service.js';
-import { eventTemplateService } from '../../shared/event-template-service.js';
-import { pdfService } from '../../shared/pdf-service.js';
-import { nativeSigningService } from '../../shared/native-signing-service.js';
+import { supabase } from '../shared/supabase.js';
+import { eventService } from '../shared/event-service.js';
+import { eventTemplateService } from '../shared/event-template-service.js';
+import { pdfService } from '../shared/pdf-service.js';
+import { nativeSigningService } from '../shared/native-signing-service.js';
 import {
   getAustinToday,
   formatDateAustin,
   isSameAustinDay
-} from '../../shared/timezone.js';
+} from '../shared/timezone.js';
 import {
   showToast,
   initAdminPage,
   setupLightbox
-} from '../../shared/admin-shell.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
-import { initTabList } from '../../shared/tab-utils.js';
+} from '../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
+import { initTabList } from '../shared/tab-utils.js';
 
 // =============================================
 // STATE

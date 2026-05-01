@@ -1,5 +1,5 @@
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
 
 const HISTORY_LIMIT = 50;
 

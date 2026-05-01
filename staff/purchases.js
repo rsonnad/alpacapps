@@ -2,8 +2,8 @@
  * Purchases & Receipts - Purchase tracking and vendor management
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast, openLightbox } from '../../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast, openLightbox } from '../shared/admin-shell.js';
 
 // =============================================
 // STATE

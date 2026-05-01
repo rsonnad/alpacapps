@@ -1,10 +1,10 @@
 /**
  * Admin Projects Page - Create, edit, delete, and reassign tasks
  */
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { supabase } from '../../shared/supabase.js';
-import { projectService } from '../../shared/project-service.js';
-import { mediaService } from '../../shared/media-service.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { projectService } from '../shared/project-service.js';
+import { mediaService } from '../shared/media-service.js';
 
 let allTasks = [];
 let spaces = [];

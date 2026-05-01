@@ -2,10 +2,10 @@
  * Settings - Payment Methods, Fee Settings, SMS Configuration
  */
 
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
-import { payoutService } from '../../shared/payout-service.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
+import { payoutService } from '../shared/payout-service.js';
 
 // =============================================
 // STATE

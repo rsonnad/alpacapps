@@ -1,5 +1,5 @@
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast, setupLightbox, openLightbox } from '../../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast, setupLightbox, openLightbox } from '../shared/admin-shell.js';
 
 let refreshTimer = null;
 let allImageUrls = [];

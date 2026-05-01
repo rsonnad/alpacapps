@@ -6,8 +6,8 @@
  * and email template previews.
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
 
 /** Read a live CSS custom property value from :root */
 function getCSSVar(name) {

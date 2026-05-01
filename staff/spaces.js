@@ -2,14 +2,14 @@
  * Spaces - Admin page for managing spaces
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { mediaService } from '../../shared/media-service.js';
+import { supabase } from '../shared/supabase.js';
+import { mediaService } from '../shared/media-service.js';
 import {
   formatDateAustin,
   getAustinToday,
   parseAustinDate,
   isTodayOrAfterAustin,
-} from '../../shared/timezone.js';
+} from '../shared/timezone.js';
 import {
   initAdminPage,
   showToast,
@@ -19,8 +19,8 @@ import {
   lightboxNext,
   setCurrentGallery,
   setupLightbox,
-} from '../../shared/admin-shell.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+} from '../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
 
 // =============================================
 // STATE

@@ -1,16 +1,16 @@
 /**
  * Accounting Page - Transaction ledger and refunds
  */
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { supabase } from '../../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
 import {
   accountingService,
   CATEGORY_LABELS,
   PAYMENT_METHOD_LABELS,
   DIRECTION,
   STATUS
-} from '../../shared/accounting-service.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+} from '../shared/accounting-service.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
 
 // State
 let transactions = [];

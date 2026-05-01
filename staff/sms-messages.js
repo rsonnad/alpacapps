@@ -2,9 +2,9 @@
  * SMS Messages - Full message list and filtering
  */
 
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
 
 // =============================================
 // STATE

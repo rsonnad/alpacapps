@@ -2,8 +2,8 @@
  * PhyProp - Physical Property data dashboard
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
 
 let authState = null;
 let activeSubtab = 'overview';

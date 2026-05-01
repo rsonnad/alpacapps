@@ -1,9 +1,9 @@
 // FAQ Management Page
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { getAuthState, hasPermission } from '../../shared/auth.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
-import { askQuestion } from '../../shared/chat-widget.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { getAuthState, hasPermission } from '../shared/auth.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
+import { askQuestion } from '../shared/chat-widget.js';
 
 // State
 let faqEntries = [];

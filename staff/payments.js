@@ -1,12 +1,12 @@
 /**
  * Admin Payments Page — View unpaid hours per associate and pay via Stripe Connect
  */
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { supabase } from '../../shared/supabase.js';
-import { payoutService } from '../../shared/payout-service.js';
-import { hoursService } from '../../shared/hours-service.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
-import { AUSTIN_TIMEZONE } from '../../shared/timezone.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { payoutService } from '../shared/payout-service.js';
+import { hoursService } from '../shared/hours-service.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
+import { AUSTIN_TIMEZONE } from '../shared/timezone.js';
 
 // State
 let associates = [];

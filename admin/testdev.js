@@ -1,4 +1,4 @@
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
 
 const REPO = 'rsonnad/alpacapps';
 const PER_PAGE = 30;

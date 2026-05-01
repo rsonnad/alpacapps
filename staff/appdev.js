@@ -4,9 +4,9 @@
  * Shows live build progress and reverse-chronological status timeline.
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast, openLightbox, setupLightbox } from '../../shared/admin-shell.js';
-import { mediaService } from '../../shared/media-service.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast, openLightbox, setupLightbox } from '../shared/admin-shell.js';
+import { mediaService } from '../shared/media-service.js';
 
 let authState = null;
 let pollTimer = null;

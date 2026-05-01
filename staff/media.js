@@ -2,11 +2,11 @@
  * Media Library - Browse, filter, and manage all media
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { mediaService } from '../../shared/media-service.js';
-import { errorLogger } from '../../shared/error-logger.js';
-import { formatDateTimeFull } from '../../shared/timezone.js';
-import { initAdminPage, showToast, setupLightbox } from '../../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { mediaService } from '../shared/media-service.js';
+import { errorLogger } from '../shared/error-logger.js';
+import { formatDateTimeFull } from '../shared/timezone.js';
+import { initAdminPage, showToast, setupLightbox } from '../shared/admin-shell.js';
 
 // Set up global error handlers
 errorLogger.setupGlobalHandlers();

@@ -2,8 +2,8 @@
  * AlpaClaw Configuration - Admin page for managing AlpaClaw chatbot (OpenClaw gateway)
  */
 
-import { supabase } from '../../shared/supabase.js';
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
 
 // =============================================
 // STATE

@@ -1,7 +1,7 @@
-import { initAdminPage, showToast } from '../../shared/admin-shell.js';
-import { voiceService } from '../../shared/voice-service.js';
-import { supabase, SUPABASE_URL } from '../../shared/supabase.js';
-import { isDemoUser, redactString } from '../../shared/demo-redact.js';
+import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { voiceService } from '../shared/voice-service.js';
+import { supabase, SUPABASE_URL } from '../shared/supabase.js';
+import { isDemoUser, redactString } from '../shared/demo-redact.js';
 
 let authState = null;
 let allAssistants = [];
