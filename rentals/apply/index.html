@@ -996,6 +996,16 @@
                 <label for="date_of_birth">How old are you? <span class="required">*</span></label>
                 <input type="text" id="date_of_birth" name="date_of_birth" placeholder="e.g. 28" required>
               </div>
+              <div class="form-group">
+                <label for="gender">Gender <span class="required">*</span></label>
+                <select id="gender" name="gender" required>
+                  <option value="">Select an option</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="non_binary">Non-binary</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+              </div>
               <div class="form-group full-width">
                 <label for="coliving_experience">Do you have experience with co-living? <span class="required">*</span></label>
                 <textarea id="coliving_experience" name="coliving_experience" rows="3" placeholder="If yes, describe it." required></textarea>
@@ -1126,7 +1136,7 @@
               </div>
               <div class="form-group">
                 <label for="desired_move_in">Desired Move-in Date <span class="required">*</span></label>
-                <input type="date" id="desired_move_in" name="desired_move_in">
+                <input type="date" id="desired_move_in" name="desired_move_in" required>
               </div>
               <div class="form-group full-width">
                 <label for="desired_term">Desired Term <span class="required">*</span></label>
@@ -1141,7 +1151,7 @@
             <div class="form-grid">
               <div class="form-group">
                 <label for="employment_status">Employment Status <span class="required">*</span></label>
-                <input type="text" id="employment_status" name="employment_status" placeholder="e.g. Full-time, Self-employed">
+                <input type="text" id="employment_status" name="employment_status" placeholder="e.g. Full-time, Self-employed" required>
               </div>
               <div class="form-group">
                 <label for="employer">Employer <span class="required">*</span></label>
@@ -1221,12 +1231,12 @@
             <h2>Property Details</h2>
             <div class="form-grid">
               <div class="form-group full-width">
-                <label for="vehicles">Vehicles</label>
-                <textarea id="vehicles" name="vehicles" rows="2" placeholder="Describe type and size (e.g. Honda Civic sedan, Ford F-150 truck)"></textarea>
+                <label for="vehicles">Vehicles <span class="required">*</span></label>
+                <textarea id="vehicles" name="vehicles" rows="2" placeholder="Describe type and size (e.g. Honda Civic sedan, Ford F-150 truck) — or 'None'" required></textarea>
               </div>
               <div class="form-group full-width">
-                <label for="pets">Pets</label>
-                <textarea id="pets" name="pets" rows="2" placeholder="Type and details (e.g. 2 cats, 1 medium dog - golden retriever)"></textarea>
+                <label for="pets">Pets <span class="required">*</span></label>
+                <textarea id="pets" name="pets" rows="2" placeholder="Type and details (e.g. 2 cats, 1 medium dog - golden retriever) — or 'None'" required></textarea>
               </div>
               <div class="form-group full-width">
                 <label for="allergies">Allergies</label>
@@ -1786,7 +1796,7 @@
       if (!phone) { document.getElementById('phone').classList.add('error'); hasError = true; }
 
       // Validate required community fit fields
-      const requiredFields = ['date_of_birth', 'coliving_experience', 'life_focus', 'visiting_guide_response', 'desired_timeframe', 'preferred_accommodation', 'volunteer_interest', 'pets_inquiry', 'referral_source'];
+      const requiredFields = ['date_of_birth', 'gender', 'coliving_experience', 'life_focus', 'visiting_guide_response', 'desired_timeframe', 'preferred_accommodation', 'volunteer_interest', 'pets_inquiry', 'referral_source'];
       for (const field of requiredFields) {
         if (!getValue(field)) {
           document.getElementById(field).classList.add('error');
@@ -1843,6 +1853,7 @@
           phone: phone,
           whatsapp: phone,
           date_of_birth: isValidDate ? dobValue : null,
+          gender: getValue('gender') || null,
           coliving_experience: getValue('coliving_experience'),
           life_focus: getValue('life_focus'),
           visiting_guide_response: getValue('visiting_guide_response'),
@@ -2105,7 +2116,7 @@
     async function submitFullApplication() {
       // Validate required Step 2 fields
       let hasError = false;
-      const step2Required = ['desired_move_in', 'desired_term', 'employment_status', 'employer', 'monthly_income'];
+      const step2Required = ['desired_move_in', 'desired_term', 'employment_status', 'employer', 'monthly_income', 'vehicles', 'pets'];
       for (const field of step2Required) {
         if (!getValue(field)) {
           document.getElementById(field).classList.add('error');
