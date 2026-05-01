@@ -342,7 +342,10 @@ Deno.serve(async (req) => {
       }
       if (recipientEmail) {
         const firstName = associate.app_user?.first_name || personName.split(' ')[0] || 'there';
-        const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' });
+        const tz = 'America/Chicago';
+        const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: tz });
+        // PayPal payouts settle within ~30 minutes — same-day ETA
+        const expectedDepositDate = `Today (${today})`;
         await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: 'POST',
           headers: {
@@ -352,18 +355,21 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             type: 'associate_payout_sent',
             to: recipientEmail,
+            bcc: 'alpacaplayhouse@gmail.com',
             data: {
               first_name: firstName,
+              recipient_name: personName,
               amount: amount.toFixed(2),
               payment_method: 'PayPal',
               payout_date: today,
+              expected_deposit_date: expectedDepositDate,
               hours: associate.hourly_rate && amount > 0 ? (amount / parseFloat(associate.hourly_rate)).toFixed(1) : null,
               hourly_rate: associate.hourly_rate || null,
               notes: notes || null
             }
           })
         });
-        console.log('Payout notification email queued for', recipientEmail);
+        console.log('Payout notification email queued for', recipientEmail, '(bcc admin)');
       }
     } catch (emailErr) {
       console.error('Non-fatal: payout email failed:', emailErr);

@@ -26,6 +26,21 @@ interface StripeConfig {
   test_mode: boolean;
 }
 
+/**
+ * Add N business days to a date, skipping weekends (Sat/Sun).
+ * Federal holidays not considered — adequate for ETA rendering only.
+ */
+function addBusinessDays(date: Date, n: number): Date {
+  const result = new Date(date);
+  let added = 0;
+  while (added < n) {
+    result.setDate(result.getDate() + 1);
+    const day = result.getDay();
+    if (day !== 0 && day !== 6) added++;
+  }
+  return result;
+}
+
 function formEncode(obj: Record<string, string | number>): string {
   return Object.entries(obj)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
@@ -311,7 +326,11 @@ Deno.serve(async (req) => {
       }
       if (recipientEmail) {
         const firstName = associate.app_user?.first_name || personName.split(' ')[0] || 'there';
-        const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' });
+        const tz = 'America/Chicago';
+        const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: tz });
+        // Stripe Connect ACH transfers typically settle in 2 business days
+        const expectedDeposit = addBusinessDays(new Date(), 2);
+        const expectedDepositDate = expectedDeposit.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: tz });
         await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: 'POST',
           headers: {
@@ -321,18 +340,21 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             type: 'associate_payout_sent',
             to: recipientEmail,
+            bcc: 'alpacaplayhouse@gmail.com',
             data: {
               first_name: firstName,
+              recipient_name: personName,
               amount: amount.toFixed(2),
               payment_method: 'Stripe (ACH)',
               payout_date: today,
+              expected_deposit_date: expectedDepositDate,
               hours: associate.hourly_rate && amount > 0 ? (amount / parseFloat(associate.hourly_rate)).toFixed(1) : null,
               hourly_rate: associate.hourly_rate || null,
               notes: notes || null
             }
           })
         });
-        console.log('Payout notification email queued for', recipientEmail);
+        console.log('Payout notification email queued for', recipientEmail, '(bcc admin)');
       }
     } catch (emailErr) {
       console.error('Non-fatal: payout email failed:', emailErr);
