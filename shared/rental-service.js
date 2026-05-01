@@ -103,7 +103,7 @@ async function getApplications(filters = {}) {
     .from('rental_applications')
     .select(`
       *,
-      person:person_id(id, first_name, last_name, email, phone, type, preferred_accommodation, coliving_experience, life_focus, visiting_guide_response, desired_timeframe, volunteer_interest, photo_url),
+      person:person_id(*),
       desired_space:desired_space_id(id, name, monthly_rate),
       approved_space:approved_space_id(id, name, monthly_rate),
       assignment:assignment_id(id, status)
@@ -156,7 +156,7 @@ async function getApplication(applicationId) {
     .from('rental_applications')
     .select(`
       *,
-      person:person_id(id, first_name, last_name, email, phone, type, preferred_accommodation, coliving_experience, life_focus, visiting_guide_response, desired_timeframe, volunteer_interest, photo_url),
+      person:person_id(*),
       desired_space:desired_space_id(id, name, monthly_rate, location),
       approved_space:approved_space_id(id, name, monthly_rate, location),
       assignment:assignment_id(id, status, start_date, end_date)

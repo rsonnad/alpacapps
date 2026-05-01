@@ -75,6 +75,14 @@ const VOLUNTEER_LABELS = {
   'no': 'Not at this time',
 };
 
+// Apply form stashes raw age input as "Age: NN" in people.notes when the user
+// types a number instead of a date. Surface that in the staff view.
+function extractAgeFromNotes(notes) {
+  if (!notes) return null;
+  const m = String(notes).match(/Age:\s*(\d{1,3})/i);
+  return m ? m[1] : null;
+}
+
 // =============================================
 // INITIALIZATION
 // =============================================
@@ -1213,7 +1221,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   document.getElementById('detailApplicantEmail').classList.toggle('demo-redacted', isDemoUser());
   document.getElementById('detailApplicantPhone').textContent = person.phone || '-';
   document.getElementById('detailApplicantDOB').textContent =
-    person.date_of_birth || '-';
+    person.date_of_birth || extractAgeFromNotes(person.notes) || '-';
 
   // Community Fit
   document.getElementById('detailPreferredAccomm').textContent =
