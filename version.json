@@ -1,12 +1,12 @@
 {
-  "version": "v260430.03 10:18p",
-  "release": 1421,
-  "sha": "78b4392ae",
-  "fullSha": "78b4392aeca6ca61d2bd14ff2b670b04cdb8bae5",
+  "version": "v260430.04 10:28p",
+  "release": 1422,
+  "sha": "d4b6ecb89",
+  "fullSha": "d4b6ecb892d03a4ae933572cb13cd7233b717d12",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T03:18:19+00:00",
-  "commits": [{"sha":"78b4392ae","message":"fix(backend): repair 8 schema-drift bugs surfaced by browser QA","author":"Paca"}]
+  "pushedAt": "2026-05-01T03:28:44+00:00",
+  "commits": [{"sha":"d4b6ecb89","message":"fix(backend): correct stale column names in accounting + identity-verifications","author":"Paca"}]
 }
