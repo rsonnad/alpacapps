@@ -875,7 +875,9 @@ async function renderIdVerification() {
   // Also check for any verification records directly linked to this user
   const { data: verification } = await supabase
     .from('identity_verifications')
-    .select('id, verification_status, extracted_name, verified_at, created_at')
+    // Real columns are `extracted_full_name` (not `extracted_name`) and
+    // `reviewed_at` (not `verified_at`). Stale names returned 400.
+    .select('id, verification_status, extracted_full_name, reviewed_at, created_at')
     .eq('app_user_id', currentUser.id)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -884,7 +886,7 @@ async function renderIdVerification() {
   const effectiveStatus = status || (verification ? verification.verification_status : null);
 
   if (effectiveStatus === 'verified' || effectiveStatus === 'auto_approved' || effectiveStatus === 'manually_approved') {
-    const verifiedDate = verification?.verified_at || verification?.created_at;
+    const verifiedDate = verification?.reviewed_at || verification?.created_at;
     const dateStr = verifiedDate ? new Date(verifiedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
     container.innerHTML = `
       <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;">

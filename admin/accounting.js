@@ -1066,9 +1066,9 @@ async function loadApiUsage() {
         .eq('status', 'completed')
         .gte('created_at', monthStart)
         .lt('created_at', monthEnd),
-      // Voice calls (existing data)
+      // Voice calls — column is `cost_cents` (integer), not `cost_usd`.
       supabase.from('voice_calls')
-        .select('duration_seconds, cost_usd, created_at')
+        .select('duration_seconds, cost_cents, created_at')
         .gte('created_at', monthStart)
         .lt('created_at', monthEnd),
       // SignWell documents (from rental_applications — source of truth)
@@ -1122,7 +1122,8 @@ async function loadApiUsage() {
     // Voice calls
     const voiceCallCount = voiceCalls.length;
     const voiceMinutes = voiceCalls.reduce((s, c) => s + ((c.duration_seconds || 0) / 60), 0);
-    const voiceCost = voiceCalls.reduce((s, c) => s + (parseFloat(c.cost_usd) || 0), 0);
+    // voice_calls.cost_cents is integer; convert to USD for the rollup.
+    const voiceCost = voiceCalls.reduce((s, c) => s + ((parseInt(c.cost_cents, 10) || 0) / 100), 0);
 
     // Anthropic from api_usage_log
     const anthropicFromLog = apiLog.filter(r => r.vendor === 'anthropic');
