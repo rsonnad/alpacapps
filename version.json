@@ -1,12 +1,12 @@
 {
-  "version": "v260501.03 4:44p",
-  "release": 1426,
-  "sha": "5d8f9d4e6",
-  "fullSha": "5d8f9d4e6e0e8b74db3f9d811af1243cecc9b3c8",
+  "version": "v260501.04 5:04p",
+  "release": 1427,
+  "sha": "2329f680b",
+  "fullSha": "2329f680b3d15e0053e474cb12781550ddbfdf45",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T21:44:42+00:00",
-  "commits": [{"sha":"5d8f9d4e6","message":"fix(staff/rentals): surface referral_source + age in applicant detail","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-05-01T22:04:30+00:00",
+  "commits": [{"sha":"2329f680b","message":"feat(staff/rentals): editable assigned-staff dropdown on applicant detail","author":"Sonia Wendorff"}]
 }
