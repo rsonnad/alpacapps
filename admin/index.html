@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin — AlpacAPPs</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <!-- Bare /admin/ entry point. Redirects to the default admin page (users).
+       Kept after Phase 3 refactor so deep links to /admin/ resolve to a real
+       page instead of a GitHub Pages 404. -->
+  <script>
+    var loc = window.location;
+    var target = '/admin/users.html' + (loc.search || '') + (loc.hash || '');
+    window.location.replace(target);
+  </script>
+  <meta http-equiv="refresh" content="0; url=/admin/users.html">
+</head>
+<body>
+  <noscript>
+    <p>Redirecting to <a href="/admin/users.html">/admin/users.html</a>…</p>
+  </noscript>
+</body>
+</html>

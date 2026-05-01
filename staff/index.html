@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Staff — AlpacAPPs</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <!-- Bare /staff/ entry point. Redirects to the default staff page (spaces).
+       Kept after Phase 3 refactor so deep links to /staff/ (e.g. login default)
+       resolve to a real page instead of a GitHub Pages 404. -->
+  <script>
+    var loc = window.location;
+    var target = '/staff/spaces.html' + (loc.search || '') + (loc.hash || '');
+    window.location.replace(target);
+  </script>
+  <meta http-equiv="refresh" content="0; url=/staff/spaces.html">
+</head>
+<body>
+  <noscript>
+    <p>Redirecting to <a href="/staff/spaces.html">/staff/spaces.html</a>…</p>
+  </noscript>
+</body>
+</html>

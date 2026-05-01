@@ -1,7 +1,10 @@
 import { initAdminPage, showToast } from '../shared/admin-shell.js';
+import { supabase } from '../shared/supabase.js';
 
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
-let supabaseClient = null;
+// initAdminPage's onReady state does not expose `.supabase`; import the singleton
+// directly (same pattern as admin/users.js, admin/accounting.js, etc).
+const supabaseClient = supabase;
 let authState = null;
 let currentCategory = '';
 
@@ -12,7 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     section: 'admin',
     onReady: async (state) => {
       authState = state;
-      supabaseClient = state.supabase;
       bindEvents();
       await loadLatestRun();
       await loadRunHistory();
