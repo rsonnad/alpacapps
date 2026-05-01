@@ -87,7 +87,7 @@ class AccountingService {
   async getTransactions(filters = {}) {
     let query = supabase
       .from('ledger')
-      .select('*, person:person_id(id, first_name, last_name)', { count: 'exact' });
+      .select('*, person:fk_ledger_person(id, first_name, last_name)', { count: 'exact' });
 
     if (filters.dateFrom) {
       query = query.gte('transaction_date', filters.dateFrom);
@@ -157,7 +157,7 @@ class AccountingService {
   async getTransaction(id) {
     const { data, error } = await supabase
       .from('ledger')
-      .select('*, person:person_id(id, first_name, last_name)')
+      .select('*, person:fk_ledger_person(id, first_name, last_name)')
       .eq('id', id)
       .single();
 
