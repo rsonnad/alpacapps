@@ -52,15 +52,17 @@ function getAvailablePlaceholders() {
  * Get the active work trade agreement template
  */
 async function getActiveTemplate() {
+  // .maybeSingle() returns null on no-rows without surfacing a 406 in the network
+  // panel (which .single() does even when we silently swallow PGRST116 below).
   const { data, error } = await supabase
     .from('worktrade_agreement_templates')
     .select('*')
     .eq('is_active', true)
     .order('version', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+  if (error) {
     console.error('Error fetching active template:', error);
     throw error;
   }

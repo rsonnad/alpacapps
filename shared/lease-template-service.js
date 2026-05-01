@@ -100,6 +100,8 @@ function getAvailablePlaceholders(type = 'lease') {
  * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
  */
 async function getActiveTemplate(type = 'lease') {
+  // .maybeSingle() returns null on no-rows without surfacing a 406 in the network
+  // panel (which .single() does even when we silently swallow PGRST116 below).
   const { data, error } = await supabase
     .from('lease_templates')
     .select('*')
@@ -107,9 +109,9 @@ async function getActiveTemplate(type = 'lease') {
     .eq('type', type)
     .order('version', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+  if (error) {
     console.error('Error fetching active template:', error);
     throw error;
   }

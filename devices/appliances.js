@@ -1129,13 +1129,25 @@ async function renderGlowforgeSettings() {
   const container = document.getElementById('glowforgeSettingsContent');
   if (!container) return;
 
-  const { data: config } = await supabase
-    .from('glowforge_config')
-    .select('*')
-    .eq('id', 1)
-    .single();
-
-  const c = config || {};
+  // glowforge_config table may not exist in this DB (CHANGELOG #43 added the
+  // feature but the migration never landed in prod). Use .maybeSingle() so the
+  // PostgREST 404/406 doesn't bubble to the user, and treat any error as "no
+  // config yet" so the settings panel still renders the test button.
+  let c = {};
+  try {
+    const { data: config, error } = await supabase
+      .from('glowforge_config')
+      .select('*')
+      .eq('id', 1)
+      .maybeSingle();
+    if (error) {
+      console.warn('Glowforge config unavailable:', error.message);
+    } else if (config) {
+      c = config;
+    }
+  } catch (err) {
+    console.warn('Glowforge config unavailable:', err?.message || err);
+  }
   container.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:600px;">
       <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">

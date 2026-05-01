@@ -124,7 +124,10 @@ async function loadSpaces() {
   try {
     const { data } = await supabase
       .from('spaces')
-      .select('id, name, type, monthly_rate, beds, baths, is_archived, parent:parent_id(name)')
+      // spaces table has no plain `beds` / `baths` columns. It has split bed counts
+      // (beds_king/queen/double/twin/folding) and bath_privacy/bath_fixture. Sum the
+      // bed columns to a single total; show bath_privacy as the bath summary.
+      .select('id, name, type, monthly_rate, beds_king, beds_queen, beds_double, beds_twin, beds_folding, bath_privacy, bath_fixture, is_archived, parent:parent_id(name)')
       .eq('is_archived', false)
       .order('name');
 
@@ -134,14 +137,20 @@ async function loadSpaces() {
     setCount('spacesCount', data.length);
     setStat('statSpaces', data.length);
 
-    body.innerHTML = data.map(s => `<tr>
+    body.innerHTML = data.map(s => {
+      const bedTotal = (s.beds_king || 0) + (s.beds_queen || 0) + (s.beds_double || 0)
+                     + (s.beds_twin || 0) + (s.beds_folding || 0);
+      const bedCell = bedTotal > 0 ? bedTotal : '--';
+      const bathCell = s.bath_privacy || s.bath_fixture || '--';
+      return `<tr>
       <td style="font-weight:500;">${esc(s.name)}</td>
       <td>${typeBadge(s.type)}</td>
       <td>${s.monthly_rate ? `$${Number(s.monthly_rate).toLocaleString()}` : '--'}</td>
-      <td>${s.beds ?? '--'}</td>
-      <td>${s.baths ?? '--'}</td>
+      <td>${bedCell}</td>
+      <td>${esc(String(bathCell))}</td>
       <td style="color:var(--text-muted);font-size:0.75rem;">${s.parent?.name ? esc(s.parent.name) : '--'}</td>
-    </tr>`).join('');
+    </tr>`;
+    }).join('');
   } catch (err) {
     console.error('Spaces load error:', err);
   }

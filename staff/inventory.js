@@ -373,8 +373,8 @@ const DB_TABLE_GROUPS = [
   { name: 'Audio & Media', icon: '🎵', color: '#db2777', desc: 'Sonos zones, Spotify, schedules', tables: ['sonos_config', 'sonos_schedules', 'sonos_zones', 'spotify_config'] },
   { name: 'Property Config', icon: '⚙️', color: '#6b7280', desc: 'Brand, weather, storage config', tables: ['brand_config', 'config', 'weather_config', 'r2_config'] },
   { name: 'AI & Automation', icon: '🤖', color: '#f59e0b', desc: 'Prompts, image gen, PAI', tables: ['prompts', 'image_gen_jobs', 'faq_entries', 'pai_config', 'life_of_pai_backstory', 'pai_email_classifications'] },
-  { name: 'Events', icon: '📅', color: '#0891b2', desc: 'Events, applications, agreements', tables: ['events', 'event_applications', 'event_templates', 'event_agreements'] },
-  { name: 'Documents & Legal', icon: '📄', color: '#64748b', desc: 'Lease & work-trade templates', tables: ['lease_templates', 'worktrade_templates'] },
+  { name: 'Events', icon: '📅', color: '#0891b2', desc: 'Event hosting requests, payments, RSVPs, agreements', tables: ['event_hosting_requests', 'event_payments', 'event_request_spaces', 'event_rsvps', 'event_agreement_templates'] },
+  { name: 'Documents & Legal', icon: '📄', color: '#64748b', desc: 'Lease & work-trade templates', tables: ['lease_templates', 'worktrade_agreement_templates'] },
   { name: 'Admin & Audit', icon: '🛡️', color: '#dc2626', desc: 'Bug reports, features, audit trail', tables: ['bug_reports', 'feature_requests', 'work_entries', 'password_vault', 'audit_log'] },
 ];
 
@@ -682,7 +682,7 @@ function switchSubtab(tab) {
 async function loadDashboard() {
   // Fetch live Supabase table count
   try {
-    const tables = ['spaces', 'people', 'assignments', 'payments', 'media', 'events', 'sms_messages', 'bug_reports'];
+    const tables = ['spaces', 'people', 'assignments', 'payments', 'media', 'event_hosting_requests', 'sms_messages', 'bug_reports'];
     const results = await Promise.all(
       tables.map(t => supabase.from(t).select('*', { count: 'exact', head: true }).then(r => ({ table: t, count: r.count ?? '?' })).catch(() => ({ table: t, count: '?' })))
     );

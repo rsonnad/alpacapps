@@ -43,14 +43,16 @@ async function loadProfile() {
       .single(),
     supabase
       .from('vehicles')
-      .select('id, name, vehicle_make, vehicle_model, year, color, color_hex, vin, image_url, license_plate, vehicle_length_ft, account_id, drivers:vehicle_drivers(id, app_user:app_user_id(id, display_name, email))')
+      .select('id, name, vehicle_make, vehicle_model, year, color, color_hex, vin, image_url, license_plate, vehicle_length_ft, account_id, drivers:vehicle_drivers(id, person:person_id(id, first_name, last_name, email))')
       .eq('owner_id', currentUser.id)
       .eq('is_active', true)
       .order('display_order'),
     supabase
       .from('vehicle_drivers')
       .select('vehicle_id, vehicles:vehicle_id(id, name, vehicle_make, vehicle_model, year, color, color_hex, vin, image_url, license_plate, vehicle_length_ft, account_id)')
-      .eq('app_user_id', currentUser.id),
+      // vehicle_drivers FKs to people(id), and people.id == app_users.id, so the
+      // current user's id (an app_user id) is also a valid people id.
+      .eq('person_id', currentUser.id),
   ]);
 
   if (profileRes.error) {
@@ -994,13 +996,16 @@ function renderVehicles() {
     // Driver list (only for owned Tesla vehicles)
     let driversHtml = '';
     if (isOwner && isTesla && hasTeslaAccount) {
-      const drivers = (v.drivers || []).map(d => d.app_user).filter(Boolean);
-      const driverChips = drivers.map(d => `
+      const drivers = (v.drivers || []).map(d => d.person).filter(Boolean);
+      const driverChips = drivers.map(d => {
+        const fullName = [d.first_name, d.last_name].filter(Boolean).join(' ');
+        return `
         <span class="vehicle-driver-chip">
-          ${escapeAttr(d.display_name || d.email)}
+          ${escapeAttr(fullName || d.email)}
           <button class="vehicle-driver-remove" data-vehicle-id="${v.id}" data-driver-user-id="${d.id}" title="Remove driver">&times;</button>
         </span>
-      `).join('');
+        `;
+      }).join('');
       driversHtml = `
         <div class="vehicle-driver-section">
           <span class="profile-vehicle-detail-label">Drivers</span>
@@ -1270,14 +1275,14 @@ async function reloadVehicles() {
   const [ownedRes, driverRes] = await Promise.all([
     supabase
       .from('vehicles')
-      .select('id, name, vehicle_make, vehicle_model, year, color, color_hex, vin, image_url, license_plate, vehicle_length_ft, account_id, drivers:vehicle_drivers(id, app_user:app_user_id(id, display_name, email))')
+      .select('id, name, vehicle_make, vehicle_model, year, color, color_hex, vin, image_url, license_plate, vehicle_length_ft, account_id, drivers:vehicle_drivers(id, person:person_id(id, first_name, last_name, email))')
       .eq('owner_id', currentUser.id)
       .eq('is_active', true)
       .order('display_order'),
     supabase
       .from('vehicle_drivers')
       .select('vehicle_id, vehicles:vehicle_id(id, name, vehicle_make, vehicle_model, year, color, color_hex, vin, image_url, license_plate, vehicle_length_ft, account_id)')
-      .eq('app_user_id', currentUser.id),
+      .eq('person_id', currentUser.id),
   ]);
 
   ownedVehicles = (ownedRes.data || []).map(v => ({ ...v, relationship: 'Owner' }));
@@ -1418,7 +1423,7 @@ async function showAddDriverDropdown(vehicleId) {
 
   const residents = await loadResidentsList();
   const vehicle = userVehicles.find(v => v.id === vehicleId);
-  const existingDriverIds = new Set((vehicle?.drivers || []).map(d => d.app_user?.id).filter(Boolean));
+  const existingDriverIds = new Set((vehicle?.drivers || []).map(d => d.person?.id).filter(Boolean));
 
   const available = residents.filter(r => !existingDriverIds.has(r.id));
 
@@ -1455,7 +1460,7 @@ async function addDriver(vehicleId, userId) {
   try {
     const { error } = await supabase
       .from('vehicle_drivers')
-      .insert({ vehicle_id: vehicleId, app_user_id: userId });
+      .insert({ vehicle_id: vehicleId, person_id: userId });
     if (error) throw error;
     showToast('Driver added', 'success');
     driverSearchCache = null;
@@ -1471,7 +1476,7 @@ async function removeDriver(vehicleId, userId) {
       .from('vehicle_drivers')
       .delete()
       .eq('vehicle_id', vehicleId)
-      .eq('app_user_id', userId);
+      .eq('person_id', userId);
     if (error) throw error;
     showToast('Driver removed', 'success');
     driverSearchCache = null;

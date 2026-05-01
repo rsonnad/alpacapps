@@ -26,7 +26,7 @@ const RESERVATION_STATUS = {
 async function getReservations({ status, spaceId, upcoming } = {}) {
   let query = supabase
     .from('space_reservations')
-    .select('*, person:people(id, first_name, last_name, email, phone), space:spaces(id, name, thumbnail_url)')
+    .select('*, person:people(id, first_name, last_name, email, phone), space:spaces(id, name)')
     .order('start_at', { ascending: true });
 
   if (status) query = query.eq('status', status);
@@ -44,7 +44,7 @@ async function getReservations({ status, spaceId, upcoming } = {}) {
 async function getReservation(id) {
   const { data, error } = await supabase
     .from('space_reservations')
-    .select('*, person:people(id, first_name, last_name, email, phone), space:spaces(id, name, thumbnail_url)')
+    .select('*, person:people(id, first_name, last_name, email, phone), space:spaces(id, name)')
     .eq('id', id)
     .single();
   if (error) throw error;
@@ -87,7 +87,7 @@ async function findPersonByEmail(email) {
 async function getBookableSpaces() {
   const { data, error } = await supabase
     .from('spaces')
-    .select('id, name, thumbnail_url, can_be_event')
+    .select('id, name, can_be_event')
     .eq('is_archived', false)
     .or('can_be_event.eq.true')
     .order('name');
