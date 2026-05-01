@@ -1,12 +1,12 @@
 {
-  "version": "v260430.05 10:36p",
-  "release": 1423,
-  "sha": "9ad86951f",
-  "fullSha": "9ad86951fa512d09f47061bcf7e7a0ec57a056f1",
+  "version": "v260501.01 3:54p",
+  "release": 1424,
+  "sha": "8f6df649a",
+  "fullSha": "8f6df649a63e3088e751b7ccd1773e12f06eecf4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T03:36:09+00:00",
-  "commits": [{"sha":"9ad86951f","message":"fix(accounting): use explicit FK name for ledger.person_id embed","author":"Paca"}]
+  "pushedAt": "2026-05-01T20:54:03+00:00",
+  "commits": [{"sha":"8f6df649a","message":"payouts: BCC admin + show expected deposit date in payout email","author":"Rahul"}]
 }
