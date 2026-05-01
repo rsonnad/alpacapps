@@ -1,12 +1,12 @@
 {
-  "version": "v260501.01 3:54p",
-  "release": 1424,
-  "sha": "8f6df649a",
-  "fullSha": "8f6df649a63e3088e751b7ccd1773e12f06eecf4",
-  "actor": "rsonnad",
+  "version": "v260501.02 3:56p",
+  "release": 1425,
+  "sha": "dead46b8f",
+  "fullSha": "dead46b8fb0e6a273caa8824c922ed93339c6c1c",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T20:54:03+00:00",
-  "commits": [{"sha":"8f6df649a","message":"payouts: BCC admin + show expected deposit date in payout email","author":"Rahul"}]
+  "pushedAt": "2026-05-01T20:56:14+00:00",
+  "commits": [{"sha":"dead46b8f","message":"feat(rentals/apply): add gender field + make demographic/property fields mandatory","author":"Sonia Wendorff"}]
 }
