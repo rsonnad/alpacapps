@@ -1,12 +1,12 @@
 {
-  "version": "v260430.04 10:28p",
-  "release": 1422,
-  "sha": "d4b6ecb89",
-  "fullSha": "d4b6ecb892d03a4ae933572cb13cd7233b717d12",
+  "version": "v260430.05 10:36p",
+  "release": 1423,
+  "sha": "9ad86951f",
+  "fullSha": "9ad86951fa512d09f47061bcf7e7a0ec57a056f1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T03:28:44+00:00",
-  "commits": [{"sha":"d4b6ecb89","message":"fix(backend): correct stale column names in accounting + identity-verifications","author":"Paca"}]
+  "pushedAt": "2026-05-01T03:36:09+00:00",
+  "commits": [{"sha":"9ad86951f","message":"fix(accounting): use explicit FK name for ledger.person_id embed","author":"Paca"}]
 }
