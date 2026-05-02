@@ -233,15 +233,26 @@ Individual: `light.smart_rgbtw_bulb_11` (Left), `light.smart_rgbtw_bulb_10` (Rig
 
 Individual: `light.skyloft_bar_light_1` (Left), `light.skyloft_bar_light_2` (Middle), `light.skyloft_bar_light_3` (Right)
 
-| Pos | Device ID | Local Key | MAC | LAN IP |
+| Pos | Device ID | Local Key | MAC | LAN IP (current) |
 |-----|-----------|-----------|-----|--------|
-| L | `ebf88bedf1475f7186vj9p` | `WgoX04Glqf43cW^2` | `18:de:50:5f:66:90` | .162 |
-| M | `eb7c2e2652329ff6cfuzvd` | `SP!'9GC5[aYY3)~t` | `18:de:50:5f:67:4c` | .211 |
-| R | `eb0a46324e9dd058fcc0ez` | `.dz~?/yR6R2W85j8` | `38:a5:c9:7c:3c:de` | .22 |
+| L | `ebf88bedf1475f7186vj9p` | `WgoX04Glqf43cW^2` | `18:de:50:5f:66:90` | .179 |
+| M | `eb7c2e2652329ff6cfuzvd` | `SP!'9GC5[aYY3)~t` | `18:de:50:5f:67:4c` | .223 |
+| R | `eb0a46324e9dd058fcc0ez` | `.dz~?/yR6R2W85j8` | `38:a5:c9:7c:3c:de` | .42 |
 
-Brand: Lightinginside LED-GU10-SM. Protocol: Tuya WiFi v3.3 (SmartLife app).
+Brand: Lightinginside LED-GU10-SM. **Protocol: Tuya WiFi v3.5** (was v3.3 — bulbs received firmware update; verified via `tinytuya` 2026-04-30).
 
-> **Status (2026-03-28):** LocalTuya port 6668 closed even when lights are on — currently unavailable in HAOS. Controllable via SmartLife app / Tuya Cloud API.
+> **Status (2026-04-30):** Bulbs are alive on LAN (port 6668 open, respond to direct `tinytuya` v3.5 calls), but **HAOS LocalTuya v5.2.3 (rospogrigio/postlund) does not support protocol v3.5** — entities show `unavailable` and log "Disconnected - waiting for discovery broadcast". Two paths to restore HAOS control:
+> 1. **Switch to xZetsubou's LocalTuya fork** via HACS (supports v3.3/v3.4/v3.5 LAN). All 10 LocalTuya devices need re-import.
+> 2. **Add Tuya Cloud integration** in HAOS Settings → Devices → + → Tuya. Uses `c9rxjqkkc3wevmpm394c` IoT credentials. Cloud-only but doesn't touch other LocalTuya devices.
+>
+> IPs above were updated in `/config/.storage/core.config_entries` on 2026-04-30 — these will work as soon as integration supports v3.5. Set DHCP reservations on UDM Pro for the 3 MACs to prevent future drift.
+>
+> **Direct `tinytuya` control works now:**
+> ```python
+> import tinytuya
+> d = tinytuya.OutletDevice("ebf88bedf1475f7186vj9p","192.168.1.179","WgoX04Glqf43cW^2")
+> d.set_version(3.5); d.set_status(True, 20)  # turn on
+> ```
 
 ---
 
@@ -910,7 +921,8 @@ Add the new room/device to the relevant sections above:
 
 ## Planned / Future
 
-- Fix Skyloft Bar GU10 LocalTuya connection — port 6668 stays closed. May need Tuya Cloud integration instead of LocalTuya
+- ~~Fix Skyloft Bar GU10 LocalTuya connection — port 6668 stays closed~~ Re-diagnosed 2026-04-30: port 6668 is now OPEN, IPs drifted (now .179/.223/.42), and bulbs upgraded to **protocol v3.5** which LocalTuya v5.2.3 (rospogrigio fork) does not support. Pick one: switch to xZetsubou LocalTuya fork via HACS, OR add Tuya Cloud integration in HAOS UI.
+- Set DHCP reservations on UDM Pro for Skyloft Bar GU10 MACs (`18:de:50:5f:66:90`, `18:de:50:5f:67:4c`, `38:a5:c9:7c:3c:de`) so IPs stop drifting.
 - Add `tuya_cloud` backend to `home-assistant-control` edge function
 - HACS Govee LAN integration — local control without cloud (fallback for API outages)
 - Set up Alexa rooms for all areas (Kitchen, Living Room, Master Bathroom, Stairs, Skyloft, Garage Mahal)
