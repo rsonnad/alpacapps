@@ -1,12 +1,12 @@
 {
-  "version": "v260501.05 5:07p",
-  "release": 1428,
-  "sha": "568ac2211",
-  "fullSha": "568ac2211685b666ba785a694e0e1934fb10dafc",
-  "actor": "wensonia",
+  "version": "v260502.01 1:51a",
+  "release": 1429,
+  "sha": "42239a564",
+  "fullSha": "42239a564350e4137f46da987c20874db30b7767",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-01T22:07:56+00:00",
-  "commits": [{"sha":"568ac2211","message":"feat(staff/rentals): wire up assigned-staff dropdown (HTML + JS)","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-05-02T06:51:46+00:00",
+  "commits": [{"sha":"42239a564","message":"docs(lighting): update Skyloft Bar status — protocol v3.5, new IPs, LocalTuya v5.2.3 limitation","author":"Paca"}]
 }
