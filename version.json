@@ -1,12 +1,12 @@
 {
-  "version": "v260502.02 12:37p",
-  "release": 1430,
-  "sha": "6b99eaae1",
-  "fullSha": "6b99eaae193a7e40965f809148b95eb5df3a63a5",
-  "actor": "wensonia",
+  "version": "v260502.03 6:10p",
+  "release": 1431,
+  "sha": "63269a51c",
+  "fullSha": "63269a51c7374243b5dbc49a2395fd180caf91fd",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-02T17:37:12+00:00",
-  "commits": [{"sha":"6b99eaae1","message":"chore(rentals/apply): remove dead staff_assigned dropdowns","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-05-02T23:10:57+00:00",
+  "commits": [{"sha":"63269a51c","message":"feat(payouts): add pay-pending-associates auto-cron edge function","author":"Rahul"}]
 }
