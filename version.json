@@ -1,12 +1,12 @@
 {
-  "version": "v260502.01 1:51a",
-  "release": 1429,
-  "sha": "42239a564",
-  "fullSha": "42239a564350e4137f46da987c20874db30b7767",
-  "actor": "rsonnad",
+  "version": "v260502.02 12:37p",
+  "release": 1430,
+  "sha": "6b99eaae1",
+  "fullSha": "6b99eaae193a7e40965f809148b95eb5df3a63a5",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-02T06:51:46+00:00",
-  "commits": [{"sha":"42239a564","message":"docs(lighting): update Skyloft Bar status — protocol v3.5, new IPs, LocalTuya v5.2.3 limitation","author":"Paca"}]
+  "pushedAt": "2026-05-02T17:37:12+00:00",
+  "commits": [{"sha":"6b99eaae1","message":"chore(rentals/apply): remove dead staff_assigned dropdowns","author":"Sonia Wendorff"}]
 }
