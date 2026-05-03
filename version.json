@@ -1,12 +1,12 @@
 {
-  "version": "v260503.02 9:53a",
-  "release": 1433,
-  "sha": "7875d7f9a",
-  "fullSha": "7875d7f9a9d7eb408c5aa5bf701f89bb5def4426",
+  "version": "v260503.03 10:01a",
+  "release": 1434,
+  "sha": "d655b4618",
+  "fullSha": "d655b461862e9b5f051e640bd6373410f7296e18",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-03T14:53:27+00:00",
-  "commits": [{"sha":"7875d7f9a","message":"fix(rahulio/showpolish): remove hardcoded POLISH label","author":"Rahul"}]
+  "pushedAt": "2026-05-03T15:01:15+00:00",
+  "commits": [{"sha":"d655b4618","message":"feat(showpolish): live realtime updates via /functions/v1/showpolish","author":"Rahul"}]
 }
