@@ -1,12 +1,12 @@
 {
-  "version": "v260503.01 9:42a",
-  "release": 1432,
-  "sha": "9dd9f763b",
-  "fullSha": "9dd9f763be3ceed6e0825d84406cdbaded263f9d",
+  "version": "v260503.02 9:53a",
+  "release": 1433,
+  "sha": "7875d7f9a",
+  "fullSha": "7875d7f9a9d7eb408c5aa5bf701f89bb5def4426",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-03T14:42:30+00:00",
-  "commits": [{"sha":"9dd9f763b","message":"feat(rahulio): add showpolish page that displays URL query string","author":"Rahul"}]
+  "pushedAt": "2026-05-03T14:53:27+00:00",
+  "commits": [{"sha":"7875d7f9a","message":"fix(rahulio/showpolish): remove hardcoded POLISH label","author":"Rahul"}]
 }
