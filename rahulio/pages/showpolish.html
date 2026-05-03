@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Show Polish</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --fg: #f5f5f5;
+      --accent: #d4a843;
+      --muted: #8b8f99;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    }
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    .label {
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .value {
+      font-size: clamp(1.5rem, 5vw, 3rem);
+      font-weight: 600;
+      line-height: 1.3;
+      max-width: 90ch;
+      word-break: break-word;
+      color: var(--accent);
+    }
+    .empty {
+      color: var(--muted);
+      font-size: 1rem;
+      font-weight: 400;
+      max-width: 50ch;
+    }
+    code {
+      background: rgba(255,255,255,0.08);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="label">Polish</div>
+    <div id="value" class="value"></div>
+  </div>
+  <script>
+    (function () {
+      const el = document.getElementById('value');
+      const search = window.location.search;
+      let text = '';
+
+      if (search && search.length > 1) {
+        const raw = search.slice(1);
+        try {
+          text = decodeURIComponent(raw.replace(/\+/g, ' '));
+        } catch (e) {
+          text = raw;
+        }
+      }
+
+      if (text) {
+        el.textContent = text;
+        document.title = text + ' — Show Polish';
+      } else {
+        el.className = 'value empty';
+        el.innerHTML = 'Add anything after <code>?</code> in the URL and it will appear here.';
+      }
+    })();
+  </script>
+</body>
+</html>
