@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-05-02T23:12:00.358Z",
+  "generatedAt": "2026-05-03T14:43:24.600Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "showpolish.html",
+      "title": "Show Polish",
+      "section": null,
+      "modifiedAt": "2026-05-03T14:42:30.000Z"
+    },
     {
       "path": "devicetesting/index.html",
       "title": "Device Testing — Alpaca Playhouse",
