@@ -1,12 +1,12 @@
 {
-  "version": "v260505.04 2:12p",
-  "release": 1438,
-  "sha": "4b8b66e6f",
-  "fullSha": "4b8b66e6fa3ec8fb0481851cd2fdcd031e5cf6ad",
+  "version": "v260505.05 3:26p",
+  "release": 1439,
+  "sha": "61f1c58d7",
+  "fullSha": "61f1c58d7e2d135eff15e4ffa933d0e499d29f3d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-05T19:12:14+00:00",
-  "commits": [{"sha":"4b8b66e6f","message":"fix(seo): add canonical tag to visiting-1 page","author":"Rahul"}]
+  "pushedAt": "2026-05-05T20:26:42+00:00",
+  "commits": [{"sha":"61f1c58d7","message":"chore: add MIT LICENSE and align package.json","author":"Rahul"}]
 }
