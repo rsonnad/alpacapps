@@ -1,12 +1,12 @@
 {
-  "version": "v260505.03 1:38p",
-  "release": 1437,
-  "sha": "75740d2cb",
-  "fullSha": "75740d2cb8045065385f1442078cbd0e7eb53fcb",
+  "version": "v260505.04 2:12p",
+  "release": 1438,
+  "sha": "4b8b66e6f",
+  "fullSha": "4b8b66e6fa3ec8fb0481851cd2fdcd031e5cf6ad",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-05T18:38:37+00:00",
-  "commits": [{"sha":"75740d2cb","message":"revert(docs): move LIVE-SUBTITLES.md back to /docs/plans/, drop ref/ folder","author":"Rahul"}]
+  "pushedAt": "2026-05-05T19:12:14+00:00",
+  "commits": [{"sha":"4b8b66e6f","message":"fix(seo): add canonical tag to visiting-1 page","author":"Rahul"}]
 }
