@@ -3655,6 +3655,45 @@ async function autoRecordPayPalDeposit(
 // COINBASE PAYMENT HANDLER
 // =============================================
 
+// TEMPORARY: Confirmation email when USDC→Ai Kordek rule fires
+async function sendUsdcKordekConfirmation(
+  resendApiKey: string,
+  coinbase: CoinbasePayment,
+  category: string
+): Promise<void> {
+  try {
+    await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
+        to: ["rahulioson@gmail.com"],
+        subject: `USDC Payment Auto-Attributed to Ai Kordek: $${coinbase.amount.toFixed(2)}`,
+        html: `
+          <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+            <h2 style="color:#0052ff;">USDC &#x2192; Ai Kordek (Temporary Rule)</h2>
+            <p>A Coinbase USDC payment from an external address was automatically attributed to <strong>Ai Kordek</strong> based on the temporary USDC assumption rule.</p>
+            <table style="border-collapse:collapse;width:100%;">
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${coinbase.amount.toFixed(2)}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Currency</td><td style="padding:8px;border-bottom:1px solid #eee;">${coinbase.currency}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${category}</td></tr>
+              ${coinbase.transactionId ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Transaction ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${coinbase.transactionId}</td></tr>` : ""}
+            </table>
+            <p style="margin-top:16px;color:#666;font-size:0.85rem;">If this is incorrect, record the correct attribution in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a>. This rule assumes all inbound USDC = Ai Kordek.</p>
+          </div>
+        `,
+      }),
+    });
+    console.log("USDC→Kordek confirmation email sent to rahulioson@gmail.com");
+  } catch (err) {
+    console.error("Failed to send USDC→Kordek confirmation:", err);
+  }
+}
+
 /**
  * Handle a parsed Coinbase payment: match to tenant, record in ledger.
  * Follows the same pattern as handleParsedPayPalPayment.
@@ -3680,6 +3719,14 @@ async function handleParsedCoinbasePayment(
   }
 
   const currencyNote = coinbase.currency !== "USD" ? ` (original: ${coinbase.currency})` : "";
+
+  // TEMPORARY RULE: USDC from "External Address" → assume Ai Kordek (Skyloft tenant)
+  let usdcKordekOverride = false;
+  if (coinbase.currency === "USDC" && /^external\s*address$/i.test(coinbase.senderName)) {
+    console.log("USDC from External Address → applying temporary Ai Kordek rule");
+    coinbase.senderName = "Ai Kordek";
+    usdcKordekOverride = true;
+  }
 
   // Try to match sender to a person
   const nameMatch = await matchByName(supabase, coinbase.senderName);
@@ -3737,6 +3784,7 @@ async function handleParsedCoinbasePayment(
         applicationId: application.id,
         category: "deposit",
       });
+      if (usdcKordekOverride) await sendUsdcKordekConfirmation(resendApiKey, coinbase, "deposit");
       return;
     }
 
@@ -3776,6 +3824,7 @@ async function handleParsedCoinbasePayment(
       applicationId: "",
       category,
     });
+    if (usdcKordekOverride) await sendUsdcKordekConfirmation(resendApiKey, coinbase, category);
     return;
   }
 
