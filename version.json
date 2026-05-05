@@ -1,12 +1,12 @@
 {
-  "version": "v260505.02 1:32p",
-  "release": 1436,
-  "sha": "b3c8c2c1c",
-  "fullSha": "b3c8c2c1cacc139c3e9e8dbbc1f9401d90296c36",
+  "version": "v260505.03 1:38p",
+  "release": 1437,
+  "sha": "75740d2cb",
+  "fullSha": "75740d2cb8045065385f1442078cbd0e7eb53fcb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-05T18:32:46+00:00",
-  "commits": [{"sha":"b3c8c2c1c","message":"feat(docs): add /docs index with subdirectory tabs; move LIVE-SUBTITLES.md to /docs/ref/","author":"Rahul"}]
+  "pushedAt": "2026-05-05T18:38:37+00:00",
+  "commits": [{"sha":"75740d2cb","message":"revert(docs): move LIVE-SUBTITLES.md back to /docs/plans/, drop ref/ folder","author":"Rahul"}]
 }
