@@ -1,12 +1,12 @@
 {
-  "version": "v260503.03 10:01a",
-  "release": 1434,
-  "sha": "d655b4618",
-  "fullSha": "d655b461862e9b5f051e640bd6373410f7296e18",
+  "version": "v260505.01 1:00p",
+  "release": 1435,
+  "sha": "0979a56bb",
+  "fullSha": "0979a56bb94edcce499f86808797f036e119f0cf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-03T15:01:15+00:00",
-  "commits": [{"sha":"d655b4618","message":"feat(showpolish): live realtime updates via /functions/v1/showpolish","author":"Rahul"}]
+  "pushedAt": "2026-05-05T18:00:44+00:00",
+  "commits": [{"sha":"0979a56bb","message":"feat(payments): temporary USDC→Ai Kordek rule + coinbase payment method fix","author":"Rahul"}]
 }
