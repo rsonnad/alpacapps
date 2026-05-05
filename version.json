@@ -1,12 +1,12 @@
 {
-  "version": "v260505.01 1:00p",
-  "release": 1435,
-  "sha": "0979a56bb",
-  "fullSha": "0979a56bb94edcce499f86808797f036e119f0cf",
+  "version": "v260505.02 1:32p",
+  "release": 1436,
+  "sha": "b3c8c2c1c",
+  "fullSha": "b3c8c2c1cacc139c3e9e8dbbc1f9401d90296c36",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-05T18:00:44+00:00",
-  "commits": [{"sha":"0979a56bb","message":"feat(payments): temporary USDC→Ai Kordek rule + coinbase payment method fix","author":"Rahul"}]
+  "pushedAt": "2026-05-05T18:32:46+00:00",
+  "commits": [{"sha":"b3c8c2c1c","message":"feat(docs): add /docs index with subdirectory tabs; move LIVE-SUBTITLES.md to /docs/ref/","author":"Rahul"}]
 }
