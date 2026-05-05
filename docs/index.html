@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docs &mdash; AlpacApps</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-warm: #faf8f5;
+      --bg-subtle: #f5f4f2;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-strong: #a87f4f;
+      --border: #e5e5e5;
+      --code-bg: #faf8f5;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-warm);
+      line-height: 1.6;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .hero {
+      background: var(--text);
+      color: #fff;
+      padding: 2rem 2rem 1.5rem;
+    }
+    .hero-inner { max-width: 1000px; margin: 0 auto; }
+    .hero h1 { font-size: 1.9rem; font-weight: 400; line-height: 1.2; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 0.95rem; color: #b0b0b0; margin-top: 0.4rem; }
+
+    /* Tabs — modeled on rentals/admin/manage-shared.css .manage-tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 0.6rem 1rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--accent-strong);
+      border-bottom-color: var(--accent-strong);
+    }
+    .tab .count {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-left: 0.35rem;
+      font-weight: 400;
+    }
+    .tab.active .count { color: var(--accent-strong); }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 4rem;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .panel-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .doc-list {
+      list-style: none;
+      display: grid;
+      gap: 0.5rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 700px) {
+      .doc-list { grid-template-columns: 1fr 1fr; }
+    }
+
+    .doc-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      box-shadow: var(--shadow);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .doc-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 2px 10px rgba(201, 168, 124, 0.18);
+      transform: translateY(-1px);
+    }
+    .doc-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .doc-file {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .empty {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem 0;
+      text-align: center;
+    }
+
+    .crumb {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .crumb a { color: var(--accent-strong); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="crumb"><a href="/">&larr; alpacaplayhouse.com</a></div>
+      <h1><span>Alpac</span>Apps Docs</h1>
+      <p id="heroSub">Reference, plans, and guides — organized by section.</p>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabNav" role="tablist"></nav>
+
+  <main class="container" id="panels"></main>
+
+  <script>
+    // Manifest of docs grouped by subdirectory.
+    // Subdirectories surface as tabs at the top, like devcontrol/manage-tabs.
+    // To add a new doc: drop it into the right folder and add it here.
+    const SECTIONS = [
+      {
+        id: 'overview',
+        label: 'Overview',
+        desc: 'Top-level docs and entry points.',
+        files: [
+          { file: 'getting-started.html', title: 'Getting Started' },
+          { file: 'alpacappsinfra.html', title: 'AlpacApps Infrastructure' },
+          { file: 'sauna-hifi.html', title: 'Sauna Hi-Fi' },
+          { file: 'FORK-SAFETY.md', title: 'Fork Safety' },
+          { file: 'INFRASHARE.md', title: 'Infra Share' },
+          { file: 'SCHEDULED-TASKS-MIGRATION.md', title: 'Scheduled Tasks Migration' },
+        ],
+      },
+      {
+        id: 'ref',
+        label: 'Reference',
+        desc: 'Stable reference docs for built-in systems.',
+        files: [
+          { file: 'ref/LIVE-SUBTITLES.md', title: 'Live Subtitles & ShowPolish — Architecture' },
+        ],
+      },
+      {
+        id: 'guides',
+        label: 'Guides',
+        desc: 'How-to guides and walkthroughs.',
+        files: [
+          { file: 'guides/code-review-pro1.md', title: 'Code Review Pro 1' },
+          { file: 'guides/code-review-prompt.md', title: 'Code Review Prompt' },
+          { file: 'guides/light-control-performance.md', title: 'Light Control Performance' },
+          { file: 'guides/pascal-editor-setup.md', title: 'Pascal Editor Setup' },
+        ],
+      },
+      {
+        id: 'plans',
+        label: 'Plans',
+        desc: 'Active plans and proposals.',
+        files: [
+          { file: 'plans/KIOSK-ANDROID-APP.md', title: 'Kiosk Android App' },
+          { file: 'plans/do-migration.md', title: 'DigitalOcean Migration' },
+        ],
+      },
+      {
+        id: 'claude',
+        label: 'Claude',
+        desc: 'Claude-specific notes — schema, edge functions, cost accounting.',
+        files: [
+          { file: 'claude/api-cost-accounting.md', title: 'API Cost Accounting' },
+          { file: 'claude/changelog.md', title: 'Changelog' },
+          { file: 'claude/database-schema.md', title: 'Database Schema' },
+          { file: 'claude/edge-functions.md', title: 'Edge Functions' },
+          { file: 'claude/external-systems.md', title: 'External Systems' },
+          { file: 'claude/file-map.md', title: 'File Map' },
+        ],
+      },
+    ];
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function renderTabs() {
+      const nav = document.getElementById('tabNav');
+      nav.innerHTML = SECTIONS.map((s) =>
+        `<a href="#${s.id}" class="tab" data-tab="${s.id}" role="tab">
+           ${esc(s.label)}<span class="count">${s.files.length}</span>
+         </a>`
+      ).join('');
+    }
+
+    function renderPanels() {
+      const root = document.getElementById('panels');
+      root.innerHTML = SECTIONS.map((s) => {
+        const items = s.files.length
+          ? `<ul class="doc-list">${s.files.map((f) =>
+              `<li><a class="doc-card" href="${esc(f.file)}">
+                 <span class="doc-title">${esc(f.title)}</span>
+                 <span class="doc-file">${esc(f.file)}</span>
+               </a></li>`
+            ).join('')}</ul>`
+          : `<p class="empty">No docs in this section yet.</p>`;
+        return `<section id="panel-${s.id}" class="panel" role="tabpanel">
+           <p class="panel-desc">${esc(s.desc)}</p>
+           ${items}
+         </section>`;
+      }).join('');
+    }
+
+    function activate(tabId) {
+      const valid = SECTIONS.find((s) => s.id === tabId) ? tabId : SECTIONS[0].id;
+      document.querySelectorAll('.tab').forEach((t) =>
+        t.classList.toggle('active', t.dataset.tab === valid)
+      );
+      document.querySelectorAll('.panel').forEach((p) =>
+        p.classList.toggle('active', p.id === `panel-${valid}`)
+      );
+    }
+
+    function init() {
+      renderTabs();
+      renderPanels();
+      const fromHash = location.hash.replace('#', '');
+      activate(fromHash || SECTIONS[0].id);
+
+      document.getElementById('tabNav').addEventListener('click', (e) => {
+        const link = e.target.closest('.tab');
+        if (!link) return;
+        e.preventDefault();
+        const id = link.dataset.tab;
+        location.hash = id === SECTIONS[0].id ? '' : id;
+        activate(id);
+      });
+
+      window.addEventListener('hashchange', () => {
+        activate(location.hash.replace('#', '') || SECTIONS[0].id);
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
