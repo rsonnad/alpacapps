@@ -5,7 +5,7 @@
 # Wrapper that pulls credentials from Bitwarden and runs unifi-snapshot.py.
 #
 # Usage:
-#   ./scripts/unifi-snapshot.sh "reason" [--source pre-change|post-change|scheduled|manual] [--taken-at ISO8601]
+#   ./scripts/unifi-snapshot.sh "snapshot name" [--notes "..."] [--stable] [--tags sonos,wifi,working]
 #
 # Required: bw CLI authenticated, sshpass, python3, ~/bin/bw-unlock
 #
