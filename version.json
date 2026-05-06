@@ -1,12 +1,12 @@
 {
-  "version": "v260505.06 10:03p",
-  "release": 1440,
-  "sha": "402d88acb",
-  "fullSha": "402d88acb2d6e5f4e50fdb0f59d311a18117be18",
+  "version": "v260506.01 4:37p",
+  "release": 1441,
+  "sha": "3aa9a78e8",
+  "fullSha": "3aa9a78e818fbbb409a90d46f6661077561290b6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-06T03:03:06+00:00",
-  "commits": [{"sha":"402d88acb","message":"fix(seo): add static fallback link list to rahulio/pages","author":"Rahul"}]
+  "pushedAt": "2026-05-06T21:37:43+00:00",
+  "commits": [{"sha":"3aa9a78e8","message":"feat(infra): UniFi config snapshot tool + Supabase history","author":"Rahul"}]
 }
