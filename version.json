@@ -1,12 +1,12 @@
 {
-  "version": "v260506.01 4:37p",
-  "release": 1441,
-  "sha": "3aa9a78e8",
-  "fullSha": "3aa9a78e818fbbb409a90d46f6661077561290b6",
+  "version": "v260506.02 4:45p",
+  "release": 1442,
+  "sha": "b66cd250f",
+  "fullSha": "b66cd250fe9a8cee219083379b221ff8c3449492",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-06T21:37:43+00:00",
-  "commits": [{"sha":"3aa9a78e8","message":"feat(infra): UniFi config snapshot tool + Supabase history","author":"Rahul"}]
+  "pushedAt": "2026-05-06T21:45:59+00:00",
+  "commits": [{"sha":"b66cd250f","message":"fix(infra): unifi-snapshot writes to existing network_config_snapshots","author":"Rahul"}]
 }
