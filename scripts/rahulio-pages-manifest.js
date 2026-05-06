@@ -13,12 +13,72 @@ const { execSync } = require('child_process');
 
 const PAGES_DIR = path.join(__dirname, '..', 'rahulio', 'pages');
 const MANIFEST_PATH = path.join(PAGES_DIR, 'pages-manifest.json');
+const INDEX_PATH = path.join(PAGES_DIR, 'index.html');
+const STATIC_BEGIN = '<!-- BEGIN_STATIC_PAGES_LIST';
+const STATIC_END = '<!-- END_STATIC_PAGES_LIST -->';
 
 const TITLE_RE = /<title[^>]*>([\s\S]*?)<\/title>/i;
 
 function extractTitle(html) {
   const m = html.match(TITLE_RE);
   return m ? m[1].replace(/\s+/g, ' ').trim() : null;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildStaticListHtml(manifest) {
+  const entries = manifest.entries || [];
+  const sectionOrder = [null, ...(manifest.sections || [])];
+  const bySection = {};
+  for (const e of entries) {
+    const key = e.section != null ? e.section : '';
+    if (!bySection[key]) bySection[key] = [];
+    bySection[key].push(e);
+  }
+  const lines = [];
+  for (const section of sectionOrder) {
+    const key = section == null ? '' : section;
+    const list = bySection[key] || [];
+    if (list.length === 0) continue;
+    if (section) lines.push(`            <div class="section-label">${escapeHtml(section)}</div>`);
+    lines.push('            <ul class="pages-list">');
+    for (const e of list) {
+      lines.push(`                <li><a href="${escapeHtml(e.path)}"><div class="page-title">${escapeHtml(e.title)}</div></a></li>`);
+    }
+    lines.push('            </ul>');
+  }
+  return lines.join('\n');
+}
+
+function updateStaticList(manifest) {
+  let html;
+  try {
+    html = fs.readFileSync(INDEX_PATH, 'utf8');
+  } catch (err) {
+    console.warn('Could not read', INDEX_PATH, '— skipping static list update:', err.message);
+    return;
+  }
+  const beginIdx = html.indexOf(STATIC_BEGIN);
+  const endIdx = html.indexOf(STATIC_END);
+  if (beginIdx === -1 || endIdx === -1 || endIdx < beginIdx) {
+    console.warn('Static list markers not found in', INDEX_PATH, '— skipping');
+    return;
+  }
+  const beginLineEnd = html.indexOf('\n', beginIdx);
+  const beginEnd = beginLineEnd === -1 ? beginIdx + STATIC_BEGIN.length : beginLineEnd;
+  const staticHtml = buildStaticListHtml(manifest);
+  const next = html.slice(0, beginEnd + 1) + staticHtml + '\n            ' + html.slice(endIdx);
+  if (next !== html) {
+    fs.writeFileSync(INDEX_PATH, next, 'utf8');
+    console.log('Updated static list in', INDEX_PATH);
+  }
 }
 
 /** Map directory prefixes to section names. */
@@ -127,6 +187,8 @@ function main() {
 
   fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2), 'utf8');
   console.log('Wrote', MANIFEST_PATH, 'with', entries.length, 'entries');
+
+  updateStaticList(manifest);
 }
 
 main();
