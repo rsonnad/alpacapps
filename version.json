@@ -1,12 +1,12 @@
 {
-  "version": "v260506.03 4:59p",
-  "release": 1443,
-  "sha": "a7710f761",
-  "fullSha": "a7710f76120517931e845b735f040e43a19915e2",
+  "version": "v260506.04 5:01p",
+  "release": 1444,
+  "sha": "f14233984",
+  "fullSha": "f142339841781f9647aef2154666405e5dfac627",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-06T21:59:41+00:00",
-  "commits": [{"sha":"a7710f761","message":"feat(infra): nightly UniFi config snapshot cron wrapper for Alpuca","author":"Rahul"}]
+  "pushedAt": "2026-05-06T22:01:51+00:00",
+  "commits": [{"sha":"f14233984","message":"fix(infra): unifi-snapshot-cron uses ~/.unifi-snapshot.env on Alpuca","author":"Rahul"}]
 }
