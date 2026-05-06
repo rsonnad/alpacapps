@@ -59,3 +59,7 @@ scripts/gmail-credentials.json
 # Google OAuth client secrets
 scripts/client_secret_*.json
 .gstack/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
