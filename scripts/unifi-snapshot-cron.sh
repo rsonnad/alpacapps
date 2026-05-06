@@ -33,31 +33,33 @@ else
   log "WARN: git pull failed — proceeding with cached script"
 fi
 
-# Unlock BW via macOS Keychain. Cron inherits the user's keychain access.
-BW_PASSWORD=$(security find-generic-password -a "rahulioson@gmail.com" -s "bitwarden-cli" -w 2>/dev/null || true)
-if [ -z "$BW_PASSWORD" ]; then
-  log "ERROR: keychain item bitwarden-cli/rahulioson@gmail.com not accessible"
-  exit 1
+# Credentials. Two paths, in order:
+#   (1) ~/.unifi-snapshot.env (matches existing Alpuca pattern: ~/.ha_llat, ~/.sb_service_key).
+#       Should define UDM_SSH_PASS, UDM_WEB_PASS, SUPA_TOKEN. chmod 600 required.
+#   (2) Bitwarden via macOS Keychain — works in interactive shells but typically NOT in cron/SSH on macOS,
+#       so this is the fallback when running manually for testing.
+ENV_FILE="$HOME/.unifi-snapshot.env"
+if [ -r "$ENV_FILE" ]; then
+  log "loading credentials from $ENV_FILE"
+  # shellcheck disable=SC1090
+  set -a; . "$ENV_FILE"; set +a
+else
+  log "no $ENV_FILE — falling back to Bitwarden via Keychain (won't work in cron)"
+  BW_PASSWORD=$(security find-generic-password -a "rahulioson@gmail.com" -s "bitwarden-cli" -w 2>/dev/null || true)
+  [ -z "$BW_PASSWORD" ] && { log "ERROR: keychain item bitwarden-cli not accessible and no $ENV_FILE"; exit 1; }
+  export BW_PASSWORD
+  BW_SESSION=$("$BW" unlock --passwordenv BW_PASSWORD --raw 2>/dev/null || true)
+  [ -z "$BW_SESSION" ] && { log "ERROR: bw unlock failed"; exit 1; }
+  export BW_SESSION; unset BW_PASSWORD
+  export UDM_SSH_PASS=$("$BW" get item "UniFi Dream Machine Pro — Network Gateway" --session "$BW_SESSION" 2>/dev/null \
+    | "$PY" -c "import sys,json; item=json.load(sys.stdin); [print(f['value'],end='') for f in item.get('fields',[]) if f['name']=='SSH Password']")
+  export UDM_WEB_PASS=$("$BW" get password "UniFi Dream Machine Pro — Network Gateway" --session "$BW_SESSION" 2>/dev/null)
+  export SUPA_TOKEN=$("$BW" get item "4febf188-93d8-4e74-b052-b428005949fe" --session "$BW_SESSION" 2>/dev/null \
+    | "$PY" -c "import sys,json; item=json.load(sys.stdin); [print(f['value'],end='') for f in item.get('fields',[]) if f['name']=='Access Token']")
 fi
-export BW_PASSWORD
 
-BW_SESSION=$("$BW" unlock --passwordenv BW_PASSWORD --raw 2>/dev/null || true)
-if [ -z "$BW_SESSION" ]; then
-  log "ERROR: bw unlock failed"
-  exit 1
-fi
-export BW_SESSION
-unset BW_PASSWORD
-
-# Credentials
-export UDM_SSH_PASS=$("$BW" get item "UniFi Dream Machine Pro — Network Gateway" --session "$BW_SESSION" 2>/dev/null \
-  | "$PY" -c "import sys,json; item=json.load(sys.stdin); [print(f['value'],end='') for f in item.get('fields',[]) if f['name']=='SSH Password']")
-export UDM_WEB_PASS=$("$BW" get password "UniFi Dream Machine Pro — Network Gateway" --session "$BW_SESSION" 2>/dev/null)
-export SUPA_TOKEN=$("$BW" get item "4febf188-93d8-4e74-b052-b428005949fe" --session "$BW_SESSION" 2>/dev/null \
-  | "$PY" -c "import sys,json; item=json.load(sys.stdin); [print(f['value'],end='') for f in item.get('fields',[]) if f['name']=='Access Token']")
-
-if [ -z "$UDM_SSH_PASS" ] || [ -z "$UDM_WEB_PASS" ] || [ -z "$SUPA_TOKEN" ]; then
-  log "ERROR: missing one of UDM_SSH_PASS / UDM_WEB_PASS / SUPA_TOKEN after BW fetch"
+if [ -z "${UDM_SSH_PASS:-}" ] || [ -z "${UDM_WEB_PASS:-}" ] || [ -z "${SUPA_TOKEN:-}" ]; then
+  log "ERROR: missing UDM_SSH_PASS / UDM_WEB_PASS / SUPA_TOKEN"
   exit 1
 fi
 
