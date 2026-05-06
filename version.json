@@ -1,12 +1,12 @@
 {
-  "version": "v260505.05 3:26p",
-  "release": 1439,
-  "sha": "61f1c58d7",
-  "fullSha": "61f1c58d7e2d135eff15e4ffa933d0e499d29f3d",
+  "version": "v260505.06 10:03p",
+  "release": 1440,
+  "sha": "402d88acb",
+  "fullSha": "402d88acb2d6e5f4e50fdb0f59d311a18117be18",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-05T20:26:42+00:00",
-  "commits": [{"sha":"61f1c58d7","message":"chore: add MIT LICENSE and align package.json","author":"Rahul"}]
+  "pushedAt": "2026-05-06T03:03:06+00:00",
+  "commits": [{"sha":"402d88acb","message":"fix(seo): add static fallback link list to rahulio/pages","author":"Rahul"}]
 }
