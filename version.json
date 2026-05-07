@@ -1,12 +1,12 @@
 {
-  "version": "v260506.05 9:50p",
-  "release": 1445,
-  "sha": "e58a96afb",
-  "fullSha": "e58a96afbb9159a872a3747118d440d1528d4abf",
+  "version": "v260506.06 9:59p",
+  "release": 1446,
+  "sha": "bd309d53d",
+  "fullSha": "bd309d53d026b55e94df6ff15c2759bff35082d7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-07T02:50:50+00:00",
-  "commits": [{"sha":"e58a96afb","message":"docs(sonos): record 2026-05-06 channel-11 + IGMP-drift fix + drift-detection cron","author":"Rahul"}]
+  "pushedAt": "2026-05-07T02:59:27+00:00",
+  "commits": [{"sha":"bd309d53d","message":"docs(devdocs): register SONOSAUTOMATION.md in dev-docs UI","author":"Rahul"}]
 }
