@@ -1,12 +1,12 @@
 {
-  "version": "v260507.04 3:11p",
-  "release": 1451,
-  "sha": "4772d8e50",
-  "fullSha": "4772d8e509dbc66ad32bb7646878af43977b95f1",
+  "version": "v260507.05 3:31p",
+  "release": 1452,
+  "sha": "807982464",
+  "fullSha": "8079824649cb956e434ac510778967b2efc23a72",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-07T20:11:22+00:00",
-  "commits": [{"sha":"4772d8e50","message":"testel: Cloudflare Worker for Tesla telemetry (D1 owner)","author":"Rahul"}]
+  "pushedAt": "2026-05-07T20:31:28+00:00",
+  "commits": [{"sha":"807982464","message":"docs(infra): note Alpuca cron deploy path for unifi-snapshot","author":"Rahul"}]
 }
