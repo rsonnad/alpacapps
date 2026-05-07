@@ -1,12 +1,12 @@
 {
-  "version": "v260507.01 12:26p",
-  "release": 1448,
-  "sha": "028f2ba4e",
-  "fullSha": "028f2ba4e35eb86b7abac78e53c98fe5977fce64",
+  "version": "v260507.02 1:40p",
+  "release": 1449,
+  "sha": "9147eee39",
+  "fullSha": "9147eee399ecf61dd28ea48e45b49485f12fe0df",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-07T17:26:05+00:00",
-  "commits": [{"sha":"028f2ba4e","message":"docs: add Page Linking & SEO reference guide","author":"Rahul"}]
+  "pushedAt": "2026-05-07T18:40:27+00:00",
+  "commits": [{"sha":"9147eee39","message":"tesla-poller: snapshot every poll (10 min) instead of every 30 min","author":"Rahul"}]
 }
