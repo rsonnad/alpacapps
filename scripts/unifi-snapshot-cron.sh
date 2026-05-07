@@ -2,8 +2,15 @@
 #
 # unifi-snapshot-cron.sh — daily UniFi config snapshot, intended for Alpuca cron at 4:00 AM.
 #
+# DEPLOYMENT NOTE (2026-05-07): This file in the repo is the canonical/dev version.
+# The cron-runtime version lives at /Users/alpuca/scripts/unifi-snapshot-cron.sh on Alpuca.
+# Reason: macOS TCC blocks cron from executing scripts in ~/Documents/ unless cron is granted
+# Full Disk Access. Deploying a copy to /Users/alpuca/scripts/ avoids the issue (matches the
+# pattern used by other working cron jobs like backup-finleg-to-rvault.sh). See service-access.md
+# §0 "Cron jobs on Alpuca — script-location TCC gotcha" for the full story and re-deploy command.
+#
 # Crontab line (Alpuca):
-#   0 4 * * * PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin /Users/alpuca/Documents/codingprojects/alpacapps/scripts/unifi-snapshot-cron.sh >> /Users/alpuca/logs/unifi-snapshot.log 2>&1
+#   0 4 * * * PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin /Users/alpuca/scripts/unifi-snapshot-cron.sh >> /Users/alpuca/logs/unifi-snapshot.log 2>&1
 #
 # Behaviour:
 #   1. cd to repo + git pull (so local script always tracks main)
