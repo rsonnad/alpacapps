@@ -1,12 +1,12 @@
 {
-  "version": "v260507.02 1:40p",
-  "release": 1449,
-  "sha": "9147eee39",
-  "fullSha": "9147eee399ecf61dd28ea48e45b49485f12fe0df",
+  "version": "v260507.03 2:00p",
+  "release": 1450,
+  "sha": "f592cddbe",
+  "fullSha": "f592cddbebae97c19075a29b18cef606e9f2bae8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-07T18:40:27+00:00",
-  "commits": [{"sha":"9147eee39","message":"tesla-poller: snapshot every poll (10 min) instead of every 30 min","author":"Rahul"}]
+  "pushedAt": "2026-05-07T19:00:46+00:00",
+  "commits": [{"sha":"f592cddbe","message":"tesla-poller: write snapshots to Cloudflare D1 instead of Supabase","author":"Rahul"}]
 }
