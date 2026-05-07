@@ -1,0 +1,10 @@
+name = "testel"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+account_id = "9cd3a280a54ce2a5b382602f0247b577"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "alpacapps-tesla-telemetry"
+database_id = "ca3e2404-3035-44a5-8cc4-93728c2391c8"
