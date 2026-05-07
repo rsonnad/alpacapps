@@ -550,6 +550,110 @@ Mongo edit alone didn't propagate — controller caches the device's `radio_tabl
 
 UDP 1900 (SSDP), UDP 5353 (mDNS), TCP 1400/1443 (control), TCP 3400/3401 (event push), UDP 6969 (setup), TCP 80/443 (streaming).
 
+## 2026-05-06 — Channel-11 SonosNet conflict, controller-IGMP drift, daily drift-detection cron
+
+### Reported symptom
+
+Music stops after a few minutes; faster when more rooms are grouped. Working a while back, broke after troubleshooting.
+
+### Diagnostic — SonosNet matrix on every speaker
+
+Pulled `http://<ip>:1400/status/proc/ath_rincon/status` from 11 reachable speakers. Pattern was unambiguous:
+
+| Speaker (SonosNet root) | PHY errors / read | STP nodes unreachable | Noise floor |
+|---|---|---|---|
+| Garage Bridge "no sound" (.220) | **12,806,409** | 9 of 11 | -97 dBm |
+| Skyloft (.7) | 4,039,566 | 1 | -95 dBm |
+| Front Outside (.193) | 4,286,326 | 4 | -101 dBm |
+
+PHY errors in the millions per read = severe co-channel interference. SonosNet is on **channel 11 (2462 MHz)**. STP 00 across most edges of the matrix = mesh hadn't converged. "Drops faster when grouped" = the Group Coordinator's clock-sync buffer drains under packet loss + retransmits, then audio dies.
+
+### Root causes (two stacked drifts)
+
+**Drift #1 — UniFi 2.4 GHz channel 11 collision with SonosNet.** Three APs were on ch 11. The reference notes (and §UDM Pro Network Settings above) require **NO UniFi AP on the SonosNet channel**. Garage Mahal AP sat right next to the wired SonosNet root in the garage — that single co-channel pair was the dominant interference source.
+
+| AP | Pre-fix ch | Post-fix ch | Note |
+|---|---|---|---|
+| Garage Mahal (78:8a:20) | 11 | **1** | next to Sonos Boost root |
+| Spartan (f4:92:bf) | 11 | **6** | |
+| Sauna Cabinet (fc:ec:da:f0:d4:b7) | 11 | **1** | |
+| Skyloft / Living Room U6 / Laundry / Outhouse / DoggieHaus | 1 / 6 (unchanged) | 1 / 6 | |
+
+Final distribution: 4 APs on ch 1, 4 APs on ch 6, **0 APs on ch 11** — channel 11 reserved for SonosNet alone.
+
+**Drift #2 — Controller IGMP snooping drifted from `false` (working) to `true`.** The 2026-04-16 deep dive enabled controller IGMP snooping on the Default LAN with the intent of "preventing multicast flooding". But the §Kernel vs Controller IGMP Snooping CRITICAL warning above still applies: **both layers must be OFF for 14 zones to be reliable** (the documented 2026-04-01 working state). Verified today:
+
+| Layer | State on 2026-05-06 (start) | State after fix | Working baseline |
+|---|---|---|---|
+| Kernel `br0/multicast_snooping` | 0 ✓ (persisted via `/data/on_boot.d/10-multicast-snooping-off.sh`) | 0 | 0 |
+| Controller `networkconf.igmp_snooping` (Default LAN) | **true** ❌ | **false** ✓ | false |
+
+Reverting controller IGMP to `false` matches the 2026-03-06 stable snapshot (`network_config_snapshots` row `a9d45377`) and the 2026-04-01 "100% reliable" state. Kernel state already correct.
+
+### Other changes applied
+
+- **Skyloft Closet US8P60 stp_priority `8192 → 4096`** to make it the explicit STP Root Bridge. Was implicitly winning by lowest MAC, now wins by configured priority.
+- **Black Rock City `mcastenhance_enabled` explicit `false`** (was already false but field-name had been ambiguous in past audits).
+
+### Fix surface — write recipe
+
+`alpacaauto` has Super Admin role. Earlier note that called it "API read-only" was a CSRF-extraction bug. **CSRF lives in the `x-csrf-token` response header on login, not in the cookie file's `TOKEN` (that's a JWT).** Recipe in `memory/service-access.md` §8.
+
+```bash
+# Capture CSRF from login RESPONSE HEADER
+HEADERS=$(curl -sk -i -c /tmp/uc.txt -X POST 'https://192.168.1.1/api/auth/login' \
+  -H 'Content-Type: application/json' \
+  -d "{\"username\":\"alpacaauto\",\"password\":\"$BW_PASS\",\"remember\":true}")
+CSRF=$(echo "$HEADERS" | grep -i '^x-csrf-token:' | tr -d '\r' | awk '{print $2}')
+
+# Set channel on an AP
+curl -sk -b /tmp/uc.txt -X PUT \
+  "https://192.168.1.1/proxy/network/api/s/default/rest/device/<DEVICE_ID>" \
+  -H 'Content-Type: application/json' -H "X-CSRF-Token: $CSRF" \
+  -d '{"radio_table":[{"radio":"ng","name":"wifi0","channel":"1","ht":"20","tx_power_mode":"auto"},{"radio":"na","name":"wifi1","channel":"auto","ht":"40","tx_power_mode":"auto"}]}'
+```
+
+Mongo direct edits also work but require `cfgversion:0` invalidation + `unifi.service` restart to push the radio_table change. The PUT path doesn't.
+
+### Configuration Drift Detection — Daily Auto-Snapshots
+
+Drifts like the controller-IGMP toggle are silent — nothing flashes red, you just notice that audio dies more often. We now snapshot the entire UDM config every night at 4:00 AM into Supabase so any future drift is bisectable to a date.
+
+**Where:** `public.network_config_snapshots`. Single table, one row per snapshot, `config jsonb` column holds full state (networks, wifi_networks, access_points, switches, plus a `critical_rules_for_sonos` array).
+
+**Stable baseline:** row id `a9d45377-fef8-480c-9526-1caa7fd1b72d` (2026-03-07, `is_stable=true`, tagged `[sonos,multicast,wifi,stable]`). Rule #1 in its annotation explicitly: "IGMP snooping MUST be disabled on the Default LAN network."
+
+**Daily snapshot:** Alpuca crontab line:
+```
+0 4 * * * PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin /Users/alpuca/Documents/codingprojects/alpacapps/scripts/unifi-snapshot-cron.sh >> /Users/alpuca/logs/unifi-snapshot.log 2>&1
+```
+
+Wrapper: `scripts/unifi-snapshot-cron.sh` (in repo). Reads creds from `/Users/alpuca/.unifi-snapshot.env` (chmod 600 — macOS Keychain isn't reachable from cron/SSH on Alpuca, so plaintext-cred files match the existing `~/.ha_llat`, `~/.sb_service_key` pattern).
+
+**Manual snapshot from any dev box** (after a deliberate change):
+```bash
+./scripts/unifi-snapshot.sh "Description of change" --notes "Why" --tags sonos,wifi --stable
+```
+Tagging `--stable` flags it as a known-good baseline for future diff queries.
+
+**Diff query — "what's drifted from the last stable baseline?"**
+```sql
+WITH stable AS (SELECT config FROM public.network_config_snapshots WHERE is_stable=true ORDER BY snapshot_date DESC LIMIT 1),
+     latest AS (SELECT config FROM public.network_config_snapshots ORDER BY snapshot_date DESC LIMIT 1)
+SELECT
+  'igmp_snooping (Default LAN)' AS field,
+  stable.config -> 'networks' -> 'default_lan' ->> 'igmp_snooping' AS stable_value,
+  latest.config -> 'networks' -> 'default_lan' ->> 'igmp_snooping' AS current_value
+FROM stable, latest;
+```
+
+Extend with one UNION ALL per field you care about, or read the full `config` jsonb pretty:
+```sql
+SELECT jsonb_pretty(config) FROM public.network_config_snapshots WHERE is_stable=true ORDER BY snapshot_date DESC LIMIT 1;
+```
+
+**Operational note:** if a UDM password or the Supabase Dashboard Access Token rotates in Bitwarden, regenerate `~/.unifi-snapshot.env` on Alpuca or cron fails silently. Refresh recipe in `memory/service-access.md` §0.
+
 ## References
 
 - [UniFi + Sonos Configuration Guide (GitHub, 537★)](https://github.com/IngmarStein/unifi-sonos-doc)
