@@ -4,14 +4,14 @@ Build process for the AlpacaPlayhouse native mobile apps.
 
 | | Android | iOS |
 |---|---|---|
-| Source | [`mobile-android/`](../../../../mobile-android/) | [`mobile-ios/`](../../../../mobile-ios/) |
+| Source | [`mobile-android/`](../mobile-android/) | [`mobile-ios/`](../mobile-ios/) |
 | Stack | Kotlin + Jetpack Compose | Swift + SwiftUI |
 | Bundle ID | `com.alpacaplayhouse.app` | `com.alpacaplayhouse.app` |
 | Min OS | Android 8.0 (SDK 26) | (per Xcode project) |
 | Toolchain | Gradle 9.4, Kotlin 2.3, JDK 17, Android SDK 35+36 | Xcode 26.4 |
 
 > Capacitor was retired 2026-03-30 in favor of native — see memory `project_native-mobile-apps.md`.
-> The kiosk app at [`alpaca-kiosk/`](../../../../alpaca-kiosk/) is **separate** (`com.alpacaplayhouse.kiosk`) and has its own [`INSTALL.md`](../../../../alpaca-kiosk/INSTALL.md).
+> The kiosk app at [`alpaca-kiosk/`](../alpaca-kiosk/) is **separate** (`com.alpacaplayhouse.kiosk`) and has its own [`INSTALL.md`](../alpaca-kiosk/INSTALL.md).
 
 ## Build host
 
@@ -25,7 +25,7 @@ git pull
 
 ## One-shot build
 
-[`scripts/build-mobile.sh`](../../../../scripts/build-mobile.sh) does everything in one call: bumps the build number, builds, drops artifacts in [`mobilebuilds/build-<N>/`](../../../../mobilebuilds/), writes release notes, and tags the commit.
+[`scripts/build-mobile.sh`](../scripts/build-mobile.sh) does everything in one call: bumps the build number, builds, drops artifacts in [`mobilebuilds/build-<N>/`](../mobilebuilds/), writes release notes, and tags the commit.
 
 ```bash
 scripts/build-mobile.sh           # both platforms (default)
@@ -38,7 +38,7 @@ DRY_RUN=1 scripts/build-mobile.sh # bump version + write notes, skip actual buil
 
 1. **Pick the next build number.** Reads `versionCode` (Android), `CURRENT_PROJECT_VERSION` (iOS), and the highest `mobile-build-N` git tag — takes max + 1. Build number is **shared across both platforms** so a given build N always corresponds to the same code.
 2. **Pull marketing version.** Reads `version.json` for the site version (e.g. `v260507.02`); the `MM.NN` portion becomes the iOS `MARKETING_VERSION` and Android `versionName`.
-3. **Bump version files** in [`mobile-android/app/build.gradle.kts`](../../../../mobile-android/app/build.gradle.kts) and [`mobile-ios/AlpacaPlayhouse.xcodeproj/project.pbxproj`](../../../../mobile-ios/AlpacaPlayhouse.xcodeproj/) (via `xcrun agvtool` when available, sed fallback otherwise).
+3. **Bump version files** in [`mobile-android/app/build.gradle.kts`](../mobile-android/app/build.gradle.kts) and [`mobile-ios/AlpacaPlayhouse.xcodeproj/project.pbxproj`](../mobile-ios/AlpacaPlayhouse.xcodeproj/) (via `xcrun agvtool` when available, sed fallback otherwise).
 4. **Build:**
    - Android — `./gradlew assembleRelease` → `mobile-android/app/build/outputs/apk/release/*.apk`
    - iOS — `xcodebuild archive` + `xcodebuild -exportArchive` with a generated `ExportOptions.plist`
@@ -74,7 +74,7 @@ mobilebuilds/
     └── alpacaplayhouse-ios-build42-v1.0.ipa             # gitignored
 ```
 
-Binaries are gitignored ([`mobilebuilds/.gitignore`](../../../../mobilebuilds/.gitignore)) — too large for git. Notes are committed so the release history is durable.
+Binaries are gitignored ([`mobilebuilds/.gitignore`](../mobilebuilds/.gitignore)) — too large for git. Notes are committed so the release history is durable.
 
 ## Distribution (manual after build)
 
@@ -94,6 +94,6 @@ Binaries are gitignored ([`mobilebuilds/.gitignore`](../../../../mobilebuilds/.g
 ## Related
 
 - Memory: `project_native-mobile-apps.md`
-- Setup wizard reference: [`mobile-setup.md`](../../../../.claude/skills/setup-alpacapps-infra/references/mobile-setup.md)
-- Site versioning (different system, used for `MARKETING_VERSION` lookup): [`scripts/bump-version.sh`](../../../../scripts/bump-version.sh)
-- Kiosk Android app (separate): [`alpaca-kiosk/INSTALL.md`](../../../../alpaca-kiosk/INSTALL.md)
+- Setup wizard reference: [`mobile-setup.md`](../.claude/skills/setup-alpacapps-infra/references/mobile-setup.md)
+- Site versioning (different system, used for `MARKETING_VERSION` lookup): [`scripts/bump-version.sh`](../scripts/bump-version.sh)
+- Kiosk Android app (separate): [`alpaca-kiosk/INSTALL.md`](../alpaca-kiosk/INSTALL.md)
