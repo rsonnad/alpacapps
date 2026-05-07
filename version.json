@@ -1,12 +1,12 @@
 {
-  "version": "v260507.03 2:00p",
-  "release": 1450,
-  "sha": "f592cddbe",
-  "fullSha": "f592cddbebae97c19075a29b18cef606e9f2bae8",
+  "version": "v260507.04 3:11p",
+  "release": 1451,
+  "sha": "4772d8e50",
+  "fullSha": "4772d8e509dbc66ad32bb7646878af43977b95f1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-07T19:00:46+00:00",
-  "commits": [{"sha":"f592cddbe","message":"tesla-poller: write snapshots to Cloudflare D1 instead of Supabase","author":"Rahul"}]
+  "pushedAt": "2026-05-07T20:11:22+00:00",
+  "commits": [{"sha":"4772d8e50","message":"testel: Cloudflare Worker for Tesla telemetry (D1 owner)","author":"Rahul"}]
 }
