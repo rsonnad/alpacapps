@@ -6,6 +6,7 @@
 > - `spaces/admin/devcontrol/devdocs/PATTERNS.md` — **load for:** writing UI code, Tailwind styling, code review, testing
 > - `spaces/admin/devcontrol/devdocs/KEY-FILES.md` — **load for:** finding files, understanding project structure
 > - `spaces/admin/devcontrol/devdocs/DEPLOY.md` — **load for:** pushing, deploying, version questions
+> - `spaces/admin/devcontrol/devdocs/MOBILE-BUILD.md` — **load for:** building Android APK / iOS IPA, mobile release notes, build numbering, `scripts/build-mobile.sh`
 > - `spaces/admin/devcontrol/devdocs/INTEGRATIONS.md` — **load for:** external APIs, vendor setup, pricing
 > - `spaces/admin/devcontrol/devdocs/CHANGELOG.md` — **load for:** understanding recent changes, migration context
 > - `spaces/admin/devcontrol/devdocs/CAD.md` — **load for:** 3D modeling, Blender, QGIS, CAD tool reference

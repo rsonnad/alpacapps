@@ -1,0 +1,8 @@
+# Don't commit build binaries — they're large and ephemeral.
+# Keep RELEASE_NOTES.md so the history of what shipped stays in git.
+*.apk
+*.ipa
+*.aab
+*.xcarchive/
+ios-export/
+ExportOptions.plist
