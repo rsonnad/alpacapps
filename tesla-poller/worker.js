@@ -22,7 +22,7 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '600000'); // 10 min
-const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '1800000'); // 30 min
+const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '600000'); // 10 min — every poll
 const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '2000'); // 2s between API calls
 
 const TESLA_TOKEN_URL = 'https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token';
