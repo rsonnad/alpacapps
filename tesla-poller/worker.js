@@ -25,6 +25,14 @@ const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '600000'); // 
 const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '600000'); // 10 min — every poll
 const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '2000'); // 2s between API calls
 
+// Cloudflare D1 — historical snapshots live here, not in Supabase (frees Supabase free-tier storage)
+const D1_ACCOUNT_ID = process.env.D1_ACCOUNT_ID;
+const D1_DATABASE_ID = process.env.D1_DATABASE_ID;
+const D1_API_TOKEN = process.env.D1_API_TOKEN;
+const D1_QUERY_URL = D1_ACCOUNT_ID && D1_DATABASE_ID
+  ? `https://api.cloudflare.com/client/v4/accounts/${D1_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`
+  : null;
+
 const TESLA_TOKEN_URL = 'https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token';
 const DEFAULT_FLEET_API_BASE = 'https://fleet-api.prd.na.vn.cloud.tesla.com';
 
@@ -341,7 +349,12 @@ function shouldTakeSnapshot(vehicleId) {
 }
 
 async function insertSnapshot(vehicleId, vehicleState, state) {
-  // Compute open doors/windows arrays
+  if (!D1_QUERY_URL || !D1_API_TOKEN) {
+    log('error', 'D1 not configured — set D1_ACCOUNT_ID, D1_DATABASE_ID, D1_API_TOKEN', { vehicleId });
+    return;
+  }
+
+  // Compute open doors/windows arrays (stored as JSON strings in D1)
   const doorsOpen = [];
   if (state.df) doorsOpen.push('driver_front');
   if (state.pf) doorsOpen.push('passenger_front');
@@ -356,42 +369,67 @@ async function insertSnapshot(vehicleId, vehicleState, state) {
   if (state.rd_window) windowsOpen.push('driver_rear');
   if (state.rp_window) windowsOpen.push('passenger_rear');
 
-  const { error } = await supabase
-    .from('tesla_vehicle_snapshots')
-    .insert({
-      vehicle_id: vehicleId,
-      vehicle_state: vehicleState,
-      battery_level: state.battery_level,
-      battery_range_mi: state.battery_range_mi,
-      charging_state: state.charging_state,
-      charge_limit_soc: state.charge_limit_soc,
-      charge_rate_mph: state.charge_rate_mph,
-      charger_power_kw: state.charger_power_kw,
-      odometer_mi: state.odometer_mi,
-      inside_temp_f: state.inside_temp_f,
-      outside_temp_f: state.outside_temp_f,
-      climate_on: state.climate_on,
-      locked: state.locked,
-      sentry_mode: state.sentry_mode,
-      latitude: state.latitude,
-      longitude: state.longitude,
-      speed_mph: state.speed_mph,
-      heading: state.heading,
-      software_version: state.software_version,
-      tpms_fl_psi: state.tpms_fl_psi,
-      tpms_fr_psi: state.tpms_fr_psi,
-      tpms_rl_psi: state.tpms_rl_psi,
-      tpms_rr_psi: state.tpms_rr_psi,
-      doors_open: doorsOpen.length ? doorsOpen : null,
-      windows_open: windowsOpen.length ? windowsOpen : null,
-      full_state: state,
-    });
+  // D1 SQLite uses 0/1 for booleans; nulls pass through
+  const b = (v) => v == null ? null : (v ? 1 : 0);
 
-  if (error) {
-    log('error', 'Snapshot insert failed', { vehicleId, error: error.message });
-  } else {
+  const sql = `INSERT INTO tesla_vehicle_snapshots (
+    vehicle_id, recorded_at, vehicle_state, battery_level, battery_range_mi,
+    charging_state, charge_limit_soc, charge_rate_mph, charger_power_kw,
+    odometer_mi, inside_temp_f, outside_temp_f, climate_on, locked, sentry_mode,
+    latitude, longitude, speed_mph, heading, software_version,
+    tpms_fl_psi, tpms_fr_psi, tpms_rl_psi, tpms_rr_psi,
+    doors_open, windows_open, full_state
+  ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+
+  const params = [
+    vehicleId,
+    new Date().toISOString(),
+    vehicleState,
+    state.battery_level,
+    state.battery_range_mi,
+    state.charging_state,
+    state.charge_limit_soc,
+    state.charge_rate_mph,
+    state.charger_power_kw,
+    state.odometer_mi,
+    state.inside_temp_f,
+    state.outside_temp_f,
+    b(state.climate_on),
+    b(state.locked),
+    b(state.sentry_mode),
+    state.latitude,
+    state.longitude,
+    state.speed_mph,
+    state.heading,
+    state.software_version,
+    state.tpms_fl_psi,
+    state.tpms_fr_psi,
+    state.tpms_rl_psi,
+    state.tpms_rr_psi,
+    doorsOpen.length ? JSON.stringify(doorsOpen) : null,
+    windowsOpen.length ? JSON.stringify(windowsOpen) : null,
+    JSON.stringify(state),
+  ];
+
+  try {
+    const resp = await fetch(D1_QUERY_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${D1_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sql, params }),
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.success) {
+      const msg = data.errors?.[0]?.message || `HTTP ${resp.status}`;
+      log('error', 'D1 snapshot insert failed', { vehicleId, error: msg });
+      return;
+    }
     lastSnapshotTime.set(vehicleId, Date.now());
-    log('info', 'Snapshot recorded', { vehicleId, battery: state.battery_level });
+    log('info', 'Snapshot recorded (D1)', { vehicleId, battery: state.battery_level });
+  } catch (err) {
+    log('error', 'D1 snapshot insert threw', { vehicleId, error: err.message });
   }
 }
 
