@@ -1,12 +1,12 @@
 {
-  "version": "v260508.17 5:09p",
-  "release": 1469,
-  "sha": "e96eaaa0a",
-  "fullSha": "e96eaaa0a8026c6e082238d014c9187d491d4cff",
+  "version": "v260508.18 5:13p",
+  "release": 1470,
+  "sha": "acb3a393c",
+  "fullSha": "acb3a393cdab5958fce541f54ec7def11ad29ff8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T22:09:55+00:00",
-  "commits": [{"sha":"e96eaaa0a","message":"feat(payments): add Cash App / Square email parser to webhook","author":"Rahul"}]
+  "pushedAt": "2026-05-08T22:13:43+00:00",
+  "commits": [{"sha":"acb3a393c","message":"chore(webhook): upgrade Gemini model from 2.0-flash to 3.1-flash-lite","author":"Rahul"}]
 }
