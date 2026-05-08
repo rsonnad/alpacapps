@@ -1,12 +1,12 @@
 {
-  "version": "v260508.13 3:54p",
-  "release": 1465,
-  "sha": "4277dcc46",
-  "fullSha": "4277dcc46823d73623aee408c0e76cf99d2d25cf",
+  "version": "v260508.14 4:12p",
+  "release": 1466,
+  "sha": "7f2b92cd3",
+  "fullSha": "7f2b92cd358a6d561dd1efe4d8b37448ee8a64f3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T20:54:45+00:00",
-  "commits": [{"sha":"4277dcc46","message":"feat(rentals): uploadable landlord signature + archival signed-lease HTML","author":"Rahul"}]
+  "pushedAt": "2026-05-08T21:12:09+00:00",
+  "commits": [{"sha":"7f2b92cd3","message":"feat(rentals): cc landlord on every lease signing-request email","author":"Rahul"}]
 }
