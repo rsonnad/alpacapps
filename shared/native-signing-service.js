@@ -499,6 +499,10 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
       body: JSON.stringify({
         type: 'custom',
         to: toEmail,
+        // CC the landlord on every lease-signing request so both parties
+        // are visibly on the original thread (not just BCC'd) and the
+        // tenant can reply-all if they have a question.
+        cc: ['alpacaplayhouse@gmail.com'],
         subject,
         data: { subject, html, text },
       }),
