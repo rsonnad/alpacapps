@@ -280,6 +280,40 @@
     </div>
     <div id="waiverDocument" class="document-card" style="display: none;"></div>
 
+    <!-- Required Information (only shown when fields are missing) -->
+    <div class="signature-section" id="contactInfoSection" style="display:none; margin-bottom: 1.5rem;">
+      <h2>Required Information</h2>
+      <p>Before you sign, please confirm a current mailing address and an emergency contact. We use this only for lease records and emergencies.</p>
+
+      <div style="display: grid; gap: 14px; margin-top: 1rem;">
+        <div>
+          <label for="ci_address" style="display:block;font-weight:600;margin-bottom:4px;">Current Mailing Address <span style="color:#c34;">*</span></label>
+          <input type="text" id="ci_address" autocomplete="street-address" placeholder="Street, City, State, ZIP" style="width:100%;padding:10px 12px;border:1.5px solid #e6e2d9;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label for="ci_ec_name" style="display:block;font-weight:600;margin-bottom:4px;">Emergency Contact Name <span style="color:#c34;">*</span></label>
+            <input type="text" id="ci_ec_name" placeholder="Full name" style="width:100%;padding:10px 12px;border:1.5px solid #e6e2d9;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;">
+          </div>
+          <div>
+            <label for="ci_ec_relationship" style="display:block;font-weight:600;margin-bottom:4px;">Relationship</label>
+            <input type="text" id="ci_ec_relationship" placeholder="e.g. Parent, Spouse, Friend" style="width:100%;padding:10px 12px;border:1.5px solid #e6e2d9;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label for="ci_ec_phone" style="display:block;font-weight:600;margin-bottom:4px;">Emergency Contact Phone <span style="color:#c34;">*</span></label>
+            <input type="tel" id="ci_ec_phone" autocomplete="tel" placeholder="(555) 555-5555" style="width:100%;padding:10px 12px;border:1.5px solid #e6e2d9;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;">
+          </div>
+          <div>
+            <label for="ci_ec_email" style="display:block;font-weight:600;margin-bottom:4px;">Emergency Contact Email</label>
+            <input type="email" id="ci_ec_email" placeholder="optional" style="width:100%;padding:10px 12px;border:1.5px solid #e6e2d9;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;">
+          </div>
+        </div>
+        <p id="contactInfoError" style="color:#c34;font-size:0.9em;margin:0;display:none;">Please fill in the required fields before signing.</p>
+      </div>
+    </div>
+
     <!-- Signature section -->
     <div class="signature-section" id="signatureSection">
       <h2>Sign Below</h2>
@@ -365,6 +399,7 @@ async function init() {
     documentData._token = token;
 
     renderDocument();
+    initContactInfoForm();
     initSignaturePad();
     initScrollTracking();
 
@@ -433,6 +468,52 @@ function cleanSignatureLines(elementId) {
 
 // ── Signature Pad ──────────────────────────────────────────────────
 
+// Show Required Information form only if the person is missing
+// current_address or any of the emergency-contact fields. Pre-populate
+// any values already on file so tenants can confirm/edit rather than retype.
+function initContactInfoForm() {
+  const ci = (documentData && documentData.contact_info) || {};
+  const missing = !ci.current_address || !ci.emergency_contact_name || !ci.emergency_contact_phone;
+  const section = document.getElementById('contactInfoSection');
+  if (!section) return;
+  if (!missing) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  if (ci.current_address) document.getElementById('ci_address').value = ci.current_address;
+  if (ci.emergency_contact_name) document.getElementById('ci_ec_name').value = ci.emergency_contact_name;
+  if (ci.emergency_contact_phone) document.getElementById('ci_ec_phone').value = ci.emergency_contact_phone;
+  if (ci.emergency_contact_email) document.getElementById('ci_ec_email').value = ci.emergency_contact_email;
+  if (ci.emergency_contact_relationship) document.getElementById('ci_ec_relationship').value = ci.emergency_contact_relationship;
+}
+
+// Returns an update payload, an empty object (form not shown / no changes
+// needed), or false if validation failed.
+function collectContactInfo() {
+  const section = document.getElementById('contactInfoSection');
+  if (!section || section.style.display === 'none') return {};
+  const address = document.getElementById('ci_address').value.trim();
+  const ecName = document.getElementById('ci_ec_name').value.trim();
+  const ecPhone = document.getElementById('ci_ec_phone').value.trim();
+  const ecEmail = document.getElementById('ci_ec_email').value.trim();
+  const ecRel = document.getElementById('ci_ec_relationship').value.trim();
+  const errEl = document.getElementById('contactInfoError');
+  if (!address || !ecName || !ecPhone) {
+    if (errEl) errEl.style.display = 'block';
+    section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
+  }
+  if (errEl) errEl.style.display = 'none';
+  return {
+    current_address: address,
+    emergency_contact_name: ecName,
+    emergency_contact_phone: ecPhone,
+    emergency_contact_email: ecEmail || null,
+    emergency_contact_relationship: ecRel || null,
+  };
+}
+
 function initSignaturePad() {
   const canvas = document.getElementById('signatureCanvas');
   const wrapper = document.getElementById('canvasWrapper');
@@ -499,6 +580,14 @@ function initScrollTracking() {
 
 async function submitSignature() {
   const btn = document.getElementById('signBtn');
+
+  // Validate Required Information form (only if it's being shown)
+  const contactInfoUpdate = collectContactInfo();
+  if (contactInfoUpdate === false) {
+    // Validation failed — error message already shown
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Signing...';
 
@@ -529,6 +618,7 @@ async function submitSignature() {
         document_html: fullDocumentHtml,
         signer_name: documentData.signer_name,
         signer_email: documentData.signer_email,
+        contact_info_update: contactInfoUpdate || null,
       }),
     });
 

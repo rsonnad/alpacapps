@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
         additional_terms,
         waiver_template_id,
         approved_space:approved_space_id (id, name, type),
-        person:person_id (id, first_name, last_name, email, phone)
+        person:person_id (id, first_name, last_name, email, phone, current_address, emergency_contact_name, emergency_contact_phone, emergency_contact_email, emergency_contact_relationship)
       `)
       .eq('signing_token', token)
       .single();
@@ -130,6 +130,14 @@ Deno.serve(async (req) => {
         document_type: 'rental',
         application_id: rentalApp.id,
         space_name: space?.name || 'Unknown Space',
+        contact_info: {
+          person_id: person?.id || null,
+          current_address: person?.current_address || '',
+          emergency_contact_name: person?.emergency_contact_name || '',
+          emergency_contact_phone: person?.emergency_contact_phone || '',
+          emergency_contact_email: person?.emergency_contact_email || '',
+          emergency_contact_relationship: person?.emergency_contact_relationship || '',
+        },
       });
     }
 
@@ -147,7 +155,7 @@ Deno.serve(async (req) => {
         rental_fee,
         reservation_fee,
         cleaning_deposit,
-        person:person_id (id, first_name, last_name, email, phone)
+        person:person_id (id, first_name, last_name, email, phone, current_address, emergency_contact_name, emergency_contact_phone, emergency_contact_email, emergency_contact_relationship)
       `)
       .eq('signing_token', token)
       .single();

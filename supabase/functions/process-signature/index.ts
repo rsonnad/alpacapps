@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body = await req.json();
-    const { token, signature_image, document_hash, signer_name, signer_email, document_html } = body;
+    const { token, signature_image, document_hash, signer_name, signer_email, document_html, contact_info_update } = body;
 
     if (!token || !signature_image || !document_hash) {
       return jsonError('Missing required fields', 400);
@@ -171,6 +171,31 @@ Deno.serve(async (req) => {
         signed_at: signedAt,
       };
       await supabase.from('signature_audit_log').insert(landlordAudit);
+    }
+
+    // ── Persist contact info collected on the signing page ─────────
+
+    if (contact_info_update && person?.id) {
+      // Whitelist the columns we accept from the client to avoid mass-assignment.
+      const allowed: Record<string, unknown> = {};
+      const fields = ['current_address', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_email', 'emergency_contact_relationship'];
+      for (const k of fields) {
+        const v = (contact_info_update as Record<string, unknown>)[k];
+        if (typeof v === 'string') {
+          const trimmed = v.trim();
+          if (trimmed) allowed[k] = trimmed;
+        }
+      }
+      if (Object.keys(allowed).length > 0) {
+        const { error: piError } = await supabase
+          .from('people')
+          .update({ ...allowed, updated_at: signedAt })
+          .eq('id', person.id);
+        if (piError) {
+          console.error('Failed to update person contact info:', piError);
+          // Don't block signing on this — the audit log still has signature.
+        }
+      }
     }
 
     // ── Update application status ──────────────────────────────────
