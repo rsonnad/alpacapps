@@ -1,12 +1,12 @@
 {
-  "version": "v260508.06 2:52p",
-  "release": 1458,
-  "sha": "6b417f4bf",
-  "fullSha": "6b417f4bff70ca306187791622c5df55d831b1bb",
+  "version": "v260508.07 2:55p",
+  "release": 1459,
+  "sha": "409e09a75",
+  "fullSha": "409e09a75eca309cb35c589c3232f613a293a57a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T19:52:48+00:00",
-  "commits": [{"sha":"6b417f4bf","message":"feat(rentals): add Total Due Before Move-In row to payment summary","author":"Rahul"}]
+  "pushedAt": "2026-05-08T19:55:48+00:00",
+  "commits": [{"sha":"cd0b9a3a2","message":"feat(payouts): unified associate_payout_sent email template w/ task descriptions and per-day totals","author":"Rahul"},{"sha":"409e09a75","message":"Merge: unified associate_payout_sent email template","author":"Rahul"}]
 }
