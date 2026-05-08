@@ -205,6 +205,17 @@ async function buildRentalPaymentSummary(applicationId) {
       </tr>
     `).join('');
 
+    // Grand total: everything due before / at move-in (not the recurring monthly).
+    // = reservation deposit (paid now) + security deposit (at move-in)
+    //   + first-month rent balance after credits.
+    const totalDueBeforeMoveIn = reservationDeposit + securityDeposit + firstMonthBalance;
+    const totalRow = `
+      <tr style="background: #efe9d8;">
+        <td style="padding: 12px; vertical-align: top;"><strong>Total Due Before Move-In</strong><br><span style="color:#5a4f33;font-size:0.85em;">Reservation deposit (now) + security deposit + first month's rent balance after credits.</span></td>
+        <td style="padding: 12px; text-align: right; white-space: nowrap; vertical-align: top; font-size: 1.1em;"><strong>${fmt(totalDueBeforeMoveIn)}</strong></td>
+        <td style="padding: 12px; vertical-align: top; color: #5a4f33; font-size: 0.9em;">By ${moveInLabel}</td>
+      </tr>`;
+
     return `
       <div style="background: #f8f6f1; border: 1px solid #e6dec9; border-radius: 10px; padding: 18px 20px; margin: 0 0 24px;">
         <h3 style="margin: 0 0 8px 0; color: #1c1618;">Payment Summary</h3>
@@ -217,7 +228,7 @@ async function buildRentalPaymentSummary(applicationId) {
               <th style="text-align: left; padding: 8px 12px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; color: #6b5e3f;">When</th>
             </tr>
           </thead>
-          <tbody>${trs}</tbody>
+          <tbody>${trs}${totalRow}</tbody>
         </table>
       </div>
     `;
