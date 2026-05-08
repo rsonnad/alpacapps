@@ -12,6 +12,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { buildBreakdownByEntryIds } from "../_shared/payout-breakdown.ts";
 interface PayoutRequest {
   associate_id: string;
   amount: number;           // Amount in dollars (e.g., 150.00)
@@ -346,6 +347,8 @@ Deno.serve(async (req) => {
         const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: tz });
         // PayPal payouts settle within ~30 minutes — same-day ETA
         const expectedDepositDate = `Today (${today})`;
+        const rate = parseFloat(associate.hourly_rate as any) || 0;
+        const breakdown = await buildBreakdownByEntryIds(supabase, time_entry_ids || [], rate);
         await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: 'POST',
           headers: {
@@ -363,8 +366,14 @@ Deno.serve(async (req) => {
               payment_method: 'PayPal',
               payout_date: today,
               expected_deposit_date: expectedDepositDate,
-              hours: associate.hourly_rate && amount > 0 ? (amount / parseFloat(associate.hourly_rate)).toFixed(1) : null,
-              hourly_rate: associate.hourly_rate || null,
+              hours: rate > 0 && amount > 0 ? (amount / rate).toFixed(2) : (breakdown.totalHours ? breakdown.totalHours.toFixed(2) : null),
+              hourly_rate: rate > 0 ? rate.toFixed(2) : null,
+              transfer_id: result.batch_id || null,
+              period_first: breakdown.period.first || null,
+              period_last: breakdown.period.last || null,
+              entry_count: breakdown.entryCount || null,
+              day_count: breakdown.dayCount || null,
+              daily_breakdown: breakdown.rows,
               notes: notes || null
             }
           })
