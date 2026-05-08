@@ -498,11 +498,11 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
       },
       body: JSON.stringify({
         type: 'custom',
-        to: toEmail,
-        // CC the landlord on every lease-signing request so both parties
-        // are visibly on the original thread (not just BCC'd) and the
-        // tenant can reply-all if they have a question.
-        cc: ['alpacaplayhouse@gmail.com'],
+        // Multi-To rather than CC: when alpacaplayhouse@gmail.com is just
+        // a CC, Gmail tends to route the message to the Updates / Promotions
+        // tab instead of Primary. Adding it as a primary recipient lands it
+        // in Primary on both sides and keeps both parties on the same thread.
+        to: [toEmail, 'alpacaplayhouse@gmail.com'],
         subject,
         data: { subject, html, text },
       }),
