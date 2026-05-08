@@ -1,12 +1,12 @@
 {
-  "version": "v260508.05 2:47p",
-  "release": 1457,
-  "sha": "8927603c7",
-  "fullSha": "8927603c78cceaa806d1f71697928df5825d25b4",
+  "version": "v260508.06 2:52p",
+  "release": 1458,
+  "sha": "6b417f4bf",
+  "fullSha": "6b417f4bff70ca306187791622c5df55d831b1bb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T19:47:05+00:00",
-  "commits": [{"sha":"8927603c7","message":"feat(rentals): payment summary at top + co-signature notice in signing email","author":"Rahul"}]
+  "pushedAt": "2026-05-08T19:52:48+00:00",
+  "commits": [{"sha":"6b417f4bf","message":"feat(rentals): add Total Due Before Move-In row to payment summary","author":"Rahul"}]
 }
