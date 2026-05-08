@@ -748,7 +748,7 @@ Respond with ONLY a JSON object: {"type": "spam|question|receipt|document|comman
 
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiApiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1310,7 +1310,7 @@ Guidelines:
 - needs_review: deleting data, modifying configs, changing passwords, financial operations, anything affecting other residents, unknown/ambiguous requests`;
 
       const gemRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiApiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1536,7 +1536,7 @@ async function handlePaiEmail(
       endpoint: "generateContent",
       estimated_cost_usd: 0.0001, // ~100 input tokens + ~50 output tokens on flash
       metadata: {
-        model: "gemini-2.0-flash",
+        model: "gemini-3.1-flash-lite",
         email_from: senderEmail,
         classification: classification.type,
         confidence: classification.confidence,
@@ -2683,7 +2683,7 @@ When last names match exactly, return confidence >= 0.80 even if the first name 
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2721,7 +2721,7 @@ When last names match exactly, return confidence >= 0.80 even if the first name 
       input_tokens: inputTokens,
       output_tokens: outputTokens,
       estimated_cost_usd: (inputTokens * 0.10 + outputTokens * 0.40) / 1_000_000,
-      metadata: { model: "gemini-2.0-flash", sender_name: senderName, confidence: parsed.confidence, reasoning: parsed.reasoning },
+      metadata: { model: "gemini-3.1-flash-lite", sender_name: senderName, confidence: parsed.confidence, reasoning: parsed.reasoning },
     });
 
     if (parsed.best_match && parsed.confidence >= 0.75) {
