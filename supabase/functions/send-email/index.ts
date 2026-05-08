@@ -2748,7 +2748,7 @@ async function holdForApproval(
   </div>
 </body></html>`;
 
-  await fetch("https://api.resend.com/emails", {
+  const approvalRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -2760,6 +2760,44 @@ async function holdForApproval(
       text: `Email Approval Required\nType: ${typeLabel}\nTo: ${recipientList}\nSubject: ${subject}\n\nApprove: ${approveOneUrl}\nApprove All: ${approveAllUrl}`,
     }),
   });
+
+  // Surface failures: previously this fetch was unchecked, so any 4xx/5xx from
+  // Resend silently dropped the approval-request email and the held send would
+  // just disappear from view. Log + record + throw.
+  if (!approvalRes.ok) {
+    const errBody = await approvalRes.json().catch(() => ({}));
+    const errMsg = `Approval-request email failed: ${approvalRes.status} ${JSON.stringify(errBody)}`;
+    console.error(errMsg);
+    try {
+      await sb.from("email_log").insert({
+        email_type: emailType,
+        from_address: SENDER_MAP.pai.from,
+        to_addresses: ["alpacaplayhouse@gmail.com"],
+        subject: `[Approval Required] ${typeLabel}: ${subject}`,
+        status: "failed",
+        error_message: errMsg,
+        source: "approval_notification",
+      });
+    } catch (logErr) {
+      console.error("Also failed to log approval-email failure:", logErr);
+    }
+    throw new Error(errMsg);
+  } else {
+    const approvalResult = await approvalRes.json().catch(() => ({}));
+    try {
+      await sb.from("email_log").insert({
+        resend_id: approvalResult.id || null,
+        email_type: emailType,
+        from_address: SENDER_MAP.pai.from,
+        to_addresses: ["alpacaplayhouse@gmail.com"],
+        subject: `[Approval Required] ${typeLabel}: ${subject}`,
+        status: "sent",
+        source: "approval_notification",
+      });
+    } catch (logErr) {
+      console.warn("Failed to log approval-email send (non-fatal):", logErr);
+    }
+  }
 
   return { approvalId: approval.id };
 }
