@@ -1,12 +1,12 @@
 {
-  "version": "v260508.07 2:55p",
-  "release": 1459,
-  "sha": "409e09a75",
-  "fullSha": "409e09a75eca309cb35c589c3232f613a293a57a",
+  "version": "v260508.08 3:08p",
+  "release": 1460,
+  "sha": "7a31d8599",
+  "fullSha": "7a31d8599d0ce5f39697cb883b035d8162489095",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T19:55:48+00:00",
-  "commits": [{"sha":"cd0b9a3a2","message":"feat(payouts): unified associate_payout_sent email template w/ task descriptions and per-day totals","author":"Rahul"},{"sha":"409e09a75","message":"Merge: unified associate_payout_sent email template","author":"Rahul"}]
+  "pushedAt": "2026-05-08T20:08:11+00:00",
+  "commits": [{"sha":"7a31d8599","message":"feat(pay+rentals): chip-style payment block in signing email + card support","author":"Rahul"}]
 }
