@@ -148,6 +148,21 @@ Deno.serve(async (req) => {
         const dates = entries.map(e => (e.clock_in as string).slice(0, 10)).sort();
         return { first: dates[0], last: dates[dates.length - 1] };
       })();
+      const dailyBreakdown = (() => {
+        const byDate = new Map<string, number>();
+        for (const e of entries) {
+          const date = (e.clock_in as string).slice(0, 10);
+          const hours = (new Date(e.clock_out as string).getTime() - new Date(e.clock_in as string).getTime()) / 3_600_000;
+          byDate.set(date, (byDate.get(date) || 0) + hours);
+        }
+        return Array.from(byDate.entries())
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([date, hours]) => {
+            const d = new Date(`${date}T12:00:00`);
+            const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            return { date, label, hours };
+          });
+      })();
       const description = `Auto payout: ${personName} — ${totalHours.toFixed(2)} hrs ${dateRange.first} to ${dateRange.last}`;
 
       let transfer: { id: string };
@@ -216,15 +231,25 @@ Deno.serve(async (req) => {
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         const eta = addBusinessDays(new Date(), 2).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
         const firstName = appUser?.first_name || personName.split(' ')[0];
+        const breakdownRowsHtml = dailyBreakdown
+          .map(d => `  <tr><td>${d.label}</td><td style="text-align:right">${d.hours.toFixed(2)} hrs</td></tr>`)
+          .join('\n');
+        const breakdownTextLines = dailyBreakdown
+          .map(d => `  ${d.label}: ${d.hours.toFixed(2)} hrs`)
+          .join('\n');
         const html = `
 <p>Hi ${firstName},</p>
 <p>A Stripe payout for <strong>$${amount.toFixed(2)}</strong> just went out to your linked account.</p>
 <table cellpadding="6" cellspacing="0" style="border-collapse:collapse;border:1px solid #ccc">
   <tr><td><strong>Hours</strong></td><td>${totalHours.toFixed(2)} @ $${rate.toFixed(2)}/hr</td></tr>
-  <tr><td><strong>Period</strong></td><td>${dateRange.first} to ${dateRange.last} (${entries.length} entries)</td></tr>
+  <tr><td><strong>Period</strong></td><td>${dateRange.first} to ${dateRange.last} (${entries.length} entries across ${dailyBreakdown.length} day${dailyBreakdown.length === 1 ? '' : 's'})</td></tr>
   <tr><td><strong>Sent</strong></td><td>${today}</td></tr>
   <tr><td><strong>Expected in your account</strong></td><td>${eta}</td></tr>
   <tr><td><strong>Stripe transfer</strong></td><td>${transfer.id}</td></tr>
+</table>
+<p style="margin-top:16px"><strong>Days paid:</strong></p>
+<table cellpadding="4" cellspacing="0" style="border-collapse:collapse;border:1px solid #ccc">
+${breakdownRowsHtml}
 </table>
 <p>Thank you!</p>
 <p>— Alpaca Playhouse</p>`;
@@ -238,7 +263,7 @@ Deno.serve(async (req) => {
               cc: ['alpacaplayhouse@gmail.com'],
               subject: `Stripe payout: $${amount.toFixed(2)} for ${totalHours.toFixed(2)} hrs`,
               html,
-              text: `Hi ${firstName},\n\nA Stripe payout for $${amount.toFixed(2)} just went out.\n\nHours: ${totalHours.toFixed(2)} @ $${rate.toFixed(2)}/hr\nPeriod: ${dateRange.first} to ${dateRange.last} (${entries.length} entries)\nSent: ${today}\nExpected in account: ${eta}\nTransfer: ${transfer.id}\n\nThanks!\n— Alpaca Playhouse`
+              text: `Hi ${firstName},\n\nA Stripe payout for $${amount.toFixed(2)} just went out.\n\nHours: ${totalHours.toFixed(2)} @ $${rate.toFixed(2)}/hr\nPeriod: ${dateRange.first} to ${dateRange.last} (${entries.length} entries across ${dailyBreakdown.length} day${dailyBreakdown.length === 1 ? '' : 's'})\nSent: ${today}\nExpected in account: ${eta}\nTransfer: ${transfer.id}\n\nDays paid:\n${breakdownTextLines}\n\nThanks!\n— Alpaca Playhouse`
             })
           });
         } catch (mailErr) {
