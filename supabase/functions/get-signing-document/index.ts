@@ -104,7 +104,8 @@ Deno.serve(async (req) => {
       const space = rentalApp.approved_space as any;
 
       // Build agreement data for template substitution
-      const agreementData = buildRentalAgreementData(rentalApp, person, space);
+      const landlordSig = await fetchLandlordSignatureHtml(supabase);
+      const agreementData = buildRentalAgreementData(rentalApp, person, space, landlordSig);
 
       // Parse template
       let documentHtml = parseMarkdownTemplate(template.content, agreementData);
@@ -237,7 +238,7 @@ function formatSigningDate(): string {
   return `${day} day of ${month} ${year}`;
 }
 
-function buildRentalAgreementData(app: any, person: any, space: any): Record<string, string> {
+function buildRentalAgreementData(app: any, person: any, space: any, landlordSignatureHtml?: string): Record<string, string> {
   const rateTermDisplay: Record<string, string> = { monthly: 'month', weekly: 'week', nightly: 'night' };
   const rateTerm = rateTermDisplay[app.approved_rate_term] || 'month';
 
@@ -309,14 +310,42 @@ function buildRentalAgreementData(app: any, person: any, space: any): Record<str
     notice_period_display: noticePeriodDisplay[app.notice_period] || '30 days notice required',
     lease_term_block: leaseTermBlock,
     additional_terms: app.additional_terms || '',
-    landlord_signature_img: landlordSignatureSvg('Rahul Sonnad', formatSigningDate()),
+    landlord_signature_img: landlordSignatureHtml || landlordSignatureSvg('Rahul Sonnad', formatSigningDate()),
   };
 }
 
 /**
- * Inline SVG that renders the landlord's pre-signature visually inside the
- * produced lease HTML. Server-generated → trusted. Renders reliably in
- * Gmail web (the inbox we send to) and most modern email clients.
+ * Resolve the landlord's pre-signature HTML to embed in produced leases.
+ *
+ * Reads `config.landlord_signature` — when an admin uploads an image via
+ * /admin/landlord-signature.html, signature_image_url points at a public
+ * URL in the lease-documents bucket and we render an <img> tag. When no
+ * image is configured (initial state), we fall back to a typed-name
+ * cursive SVG so leases still render a real-looking signature.
+ */
+async function fetchLandlordSignatureHtml(supabase: any): Promise<string> {
+  try {
+    const { data } = await supabase
+      .from('config')
+      .select('value')
+      .eq('key', 'landlord_signature')
+      .single();
+    const cfg = data?.value || {};
+    const name = cfg.name || 'Rahul Sonnad';
+    if (cfg.signature_image_url) {
+      const dateLabel = formatSigningDate();
+      const safeUrl = String(cfg.signature_image_url).replace(/"/g, '&quot;');
+      return `<img src="${safeUrl}" alt="Landlord signature: ${name}" style="max-width:260px;max-height:80px;display:block;border:0;background:transparent;"/><div style="font-size:11px;color:#888;margin-top:4px;border-top:1px solid #ccc;padding-top:4px;">Pre-signed ${dateLabel}</div>`;
+    }
+    return landlordSignatureSvg(name, formatSigningDate());
+  } catch (_e) {
+    return landlordSignatureSvg('Rahul Sonnad', formatSigningDate());
+  }
+}
+
+/**
+ * Inline SVG fallback when no uploaded landlord signature image is
+ * configured. Renders reliably in Gmail web and most modern email clients.
  */
 function landlordSignatureSvg(name: string, dateLabel: string): string {
   const safe = String(name).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

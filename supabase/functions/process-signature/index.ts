@@ -229,6 +229,41 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── Persist the fully-signed lease as a static HTML file ───────
+    //
+    // Both parties get a pointer to the same archival file
+    // (rental_applications.agreement_document_url). The file embeds
+    // the landlord's pre-signature, the tenant's drawn signature,
+    // and the audit metadata, so opening the URL later shows the
+    // executed agreement exactly as it was at signing time.
+    let signedDocUrl: string | null = null;
+    try {
+      const fullSignedHtml = buildArchivalLeaseHtml({
+        documentHtml: document_html || '',
+        signerName: signer_name || '',
+        signerEmail: signer_email || '',
+        signedAt,
+        ipAddress,
+        userAgent,
+        documentHash: document_hash,
+        signatureImageUrl,
+      });
+      const objectPath = `signed/${app.id}-${Date.now()}.html`;
+      const { error: uploadErr } = await supabase.storage
+        .from('lease-documents')
+        .upload(objectPath, new Blob([fullSignedHtml], { type: 'text/html; charset=utf-8' }), {
+          cacheControl: '31536000', upsert: false,
+        });
+      if (uploadErr) {
+        console.error('Failed to upload signed lease HTML:', uploadErr);
+      } else {
+        const { data: urlData } = supabase.storage.from('lease-documents').getPublicUrl(objectPath);
+        signedDocUrl = urlData?.publicUrl || null;
+      }
+    } catch (e) {
+      console.error('Archival HTML save failed (non-fatal):', e);
+    }
+
     // ── Update application status ──────────────────────────────────
 
     if (docType === 'rental') {
@@ -239,6 +274,7 @@ Deno.serve(async (req) => {
           agreement_signed_at: signedAt,
           signing_token: null, // Invalidate token
           signing_token_expires_at: null,
+          ...(signedDocUrl ? { agreement_document_url: signedDocUrl } : {}),
           updated_at: signedAt,
         })
         .eq('id', app.id);
@@ -410,6 +446,48 @@ function formatDateTime(iso: string): string {
 }
 
 // Build the e-signature audit block HTML used in all post-signing emails
+/**
+ * Wrap the rendered lease HTML the tenant signed (which already has the
+ * landlord's pre-signature embedded) plus an audit footer into a complete
+ * standalone HTML document suitable for archival in lease-documents/signed/.
+ * Both parties (tenant and landlord) reference the same file via
+ * rental_applications.agreement_document_url.
+ */
+function buildArchivalLeaseHtml(opts: {
+  documentHtml: string;
+  signerName: string;
+  signerEmail: string;
+  signedAt: string;
+  ipAddress: string;
+  userAgent: string;
+  documentHash: string;
+  signatureImageUrl: string;
+}): string {
+  const audit = auditBlockHtml(opts);
+  const titleSafe = (opts.signerName || 'Signed Lease').replace(/[<>&]/g, '');
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signed Lease — ${titleSafe}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 820px; margin: 32px auto; padding: 0 20px 60px; color: #1c1618; line-height: 1.55; }
+  h1 { font-size: 24px; }
+  h2 { font-size: 18px; margin-top: 1.6em; }
+  h3 { font-size: 15px; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 1.6em 0; }
+  .archival-banner { background:#f1f8f4; border-left: 4px solid #3d8b7a; padding: 12px 16px; margin-bottom: 24px; font-size: 14px; color:#1c4a3e; }
+</style>
+</head>
+<body>
+  <div class="archival-banner"><strong>Executed Lease Agreement</strong> — signed by ${titleSafe} on ${formatDateTime(opts.signedAt)}. This file is the canonical archival record; both parties have the same URL on file.</div>
+  ${opts.documentHtml}
+  ${audit}
+</body>
+</html>`;
+}
+
 function landlordSignatureSvg(name: string, dateLabel: string): string {
   // Inline SVG renders reliably in Gmail web (the primary inbox we send to)
   // and most modern clients. Falls back gracefully — even when stripped,

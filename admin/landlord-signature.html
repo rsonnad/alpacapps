@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Landlord Signature - AlpacAPPs Admin</title>
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../styles/site.css">
+<link rel="stylesheet" href="../styles/tailwind.out.css">
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.2.0/dist/signature_pad.umd.min.js"></script>
+<style>
+  body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #faf9f6; color: #2a1f23; margin: 0; }
+  main { max-width: 720px; margin: 32px auto; padding: 24px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  .lede { color: #666; margin: 0 0 24px; }
+  .preview { background: #fdfcf8; border: 1px solid #e6dec9; border-radius: 8px; padding: 16px; min-height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .preview img { max-height: 80px; max-width: 100%; }
+  .preview .empty { color: #999; font-size: 14px; }
+  .canvas-wrap { border: 2px dashed #ccc; border-radius: 8px; padding: 8px; background: #fff; position: relative; }
+  canvas { width: 100%; height: 180px; touch-action: none; cursor: crosshair; display: block; background: #fff; border-radius: 4px; }
+  .canvas-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #ccc; pointer-events: none; font-style: italic; }
+  .canvas-placeholder.hidden { display: none; }
+  .row { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+  button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; font-family: inherit; }
+  .btn-primary { background: #3d8b7a; color: #fff; }
+  .btn-primary:hover { background: #336e63; }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-secondary { background: #eee; color: #333; }
+  .btn-secondary:hover { background: #ddd; }
+  .btn-danger { background: #c34; color: #fff; }
+  .toast { position: fixed; top: 16px; right: 16px; background: #333; color: #fff; padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); display: none; z-index: 1000; }
+  .toast.success { background: #2a7c5e; }
+  .toast.error { background: #c34; }
+  .toast.show { display: block; }
+  .file-input { display: none; }
+  .file-label { display: inline-block; padding: 10px 20px; background: #eee; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; }
+  .file-label:hover { background: #ddd; }
+  label { display: block; font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 6px; }
+  input[type="text"] { width: 100%; padding: 10px 12px; border: 1.5px solid #e6e2d9; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box; }
+  .meta { font-size: 12px; color: #888; margin-top: 16px; line-height: 1.5; }
+  .auth-warn { background: #ffe9e0; color: #7a2a10; padding: 12px 16px; border-radius: 8px; margin: 16px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Landlord Pre-Signature</h1>
+  <p class="lede">Upload or draw the signature embedded in every lease the system sends out for tenant signature. Stored in the <code>lease-documents</code> bucket. Used by <code>get-signing-document</code> for the <code>{{landlord_signature_img}}</code> placeholder.</p>
+
+  <div id="authWarn" class="auth-warn" style="display:none;">You must be signed in as an admin to save changes.</div>
+
+  <h2 style="margin-top:0;font-size:16px;">Current signature on file</h2>
+  <div class="preview" id="currentPreview"><span class="empty">Loading…</span></div>
+
+  <label for="ls_name">Name on Signature</label>
+  <input id="ls_name" type="text" placeholder="Rahul Sonnad" />
+
+  <label for="ls_title">Title (optional)</label>
+  <input id="ls_title" type="text" placeholder='Admin, Revocable Trust of Subhash Sonnad' />
+
+  <h2 style="margin-top:24px;font-size:16px;">Set new signature</h2>
+  <p style="color:#666;font-size:13px;margin:0 0 8px;">Draw on the pad below, OR upload a transparent-background PNG. Saved as the new signature when you hit "Save Signature".</p>
+
+  <div class="canvas-wrap">
+    <canvas id="sigCanvas"></canvas>
+    <span class="canvas-placeholder" id="sigPlaceholder">Draw your signature here</span>
+  </div>
+
+  <div class="row">
+    <button class="btn-secondary" type="button" onclick="clearPad()">Clear Pad</button>
+    <label for="fileInput" class="file-label">Upload PNG instead</label>
+    <input id="fileInput" type="file" accept="image/png,image/jpeg" class="file-input" />
+    <span id="uploadFileName" style="font-size:13px;color:#888;align-self:center;"></span>
+  </div>
+
+  <div class="row" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #eee;">
+    <button class="btn-primary" id="saveBtn" type="button" onclick="save()">Save Signature</button>
+    <button class="btn-danger" type="button" onclick="removeSignature()" id="removeBtn" style="display:none;">Remove (revert to typed-name SVG fallback)</button>
+  </div>
+
+  <div class="meta">
+    Falls back to a cursive SVG of the typed name when no image is on file. The signed lease HTML produced at signing time embeds whichever applies.
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { supabase } from '../shared/supabase.js';
+
+window.supabase = supabase;
+let pad = null;
+let uploadedFile = null;
+let currentValue = { name: 'Rahul Sonnad', title: 'Admin, Revocable Trust of Subhash Sonnad', signature_image_url: null };
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+function initPad() {
+  const canvas = document.getElementById('sigCanvas');
+  const ph = document.getElementById('sigPlaceholder');
+  function resize() {
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    if (pad) pad.clear();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  pad = new SignaturePad(canvas, { minWidth: 1, maxWidth: 2.5, penColor: '#1c4a3e', backgroundColor: 'rgba(255,255,255,0)' });
+  pad.addEventListener('beginStroke', () => ph.classList.add('hidden'));
+  pad.addEventListener('endStroke', () => { if (pad.isEmpty()) ph.classList.remove('hidden'); });
+}
+
+window.clearPad = () => { if (pad) pad.clear(); document.getElementById('sigPlaceholder').classList.remove('hidden'); uploadedFile = null; document.getElementById('uploadFileName').textContent = ''; };
+
+async function loadCurrent() {
+  const { data, error } = await supabase.from('config').select('value').eq('key', 'landlord_signature').single();
+  const preview = document.getElementById('currentPreview');
+  if (error || !data) { preview.innerHTML = '<span class="empty">No signature on file (using typed-name fallback).</span>'; return; }
+  currentValue = data.value || currentValue;
+  document.getElementById('ls_name').value = currentValue.name || '';
+  document.getElementById('ls_title').value = currentValue.title || '';
+  if (currentValue.signature_image_url) {
+    preview.innerHTML = `<img src="${currentValue.signature_image_url}?t=${Date.now()}" alt="Landlord signature">`;
+    document.getElementById('removeBtn').style.display = '';
+  } else {
+    preview.innerHTML = '<span class="empty">No image uploaded — using typed-name SVG fallback.</span>';
+  }
+}
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  uploadedFile = e.target.files[0] || null;
+  document.getElementById('uploadFileName').textContent = uploadedFile ? `Selected: ${uploadedFile.name}` : '';
+  if (pad) pad.clear();
+});
+
+async function getBlobToUpload() {
+  if (uploadedFile) return uploadedFile;
+  if (pad && !pad.isEmpty()) {
+    const dataUrl = pad.toDataURL('image/png');
+    const res = await fetch(dataUrl);
+    return await res.blob();
+  }
+  return null;
+}
+
+window.save = async () => {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const session = (await supabase.auth.getSession()).data.session;
+    if (!session) { document.getElementById('authWarn').style.display = ''; throw new Error('Sign in as admin first.'); }
+    const blob = await getBlobToUpload();
+    let signature_image_url = currentValue.signature_image_url || null;
+    if (blob) {
+      const path = `signatures/landlord-${Date.now()}.png`;
+      const { error: upErr } = await supabase.storage.from('lease-documents').upload(path, blob, { contentType: blob.type || 'image/png', upsert: false });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from('lease-documents').getPublicUrl(path);
+      signature_image_url = urlData?.publicUrl || null;
+    }
+    const newValue = {
+      name: document.getElementById('ls_name').value.trim() || 'Rahul Sonnad',
+      title: document.getElementById('ls_title').value.trim() || null,
+      signature_image_url,
+    };
+    const { error: cfgErr } = await supabase.from('config').update({ value: newValue, updated_at: new Date().toISOString() }).eq('key', 'landlord_signature');
+    if (cfgErr) throw cfgErr;
+    toast('Saved. New signature will be used in all future signings.', 'success');
+    await loadCurrent();
+    if (pad) pad.clear();
+    uploadedFile = null;
+    document.getElementById('uploadFileName').textContent = '';
+  } catch (e) {
+    console.error(e);
+    toast(e.message || 'Save failed', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Signature';
+  }
+};
+
+window.removeSignature = async () => {
+  if (!confirm('Remove the uploaded landlord signature image and revert to the typed-name SVG fallback?')) return;
+  try {
+    const newValue = { ...currentValue, signature_image_url: null };
+    const { error } = await supabase.from('config').update({ value: newValue, updated_at: new Date().toISOString() }).eq('key', 'landlord_signature');
+    if (error) throw error;
+    toast('Reverted to SVG fallback.', 'success');
+    await loadCurrent();
+  } catch (e) {
+    toast(e.message || 'Remove failed', 'error');
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  initPad();
+  loadCurrent();
+});
+</script>
+</body>
+</html>
