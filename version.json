@@ -1,12 +1,12 @@
 {
-  "version": "v260508.14 4:12p",
-  "release": 1466,
-  "sha": "7f2b92cd3",
-  "fullSha": "7f2b92cd358a6d561dd1efe4d8b37448ee8a64f3",
+  "version": "v260508.15 4:20p",
+  "release": 1467,
+  "sha": "eb99f34da",
+  "fullSha": "eb99f34da0354af84b35dd5d6757e1dff1df1728",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T21:12:09+00:00",
-  "commits": [{"sha":"7f2b92cd3","message":"feat(rentals): cc landlord on every lease signing-request email","author":"Rahul"}]
+  "pushedAt": "2026-05-08T21:20:30+00:00",
+  "commits": [{"sha":"eb99f34da","message":"fix(rentals): use multi-To instead of CC for landlord copy of lease","author":"Rahul"}]
 }
