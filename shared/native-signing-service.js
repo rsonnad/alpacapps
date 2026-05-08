@@ -162,10 +162,12 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
+        type: 'custom',
         to: toEmail,
         subject: `Please Sign: ${docLabel} - Alpaca Playhouse`,
-        sender: 'pai',
-        html: `
+        data: {
+          subject: `Please Sign: ${docLabel} - Alpaca Playhouse`,
+          html: `
           <h2>Your ${docLabel} Is Ready to Sign</h2>
           <p>Hi ${firstName},</p>
           <p>Your agreement is ready for your review and signature. Please click the button below to review the document and sign electronically.</p>
@@ -197,6 +199,8 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
 
           <div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>
         `,
+          text: `Hi ${firstName},\n\nYour ${docLabel} is ready to sign:\n${signingUrl}\n\nThis link expires in ${TOKEN_EXPIRY_DAYS} days.\n\n— Alpaca Playhouse`,
+        },
       }),
     });
 

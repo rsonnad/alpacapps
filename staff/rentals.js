@@ -3549,9 +3549,6 @@ async function sendForSignature() {
       }).eq('id', currentApplicationId);
     }
 
-    await loadApplications();
-    openRentalDetail(currentApplicationId, getActiveDetailTab());
-
     if (emailResult.success && depositEmailResult.success) {
       showToast('Lease sent for signature, notification & deposit request emails sent', 'success');
     } else if (emailResult.success) {
@@ -3564,6 +3561,12 @@ async function sendForSignature() {
     showToast('Error: ' + error.message, 'error');
   } finally {
     if (btn) { btn.textContent = originalText; btn.disabled = false; }
+    try {
+      await loadApplications();
+      openRentalDetail(currentApplicationId, getActiveDetailTab());
+    } catch (refreshErr) {
+      console.error('Failed to refresh after sendForSignature:', refreshErr);
+    }
   }
 }
 
