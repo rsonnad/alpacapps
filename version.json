@@ -1,12 +1,12 @@
 {
-  "version": "v260508.03 12:57p",
-  "release": 1455,
-  "sha": "1064b4d0c",
-  "fullSha": "1064b4d0c75e32f9131bb3a3878b3d15c8b4b970",
+  "version": "v260508.04 2:36p",
+  "release": 1456,
+  "sha": "2f1426a84",
+  "fullSha": "2f1426a84b3888736bed6811ef36adfcdc43e124",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T17:57:17+00:00",
-  "commits": [{"sha":"1064b4d0c","message":"fix(rentals): signing email payload + UI refresh on partial failure","author":"Rahul"}]
+  "pushedAt": "2026-05-08T19:36:25+00:00",
+  "commits": [{"sha":"2f1426a84","message":"feat(rentals): inline lease text + payment links in signing email","author":"Rahul"}]
 }
