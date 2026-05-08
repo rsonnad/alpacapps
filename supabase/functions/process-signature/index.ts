@@ -192,9 +192,10 @@ Deno.serve(async (req) => {
         }
       }
       if (Object.keys(allowed).length > 0) {
+        // people has no updated_at column — write only the whitelisted fields.
         const { error: piError } = await supabase
           .from('people')
-          .update({ ...allowed, updated_at: signedAt })
+          .update(allowed)
           .eq('id', person.id);
         if (piError) {
           console.error('Failed to update person contact info:', piError);
