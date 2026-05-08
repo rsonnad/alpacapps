@@ -410,7 +410,20 @@ function formatDateTime(iso: string): string {
 }
 
 // Build the e-signature audit block HTML used in all post-signing emails
+function landlordSignatureSvg(name: string, dateLabel: string): string {
+  // Inline SVG renders reliably in Gmail web (the primary inbox we send to)
+  // and most modern clients. Falls back gracefully — even when stripped,
+  // the lease text below still names Rahul Sonnad as the pre-signing landlord.
+  const safeName = name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<svg width="260" height="64" viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Landlord signature: ${safeName}">
+    <text x="6" y="46" font-family="'Brush Script MT','Lucida Handwriting','Snell Roundhand',cursive" font-style="italic" font-size="38" fill="#1c4a3e">${safeName}</text>
+    <line x1="0" y1="56" x2="260" y2="56" stroke="#aaa" stroke-width="0.5"/>
+    <text x="0" y="63" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="9" fill="#888">Pre-signed ${dateLabel}</text>
+  </svg>`;
+}
+
 function auditBlockHtml(opts: { signedAt: string; ipAddress: string; userAgent: string; documentHash: string; signatureImageUrl: string }): string {
+  const landlordSig = landlordSignatureSvg('Rahul Sonnad', formatDateTime(opts.signedAt).split(',')[0] || formatDateTime(opts.signedAt));
   return `
     <div style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 24px 0;">
       <h3 style="margin-top: 0; color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Electronic Signature Record</h3>
@@ -420,10 +433,19 @@ function auditBlockHtml(opts: { signedAt: string; ipAddress: string; userAgent: 
         <tr><td style="padding: 6px 0; color: #888;">Browser</td><td style="padding: 6px 0; word-break: break-all; font-size: 11px;">${opts.userAgent}</td></tr>
         <tr><td style="padding: 6px 0; color: #888;">Document Hash</td><td style="padding: 6px 0; font-family: monospace; font-size: 11px; word-break: break-all;">${opts.documentHash}</td></tr>
       </table>
-      <div style="margin-top: 16px; border-top: 1px solid #eee; padding-top: 12px;">
-        <p style="color: #888; font-size: 12px; margin: 0 0 8px 0;">Signature:</p>
-        <img src="${opts.signatureImageUrl}" alt="Signature" style="max-width: 300px; height: auto; border: 1px solid #eee; border-radius: 4px; padding: 8px; background: #fff;">
-      </div>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 16px; border-top: 1px solid #eee; padding-top: 12px;">
+        <tr>
+          <td style="vertical-align: top; padding: 12px 8px 0 0; width: 50%;">
+            <p style="color: #888; font-size: 12px; margin: 0 0 6px 0;">Landlord signature</p>
+            <div style="border: 1px solid #eee; border-radius: 4px; padding: 6px 10px; background: #fff;">${landlordSig}</div>
+            <p style="color: #555; font-size: 11px; margin: 6px 0 0 0;">Rahul Sonnad — Admin, Revocable Trust of Subhash Sonnad</p>
+          </td>
+          <td style="vertical-align: top; padding: 12px 0 0 8px; width: 50%;">
+            <p style="color: #888; font-size: 12px; margin: 0 0 6px 0;">Tenant signature</p>
+            <img src="${opts.signatureImageUrl}" alt="Tenant signature" style="max-width: 260px; max-height: 64px; height: auto; border: 1px solid #eee; border-radius: 4px; padding: 6px 10px; background: #fff;">
+          </td>
+        </tr>
+      </table>
       <p style="color: #999; font-size: 11px; margin: 12px 0 0 0;">
         This document was signed electronically in compliance with the ESIGN Act (15 U.S.C. § 7001) and the Texas Uniform Electronic Transactions Act (Tex. Bus. & Com. Code Ch. 322).
       </p>
@@ -439,6 +461,9 @@ async function sendSignedEmail(apiKey: string, opts: any) {
       body: JSON.stringify({
         from: SENDER_MAP.pai.from,
         to: [opts.to],
+        // Landlord copy: same fully-signed HTML the tenant receives, so both
+        // parties have the executed agreement on file in their inbox.
+        bcc: ['alpacaplayhouse@gmail.com'],
         reply_to: SENDER_MAP.pai.reply_to,
         subject: opts.subject,
         html: `
@@ -496,6 +521,7 @@ async function sendEventSignedEmail(apiKey: string, opts: any) {
       body: JSON.stringify({
         from: SENDER_MAP.pai.from,
         to: [opts.to],
+        bcc: ['alpacaplayhouse@gmail.com'],
         reply_to: SENDER_MAP.pai.reply_to,
         subject: 'Event Agreement Signed - Outstanding Fees Due - Alpaca Playhouse',
         html: `

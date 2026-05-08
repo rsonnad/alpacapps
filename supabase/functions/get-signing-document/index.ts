@@ -309,7 +309,18 @@ function buildRentalAgreementData(app: any, person: any, space: any): Record<str
     notice_period_display: noticePeriodDisplay[app.notice_period] || '30 days notice required',
     lease_term_block: leaseTermBlock,
     additional_terms: app.additional_terms || '',
+    landlord_signature_img: landlordSignatureSvg('Rahul Sonnad', formatSigningDate()),
   };
+}
+
+/**
+ * Inline SVG that renders the landlord's pre-signature visually inside the
+ * produced lease HTML. Server-generated → trusted. Renders reliably in
+ * Gmail web (the inbox we send to) and most modern email clients.
+ */
+function landlordSignatureSvg(name: string, dateLabel: string): string {
+  const safe = String(name).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<svg width="260" height="64" viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Landlord signature: ${safe}"><text x="6" y="46" font-family="'Brush Script MT','Lucida Handwriting','Snell Roundhand',cursive" font-style="italic" font-size="38" fill="#1c4a3e">${safe}</text><line x1="0" y1="56" x2="260" y2="56" stroke="#aaa" stroke-width="0.5"/><text x="0" y="63" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="9" fill="#888">Pre-signed ${dateLabel}</text></svg>`;
 }
 
 /**
