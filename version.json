@@ -1,12 +1,12 @@
 {
-  "version": "v260508.12 3:47p",
-  "release": 1464,
-  "sha": "e0fc2fa62",
-  "fullSha": "e0fc2fa62bc11b4476eaae2894a99fbc0a56eac2",
+  "version": "v260508.13 3:54p",
+  "release": 1465,
+  "sha": "4277dcc46",
+  "fullSha": "4277dcc46823d73623aee408c0e76cf99d2d25cf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T20:47:25+00:00",
-  "commits": [{"sha":"e0fc2fa62","message":"feat(rentals): visual landlord signature + landlord copy of signed lease","author":"Rahul"}]
+  "pushedAt": "2026-05-08T20:54:45+00:00",
+  "commits": [{"sha":"4277dcc46","message":"feat(rentals): uploadable landlord signature + archival signed-lease HTML","author":"Rahul"}]
 }
