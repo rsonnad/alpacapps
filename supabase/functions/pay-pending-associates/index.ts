@@ -19,6 +19,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getCorsHeaders } from '../_shared/api-helpers.ts';
+import { rollupEntries } from '../_shared/payout-breakdown.ts';
 
 function formEncode(obj: Record<string, string | number>): string {
   return Object.entries(obj)
@@ -100,7 +101,7 @@ Deno.serve(async (req) => {
     for (const assoc of associates || []) {
       const { data: entries, error: eerr } = await supabase
         .from('time_entries')
-        .select('id, clock_in, clock_out')
+        .select('id, clock_in, clock_out, description, task_id')
         .eq('associate_id', assoc.id)
         .eq('is_paid', false)
         .not('clock_out', 'is', null);
@@ -144,25 +145,15 @@ Deno.serve(async (req) => {
         if (person?.email) recipientEmail = person.email;
       }
 
-      const dateRange = (() => {
-        const dates = entries.map(e => (e.clock_in as string).slice(0, 10)).sort();
-        return { first: dates[0], last: dates[dates.length - 1] };
-      })();
-      const dailyBreakdown = (() => {
-        const byDate = new Map<string, number>();
-        for (const e of entries) {
-          const date = (e.clock_in as string).slice(0, 10);
-          const hours = (new Date(e.clock_out as string).getTime() - new Date(e.clock_in as string).getTime()) / 3_600_000;
-          byDate.set(date, (byDate.get(date) || 0) + hours);
-        }
-        return Array.from(byDate.entries())
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([date, hours]) => {
-            const d = new Date(`${date}T12:00:00`);
-            const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            return { date, label, hours };
-          });
-      })();
+      // Resolve task titles for entries that have a task_id but no inline description.
+      const taskIds = Array.from(new Set(entries.map(e => (e as any).task_id).filter(Boolean))) as string[];
+      let taskNames: Record<string, string> = {};
+      if (taskIds.length > 0) {
+        const { data: tasks } = await supabase.from('tasks').select('id, title').in('id', taskIds);
+        for (const t of tasks || []) if (t.title) taskNames[t.id] = t.title;
+      }
+      const breakdown = rollupEntries(entries as any, rate, taskNames);
+      const dateRange = breakdown.period;
       const description = `Auto payout: ${personName} — ${totalHours.toFixed(2)} hrs ${dateRange.first} to ${dateRange.last}`;
 
       let transfer: { id: string };
@@ -226,44 +217,39 @@ Deno.serve(async (req) => {
       // decrement remaining balance so we don't over-promise within a single run
       const newAvailable = availableCents - amountCents;
 
-      // emails — to associate + cc alpacaplayhouse@gmail.com
-      if (resendKey && recipientEmail) {
+      // emails — route through send-email so the associate_payout_sent template
+      // (and SENDER_MAP) is the single source of truth for payout emails.
+      if (recipientEmail) {
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         const eta = addBusinessDays(new Date(), 2).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
         const firstName = appUser?.first_name || personName.split(' ')[0];
-        const breakdownRowsHtml = dailyBreakdown
-          .map(d => `  <tr><td>${d.label}</td><td style="text-align:right">${d.hours.toFixed(2)} hrs</td></tr>`)
-          .join('\n');
-        const breakdownTextLines = dailyBreakdown
-          .map(d => `  ${d.label}: ${d.hours.toFixed(2)} hrs`)
-          .join('\n');
-        const html = `
-<p>Hi ${firstName},</p>
-<p>A Stripe payout for <strong>$${amount.toFixed(2)}</strong> just went out to your linked account.</p>
-<table cellpadding="6" cellspacing="0" style="border-collapse:collapse;border:1px solid #ccc">
-  <tr><td><strong>Hours</strong></td><td>${totalHours.toFixed(2)} @ $${rate.toFixed(2)}/hr</td></tr>
-  <tr><td><strong>Period</strong></td><td>${dateRange.first} to ${dateRange.last} (${entries.length} entries across ${dailyBreakdown.length} day${dailyBreakdown.length === 1 ? '' : 's'})</td></tr>
-  <tr><td><strong>Sent</strong></td><td>${today}</td></tr>
-  <tr><td><strong>Expected in your account</strong></td><td>${eta}</td></tr>
-  <tr><td><strong>Stripe transfer</strong></td><td>${transfer.id}</td></tr>
-</table>
-<p style="margin-top:16px"><strong>Days paid:</strong></p>
-<table cellpadding="4" cellspacing="0" style="border-collapse:collapse;border:1px solid #ccc">
-${breakdownRowsHtml}
-</table>
-<p>Thank you!</p>
-<p>— Alpaca Playhouse</p>`;
         try {
-          await fetch('https://api.resend.com/emails', {
+          await fetch(`${supabaseUrl}/functions/v1/send-email`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${supabaseServiceKey}`
+            },
             body: JSON.stringify({
-              from: 'Alpaca Playhouse <admin@alpacaplayhouse.com>',
-              to: [recipientEmail],
-              cc: ['alpacaplayhouse@gmail.com'],
-              subject: `Stripe payout: $${amount.toFixed(2)} for ${totalHours.toFixed(2)} hrs`,
-              html,
-              text: `Hi ${firstName},\n\nA Stripe payout for $${amount.toFixed(2)} just went out.\n\nHours: ${totalHours.toFixed(2)} @ $${rate.toFixed(2)}/hr\nPeriod: ${dateRange.first} to ${dateRange.last} (${entries.length} entries across ${dailyBreakdown.length} day${dailyBreakdown.length === 1 ? '' : 's'})\nSent: ${today}\nExpected in account: ${eta}\nTransfer: ${transfer.id}\n\nDays paid:\n${breakdownTextLines}\n\nThanks!\n— Alpaca Playhouse`
+              type: 'associate_payout_sent',
+              to: recipientEmail,
+              cc: 'alpacaplayhouse@gmail.com',
+              data: {
+                first_name: firstName,
+                recipient_name: personName,
+                amount: amount.toFixed(2),
+                payment_method: 'Stripe (ACH)',
+                hours: totalHours.toFixed(2),
+                hourly_rate: rate.toFixed(2),
+                payout_date: today,
+                expected_deposit_date: eta,
+                transfer_id: transfer.id,
+                period_first: dateRange.first,
+                period_last: dateRange.last,
+                entry_count: breakdown.entryCount,
+                day_count: breakdown.dayCount,
+                daily_breakdown: breakdown.rows
+              }
             })
           });
         } catch (mailErr) {

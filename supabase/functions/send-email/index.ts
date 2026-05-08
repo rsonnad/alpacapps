@@ -2474,6 +2474,90 @@ This is an automated weekly schedule report from Alpaca Playhouse.`
       };
     }
 
+    case "associate_payout_sent": {
+      // data: {
+      //   first_name, recipient_name, amount (string),
+      //   payment_method ("Stripe (ACH)" | "PayPal" | ...),
+      //   hours, hourly_rate,
+      //   payout_date, expected_deposit_date,
+      //   transfer_id (optional), notes (optional),
+      //   period_first, period_last, entry_count, day_count,
+      //   daily_breakdown: [{ label, hours, amount, descriptions: string[] }]
+      // }
+      const breakdown = Array.isArray(data.daily_breakdown) ? data.daily_breakdown : [];
+      const hasBreakdown = breakdown.length > 0;
+      const periodLine = data.period_first && data.period_last
+        ? `${data.period_first} to ${data.period_last}${data.entry_count ? ` (${data.entry_count} entries${data.day_count ? ` across ${data.day_count} day${data.day_count === 1 ? '' : 's'}` : ''})` : ''}`
+        : '';
+
+      const breakdownRowsHtml = breakdown.map((d: any) => {
+        const desc = Array.isArray(d.descriptions) && d.descriptions.length
+          ? `<div style="color:#7d6f74;font-size:12px;margin-top:2px;">${d.descriptions.map((s: string) => String(s).replace(/[<>]/g, '')).join(' • ')}</div>`
+          : '';
+        return `<tr>
+          <td style="padding:6px 8px;border-top:1px solid #e6e2d9;vertical-align:top;">
+            <div style="font-weight:600;color:#2a1f23;">${d.label}</div>
+            ${desc}
+          </td>
+          <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;color:#555;white-space:nowrap;">${Number(d.hours).toFixed(2)} hrs</td>
+          <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;font-weight:600;color:#d4883a;white-space:nowrap;">$${Number(d.amount).toFixed(2)}</td>
+        </tr>`;
+      }).join('');
+
+      const breakdownHtml = hasBreakdown ? `
+        <p style="margin:24px 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">Days paid</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e6e2d9;border-radius:8px;border-collapse:separate;border-spacing:0;overflow:hidden;background:#fff;">
+          <tr style="background:#f7f6f1;color:#7d6f74;font-size:12px;">
+            <td style="padding:8px;text-align:left;">Date / Description</td>
+            <td style="padding:8px;text-align:right;">Hours</td>
+            <td style="padding:8px;text-align:right;">Amount</td>
+          </tr>
+          ${breakdownRowsHtml}
+        </table>` : '';
+
+      const breakdownText = hasBreakdown
+        ? '\nDays paid:\n' + breakdown.map((d: any) => {
+            const desc = Array.isArray(d.descriptions) && d.descriptions.length
+              ? `\n      ${d.descriptions.join(' • ')}` : '';
+            return `  ${d.label}: ${Number(d.hours).toFixed(2)} hrs — $${Number(d.amount).toFixed(2)}${desc}`;
+          }).join('\n')
+        : '';
+
+      return {
+        subject: `Payout sent: $${data.amount} for ${data.hours ?? ''} hrs`.replace(/\s+/g, ' ').trim(),
+        html: `
+          <h2 style="margin:0 0 8px;">Payout sent</h2>
+          <p style="margin:0 0 16px;">Hi ${data.first_name || data.recipient_name || 'there'},</p>
+          <p style="margin:0 0 16px;">A <strong>${data.payment_method || 'payout'}</strong> for <strong>$${data.amount}</strong> just went out to your linked account.</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 8px;">
+            <tr><td style="padding:16px 20px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                ${data.hours ? `<tr><td style="padding:0 0 6px;"><strong>Hours</strong></td><td style="padding:0 0 6px;text-align:right;">${data.hours}${data.hourly_rate ? ` @ $${data.hourly_rate}/hr` : ''}</td></tr>` : ''}
+                ${periodLine ? `<tr><td style="padding:0 0 6px;"><strong>Period</strong></td><td style="padding:0 0 6px;text-align:right;">${periodLine}</td></tr>` : ''}
+                ${data.payout_date ? `<tr><td style="padding:0 0 6px;"><strong>Sent</strong></td><td style="padding:0 0 6px;text-align:right;">${data.payout_date}</td></tr>` : ''}
+                ${data.expected_deposit_date ? `<tr><td style="padding:0 0 6px;"><strong>Expected in your account</strong></td><td style="padding:0 0 6px;text-align:right;">${data.expected_deposit_date}</td></tr>` : ''}
+                ${data.transfer_id ? `<tr><td style="padding:0 0 0;"><strong>Transfer</strong></td><td style="padding:0 0 0;text-align:right;font-family:monospace;font-size:12px;color:#7d6f74;">${data.transfer_id}</td></tr>` : ''}
+              </table>
+            </td></tr>
+          </table>
+          ${breakdownHtml}
+          ${data.notes ? `<p style="margin:16px 0 0;color:#555;">${data.notes}</p>` : ''}
+          <p style="margin:20px 0 0;">Thank you!</p>
+          <p style="margin:4px 0 0;">— Alpaca Playhouse</p>
+        `,
+        text: `Payout sent
+
+Hi ${data.first_name || data.recipient_name || 'there'},
+
+A ${data.payment_method || 'payout'} for $${data.amount} just went out to your linked account.
+
+${data.hours ? `Hours: ${data.hours}${data.hourly_rate ? ` @ $${data.hourly_rate}/hr` : ''}\n` : ''}${periodLine ? `Period: ${periodLine}\n` : ''}${data.payout_date ? `Sent: ${data.payout_date}\n` : ''}${data.expected_deposit_date ? `Expected in account: ${data.expected_deposit_date}\n` : ''}${data.transfer_id ? `Transfer: ${data.transfer_id}\n` : ''}${breakdownText}${data.notes ? `\n\n${data.notes}` : ''}
+
+Thanks!
+— Alpaca Playhouse`,
+      };
+    }
+
     case "event_notification":
       return {
         subject: data.subject || `Event Notification — Alpaca Playhouse`,
