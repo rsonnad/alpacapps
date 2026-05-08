@@ -1,12 +1,12 @@
 {
-  "version": "v260508.09 3:11p",
-  "release": 1461,
-  "sha": "4546c96c6",
-  "fullSha": "4546c96c606f6c8cd9a0e689d5c47cbb2e2430e6",
+  "version": "v260508.10 3:13p",
+  "release": 1462,
+  "sha": "0fbc2236e",
+  "fullSha": "0fbc2236e5ebb04f15a3848faec9fcbde78cf7de",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T20:11:01+00:00",
-  "commits": [{"sha":"e635f6bb4","message":"feat(payouts): DB-template renders Days paid table + transfer row; pre-render breakdown HTML","author":"Rahul"},{"sha":"4546c96c6","message":"Merge: payout template renders Days paid + transfer row","author":"Rahul"}]
+  "pushedAt": "2026-05-08T20:13:23+00:00",
+  "commits": [{"sha":"0fbc2236e","message":"feat(rentals): collect address + emergency contact on signing page","author":"Rahul"}]
 }
