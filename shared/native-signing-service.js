@@ -58,11 +58,13 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
   // Tenant can read everything inline and only follow the Sign button when ready.
   const { documentHtml, waiverHtml } = await fetchSigningDocument(token);
   const paymentMethodsHtml = await fetchPaymentMethodsHtml();
+  const paymentSummaryHtml = await buildRentalPaymentSummary(applicationId);
 
   await sendSigningEmail(recipientEmail, recipientName, signingUrl, 'rental', null, {
     documentHtml,
     waiverHtml,
     paymentMethodsHtml,
+    paymentSummaryHtml,
   });
 
   return { token, signing_url: signingUrl, expires_at: expiresAt };
@@ -122,6 +124,106 @@ async function fetchSigningDocument(token) {
   } catch (err) {
     console.warn('fetchSigningDocument failed:', err);
     return { documentHtml: '', waiverHtml: '' };
+  }
+}
+
+/**
+ * Build a Payment Summary HTML block for a rental application.
+ * Shows: reservation deposit (due now), security deposit (due at move-in),
+ * first-month rent (prorated, with reservation-deposit credit applied),
+ * and the recurring monthly cadence (1st of each month).
+ *
+ * Returns '' if essential data is missing — caller renders no summary in that case.
+ */
+async function buildRentalPaymentSummary(applicationId) {
+  try {
+    const { data: app, error } = await supabase
+      .from('rental_applications')
+      .select('approved_rate, approved_rate_term, approved_move_in, approved_lease_end, security_deposit_amount, move_in_deposit_amount, reservation_deposit_amount, application_fee_paid, application_fee_amount')
+      .eq('id', applicationId)
+      .single();
+    if (error || !app) return '';
+
+    const fmt = (n) => `$${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    const fmtDate = (d) => d
+      ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' })
+      : 'TBD';
+
+    const rate = Number(app.approved_rate || 0);
+    const term = app.approved_rate_term || 'monthly';
+    const isMonthly = term === 'monthly';
+    const reservationDeposit = Number(app.reservation_deposit_amount || 0);
+    const securityDeposit = Number(app.security_deposit_amount || 0);
+    const appFeePaid = (app.application_fee_paid && app.application_fee_amount) ? Number(app.application_fee_amount) : 0;
+
+    // Prorated first month's rent if monthly + we have a move-in date
+    let proratedRent = 0;
+    let prorationNote = '';
+    if (isMonthly && app.approved_move_in) {
+      const moveIn = new Date(app.approved_move_in + 'T12:00:00');
+      const y = moveIn.getFullYear(), m = moveIn.getMonth();
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const daysRemaining = daysInMonth - moveIn.getDate() + 1; // inclusive of move-in day
+      proratedRent = Math.round((rate * daysRemaining / daysInMonth) * 100) / 100;
+      prorationNote = `Prorated for ${daysRemaining} of ${daysInMonth} days in ${moveIn.toLocaleDateString('en-US', { month: 'long' })}.`;
+    } else {
+      proratedRent = rate;
+    }
+
+    const credits = reservationDeposit + appFeePaid;
+    const firstMonthBalance = Math.max(0, proratedRent - credits);
+
+    const moveInLabel = fmtDate(app.approved_move_in);
+
+    const rows = [];
+    if (reservationDeposit > 0) {
+      rows.push({ label: 'Reservation Deposit', amount: fmt(reservationDeposit), when: 'Due now — holds your space', note: 'Credited toward first month\'s rent.' });
+    }
+    if (securityDeposit > 0) {
+      rows.push({ label: 'Security Deposit', amount: fmt(securityDeposit), when: `Due by move-in (${moveInLabel})`, note: 'Refundable at end of lease, less any deductions.' });
+    }
+    rows.push({
+      label: isMonthly ? 'First Month\'s Rent' : 'Rent',
+      amount: fmt(proratedRent),
+      when: `Due by move-in (${moveInLabel})`,
+      note: [prorationNote, credits > 0 ? `Less ${fmt(credits)} credits already paid → balance owed at move-in: ${fmt(firstMonthBalance)}.` : null].filter(Boolean).join(' '),
+    });
+    if (isMonthly) {
+      rows.push({
+        label: 'Monthly Rent (thereafter)',
+        amount: `${fmt(rate)} / month`,
+        when: 'Due on the 1st of each month',
+        note: 'Recurring until lease ends.',
+      });
+    }
+
+    const trs = rows.map(r => `
+      <tr>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: top;"><strong>${r.label}</strong>${r.note ? `<br><span style="color:#666;font-size:0.85em;">${r.note}</span>` : ''}</td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap; vertical-align: top;"><strong>${r.amount}</strong></td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: top; color: #555; font-size: 0.9em;">${r.when}</td>
+      </tr>
+    `).join('');
+
+    return `
+      <div style="background: #f8f6f1; border: 1px solid #e6dec9; border-radius: 10px; padding: 18px 20px; margin: 0 0 24px;">
+        <h3 style="margin: 0 0 8px 0; color: #1c1618;">Payment Summary</h3>
+        <p style="margin: 0 0 12px 0; color: #555; font-size: 0.92em;">Here's what's due and when. Full lease text and payment methods are below.</p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95em;">
+          <thead>
+            <tr style="background: #f0eadb;">
+              <th style="text-align: left; padding: 8px 12px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; color: #6b5e3f;">Item</th>
+              <th style="text-align: right; padding: 8px 12px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; color: #6b5e3f;">Amount</th>
+              <th style="text-align: left; padding: 8px 12px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; color: #6b5e3f;">When</th>
+            </tr>
+          </thead>
+          <tbody>${trs}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (err) {
+    console.warn('buildRentalPaymentSummary failed:', err);
+    return '';
   }
 }
 
@@ -211,7 +313,7 @@ async function getAuditLog(applicationId) {
 async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eventName, context = {}) {
   const firstName = recipientName.split(' ')[0];
   const docLabel = docType === 'rental' ? 'Lease Agreement' : `Event Agreement for ${eventName || 'your event'}`;
-  const { documentHtml = '', waiverHtml = '', paymentMethodsHtml = '' } = context;
+  const { documentHtml = '', waiverHtml = '', paymentMethodsHtml = '', paymentSummaryHtml = '' } = context;
 
   // Use the send-email edge function
   try {
@@ -244,10 +346,19 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
       </div>
     ` : '';
 
+    const cosignNote = `
+      <div style="background: #f1f8f4; border-left: 4px solid #3d8b7a; padding: 10px 14px; margin: 16px 0; font-size: 0.92em; color: #1c4a3e;">
+        <strong>Pre-signed by Landlord.</strong> The Landlord (Rahul Sonnad) has already countersigned this lease. Your signature, applied through the secure link below, completes execution.
+      </div>`;
+
     const html = `
       <h2>Your ${docLabel} Is Ready to Sign</h2>
       <p>Hi ${firstName},</p>
       <p>Your agreement is ready for your review and signature. The full text is included below — read it at your own pace, then click the <strong>Review &amp; Sign Document</strong> button when you're ready to sign.</p>
+
+      ${paymentSummaryHtml}
+
+      ${cosignNote}
 
       ${signCta}
 

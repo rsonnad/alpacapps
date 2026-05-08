@@ -521,6 +521,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 ## Decisions
 
+### 2026-05-08: Signing-Request Email — Standard Format
+
+**Decision:** The "Please Sign" email sent to tenants when a lease is sent for signature must always include, in this order: (1) **Payment Summary table** at the top — reservation deposit due now, security deposit due at move-in, prorated first month's rent due at move-in (with credits applied), and recurring monthly rent on the 1st of each month; (2) a **co-signature notice** stating the Landlord has pre-signed and only the tenant's signature remains; (3) the **Sign CTA** button; (4) the **payment methods** block; (5) the **full lease HTML** inline so the tenant has the entire agreement in their inbox without clicking through. The lease template itself includes the rent-due-1st-of-month wording and the "✓ Pre-signed by Rahul Sonnad" line in the SIGNATURES block, so the produced lease document carries both signatures (landlord pre-signed, tenant signed via the link).
+
+**Why:** Tenants need everything they need in one email — read the lease, see what's owed and when, see how to pay, and sign — without bouncing between attachments and pages. Standardizing the format in code (`buildRentalPaymentSummary` in `shared/native-signing-service.js`) and in the lease template (DB row `lease_templates.type='lease'`, version 2) means future signings get the right information without re-prompting.
+
 ### 2026-03-17: Email Template Compliance System
 
 **Decision:** Centralize all email branding/compliance rules into the shared brand wrapper layer rather than maintaining them per-template.
