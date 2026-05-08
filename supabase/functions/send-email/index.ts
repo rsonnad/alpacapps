@@ -2710,6 +2710,52 @@ async function getRenderedTemplate(
     }
   }
 
+  // Pre-render per-day payout breakdown so DB template can include it via
+  // {{_breakdown_html}} / {{_breakdown_text}}.
+  if (type === "associate_payout_sent") {
+    // Build a single readable period string from period_first/last/entry/day_count
+    // for {{period}} placeholder, if caller didn't pass one already.
+    if (!data.period && data.period_first && data.period_last) {
+      const dc = data.day_count ? ` across ${data.day_count} day${data.day_count === 1 ? '' : 's'}` : '';
+      const ec = data.entry_count ? `${data.entry_count} entries${dc}` : '';
+      data.period = `${data.period_first} to ${data.period_last}${ec ? ` (${ec})` : ''}`;
+    }
+    const rows: any[] = Array.isArray(data.daily_breakdown) ? data.daily_breakdown : [];
+    if (rows.length > 0) {
+      const escape = (s: any) => String(s ?? '').replace(/[<>&]/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;' }[c] as string));
+      const rowsHtml = rows.map((d) => {
+        const descs = Array.isArray(d.descriptions) ? d.descriptions.filter(Boolean) : [];
+        const descLine = descs.length ? `<div style="color:#7d6f74;font-size:12px;margin-top:2px;">${descs.map(escape).join(' • ')}</div>` : '';
+        return `<tr>
+          <td style="padding:6px 8px;border-top:1px solid #e6e2d9;vertical-align:top;">
+            <div style="font-weight:600;color:#2a1f23;">${escape(d.label)}</div>
+            ${descLine}
+          </td>
+          <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;color:#555;white-space:nowrap;">${Number(d.hours || 0).toFixed(2)} hrs</td>
+          <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;font-weight:600;color:#d4883a;white-space:nowrap;">$${Number(d.amount || 0).toFixed(2)}</td>
+        </tr>`;
+      }).join('');
+      data._breakdown_html = `
+        <p style="margin:24px 0 8px;font-weight:600;font-size:14px;color:#2a1f23;">Days paid</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e6e2d9;border-radius:8px;border-collapse:separate;border-spacing:0;overflow:hidden;background:#fff;">
+          <tr style="background:#f7f6f1;color:#7d6f74;font-size:12px;">
+            <td style="padding:8px;text-align:left;">Date / Description</td>
+            <td style="padding:8px;text-align:right;">Hours</td>
+            <td style="padding:8px;text-align:right;">Amount</td>
+          </tr>
+          ${rowsHtml}
+        </table>`;
+      data._breakdown_text = '\nDays paid:\n' + rows.map((d: any) => {
+        const descs = Array.isArray(d.descriptions) ? d.descriptions.filter(Boolean) : [];
+        const descLine = descs.length ? `\n      ${descs.join(' • ')}` : '';
+        return `  ${d.label}: ${Number(d.hours || 0).toFixed(2)} hrs — $${Number(d.amount || 0).toFixed(2)}${descLine}`;
+      }).join('\n');
+    } else {
+      data._breakdown_html = '';
+      data._breakdown_text = '';
+    }
+  }
+
   // 1. Try DB template (cached)
   const cached = templateCache.get(type);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
