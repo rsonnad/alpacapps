@@ -1,12 +1,12 @@
 {
-  "version": "v260508.11 3:32p",
-  "release": 1463,
-  "sha": "81f9d068e",
-  "fullSha": "81f9d068e47f2e5d54b61e3119d545da9f424f7f",
+  "version": "v260508.12 3:47p",
+  "release": 1464,
+  "sha": "e0fc2fa62",
+  "fullSha": "e0fc2fa62bc11b4476eaae2894a99fbc0a56eac2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T20:32:11+00:00",
-  "commits": [{"sha":"81f9d068e","message":"fix(rentals): server-side enforcement of address + emergency contact","author":"Rahul"}]
+  "pushedAt": "2026-05-08T20:47:25+00:00",
+  "commits": [{"sha":"e0fc2fa62","message":"feat(rentals): visual landlord signature + landlord copy of signed lease","author":"Rahul"}]
 }
