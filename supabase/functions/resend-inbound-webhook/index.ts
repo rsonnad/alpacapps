@@ -2088,6 +2088,84 @@ function parseCoinbasePayment(bodyText: string, fromAddress: string): CoinbasePa
 }
 
 // =============================================
+// CASH APP / SQUARE PAYMENT PARSING
+// =============================================
+
+interface CashAppPayment {
+  amount: number;
+  senderName: string;
+  senderEmail: string | null;
+  currency: string;
+  transactionId: string | null;
+}
+
+function parseCashAppPayment(bodyText: string, fromAddress: string): CashAppPayment | null {
+  const fromLower = (fromAddress || "").toLowerCase();
+  const body = bodyText || "";
+  const bodyLower = body.toLowerCase();
+
+  const fromMatches =
+    fromLower.includes("cash@square.com") ||
+    fromLower.includes("@square.com") ||
+    fromLower.includes("cash.app");
+  const bodyMatches =
+    bodyLower.includes("cash.app/launch/activity/receipt") ||
+    /you were sent \$[\d,]+\.\d{2} by /i.test(body) ||
+    (bodyLower.includes("cash app") && /\$[\d,]+\.\d{2}/.test(body));
+
+  if (!fromMatches && !bodyMatches) return null;
+
+  const normalized = body.replace(/\s+/g, " ");
+
+  // Reject outbound (you sent, not received)
+  if (/you sent \$[\d,]+\.\d{2} to /i.test(normalized) && !/you were sent/i.test(normalized)) {
+    return null;
+  }
+
+  const txMatch = normalized.match(/cash\.app\/launch\/activity\/receipt\/([A-Za-z0-9_=-]+)/i);
+  const transactionId = txMatch?.[1]?.substring(0, 60) || null;
+
+  // Pattern 1: "You were sent $601.29 by Britany Nelson."
+  const m1 = normalized.match(/you were sent \$([\d,]+\.\d{2}) by ([^.\n]+?)(?:\.| To view|$)/i);
+  if (m1) {
+    return {
+      amount: parseFloat(m1[1].replace(/,/g, "")),
+      senderName: m1[2].trim(),
+      senderEmail: null,
+      currency: "USD",
+      transactionId,
+    };
+  }
+
+  // Pattern 2: "Britany Nelson sent you $601.29"
+  const m2 = normalized.match(/([A-Z][A-Za-z .'-]{1,60}) sent you \$([\d,]+\.\d{2})/);
+  if (m2) {
+    return {
+      amount: parseFloat(m2[2].replace(/,/g, "")),
+      senderName: m2[1].trim(),
+      senderEmail: null,
+      currency: "USD",
+      transactionId,
+    };
+  }
+
+  // Pattern 3: generic "$X.XX" + "from Name"
+  const amtMatch = normalized.match(/\$([\d,]+\.\d{2})/);
+  const fromMatch = normalized.match(/(?:from|sender|paid by)[:\s]+([A-Z][A-Za-z .'-]+?)(?:\s*\.|$|!|\s+on\b)/i);
+  if (amtMatch && fromMatch) {
+    return {
+      amount: parseFloat(amtMatch[1].replace(/,/g, "")),
+      senderName: fromMatch[1].trim(),
+      senderEmail: null,
+      currency: "USD",
+      transactionId,
+    };
+  }
+
+  return null;
+}
+
+// =============================================
 // OUTBOUND ZELLE PAYMENT PARSING (sent payments / refunds)
 // =============================================
 
@@ -3202,6 +3280,23 @@ async function sendPaymentNotification(
         ${applicationId ? `<p><a href="${adminUrl}" style="display:inline-block;padding:10px 20px;background:#003087;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">View Application</a></p>` : ""}
       </div>
     `;
+  } else if (type === "auto_recorded_cashapp") {
+    subject = `Cash App Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#00d632;">&#x2705; Cash App Payment Auto-Recorded</h2>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>
+          ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Receipt ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Cash App</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${details.category || 'other'}</td></tr>
+        </table>
+        ${details.breakdownHtml || ""}
+        ${applicationId ? `<p><a href="${adminUrl}" style="display:inline-block;padding:10px 20px;background:#00d632;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">View Application</a></p>` : ""}
+      </div>
+    `;
   } else if (type === "auto_recorded_coinbase") {
     subject = `Coinbase Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
     html = `
@@ -3284,6 +3379,14 @@ async function handlePaymentEmail(
   if (coinbaseParsed) {
     console.log(`Parsed Coinbase payment: $${coinbaseParsed.amount} from ${coinbaseParsed.senderName}, currency=${coinbaseParsed.currency}, txn=${coinbaseParsed.transactionId}`);
     await handleParsedCoinbasePayment(supabase, resendApiKey, coinbaseParsed, emailRecord);
+    return;
+  }
+
+  // 1b2. Try to parse as Cash App payment (cash@square.com forwards)
+  const cashappParsed = parseCashAppPayment(bodyText, fromAddress);
+  if (cashappParsed) {
+    console.log(`Parsed Cash App payment: $${cashappParsed.amount} from ${cashappParsed.senderName}, txn=${cashappParsed.transactionId}`);
+    await handleParsedCashAppPayment(supabase, resendApiKey, cashappParsed, emailRecord);
     return;
   }
 
@@ -3847,6 +3950,204 @@ async function handleParsedCoinbasePayment(
   console.log("Coinbase payment: no match found, notifying admin");
   await sendPaymentNotification(resendApiKey, "no_match", {
     parsed: { amount: coinbase.amount, senderName: coinbase.senderName, confirmationNumber: coinbase.transactionId },
+    personName: "",
+    applicationId: "",
+    pendingApps: "",
+  });
+}
+
+/**
+ * Handle a parsed Cash App payment: match to tenant, record in ledger.
+ *
+ * Cash App is "amount only" — tenant context matters because the payment can
+ * be split (e.g. prorated rent + security deposit). Strategy:
+ *   1. Match sender to a person by name.
+ *   2. If the person has a pending rental application, try to split the
+ *      received amount into (prorated_rent | move_in_deposit) + security_deposit.
+ *   3. Otherwise fall back to single-row record (rent if active assignment, else other).
+ */
+async function handleParsedCashAppPayment(
+  supabase: any,
+  resendApiKey: string,
+  cashapp: CashAppPayment,
+  emailRecord: any
+): Promise<void> {
+  // Dedup: skip if this Cash App receipt was already recorded
+  if (cashapp.transactionId) {
+    const { data: existing } = await supabase
+      .from("ledger")
+      .select("id")
+      .eq("notes", `Cash App receipt: ${cashapp.transactionId}`)
+      .limit(1)
+      .maybeSingle();
+    if (existing) {
+      console.log(`Cash App receipt ${cashapp.transactionId} already recorded, skipping`);
+      return;
+    }
+  }
+
+  const nameMatch = await matchByName(supabase, cashapp.senderName);
+  const today = new Date().toISOString().split("T")[0];
+  const txNote = cashapp.transactionId ? `Cash App receipt: ${cashapp.transactionId}` : `Cash App receipt (${cashapp.senderName})`;
+
+  if (nameMatch) {
+    const application = await findDepositApplication(supabase, nameMatch.person_id);
+    if (application) {
+      const moveIn = Number(application.move_in_deposit_amount || 0);
+      const security = Number(application.security_deposit_amount || 0);
+      const approvedRate = Number(application.approved_rate || 0);
+      const moveInDate = application.approved_move_in ? new Date(application.approved_move_in) : null;
+
+      // Try to split amount = (rent or move-in) + security
+      const breakdown: { category: string; amount: number; period_start?: string; period_end?: string }[] = [];
+
+      if (Math.abs(cashapp.amount - (moveIn + security)) < 0.01) {
+        if (moveIn > 0) breakdown.push({ category: "move_in_deposit", amount: moveIn });
+        if (security > 0) breakdown.push({ category: "security_deposit", amount: security });
+      } else if (security > 0 && approvedRate > 0 && moveInDate) {
+        // Compute prorated rent for partial first month
+        const year = moveInDate.getUTCFullYear();
+        const month = moveInDate.getUTCMonth();
+        const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+        const dayOfMonth = moveInDate.getUTCDate();
+        const remainingDays = daysInMonth - dayOfMonth + 1;
+        const prorated = Math.round((approvedRate * remainingDays / daysInMonth) * 100) / 100;
+        if (Math.abs(cashapp.amount - (prorated + security)) < 0.02) {
+          const periodStart = moveInDate.toISOString().split("T")[0];
+          const periodEnd = new Date(Date.UTC(year, month + 1, 0)).toISOString().split("T")[0];
+          breakdown.push({ category: "prorated_rent", amount: prorated, period_start: periodStart, period_end: periodEnd });
+          breakdown.push({ category: "security_deposit", amount: security });
+        }
+      }
+
+      if (breakdown.length > 0) {
+        for (let i = 0; i < breakdown.length; i++) {
+          const b = breakdown[i];
+          await supabase.from("ledger").insert({
+            direction: "income",
+            category: b.category,
+            amount: b.amount,
+            payment_method: "cashapp",
+            transaction_date: today,
+            person_id: nameMatch.person_id,
+            person_name: nameMatch.name,
+            rental_application_id: application.id,
+            status: "completed",
+            description: `${b.category.replace(/_/g, " ")} from ${nameMatch.name} (Cash App)`,
+            notes: i === 0 ? txNote : `${txNote}-2`,
+            recorded_by: "system:cashapp-email",
+            period_start: b.period_start || null,
+            period_end: b.period_end || null,
+          });
+        }
+
+        const updates: Record<string, any> = { deposit_confirmed_at: new Date().toISOString() };
+        let allPaid = true;
+        if (breakdown.find((b) => b.category === "security_deposit")) {
+          updates.security_deposit_paid = true;
+          updates.security_deposit_paid_at = new Date().toISOString();
+          updates.security_deposit_method = "cashapp";
+        }
+        if (breakdown.find((b) => b.category === "move_in_deposit")) {
+          updates.move_in_deposit_paid = true;
+          updates.move_in_deposit_paid_at = new Date().toISOString();
+          updates.move_in_deposit_method = "cashapp";
+        } else {
+          allPaid = false;
+        }
+        updates.deposit_status = allPaid ? "paid" : "partial";
+        await supabase.from("rental_applications").update(updates).eq("id", application.id);
+
+        const breakdownHtml = `<p style="margin-top:12px;"><strong>Recorded as:</strong></p><ul>${breakdown
+          .map((b) => `<li>$${b.amount.toFixed(2)} — ${b.category.replace(/_/g, " ")}</li>`)
+          .join("")}</ul>`;
+
+        await sendPaymentNotification(resendApiKey, "auto_recorded_cashapp", {
+          parsed: { amount: cashapp.amount, senderName: cashapp.senderName, confirmationNumber: cashapp.transactionId },
+          personName: nameMatch.name,
+          applicationId: application.id,
+          category: breakdown.map((b) => b.category).join(" + "),
+          breakdownHtml,
+        });
+        console.log(`Cash App payment split-recorded: ${breakdown.map((b) => `${b.category}=$${b.amount}`).join(", ")} for ${nameMatch.name}`);
+        return;
+      }
+
+      // Couldn't split cleanly — record as a single "other" row tied to the app and notify
+      await supabase.from("ledger").insert({
+        direction: "income",
+        category: "other",
+        amount: cashapp.amount,
+        payment_method: "cashapp",
+        transaction_date: today,
+        person_id: nameMatch.person_id,
+        person_name: nameMatch.name,
+        rental_application_id: application.id,
+        status: "completed",
+        description: `Cash App payment from ${nameMatch.name} (needs review — could not split)`,
+        notes: txNote,
+        recorded_by: "system:cashapp-email",
+      });
+      await sendPaymentNotification(resendApiKey, "auto_recorded_cashapp", {
+        parsed: { amount: cashapp.amount, senderName: cashapp.senderName, confirmationNumber: cashapp.transactionId },
+        personName: nameMatch.name,
+        applicationId: application.id,
+        category: "other (needs review)",
+      });
+      return;
+    }
+
+    // No deposit application — check for active assignment (likely rent)
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id, rate_amount")
+      .eq("person_id", nameMatch.person_id)
+      .in("status", ["active", "pending_contract", "contract_sent"])
+      .order("start_date", { ascending: false })
+      .limit(1)
+      .single();
+
+    const category = assignment ? "rent" : "other";
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category,
+      amount: cashapp.amount,
+      payment_method: "cashapp",
+      transaction_date: today,
+      person_id: nameMatch.person_id,
+      person_name: nameMatch.name,
+      assignment_id: assignment?.id || null,
+      status: "completed",
+      description: `Cash App payment from ${nameMatch.name}`,
+      notes: txNote,
+      recorded_by: "system:cashapp-email",
+      is_test: false,
+    });
+    await sendPaymentNotification(resendApiKey, "auto_recorded_cashapp", {
+      parsed: { amount: cashapp.amount, senderName: cashapp.senderName, confirmationNumber: cashapp.transactionId },
+      personName: nameMatch.name,
+      applicationId: "",
+      category,
+    });
+    return;
+  }
+
+  // No name match — try amount matching
+  const amountMatches = await matchByAmount(supabase, cashapp.amount);
+  if (amountMatches.length === 1) {
+    const zelleEquiv: ZellePayment = {
+      amount: cashapp.amount,
+      senderName: cashapp.senderName,
+      confirmationNumber: cashapp.transactionId,
+      bank: "cashapp",
+    };
+    await createConfirmationRequest(supabase, resendApiKey, zelleEquiv, amountMatches[0], emailRecord.id);
+    return;
+  }
+
+  console.log("Cash App payment: no match found, notifying admin");
+  await sendPaymentNotification(resendApiKey, "no_match", {
+    parsed: { amount: cashapp.amount, senderName: cashapp.senderName, confirmationNumber: cashapp.transactionId },
     personName: "",
     applicationId: "",
     pendingApps: "",
