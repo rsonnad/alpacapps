@@ -57,8 +57,21 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
   // Fetch the rendered lease HTML + payment methods so the email is self-contained.
   // Tenant can read everything inline and only follow the Sign button when ready.
   const { documentHtml, waiverHtml } = await fetchSigningDocument(token);
-  const paymentMethodsHtml = await fetchPaymentMethodsHtml();
   const paymentSummaryHtml = await buildRentalPaymentSummary(applicationId);
+
+  // Default the online-payment CTAs to the reservation deposit (what's due
+  // now to hold the space). At move-in the tenant will be sent a separate
+  // request for the remaining balance.
+  const { data: appRow } = await supabase
+    .from('rental_applications')
+    .select('reservation_deposit_amount, person:person_id(first_name, last_name)')
+    .eq('id', applicationId)
+    .single();
+  const ctaAmount = Number(appRow?.reservation_deposit_amount || 0);
+  const ctaDesc = appRow?.person
+    ? `${appRow.person.first_name} ${appRow.person.last_name} — Reservation Deposit`.trim()
+    : 'Reservation Deposit';
+  const paymentMethodsHtml = await fetchPaymentMethodsHtml({ amount: ctaAmount, description: ctaDesc });
 
   await sendSigningEmail(recipientEmail, recipientName, signingUrl, 'rental', null, {
     documentHtml,
@@ -238,27 +251,103 @@ async function buildRentalPaymentSummary(applicationId) {
   }
 }
 
-async function fetchPaymentMethodsHtml() {
+/**
+ * Render the payment methods block using the same visual chips as
+ * https://alpacaplayhouse.com/pay — colored badge + handle + free marker.
+ * Email-safe (table layout, inline styles).
+ *
+ * Includes deep-linked CTAs for Bank Transfer and Credit/Debit Card
+ * (both route to /pay with prefilled amount + description).
+ */
+async function fetchPaymentMethodsHtml(opts = {}) {
+  // Brand colors mirroring /pay/index.html chips.
+  const BRAND = {
+    zelle: '#6c1cd3',
+    venmo: '#3d95ce',
+    cashapp: '#00D632',
+    paypal: '#003087',
+    coinbase: '#0052ff',
+  };
+
+  let methods = [];
   try {
     const { data, error } = await supabase
       .from('payment_methods')
       .select('name, method_type, account_identifier, instructions')
       .eq('is_active', true)
       .order('display_order');
-    if (error || !data || data.length === 0) return '';
-
-    const items = data.map(pm => {
-      let line = `<li style="margin-bottom: 10px;"><strong>${pm.name}</strong>`;
-      if (pm.account_identifier) line += `: <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;">${pm.account_identifier}</code>`;
-      if (pm.instructions) line += `<br><span style="color: #666; font-size: 0.9em;">${pm.instructions.replace(/\n/g, '<br>')}</span>`;
-      return line + '</li>';
-    }).join('\n');
-
-    return `<ul style="margin: 0; padding-left: 20px;">${items}</ul>`;
+    if (!error && data) methods = data;
   } catch (err) {
-    console.warn('fetchPaymentMethodsHtml failed:', err);
-    return '';
+    console.warn('fetchPaymentMethodsHtml: payment_methods query failed:', err);
   }
+
+  // Build chip rows
+  const rows = methods.map(pm => {
+    const color = BRAND[pm.method_type] || '#3d8b7a';
+    const noFee = (pm.method_type === 'zelle' || pm.method_type === 'venmo' || pm.method_type === 'cashapp')
+      || (pm.method_type === 'paypal' && /friends.*family/i.test(pm.instructions || ''));
+    const handle = pm.account_identifier ? `<a href="mailto:${pm.account_identifier}" style="color:#1c1618;text-decoration:none;font-weight:600;">${pm.account_identifier}</a>` : '';
+    const noteLine = pm.instructions ? `<div style="color:#666;font-size:0.85em;margin-top:2px;">${pm.instructions.replace(/\n/g, ' · ')}</div>` : '';
+    const noFeePill = noFee
+      ? `<span style="background:#e8f5e0;color:#54a326;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;">No fee</span>`
+      : '';
+    return `
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #e6dec9; vertical-align: middle; width: 70px;">
+          <span style="display:inline-block;background:${color};color:#fff;padding:4px 0;border-radius:4px;font-size:11px;font-weight:600;width:64px;text-align:center;">${escapeChip(pm.name)}</span>
+        </td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #e6dec9; vertical-align: middle;">
+          ${handle}
+          ${noteLine}
+        </td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #e6dec9; vertical-align: middle; text-align: right; white-space: nowrap;">${noFeePill}</td>
+      </tr>`;
+  }).join('');
+
+  // Online-payment CTAs (Bank Transfer + Card) — both deep-link to /pay
+  const { amount, description } = opts;
+  let ctas = '';
+  if (amount && Number(amount) > 0) {
+    const params = new URLSearchParams();
+    params.set('amount', String(amount));
+    if (description) params.set('description', description);
+    const ach = `https://alpacaplayhouse.com/pay/?${params.toString()}`;
+    const cardParams = new URLSearchParams(params);
+    cardParams.set('method', 'card');
+    const card = `https://alpacaplayhouse.com/pay/?${cardParams.toString()}`;
+    ctas = `
+      <table role="presentation" style="width:100%; border-collapse: collapse; margin: 16px 0 4px;">
+        <tr>
+          <td style="padding: 0 6px 0 0; width: 50%;">
+            <a href="${ach}" style="display:block;background:#3d8b7a;color:#fff;padding:12px 14px;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;font-size:14px;">
+              Pay via Bank Transfer
+              <div style="font-weight:400;font-size:11px;opacity:0.85;margin-top:2px;">0.8% fee, $5 max</div>
+            </a>
+          </td>
+          <td style="padding: 0 0 0 6px; width: 50%;">
+            <a href="${card}" style="display:block;background:#1c1618;color:#fff;padding:12px 14px;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;font-size:14px;">
+              Pay with Card
+              <div style="font-weight:400;font-size:11px;opacity:0.85;margin-top:2px;">2.9% + $0.30 fee</div>
+            </a>
+          </td>
+        </tr>
+      </table>`;
+  }
+
+  if (!rows && !ctas) return '';
+
+  return `
+    <div style="background:#fdfcf8; border:1px solid #e6dec9; border-radius:10px; padding: 16px 18px;">
+      <p style="margin: 0 0 8px; font-weight: 600; color: #1c1618; font-size: 14px;">Payment Methods</p>
+      ${ctas}
+      ${rows ? `<table role="presentation" style="width:100%;border-collapse:collapse;margin-top:6px;">${rows}</table>` : ''}
+      <p style="color:#666; font-size: 12px; margin: 12px 0 0;">Include your name and what the payment is for in the memo.</p>
+    </div>
+  `;
+}
+
+function escapeChip(s) {
+  return String(s || '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 }
 
 /**

@@ -22,6 +22,7 @@ interface CreatePaymentRequest {
   person_id?: string;
   person_name?: string;
   buyer_email?: string;
+  payment_method?: 'bank' | 'card'; // Defaults to 'bank' (us_bank_account)
 }
 
 interface StripeConfig {
@@ -42,12 +43,13 @@ async function createPaymentIntent(
   amountCents: number,
   description: string,
   metadata: Record<string, string>,
-  buyerEmail?: string
+  buyerEmail?: string,
+  paymentMethod: 'bank' | 'card' = 'bank',
 ): Promise<{ id: string; client_secret: string }> {
   const body: Record<string, string | number | boolean> = {
     amount: amountCents,
     currency: 'usd',
-    'payment_method_types[0]': 'us_bank_account',
+    'payment_method_types[0]': paymentMethod === 'card' ? 'card' : 'us_bank_account',
     description: description.slice(0, 500),
     ...Object.fromEntries(
       Object.entries(metadata).map(([k, v]) => [`metadata[${k}]`, v])
@@ -94,7 +96,8 @@ Deno.serve(async (req) => {
       reference_id,
       person_id,
       person_name,
-      buyer_email
+      buyer_email,
+      payment_method
     } = body;
 
     if (!amount || amount < 50) {
@@ -179,10 +182,12 @@ Deno.serve(async (req) => {
         payment_type,
         reference_type,
         reference_id,
+        payment_method: payment_method || 'bank',
         ...(person_id ? { person_id } : {}),
         ...(person_name ? { person_name: person_name.slice(0, 100) } : {})
       },
-      buyer_email
+      buyer_email,
+      payment_method === 'card' ? 'card' : 'bank',
     );
 
     await supabase

@@ -475,8 +475,8 @@
 
           <p class="pay-memo">Include your name and what the payment is for in the memo.</p>
 
-          <!-- Stripe ACH divider -->
-          <div class="pay-divider"><span>or pay online via bank transfer</span></div>
+          <!-- Stripe ACH/Card divider -->
+          <div class="pay-divider" id="onlineDivider"><span>or pay online via bank transfer</span></div>
 
           <!-- Preset summary -->
           <div class="pay-summary" id="presetSummary" style="display:none;">
@@ -512,7 +512,7 @@
             <button class="pay-btn" id="payBtn" disabled>
               Pay via Bank Transfer
             </button>
-            <span class="pay-btn__sub">Secure payment via Stripe &bull; 0.8% processing fee, max $5</span>
+            <span class="pay-btn__sub" id="payBtnSub">Secure payment via Stripe &bull; 0.8% processing fee, max $5</span>
           </div>
         </div>
       </div>
@@ -567,6 +567,11 @@
     var presetPaymentType = params.get('payment_type') || 'rent';
     var presetRefType = params.get('reference_type') || 'assignment';
     var presetRefId = params.get('reference_id') || '';
+    // Online payment method: 'bank' (default, ACH, 0.8% capped at $5)
+    // or 'card' (2.9% + $0.30). Switched via ?method=card.
+    var presetPaymentMethod = (params.get('method') || 'bank').toLowerCase();
+    if (presetPaymentMethod !== 'card') presetPaymentMethod = 'bank';
+    var IS_CARD = presetPaymentMethod === 'card';
 
     var payAmountInput = null;
     var payDescInput = null;
@@ -584,6 +589,15 @@
       payDescInput = document.getElementById('payDesc');
       payBtn = document.getElementById('payBtn');
       payError = document.getElementById('payError');
+
+      // Adjust UI for card-vs-bank mode
+      if (IS_CARD) {
+        var divider = document.getElementById('onlineDivider');
+        if (divider) divider.querySelector('span').textContent = 'or pay online with card';
+        var sub = document.getElementById('payBtnSub');
+        if (sub) sub.innerHTML = 'Secure payment via Stripe &bull; 2.9% + $0.30 card processing fee';
+        payBtn.textContent = 'Pay with Card';
+      }
 
       // Init Supabase client
       try {
@@ -626,6 +640,11 @@
     function getAmount() { return parseFloat(payAmountInput.value) || 0; }
 
     function calcFee(amount) {
+      if (IS_CARD) {
+        // Stripe card: 2.9% + $0.30
+        return Math.round((amount * 0.029 + 0.30) * 100) / 100;
+      }
+      // ACH: 0.8% capped at $5
       return Math.min(Math.round(amount * 0.008 * 100) / 100, 5.00);
     }
 
@@ -634,14 +653,17 @@
       var fee = calcFee(amt);
       var total = amt + fee;
       var breakdown = document.getElementById('feeBreakdown');
+      var btnLabel = IS_CARD ? 'Pay with Card' : 'Pay via Bank Transfer';
       if (amt > 0) {
-        payBtn.textContent = 'Pay $' + total.toFixed(2) + ' via Bank Transfer';
+        payBtn.textContent = 'Pay $' + total.toFixed(2) + ' ' + (IS_CARD ? 'with Card' : 'via Bank Transfer');
         document.getElementById('feeBase').textContent = '$' + amt.toFixed(2);
+        var feeRow = document.getElementById('feeAmount').parentElement;
+        feeRow.firstElementChild.textContent = IS_CARD ? 'Processing fee (2.9% + $0.30)' : 'Processing fee (0.8%, max $5)';
         document.getElementById('feeAmount').textContent = '+$' + fee.toFixed(2);
         document.getElementById('feeTotal').textContent = '$' + total.toFixed(2);
         breakdown.style.display = '';
       } else {
-        payBtn.textContent = 'Pay via Bank Transfer';
+        payBtn.textContent = btnLabel;
         breakdown.style.display = 'none';
       }
     }
@@ -817,6 +839,7 @@
           person_id: presetPersonId || null,
           person_name: presetPersonName || null,
           buyer_email: presetEmail || null,
+          payment_method: presetPaymentMethod,
         }),
       })
       .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
