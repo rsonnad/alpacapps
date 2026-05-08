@@ -1,12 +1,12 @@
 {
-  "version": "v260508.08 3:08p",
-  "release": 1460,
-  "sha": "7a31d8599",
-  "fullSha": "7a31d8599d0ce5f39697cb883b035d8162489095",
+  "version": "v260508.09 3:11p",
+  "release": 1461,
+  "sha": "4546c96c6",
+  "fullSha": "4546c96c606f6c8cd9a0e689d5c47cbb2e2430e6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T20:08:11+00:00",
-  "commits": [{"sha":"7a31d8599","message":"feat(pay+rentals): chip-style payment block in signing email + card support","author":"Rahul"}]
+  "pushedAt": "2026-05-08T20:11:01+00:00",
+  "commits": [{"sha":"e635f6bb4","message":"feat(payouts): DB-template renders Days paid table + transfer row; pre-render breakdown HTML","author":"Rahul"},{"sha":"4546c96c6","message":"Merge: payout template renders Days paid + transfer row","author":"Rahul"}]
 }
