@@ -1,12 +1,12 @@
 {
-  "version": "v260508.15 4:20p",
-  "release": 1467,
-  "sha": "eb99f34da",
-  "fullSha": "eb99f34da0354af84b35dd5d6757e1dff1df1728",
+  "version": "v260508.16 4:45p",
+  "release": 1468,
+  "sha": "3f0dbbfb2",
+  "fullSha": "3f0dbbfb2b5000355abc515ec36d9aff46242760",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T21:20:30+00:00",
-  "commits": [{"sha":"eb99f34da","message":"fix(rentals): use multi-To instead of CC for landlord copy of lease","author":"Rahul"}]
+  "pushedAt": "2026-05-08T21:45:10+00:00",
+  "commits": [{"sha":"3f0dbbfb2","message":"fix(rentals): people table has no updated_at column","author":"Rahul"}]
 }
