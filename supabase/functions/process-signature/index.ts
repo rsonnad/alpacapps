@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
         approved_move_in,
         waiver_template_id,
         approved_space:approved_space_id (id, name),
-        person:person_id (id, first_name, last_name, email)
+        person:person_id (id, first_name, last_name, email, current_address, emergency_contact_name, emergency_contact_phone)
       `)
       .eq('signing_token', token)
       .single();
@@ -174,6 +174,11 @@ Deno.serve(async (req) => {
     }
 
     // ── Persist contact info collected on the signing page ─────────
+    //
+    // For RENTAL signings we REQUIRE current_address + emergency contact
+    // (name + phone). The signing page collects these client-side, but
+    // we must enforce server-side too so the API can't be called directly
+    // to sign before we have these on file.
 
     if (contact_info_update && person?.id) {
       // Whitelist the columns we accept from the client to avoid mass-assignment.
@@ -193,8 +198,34 @@ Deno.serve(async (req) => {
           .eq('id', person.id);
         if (piError) {
           console.error('Failed to update person contact info:', piError);
-          // Don't block signing on this — the audit log still has signature.
+          return jsonError('Failed to save contact information. Please try again.', 500);
         }
+      }
+    }
+
+    // Re-read the canonical fields on people AFTER the (optional) update,
+    // so we evaluate against the persisted truth, not the client-supplied
+    // payload. For rental signings, hard-block if any required field is
+    // still blank.
+    if (docType === 'rental' && person?.id) {
+      const { data: refreshed, error: refreshErr } = await supabase
+        .from('people')
+        .select('current_address, emergency_contact_name, emergency_contact_phone')
+        .eq('id', person.id)
+        .single();
+      if (refreshErr || !refreshed) {
+        console.error('Failed to re-read person record:', refreshErr);
+        return jsonError('Could not verify tenant record. Please try again.', 500);
+      }
+      const missing: string[] = [];
+      if (!refreshed.current_address || !refreshed.current_address.trim()) missing.push('current address');
+      if (!refreshed.emergency_contact_name || !refreshed.emergency_contact_name.trim()) missing.push('emergency contact name');
+      if (!refreshed.emergency_contact_phone || !refreshed.emergency_contact_phone.trim()) missing.push('emergency contact phone');
+      if (missing.length > 0) {
+        return jsonError(
+          `Cannot sign yet — please complete the Required Information form. Missing: ${missing.join(', ')}.`,
+          422,
+        );
       }
     }
 
