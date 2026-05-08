@@ -1,12 +1,12 @@
 {
-  "version": "v260508.04 2:36p",
-  "release": 1456,
-  "sha": "2f1426a84",
-  "fullSha": "2f1426a84b3888736bed6811ef36adfcdc43e124",
+  "version": "v260508.05 2:47p",
+  "release": 1457,
+  "sha": "8927603c7",
+  "fullSha": "8927603c78cceaa806d1f71697928df5825d25b4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T19:36:25+00:00",
-  "commits": [{"sha":"2f1426a84","message":"feat(rentals): inline lease text + payment links in signing email","author":"Rahul"}]
+  "pushedAt": "2026-05-08T19:47:05+00:00",
+  "commits": [{"sha":"8927603c7","message":"feat(rentals): payment summary at top + co-signature notice in signing email","author":"Rahul"}]
 }
