@@ -1,12 +1,12 @@
 {
-  "version": "v260507.05 3:31p",
-  "release": 1452,
-  "sha": "807982464",
-  "fullSha": "8079824649cb956e434ac510778967b2efc23a72",
+  "version": "v260508.03 12:57p",
+  "release": 1455,
+  "sha": "1064b4d0c",
+  "fullSha": "1064b4d0c75e32f9131bb3a3878b3d15c8b4b970",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-07T20:31:28+00:00",
-  "commits": [{"sha":"807982464","message":"docs(infra): note Alpuca cron deploy path for unifi-snapshot","author":"Rahul"}]
+  "pushedAt": "2026-05-08T17:57:17+00:00",
+  "commits": [{"sha":"1064b4d0c","message":"fix(rentals): signing email payload + UI refresh on partial failure","author":"Rahul"}]
 }
