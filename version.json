@@ -1,12 +1,12 @@
 {
-  "version": "v260508.16 4:45p",
-  "release": 1468,
-  "sha": "3f0dbbfb2",
-  "fullSha": "3f0dbbfb2b5000355abc515ec36d9aff46242760",
+  "version": "v260508.17 5:09p",
+  "release": 1469,
+  "sha": "e96eaaa0a",
+  "fullSha": "e96eaaa0a8026c6e082238d014c9187d491d4cff",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T21:45:10+00:00",
-  "commits": [{"sha":"3f0dbbfb2","message":"fix(rentals): people table has no updated_at column","author":"Rahul"}]
+  "pushedAt": "2026-05-08T22:09:55+00:00",
+  "commits": [{"sha":"e96eaaa0a","message":"feat(payments): add Cash App / Square email parser to webhook","author":"Rahul"}]
 }
