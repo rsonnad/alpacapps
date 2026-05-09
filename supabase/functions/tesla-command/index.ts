@@ -180,7 +180,7 @@ serve(async (req) => {
     // 4. Load vehicle + account + drivers
     const { data: vehicle, error: vehicleError } = await supabase
       .from("vehicles")
-      .select("id, name, vehicle_api_id, vehicle_state, owner_id, last_state, tesla_accounts(id, is_active, fleet_client_id, fleet_client_secret, fleet_api_base, access_token, refresh_token, token_expires_at, needs_reauth), vehicle_drivers(person_id)")
+      .select("id, name, vehicle_api_id, vehicle_state, owner_id, last_state, tesla_accounts(id, is_active, app_user_id, fleet_client_id, fleet_client_secret, fleet_api_base, access_token, refresh_token, token_expires_at, needs_reauth), vehicle_drivers(person_id)")
       .eq("id", vehicle_id)
       .eq("is_active", true)
       .single();
@@ -189,8 +189,12 @@ serve(async (req) => {
       return jsonResponse(req, { error: "Vehicle not found" }, 404);
     }
 
+    const account = Array.isArray(vehicle.tesla_accounts)
+      ? vehicle.tesla_accounts[0]
+      : vehicle.tesla_accounts;
+
     // 5. Non-owner/non-driver restriction: only allow commands when battery >50% AND plugged in
-    if (!isInternalCall && appUser) {
+    if (!isInternalCall && appUser && !["admin", "oracle"].includes(appUser.role)) {
       const isOwner = (appUser.person_id && vehicle.owner_id === appUser.person_id) ||
         (account && account.app_user_id === appUser.id);
       const isDriver = appUser.person_id &&
@@ -213,7 +217,6 @@ serve(async (req) => {
       }
     }
 
-    const account = vehicle.tesla_accounts;
     if (!account || !account.is_active) {
       return jsonResponse(req, { error: "Tesla account not active" }, 400);
     }
@@ -239,7 +242,7 @@ serve(async (req) => {
     let accessToken: string;
     try {
       accessToken = await getValidAccessToken(supabase, account, apiBase);
-    } catch (err) {
+    } catch (err: any) {
       // If refresh failed, mark account for re-auth if it's a login_required error
       if (err.message?.includes("login_required") || err.message?.includes("invalid_grant")) {
         await markNeedsReauth(supabase, account.id, err.message);
@@ -304,7 +307,7 @@ serve(async (req) => {
             "Content-Type": "application/json",
           },
         });
-      } catch (retryErr) {
+      } catch (retryErr: any) {
         if (retryErr.message?.includes("login_required") || retryErr.message?.includes("invalid_grant")) {
           await markNeedsReauth(supabase, account.id, retryErr.message);
           return jsonResponse(req, 
@@ -369,7 +372,7 @@ serve(async (req) => {
       vehicle_name: vehicle.name,
       command,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Tesla command error:", error.message, error.stack);
     return jsonResponse(req, { error: "Internal error processing tesla command" }, 500);
   }

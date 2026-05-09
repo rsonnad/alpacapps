@@ -605,6 +605,7 @@ export async function signOut() {
  * @returns {{user: object|null, appUser: object|null, role: string, isAuthenticated: boolean, isAdmin: boolean, isStaff: boolean, isAuthorized: boolean}}
  */
 export function getAuthState() {
+  const hasFullAccessRole = ['admin', 'oracle'].includes(currentRole);
   return {
     user: currentUser,
     appUser: currentAppUser,
@@ -621,8 +622,8 @@ export function getAuthState() {
     isCurrentResident: currentAppUser?.is_current_resident === true,
     // Granular permissions
     permissions: currentPermissions,
-    hasPermission: (key) => currentPermissions.has(key),
-    hasAnyPermission: (...keys) => keys.some(k => currentPermissions.has(k)),
+    hasPermission: (key) => hasFullAccessRole || currentPermissions.has(key),
+    hasAnyPermission: (...keys) => hasFullAccessRole || keys.some(k => currentPermissions.has(k)),
   };
 }
 
@@ -632,6 +633,7 @@ export function getAuthState() {
  * @returns {boolean}
  */
 export function hasPermission(permKey) {
+  if (['admin', 'oracle'].includes(currentRole)) return true;
   return currentPermissions.has(permKey);
 }
 
@@ -641,6 +643,7 @@ export function hasPermission(permKey) {
  * @returns {boolean}
  */
 export function hasAnyPermission(...permKeys) {
+  if (['admin', 'oracle'].includes(currentRole)) return true;
   return permKeys.some(k => currentPermissions.has(k));
 }
 

@@ -25,6 +25,10 @@ export async function getAppUserWithPermission(
 
   if (!appUser) return { appUser: null, hasPermission: false };
 
+  if (appUser.role === "admin" || appUser.role === "oracle") {
+    return { appUser, hasPermission: true };
+  }
+
   // Check for explicit user override first (fastest path)
   const { data: override } = await supabase
     .from("user_permissions")
