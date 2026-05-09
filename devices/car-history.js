@@ -15,14 +15,25 @@ let vehicles = [];
 // INIT
 // =============================================
 async function init() {
-  await initResidentPage({ requiredPermissions: [] });
+  await initResidentPage({
+    activeTab: 'devices',
+    requiredRole: 'resident',
+    onReady: initHistory,
+  });
+}
 
+async function initHistory() {
   // Load vehicles for dropdown
-  const { data: vData } = await supabase
+  const { data: vData, error: vehicleError } = await supabase
     .from('vehicles')
     .select('id, name, vehicle_make, vehicle_model, year')
     .eq('is_active', true)
     .order('display_order');
+
+  if (vehicleError) {
+    showToast(`Failed to load vehicles: ${vehicleError.message}`, 'error');
+    console.error(vehicleError);
+  }
 
   vehicles = vData || [];
   const sel = document.getElementById('vehicleSelect');
