@@ -1,12 +1,12 @@
 {
-  "version": "v260509.04 3:09p",
-  "release": 1475,
-  "sha": "287e8cfda",
-  "fullSha": "287e8cfdab5a6fe3585812829bbde9a5d6de0990",
+  "version": "v260509.05 3:20p",
+  "release": 1476,
+  "sha": "9ebafe0c7",
+  "fullSha": "9ebafe0c77e2d3c163a820a0c2e606b22ef53874",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-09T20:09:18+00:00",
-  "commits": [{"sha":"287e8cfda","message":"fix(devices): wait for verified auth on vehicle history","author":"Rahul"}]
+  "pushedAt": "2026-05-09T20:20:23+00:00",
+  "commits": [{"sha":"9ebafe0c7","message":"fix(devices): ignore stale cached auth on vehicles","author":"Rahul"}]
 }
