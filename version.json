@@ -1,12 +1,12 @@
 {
-  "version": "v260509.01 1:51p",
-  "release": 1472,
-  "sha": "2d5355b2e",
-  "fullSha": "2d5355b2e1c59b78fe12a9033283c1b01d429de6",
+  "version": "v260509.02 2:54p",
+  "release": 1473,
+  "sha": "dfa7f9ccc",
+  "fullSha": "dfa7f9cccf77ccf603668ce2e0de211cff105e86",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-09T18:51:19+00:00",
-  "commits": [{"sha":"2d5355b2e","message":"fix(auth): honor admin access for vehicle pages","author":"Rahul"}]
+  "pushedAt": "2026-05-09T19:54:04+00:00",
+  "commits": [{"sha":"dfa7f9ccc","message":"fix(cars): show fleet for admin vehicle access","author":"Rahul"}]
 }
