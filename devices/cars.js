@@ -26,6 +26,12 @@ let currentPersonId = null;  // people.id (for ownership matching)
 const leafletMaps = {};       // car.id → Leaflet map instance
 const geocodeCache = {};      // "lat,lng" → address string
 
+function hasFleetAdminAccess() {
+  return ['admin', 'oracle', 'staff'].includes(currentUserRole)
+    || hasPermission('admin_cars_settings')
+    || hasPermission('control_cars');
+}
+
 // =============================================
 // SVG ICONS (inline for data rows)
 // =============================================
@@ -144,12 +150,12 @@ function isChargingAtHome(car) {
 }
 
 function filterVehiclesForUser(allVehicles) {
-  // Users with admin_cars_settings or control_cars see everything
-  if (hasPermission('admin_cars_settings') || hasPermission('control_cars')) return allVehicles;
+  // Staff/admin/oracle and users with elevated car permissions see everything.
+  if (hasFleetAdminAccess()) return allVehicles;
 
   return allVehicles.filter(car => {
     // User owns this vehicle
-    if (car.owner_id === currentUserId) return true;
+    if (currentPersonId && car.owner_id === currentPersonId) return true;
     // User is a driver (match via person_id)
     if (currentPersonId && (car.drivers || []).some(d => d.person?.id === currentPersonId)) return true;
     // Vehicle is charging at the house
@@ -181,7 +187,7 @@ async function loadAccounts() {
     .order('id', { ascending: true });
 
   // Non-admins only see their own accounts
-  if (!hasPermission('admin_cars_settings')) {
+  if (!hasFleetAdminAccess()) {
     query = query.eq('app_user_id', currentUserId);
   }
 
