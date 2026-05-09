@@ -1,12 +1,12 @@
 {
-  "version": "v260508.19 5:15p",
-  "release": 1471,
-  "sha": "9d50430ed",
-  "fullSha": "9d50430ed2abe5fda4fa601418a7a53ee1290952",
+  "version": "v260509.01 1:51p",
+  "release": 1472,
+  "sha": "2d5355b2e",
+  "fullSha": "2d5355b2e1c59b78fe12a9033283c1b01d429de6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-08T22:15:48+00:00",
-  "commits": [{"sha":"9d50430ed","message":"chore(db): backfill cashapp payment_method migration file","author":"Rahul"}]
+  "pushedAt": "2026-05-09T18:51:19+00:00",
+  "commits": [{"sha":"2d5355b2e","message":"fix(auth): honor admin access for vehicle pages","author":"Rahul"}]
 }
