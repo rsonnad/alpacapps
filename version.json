@@ -1,12 +1,12 @@
 {
-  "version": "v260509.02 2:54p",
-  "release": 1473,
-  "sha": "dfa7f9ccc",
-  "fullSha": "dfa7f9cccf77ccf603668ce2e0de211cff105e86",
+  "version": "v260509.03 3:02p",
+  "release": 1474,
+  "sha": "625d64987",
+  "fullSha": "625d64987118eb9e8091d7dbfd76c5ac9ef52b07",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-09T19:54:04+00:00",
-  "commits": [{"sha":"dfa7f9ccc","message":"fix(cars): show fleet for admin vehicle access","author":"Rahul"}]
+  "pushedAt": "2026-05-09T20:02:38+00:00",
+  "commits": [{"sha":"625d64987","message":"fix(cars): add fleet API fallback","author":"Rahul"}]
 }
