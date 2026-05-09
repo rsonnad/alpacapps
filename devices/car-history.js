@@ -20,7 +20,7 @@ async function init() {
   // Load vehicles for dropdown
   const { data: vData } = await supabase
     .from('vehicles')
-    .select('id, name, make, model, year')
+    .select('id, name, vehicle_make, vehicle_model, year')
     .eq('is_active', true)
     .order('display_order');
 
@@ -29,7 +29,7 @@ async function init() {
   for (const v of vehicles) {
     const opt = document.createElement('option');
     opt.value = v.id;
-    opt.textContent = `${v.name} (${v.year || ''} ${v.make || ''} ${v.model || ''})`.trim();
+    opt.textContent = `${v.name} (${v.year || ''} ${v.vehicle_make || ''} ${v.vehicle_model || ''})`.trim();
     sel.appendChild(opt);
   }
 

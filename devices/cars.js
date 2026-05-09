@@ -3,7 +3,7 @@
  * Poller on DO droplet writes vehicle state; this page reads it every 30s.
  */
 
-import { supabase } from '../shared/supabase.js';
+import { supabase, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { initResidentPage, showToast } from '../shared/resident-shell.js';
 import { hasPermission } from '../shared/auth.js';
 import { PollManager } from '../shared/services/poll-manager.js';
@@ -173,11 +173,47 @@ async function loadVehicles() {
 
   if (error) {
     console.warn('Failed to load vehicles:', error.message);
+    if (hasFleetAdminAccess()) {
+      vehicles = filterVehiclesForUser(await loadVehiclesViaApi());
+      if (vehicles.length) {
+        supabaseHealth.recordSuccess();
+        return;
+      }
+    }
     supabaseHealth.recordFailure();
     throw error;
   }
   supabaseHealth.recordSuccess();
   vehicles = filterVehiclesForUser(data || []);
+
+  if (!vehicles.length && hasFleetAdminAccess()) {
+    const apiVehicles = await loadVehiclesViaApi();
+    if (apiVehicles.length) vehicles = apiVehicles;
+  }
+}
+
+async function loadVehiclesViaApi() {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    if (!token) return [];
+
+    const resp = await fetch('https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ resource: 'vehicles', action: 'list' }),
+    });
+    const body = await resp.json();
+    if (!resp.ok || body?.error) throw new Error(body?.error || `API returned ${resp.status}`);
+    return Array.isArray(body?.data) ? body.data : [];
+  } catch (err) {
+    console.warn('Vehicle API fallback failed:', err.message);
+    return [];
+  }
 }
 
 async function loadAccounts() {
@@ -473,7 +509,7 @@ function renderFleet() {
       const chargingState = car.last_state?.charging_state;
       const pluggedIn = chargingState && chargingState !== 'Disconnected';
       const batteryOk = typeof batteryLevel === 'number' && batteryLevel > 50;
-      const canControl = isOwnCar || (batteryOk && pluggedIn);
+      const canControl = hasFleetAdminAccess() || isOwnCar || (batteryOk && pluggedIn);
 
       const isLocked = car.last_state?.locked;
       const lockIcon = isLocked === false ? ICONS.unlock : ICONS.lock;
@@ -539,6 +575,16 @@ function renderFleet() {
       </div>
     `;
   }).join('');
+}
+
+function renderFleetError(message) {
+  const grid = document.getElementById('carGrid');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div style="padding:1rem;border:1px solid var(--border,#ddd);border-radius:8px;background:var(--bg-card,#fff);color:var(--text-muted);font-size:0.9rem;">
+      Vehicle data could not load.
+      ${message ? `<span style="display:block;margin-top:0.35rem;font-size:0.8rem;">${message}</span>` : ''}
+    </div>`;
 }
 
 // =============================================
@@ -861,27 +907,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     activeTab: 'devices',
     requiredRole: 'resident',
     onReady: async (authState) => {
-      currentUserRole = authState.appUser?.role;
-      currentUserId = authState.appUser?.id;
-      currentPersonId = authState.appUser?.person_id;
+      try {
+        currentUserRole = authState.appUser?.role;
+        currentUserId = authState.appUser?.id;
+        currentPersonId = authState.appUser?.person_id;
 
-      // Load vehicles and render
-      await loadVehicles();
-      renderFleet();
-      updateAddVehicleCta();
-      resolveAllAddresses(); // async — patches DOM when ready
+        // Load vehicles and render
+        await loadVehicles();
+        renderFleet();
+        updateAddVehicleCta();
+        resolveAllAddresses(); // async — patches DOM when ready
 
-      // Start polling
-      startPolling();
-      // Refresh when PAI sends vehicle commands
-      window.addEventListener('pai-actions', (e) => {
-        const carActions = (e.detail?.actions || []).filter(a => a.type === 'control_vehicle');
-        if (carActions.length) setTimeout(() => refreshFromDB(), 3000);
-      });
+        // Start polling
+        startPolling();
+        // Refresh when PAI sends vehicle commands
+        window.addEventListener('pai-actions', (e) => {
+          const carActions = (e.detail?.actions || []).filter(a => a.type === 'control_vehicle');
+          if (carActions.length) setTimeout(() => refreshFromDB(), 3000);
+        });
 
-      // Load Tesla account settings (self-service for all users)
-      await loadAccounts();
-      renderSettings();
+        // Load Tesla account settings (self-service for all users)
+        await loadAccounts();
+        renderSettings();
+      } catch (err) {
+        console.error('Cars page failed to initialize:', err);
+        renderFleetError(err.message);
+        showToast('Vehicle data could not load. Please refresh and try again.', 'error');
+      }
     },
   });
 });
