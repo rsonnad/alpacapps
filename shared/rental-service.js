@@ -856,7 +856,7 @@ async function recordMoveInDeposit(applicationId, details = {}) {
 
   // Dual-write to ledger
   const personName = app.person ? `${app.person.first_name} ${app.person.last_name}` : null;
-  await supabase.from('ledger').insert({
+  const { error: ledgerError } = await supabase.from('ledger').insert({
     direction: 'income',
     category: 'move_in_deposit',
     amount: depositAmount,
@@ -870,6 +870,7 @@ async function recordMoveInDeposit(applicationId, details = {}) {
     description: 'Move-in deposit',
     recorded_by: 'system:rental-service',
   });
+  if (ledgerError) console.error('Ledger dual-write failed (move-in deposit):', ledgerError);
 
   // Update overall deposit status
   await updateOverallDepositStatus(applicationId);
@@ -930,7 +931,7 @@ async function recordSecurityDeposit(applicationId, details = {}) {
 
     // Dual-write to ledger
     const personName = app.person ? `${app.person.first_name} ${app.person.last_name}` : null;
-    await supabase.from('ledger').insert({
+    const { error: ledgerError } = await supabase.from('ledger').insert({
       direction: 'income',
       category: 'security_deposit',
       amount: depositAmount,
@@ -944,6 +945,7 @@ async function recordSecurityDeposit(applicationId, details = {}) {
       description: 'Security deposit',
       recorded_by: 'system:rental-service',
     });
+    if (ledgerError) console.error('Ledger dual-write failed (security deposit):', ledgerError);
   }
 
   // Update overall deposit status
@@ -995,13 +997,18 @@ async function confirmDeposit(applicationId) {
   if (appError) throw appError;
 
   // Verify a deposit payment exists in the ledger
+  // Also try matching by rental_application_id in case assignment/person IDs weren't set on the ledger row
+  const orClauses = [`rental_application_id.eq.${applicationId}`];
+  if (app.person_id) orClauses.push(`person_id.eq.${app.person_id}`);
+  if (app.assignment_id) orClauses.push(`assignment_id.eq.${app.assignment_id}`);
+
   const { data: depositEntries } = await supabase
     .from('ledger')
     .select('id')
     .in('category', ['security_deposit', 'move_in_deposit'])
     .eq('status', 'completed')
     .eq('is_test', false)
-    .or(`assignment_id.eq.${app.assignment_id},person_id.eq.${app.person_id}`)
+    .or(orClauses.join(','))
     .limit(1);
 
   if (!depositEntries || depositEntries.length === 0) {
