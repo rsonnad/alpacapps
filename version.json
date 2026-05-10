@@ -1,12 +1,12 @@
 {
-  "version": "v260509.06 11:50p",
-  "release": 1477,
-  "sha": "9b178d5f9",
-  "fullSha": "9b178d5f9cb3289d040b9cf82378f3fc739e30d7",
+  "version": "v260510.01 1:40a",
+  "release": 1478,
+  "sha": "d5cb3ca16",
+  "fullSha": "d5cb3ca16d4eeaf84be74f84b9976ace73190bf9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-10T04:50:08+00:00",
-  "commits": [{"sha":"9b178d5f9","message":"fix(rentals): show prorated move-in payments","author":"Rahul"}]
+  "pushedAt": "2026-05-10T06:40:56+00:00",
+  "commits": [{"sha":"d5cb3ca16","message":"fix(rentals): clarify deposit verification action","author":"Rahul"}]
 }
