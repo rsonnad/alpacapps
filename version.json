@@ -1,12 +1,12 @@
 {
-  "version": "v260510.02 2:59p",
-  "release": 1479,
-  "sha": "8747453c0",
-  "fullSha": "8747453c0658525761c78dfec6f3e3ab154aa371",
+  "version": "v260510.03 3:03p",
+  "release": 1480,
+  "sha": "baeb41cc1",
+  "fullSha": "baeb41cc1a0139ff31a487b726d4f24cd78b8a38",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-10T19:59:09+00:00",
-  "commits": [{"sha":"8747453c0","message":"fix(rentals): surface ledger dual-write errors and widen deposit verification query","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-05-10T20:03:56+00:00",
+  "commits": [{"sha":"baeb41cc1","message":"fix(rentals): remove non-existent columns from deposit recording","author":"Sonia Wendorff"}]
 }
