@@ -10,7 +10,7 @@
  */
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
-import { formatDateAustin, getAustinToday, AUSTIN_TIMEZONE } from './timezone.js';
+import { formatDateAustin, getAustinToday, parseAustinDate, AUSTIN_TIMEZONE } from './timezone.js';
 import { getAuthState } from './auth.js';
 
 /**
@@ -1032,7 +1032,9 @@ async function confirmDeposit(applicationId) {
  * Calculate prorated rent for a partial month
  */
 function calculateProration(moveInDate, monthlyRent) {
-  const moveIn = new Date(moveInDate);
+  const moveIn = typeof moveInDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(moveInDate)
+    ? parseAustinDate(moveInDate)
+    : new Date(moveInDate);
   const year = moveIn.getFullYear();
   const month = moveIn.getMonth();
 
@@ -1189,6 +1191,76 @@ async function getApplicationPayments(applicationId) {
 
   if (error) throw error;
   return data || [];
+}
+
+/**
+ * Get completed payment credits tied to an application.
+ * Ledger is the source of truth for imported payments (Cash App, Stripe, etc.),
+ * while rental_payments covers older/manual flows. When both exist, use ledger.
+ */
+async function getApplicationPaymentCredits(applicationId) {
+  if (!applicationId) return [];
+
+  const creditCategories = [
+    PAYMENT_TYPE.MOVE_IN_DEPOSIT,
+    PAYMENT_TYPE.SECURITY_DEPOSIT,
+    PAYMENT_TYPE.RENT,
+    PAYMENT_TYPE.PRORATED_RENT,
+  ];
+
+  const [ledgerResult, paymentsResult] = await Promise.all([
+    supabase
+      .from('ledger')
+      .select('id, category, amount, payment_method, transaction_date, rental_payment_id, description, notes, created_at')
+      .eq('rental_application_id', applicationId)
+      .eq('direction', 'income')
+      .eq('status', 'completed')
+      .in('category', creditCategories)
+      .order('transaction_date', { ascending: false }),
+    supabase
+      .from('rental_payments')
+      .select('id, payment_type, amount_due, amount_paid, paid_date, payment_method, transaction_id, period_start, period_end, notes, created_at')
+      .eq('rental_application_id', applicationId)
+      .in('payment_type', creditCategories)
+      .order('paid_date', { ascending: false }),
+  ]);
+
+  if (ledgerResult.error) throw ledgerResult.error;
+  if (paymentsResult.error) throw paymentsResult.error;
+
+  const ledgerRows = ledgerResult.data || [];
+  const ledgerPaymentIds = new Set(
+    ledgerRows
+      .map(row => row.rental_payment_id)
+      .filter(Boolean)
+  );
+
+  const credits = ledgerRows.map(row => ({
+    id: row.id,
+    source: 'ledger',
+    category: row.category,
+    amount: Number(row.amount) || 0,
+    date: row.transaction_date || row.created_at,
+    method: row.payment_method,
+    description: row.description,
+    notes: row.notes,
+  }));
+
+  for (const payment of paymentsResult.data || []) {
+    if (ledgerPaymentIds.has(payment.id)) continue;
+    credits.push({
+      id: payment.id,
+      source: 'rental_payments',
+      category: payment.payment_type,
+      amount: Number(payment.amount_paid ?? payment.amount_due) || 0,
+      date: payment.paid_date || payment.created_at,
+      method: payment.payment_method,
+      description: payment.notes,
+      notes: payment.transaction_id,
+    });
+  }
+
+  return credits.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
 }
 
 // =============================================
@@ -1618,6 +1690,7 @@ export const rentalService = {
   recordRentPayment,
   getRentHistory,
   getApplicationPayments,
+  getApplicationPaymentCredits,
 
   // Move-in
   confirmMoveIn,

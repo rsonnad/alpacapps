@@ -1397,25 +1397,24 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   await updateIdentityVerificationUI(app);
 
   // ===== DEPOSITS TAB =====
-  renderPaymentSummary(app);
+  const paymentSummary = await renderPaymentSummary(app);
+  app._preMoveInPaymentSummary = paymentSummary;
 
   const moveInAmtEl = document.getElementById('moveInDepositAmount');
   const moveInAmtRaw = rentalService.formatCurrency(app.move_in_deposit_amount || app.approved_rate || 0);
   moveInAmtEl.textContent = isDemoUser() ? redactString(moveInAmtRaw, 'amount') : moveInAmtRaw;
   moveInAmtEl.classList.toggle('demo-redacted', isDemoUser());
-  document.getElementById('moveInDepositStatus').textContent =
-    app.move_in_deposit_paid ? 'Paid' : 'Pending';
-  document.getElementById('moveInDepositStatus').className =
-    `deposit-status ${app.move_in_deposit_paid ? 'paid' : ''}`;
+  const moveInStatus = document.getElementById('moveInDepositStatus');
+  moveInStatus.textContent = paymentSummary.moveInStatusText;
+  moveInStatus.className = `deposit-status ${paymentSummary.moveInStatusClass}`;
 
   const secDepAmtEl = document.getElementById('securityDepositAmount');
   const secDepAmtRaw = rentalService.formatCurrency(app.security_deposit_amount || 0);
   secDepAmtEl.textContent = isDemoUser() ? redactString(secDepAmtRaw, 'amount') : secDepAmtRaw;
   secDepAmtEl.classList.toggle('demo-redacted', isDemoUser());
-  document.getElementById('securityDepositStatus').textContent =
-    app.security_deposit_paid ? 'Paid' : (app.security_deposit_amount > 0 ? 'Pending' : 'N/A');
-  document.getElementById('securityDepositStatus').className =
-    `deposit-status ${app.security_deposit_paid ? 'paid' : ''}`;
+  const securityStatus = document.getElementById('securityDepositStatus');
+  securityStatus.textContent = paymentSummary.securityStatusText;
+  securityStatus.className = `deposit-status ${paymentSummary.securityStatusClass}`;
 
   if (app.approved_move_in && app.approved_rate) {
     const rateTerm = app.approved_rate_term || 'monthly';
@@ -1438,16 +1437,14 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
     } else {
       // Monthly rate: prorate for partial months
       const proration = rentalService.calculateProration(app.approved_move_in, app.approved_rate);
-      const application = rentalService.calculateDepositApplication(
-        app.approved_move_in, app.approved_rate, app.security_deposit_amount || 0
-      );
+      const charges = getPreMoveInCharges(app);
+      const totalDue = charges.moveInDue + charges.securityDeposit;
       prorationEl.innerHTML = `
         <p>Move-in: <strong>${rentalService.formatDate(app.approved_move_in)}</strong> (day ${proration.dayOfMonth} of ${proration.daysInMonth})</p>
         <p>Days remaining: <strong>${proration.daysRemaining}</strong></p>
-        <p>First month (prorated): <strong class="highlight">${rentalService.formatCurrency(proration.proratedAmount)}</strong></p>
-        <p>Move-in deposit: ${rentalService.formatCurrency(application.moveInDeposit)}</p>
-        ${application.towardsSecurity > 0 ? `<p>Applied to security: ${rentalService.formatCurrency(application.towardsSecurity)}</p>` : ''}
-        ${application.securityRemaining > 0 ? `<p>Additional security due: <strong class="highlight">${rentalService.formatCurrency(application.securityRemaining)}</strong></p>` : ''}
+        <p>${charges.moveInLabel}: <strong class="highlight">${rentalService.formatCurrency(charges.moveInDue)}</strong></p>
+        ${charges.securityDeposit > 0 ? `<p>Security deposit: <strong>${rentalService.formatCurrency(charges.securityDeposit)}</strong></p>` : ''}
+        <p>Total due before move-in: <strong class="highlight">${rentalService.formatCurrency(totalDue)}</strong></p>
       `;
     }
   } else {
@@ -1457,12 +1454,13 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   // Deposit request info
   const depositRequestedInfo = document.getElementById('depositRequestedInfo');
   if (app.deposit_requested_at) {
-    const moveIn = app.move_in_deposit_amount || app.approved_rate || 0;
-    const sec = app.security_deposit_amount || 0;
+    const charges = getPreMoveInCharges(app);
+    const moveIn = charges.moveInDue;
+    const sec = charges.securityDeposit;
     const dt = new Date(app.deposit_requested_at);
     const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    depositRequestedInfo.innerHTML = `<span style="color: #666; font-size: 0.85rem;">Deposit request sent <strong>${dateStr} ${timeStr}</strong> — Move-in: $${moveIn}, Security: $${sec}, Total: $${moveIn + sec}</span>`;
+    depositRequestedInfo.innerHTML = `<span style="color: #666; font-size: 0.85rem;">Deposit request sent <strong>${dateStr} ${timeStr}</strong> — ${charges.moveInLabel}: ${rentalService.formatCurrency(moveIn)}, Security: ${rentalService.formatCurrency(sec)}, Total: ${rentalService.formatCurrency(moveIn + sec)}</span>`;
   } else {
     depositRequestedInfo.innerHTML = '<span style="color: #999; font-size: 0.85rem;">Deposit request not yet sent</span>';
   }
@@ -1754,16 +1752,19 @@ function renderContractPane(app, guidance, actions) {
 }
 
 function renderDepositPane(app, guidance, actions) {
-  const moveInAmt = app.move_in_deposit_amount || app.approved_rate || 0;
-  const secAmt = app.security_deposit_amount || 0;
-  const moveInPaid = !!app.move_in_deposit_paid;
-  const secPaid = !!app.security_deposit_paid;
+  const charges = getPreMoveInCharges(app);
+  const summary = app._preMoveInPaymentSummary;
+  const moveInAmt = charges.moveInDue;
+  const secAmt = charges.securityDeposit;
+  const moveInPaid = summary ? summary.moveInPaidCents >= cents(moveInAmt) : !!app.move_in_deposit_paid;
+  const secPaid = summary ? summary.securityPaidCents >= cents(secAmt) : !!app.security_deposit_paid;
+  const remainingCents = summary ? summary.remainingCents : null;
   const depStatus = app.deposit_status || 'pending';
 
   const checklist = [];
   checklist.push(`
     <div class="checklist-row ${moveInPaid ? 'done' : 'missing'}">
-      ${moveInPaid ? '&#10003;' : '&#9675;'} Move-in deposit<span class="checklist-value">${rentalService.formatCurrency(moveInAmt)}</span>
+      ${moveInPaid ? '&#10003;' : '&#9675;'} ${charges.moveInLabel}<span class="checklist-value">${rentalService.formatCurrency(moveInAmt)}</span>
     </div>
   `);
   if (secAmt > 0) {
@@ -1774,7 +1775,7 @@ function renderDepositPane(app, guidance, actions) {
     `);
   }
 
-  const allReceived = moveInPaid && (secAmt === 0 || secPaid);
+  const allReceived = remainingCents != null ? remainingCents === 0 : (moveInPaid && (secAmt === 0 || secPaid));
 
   guidance.innerHTML = `
     <div class="action-pane-instruction">
@@ -1783,6 +1784,7 @@ function renderDepositPane(app, guidance, actions) {
     </div>
     <div class="action-pane-checklist">
       ${checklist.join('')}
+      ${remainingCents && remainingCents > 0 ? `<div class="checklist-row missing">Remaining balance<span class="checklist-value">${rentalService.formatCurrency(fromCents(remainingCents))}</span></div>` : ''}
     </div>
   `;
 
@@ -2966,41 +2968,182 @@ async function loadRentHistory(assignmentId) {
 // PAYMENT SUMMARY
 // =============================================
 
-function renderPaymentSummary(app) {
+const MOVE_IN_CREDIT_CATEGORIES = new Set(['move_in_deposit', 'rent', 'prorated_rent']);
+const SECURITY_CREDIT_CATEGORIES = new Set(['security_deposit']);
+
+function cents(amount) {
+  return Math.round((Number(amount) || 0) * 100);
+}
+
+function fromCents(value) {
+  return value / 100;
+}
+
+function sumCredits(credits, categories) {
+  return credits.reduce((total, credit) => {
+    if (!categories.has(credit.category)) return total;
+    return total + cents(credit.amount);
+  }, 0);
+}
+
+function paymentLabel(category) {
+  switch (category) {
+    case 'move_in_deposit': return 'Move-in deposit paid';
+    case 'security_deposit': return 'Security deposit paid';
+    case 'prorated_rent': return 'Prorated rent paid';
+    case 'rent': return 'Rent paid';
+    default: return `${String(category || 'Payment').replace(/_/g, ' ')} paid`;
+  }
+}
+
+function getPreMoveInCharges(app) {
+  const securityDeposit = Number(app.security_deposit_amount) || 0;
+  const rate = Number(app.approved_rate) || 0;
+  const rateTerm = app.approved_rate_term || 'monthly';
+  const storedMoveIn = Number(app.move_in_deposit_amount || app.approved_rate) || 0;
+
+  if (rateTerm === 'monthly' && app.approved_move_in && rate > 0) {
+    const proration = rentalService.calculateProration(app.approved_move_in, rate);
+    const monthLabel = parseAustinDate(app.approved_move_in).toLocaleDateString('en-US', { month: 'long' });
+    const moveInLabel = proration.isFullMonth
+      ? `${monthLabel} rent`
+      : `${monthLabel} rent (prorated)`;
+    return {
+      moveInDue: proration.proratedAmount,
+      moveInLabel,
+      moveInNote: proration.isFullMonth
+        ? 'First month rent due before move-in.'
+        : `${proration.daysRemaining} of ${proration.daysInMonth} days from move-in through month-end.`,
+      securityDeposit,
+    };
+  }
+
+  if (rateTerm === 'nightly' && app.approved_move_in && app.approved_lease_end && rate > 0) {
+    const moveIn = parseAustinDate(app.approved_move_in);
+    const moveOut = parseAustinDate(app.approved_lease_end);
+    const nights = Math.max(0, Math.round((moveOut - moveIn) / (1000 * 60 * 60 * 24)));
+    const moveInDue = Math.round(rate * nights * 100) / 100;
+    return {
+      moveInDue,
+      moveInLabel: 'Stay rent',
+      moveInNote: `${nights} night${nights === 1 ? '' : 's'} at ${rentalService.formatCurrency(rate)}/night.`,
+      securityDeposit,
+    };
+  }
+
+  return {
+    moveInDue: storedMoveIn,
+    moveInLabel: 'Move-in rent/deposit',
+    moveInNote: 'Due before move-in.',
+    securityDeposit,
+  };
+}
+
+function statusForPayment(dueCents, paidCents, fallbackPaid = false) {
+  if (dueCents <= 0) {
+    return { text: 'N/A', className: '' };
+  }
+  if (paidCents >= dueCents || fallbackPaid) {
+    return { text: 'Paid', className: 'paid' };
+  }
+  if (paidCents > 0) {
+    return {
+      text: `Partial: ${rentalService.formatCurrency(fromCents(paidCents))} paid`,
+      className: 'partial',
+    };
+  }
+  return { text: 'Pending', className: '' };
+}
+
+async function renderPaymentSummary(app) {
   const card = document.getElementById('paymentSummaryCard');
   const content = document.getElementById('paymentSummaryContent');
-  if (!card || !content) return;
+  const emptySummary = {
+    moveInStatusText: app.move_in_deposit_paid ? 'Paid' : 'Pending',
+    moveInStatusClass: app.move_in_deposit_paid ? 'paid' : '',
+    securityStatusText: app.security_deposit_paid ? 'Paid' : (app.security_deposit_amount > 0 ? 'Pending' : 'N/A'),
+    securityStatusClass: app.security_deposit_paid ? 'paid' : '',
+    moveInPaidCents: 0,
+    securityPaidCents: 0,
+    totalPaidCents: 0,
+    remainingCents: 0,
+  };
+  if (!card || !content) return emptySummary;
 
-  const securityDeposit = app.security_deposit_amount || 0;
+  const charges = getPreMoveInCharges(app);
+  const securityDeposit = charges.securityDeposit;
   const appFeeCredit = (app.application_fee_paid && app.application_fee_amount > 0) ? app.application_fee_amount : 0;
 
-  // Move-in reservation deposit = up to one month's rent (non-refundable, applied to first month)
-  const moveInDeposit = app.move_in_deposit_amount || app.approved_rate || 0;
-  const subtotal = moveInDeposit + securityDeposit;
-  const totalDue = Math.max(0, subtotal - appFeeCredit);
+  const moveInDeposit = charges.moveInDue;
+  const subtotalCents = cents(moveInDeposit) + cents(securityDeposit);
+  const totalDueCents = Math.max(0, subtotalCents - cents(appFeeCredit));
+
+  let credits = [];
+  try {
+    credits = await rentalService.getApplicationPaymentCredits(app.id);
+  } catch (error) {
+    console.error('Error loading application payment credits:', error);
+  }
+
+  const moveInDueCents = cents(moveInDeposit);
+  const securityDueCents = cents(securityDeposit);
+  let moveInPaidCents = sumCredits(credits, MOVE_IN_CREDIT_CATEGORIES);
+  let securityPaidCents = sumCredits(credits, SECURITY_CREDIT_CATEGORIES);
+
+  // Older records may have only the application boolean, without a linked
+  // ledger/payment row. Keep those from regressing while preferring money rows.
+  if (app.move_in_deposit_paid && moveInPaidCents === 0) moveInPaidCents = moveInDueCents;
+  if (app.security_deposit_paid && securityPaidCents === 0) securityPaidCents = securityDueCents;
+
+  const totalPaidCents = moveInPaidCents + securityPaidCents;
+  const remainingCents = Math.max(0, totalDueCents - totalPaidCents);
+  const moveInStatus = statusForPayment(moveInDueCents, moveInPaidCents, app.move_in_deposit_paid);
+  const securityStatus = statusForPayment(securityDueCents, securityPaidCents, app.security_deposit_paid);
 
   if (!moveInDeposit && !securityDeposit) {
     card.classList.add('hidden');
-    return;
+    return {
+      moveInStatusText: moveInStatus.text,
+      moveInStatusClass: moveInStatus.className,
+      securityStatusText: securityStatus.text,
+      securityStatusClass: securityStatus.className,
+      moveInPaidCents,
+      securityPaidCents,
+      totalPaidCents,
+      remainingCents,
+    };
   }
 
   card.classList.remove('hidden');
 
   let rows = '';
-  rows += `<div class="summary-row"><span>Move-in reservation deposit:</span><span>${rentalService.formatCurrency(moveInDeposit)}</span></div>`;
-  rows += `<div class="summary-note">Non-refundable. Applied to first month's rent.</div>`;
+  rows += `<div class="summary-row"><span>${charges.moveInLabel}:</span><span>${rentalService.formatCurrency(moveInDeposit)}</span></div>`;
+  rows += `<div class="summary-note">${charges.moveInNote}</div>`;
   if (securityDeposit > 0) {
     rows += `<div class="summary-row"><span>Security deposit (refundable):</span><span>+ ${rentalService.formatCurrency(securityDeposit)}</span></div>`;
   }
   rows += `<div class="summary-divider"></div>`;
-  rows += `<div class="summary-row"><span>Subtotal:</span><span>${rentalService.formatCurrency(subtotal)}</span></div>`;
+  rows += `<div class="summary-row"><span>Subtotal:</span><span>${rentalService.formatCurrency(fromCents(subtotalCents))}</span></div>`;
 
   if (appFeeCredit > 0) {
     rows += `<div class="summary-row credit"><span>Application fee credit:</span><span>- ${rentalService.formatCurrency(appFeeCredit)}</span></div>`;
     rows += `<div class="summary-divider"></div>`;
   }
 
-  rows += `<div class="summary-row total"><span>TOTAL DUE BEFORE MOVE-IN:</span><span>${rentalService.formatCurrency(totalDue)}</span></div>`;
+  rows += `<div class="summary-row total"><span>Total due before move-in:</span><span>${rentalService.formatCurrency(fromCents(totalDueCents))}</span></div>`;
+
+  if (credits.length > 0) {
+    rows += `<div class="summary-divider"></div>`;
+    for (const credit of credits) {
+      const method = credit.method ? ` · ${credit.method}` : '';
+      const date = credit.date ? ` · ${rentalService.formatDate(credit.date)}` : '';
+      rows += `<div class="summary-row credit"><span>${paymentLabel(credit.category)}<small>${method}${date}</small></span><span>- ${rentalService.formatCurrency(credit.amount)}</span></div>`;
+    }
+    rows += `<div class="summary-row credit"><span>Payments recorded:</span><span>- ${rentalService.formatCurrency(fromCents(totalPaidCents))}</span></div>`;
+  }
+
+  rows += `<div class="summary-divider"></div>`;
+  rows += `<div class="summary-row remaining ${remainingCents === 0 ? 'paid' : ''}"><span>Remaining balance:</span><span>${rentalService.formatCurrency(fromCents(remainingCents))}</span></div>`;
 
   // Checklist
   rows += `<div class="summary-checklist">`;
@@ -3008,18 +3151,28 @@ function renderPaymentSummary(app) {
     rows += `<div class="checklist-item done">&#9745; Application fee (${rentalService.formatCurrency(appFeeCredit)}) — PAID</div>`;
   }
 
-  const allDepositsPaid = app.move_in_deposit_paid && (app.security_deposit_paid || securityDeposit === 0);
-  if (allDepositsPaid) {
-    rows += `<div class="checklist-item done">&#9745; Move-in balance (${rentalService.formatCurrency(totalDue)}) — PAID</div>`;
-  } else if (app.move_in_deposit_paid && securityDeposit > 0 && !app.security_deposit_paid) {
-    rows += `<div class="checklist-item done">&#9745; Reservation deposit (${rentalService.formatCurrency(moveInDeposit)}) — PAID</div>`;
-    rows += `<div class="checklist-item pending">&#9744; Security deposit (${rentalService.formatCurrency(securityDeposit)}) — DUE</div>`;
+  if (remainingCents === 0) {
+    rows += `<div class="checklist-item done">&#9745; Move-in balance (${rentalService.formatCurrency(fromCents(totalDueCents))}) — PAID</div>`;
+  } else if (totalPaidCents > 0) {
+    rows += `<div class="checklist-item done">&#9745; Payments recorded (${rentalService.formatCurrency(fromCents(totalPaidCents))})</div>`;
+    rows += `<div class="checklist-item pending">&#9744; Remaining balance (${rentalService.formatCurrency(fromCents(remainingCents))}) — DUE</div>`;
   } else {
-    rows += `<div class="checklist-item pending">&#9744; Remaining balance (${rentalService.formatCurrency(totalDue)}) — DUE</div>`;
+    rows += `<div class="checklist-item pending">&#9744; Remaining balance (${rentalService.formatCurrency(fromCents(totalDueCents))}) — DUE</div>`;
   }
   rows += `</div>`;
 
   content.innerHTML = rows;
+
+  return {
+    moveInStatusText: moveInStatus.text,
+    moveInStatusClass: moveInStatus.className,
+    securityStatusText: securityStatus.text,
+    securityStatusClass: securityStatus.className,
+    moveInPaidCents,
+    securityPaidCents,
+    totalPaidCents,
+    remainingCents,
+  };
 }
 
 // =============================================

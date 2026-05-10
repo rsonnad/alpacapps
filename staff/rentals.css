@@ -394,10 +394,27 @@
   color: #16a34a;
 }
 
+.payment-summary-card .summary-row small {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
 .payment-summary-card .summary-row.total {
   font-weight: 700;
   font-size: 1rem;
   padding-top: 0.5rem;
+}
+
+.payment-summary-card .summary-row.remaining {
+  font-weight: 700;
+  color: #b45309;
+}
+
+.payment-summary-card .summary-row.remaining.paid {
+  color: #16a34a;
 }
 
 .payment-summary-card .summary-note {
@@ -474,6 +491,11 @@
 
 .deposit-card .deposit-status.paid {
   color: #16a34a;
+  font-weight: 500;
+}
+
+.deposit-card .deposit-status.partial {
+  color: #b45309;
   font-weight: 500;
 }
 

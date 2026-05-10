@@ -4055,7 +4055,7 @@ async function handleParsedCashAppPayment(
         } else {
           allPaid = false;
         }
-        updates.deposit_status = allPaid ? "paid" : "partial";
+        updates.deposit_status = allPaid ? "received" : "partial";
         await supabase.from("rental_applications").update(updates).eq("id", application.id);
 
         const breakdownHtml = `<p style="margin-top:12px;"><strong>Recorded as:</strong></p><ul>${breakdown
