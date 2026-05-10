@@ -1,12 +1,12 @@
 {
-  "version": "v260509.05 3:20p",
-  "release": 1476,
-  "sha": "9ebafe0c7",
-  "fullSha": "9ebafe0c77e2d3c163a820a0c2e606b22ef53874",
+  "version": "v260509.06 11:50p",
+  "release": 1477,
+  "sha": "9b178d5f9",
+  "fullSha": "9b178d5f9cb3289d040b9cf82378f3fc739e30d7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-09T20:20:23+00:00",
-  "commits": [{"sha":"9ebafe0c7","message":"fix(devices): ignore stale cached auth on vehicles","author":"Rahul"}]
+  "pushedAt": "2026-05-10T04:50:08+00:00",
+  "commits": [{"sha":"9b178d5f9","message":"fix(rentals): show prorated move-in payments","author":"Rahul"}]
 }
