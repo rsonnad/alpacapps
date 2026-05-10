@@ -1009,14 +1009,31 @@ async function confirmDeposit(applicationId) {
     throw new Error('Cannot confirm deposit: no deposit payment found in ledger. Record the deposit payment first.');
   }
 
+  // Schedule onboarding email for 9am CT on move-in day
+  const fullApp = await getApplication(applicationId);
+  const moveInDate = fullApp?.approved_move_in_date || fullApp?.desired_move_in;
+  let onboardingSendAt = null;
+  if (moveInDate) {
+    const sendDate = new Date(moveInDate + 'T14:00:00.000Z'); // 9am CDT = 14:00 UTC
+    if (sendDate > new Date()) {
+      onboardingSendAt = sendDate.toISOString();
+    } else {
+      // Move-in is today or past — send within the hour
+      onboardingSendAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    }
+  }
+
+  const updatePayload = {
+    deposit_status: DEPOSIT_STATUS.CONFIRMED,
+    deposit_confirmed_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    ...activityStamp(),
+  };
+  if (onboardingSendAt) updatePayload.onboarding_email_send_at = onboardingSendAt;
+
   const { data, error } = await supabase
     .from('rental_applications')
-    .update({
-      deposit_status: DEPOSIT_STATUS.CONFIRMED,
-      deposit_confirmed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      ...activityStamp(),
-    })
+    .update(updatePayload)
     .eq('id', applicationId)
     .select()
     .single();
