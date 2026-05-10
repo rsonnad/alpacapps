@@ -817,12 +817,9 @@ async function recordMoveInDeposit(applicationId, details = {}) {
   // Use provided amount or fall back to stored amount
   const depositAmount = amount !== null ? amount : app.move_in_deposit_amount;
 
-  // Update application with the new amount if provided
+  // Update application — method/transactionId live in rental_payments, not here
   const updateData = {
     move_in_deposit_paid: true,
-    move_in_deposit_paid_at: paidAt,
-    move_in_deposit_method: method,
-    move_in_deposit_transaction_id: transactionId,
     updated_at: new Date().toISOString(),
     ...activityStamp(),
   };
@@ -891,12 +888,9 @@ async function recordSecurityDeposit(applicationId, details = {}) {
   // Use provided amount or fall back to stored amount
   const depositAmount = amount !== null ? amount : app.security_deposit_amount;
 
-  // Update application with the new amount if provided
+  // Update application — method/transactionId live in rental_payments, not here
   const updateData = {
     security_deposit_paid: true,
-    security_deposit_paid_at: paidAt,
-    security_deposit_method: method,
-    security_deposit_transaction_id: transactionId,
     updated_at: new Date().toISOString(),
     ...activityStamp(),
   };
