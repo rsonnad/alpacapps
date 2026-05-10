@@ -1399,22 +1399,29 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   // ===== DEPOSITS TAB =====
   const paymentSummary = await renderPaymentSummary(app);
   app._preMoveInPaymentSummary = paymentSummary;
+  const preMoveInCharges = getPreMoveInCharges(app);
 
   const moveInAmtEl = document.getElementById('moveInDepositAmount');
-  const moveInAmtRaw = rentalService.formatCurrency(app.move_in_deposit_amount || app.approved_rate || 0);
+  const moveInLabelEl = document.getElementById('moveInDepositLabel');
+  if (moveInLabelEl) moveInLabelEl.textContent = preMoveInCharges.moveInLabel;
+  const moveInAmtRaw = rentalService.formatCurrency(preMoveInCharges.moveInDue);
   moveInAmtEl.textContent = isDemoUser() ? redactString(moveInAmtRaw, 'amount') : moveInAmtRaw;
   moveInAmtEl.classList.toggle('demo-redacted', isDemoUser());
   const moveInStatus = document.getElementById('moveInDepositStatus');
   moveInStatus.textContent = paymentSummary.moveInStatusText;
   moveInStatus.className = `deposit-status ${paymentSummary.moveInStatusClass}`;
+  const moveInRecordBtn = document.getElementById('recordMoveInDepositBtn');
+  if (moveInRecordBtn) moveInRecordBtn.textContent = paymentSummary.moveInStatusClass === 'paid' ? 'Adjust Payment' : 'Record Payment';
 
   const secDepAmtEl = document.getElementById('securityDepositAmount');
-  const secDepAmtRaw = rentalService.formatCurrency(app.security_deposit_amount || 0);
+  const secDepAmtRaw = rentalService.formatCurrency(preMoveInCharges.securityDeposit);
   secDepAmtEl.textContent = isDemoUser() ? redactString(secDepAmtRaw, 'amount') : secDepAmtRaw;
   secDepAmtEl.classList.toggle('demo-redacted', isDemoUser());
   const securityStatus = document.getElementById('securityDepositStatus');
   securityStatus.textContent = paymentSummary.securityStatusText;
   securityStatus.className = `deposit-status ${paymentSummary.securityStatusClass}`;
+  const securityRecordBtn = document.getElementById('recordSecurityDepositBtn');
+  if (securityRecordBtn) securityRecordBtn.textContent = paymentSummary.securityStatusClass === 'paid' ? 'Adjust Payment' : 'Record Payment';
 
   if (app.approved_move_in && app.approved_rate) {
     const rateTerm = app.approved_rate_term || 'monthly';
@@ -1451,19 +1458,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
     document.getElementById('prorationDetails').innerHTML = '<p class="text-muted">Set move-in date and rate to calculate proration.</p>';
   }
 
-  // Deposit request info
-  const depositRequestedInfo = document.getElementById('depositRequestedInfo');
-  if (app.deposit_requested_at) {
-    const charges = getPreMoveInCharges(app);
-    const moveIn = charges.moveInDue;
-    const sec = charges.securityDeposit;
-    const dt = new Date(app.deposit_requested_at);
-    const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    depositRequestedInfo.innerHTML = `<span style="color: #666; font-size: 0.85rem;">Deposit request sent <strong>${dateStr} ${timeStr}</strong> — ${charges.moveInLabel}: ${rentalService.formatCurrency(moveIn)}, Security: ${rentalService.formatCurrency(sec)}, Total: ${rentalService.formatCurrency(moveIn + sec)}</span>`;
-  } else {
-    depositRequestedInfo.innerHTML = '<span style="color: #999; font-size: 0.85rem;">Deposit request not yet sent</span>';
-  }
+  updateDepositWorkflowControls(app, paymentSummary, preMoveInCharges);
 
   // ===== RENT TAB =====
   document.getElementById('rentMonthlyAmount').textContent =
@@ -1779,8 +1774,8 @@ function renderDepositPane(app, guidance, actions) {
 
   guidance.innerHTML = `
     <div class="action-pane-instruction">
-      <strong>${allReceived ? 'All deposits received.' : 'Collect deposits before move-in.'}</strong>
-      ${allReceived ? ' Confirm to proceed.' : ''}
+      <strong>${allReceived ? 'All payments received.' : 'Collect deposits before move-in.'}</strong>
+      ${allReceived ? ' Mark deposits verified when reviewed.' : ''}
     </div>
     <div class="action-pane-checklist">
       ${checklist.join('')}
@@ -1790,12 +1785,12 @@ function renderDepositPane(app, guidance, actions) {
 
   if (allReceived || depStatus === 'received') {
     actions.innerHTML = `
-      <button class="btn-primary action-pane-cta" onclick="confirmDeposit()">Confirm Deposit</button>
+      <button class="btn-primary action-pane-cta" onclick="confirmDeposit()">Mark Deposits Verified</button>
     `;
   } else {
     actions.innerHTML = `
       <button class="btn-primary action-pane-cta" onclick="switchDetailTab('deposits')">Record Payment</button>
-      ${!app.deposit_requested_at ? '<button class="btn-secondary" onclick="switchDetailTab(\'deposits\')">Send Deposit Request</button>' : ''}
+      ${!app.deposit_requested_at ? '<button class="btn-secondary" onclick="switchDetailTab(\'deposits\')">Request Deposit</button>' : ''}
     `;
   }
 }
@@ -1979,7 +1974,11 @@ function updateRentalActions(app) {
 
     case 'deposit':
       if (app.deposit_status !== 'confirmed') {
-        buttons.push('<button class="btn-primary" onclick="confirmDeposit()">Confirm Deposit</button>');
+        const summary = app._preMoveInPaymentSummary;
+        const paidInFull = summary?.remainingCents === 0;
+        buttons.push(paidInFull
+          ? '<button class="btn-primary" onclick="confirmDeposit()">Mark Deposits Verified</button>'
+          : '<button class="btn-primary" onclick="switchDetailTab(\'deposits\')">Request Deposit / Record Payment</button>');
       }
       break;
 
@@ -2552,7 +2551,7 @@ window.confirmDeposit = async function() {
   if (!currentApplicationId) return;
   // Prevent double-click — find and disable the clicked button
   const btns = document.querySelectorAll('[onclick="confirmDeposit()"]');
-  btns.forEach(b => { b.disabled = true; b.textContent = 'Confirming...'; });
+  btns.forEach(b => { b.disabled = true; b.textContent = 'Marking verified...'; });
   try {
     await rentalService.confirmDeposit(currentApplicationId);
     await loadApplications();
@@ -2562,18 +2561,18 @@ window.confirmDeposit = async function() {
     if (app?.person?.email) {
       const emailResult = await emailService.sendDepositsConfirmed(app);
       if (emailResult.success) {
-        showToast('Deposit confirmed & email sent', 'success');
+        showToast('Deposits verified & email sent', 'success');
       } else {
-        showToast('Deposit confirmed (email failed to send)', 'warning');
+        showToast('Deposits verified (email failed to send)', 'warning');
       }
     } else {
-      showToast('Deposit confirmed (no email on file)', 'success');
+      showToast('Deposits verified (no email on file)', 'success');
     }
 
     openRentalDetail(currentApplicationId, getActiveDetailTab());
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
-    btns.forEach(b => { b.disabled = false; b.textContent = 'Confirm Deposit'; });
+    btns.forEach(b => { b.disabled = false; b.textContent = 'Mark Deposits Verified'; });
   }
 };
 
@@ -3053,6 +3052,53 @@ function statusForPayment(dueCents, paidCents, fallbackPaid = false) {
     };
   }
   return { text: 'Pending', className: '' };
+}
+
+function updateDepositWorkflowControls(app, summary, charges) {
+  const title = document.getElementById('depositWorkflowTitle');
+  const info = document.getElementById('depositRequestedInfo');
+  const sendBtn = document.getElementById('sendDepositRequestBtn');
+  const copyBtn = document.getElementById('copyDepositRequestBtn');
+  const verifyBtn = document.getElementById('confirmDepositBtn');
+  if (!title || !info || !sendBtn || !copyBtn || !verifyBtn) return;
+
+  const verified = app.deposit_status === 'confirmed';
+  const paidInFull = summary?.remainingCents === 0;
+  const requested = !!app.deposit_requested_at;
+  const moveIn = charges.moveInDue;
+  const sec = charges.securityDeposit;
+  const total = moveIn + sec;
+
+  sendBtn.style.display = verified || paidInFull ? 'none' : '';
+  copyBtn.style.display = verified || paidInFull ? 'none' : '';
+  verifyBtn.style.display = verified || !paidInFull ? 'none' : '';
+  verifyBtn.textContent = 'Mark Deposits Verified';
+
+  if (verified) {
+    title.textContent = 'Deposits Verified';
+    const dt = app.deposit_confirmed_at ? new Date(app.deposit_confirmed_at) : null;
+    const when = dt && !Number.isNaN(dt.getTime())
+      ? ` on ${dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+      : '';
+    info.innerHTML = `<span style="color:#16a34a;font-size:0.85rem;">Deposits verified${when}. Applicant can move to ready/move-in.</span>`;
+    return;
+  }
+
+  if (paidInFull) {
+    title.textContent = 'Verify Deposits';
+    info.innerHTML = `<span style="color:#16a34a;font-size:0.85rem;">Payments cover the full pre-move-in balance (${rentalService.formatCurrency(total)}). Mark verified after review.</span>`;
+    return;
+  }
+
+  title.textContent = requested ? 'Deposit Request Sent' : 'Request Deposit';
+  if (requested) {
+    const dt = new Date(app.deposit_requested_at);
+    const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    info.innerHTML = `<span style="color:#666;font-size:0.85rem;">Deposit request sent <strong>${dateStr} ${timeStr}</strong> — ${charges.moveInLabel}: ${rentalService.formatCurrency(moveIn)}, Security: ${rentalService.formatCurrency(sec)}, Total: ${rentalService.formatCurrency(total)}</span>`;
+  } else {
+    info.innerHTML = `<span style="color:#999;font-size:0.85rem;">Deposit request not yet sent — total due ${rentalService.formatCurrency(total)}</span>`;
+  }
 }
 
 async function renderPaymentSummary(app) {
@@ -3686,10 +3732,11 @@ async function sendForSignature() {
         console.warn('Could not generate ID upload link:', e);
       }
     }
+    const charges = getPreMoveInCharges(app);
     const depositApp = {
       person: app.person,
-      move_in_deposit: app.move_in_deposit_amount || app.approved_rate || 0,
-      security_deposit: app.security_deposit_amount || 0,
+      move_in_deposit: charges.moveInDue,
+      security_deposit: charges.securityDeposit,
       identity_verification_status: app.identity_verification_status,
       id_upload_url: idUploadUrl,
     };
@@ -3756,10 +3803,11 @@ async function sendDepositRequestEmail() {
         console.warn('Could not generate ID upload link:', e);
       }
     }
+    const charges = getPreMoveInCharges(app);
     const depositApp = {
       person: app.person,
-      move_in_deposit: app.move_in_deposit_amount || app.approved_rate || 0,
-      security_deposit: app.security_deposit_amount || 0,
+      move_in_deposit: charges.moveInDue,
+      security_deposit: charges.securityDeposit,
       identity_verification_status: app.identity_verification_status,
       id_upload_url: idUploadUrl,
     };
