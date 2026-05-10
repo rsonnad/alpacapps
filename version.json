@@ -1,12 +1,12 @@
 {
-  "version": "v260510.03 3:03p",
-  "release": 1480,
-  "sha": "baeb41cc1",
-  "fullSha": "baeb41cc1a0139ff31a487b726d4f24cd78b8a38",
+  "version": "v260510.04 4:16p",
+  "release": 1481,
+  "sha": "95e4b5f6b",
+  "fullSha": "95e4b5f6ba6adc378d54ab6e44a4a79b4a4d8d1f",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-10T20:03:56+00:00",
-  "commits": [{"sha":"baeb41cc1","message":"fix(rentals): remove non-existent columns from deposit recording","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-05-10T21:16:27+00:00",
+  "commits": [{"sha":"95e4b5f6b","message":"feat(rentals): automated onboarding email on deposit confirmation","author":"Sonia Wendorff"}]
 }
