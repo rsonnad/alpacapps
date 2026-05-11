@@ -4,6 +4,8 @@ Programmatic control of Sonos speakers, UniFi network, cameras, and lighting at 
 
 > **See `HOMEAUTOMATION.local.md` for IP addresses, credentials, and sensitive configuration.**
 > That file is gitignored and contains Tailscale IPs, WiFi passwords, and API credentials.
+>
+> **Maker devices:** Glowforge laser cutter and FlashForge 3D printer operational notes live in `devcontrol/devdocs/MAKERDEVICES.md`.
 
 ## Architecture
 

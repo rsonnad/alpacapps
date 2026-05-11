@@ -13,6 +13,7 @@
 > - `spaces/admin/devcontrol/devdocs/CAD-RENDER-PIPELINE.md` — **load for:** 3D property rendering, photorealistic render pipeline, on-site data collection tasks
 > - `spaces/admin/devcontrol/devdocs/HOMEAUTOMATION.md` — **load for:** smart home devices, Home Assistant setup, HAOS integrations, device management, automations
 > - `spaces/admin/devcontrol/devdocs/LIGHTINGAUTOMATION.md` — **load for:** controlling lights, changing light colors/brightness, light entities, WiZ/HAOS/Govee/Tuya light control
+> - `devcontrol/devdocs/MAKERDEVICES.md` — **load for:** Glowforge laser cutter, FlashForge 3D printer, Maker Tools, 3D Printing, maker device proxy/session troubleshooting
 > - `spaces/admin/devcontrol/devdocs/TESTING-GUIDE.md` — **load for:** test account credentials, auth testing, QA workflows, admin page testing
 > - `spaces/admin/devcontrol/devdocs/SECRETS-GUIDE.md` — **load for:** Bitwarden CLI, secrets management, bw-read helper, API key storage, credential access patterns
 > - `spaces/admin/devcontrol/devdocs/LOCAL-AI-SETUP.md` — **load for:** local AI models, Ollama, Atomic Chat, Qwen setup

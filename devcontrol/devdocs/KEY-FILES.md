@@ -44,6 +44,7 @@
 - `oven-data.js` - Anova oven state + control via `anova-control` edge function
 - `glowforge-data.js` - Glowforge laser cutter status via `glowforge-control` edge function
 - `printer-data.js` - FlashForge 3D printer state + control via `printer-control` edge function
+- `devcontrol/devdocs/MAKERDEVICES.md` - Glowforge + FlashForge operational notes, edge/session caveats, proxy chain, validation commands
 
 ## Mobile App (`/mobile/`)
 - `capacitor.config.ts` - App config (ID: `com.alpacaplayhouse.app`, plugins, platform settings)

@@ -5,6 +5,8 @@
 >
 > **Lighting?** All lighting control commands, entity names, room groups, Tuya/Govee/WiZ credentials, and troubleshooting live in **`LIGHTINGAUTOMATION.md`**. Per-bulb inventory (IPs, MACs, sockets) is in Supabase tables: `lighting_devices`, `lighting_groups`, `lighting_group_targets`, `home_assistant_entities`.
 >
+> **Maker devices?** Glowforge laser cutter and FlashForge 3D printer operational notes live in **`MAKERDEVICES.md`**.
+>
 > **Machine specs & hardware inventory:** See [Admin Inventory](../../inventory.html) → Devices → "Computers & Kiosks" for full queried specs (chip, RAM, storage, serial, IPs) for Alpuca, AlpineMac, Entry Tablet, and dev MacBook.
 
 ---

@@ -385,6 +385,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **API**: Undocumented Glowforge Cloud API (community reverse-engineered)
 - **Auth**: Cookie-based session auth (email/password login → session cookies)
 - **Architecture**: Per-request in `glowforge-control` edge function (no polling worker)
+- **Operations**: See `MAKERDEVICES.md` for the Supabase Edge login caveat, local session seeding note, and validation commands
 - **Auth flow**: GET app.glowforge.com (CSRF token) → POST accounts.glowforge.com/users/sign_in → collect cookies → GET api.glowforge.com/gfcore/users/machines
 - **Credentials**: Stored as Supabase secrets (`GLOWFORGE_EMAIL`, `GLOWFORGE_PASSWORD`)
 - **Session caching**: Cookies cached in `glowforge_config.session_cookies` with 7-day expiry, auto-re-authenticates on failure
@@ -399,6 +400,7 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **API**: FlashForge TCP G-code protocol (port 8899, no auth needed on LAN)
 - **Printer**: "Alpaca Foundry" — Adventurer 5M Pro, SN SNMSQE9C09604, FW v3.2.7
 - **Architecture**: Per-request via printer proxy on Alpaca Mac (HTTP→TCP bridge, same pattern as Sonos/cameras)
+- **Operations**: See `MAKERDEVICES.md` for proxy chain, command list, health checks, and troubleshooting
 - **Proxy chain**: Browser → Supabase edge function → Caddy on Hostinger → Alpaca Mac printer-proxy.js (port 8903) → TCP to printer at 192.168.1.106:8899
 - **Proxy**: `scripts/printer-proxy/printer-proxy.js` on Alpaca Mac, health check on port 8904
 - **LaunchAgent**: `scripts/printer-proxy/com.printer-proxy.plist`
@@ -493,4 +495,3 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 ### Google Drive (Legacy)
 - Rental agreements stored in a shared folder (legacy)
 - Not programmatically accessed
-
