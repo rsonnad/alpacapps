@@ -1,12 +1,12 @@
 {
-  "version": "v260510.06 11:27p",
-  "release": 1483,
-  "sha": "47c07565a",
-  "fullSha": "47c07565a02929f78d023a6bf69771aa6c03002b",
+  "version": "v260511.01 12:38p",
+  "release": 1484,
+  "sha": "e29900722",
+  "fullSha": "e29900722683030ca37483fb8d1abab21a58c3d4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-11T04:27:57+00:00",
-  "commits": [{"sha":"47c07565a","message":"docs: add maker device operations guide","author":"Rahul"}]
+  "pushedAt": "2026-05-11T17:38:02+00:00",
+  "commits": [{"sha":"e29900722","message":"fix(glowforge): add session refresh script","author":"Rahul"}]
 }
