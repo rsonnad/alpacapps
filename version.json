@@ -1,12 +1,12 @@
 {
-  "version": "v260510.05 11:19p",
-  "release": 1482,
-  "sha": "af0f4891b",
-  "fullSha": "af0f4891b94eda7a4d70b315339f9b33e9d10626",
+  "version": "v260510.06 11:27p",
+  "release": 1483,
+  "sha": "47c07565a",
+  "fullSha": "47c07565a02929f78d023a6bf69771aa6c03002b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-11T04:19:01+00:00",
-  "commits": [{"sha":"af0f4891b","message":"fix(glowforge): land status integration","author":"Rahul"}]
+  "pushedAt": "2026-05-11T04:27:57+00:00",
+  "commits": [{"sha":"47c07565a","message":"docs: add maker device operations guide","author":"Rahul"}]
 }
