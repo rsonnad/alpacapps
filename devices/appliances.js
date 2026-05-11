@@ -36,6 +36,16 @@ import {
 // =============================================
 const POLL_INTERVAL_MS = 15000;
 
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[c]));
+}
+
 // =============================================
 // STATE
 // =============================================
@@ -441,26 +451,26 @@ function renderGlowforgeCard(machine) {
   const stateClass = state.isOnline ? 'running' : '';
 
   return `
-    <div class="laundry-card ${stateClass}" data-glowforge-id="${machine.id}">
+    <div class="laundry-card ${stateClass}" data-glowforge-id="${esc(machine.id)}">
       <div class="laundry-card__header">
         <div class="laundry-card__icon">${GLOWFORGE_ICON}</div>
-        <div class="laundry-card__name">${machine.name}</div>
+        <div class="laundry-card__name">${esc(machine.name)}</div>
         <span class="laundry-card__status-dot" style="background:${state.color}"></span>
       </div>
 
-      <div class="laundry-card__state" style="color:${state.color}">${state.text}</div>
+      <div class="laundry-card__state" style="color:${state.color}">${esc(state.text)}</div>
 
       <div class="laundry-card__data-grid">
         ${model ? `
         <div class="laundry-data-row">
           <span class="laundry-data-label">Model</span>
-          <span class="laundry-data-value" style="text-transform:capitalize;">${model}</span>
+          <span class="laundry-data-value" style="text-transform:capitalize;">${esc(model)}</span>
         </div>
         ` : ''}
         ${lastActivity ? `
         <div class="laundry-data-row">
           <span class="laundry-data-label">Last Activity</span>
-          <span class="laundry-data-value">${lastActivity}</span>
+          <span class="laundry-data-value">${esc(lastActivity)}</span>
         </div>
         ` : ''}
       </div>
@@ -788,7 +798,14 @@ window._refreshGlowforge = async function() {
   try {
     const result = await refreshGlowforgeStatus();
     if (result.error) throw new Error(result.error);
-    showToast(`Glowforge: found ${result.count || 0} machine(s)`, 'success');
+    if (result.cached) {
+      const synced = result.last_synced_at ? formatGlowforgeSyncTime(result.last_synced_at) : 'recently';
+      showToast(`Glowforge: cached (${synced})`, 'info');
+    } else if (result.test_mode) {
+      showToast(result.message || 'Glowforge test mode: no API call made', 'info');
+    } else {
+      showToast(`Glowforge: found ${result.count || 0} machine(s)`, 'success');
+    }
     await loadGlowforge();
   } catch (err) {
     showToast(`Glowforge refresh failed: ${err.message}`, 'error');
@@ -1137,7 +1154,7 @@ async function renderGlowforgeSettings() {
   try {
     const { data: config, error } = await supabase
       .from('glowforge_config')
-      .select('*')
+      .select('id, is_active, test_mode, last_error, last_synced_at, updated_at')
       .eq('id', 1)
       .maybeSingle();
     if (error) {
@@ -1155,7 +1172,7 @@ async function renderGlowforgeSettings() {
       </p>
       ${c.last_error ? `
         <div style="background:var(--occupied-bg);border:1px solid var(--occupied);border-radius:var(--radius);padding:0.75rem;font-size:0.85rem;">
-          <strong>Last Error:</strong> ${c.last_error}
+          <strong>Last Error:</strong> ${esc(c.last_error)}
         </div>
       ` : ''}
       ${c.last_synced_at ? `
@@ -1175,7 +1192,13 @@ async function renderGlowforgeSettings() {
     try {
       const result = await refreshGlowforgeStatus();
       if (result.error) throw new Error(result.error);
-      showToast(`Connected! Found ${result.count || 0} machine(s)`, 'success');
+      if (result.cached) {
+        showToast(`Connected from cache. Found ${result.count || 0} machine(s)`, 'info');
+      } else if (result.test_mode) {
+        showToast(result.message || 'Glowforge test mode: no API call made', 'info');
+      } else {
+        showToast(`Connected! Found ${result.count || 0} machine(s)`, 'success');
+      }
       await loadGlowforge();
       renderSections();
       renderGlowforgeSettings(); // refresh device list
@@ -1196,9 +1219,9 @@ async function renderGlowforgeSettings() {
           <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Discovered Machines</label>
           ${glowforgeMachines.map(m => `
             <div style="padding:0.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.5rem;">
-              <div style="font-weight:600;">${m.name}</div>
+              <div style="font-weight:600;">${esc(m.name)}</div>
               <div style="font-size:0.8rem;color:var(--text-muted);">
-                ID: ${m.machine_id || '?'} | Type: ${m.machine_type || '?'}${m.lan_ip ? ` | IP: ${m.lan_ip}` : ''}
+                ID: ${esc(m.machine_id || '?')} | Type: ${esc(m.machine_type || '?')}${m.lan_ip ? ` | IP: ${esc(m.lan_ip)}` : ''}
               </div>
             </div>
           `).join('')}

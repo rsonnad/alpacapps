@@ -7,6 +7,7 @@ import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface GlowforgeControlRequest {
   action: "getStatus";
   machineId?: string;
+  force?: boolean;
 }
 
 function jsonResponse(req: Request, data: any, status = 200) {
@@ -19,9 +20,43 @@ function jsonResponse(req: Request, data: any, status = 200) {
 const BROWSER_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
+function collectCookies(resp: Response, cookies: string[]) {
+  const getSetCookie = resp.headers.getSetCookie?.bind(resp.headers);
+  let cookieHeaders = getSetCookie ? getSetCookie() : [];
+
+  if (cookieHeaders.length === 0) {
+    const folded = resp.headers.get("set-cookie");
+    if (folded) {
+      cookieHeaders = folded.split(/,(?=\s*[^;,\s]+=)/g).map((c) => c.trim());
+    }
+  }
+
+  for (const cookieHeader of cookieHeaders) {
+    const cookiePart = cookieHeader.split(";")[0];
+    if (cookiePart.includes("=")) cookies.push(cookiePart);
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function errorStack(error: unknown): string | undefined {
+  return error instanceof Error ? error.stack : undefined;
+}
+
+function cookieNames(cookies: string | null | undefined): string {
+  if (!cookies) return "none";
+  return cookies
+    .split(";")
+    .map((cookie) => cookie.trim().split("=")[0])
+    .filter(Boolean)
+    .join(",");
+}
+
 /**
  * Authenticate with Glowforge via cookie-based login.
- * 1. GET app.glowforge.com → extract CSRF authenticity_token
+ * 1. GET accounts.glowforge.com/users/sign_in → extract CSRF authenticity_token
  * 2. POST accounts.glowforge.com/users/sign_in with credentials
  * 3. Return session cookies
  */
@@ -29,14 +64,14 @@ async function glowforgeLogin(
   email: string,
   password: string,
 ): Promise<{ cookies: string; expiresAt: string }> {
-  // Step 1: Get CSRF token from app.glowforge.com
-  const appResp = await fetch("https://app.glowforge.com/", {
+  // Step 1: Get CSRF token from the actual sign-in form.
+  const signInResp = await fetch("https://accounts.glowforge.com/users/sign_in", {
     headers: { "User-Agent": BROWSER_UA },
-    redirect: "manual",
+    redirect: "follow",
   });
 
-  const appHtml = await appResp.text();
-  const csrfMatch = appHtml.match(
+  const signInHtml = await signInResp.text();
+  const csrfMatch = signInHtml.match(
     /name="authenticity_token"\s+value="([^"]+)"/,
   );
   if (!csrfMatch) {
@@ -46,12 +81,7 @@ async function glowforgeLogin(
 
   // Collect cookies from the initial page load
   const initCookies: string[] = [];
-  for (const [key, value] of appResp.headers.entries()) {
-    if (key.toLowerCase() === "set-cookie") {
-      const cookiePart = value.split(";")[0];
-      initCookies.push(cookiePart);
-    }
-  }
+  collectCookies(signInResp, initCookies);
 
   // Step 2: POST login
   const formData = new URLSearchParams({
@@ -78,30 +108,27 @@ async function glowforgeLogin(
 
   // Collect all session cookies from the login response
   const allCookies: string[] = [...initCookies];
-  for (const [key, value] of loginResp.headers.entries()) {
-    if (key.toLowerCase() === "set-cookie") {
-      const cookiePart = value.split(";")[0];
-      allCookies.push(cookiePart);
-    }
-  }
+  collectCookies(loginResp, allCookies);
 
   // Follow redirects manually to collect cookies from each hop
   let location = loginResp.headers.get("location");
+  if (!location || loginResp.status < 300 || loginResp.status >= 400) {
+    throw new Error(`Glowforge login did not redirect after sign-in: ${loginResp.status}`);
+  }
   let hops = 0;
   while (location && hops < 5) {
-    const redirectResp = await fetch(location, {
+    const redirectUrl: string = new URL(
+      location,
+      "https://accounts.glowforge.com",
+    ).toString();
+    const redirectResp: Response = await fetch(redirectUrl, {
       headers: {
         "User-Agent": BROWSER_UA,
         Cookie: allCookies.join("; "),
       },
       redirect: "manual",
     });
-    for (const [key, value] of redirectResp.headers.entries()) {
-      if (key.toLowerCase() === "set-cookie") {
-        const cookiePart = value.split(";")[0];
-        allCookies.push(cookiePart);
-      }
-    }
+    collectCookies(redirectResp, allCookies);
     location = redirectResp.headers.get("location");
     hops++;
   }
@@ -138,6 +165,9 @@ async function fetchMachines(
         "User-Agent": BROWSER_UA,
         Cookie: cookies,
         Accept: "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+        Origin: "https://app.glowforge.com",
+        Referer: "https://app.glowforge.com/",
       },
     },
   );
@@ -208,7 +238,9 @@ serve(async (req) => {
     // 3. Load config
     const { data: config } = await supabase
       .from("glowforge_config")
-      .select("is_active, test_mode, session_cookies, session_expires_at")
+      .select(
+        "is_active, test_mode, session_cookies, session_expires_at, last_synced_at",
+      )
       .eq("id", 1)
       .single();
 
@@ -222,25 +254,48 @@ serve(async (req) => {
     if (config.test_mode) {
       return jsonResponse(req, {
         test_mode: true,
+        machines: [],
+        count: 0,
         message: "Test mode — no API call made",
       });
     }
 
-    // Get credentials from Supabase secrets
-    const gfEmail = Deno.env.get("GLOWFORGE_EMAIL");
-    const gfPassword = Deno.env.get("GLOWFORGE_PASSWORD");
-    if (!gfEmail || !gfPassword) {
-      return jsonResponse(req, 
-        {
-          error:
-            "Glowforge credentials not configured. Set GLOWFORGE_EMAIL and GLOWFORGE_PASSWORD secrets.",
-        },
-        400,
-      );
-    }
-
     // ---- GET STATUS ----
     if (body.action === "getStatus") {
+      if (!body.force && config.last_synced_at) {
+        const lastSyncedAt = new Date(config.last_synced_at);
+        const ageMs = Date.now() - lastSyncedAt.getTime();
+        if (Number.isFinite(ageMs) && ageMs >= 0 && ageMs < 30000) {
+          const { data: cachedMachines, error: cachedError } = await supabase
+            .from("glowforge_machines")
+            .select("*")
+            .eq("is_active", true)
+            .order("display_order", { ascending: true });
+
+          if (!cachedError) {
+            return jsonResponse(req, {
+              machines: cachedMachines || [],
+              count: cachedMachines?.length || 0,
+              cached: true,
+              last_synced_at: config.last_synced_at,
+            });
+          }
+        }
+      }
+
+      // Get credentials from Supabase secrets only when an upstream call is needed.
+      const gfEmail = Deno.env.get("GLOWFORGE_EMAIL");
+      const gfPassword = Deno.env.get("GLOWFORGE_PASSWORD");
+      if (!gfEmail || !gfPassword) {
+        return jsonResponse(req,
+          {
+            error:
+              "Glowforge credentials not configured. Set GLOWFORGE_EMAIL and GLOWFORGE_PASSWORD secrets.",
+          },
+          400,
+        );
+      }
+
       // Check if we have valid cached cookies
       let cookies = config.session_cookies;
       const expiresAt = config.session_expires_at
@@ -266,10 +321,11 @@ serve(async (req) => {
             })
             .eq("id", 1);
         } catch (err) {
+          const message = errorMessage(err);
           await supabase
             .from("glowforge_config")
             .update({
-              last_error: `Login failed: ${err.message}`,
+              last_error: `Login failed: ${message}`,
               updated_at: new Date().toISOString(),
             })
             .eq("id", 1);
@@ -285,10 +341,11 @@ serve(async (req) => {
       try {
         machines = await fetchMachines(cookies);
       } catch (err) {
+        const message = errorMessage(err);
         // If fetch fails, try re-authenticating once
         console.log(
           "Glowforge: fetch failed, re-authenticating...",
-          err.message,
+          message,
         );
         try {
           const session = await glowforgeLogin(gfEmail, gfPassword);
@@ -303,10 +360,12 @@ serve(async (req) => {
             .eq("id", 1);
           machines = await fetchMachines(cookies);
         } catch (retryErr) {
+          const retryMessage = errorMessage(retryErr);
           await supabase
             .from("glowforge_config")
             .update({
-              last_error: `API failed after re-auth: ${retryErr.message}`,
+              last_error:
+                `API failed after re-auth: ${retryMessage}; cookies=${cookieNames(cookies)}`,
               session_cookies: null,
               session_expires_at: null,
               updated_at: new Date().toISOString(),
@@ -321,39 +380,24 @@ serve(async (req) => {
 
       // Upsert machines into glowforge_machines
       const now = new Date().toISOString();
-      for (const machine of machines) {
-        // Extract a stable ID — try serial, id, or name
+      const rows = machines.map((machine) => {
         const machineId =
           machine.serial || machine.id?.toString() || machine.name || "unknown";
-        const machineName = machine.name || "Glowforge";
-        const machineType = machine.type || machine.model || null;
+        return {
+          machine_id: machineId,
+          name: machine.name || "Glowforge",
+          machine_type: machine.type || machine.model || null,
+          last_state: machine,
+          last_synced_at: now,
+          updated_at: now,
+        };
+      });
 
-        const { data: existing } = await supabase
+      if (rows.length > 0) {
+        const { error: upsertError } = await supabase
           .from("glowforge_machines")
-          .select("id")
-          .eq("machine_id", machineId)
-          .maybeSingle();
-
-        if (existing) {
-          await supabase
-            .from("glowforge_machines")
-            .update({
-              name: machineName,
-              machine_type: machineType,
-              last_state: machine,
-              last_synced_at: now,
-              updated_at: now,
-            })
-            .eq("id", existing.id);
-        } else {
-          await supabase.from("glowforge_machines").insert({
-            machine_id: machineId,
-            name: machineName,
-            machine_type: machineType,
-            last_state: machine,
-            last_synced_at: now,
-          });
-        }
+          .upsert(rows, { onConflict: "machine_id" });
+        if (upsertError) throw upsertError;
       }
 
       // Clear last_error on success
@@ -381,14 +425,14 @@ serve(async (req) => {
             appUser?.id !== "service" ? appUser?.id : null,
         })
         .then(() => {})
-        .catch(() => {});
+        .then(undefined, () => {});
 
-      return jsonResponse(req, { machines, count: machines.length });
+      return jsonResponse(req, { machines, count: machines.length, cached: false });
     }
 
     return jsonResponse(req, { error: `Unknown action: ${body.action}` }, 400);
   } catch (error) {
-    console.error("Glowforge control error:", error.message, error.stack);
+    console.error("Glowforge control error:", errorMessage(error), errorStack(error));
     return jsonResponse(req, { error: "Internal error processing glowforge control request" }, 500);
   }
 });

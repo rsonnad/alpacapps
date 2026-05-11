@@ -292,6 +292,7 @@
    - **Admin settings**: Active toggle, test mode toggle, test connection, discovered machines list
    - **Auto-discovery**: First getStatus creates glowforge_machines rows from API response
    - **Cost**: $0 (undocumented API, no rate limits known)
+   - **Fix 2026-05-10**: Landed missing production migration, protected session cookies with column grants/RLS, fixed multi-cookie login capture, switched CSRF fetch to the sign-in form, added 30s server-side cache throttling, atomic machine upsert, test-mode response shape, and escaped Glowforge strings in the Appliances UI.
 
 44. **Square Webhook for ACH Payment Tracking** - Async payment status updates
    - **Edge function**: `square-webhook` — receives `payment.created`, `payment.updated`, `refund.created`, `refund.updated`
@@ -390,4 +391,3 @@
     - Garage Mahal AP moved from ch1 → ch11 to reduce 2.4 GHz contention
     - STP/IGMP changes + revert documented in `SONOSAUTOMATION.md`
     - Three RF dead-zone speakers identified (.42, .99, .220) — physical remediation needed
-

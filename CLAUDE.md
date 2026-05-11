@@ -61,6 +61,11 @@ When the user names a person (e.g. "is X working?", "what's X's schedule?", "wha
 4. CI bumps version — never bump locally
 5. Exclude `/mistiq/` from all AlpacApps work
 
+## TTRAN Task Routing
+
+- When the user says `ttran AA##` or names a ttran task, look first in `/Volumes/PortoSams2T/ttran/` for matching files before searching the repo.
+- Example: `ttran AA10` resolves to `/Volumes/PortoSams2T/ttran/AA10 glowforge-fix-plan.md`.
+
 ## Code Guards
 
 - `media_spaces` not `photo_spaces` — legacy migrated

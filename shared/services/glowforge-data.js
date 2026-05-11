@@ -64,8 +64,8 @@ export async function loadGlowforgeMachines() {
 // COMMANDS (via edge function → Glowforge Cloud API)
 // =============================================
 
-export async function refreshGlowforgeStatus() {
-  return glowforgeApi('getStatus');
+export async function refreshGlowforgeStatus({ force = false } = {}) {
+  return glowforgeApi('getStatus', force ? { force: true } : {});
 }
 
 // =============================================
