@@ -45,11 +45,42 @@ _gf_user_session, remember_user_token, gfrt, gf_has_session
 
 So the failure is not missing cookies or stale Supabase secrets. The working path is:
 
-1. Create a Glowforge session from a local trusted machine.
-2. Store that cookie string in `glowforge_config.session_cookies`.
+1. Create a Glowforge session from a local trusted machine with `npm run glowforge:refresh-session`.
+2. The script verifies the machines API and stores that cookie string in `glowforge_config.session_cookies`.
 3. Let `glowforge-control` use the cached session for `getStatus`.
 
 With a locally seeded session, the deployed edge function returns one machine and the immediate second call returns `{ cached: true }`.
+
+### Local Session Refresh Script
+
+Run this from a trusted local Mac when `glowforge_config.session_expires_at` is near expiry or when the function reports `User not found` after re-auth:
+
+```bash
+npm run glowforge:refresh-session
+```
+
+What it does:
+
+1. Reads Glowforge credentials from Bitwarden item `Glowforge — Laser Cutter API`.
+2. Logs into `accounts.glowforge.com` locally.
+3. Verifies `https://api.glowforge.com/gfcore/users/machines` returns machine data.
+4. Reads Supabase connection fields from Bitwarden item `Supabase — AlpacApps Project`.
+5. Updates `glowforge_config.session_cookies`, `session_expires_at`, clears `last_error`, and leaves the cookies service-role-only.
+
+Dry run:
+
+```bash
+npm run glowforge:refresh-session -- --dry-run
+```
+
+Environment overrides:
+
+```bash
+GLOWFORGE_BW_ITEM="Glowforge — Laser Cutter API" \
+SUPABASE_BW_ITEM="Supabase — AlpacApps Project" \
+PSQL_BIN="/opt/homebrew/opt/libpq/bin/psql" \
+npm run glowforge:refresh-session
+```
 
 ### Refresh And Throttle Behavior
 
@@ -184,4 +215,3 @@ curl -sS "$PRINTER_PROXY_URL/health"
 | Glowforge frontend shows `0 machine(s)` in test mode | Function returning legacy test shape | Ensure response includes `count: 0, machines: []` |
 | FlashForge status unavailable | Proxy unreachable or Tailscale route broken | Check `printer_config.proxy_url`, Caddy, Tailscale, and proxy health |
 | FlashForge command ignored | Control not acquired or printer busy | Confirm proxy wraps command with `M601 S1` / `M602` |
-
