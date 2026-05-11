@@ -28,7 +28,7 @@ Internet
 
 ## Method 1: Tailscale (preferred)
 
-Requires Tailscale running on your machine and Alpuca.
+Requires Tailscale running on your machine and the target device.
 
 ```bash
 # Start Tailscale if needed
@@ -37,6 +37,9 @@ Requires Tailscale running on your machine and Alpuca.
 
 # SSH to Alpuca
 ssh -o StrictHostKeyChecking=no paca@100.74.59.97
+
+# SSH to Almaca
+ssh -o StrictHostKeyChecking=accept-new alpaca@100.115.27.43
 
 # SSH to UDM via Alpuca
 ssh -o StrictHostKeyChecking=no paca@100.74.59.97 \
@@ -62,6 +65,39 @@ lsof -ti:8443 | xargs kill
 | Almaca (MacBook Pro 16) | `100.115.27.43` | Legacy — avoid |
 | AlpineMac (MacBook Pro 15) | `100.67.3.39` | Kiosk |
 | Entry Tablet (Galaxy Tab) | `100.103.110.7` | Hall kiosk |
+
+### Almaca Volume Checks
+
+Use this from any machine with the repo and Tailscale access to verify the legacy Almaca MacBook and its mounted volumes.
+
+```bash
+# Preferred route: Tailscale
+ssh -o StrictHostKeyChecking=accept-new alpaca@100.115.27.43 \
+  'hostname; scutil --get ComputerName 2>/dev/null || true; ls -la /Volumes'
+
+# Confirm SW-SDCAM is mounted on Almaca
+ssh -o StrictHostKeyChecking=accept-new alpaca@100.115.27.43 \
+  'test -d /Volumes/SW-SDCAM && df -h /Volumes/SW-SDCAM && mount | grep -i SW-SDCAM'
+
+# If known_hosts has a stale key for the Tailscale IP, use a temporary known-hosts file for one-off verification
+ssh -o UserKnownHostsFile=/tmp/almaca-known-hosts \
+  -o StrictHostKeyChecking=accept-new \
+  alpaca@100.115.27.43 \
+  'hostname; ls -la /Volumes; df -h /Volumes/SW-SDCAM 2>/dev/null || true'
+```
+
+Expected `SW-SDCAM` mount when present:
+
+```text
+/dev/disk2s1 on /Volumes/SW-SDCAM (exfat, local, nodev, nosuid, noowners)
+```
+
+LAN fallback when on the home network:
+
+```bash
+ssh -o StrictHostKeyChecking=accept-new alpaca@192.168.1.74 \
+  'hostname; ls -la /Volumes; df -h /Volumes/SW-SDCAM 2>/dev/null || true'
+```
 
 ---
 
@@ -162,4 +198,4 @@ ssh paca@100.74.59.97 "sshpass -p '\$(bw-read \"UniFi Dream Machine Pro — Netw
 
 ---
 
-*Last tested: 2026-04-04*
+*Last tested: 2026-05-11*
