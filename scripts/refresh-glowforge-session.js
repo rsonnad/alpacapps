@@ -10,17 +10,17 @@
  *
  * Requirements:
  * - Bitwarden CLI unlocked (`bw unlock` / BW_SESSION)
- * - psql installed (`/opt/homebrew/opt/libpq/bin/psql` or `psql` on PATH)
+ * - psql installed (Homebrew libpq/PostgreSQL or `psql` on PATH)
  */
 
 const { spawnSync } = require('node:child_process');
+const { existsSync } = require('node:fs');
 
 const BROWSER_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 const DEFAULT_GLOWFORGE_ITEM = 'Glowforge — Laser Cutter API';
 const DEFAULT_SUPABASE_ITEM = 'Supabase — AlpacApps Project';
-const DEFAULT_PSQL = '/opt/homebrew/opt/libpq/bin/psql';
 
 function usage() {
   console.log(`Usage: node scripts/refresh-glowforge-session.js [--dry-run]
@@ -31,7 +31,7 @@ glowforge_config.session_cookies in Supabase.
 Environment overrides:
   GLOWFORGE_BW_ITEM       Bitwarden item name or id (default: ${DEFAULT_GLOWFORGE_ITEM})
   SUPABASE_BW_ITEM        Bitwarden item name or id (default: ${DEFAULT_SUPABASE_ITEM})
-  PSQL_BIN                psql binary path (default: ${DEFAULT_PSQL}, fallback: psql)
+  PSQL_BIN                psql binary path
 `);
 }
 
@@ -74,6 +74,47 @@ function field(item, name) {
 function requireValue(value, label) {
   if (!value) throw new Error(`Missing required value: ${label}`);
   return value;
+}
+
+function commandExists(cmd) {
+  const result = spawnSync(cmd, ['--version'], { encoding: 'utf8' });
+  return !result.error && result.status === 0;
+}
+
+function brewPrefix(formula) {
+  const result = spawnSync('brew', ['--prefix', formula], { encoding: 'utf8' });
+  if (result.error || result.status !== 0) return '';
+  return result.stdout.trim();
+}
+
+function findPsql() {
+  if (process.env.PSQL_BIN) {
+    if (existsSync(process.env.PSQL_BIN)) return process.env.PSQL_BIN;
+    throw new Error(`PSQL_BIN is set but not executable/found: ${process.env.PSQL_BIN}`);
+  }
+
+  const candidates = [
+    '/opt/homebrew/opt/libpq/bin/psql',
+    '/opt/homebrew/bin/psql',
+    '/usr/local/opt/libpq/bin/psql',
+    '/usr/local/bin/psql',
+  ];
+
+  const libpqPrefix = brewPrefix('libpq');
+  if (libpqPrefix) candidates.unshift(`${libpqPrefix}/bin/psql`);
+
+  const postgresPrefix = brewPrefix('postgresql@16') || brewPrefix('postgresql@15') || brewPrefix('postgresql');
+  if (postgresPrefix) candidates.unshift(`${postgresPrefix}/bin/psql`);
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate;
+  }
+  if (commandExists('psql')) return 'psql';
+
+  throw new Error(
+    'psql was not found. Install it with `brew install libpq` and either add it to PATH ' +
+    'or rerun with `PSQL_BIN="$(brew --prefix libpq)/bin/psql" npm run glowforge:refresh-session`.'
+  );
 }
 
 function collectCookies(resp, cookies) {
@@ -181,7 +222,7 @@ function updateSupabaseSession(supabaseItem, cookies) {
   const database = requireValue(field(supabaseItem, 'Database'), 'Supabase Database');
   const user = requireValue(field(supabaseItem, 'User'), 'Supabase User');
   const password = requireValue(field(supabaseItem, 'psql Password'), 'Supabase psql Password');
-  const psqlBin = process.env.PSQL_BIN || DEFAULT_PSQL;
+  const psqlBin = findPsql();
 
   const sql = `
 update public.glowforge_config
@@ -201,15 +242,7 @@ where id = 1;
     '-v', `cookies=${cookies}`,
   ];
 
-  try {
-    run(psqlBin, args, { input: sql, env: { ...process.env, PGPASSWORD: password } });
-  } catch (err) {
-    if (psqlBin === DEFAULT_PSQL) {
-      run('psql', args, { input: sql, env: { ...process.env, PGPASSWORD: password } });
-      return;
-    }
-    throw err;
-  }
+  run(psqlBin, args, { input: sql, env: { ...process.env, PGPASSWORD: password } });
 }
 
 async function main() {
