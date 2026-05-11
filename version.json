@@ -1,12 +1,12 @@
 {
-  "version": "v260511.02 12:56p",
-  "release": 1485,
-  "sha": "57ae98eac",
-  "fullSha": "57ae98eac27a8842b44b7f1985973ff7a52c554b",
+  "version": "v260511.03 2:32p",
+  "release": 1486,
+  "sha": "23c044a56",
+  "fullSha": "23c044a568164a596d70e602d7e978bbf4cecc08",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-11T17:56:21+00:00",
-  "commits": [{"sha":"57ae98eac","message":"fix(glowforge): find psql across machines","author":"Rahul"}]
+  "pushedAt": "2026-05-11T19:32:13+00:00",
+  "commits": [{"sha":"23c044a56","message":"docs(remote): add Almaca access recipes","author":"Rahul"}]
 }
