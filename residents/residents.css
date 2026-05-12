@@ -4299,6 +4299,180 @@ span.sonos-library-item__star.starred {
   padding: 0 0 0.5rem;
 }
 
+/* ===== GLOWFORGE JOB PREP ===== */
+.gf-job-prep {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr);
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.gf-job-prep__main,
+.gf-job-prep__side {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.gf-job-prep__header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.gf-job-prep__icon {
+  width: 36px;
+  height: 36px;
+  color: var(--text-muted);
+  flex: 0 0 auto;
+}
+
+.gf-job-prep__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.gf-job-prep h4 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.gf-job-prep p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.gf-job-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.gf-job-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.gf-job-form label span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.gf-job-form input,
+.gf-job-form select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text);
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+}
+
+.gf-job-form__wide {
+  grid-column: 1 / -1;
+}
+
+.gf-job-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.gf-job-actions .laundry-watch-btn {
+  text-decoration: none;
+  min-height: 42px;
+}
+
+.gf-current-job__title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.gf-current-job__meta {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  margin-bottom: 0.75rem;
+}
+
+.gf-recipe {
+  margin: 0 0 0.9rem;
+  padding-left: 1.1rem;
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.gf-recipe li + li {
+  margin-top: 0.25rem;
+}
+
+.gf-stage-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+  margin-bottom: 0.9rem;
+}
+
+.gf-stage {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+}
+
+.gf-stage svg {
+  width: 15px;
+  height: 15px;
+}
+
+.gf-stage.is-done {
+  border-color: var(--available);
+  background: var(--available-bg, rgba(34, 197, 94, 0.1));
+  color: var(--available);
+}
+
+.gf-checklist {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.gf-empty-job {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 /* ===== PLACEHOLDER CARD ===== */
 .placeholder-card {
   opacity: 0.6;
@@ -4331,6 +4505,15 @@ span.sonos-library-item__star.starred {
     padding: 0.5rem 0.75rem;
     min-height: 44px;
     min-width: 44px;
+  }
+
+  .gf-job-prep {
+    grid-template-columns: 1fr;
+  }
+
+  .gf-job-form,
+  .gf-job-actions {
+    grid-template-columns: 1fr;
   }
 
   /* Tabs: horizontal scroll with touch, fade hint */

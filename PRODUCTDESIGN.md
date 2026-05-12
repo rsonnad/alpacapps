@@ -521,6 +521,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 ## Decisions
 
+### 2026-05-11: Glowforge Job Prep, Not Remote Laser Control
+
+**Decision:** Add a Glowforge Job Prep workflow inside the resident Appliances/Maker Tools page that records the uploaded file name, material, thickness, board size, operation type, finish target, generated settings recipe, operator checklist, and handoff status. AlpacApps prepares and tracks the job, but Glowforge Print remains the required final confirmation surface for artwork placement, machine settings, and starting the physical laser.
+
+**Why:** The existing Glowforge integration is status-only and uses an undocumented machine-status endpoint. For a laser cutter, the safest and most durable UX is to automate repeatable prep work while preserving human verification at the machine: material placement, camera-preview alignment, ventilation/lid checks, Glowforge print confirmation, and the physical button press.
+
 ### 2026-05-08: Signing-Request Email — Standard Format
 
 **Decision:** The "Please Sign" email sent to tenants when a lease is sent for signature must always include, in this order: (1) **Payment Summary table** at the top — reservation deposit due now, security deposit due at move-in, prorated first month's rent due at move-in (with credits applied), and recurring monthly rent on the 1st of each month; (2) a **co-signature notice** stating the Landlord has pre-signed and only the tenant's signature remains; (3) the **Sign CTA** button; (4) the **payment methods** block; (5) the **full lease HTML** inline so the tenant has the entire agreement in their inbox without clicking through. The lease template itself includes the rent-due-1st-of-month wording and the "✓ Pre-signed by Rahul Sonnad" line in the SIGNATURES block, so the produced lease document carries both signatures (landlord pre-signed, tenant signed via the link).

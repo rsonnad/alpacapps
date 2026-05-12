@@ -62,6 +62,7 @@ let loadFailed = false;
 let canControlOven = false;
 let refreshingOven = new Set();
 let refreshingGlowforge = false;
+let glowforgeJobs = [];
 let printerDevices = [];
 let refreshingPrinter = new Set();
 let canControlPrinter = false;
@@ -110,6 +111,22 @@ const GLOWFORGE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColo
   <circle cx="12" cy="14" r="1" fill="currentColor" stroke="none" opacity="0.6"/>
 </svg>`;
 
+const FILE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+  <path d="M14 2v6h6"/>
+  <path d="M8 13h8M8 17h5"/>
+</svg>`;
+
+const CHECK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 6 9 17l-5-5"/>
+</svg>`;
+
+const EXTERNAL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+  <path d="M15 3h6v6"/>
+  <path d="m10 14 11-11"/>
+</svg>`;
+
 const PRINTER_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
   <rect x="3" y="3" width="18" height="18" rx="2"/>
   <rect x="6" y="14" width="12" height="4" rx="0.5" stroke-dasharray="2 1.5"/>
@@ -141,6 +158,215 @@ function saveSectionState(sectionId, isOpen) {
     }
     localStorage.setItem(SECTION_COLLAPSE_KEY, JSON.stringify(collapsed));
   } catch {}
+}
+
+// =============================================
+// GLOWFORGE JOB PREP
+// =============================================
+const GLOWFORGE_JOBS_KEY = 'glowforge_job_prep_jobs';
+const GLOWFORGE_STAGES = [
+  { id: 'prepared', label: 'Prepared' },
+  { id: 'loaded', label: 'Loaded in Glowforge' },
+  { id: 'confirmed', label: 'Placement checked' },
+  { id: 'started', label: 'Print started' },
+];
+
+function loadGlowforgeJobs() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(GLOWFORGE_JOBS_KEY) || '[]');
+    glowforgeJobs = Array.isArray(parsed) ? parsed.slice(0, 12) : [];
+  } catch {
+    glowforgeJobs = [];
+  }
+}
+
+function saveGlowforgeJobs() {
+  try {
+    localStorage.setItem(GLOWFORGE_JOBS_KEY, JSON.stringify(glowforgeJobs.slice(0, 12)));
+  } catch {}
+}
+
+function getGlowforgeSettings({ material, thickness, operation, finish }) {
+  const isQuarter = Number(thickness) >= 0.22;
+  const baseMaterial = material || 'custom plywood';
+  const settings = {
+    materialLabel: `${baseMaterial}, ${thickness || '0.25'} in`,
+    focusHeight: thickness || '0.25',
+    engrave: { speed: '900', power: finish === 'dark' ? '60' : '45', lpi: '340', passes: '1' },
+    score: { speed: '600', power: '20', passes: '1' },
+    cut: { speed: isQuarter ? '130' : '165', power: 'Full', passes: '1' },
+  };
+
+  if (material === 'sande plywood' && isQuarter) {
+    settings.cut.note = 'Sande plywood glue layers vary. Use one pass first and inspect before a second pass.';
+  }
+  if (operation === 'engrave') settings.primary = 'engrave';
+  else if (operation === 'cut') settings.primary = 'cut';
+  else if (operation === 'score') settings.primary = 'score';
+  else settings.primary = 'mixed';
+  return settings;
+}
+
+function formatGlowforgeRecipe(settings, operation) {
+  const lines = [
+    `Material: Uncertified Material`,
+    `Thickness / focus height: ${settings.focusHeight} in`,
+  ];
+  if (operation === 'engrave' || operation === 'mixed') {
+    lines.push(`Engrave: speed ${settings.engrave.speed}, power ${settings.engrave.power}, ${settings.engrave.lpi} LPI, ${settings.engrave.passes} pass`);
+  }
+  if (operation === 'score' || operation === 'mixed') {
+    lines.push(`Score: speed ${settings.score.speed}, power ${settings.score.power}, ${settings.score.passes} pass`);
+  }
+  if (operation === 'cut' || operation === 'mixed') {
+    lines.push(`Cut: speed ${settings.cut.speed}, power ${settings.cut.power}, ${settings.cut.passes} pass`);
+  }
+  if (settings.cut.note && (operation === 'cut' || operation === 'mixed')) lines.push(settings.cut.note);
+  return lines;
+}
+
+function getLatestGlowforgeJob() {
+  return glowforgeJobs[0] || null;
+}
+
+function buildGlowforgeJob(form) {
+  const settings = getGlowforgeSettings(form);
+  return {
+    id: `gf-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    title: form.title || 'Glowforge job',
+    fileName: form.fileName || 'Uploaded PDF',
+    material: form.material,
+    thickness: form.thickness,
+    boardSize: form.boardSize,
+    operation: form.operation,
+    finish: form.finish,
+    notes: form.notes,
+    stage: 'prepared',
+    recipe: formatGlowforgeRecipe(settings, form.operation),
+  };
+}
+
+function renderGlowforgeJobPrep() {
+  const job = getLatestGlowforgeJob();
+  const stageIndex = job ? GLOWFORGE_STAGES.findIndex(s => s.id === job.stage) : -1;
+  const recipeHtml = job ? job.recipe.map(line => `<li>${esc(line)}</li>`).join('') : '';
+  const stageHtml = job ? GLOWFORGE_STAGES.map((stage, index) => {
+    const isDone = index <= stageIndex;
+    return `
+      <button class="gf-stage ${isDone ? 'is-done' : ''}" onclick="window._setGlowforgeJobStage('${esc(job.id)}', '${esc(stage.id)}')" title="${esc(stage.label)}">
+        ${isDone ? CHECK_ICON : ''}
+        <span>${esc(stage.label)}</span>
+      </button>
+    `;
+  }).join('') : '';
+
+  return `
+    <div class="gf-job-prep">
+      <div class="gf-job-prep__main">
+        <div class="gf-job-prep__header">
+          <div class="gf-job-prep__icon">${FILE_ICON}</div>
+          <div>
+            <h4>Glowforge Job Prep</h4>
+            <p>Prepare the settings recipe and track the human confirmation handoff.</p>
+          </div>
+        </div>
+
+        <div class="gf-job-form">
+          <label>
+            <span>Job name</span>
+            <input id="gfJobTitle" type="text" value="${esc(job?.title || 'Sande plywood sign')}" placeholder="Sign, plaque, template">
+          </label>
+          <label>
+            <span>Uploaded file</span>
+            <input id="gfJobFile" type="text" value="${esc(job?.fileName || 'PDF already uploaded')}" placeholder="PDF already uploaded">
+          </label>
+          <label>
+            <span>Material</span>
+            <select id="gfJobMaterial">
+              ${[
+                ['sande plywood', 'Sande plywood'],
+                ['birch plywood', 'Birch plywood'],
+                ['basswood plywood', 'Basswood plywood'],
+                ['mdf core plywood', 'MDF-core plywood'],
+                ['custom plywood', 'Custom plywood'],
+              ].map(([value, label]) => `<option value="${value}" ${job?.material === value ? 'selected' : ''}>${label}</option>`).join('')}
+            </select>
+          </label>
+          <label>
+            <span>Thickness</span>
+            <select id="gfJobThickness">
+              ${[
+                ['0.125', '1/8 in'],
+                ['0.188', '3/16 in'],
+                ['0.25', '1/4 in'],
+              ].map(([value, label]) => `<option value="${value}" ${String(job?.thickness || '0.25') === value ? 'selected' : ''}>${label}</option>`).join('')}
+            </select>
+          </label>
+          <label>
+            <span>Board size</span>
+            <input id="gfJobBoardSize" type="text" value="${esc(job?.boardSize || '17 x 20 in')}" placeholder="17 x 20 in">
+          </label>
+          <label>
+            <span>Operation</span>
+            <select id="gfJobOperation">
+              ${[
+                ['engrave', 'Engrave only'],
+                ['score', 'Score only'],
+                ['cut', 'Cut only'],
+                ['mixed', 'Mixed layers'],
+              ].map(([value, label]) => `<option value="${value}" ${String(job?.operation || 'engrave') === value ? 'selected' : ''}>${label}</option>`).join('')}
+            </select>
+          </label>
+          <label>
+            <span>Finish</span>
+            <select id="gfJobFinish">
+              ${[
+                ['clean', 'Clean readable mark'],
+                ['dark', 'Darker engraving'],
+              ].map(([value, label]) => `<option value="${value}" ${String(job?.finish || 'clean') === value ? 'selected' : ''}>${label}</option>`).join('')}
+            </select>
+          </label>
+          <label class="gf-job-form__wide">
+            <span>Notes</span>
+            <input id="gfJobNotes" type="text" value="${esc(job?.notes || '')}" placeholder="Alignment, masking, or layer notes">
+          </label>
+        </div>
+
+        <div class="gf-job-actions">
+          <button class="laundry-watch-btn active" onclick="window._prepareGlowforgeJob()" title="Generate settings recipe">
+            ${CHECK_ICON}
+            <span>Prepare Job</span>
+          </button>
+          <a class="laundry-watch-btn" href="https://app.glowforge.com/" target="_blank" rel="noopener" title="Open Glowforge Print">
+            ${EXTERNAL_ICON}
+            <span>Open Glowforge</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="gf-job-prep__side">
+        ${job ? `
+          <div class="gf-current-job">
+            <div class="gf-current-job__title">${esc(job.title)}</div>
+            <div class="gf-current-job__meta">${esc(job.fileName)} · ${esc(job.material)} · ${esc(job.boardSize || 'board size not set')}</div>
+            <ol class="gf-recipe">${recipeHtml}</ol>
+            <div class="gf-stage-list">${stageHtml}</div>
+            <div class="gf-checklist">
+              <div>Verify artwork placement in the Glowforge camera preview.</div>
+              <div>Confirm ventilation/filter, flat material, closed lid, and clear bed.</div>
+              <div>Click Print in Glowforge, then press the physical button at the machine.</div>
+            </div>
+          </div>
+        ` : `
+          <div class="gf-empty-job">
+            <strong>No prepared job yet.</strong>
+            <span>Fill the fields and prepare a job to generate the operator recipe.</span>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
 }
 
 // =============================================
@@ -615,11 +841,17 @@ function renderSections() {
   const makerOpen = getSectionOpenState('maker');
   let makerCardsHtml;
   if (glowforgeMachines.length > 0) {
-    makerCardsHtml = `<div class="laundry-grid">${glowforgeMachines.map(renderGlowforgeCard).join('')}</div>`;
+    makerCardsHtml = `
+      <div class="laundry-grid">${glowforgeMachines.map(renderGlowforgeCard).join('')}</div>
+      ${renderGlowforgeJobPrep()}
+    `;
   } else {
-    makerCardsHtml = `<p style="text-align:center;color:var(--text-muted);padding:2rem;">
-      No maker tools discovered yet. Admin: configure Glowforge credentials in Settings below, then click Refresh.
-    </p>`;
+    makerCardsHtml = `
+      <p style="text-align:center;color:var(--text-muted);padding:2rem;">
+        No maker tools discovered yet. Admin: configure Glowforge credentials in Settings below, then click Refresh.
+      </p>
+      ${renderGlowforgeJobPrep()}
+    `;
   }
 
   // 3D Printing section
@@ -813,6 +1045,35 @@ window._refreshGlowforge = async function() {
     refreshingGlowforge = false;
     renderSections();
   }
+};
+
+window._prepareGlowforgeJob = function() {
+  const form = {
+    title: document.getElementById('gfJobTitle')?.value?.trim(),
+    fileName: document.getElementById('gfJobFile')?.value?.trim(),
+    material: document.getElementById('gfJobMaterial')?.value || 'custom plywood',
+    thickness: document.getElementById('gfJobThickness')?.value || '0.25',
+    boardSize: document.getElementById('gfJobBoardSize')?.value?.trim(),
+    operation: document.getElementById('gfJobOperation')?.value || 'engrave',
+    finish: document.getElementById('gfJobFinish')?.value || 'clean',
+    notes: document.getElementById('gfJobNotes')?.value?.trim(),
+  };
+  const job = buildGlowforgeJob(form);
+  glowforgeJobs = [job, ...glowforgeJobs.filter(j => j.id !== job.id)].slice(0, 12);
+  saveGlowforgeJobs();
+  renderSections();
+  showToast('Glowforge job recipe prepared', 'success');
+};
+
+window._setGlowforgeJobStage = function(jobId, stage) {
+  const job = glowforgeJobs.find(j => j.id === jobId);
+  if (!job) return;
+  job.stage = stage;
+  job.updatedAt = new Date().toISOString();
+  saveGlowforgeJobs();
+  renderSections();
+  const label = GLOWFORGE_STAGES.find(s => s.id === stage)?.label || 'Updated';
+  showToast(`Glowforge job: ${label}`, 'success');
 };
 
 window._stopCook = async function(ovenId) {
@@ -1349,6 +1610,7 @@ document.addEventListener('DOMContentLoaded', () => {
       deviceScope = await getResidentDeviceScope(authState.appUser, authState.hasPermission);
       canControlOven = hasPermission('control_oven');
       canControlPrinter = hasPermission('control_printer');
+      loadGlowforgeJobs();
 
       // Initial load + polling
       await refreshFromDB();
