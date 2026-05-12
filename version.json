@@ -1,12 +1,12 @@
 {
-  "version": "v260512.01 12:02a",
-  "release": 1492,
-  "sha": "6e8430321",
-  "fullSha": "6e843032183e6aad93d68bfe19b3c0a19c3f56fe",
+  "version": "v260512.02 11:53a",
+  "release": 1493,
+  "sha": "23ababa1e",
+  "fullSha": "23ababa1e2cc6cea1e78ea46001ed14e08ebf026",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-12T05:02:05+00:00",
-  "commits": [{"sha":"6e8430321","message":"refine plant marker font style","author":"RedPanda"}]
+  "pushedAt": "2026-05-12T16:53:58+00:00",
+  "commits": [{"sha":"23ababa1e","message":"update plant marker preview font","author":"RedPanda"}]
 }
