@@ -1,12 +1,12 @@
 {
-  "version": "v260511.05 9:57p",
-  "release": 1488,
-  "sha": "12cc4319d",
-  "fullSha": "12cc4319d1e8039abfd6448e8f33e37953d8596a",
+  "version": "v260511.06 10:15p",
+  "release": 1489,
+  "sha": "738494133",
+  "fullSha": "738494133062281d881814cdebaa26b4704f2547",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-12T02:57:57+00:00",
-  "commits": [{"sha":"4c8e469db","message":"fix(printer): move proxy off conflicting ports","author":"RedPanda"},{"sha":"12cc4319d","message":"docs(printer): require FlashForge slicer gate","author":"RedPanda"}]
+  "pushedAt": "2026-05-12T03:15:59+00:00",
+  "commits": [{"sha":"738494133","message":"fix(printer): add safe AD5M send workflow","author":"RedPanda"}]
 }
