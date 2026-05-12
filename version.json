@@ -1,12 +1,12 @@
 {
-  "version": "v260511.06 10:15p",
-  "release": 1489,
-  "sha": "738494133",
-  "fullSha": "738494133062281d881814cdebaa26b4704f2547",
+  "version": "v260511.07 11:32p",
+  "release": 1490,
+  "sha": "233dfc9f4",
+  "fullSha": "233dfc9f4a4f13516fc6745fa0211b65b46f201a",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-12T03:15:59+00:00",
-  "commits": [{"sha":"738494133","message":"fix(printer): add safe AD5M send workflow","author":"RedPanda"}]
+  "pushedAt": "2026-05-12T04:32:05+00:00",
+  "commits": [{"sha":"233dfc9f4","message":"fix(printer): remove plant marker adhesion artifacts","author":"RedPanda"}]
 }
