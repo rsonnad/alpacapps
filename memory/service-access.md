@@ -44,3 +44,41 @@ SW-SDCAM: /Volumes/SW-SDCAM
 Filesystem: exfat
 Observed capacity: 231Gi total, 40Gi used, 191Gi available
 ```
+
+## Alpuca SSH and Printer Proxy
+
+Use when checking the primary home server, LAN devices, or the FlashForge printer proxy.
+
+### Tailscale SSH
+
+```bash
+ssh -F /dev/null -i ~/.ssh/id_ed25519 \
+  -o IdentitiesOnly=yes \
+  -o IdentityAgent=none \
+  -o PreferredAuthentications=publickey \
+  -o PasswordAuthentication=no \
+  -o StrictHostKeyChecking=accept-new \
+  alpuca@100.74.59.97
+```
+
+### Printer Proxy Health
+
+```bash
+ssh -F /dev/null -i ~/.ssh/id_ed25519 \
+  -o IdentitiesOnly=yes \
+  -o IdentityAgent=none \
+  -o PreferredAuthentications=publickey \
+  -o PasswordAuthentication=no \
+  -o StrictHostKeyChecking=accept-new \
+  alpuca@100.74.59.97 \
+  'curl -sS http://127.0.0.1:8914/health'
+```
+
+Verified 2026-05-11:
+
+```text
+ComputerName: Alpuca.local
+Tailscale IP: 100.74.59.97
+LAN IP: 192.168.1.200
+Printer proxy: com.printer-proxy on port 8913, health on 8914
+```

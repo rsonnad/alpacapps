@@ -6,8 +6,8 @@
   <string>com.printer-proxy</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/node</string>
-    <string>/Users/alpaca/printer-proxy/printer-proxy.js</string>
+    <string>/Users/alpuca/.nvm/versions/node/v18.20.8/bin/node</string>
+    <string>/Users/alpuca/printer-proxy/printer-proxy.js</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
@@ -15,6 +15,10 @@
     <string>CHANGE_ME</string>
     <key>DEFAULT_PRINTER_IP</key>
     <string>192.168.1.106</string>
+    <key>PRINTER_PROXY_PORT</key>
+    <string>8913</string>
+    <key>PRINTER_HEALTH_PORT</key>
+    <string>8914</string>
   </dict>
   <key>KeepAlive</key>
   <true/>

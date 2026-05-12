@@ -150,12 +150,12 @@ The printer speaks a LAN TCP G-code protocol, so AlpacApps uses a proxy chain:
 Browser
   -> printer-control Supabase edge function
   -> Hostinger Caddy
-  -> Tailscale to Alpuca/Almaca LAN
-  -> printer-proxy.js HTTP bridge on port 8903
+  -> Tailscale to Alpuca LAN
+  -> printer-proxy.js HTTP bridge on port 8913
   -> FlashForge TCP port 8899
 ```
 
-The proxy handles FlashForge control acquisition:
+The proxy health check listens on port 8914. The proxy handles FlashForge control acquisition:
 
 ```text
 M601 S1 -> command -> M602
@@ -203,7 +203,14 @@ supabase functions deploy printer-control --no-verify-jwt --project-ref aphrrfpr
 Check the proxy health from a machine with route access:
 
 ```bash
-curl -sS "$PRINTER_PROXY_URL/health"
+curl -sS "http://100.74.59.97:8914/health"
+```
+
+Check the printer control port from Alpuca:
+
+```bash
+ssh -F /dev/null -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes alpuca@100.74.59.97 \
+  'nc -vz -w 3 192.168.1.106 8899'
 ```
 
 ## Troubleshooting
@@ -213,5 +220,6 @@ curl -sS "$PRINTER_PROXY_URL/health"
 | Glowforge says `integration is disabled` | Missing `glowforge_config` row or `is_active=false` | `select id,is_active from glowforge_config;` |
 | Glowforge says `User not found` after re-auth | Supabase Edge-created session rejected by Glowforge | Seed a local verified session; do not rotate credentials blindly |
 | Glowforge frontend shows `0 machine(s)` in test mode | Function returning legacy test shape | Ensure response includes `count: 0, machines: []` |
-| FlashForge status unavailable | Proxy unreachable or Tailscale route broken | Check `printer_config.proxy_url`, Caddy, Tailscale, and proxy health |
+| FlashForge status unavailable | Proxy unreachable or Tailscale route broken | Check `printer_config.proxy_url`, Caddy, Tailscale, and proxy health on Alpuca port 8914 |
 | FlashForge command ignored | Control not acquired or printer busy | Confirm proxy wraps command with `M601 S1` / `M602` |
+| FlashForge ports refuse connections | Printer LAN mode/API disabled or IP changed | On printer touchscreen, enable LAN mode/control, confirm IP/checkCode, then test `8899`, `8898`, and camera `8080` from Alpuca |

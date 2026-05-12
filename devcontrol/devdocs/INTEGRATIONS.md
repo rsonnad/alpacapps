@@ -399,10 +399,10 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 ### FlashForge (3D Printer)
 - **API**: FlashForge TCP G-code protocol (port 8899, no auth needed on LAN)
 - **Printer**: "Alpaca Foundry" — Adventurer 5M Pro, SN SNMSQE9C09604, FW v3.2.7
-- **Architecture**: Per-request via printer proxy on Alpaca Mac (HTTP→TCP bridge, same pattern as Sonos/cameras)
+- **Architecture**: Per-request via printer proxy on Alpuca (HTTP→TCP bridge, same pattern as Sonos/cameras)
 - **Operations**: See `MAKERDEVICES.md` for proxy chain, command list, health checks, and troubleshooting
-- **Proxy chain**: Browser → Supabase edge function → Caddy on Hostinger → Alpaca Mac printer-proxy.js (port 8903) → TCP to printer at 192.168.1.106:8899
-- **Proxy**: `scripts/printer-proxy/printer-proxy.js` on Alpaca Mac, health check on port 8904
+- **Proxy chain**: Browser → Supabase edge function → Caddy on Hostinger → Alpuca printer-proxy.js (port 8913) → TCP to printer at 192.168.1.106:8899
+- **Proxy**: `scripts/printer-proxy/printer-proxy.js` on Alpuca, health check on port 8914
 - **LaunchAgent**: `scripts/printer-proxy/com.printer-proxy.plist`
 - **Control flow**: M601 S1 (request control) → command → M602 (release control) — proxy handles this automatically
 - **Commands**: M115 (info), M105 (temps), M27 (progress), M119 (endstops), M23/M24/M25/M26 (print control), M104/M140 (set temps), M146 (LED), G28 (home), M661 (list files)

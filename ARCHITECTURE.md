@@ -1131,8 +1131,8 @@ Rich receipt with payment history, outstanding balance calculation, and "Pay Now
 - API: FlashForge TCP G-code protocol on port 8899 (no authentication required)
 - HTTP REST API on port 8898 (requires checkCode — not used)
 - MJPEG camera stream on port 8080
-- Architecture: Browser → `printer-control` edge function → Hostinger Caddy → Almaca (Tailscale) → `printer-proxy.js` (port 8903) → TCP to printer LAN IP
-- Proxy: `scripts/printer-proxy/printer-proxy.js` — HTTP→TCP bridge on Almaca, auto-wraps control commands in M601 S1/M602 (request/release control)
+- Architecture: Browser → `printer-control` edge function → Hostinger Caddy → Alpuca (Tailscale) → `printer-proxy.js` (port 8913) → TCP to printer LAN IP
+- Proxy: `scripts/printer-proxy/printer-proxy.js` — HTTP→TCP bridge on Alpuca, auto-wraps control commands in M601 S1/M602 (request/release control)
 - Edge function: `printer-control` — getStatus, startPrint, pausePrint, resumePrint, cancelPrint, setTemperature, toggleLight, homeAxes, listFiles
 - Data service: `shared/services/printer-data.js` — display helpers, temp formatting, print progress
 - DB: `printer_config` (proxy URL/secret), `printer_devices` (cached state in `last_state` JSONB)
