@@ -136,11 +136,29 @@ Expected success shape:
 - Device name: `Alpaca Foundry`
 - Model: FlashForge Adventurer 5M Pro
 - Serial: `SNMSQE9C09604`
-- Firmware: `v3.2.7`
+- Firmware: `v5.1.2`
 - Build volume: `220x220x220mm`
-- LAN IP: `192.168.1.106`
+- LAN IP: `192.168.1.123`
 - TCP control port: `8899`
-- MJPEG camera: `http://192.168.1.106:8080/?action=stream`
+- HTTP API port: `8898`
+- MJPEG camera: `http://192.168.1.123:8080/?action=stream`
+
+### Default Garden Plant Marker Design
+
+Use this as the default for future garden plant identification cards unless the user asks for a different design:
+
+- Generator: `tools/generate-plant-marker-stl.py`
+- Preview renderer: `tools/render-plant-marker-blender.py`
+- Label style: single-line raised `SignPainter-HouseScript` lettering
+- Sign face: `2.5 in x 1.5 in` (`63.5 x 38.1mm`)
+- Sign/stake body thickness: `0.10 in` (`2.54mm`)
+- Raised border height: `3.12mm`
+- Raised lettering height: `3.62mm`
+- Stake length below sign: `3.5 in` (`88.9mm`)
+- Stake shape: tapered, `0.5 in` wide at the sign to a flat `0.125 in` end for dirt insertion
+- Adhesion default: no raft, no brim, no skirt. Ask before adding any “boat”/raft/brim.
+
+Before printing, regenerate the STL, render a Blender preview from the actual STL, slice with the Adventurer 5M Pro profile, and validate that the G-code has `brim_type = no_brim`, `brim_width = 0`, `raft_layers = 0`, `skirt_loops = 0`, and no `;TYPE:Brim`, `;TYPE:Skirt`, or `;TYPE:Raft` sections.
 
 ### 3D Print Request Protocol
 
