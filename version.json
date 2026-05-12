@@ -1,12 +1,12 @@
 {
-  "version": "v260512.03 12:01p",
-  "release": 1494,
-  "sha": "ceca1223b",
-  "fullSha": "ceca1223ba02f07bb5f4d98b8afe743bcdf7a51f",
+  "version": "v260512.04 12:29p",
+  "release": 1495,
+  "sha": "19cf25191",
+  "fullSha": "19cf251915863e8dc25ded3e2d10a3a5f8d342d5",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-12T17:01:03+00:00",
-  "commits": [{"sha":"ceca1223b","message":"fix plant marker preview accuracy","author":"RedPanda"}]
+  "pushedAt": "2026-05-12T17:29:21+00:00",
+  "commits": [{"sha":"19cf25191","message":"add blender plant marker render preview","author":"RedPanda"}]
 }
