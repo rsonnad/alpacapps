@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate a raised-text plant marker STL and matching SVG preview.
 
-Dimensions are millimeters. Text is built from Arial Rounded Bold outlines so
-the printable letters are softer than the earlier block-stroke prototype.
+Dimensions are millimeters. Text is built from SignPainter HouseScript outlines
+so the printable letters feel more like a garden label than a block sign.
 """
 
 from __future__ import annotations
@@ -25,7 +25,9 @@ except ImportError as exc:
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "tmp" / "prints" / "peppermint-marker.stl"
 PREVIEW = ROOT / "tmp" / "prints" / "peppermint-marker-preview.svg"
-FONT_PATH = Path("/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf")
+FONT_PATH = Path("/System/Library/Fonts/Supplemental/SignPainter.ttc")
+FONT_NUMBER = 0
+FONT_FAMILY = "SignPainter-HouseScript"
 
 LABEL = "PEPPERMINT"
 TAG_W = 76.2
@@ -139,7 +141,7 @@ class FlattenPen(BasePen):
 
 
 def font_contours(text):
-    font = TTFont(FONT_PATH)
+    font = TTFont(FONT_PATH, fontNumber=FONT_NUMBER)
     glyph_set = font.getGlyphSet()
     cmap = font.getBestCmap()
     hmtx = font["hmtx"].metrics
@@ -160,8 +162,8 @@ def font_contours(text):
     max_x = max(x for c in contours for x, _ in c)
     min_y = min(y for c in contours for _, y in c)
     max_y = max(y for c in contours for _, y in c)
-    target_w = TAG_W - 16.0
-    target_h = 10.0
+    target_w = TAG_W - 13.0
+    target_h = 14.0
     scale = min(target_w / (max_x - min_x), target_h / (max_y - min_y))
     text_w = (max_x - min_x) * scale
     text_h = (max_y - min_y) * scale
@@ -273,8 +275,8 @@ def write_svg_preview(path: Path):
         f.write(f'  <rect x="{sx(2):.1f}" y="{sy(SPIKE_L + TAG_H - 2):.1f}" width="{(TAG_W - 4) * scale:.1f}" height="{(TAG_H - 4) * scale:.1f}" fill="none" stroke="#d8e6dd" stroke-width="{1.3 * scale:.1f}"/>\n')
         f.write(
             f'  <text x="{sx(TAG_W / 2):.1f}" y="{sy(SPIKE_L + TAG_H / 2 - 3.5):.1f}" '
-            'font-family="Arial Rounded MT Bold, Arial Rounded, Avenir Next, Helvetica Neue, sans-serif" '
-            'font-size="39" font-weight="700" text-anchor="middle" fill="#d8e6dd">PEPPERMINT</text>\n'
+            f'font-family="{FONT_FAMILY}, SignPainter, Brush Script MT, cursive" '
+            'font-size="53" font-weight="700" text-anchor="middle" fill="#d8e6dd">PEPPERMINT</text>\n'
         )
         f.write("</svg>\n")
 
