@@ -1,12 +1,12 @@
 {
-  "version": "v260511.07 11:32p",
-  "release": 1490,
-  "sha": "233dfc9f4",
-  "fullSha": "233dfc9f4a4f13516fc6745fa0211b65b46f201a",
+  "version": "v260511.08 11:44p",
+  "release": 1491,
+  "sha": "9512f5796",
+  "fullSha": "9512f5796e7312530b9b32573301ca1540e042cd",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-12T04:32:05+00:00",
-  "commits": [{"sha":"233dfc9f4","message":"fix(printer): remove plant marker adhesion artifacts","author":"RedPanda"}]
+  "pushedAt": "2026-05-12T04:44:17+00:00",
+  "commits": [{"sha":"9512f5796","message":"improve plant marker lettering preview","author":"RedPanda"}]
 }
