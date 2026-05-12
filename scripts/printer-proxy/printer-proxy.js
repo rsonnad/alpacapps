@@ -239,7 +239,7 @@ function uploadGcode(ip, httpPort, filename, gcodeBuffer, serialNumber, checkCod
     // Build multipart body
     const header = Buffer.from(
       `--${boundary}\r\n` +
-      `Content-Disposition: form-data; name="file"; filename="${safeName}"\r\n` +
+      `Content-Disposition: form-data; name="gcodeFile"; filename="${safeName}"\r\n` +
       `Content-Type: application/octet-stream\r\n\r\n`
     );
     const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
@@ -253,6 +253,9 @@ function uploadGcode(ip, httpPort, filename, gcodeBuffer, serialNumber, checkCod
       headers: {
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
         'Content-Length': body.length,
+        'fileSize': gcodeBuffer.length,
+        'printNow': 'false',
+        'levelingBeforePrint': 'false',
       },
       timeout,
     };
