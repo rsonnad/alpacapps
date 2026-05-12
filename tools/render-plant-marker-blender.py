@@ -46,7 +46,7 @@ def import_marker():
 
     for poly in obj.data.polygons:
         z = sum(obj.data.vertices[i].co.z for i in poly.vertices) / len(poly.vertices)
-        poly.material_index = 1 if z > 3.18 else 0
+        poly.material_index = 1 if z > 2.55 else 0
 
     return obj
 
