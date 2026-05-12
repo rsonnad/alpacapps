@@ -1,12 +1,12 @@
 {
-  "version": "v260512.04 12:29p",
-  "release": 1495,
-  "sha": "19cf25191",
-  "fullSha": "19cf251915863e8dc25ded3e2d10a3a5f8d342d5",
+  "version": "v260512.05 12:48p",
+  "release": 1496,
+  "sha": "752bc0efc",
+  "fullSha": "752bc0efc0948bbf39a0a19c16888c6e399bed42",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-12T17:29:21+00:00",
-  "commits": [{"sha":"19cf25191","message":"add blender plant marker render preview","author":"RedPanda"}]
+  "pushedAt": "2026-05-12T17:48:07+00:00",
+  "commits": [{"sha":"752bc0efc","message":"update plant marker stake geometry","author":"RedPanda"}]
 }
