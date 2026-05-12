@@ -1,12 +1,12 @@
 {
-  "version": "v260512.05 12:48p",
-  "release": 1496,
-  "sha": "752bc0efc",
-  "fullSha": "752bc0efc0948bbf39a0a19c16888c6e399bed42",
+  "version": "v260512.06 2:58p",
+  "release": 1497,
+  "sha": "a18ac8585",
+  "fullSha": "a18ac85859884eb09f86622907c085eb963a9d43",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-12T17:48:07+00:00",
-  "commits": [{"sha":"752bc0efc","message":"update plant marker stake geometry","author":"RedPanda"}]
+  "pushedAt": "2026-05-12T19:58:45+00:00",
+  "commits": [{"sha":"a18ac8585","message":"refine plant marker tapered stake","author":"RedPanda"}]
 }
