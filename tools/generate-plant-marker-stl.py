@@ -30,13 +30,13 @@ FONT_NUMBER = 0
 FONT_FAMILY = "SignPainter-HouseScript"
 
 LABEL = "PEPPERMINT"
-TAG_W = 76.2
-TAG_H = 38.1
-SPIKE_L = 114.3
-SPIKE_TOP_W = 15.0
-SPIKE_TIP_W = 3.0
-BASE_Z = 2.0
-TEXT_Z = 3.0
+TAG_W = 63.5       # 2.5 in
+TAG_H = 38.1       # 1.5 in
+SPIKE_L = 88.9     # 3.5 in
+SPIKE_W = 9.525    # 0.375 in straight stake
+BASE_Z = 3.175     # 0.125 in sign/stake body
+RIM_Z = 3.75
+TEXT_Z = 4.25
 
 triangles: list[tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]] = []
 
@@ -162,7 +162,7 @@ def font_contours(text):
     max_x = max(x for c in contours for x, _ in c)
     min_y = min(y for c in contours for _, y in c)
     max_y = max(y for c in contours for _, y in c)
-    target_w = TAG_W - 13.0
+    target_w = TAG_W - 9.0
     target_h = 14.0
     scale = min(target_w / (max_x - min_x), target_h / (max_y - min_y))
     text_w = (max_x - min_x) * scale
@@ -211,21 +211,12 @@ def add_text():
 
 
 def add_model():
-    outline = [
-        ((TAG_W - SPIKE_TIP_W) / 2, 0),
-        ((TAG_W - SPIKE_TOP_W) / 2, SPIKE_L),
-        (0, SPIKE_L),
-        (0, SPIKE_L + TAG_H),
-        (TAG_W, SPIKE_L + TAG_H),
-        (TAG_W, SPIKE_L),
-        ((TAG_W + SPIKE_TOP_W) / 2, SPIKE_L),
-        ((TAG_W + SPIKE_TIP_W) / 2, 0),
-    ]
-    prism(outline, 0, BASE_Z)
-    box(TAG_W / 2, SPIKE_L + TAG_H - 2.0, TAG_W - 3.0, 1.3, BASE_Z, 2.45)
-    box(2.0, SPIKE_L + TAG_H / 2, 1.3, TAG_H - 3.0, BASE_Z, 2.45)
-    box(TAG_W / 2, SPIKE_L + 2.0, TAG_W - 3.0, 1.3, BASE_Z, 2.45)
-    box(TAG_W - 2.0, SPIKE_L + TAG_H / 2, 1.3, TAG_H - 3.0, BASE_Z, 2.45)
+    box(TAG_W / 2, SPIKE_L + TAG_H / 2, TAG_W, TAG_H, 0, BASE_Z)
+    box(TAG_W / 2, SPIKE_L / 2, SPIKE_W, SPIKE_L, 0, BASE_Z)
+    box(TAG_W / 2, SPIKE_L + TAG_H - 2.0, TAG_W - 3.0, 1.3, BASE_Z, RIM_Z)
+    box(2.0, SPIKE_L + TAG_H / 2, 1.3, TAG_H - 3.0, BASE_Z, RIM_Z)
+    box(TAG_W / 2, SPIKE_L + 2.0, TAG_W - 3.0, 1.3, BASE_Z, RIM_Z)
+    box(TAG_W - 2.0, SPIKE_L + TAG_H / 2, 1.3, TAG_H - 3.0, BASE_Z, RIM_Z)
     add_text()
 
 
@@ -255,14 +246,14 @@ def write_svg_preview(path: Path):
         return margin + (SPIKE_L + TAG_H - y) * scale
 
     outline = [
-        ((TAG_W - SPIKE_TIP_W) / 2, 0),
-        ((TAG_W - SPIKE_TOP_W) / 2, SPIKE_L),
+        ((TAG_W - SPIKE_W) / 2, 0),
+        ((TAG_W - SPIKE_W) / 2, SPIKE_L),
         (0, SPIKE_L),
         (0, SPIKE_L + TAG_H),
         (TAG_W, SPIKE_L + TAG_H),
         (TAG_W, SPIKE_L),
-        ((TAG_W + SPIKE_TOP_W) / 2, SPIKE_L),
-        ((TAG_W + SPIKE_TIP_W) / 2, 0),
+        ((TAG_W + SPIKE_W) / 2, SPIKE_L),
+        ((TAG_W + SPIKE_W) / 2, 0),
     ]
     poly = " ".join(f"{sx(x):.1f},{sy(y):.1f}" for x, y in outline)
     text_path = []

@@ -46,21 +46,21 @@ def import_marker():
 
     for poly in obj.data.polygons:
         z = sum(obj.data.vertices[i].co.z for i in poly.vertices) / len(poly.vertices)
-        poly.material_index = 1 if z > 2.02 else 0
+        poly.material_index = 1 if z > 3.18 else 0
 
     return obj
 
 
 def setup_scene():
-    bpy.ops.object.light_add(type="AREA", location=(18, 86, 130))
+    bpy.ops.object.light_add(type="AREA", location=(16, 70, 120))
     light = bpy.context.object
     light.data.energy = 480
     light.data.size = 80
 
-    bpy.ops.object.camera_add(location=(38.1, 76.2, 230), rotation=(0, 0, 0))
+    bpy.ops.object.camera_add(location=(31.75, 63.5, 210), rotation=(0, 0, 0))
     cam = bpy.context.object
     cam.data.type = "ORTHO"
-    cam.data.ortho_scale = 165
+    cam.data.ortho_scale = 140
     bpy.context.scene.camera = cam
 
     bpy.context.scene.render.engine = "BLENDER_WORKBENCH"
