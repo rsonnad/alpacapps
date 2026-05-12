@@ -1,12 +1,12 @@
 {
-  "version": "v260511.03 2:32p",
-  "release": 1486,
-  "sha": "23c044a56",
-  "fullSha": "23c044a568164a596d70e602d7e978bbf4cecc08",
-  "actor": "rsonnad",
+  "version": "v260511.04 8:23p",
+  "release": 1487,
+  "sha": "197e8a1cd",
+  "fullSha": "197e8a1cdd14e80579edcec3bd126424a9561c0c",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-11T19:32:13+00:00",
-  "commits": [{"sha":"23c044a56","message":"docs(remote): add Almaca access recipes","author":"Rahul"}]
+  "pushedAt": "2026-05-12T01:23:17+00:00",
+  "commits": [{"sha":"197e8a1cd","message":"Add Glowforge job prep workflow","author":"RedPanda"}]
 }
