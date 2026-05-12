@@ -123,8 +123,8 @@ def add_model():
     ]
     prism(outline, 0, 2.0)
     # Raised border/rim around label plate.
-    box(tag_w / 2, spike_l + tag_h / 2, tag_w - 3.0, 1.3, 2.0, 2.45)
-    box(tag_w / 2, spike_l + tag_h / 2, 1.3, tag_h - 3.0, 2.0, 2.45)
+    box(tag_w / 2, spike_l + tag_h - 2.0, tag_w - 3.0, 1.3, 2.0, 2.45)
+    box(2.0, spike_l + tag_h / 2, 1.3, tag_h - 3.0, 2.0, 2.45)
     box(tag_w / 2, spike_l + 2.0, tag_w - 3.0, 1.3, 2.0, 2.45)
     box(tag_w - 2.0, spike_l + tag_h / 2, 1.3, tag_h - 3.0, 2.0, 2.45)
     add_text("PEPPERMINT")

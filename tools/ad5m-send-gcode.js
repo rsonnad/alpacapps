@@ -15,10 +15,11 @@ const { execFileSync } = require('child_process');
 
 const args = process.argv.slice(2);
 const start = args.includes('--start');
+const allowAdhesion = args.includes('--allow-adhesion');
 const fileArg = args.find((arg) => !arg.startsWith('--'));
 
 if (!fileArg) {
-  console.error('Usage: AD5M_CHECK_CODE=... node tools/ad5m-send-gcode.js <file.gcode> [--start]');
+  console.error('Usage: AD5M_CHECK_CODE=... node tools/ad5m-send-gcode.js <file.gcode> [--start] [--allow-adhesion]');
   process.exit(2);
 }
 
@@ -53,6 +54,11 @@ function validateGcode() {
   if (!gcode.includes('M104 S')) errors.push('missing nozzle heat command');
   if (!gcode.includes('G90')) errors.push('missing absolute positioning command');
   if (!gcode.includes('M83')) errors.push('missing relative extrusion command');
+  if (!allowAdhesion) {
+    if (gcode.includes(';TYPE:Brim')) errors.push('contains brim/boat adhesion; pass --allow-adhesion if requested');
+    if (/;\s*brim_type\s*=\s*(?!no_brim\b)\S+/i.test(gcode)) errors.push('brim_type is not no_brim');
+    if (/;\s*raft_layers\s*=\s*[1-9]/i.test(gcode)) errors.push('raft layers are enabled');
+  }
 
   const xy = [];
   for (const line of gcode.split(/\r?\n/)) {
