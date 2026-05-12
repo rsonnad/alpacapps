@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Generate a simple raised-text plant marker STL.
+"""Generate a raised-text plant marker STL and matching SVG preview.
 
-The mesh intentionally uses block-letter strokes so it can be generated without
-font/CAD dependencies in automation. Dimensions are in millimeters.
+The mesh uses dependency-free rounded stroke letters. Dimensions are millimeters.
 """
 
 from __future__ import annotations
@@ -11,6 +10,7 @@ import math
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[1] / "tmp" / "prints" / "peppermint-marker.stl"
+PREVIEW = Path(__file__).resolve().parents[1] / "tmp" / "prints" / "peppermint-marker-preview.svg"
 
 
 triangles: list[tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]] = []
@@ -47,20 +47,25 @@ def box(cx, cy, w, h, z0, z1):
     prism([(x0, y0), (x1, y0), (x1, y1), (x0, y1)], z0, z1)
 
 
+svg_strokes: list[tuple[float, float, float, float, float]] = []
+
+
 def stroke(x1, y1, x2, y2, width, z0, z1):
     dx, dy = x2 - x1, y2 - y1
     length = math.hypot(dx, dy) or 1
-    px, py = -dy / length * width / 2, dx / length * width / 2
-    prism(
-        [
-            (x1 + px, y1 + py),
-            (x2 + px, y2 + py),
-            (x2 - px, y2 - py),
-            (x1 - px, y1 - py),
-        ],
-        z0,
-        z1,
-    )
+    radius = width / 2
+    theta = math.atan2(dy, dx)
+    points = []
+
+    def add_arc(cx, cy, start, end, steps=8):
+        for i in range(steps + 1):
+            angle = start + (end - start) * i / steps
+            points.append((cx + math.cos(angle) * radius, cy + math.sin(angle) * radius))
+
+    add_arc(x2, y2, theta + math.pi / 2, theta - math.pi / 2)
+    add_arc(x1, y1, theta - math.pi / 2, theta + math.pi / 2)
+    prism(points, z0, z1)
+    svg_strokes.append((x1, y1, x2, y2, width))
 
 
 SEGMENTS = {
@@ -92,16 +97,19 @@ def seg_points(seg, ox, oy, w, h):
     }[seg]
 
 
-def add_text(text):
-    letter_w, letter_h, gap = 5.2, 15.0, 1.35
-    stroke_w = 1.25
+def add_text_line(text, center_x, base_y, letter_w=6.8, letter_h=11.5, gap=1.8, stroke_w=1.2):
     total_w = len(text) * letter_w + (len(text) - 1) * gap
-    start_x = (76.2 - total_w) / 2
-    base_y = 126.0
+    start_x = center_x - total_w / 2
     for idx, ch in enumerate(text):
         ox = start_x + idx * (letter_w + gap)
         for seg in SEGMENTS[ch]:
             stroke(*seg_points(seg, ox, base_y, letter_w, letter_h), stroke_w, 2.0, 3.0)
+
+
+def add_text():
+    # Two-line label keeps long plant names readable on a 3 in x 1.5 in tag.
+    add_text_line("PEPPER", 38.1, 134.3)
+    add_text_line("MINT", 38.1, 119.9, letter_w=7.4, gap=2.1, stroke_w=1.25)
 
 
 def add_model():
@@ -127,7 +135,7 @@ def add_model():
     box(2.0, spike_l + tag_h / 2, 1.3, tag_h - 3.0, 2.0, 2.45)
     box(tag_w / 2, spike_l + 2.0, tag_w - 3.0, 1.3, 2.0, 2.45)
     box(tag_w - 2.0, spike_l + tag_h / 2, 1.3, tag_h - 3.0, 2.0, 2.45)
-    add_text("PEPPERMINT")
+    add_text()
 
 
 def write_ascii_stl(path: Path):
@@ -145,7 +153,51 @@ def write_ascii_stl(path: Path):
         f.write("endsolid peppermint_marker\n")
 
 
+def write_svg_preview(path: Path):
+    tag_w = 76.2
+    tag_h = 38.1
+    spike_l = 114.3
+    spike_top_w = 15.0
+    spike_tip_w = 3.0
+    outline = [
+        ((tag_w - spike_tip_w) / 2, 0),
+        ((tag_w - spike_top_w) / 2, spike_l),
+        (0, spike_l),
+        (0, spike_l + tag_h),
+        (tag_w, spike_l + tag_h),
+        (tag_w, spike_l),
+        ((tag_w + spike_top_w) / 2, spike_l),
+        ((tag_w + spike_tip_w) / 2, 0),
+    ]
+    scale = 4
+    margin = 8
+
+    def sx(x):
+        return margin + x * scale
+
+    def sy(y):
+        return margin + (spike_l + tag_h - y) * scale
+
+    poly = " ".join(f"{sx(x):.1f},{sy(y):.1f}" for x, y in outline)
+    width = tag_w * scale + margin * 2
+    height = (spike_l + tag_h) * scale + margin * 2
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="ascii") as f:
+        f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width:.1f} {height:.1f}">\n')
+        f.write('  <rect width="100%" height="100%" fill="#f7efe4"/>\n')
+        f.write(f'  <polygon points="{poly}" fill="#2d3b37" stroke="#111" stroke-width="1.5"/>\n')
+        f.write(f'  <rect x="{sx(2):.1f}" y="{sy(spike_l + tag_h - 2):.1f}" width="{(tag_w - 4) * scale:.1f}" height="{(tag_h - 4) * scale:.1f}" fill="none" stroke="#d8e6dd" stroke-width="{1.3 * scale:.1f}"/>\n')
+        for x1, y1, x2, y2, w in svg_strokes:
+            f.write(
+                f'  <line x1="{sx(x1):.1f}" y1="{sy(y1):.1f}" x2="{sx(x2):.1f}" y2="{sy(y2):.1f}" '
+                f'stroke="#d8e6dd" stroke-width="{w * scale:.1f}" stroke-linecap="round" stroke-linejoin="round"/>\n'
+            )
+        f.write("</svg>\n")
+
+
 if __name__ == "__main__":
     add_model()
     write_ascii_stl(OUT)
+    write_svg_preview(PREVIEW)
     print(OUT)
+    print(PREVIEW)
