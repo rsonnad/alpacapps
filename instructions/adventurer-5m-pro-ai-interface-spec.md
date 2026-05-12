@@ -225,13 +225,19 @@ Never allow unsafe/invalid print starts due to generative output.
   - build volume limits,
   - material presets (PLA baseline first),
   - safe speed/temperature defaults.
-- Produce deterministic slicing config from selected profile.
+- Produce deterministic slicing config from the selected FlashForge Adventurer 5M Pro profile.
+- Treat the slicer as a mandatory stage gate named `slice_for_flashforge`.
+- Require the slicer to generate the final `.gcode` artifact before upload; raw `.stl`, `.3mf`, or `.obj` files must never be sent directly to the printer/proxy.
+- Validate slicer output for material preset, temperatures, supports/adhesion, estimated time, filament use, and printer-readable G-code before enabling upload.
 - Require passing validation checks before enabling "Start Print".
 
 ### Job Lifecycle
 
 - queued
 - preparing
+- slicing
+- sliced
+- uploading
 - printing
 - paused
 - completed
@@ -535,7 +541,7 @@ Defer advanced geometry and full automation if needed, but keep interfaces and c
 - Risk: users get stuck in ideation loops.
   - Mitigation: "best first print" recommendation and decisive CTAs.
 - Risk: printer-specific mismatch.
-  - Mitigation: enforce Adventurer 5M Pro profile constraints centrally.
+  - Mitigation: enforce Adventurer 5M Pro profile constraints centrally and require slicer-generated FlashForge-readable G-code before upload/start.
 
 ---
 

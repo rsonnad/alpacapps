@@ -142,6 +142,18 @@ Expected success shape:
 - TCP control port: `8899`
 - MJPEG camera: `http://192.168.1.106:8080/?action=stream`
 
+### 3D Print Request Protocol
+
+For any future request to print a 3D object on the FlashForge, include the slicer step before upload or start:
+
+1. Confirm the source model is a valid printable model (`.stl`, `.3mf`, or `.obj`) and that it fits the Adventurer 5M Pro `220x220x220mm` build volume.
+2. Run the model through the configured slicer with the FlashForge Adventurer 5M Pro profile. The slicer is the required conversion layer from model geometry to FlashForge-readable G-code.
+3. Review the slicer output for basic printability: material preset, nozzle/bed temperatures, supports, adhesion, estimated time, estimated filament, and any first-layer or overhang warnings.
+4. Save the generated `.gcode` as the print artifact. Do not send raw `.stl`, `.3mf`, or `.obj` files to the printer/proxy.
+5. Upload the generated `.gcode` through the printer proxy, then start the selected file through AlpacApps once the printer is idle and ready.
+
+When automating this flow, make the slicer a required stage gate named `slice_for_flashforge`. The job must not advance to `upload` or `startPrint` unless a slicer-generated `.gcode` artifact exists and passes validation.
+
 ### Architecture
 
 The printer speaks a LAN TCP G-code protocol, so AlpacApps uses a proxy chain:

@@ -109,6 +109,18 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 
 **Tradeoff accepted:** TCP requires a custom proxy to bridge HTTP→TCP, adding one more LaunchAgent on Alpaca Mac. This is acceptable since the same machine already runs go2rtc, talkback-relay, and sonos-http-api.
 
+### 3.6 FlashForge: Slicer-Gated Print Jobs
+
+**Decision:** Every future 3D print workflow must run source models through the configured slicer before upload/start, producing a FlashForge-readable `.gcode` artifact as the required handoff to AlpacApps and the printer proxy.
+
+**Why:**
+- **Printer readability.** The FlashForge control path expects G-code commands/files, not raw model geometry, so the slicer is the reliable conversion layer from `.stl`, `.3mf`, or `.obj` into printer-readable instructions.
+- **Safer automation.** A named `slice_for_flashforge` stage gate prevents future AI/operator flows from skipping directly from generated model to `startPrint`.
+- **Better print outcomes.** Slicer review captures material preset, temperatures, supports, adhesion, estimated time, and filament use before the printer is asked to move.
+- **Clear artifact boundary.** The generated `.gcode` becomes the artifact of record for upload, monitoring, retry, and history.
+
+**Tradeoff accepted:** Print jobs now have an extra mandatory preparation step before upload. That extra friction is worth it because it prevents unreadable or unsafe model files from entering the FlashForge execution path.
+
 ---
 
 ## 4. Payment System Design
