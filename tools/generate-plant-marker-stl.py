@@ -265,6 +265,16 @@ def write_svg_preview(path: Path):
         ((TAG_W + SPIKE_TIP_W) / 2, 0),
     ]
     poly = " ".join(f"{sx(x):.1f},{sy(y):.1f}" for x, y in outline)
+    text_path = []
+    for contour in font_contours(LABEL):
+        if len(contour) < 3 or abs(polygon_area(contour)) <= 0.01:
+            continue
+        first = contour[0]
+        text_path.append(f"M {sx(first[0]):.2f} {sy(first[1]):.2f}")
+        for x, y in contour[1:]:
+            text_path.append(f"L {sx(x):.2f} {sy(y):.2f}")
+        text_path.append("Z")
+    text_d = " ".join(text_path)
     width = TAG_W * scale + margin * 2
     height = (SPIKE_L + TAG_H) * scale + margin * 2
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -273,11 +283,7 @@ def write_svg_preview(path: Path):
         f.write('  <rect width="100%" height="100%" fill="#f7efe4"/>\n')
         f.write(f'  <polygon points="{poly}" fill="#2d3b37" stroke="#111" stroke-width="1.5"/>\n')
         f.write(f'  <rect x="{sx(2):.1f}" y="{sy(SPIKE_L + TAG_H - 2):.1f}" width="{(TAG_W - 4) * scale:.1f}" height="{(TAG_H - 4) * scale:.1f}" fill="none" stroke="#d8e6dd" stroke-width="{1.3 * scale:.1f}"/>\n')
-        f.write(
-            f'  <text x="{sx(TAG_W / 2):.1f}" y="{sy(SPIKE_L + TAG_H / 2 - 3.5):.1f}" '
-            f'font-family="{FONT_FAMILY}, SignPainter, Brush Script MT, cursive" '
-            'font-size="53" font-weight="700" text-anchor="middle" fill="#d8e6dd">PEPPERMINT</text>\n'
-        )
+        f.write(f'  <path d="{text_d}" fill="#d8e6dd" fill-rule="evenodd"/>\n')
         f.write("</svg>\n")
 
 
