@@ -1,12 +1,12 @@
 {
-  "version": "v260512.07 3:04p",
-  "release": 1498,
-  "sha": "4d84b6d1b",
-  "fullSha": "4d84b6d1b22ae5996fb3ebb9c9f546ffa82e32f3",
-  "actor": "wensonia",
+  "version": "v260513.01 9:51a",
+  "release": 1499,
+  "sha": "795b06650",
+  "fullSha": "795b066509ffa4c2ab947de8783a47d1e484852d",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-12T20:04:57+00:00",
-  "commits": [{"sha":"4d84b6d1b","message":"docs: record default plant marker design","author":"RedPanda"}]
+  "pushedAt": "2026-05-13T14:51:48+00:00",
+  "commits": [{"sha":"795b06650","message":"fix: work photo workDate uses Austin local date, not UTC","author":"Rahul"}]
 }
