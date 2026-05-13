@@ -703,7 +703,7 @@ async function handlePhotoUpload(file) {
       mediaId: result.media.id,
       timeEntryId: activeEntry?.id || null,
       photoType: selectedPhotoType,
-      workDate: new Date().toISOString().split('T')[0]
+      workDate: new Date().toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })
     });
 
     showToast('Photo uploaded!', 'success');
@@ -765,7 +765,7 @@ async function handleFileUpload(file) {
       mediaId: mediaRecord.id,
       timeEntryId: activeEntry?.id || null,
       photoType: selectedPhotoType,
-      workDate: new Date().toISOString().split('T')[0]
+      workDate: new Date().toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })
     });
 
     showToast('File uploaded!', 'success');
