@@ -1,12 +1,12 @@
 {
-  "version": "v260513.03 8:16p",
-  "release": 1501,
-  "sha": "b44e28160",
-  "fullSha": "b44e28160eb74761d2dab134bb13ab7c147636f6",
+  "version": "v260513.04 8:19p",
+  "release": 1502,
+  "sha": "4941096ce",
+  "fullSha": "4941096ce36844f9838059d7d42aff55fcb56c3b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-14T01:16:10+00:00",
-  "commits": [{"sha":"b44e28160","message":"feat(tesla-poller): hourly polls + 97% billing kill-switch","author":"Rahul"}]
+  "pushedAt": "2026-05-14T01:19:18+00:00",
+  "commits": [{"sha":"4941096ce","message":"feat(tesla-poller): graduated billing throttle (90% / 97% tiers)","author":"Rahul"}]
 }
