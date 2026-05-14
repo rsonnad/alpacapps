@@ -21,13 +21,21 @@ import { createClient } from '@supabase/supabase-js';
 // ============================================
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '3600000'); // 1 hr
-const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '3600000'); // 1 hr — every poll
+const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '900000'); // 15 min
+const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '900000'); // 15 min — every poll
 const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '2000'); // 2s between API calls
 // When a vehicle is online-but-idle (parked, not charging, climate off), throttle
 // the per-VIN vehicle_data call to at most this often. The cheap vehicles-list
 // call still runs every poll so we notice state changes (sleeping/online) fast.
 const IDLE_DATA_INTERVAL_MS = parseInt(process.env.IDLE_DATA_INTERVAL_MS || '28800000'); // 8 hr
+
+// One-time conservation hold for the rest of the current billing cycle.
+// We're already at 80% of the May cap so we don't want to step up cadence
+// until the new cycle starts. Until TESLA_HOLD_UNTIL, the gate enforces at
+// least TESLA_HOLD_MIN_INTERVAL_MS between cycles. After that date the hold
+// disappears and only the warn/crit tiered throttle gates the cadence.
+const TESLA_HOLD_UNTIL = process.env.TESLA_HOLD_UNTIL || '2026-06-01T00:00:00Z';
+const TESLA_HOLD_MIN_INTERVAL_MS = parseInt(process.env.TESLA_HOLD_MIN_INTERVAL_MS || '3600000'); // 1 hr
 
 // Monthly billing throttle. Counts every Tesla Fleet API call this calendar
 // month via api_usage_log. Two graduated thresholds:
@@ -113,18 +121,32 @@ async function getThisMonthCallCount() {
   return usageCache.count;
 }
 
-// Returns { tier, count, pct, minIntervalMs } based on this month's usage.
-// tier: 'normal' | 'warn' | 'crit'
+// Returns { tier, count, pct, minIntervalMs } based on this month's usage
+// and the one-time conservation hold.
+// tier: 'normal' | 'hold' | 'warn' | 'crit'
 async function getThrottleState() {
   const count = await getThisMonthCallCount();
   const pct = count / TESLA_MONTHLY_CALL_CAP;
+  let tier = 'normal';
+  let minIntervalMs = 0;
+
+  // Tiered usage throttle
   if (pct >= TESLA_CRIT_PCT) {
-    return { tier: 'crit', count, pct, minIntervalMs: TESLA_CRIT_MIN_INTERVAL_MS };
+    tier = 'crit';
+    minIntervalMs = TESLA_CRIT_MIN_INTERVAL_MS;
+  } else if (pct >= TESLA_WARN_PCT) {
+    tier = 'warn';
+    minIntervalMs = TESLA_WARN_MIN_INTERVAL_MS;
   }
-  if (pct >= TESLA_WARN_PCT) {
-    return { tier: 'warn', count, pct, minIntervalMs: TESLA_WARN_MIN_INTERVAL_MS };
+
+  // Conservation hold (one-time, until billing cycle reset). Wins if larger.
+  const holdUntil = Date.parse(TESLA_HOLD_UNTIL);
+  if (Number.isFinite(holdUntil) && Date.now() < holdUntil && TESLA_HOLD_MIN_INTERVAL_MS > minIntervalMs) {
+    tier = tier === 'normal' ? 'hold' : tier;
+    minIntervalMs = TESLA_HOLD_MIN_INTERVAL_MS;
   }
-  return { tier: 'normal', count, pct, minIntervalMs: 0 };
+
+  return { tier, count, pct, minIntervalMs };
 }
 
 // ============================================
@@ -877,6 +899,8 @@ async function main() {
     monthlyCallCap: TESLA_MONTHLY_CALL_CAP,
     warnAt: `${(TESLA_WARN_PCT * 100).toFixed(0)}% → min ${Math.round(TESLA_WARN_MIN_INTERVAL_MS / 60000)}min between cycles`,
     critAt: `${(TESLA_CRIT_PCT * 100).toFixed(0)}% → min ${Math.round(TESLA_CRIT_MIN_INTERVAL_MS / 60000)}min between cycles`,
+    conservationHoldUntil: TESLA_HOLD_UNTIL,
+    conservationHoldMinIntervalMin: Math.round(TESLA_HOLD_MIN_INTERVAL_MS / 60000),
     defaultApiBase: DEFAULT_FLEET_API_BASE,
     tokenUrl: TESLA_TOKEN_URL,
   });
