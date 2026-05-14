@@ -1,12 +1,12 @@
 {
-  "version": "v260513.05 8:25p",
-  "release": 1503,
-  "sha": "3b7e95e24",
-  "fullSha": "3b7e95e24e20dbe17ecc6923d0c9a751d44d06b8",
-  "actor": "rsonnad",
+  "version": "v260514.01 12:00a",
+  "release": 1504,
+  "sha": "007fa93ed",
+  "fullSha": "007fa93edda1c22b5f11acfc6df48d6436c589f5",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-14T01:25:03+00:00",
-  "commits": [{"sha":"3b7e95e24","message":"feat(tesla-poller): 15-min default + conservation hold to 2026-06-01","author":"Rahul"}]
+  "pushedAt": "2026-05-14T05:00:11+00:00",
+  "commits": [{"sha":"007fa93ed","message":"Fix public payment link completion","author":"Sonia Wendorff"}]
 }
