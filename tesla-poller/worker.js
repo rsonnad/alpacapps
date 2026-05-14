@@ -29,11 +29,16 @@ const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '2000'); // 2s between
 // call still runs every poll so we notice state changes (sleeping/online) fast.
 const IDLE_DATA_INTERVAL_MS = parseInt(process.env.IDLE_DATA_INTERVAL_MS || '28800000'); // 8 hr
 
-// Monthly billing kill-switch. Counts every Tesla Fleet API call this calendar
-// month via api_usage_log. When usage >= TESLA_MONTHLY_CALL_CAP_PCT_STOP of cap,
-// the poller skips entire poll cycles so we never exceed the billing limit.
+// Monthly billing throttle. Counts every Tesla Fleet API call this calendar
+// month via api_usage_log. Two graduated thresholds:
+//   - WARN  (default 90%): only allow one poll cycle every TESLA_WARN_MIN_INTERVAL_MS  (6 hr)
+//   - CRIT  (default 97%): only allow one poll cycle every TESLA_CRIT_MIN_INTERVAL_MS (24 hr)
+// Below WARN, polling runs at POLL_INTERVAL_MS unrestricted.
 const TESLA_MONTHLY_CALL_CAP = parseInt(process.env.TESLA_MONTHLY_CALL_CAP || '10000');
-const TESLA_KILL_SWITCH_PCT = parseFloat(process.env.TESLA_KILL_SWITCH_PCT || '0.97');
+const TESLA_WARN_PCT = parseFloat(process.env.TESLA_WARN_PCT || '0.90');
+const TESLA_CRIT_PCT = parseFloat(process.env.TESLA_CRIT_PCT || '0.97');
+const TESLA_WARN_MIN_INTERVAL_MS = parseInt(process.env.TESLA_WARN_MIN_INTERVAL_MS || '21600000'); // 6 hr
+const TESLA_CRIT_MIN_INTERVAL_MS = parseInt(process.env.TESLA_CRIT_MIN_INTERVAL_MS || '86400000'); // 24 hr
 const USAGE_CACHE_MS = 5 * 60 * 1000; // re-check DB usage at most every 5 min
 
 // testel Worker (Cloudflare) — owns D1 access. Poller posts here; admin reads here.
@@ -108,10 +113,18 @@ async function getThisMonthCallCount() {
   return usageCache.count;
 }
 
-async function isKillSwitchTripped() {
+// Returns { tier, count, pct, minIntervalMs } based on this month's usage.
+// tier: 'normal' | 'warn' | 'crit'
+async function getThrottleState() {
   const count = await getThisMonthCallCount();
-  const threshold = Math.floor(TESLA_MONTHLY_CALL_CAP * TESLA_KILL_SWITCH_PCT);
-  return { tripped: count >= threshold, count, threshold };
+  const pct = count / TESLA_MONTHLY_CALL_CAP;
+  if (pct >= TESLA_CRIT_PCT) {
+    return { tier: 'crit', count, pct, minIntervalMs: TESLA_CRIT_MIN_INTERVAL_MS };
+  }
+  if (pct >= TESLA_WARN_PCT) {
+    return { tier: 'warn', count, pct, minIntervalMs: TESLA_WARN_MIN_INTERVAL_MS };
+  }
+  return { tier: 'normal', count, pct, minIntervalMs: 0 };
 }
 
 // ============================================
@@ -777,30 +790,38 @@ async function pollAccount(account) {
 // ============================================
 let isProcessing = false;
 
+let lastPollStartedAt = 0;
+
 async function pollAllAccounts() {
   if (isProcessing) return;
   isProcessing = true;
 
   try {
-    // Kill-switch: if this month's call count has hit the threshold, skip
-    // the entire cycle. Tesla resets the counter at the billing-cycle boundary
-    // and we'll start polling again automatically.
-    const { tripped, count, threshold } = await isKillSwitchTripped();
-    if (tripped) {
-      log('warn', 'KILL-SWITCH ACTIVE — skipping poll cycle', {
+    // Graduated billing throttle: depending on this month's usage, the cycle
+    // may be skipped because we ran one too recently. Resets automatically
+    // at the start of next calendar month.
+    const { tier, count, pct, minIntervalMs } = await getThrottleState();
+    const pctStr = (pct * 100).toFixed(1) + '%';
+
+    if (tier !== 'normal' && lastPollStartedAt && (Date.now() - lastPollStartedAt) < minIntervalMs) {
+      const waitMin = Math.round((minIntervalMs - (Date.now() - lastPollStartedAt)) / 60000);
+      log('warn', `THROTTLE [${tier}] — skipping poll cycle`, {
         thisMonthCalls: count,
-        threshold,
         cap: TESLA_MONTHLY_CALL_CAP,
-        pct: ((count / TESLA_MONTHLY_CALL_CAP) * 100).toFixed(1) + '%',
+        pct: pctStr,
+        minIntervalMin: Math.round(minIntervalMs / 60000),
+        nextPollInMin: waitMin,
       });
       return;
     }
-    log('info', 'Tesla usage this month', {
+
+    log('info', `Tesla usage this month [${tier}]`, {
       thisMonthCalls: count,
-      threshold,
       cap: TESLA_MONTHLY_CALL_CAP,
-      pct: ((count / TESLA_MONTHLY_CALL_CAP) * 100).toFixed(1) + '%',
+      pct: pctStr,
+      throttleMinIntervalMin: minIntervalMs ? Math.round(minIntervalMs / 60000) : 'none',
     });
+    lastPollStartedAt = Date.now();
 
     // Fetch active accounts that have refresh tokens and Fleet API credentials
     const { data: accounts, error } = await supabase
@@ -854,7 +875,8 @@ async function main() {
     idleDataInterval: `${IDLE_DATA_INTERVAL_MS / 1000}s`,
     apiDelay: `${API_DELAY_MS}ms`,
     monthlyCallCap: TESLA_MONTHLY_CALL_CAP,
-    killSwitchAt: `${(TESLA_KILL_SWITCH_PCT * 100).toFixed(0)}%`,
+    warnAt: `${(TESLA_WARN_PCT * 100).toFixed(0)}% → min ${Math.round(TESLA_WARN_MIN_INTERVAL_MS / 60000)}min between cycles`,
+    critAt: `${(TESLA_CRIT_PCT * 100).toFixed(0)}% → min ${Math.round(TESLA_CRIT_MIN_INTERVAL_MS / 60000)}min between cycles`,
     defaultApiBase: DEFAULT_FLEET_API_BASE,
     tokenUrl: TESLA_TOKEN_URL,
   });
