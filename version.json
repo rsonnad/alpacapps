@@ -1,12 +1,12 @@
 {
-  "version": "v260513.02 8:10p",
-  "release": 1500,
-  "sha": "479f041c1",
-  "fullSha": "479f041c13a5a02a98330fc161ce7e532690331a",
+  "version": "v260513.03 8:16p",
+  "release": 1501,
+  "sha": "b44e28160",
+  "fullSha": "b44e28160eb74761d2dab134bb13ab7c147636f6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-14T01:10:49+00:00",
-  "commits": [{"sha":"479f041c1","message":"fix(tesla-poller): cut Fleet API usage ~80% — 15min polls + idle skip","author":"Rahul"}]
+  "pushedAt": "2026-05-14T01:16:10+00:00",
+  "commits": [{"sha":"b44e28160","message":"feat(tesla-poller): hourly polls + 97% billing kill-switch","author":"Rahul"}]
 }
