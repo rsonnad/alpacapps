@@ -21,9 +21,13 @@ import { createClient } from '@supabase/supabase-js';
 // ============================================
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '600000'); // 10 min
-const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '600000'); // 10 min — every poll
+const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '900000'); // 15 min
+const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '900000'); // 15 min — every poll
 const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '2000'); // 2s between API calls
+// When a vehicle is online-but-idle (parked, not charging, climate off), throttle
+// the per-VIN vehicle_data call to at most this often. The cheap vehicles-list
+// call still runs every poll so we notice state changes (sleeping/online) fast.
+const IDLE_DATA_INTERVAL_MS = parseInt(process.env.IDLE_DATA_INTERVAL_MS || '3600000'); // 1 hr
 
 // testel Worker (Cloudflare) — owns D1 access. Poller posts here; admin reads here.
 const TESTEL_URL = process.env.TESTEL_URL || 'https://testel.alpacapps.workers.dev';
@@ -344,6 +348,34 @@ function shouldTakeSnapshot(vehicleId) {
   return Date.now() - last >= SNAPSHOT_INTERVAL_MS;
 }
 
+// ============================================
+// Per-vehicle data-fetch throttle (online-but-idle vehicles)
+// ============================================
+const lastDataFetch = new Map(); // vehicleId -> timestamp of last vehicle_data fetch
+
+// Active = charging, driving, climate running, or software update in progress.
+// We still want fast updates while these are happening.
+function isActiveState(s) {
+  if (!s) return true;
+  const charging = s.charging_state &&
+    !['Disconnected', 'Stopped', 'Complete', 'NoPower', null].includes(s.charging_state);
+  const driving = s.speed_mph != null && s.speed_mph > 0;
+  const climate = s.climate_on === true;
+  const updating = !!s.software_update;
+  return charging || driving || climate || updating;
+}
+
+function shouldFetchVehicleData(dbVehicle) {
+  // No cached state yet — must fetch
+  if (!dbVehicle.last_state) return true;
+  // Anything actively happening — fetch every poll
+  if (isActiveState(dbVehicle.last_state)) return true;
+  // Online but idle — throttle to IDLE_DATA_INTERVAL_MS
+  const last = lastDataFetch.get(dbVehicle.id);
+  if (!last) return true;
+  return Date.now() - last >= IDLE_DATA_INTERVAL_MS;
+}
+
 async function insertSnapshot(vehicleId, vehicleState, state) {
   if (!TESTEL_SECRET) {
     log('error', 'testel not configured — set TESTEL_SECRET (and optionally TESTEL_URL)', { vehicleId });
@@ -580,7 +612,26 @@ async function pollAccount(account) {
       continue;
     }
 
-    // Vehicle is online — fetch full data
+    // Vehicle is online — but skip the per-VIN vehicle_data fetch if idle
+    // (parked, not charging, climate off) and we fetched recently. The cheap
+    // vehicles-list call already updated last_synced_at above.
+    if (!shouldFetchVehicleData(dbVehicle)) {
+      await supabase
+        .from('vehicles')
+        .update({
+          vehicle_state: 'online',
+          last_synced_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', dbVehicle.id);
+      log('info', 'Vehicle online-idle, skipped vehicle_data fetch', {
+        name: dbVehicle.name,
+        battery: dbVehicle.last_state?.battery_level,
+      });
+      continue;
+    }
+
+    // Vehicle is online and we need fresh data — fetch it
     await new Promise(r => setTimeout(r, API_DELAY_MS));
 
     try {
@@ -591,6 +642,7 @@ async function pollAccount(account) {
           apiBase
         )
       );
+      lastDataFetch.set(dbVehicle.id, Date.now());
 
       if (vehicleData.sleeping) {
         // Vehicle went to sleep between list and data call

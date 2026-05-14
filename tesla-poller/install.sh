@@ -48,7 +48,8 @@ if [ ! -f "$ENV_FILE" ]; then
     cat > "$ENV_FILE" << 'ENVEOF'
 SUPABASE_URL=https://aphrrfprbixmhissnjfn.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-POLL_INTERVAL_MS=300000
+POLL_INTERVAL_MS=900000
+IDLE_DATA_INTERVAL_MS=3600000
 API_DELAY_MS=2000
 ENVEOF
     chown bugfixer:bugfixer "$ENV_FILE"
