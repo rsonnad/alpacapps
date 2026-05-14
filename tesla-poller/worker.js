@@ -21,13 +21,20 @@ import { createClient } from '@supabase/supabase-js';
 // ============================================
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '900000'); // 15 min
-const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '900000'); // 15 min — every poll
+const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '3600000'); // 1 hr
+const SNAPSHOT_INTERVAL_MS = parseInt(process.env.SNAPSHOT_INTERVAL_MS || '3600000'); // 1 hr — every poll
 const API_DELAY_MS = parseInt(process.env.API_DELAY_MS || '2000'); // 2s between API calls
 // When a vehicle is online-but-idle (parked, not charging, climate off), throttle
 // the per-VIN vehicle_data call to at most this often. The cheap vehicles-list
 // call still runs every poll so we notice state changes (sleeping/online) fast.
-const IDLE_DATA_INTERVAL_MS = parseInt(process.env.IDLE_DATA_INTERVAL_MS || '3600000'); // 1 hr
+const IDLE_DATA_INTERVAL_MS = parseInt(process.env.IDLE_DATA_INTERVAL_MS || '28800000'); // 8 hr
+
+// Monthly billing kill-switch. Counts every Tesla Fleet API call this calendar
+// month via api_usage_log. When usage >= TESLA_MONTHLY_CALL_CAP_PCT_STOP of cap,
+// the poller skips entire poll cycles so we never exceed the billing limit.
+const TESLA_MONTHLY_CALL_CAP = parseInt(process.env.TESLA_MONTHLY_CALL_CAP || '10000');
+const TESLA_KILL_SWITCH_PCT = parseFloat(process.env.TESLA_KILL_SWITCH_PCT || '0.97');
+const USAGE_CACHE_MS = 5 * 60 * 1000; // re-check DB usage at most every 5 min
 
 // testel Worker (Cloudflare) — owns D1 access. Poller posts here; admin reads here.
 const TESTEL_URL = process.env.TESTEL_URL || 'https://testel.alpacapps.workers.dev';
@@ -53,6 +60,61 @@ function log(level, msg, data = {}) {
 }
 
 // ============================================
+// API usage logging (every Tesla Fleet API call)
+// ============================================
+async function logTeslaCall(endpoint, metadata = {}) {
+  try {
+    await supabase.from('api_usage_log').insert({
+      vendor: 'tesla',
+      category: 'tesla_vehicle_poll',
+      endpoint,
+      units: 1,
+      unit_type: 'api_calls',
+      estimated_cost_usd: 0,
+      metadata,
+    });
+  } catch (err) {
+    // Never let logging failures kill the poller
+    log('warn', 'api_usage_log insert failed', { endpoint, error: err.message });
+  }
+}
+
+// ============================================
+// Kill-switch — check current month's Tesla call count
+// ============================================
+let usageCache = { count: 0, checkedAt: 0 };
+
+async function getThisMonthCallCount() {
+  if (Date.now() - usageCache.checkedAt < USAGE_CACHE_MS) {
+    return usageCache.count;
+  }
+  // Start of current calendar month (UTC). Tesla bills monthly; UTC is a
+  // conservative choice — slightly earlier reset than Pacific would give.
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+  // Sum `units` (not count rows) so a single backfill row can represent
+  // pre-tracking usage from earlier in the billing cycle.
+  const { data, error } = await supabase
+    .from('api_usage_log')
+    .select('units')
+    .eq('vendor', 'tesla')
+    .gte('created_at', monthStart);
+  if (error) {
+    log('warn', 'Failed to read api_usage_log for kill-switch', { error: error.message });
+    return usageCache.count; // fall back to last good value
+  }
+  const total = (data || []).reduce((sum, row) => sum + Number(row.units || 0), 0);
+  usageCache = { count: total, checkedAt: Date.now() };
+  return usageCache.count;
+}
+
+async function isKillSwitchTripped() {
+  const count = await getThisMonthCallCount();
+  const threshold = Math.floor(TESLA_MONTHLY_CALL_CAP * TESLA_KILL_SWITCH_PCT);
+  return { tripped: count >= threshold, count, threshold };
+}
+
+// ============================================
 // Tesla Fleet API Helper
 // ============================================
 async function teslaApi(accessToken, path, apiBase = DEFAULT_FLEET_API_BASE) {
@@ -62,6 +124,16 @@ async function teslaApi(accessToken, path, apiBase = DEFAULT_FLEET_API_BASE) {
       'User-Agent': 'AlpacAppsPoller/1.0',
     },
   });
+
+  // Log every call (success or failure) — Tesla bills on request, not on 2xx
+  const endpointLabel = path.includes('/vehicle_data') ? 'vehicle_data'
+    : path.match(/\/vehicles\/?$/) ? 'vehicle_list'
+    : path.includes('/wake_up') ? 'wake_up'
+    : path;
+  // fire-and-forget; we don't want to delay the poll on logging
+  logTeslaCall(endpointLabel, { status: response.status, path });
+  // Bust cache so kill-switch sees fresh count
+  usageCache.checkedAt = 0;
 
   if (response.status === 408 || response.status === 504) {
     // Vehicle is sleeping or timed out
@@ -114,6 +186,7 @@ async function refreshToken(account) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString(),
   });
+  logTeslaCall('token_refresh', { status: response.status, accountId: account.id });
 
   // Check for non-OK response first (may return HTML error page)
   if (!response.ok) {
@@ -709,6 +782,26 @@ async function pollAllAccounts() {
   isProcessing = true;
 
   try {
+    // Kill-switch: if this month's call count has hit the threshold, skip
+    // the entire cycle. Tesla resets the counter at the billing-cycle boundary
+    // and we'll start polling again automatically.
+    const { tripped, count, threshold } = await isKillSwitchTripped();
+    if (tripped) {
+      log('warn', 'KILL-SWITCH ACTIVE — skipping poll cycle', {
+        thisMonthCalls: count,
+        threshold,
+        cap: TESLA_MONTHLY_CALL_CAP,
+        pct: ((count / TESLA_MONTHLY_CALL_CAP) * 100).toFixed(1) + '%',
+      });
+      return;
+    }
+    log('info', 'Tesla usage this month', {
+      thisMonthCalls: count,
+      threshold,
+      cap: TESLA_MONTHLY_CALL_CAP,
+      pct: ((count / TESLA_MONTHLY_CALL_CAP) * 100).toFixed(1) + '%',
+    });
+
     // Fetch active accounts that have refresh tokens and Fleet API credentials
     const { data: accounts, error } = await supabase
       .from('tesla_accounts')
@@ -758,7 +851,10 @@ async function main() {
   log('info', 'Tesla poller starting', {
     pollInterval: `${POLL_INTERVAL_MS / 1000}s`,
     snapshotInterval: `${SNAPSHOT_INTERVAL_MS / 1000}s`,
+    idleDataInterval: `${IDLE_DATA_INTERVAL_MS / 1000}s`,
     apiDelay: `${API_DELAY_MS}ms`,
+    monthlyCallCap: TESLA_MONTHLY_CALL_CAP,
+    killSwitchAt: `${(TESLA_KILL_SWITCH_PCT * 100).toFixed(0)}%`,
     defaultApiBase: DEFAULT_FLEET_API_BASE,
     tokenUrl: TESLA_TOKEN_URL,
   });
