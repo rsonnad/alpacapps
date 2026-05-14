@@ -827,7 +827,11 @@
 
       fetch(SUPABASE_URL + '/functions/v1/process-stripe-payment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        },
         body: JSON.stringify({
           amount: Math.round(totalAmount * 100),
           original_amount: Math.round(amount * 100),
@@ -898,7 +902,7 @@
       stripe.confirmPayment({
         elements: elements,
         confirmParams: {
-          return_url: window.location.href + '?success=true',
+          return_url: getReturnUrl(),
           receipt_email: presetEmail || undefined,
         },
         redirect: 'if_required',
@@ -932,6 +936,12 @@
       var total = amt + fee;
       document.getElementById('successMessage').textContent = 'Your payment of $' + total.toFixed(2) + ' ($' + amt.toFixed(2) + ' + $' + fee.toFixed(2) + ' processing fee) has been received. A confirmation email will be sent shortly.';
       document.title = 'Payment Received - Alpaca Playhouse';
+    }
+
+    function getReturnUrl() {
+      var url = new URL(window.location.href);
+      url.searchParams.set('success', 'true');
+      return url.toString();
     }
 
     // Check if returning from redirect

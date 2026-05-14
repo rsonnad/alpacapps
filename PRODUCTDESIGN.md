@@ -142,6 +142,12 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 
 **Why:** Tenants should make informed choices. If they know Zelle is free and Stripe costs $5 on a large payment, most will choose Zelle — which is the preferred outcome for the property.
 
+### 4.3 Public Payment Completion
+
+**Decision:** Stripe-hosted payment links redirect to the public `/pay/?success=true` receipt state after completion, not to resident-only portal pages.
+
+**Why:** Payment links are often sent to past residents, guests, applicants, and event clients who may not have an active resident portal session. A public success state confirms completion without trapping them behind auth loading.
+
 ---
 
 ## 5. PAI (Property AI) Design

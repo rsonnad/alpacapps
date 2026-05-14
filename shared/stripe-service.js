@@ -92,11 +92,9 @@ class StripeService {
     const { data: { session } } = await supabase.auth.getSession();
     const headers = {
       'Content-Type': 'application/json',
-      'apikey': SUPABASE_ANON_KEY
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`
     };
-    if (session?.access_token) {
-      headers['Authorization'] = `Bearer ${session.access_token}`;
-    }
 
     const response = await fetch(PROCESS_STRIPE_PAYMENT_URL, {
       method: 'POST',

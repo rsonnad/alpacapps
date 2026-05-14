@@ -105,9 +105,11 @@ serve(async (req) => {
       }
     }
 
-    // After payment, redirect to a thank-you or property page
+    // After payment, redirect to the public pay success screen.
+    // Payment links are often sent to past residents or guests who do not have
+    // an active resident portal session.
     params.append("after_completion[type]", "redirect");
-    params.append("after_completion[redirect][url]", "https://alpacaplayhouse.com/residents/profile.html?payment=success");
+    params.append("after_completion[redirect][url]", "https://alpacaplayhouse.com/pay/?success=true");
 
     // Create Payment Link via Stripe API
     const stripeResponse = await fetch(`${STRIPE_API_BASE}/payment_links`, {
