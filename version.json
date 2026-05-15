@@ -1,12 +1,12 @@
 {
-  "version": "v260515.05 10:05a",
-  "release": 1509,
-  "sha": "726d129cb",
-  "fullSha": "726d129cb604a905fa107aad3dc7d02a1b561136",
+  "version": "v260515.06 10:17a",
+  "release": 1510,
+  "sha": "8d54104f7",
+  "fullSha": "8d54104f735fe7d12f9a9d73e67f277c8c50152d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-15T15:05:21+00:00",
-  "commits": [{"sha":"726d129cb","message":"Refine Sonos music page states","author":"Paca"}]
+  "pushedAt": "2026-05-15T15:17:06+00:00",
+  "commits": [{"sha":"8d54104f7","message":"Document Sonos proxy health check","author":"Paca"}]
 }
