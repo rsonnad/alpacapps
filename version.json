@@ -1,12 +1,12 @@
 {
-  "version": "v260515.06 10:17a",
-  "release": 1510,
-  "sha": "8d54104f7",
-  "fullSha": "8d54104f735fe7d12f9a9d73e67f277c8c50152d",
+  "version": "v260515.07 10:28a",
+  "release": 1511,
+  "sha": "528b6f1fc",
+  "fullSha": "528b6f1fc5f1ed9b5090377c3af685719c44cbe6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-15T15:17:06+00:00",
-  "commits": [{"sha":"8d54104f7","message":"Document Sonos proxy health check","author":"Paca"}]
+  "machine": "runnervmeorf1",
+  "pushedAt": "2026-05-15T15:28:20+00:00",
+  "commits": [{"sha":"528b6f1fc","message":"Add energy magnitudes infographic","author":"Rahul"}]
 }
