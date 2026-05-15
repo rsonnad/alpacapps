@@ -39,6 +39,7 @@ let scenes = [];           // Array of scene objects from DB (with nested action
 let activatingScene = null; // ID of scene currently being activated
 let deviceScope = null;
 let uxActiveTab = 'now';
+let zoneLoadError = null;
 
 // =============================================
 // INITIALIZATION
@@ -61,6 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Load zone-independent DB data in parallel with zones (which may be slow)
       const zonesReady = loadZones().then(() => {
         renderZones();
+        updatePollStatus();
       });
       const dbReady = Promise.all([loadPlaylistTags(), loadSchedules(), loadScenes()]).then(() => {
         renderSchedules();
@@ -149,7 +151,8 @@ async function loadZones() {
   try {
     const result = await sonosApi('getZones');
     zoneGroups = [];
-    if (!Array.isArray(result)) return;
+    zoneLoadError = null;
+    if (!Array.isArray(result)) return true;
 
     for (const group of result) {
       const coord = group.coordinator;
@@ -185,10 +188,20 @@ async function loadZones() {
       if (aOrder !== bOrder) return aOrder - bOrder;
       return a.coordinatorName.localeCompare(b.coordinatorName);
     });
+    return true;
   } catch (err) {
+    zoneLoadError = err;
     console.error('Failed to load zones:', err);
-    showToast('Failed to load Sonos zones', 'error');
+    return false;
   }
+}
+
+function getZoneLoadErrorMessage(err = zoneLoadError) {
+  if (!err) return '';
+  const rawMessage = err.message || String(err);
+  if (/timed out/i.test(rawMessage)) return 'connection timed out';
+  if (/failed to fetch|networkerror|cors/i.test(rawMessage)) return 'network request failed';
+  return rawMessage.length > 120 ? `${rawMessage.slice(0, 117)}...` : rawMessage;
 }
 
 async function loadPlaylists() {
@@ -343,7 +356,16 @@ function renderNowPanel() {
   if (!panel) return;
 
   if (!zoneGroups.length) {
-    panel.innerHTML = '<p class="rounded-aap-lg border border-white/30 bg-white/90 p-4 text-sm text-aap-text-muted">No available zones right now.</p>';
+    const title = zoneLoadError ? 'Zones are unreachable right now.' : 'No available zones right now.';
+    const detail = zoneLoadError
+      ? `Retrying automatically. ${getZoneLoadErrorMessage(zoneLoadError)}.`
+      : 'When Sonos or Music Assistant zones are online, quick playback controls appear here.';
+    panel.innerHTML = `
+      <div class="sonos-command-empty">
+        <strong>${escapeHtml(title)}</strong>
+        <span>${escapeHtml(detail)}</span>
+      </div>
+    `;
     return;
   }
 
@@ -400,7 +422,7 @@ function renderAmbientPanel() {
   const currentRoom = document.getElementById('uxAmbientTarget')?.value || '';
   const currentPlaylist = document.getElementById('uxAmbientSource')?.value || '';
   const noAccessNote = deviceScope && !deviceScope.fullAccess
-    ? '<p class="mb-3 rounded-aap border border-aap-border bg-white p-2 text-xs text-aap-text-muted">You only see and control zones you are allowed to access.</p>'
+    ? '<p class="sonos-ambient-note">You only see and control zones you are allowed to access.</p>'
     : '';
 
   const roomOptions = rooms.length
@@ -412,27 +434,37 @@ function renderAmbientPanel() {
     : '<option value="">No ambient playlists found</option>';
 
   const chips = ambientPlaylists.slice(0, 8).map(name => (
-    `<button type="button" class="rounded-full border border-aap-border bg-white px-3 py-1 text-xs text-aap-text-muted hover:bg-aap-cream" data-ambient-playlist="${escapeHtml(name)}">${escapeHtml(name)}</button>`
+    `<button type="button" class="sonos-ambient-chip" data-ambient-playlist="${escapeHtml(name)}">${escapeHtml(name)}</button>`
   )).join('');
 
   panel.innerHTML = `
     ${noAccessNote}
-    <div class="grid gap-3 rounded-aap-lg border border-white/30 bg-white/95 p-4 shadow-aap-sm md:grid-cols-2">
-      <label class="text-sm font-medium text-aap-text-muted">
-        Target zone
-        <select id="uxAmbientTarget" class="mt-1.5 w-full rounded-aap border border-aap-border bg-aap-cream px-2.5 py-2 text-sm text-aap-dark">${roomOptions}</select>
-      </label>
-      <label class="text-sm font-medium text-aap-text-muted">
-        Ambient source
-        <select id="uxAmbientSource" class="mt-1.5 w-full rounded-aap border border-aap-border bg-aap-cream px-2.5 py-2 text-sm text-aap-dark">${playlistOptions}</select>
-      </label>
-      <div class="flex flex-wrap items-center gap-2 md:col-span-2">
-        <button type="button" id="uxAmbientStartBtn" class="rounded-full bg-aap-dark px-4 py-2 text-sm font-semibold text-white hover:opacity-90">Start Ambient</button>
-        <button type="button" id="uxAmbientShuffleBtn" class="rounded-full border border-aap-border bg-white px-4 py-2 text-sm font-medium text-aap-text-muted hover:bg-aap-cream">Shuffle Ambient</button>
-        <button type="button" id="uxAmbientPauseAllBtn" class="rounded-full border border-aap-border bg-white px-4 py-2 text-sm font-medium text-aap-text-muted hover:bg-aap-cream">Pause All</button>
+    <div class="sonos-ambient-panel">
+      <div class="sonos-ambient-grid">
+        <label class="sonos-ambient-field">
+          <span>Target zone</span>
+          <select id="uxAmbientTarget" class="sonos-ambient-select">${roomOptions}</select>
+        </label>
+        <label class="sonos-ambient-field">
+          <span>Ambient source</span>
+          <select id="uxAmbientSource" class="sonos-ambient-select">${playlistOptions}</select>
+        </label>
+      </div>
+      <div class="sonos-ambient-actions">
+        <button type="button" id="uxAmbientStartBtn" class="sonos-ambient-btn sonos-ambient-btn--primary">Start Ambient</button>
+        <button type="button" id="uxAmbientShuffleBtn" class="sonos-ambient-btn">Shuffle</button>
+        <button type="button" id="uxAmbientPauseAllBtn" class="sonos-ambient-btn">Pause All</button>
+      </div>
+      <div class="sonos-ambient-helper">
+        ${chips ? `
+          <span>Quick picks</span>
+          <div class="sonos-ambient-chips">${chips}</div>
+        ` : `
+          <span>No ambient quick picks yet.</span>
+          <p>Create playlists with "ambient" in the name to enable rotation controls.</p>
+        `}
       </div>
     </div>
-    ${chips ? `<div class="mt-3 flex flex-wrap gap-2">${chips}</div>` : '<p class="mt-3 text-xs text-aap-cream/85">Create playlists with "ambient" in the name to enable quick rotation controls.</p>'}
   `;
 }
 
@@ -514,7 +546,11 @@ function renderZones() {
   }
 
   if (!zoneGroups.length) {
-    container.innerHTML = '<p class="text-muted" style="padding:2rem;text-align:center">No Sonos zones found. Is the Sonos system online?</p>';
+    const message = zoneLoadError
+      ? `Sonos zones are unavailable: ${getZoneLoadErrorMessage(zoneLoadError)}. Retrying automatically.`
+      : 'No Sonos zones found. Is the Sonos system online?';
+    const emptyClass = zoneLoadError ? 'sonos-zone-empty sonos-zone-empty--error' : 'sonos-zone-empty';
+    container.innerHTML = `<p class="${emptyClass}">${escapeHtml(message)}</p>`;
     renderNowAmbient();
     return;
   }
@@ -1362,15 +1398,22 @@ async function pauseAll() {
 // =============================================
 // POLLING
 // =============================================
-async function refreshAllZones() {
+async function refreshAllZones(options = {}) {
+  const { throwOnError = false } = options;
   try {
-    await loadZones();
+    const loaded = await loadZones();
     renderZones();
     updatePollStatus();
-    supabaseHealth.recordSuccess();
+    if (loaded) {
+      supabaseHealth.recordSuccess();
+    } else {
+      supabaseHealth.recordFailure();
+      if (throwOnError && zoneLoadError) throw zoneLoadError;
+    }
+    return loaded;
   } catch (err) {
     console.warn('Zone refresh failed:', err);
-    supabaseHealth.recordFailure();
+    if (err !== zoneLoadError) supabaseHealth.recordFailure();
     throw err; // let PollManager circuit breaker track failures
   }
 }
@@ -1378,12 +1421,18 @@ async function refreshAllZones() {
 function updatePollStatus() {
   const el = document.getElementById('pollStatus');
   if (!el) return;
+  if (zoneLoadError) {
+    el.classList.add('poll-status--error');
+    el.textContent = `Sonos zones unavailable: ${getZoneLoadErrorMessage(zoneLoadError)}. Retrying automatically.`;
+    return;
+  }
+  el.classList.remove('poll-status--error');
   el.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
 }
 
 function startPolling() {
   if (poll) poll.stop();
-  poll = new PollManager(refreshAllZones, POLL_INTERVAL_MS);
+  poll = new PollManager(() => refreshAllZones({ throwOnError: true }), POLL_INTERVAL_MS);
   poll.start();
   startElapsedTimer();
 }
@@ -1878,10 +1927,17 @@ function setupEventListeners() {
     const btn = document.getElementById('refreshZonesBtn');
     btn.disabled = true;
     btn.textContent = 'Refreshing...';
-    await refreshAllZones();
-    btn.disabled = false;
-    btn.textContent = 'Refresh';
-    showToast('Zones refreshed', 'info', 1500);
+    try {
+      const loaded = await refreshAllZones();
+      if (loaded) {
+        showToast('Zones refreshed', 'info', 1500);
+      } else {
+        showToast('Still cannot reach Sonos zones. Retrying in the background.', 'warning', 2500);
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Refresh';
+    }
   });
 
   // Group Rooms button

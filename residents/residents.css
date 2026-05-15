@@ -1640,6 +1640,11 @@
   padding: 0.25rem 0;
 }
 
+.poll-status.poll-status--error {
+  color: #9a5b11;
+  font-weight: 700;
+}
+
 /* ===== DISCONNECTED STATE ===== */
 .lighting-group-card.disconnected {
   opacity: 0.85;
@@ -1972,7 +1977,7 @@ body.is-admin .admin-only {
   margin-bottom: 1.25rem;
   overflow: hidden;
   border: 1px solid rgba(31, 23, 32, 0.12);
-  border-radius: var(--radius-lg, 12px);
+  border-radius: var(--radius, 8px);
   background:
     linear-gradient(135deg, rgba(31, 23, 32, 0.96), rgba(49, 63, 70, 0.95)),
     #1f1720;
@@ -1984,8 +1989,8 @@ body.is-admin .admin-only {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem;
+  gap: 1.25rem;
+  padding: clamp(1rem, 2.4vw, 1.35rem);
 }
 
 .sonos-command__eyebrow {
@@ -1993,7 +1998,7 @@ body.is-admin .admin-only {
   margin: 0 0 0.45rem;
   padding: 0.22rem 0.55rem;
   border: 1px solid rgba(212, 136, 58, 0.42);
-  border-radius: 999px;
+  border-radius: var(--radius, 8px);
   background: rgba(212, 136, 58, 0.16);
   color: #f3c17c;
   font-size: 0.68rem;
@@ -2005,7 +2010,7 @@ body.is-admin .admin-only {
 .sonos-command h2 {
   margin: 0;
   color: #fff;
-  font-size: 1.7rem;
+  font-size: clamp(1.45rem, 2.2vw, 1.9rem);
   line-height: 1.05;
 }
 
@@ -2021,7 +2026,7 @@ body.is-admin .admin-only {
   gap: 0.25rem;
   padding: 0.25rem;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 10px;
+  border-radius: var(--radius, 8px);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -2029,7 +2034,7 @@ body.is-admin .admin-only {
   min-height: 34px;
   padding: 0.35rem 0.8rem;
   border: 0;
-  border-radius: 8px;
+  border-radius: calc(var(--radius, 8px) - 2px);
   background: transparent;
   color: rgba(255, 255, 255, 0.72);
   font-weight: 700;
@@ -2042,13 +2047,164 @@ body.is-admin .admin-only {
 }
 
 .sonos-command__panel {
-  padding: 0 1.25rem 1.25rem;
+  padding: 0 clamp(1rem, 2.4vw, 1.35rem) clamp(1rem, 2.4vw, 1.35rem);
+}
+
+.sonos-command-empty {
+  display: grid;
+  gap: 0.2rem;
+  width: min(100%, 660px);
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius, 8px);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.sonos-command-empty strong {
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.sonos-command-empty span {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.8rem;
+}
+
+.sonos-ambient-note {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius, 8px);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+}
+
+.sonos-ambient-panel {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius, 8px);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1rem;
+  color: var(--text, #1f1720);
+  box-shadow: 0 14px 34px rgba(31, 23, 32, 0.16);
+}
+
+.sonos-ambient-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.sonos-ambient-field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.sonos-ambient-select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 8px);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.sonos-ambient-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 136, 58, 0.18);
+}
+
+.sonos-ambient-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sonos-ambient-btn {
+  min-height: 38px;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 8px);
+  background: #fff;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sonos-ambient-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.sonos-ambient-btn--primary {
+  border-color: var(--accent);
+  background: var(--accent, #d4883a);
+  color: #1f1720;
+}
+
+.sonos-ambient-helper {
+  display: grid;
+  gap: 0.45rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.sonos-ambient-helper > span {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sonos-ambient-helper p {
+  margin: 0;
+}
+
+.sonos-ambient-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sonos-ambient-chip {
+  min-height: 30px;
+  max-width: 100%;
+  padding: 0.32rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 8px);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sonos-ambient-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: #fff;
 }
 
 .sonos-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  gap: 1.25rem;
   align-items: start;
 }
 
@@ -2059,8 +2215,8 @@ body.is-admin .admin-only {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: calc(100vh - 8rem);
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 /* Staff-only elements */
@@ -2119,7 +2275,8 @@ body.is-staff .staff-only { display: inline-flex; }
 }
 
 .sonos-search__row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(76px, auto) 38px;
   gap: 0.35rem;
 }
 
@@ -2140,7 +2297,7 @@ body.is-staff .staff-only { display: inline-flex; }
 
 .sonos-search__btn {
   flex-shrink: 0;
-  width: 34px;
+  width: 38px;
   padding: 0.35rem;
   border: none;
   border-radius: var(--radius);
@@ -2381,7 +2538,10 @@ details[open] .sonos-library__chevron {
 }
 
 .sonos-library__overview span {
+  display: grid;
+  place-items: center;
   min-width: 0;
+  min-height: 52px;
   padding: 0.45rem 0.4rem;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -2390,6 +2550,7 @@ details[open] .sonos-library__chevron {
   font-size: 0.68rem;
   font-weight: 700;
   text-align: center;
+  line-height: 1.25;
 }
 
 /* Library draggable items */
@@ -2470,6 +2631,27 @@ span.sonos-library-item__star.starred {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
+}
+
+.sonos-zone-empty {
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: min(100%, 560px);
+  min-height: 132px;
+  margin: 0;
+  padding: 2rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.55;
+}
+
+.sonos-zone-empty--error {
+  border: 1px solid rgba(154, 91, 17, 0.24);
+  border-radius: var(--radius, 8px);
+  background: #fff8ec;
+  color: #6f410d;
 }
 
 .sonos-zone-card {
@@ -3887,9 +4069,28 @@ span.sonos-library-item__star.starred {
 }
 
 /* ===== SONOS MOBILE ===== */
+@media (max-width: 1120px) {
+  .sonos-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sonos-sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: none;
+    overflow: visible;
+  }
+
+  .sonos-library {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 768px) {
   .sonos-command__header {
     flex-direction: column;
+    gap: 0.9rem;
   }
 
   .sonos-command__tabs {
@@ -3906,8 +4107,18 @@ span.sonos-library-item__star.starred {
 
   .sonos-sidebar {
     position: static;
+    display: flex;
     max-height: none;
     order: -1;
+  }
+
+  .sonos-ambient-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sonos-ambient-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .sonos-automation-grid,
@@ -3966,6 +4177,32 @@ span.sonos-library-item__star.starred {
 
   .scene-room-row__options {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .sonos-command {
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+  }
+
+  .sonos-command__tabs,
+  .sonos-ambient-actions {
+    width: 100%;
+  }
+
+  .sonos-ambient-actions,
+  .sonos-search__row {
+    grid-template-columns: 1fr;
+  }
+
+  .sonos-ambient-btn,
+  .sonos-search__btn {
+    width: 100%;
+  }
+
+  .sonos-library__overview {
+    grid-template-columns: 1fr;
   }
 }
 
