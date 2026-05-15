@@ -120,7 +120,7 @@ export function showToast(message, type = 'info', duration = 4000) {
 // TAB NAVIGATION
 // =============================================
 async function renderResidentTabNav(activeTab, authState) {
-  const tabsContainer = document.querySelector('.manage-tabs');
+  const tabsContainer = document.getElementById('tabNav') || document.querySelector('.manage-tabs');
   if (!tabsContainer) return;
 
   // Show context switcher for users with any staff/admin permissions (or admin/oracle role)
@@ -146,10 +146,13 @@ async function renderResidentTabNav(activeTab, authState) {
 
   if (isDevicePage) {
     tabsContainer.innerHTML = '';
-    tabsContainer.style.display = 'none';
-    await renderDeviceSubTabNav(activeTab, authState);
+    tabsContainer.style.display = '';
+    await renderDeviceSubTabNav(activeTab, authState, tabsContainer);
     return;
   }
+
+  document.getElementById('deviceSubTabNav')?.remove();
+  tabsContainer.style.display = '';
 
   // Filter tabs by enabled features AND permission
   const enabledFeatures = await getEnabledFeatures();
@@ -185,7 +188,7 @@ function hasTabAccess(tab, authState) {
   return authState.hasPermission?.(tab.permission);
 }
 
-async function renderDeviceSubTabNav(activeTab, authState) {
+async function renderDeviceSubTabNav(activeTab, authState, preferredContainer = null) {
   const currentPath = normalizeRouteToken(window.location.pathname.split('/').pop() || '');
   const devicePageToTab = {
     'devices.html': 'list',
@@ -212,9 +215,19 @@ async function renderDeviceSubTabNav(activeTab, authState) {
   const activeDeviceSubTab = devicePageToTab[currentPath] || (activeTab === 'devices' ? 'list' : null);
   const shouldRenderDeviceSubtabs = activeTab === 'devices' || Boolean(devicePageToTab[currentPath]);
 
-  let subTabContainer = document.getElementById('deviceSubTabNav');
+  let subTabContainer = preferredContainer || document.getElementById('tabNav') || document.getElementById('deviceSubTabNav');
+  const legacySubTabContainer = document.getElementById('deviceSubTabNav');
+  if (legacySubTabContainer && legacySubTabContainer !== subTabContainer) {
+    legacySubTabContainer.remove();
+  }
+
   if (!shouldRenderDeviceSubtabs) {
-    if (subTabContainer) subTabContainer.remove();
+    if (subTabContainer?.id === 'tabNav') {
+      subTabContainer.innerHTML = '';
+      subTabContainer.style.display = 'none';
+    } else if (subTabContainer) {
+      subTabContainer.remove();
+    }
     return;
   }
 
@@ -223,7 +236,12 @@ async function renderDeviceSubTabNav(activeTab, authState) {
     .filter(tab => !tab.feature || enabledFeatures[tab.feature])
     .filter((tab) => hasTabAccess(tab, authState));
   if (visibleSubtabs.length === 0) {
-    if (subTabContainer) subTabContainer.remove();
+    if (subTabContainer?.id === 'tabNav') {
+      subTabContainer.innerHTML = '';
+      subTabContainer.style.display = 'none';
+    } else if (subTabContainer) {
+      subTabContainer.remove();
+    }
     return;
   }
 
@@ -231,9 +249,12 @@ async function renderDeviceSubTabNav(activeTab, authState) {
     subTabContainer = document.createElement('div');
     subTabContainer.id = 'deviceSubTabNav';
     subTabContainer.className = 'manage-tabs';
-    const tabsContainer = document.querySelector('.manage-tabs');
+    const tabsContainer = document.getElementById('tabNav') || document.querySelector('.manage-tabs');
+    if (!tabsContainer) return;
     tabsContainer.insertAdjacentElement('afterend', subTabContainer);
   }
+  subTabContainer.classList.add('manage-tabs');
+  subTabContainer.style.display = '';
 
   subTabContainer.innerHTML = visibleSubtabs.map((tab) => {
     const isActive = tab.id === activeDeviceSubTab;
