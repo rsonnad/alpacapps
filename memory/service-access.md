@@ -108,3 +108,21 @@ HAOS: QEMU VM running haos_generic-aarch64-17.1.img, HTTP 200 from Alpuca
 Home Assistant API: 1,352 states, 37 media_player entities with local token
 Music Assistant API: players/all returns Sonos S1 players; playlist library command is music/playlists/library_items
 ```
+
+Proxy follow-up from 2026-05-15 10:15a:
+
+```text
+Alpuca local checks still pass from this machine over Tailscale:
+- http://127.0.0.1:8095/ on Alpuca -> 200
+- http://127.0.0.1:5005/zones on Alpuca -> 200, 12 zones
+- http://192.168.1.39:8123/ from Alpuca -> 200
+
+Production resident page still reported sonos-control getZones timeout.
+Public proxy probes:
+- https://alpaclaw.cloud/sonos/zones -> 403 without the X-Sonos-Secret header, so the route exists and auth is enforced.
+- https://alpaclaw.cloud/ma-api -> 502 for GET and POST players/all probe, so the Music Assistant proxy path is broken or removed.
+
+Hostinger SSH follow-up needed:
+- ~/.ssh/alpacapps-hostinger.pass was missing on this machine.
+- Bitwarden was locked, so Hostinger password could not be retrieved during the check.
+```
