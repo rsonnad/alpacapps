@@ -331,12 +331,8 @@ function renderNowAmbient() {
   ambientPanel.classList.toggle('hidden', showNow);
 
   if (nowBtn && ambientBtn) {
-    nowBtn.className = showNow
-      ? 'rounded-aap px-3 py-1.5 text-sm font-semibold text-aap-dark bg-aap-amber shadow-aap-sm'
-      : 'rounded-aap px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10';
-    ambientBtn.className = !showNow
-      ? 'rounded-aap px-3 py-1.5 text-sm font-semibold text-aap-dark bg-aap-amber shadow-aap-sm'
-      : 'rounded-aap px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10';
+    nowBtn.classList.toggle('active', showNow);
+    ambientBtn.classList.toggle('active', !showNow);
   }
 
   saveUxTabPreference();
@@ -492,6 +488,13 @@ const ALARM_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" heigh
 const LEAF_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M6.05 8.05c-2.73 2.73-2.73 7.15-.02 9.88a6.985 6.985 0 004.95 2.05c.41 0 .82-.04 1.21-.12-1.44-.44-2.79-1.18-3.95-2.34-2.55-2.55-2.95-6.36-1.2-9.31l.01-.01c.38.23.8.35 1.24.35C9.8 8.55 11 7.35 11 5.84V2.02S4.47 3.66 6.05 8.05z"/><path d="M17.95 8.05c-1.58-4.39-8.11-6.03-8.11-6.03V5.84c0 1.52 1.2 2.72 2.72 2.72.43 0 .84-.12 1.21-.34 1.76 2.96 1.36 6.77-1.2 9.13-1.15 1.15-2.49 1.89-3.92 2.33.39.08.79.12 1.2.12 1.84 0 3.58-.72 4.89-2.03 2.71-2.73 2.71-7.15-.01-9.88l.01.01.02.01-.01.01c.38.23.8.36 1.24.36a2.72 2.72 0 002.72-2.72V2.02s-1.65.82-2.76 2.21"/></svg>';
 const CHEVRON_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>';
 const EQ_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M7 18h2V6H7v12zm4 4h2V2h-2v20zm-8-8h2v-4H3v4zm12 4h2V6h-2v12zm4-8v4h2v-4h-2z"/></svg>';
+
+const PLAYLIST_CATEGORIES = [
+  { id: 'starred', label: 'Pinned', test: (name) => isPlaylistStarred(name), icon: STAR_SVG },
+  { id: 'ambient', label: 'Ambient', test: (name) => /ambient|soundscape|sleep|focus|meditat|rain|drone/i.test(name), icon: LEAF_SVG },
+  { id: 'morning', label: 'Morning', test: (name) => /morning|wake|coffee|sunrise|breakfast/i.test(name), icon: PLAYLIST_SVG },
+  { id: 'event', label: 'Events', test: (name) => /party|dinner|event|dance|pool|sauna|yoga|ceremony/i.test(name), icon: PLAYLIST_SVG },
+];
 
 // =============================================
 // RENDERING - ZONE GROUPS
@@ -715,25 +718,43 @@ function renderMusicLibrary() {
   const libraryBody = document.getElementById('libraryBody');
   if (!libraryBody) return;
 
-  const starredPlaylists = playlists.filter(name => isPlaylistStarred(name));
-  const ambientPlaylists = playlists.filter(name => /ambient/i.test(name));
+  const categorized = new Set();
+  const categorySections = PLAYLIST_CATEGORIES.map(category => {
+    const items = playlists.filter(name => category.test(name));
+    items.forEach(name => categorized.add(name));
+    return { ...category, items };
+  }).filter(section => section.items.length);
+  const uncategorized = playlists.filter(name => !categorized.has(name));
 
   let html = '';
+  const totalItems = playlists.length + favorites.length;
+  const pinnedCount = playlists.filter(name => isPlaylistStarred(name)).length;
 
-  // Starred section
-  if (starredPlaylists.length > 0) {
-    html += renderLibrarySectionHtml('Starred', 'starredList', starredPlaylists, 'playlist', STAR_SVG, true);
+  html += `
+    <div class="sonos-library__overview">
+      <span>${totalItems} saved sources</span>
+      <span>${pinnedCount} pinned</span>
+      <span>Spotify + YouTube ready</span>
+    </div>
+  `;
+
+  for (const section of categorySections) {
+    html += renderLibrarySectionHtml(
+      `${section.label} (${section.items.length})`,
+      `${section.id}List`,
+      section.items,
+      'playlist',
+      section.icon,
+      section.id === 'starred' || section.id === 'ambient',
+      true,
+    );
   }
 
-  // Ambient section
-  if (ambientPlaylists.length > 0) {
-    html += renderLibrarySectionHtml('Ambient', 'ambientList', ambientPlaylists, 'playlist', LEAF_SVG, true);
+  html += renderLibrarySectionHtml(`All Playlists (${playlists.length})`, 'playlistsList', playlists, 'playlist', PLAYLIST_SVG, !categorySections.length, true);
+  if (uncategorized.length && uncategorized.length !== playlists.length) {
+    html += renderLibrarySectionHtml(`Unsorted (${uncategorized.length})`, 'unsortedList', uncategorized, 'playlist', PLAYLIST_SVG, false, true);
   }
 
-  // All Playlists
-  html += renderLibrarySectionHtml(`Playlists (${playlists.length})`, 'playlistsList', playlists, 'playlist', PLAYLIST_SVG, false, true);
-
-  // Sonos Favorites
   html += renderLibrarySectionHtml(`Favorites (${favorites.length})`, 'favoritesList', favorites, 'favorite', STAR_SVG, false);
 
   libraryBody.innerHTML = html;
@@ -805,7 +826,7 @@ function renderSchedules() {
   if (!container) return;
 
   if (!schedules.length) {
-    container.innerHTML = '<p class="text-muted" style="font-size:0.8rem;padding:0.75rem 0;text-align:center;">No scheduled alarms yet.</p>';
+    container.innerHTML = '<div class="sonos-empty-state"><strong>No automations yet.</strong><span>Create one to start a playlist, Spotify link, or YouTube source on a schedule.</span></div>';
     renderNowAmbient();
     return;
   }
@@ -814,23 +835,29 @@ function renderSchedules() {
     const timeStr = formatTime12h(s.time_of_day);
     const recStr = formatRecurrence(s);
     const activeClass = s.is_active ? '' : 'inactive';
+    const sourceLabel = formatScheduleSource(s);
+    const modes = formatScheduleModes(s);
 
     return `
       <div class="sonos-schedule-card ${activeClass}" data-schedule-id="${s.id}">
-        <div class="sonos-schedule-card__left">
-          <div class="sonos-schedule-card__time">${timeStr}</div>
-          <div class="sonos-schedule-card__name">${escapeHtml(s.name)}</div>
+        <div class="sonos-schedule-card__top">
+          <div class="sonos-schedule-card__left">
+            <div class="sonos-schedule-card__time">${timeStr}</div>
+            <div class="sonos-schedule-card__name">${escapeHtml(s.name)}</div>
+          </div>
+          <div class="sonos-schedule-card__actions">
+            <label class="sonos-schedule-toggle" title="${s.is_active ? 'Active' : 'Inactive'}">
+              <input type="checkbox" ${s.is_active ? 'checked' : ''} data-toggle-schedule="${s.id}">
+              <span class="sonos-schedule-toggle__slider"></span>
+            </label>
+          </div>
         </div>
         <div class="sonos-schedule-card__meta">
-          <span>${escapeHtml(s.room)}</span>
-          <span>${escapeHtml(s.playlist_name)}</span>
-          <span>${recStr}${s.volume != null ? ` &middot; Vol ${s.volume}%` : ''}${s.keep_grouped ? ' &middot; Grouped' : ''}</span>
+          <span class="sonos-schedule-card__source">${escapeHtml(sourceLabel)} · ${escapeHtml(s.playlist_name)}</span>
+          <span>${escapeHtml(s.room)} · ${recStr}</span>
+          <span>${escapeHtml(modes)}</span>
         </div>
         <div class="sonos-schedule-card__actions">
-          <label class="sonos-schedule-toggle" title="${s.is_active ? 'Active' : 'Inactive'}">
-            <input type="checkbox" ${s.is_active ? 'checked' : ''} data-toggle-schedule="${s.id}">
-            <span class="sonos-schedule-toggle__slider"></span>
-          </label>
           ${isStaffPlus() ? `
             <button class="btn-small" data-edit-schedule="${s.id}">Edit</button>
             <button class="btn-small btn-danger-small" data-delete-schedule="${s.id}">Del</button>
@@ -864,6 +891,32 @@ function formatRecurrence(schedule) {
   }
 }
 
+function formatScheduleSource(schedule) {
+  const provider = schedule.source_provider || (
+    schedule.source_type === 'favorite' ? 'sonos' :
+    schedule.source_type === 'url' ? 'link' :
+    'music_assistant'
+  );
+  const labels = {
+    music_assistant: 'Music Assistant',
+    sonos: 'Sonos',
+    spotify: 'Spotify',
+    youtube: 'YouTube',
+    link: 'Link',
+  };
+  return labels[provider] || provider;
+}
+
+function formatScheduleModes(schedule) {
+  const modes = [];
+  if (schedule.shuffle) modes.push('Shuffle');
+  if (schedule.repeat_mode === 'all') modes.push('Repeat all');
+  if (schedule.repeat_mode === 'one') modes.push('Repeat one');
+  if (schedule.keep_grouped) modes.push('Grouped');
+  if (schedule.volume != null) modes.push(`Vol ${schedule.volume}%`);
+  return modes.join(' · ') || 'Default play mode';
+}
+
 // =============================================
 // SCHEDULE CRUD
 // =============================================
@@ -873,40 +926,53 @@ function openScheduleModal(schedule = null) {
 
   const isEdit = !!schedule;
   const rooms = getAllRoomNames();
-  const allItems = [
-    ...playlists.map(p => ({ name: p, type: 'playlist' })),
-    ...favorites.map(f => ({ name: f, type: 'favorite' })),
-  ];
-
   const modal = document.createElement('div');
   modal.id = 'scheduleModal';
   modal.className = 'modal-overlay';
   modal.innerHTML = `
-    <div class="modal-card" style="max-width:420px;">
-      <h3 style="margin:0 0 1rem;">${isEdit ? 'Edit' : 'New'} Schedule</h3>
+    <div class="modal-card sonos-automation-modal">
+      <h3>${isEdit ? 'Edit' : 'New'} Playlist Automation</h3>
       <form id="scheduleForm">
         <div class="form-group">
-          <label>Name</label>
+          <label>Automation name</label>
           <input type="text" name="name" required value="${escapeHtml(schedule?.name || '')}" placeholder="e.g. Morning Wake Up">
         </div>
-        <div class="form-group">
-          <label>Playlist / Favorite</label>
-          <select name="playlist_name" required>
+        <div class="sonos-automation-grid">
+          <div class="form-group">
+            <label>Source system</label>
+            <select name="source_provider" id="scheduleSourceProvider">
+              <option value="music_assistant" ${(!schedule?.source_provider || schedule?.source_provider === 'music_assistant') ? 'selected' : ''}>Music Assistant</option>
+              <option value="sonos" ${schedule?.source_provider === 'sonos' ? 'selected' : ''}>Sonos Favorites</option>
+              <option value="spotify" ${schedule?.source_provider === 'spotify' ? 'selected' : ''}>Spotify URI</option>
+              <option value="youtube" ${schedule?.source_provider === 'youtube' ? 'selected' : ''}>YouTube / YouTube Music URL</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Room</label>
+            <select name="room" required>
+              <option value="">Select...</option>
+              ${rooms.map(r => `<option value="${escapeHtml(r)}" ${schedule?.room === r ? 'selected' : ''}>${escapeHtml(r)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="savedSourceGroup">
+          <label>Saved playlist / favorite</label>
+          <select name="playlist_name" id="schedulePlaylistSelect">
             <option value="">Select...</option>
-            <optgroup label="Playlists">
-              ${playlists.map(p => `<option value="${escapeHtml(p)}" data-source="playlist" ${schedule?.playlist_name === p && schedule?.source_type === 'playlist' ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('')}
+            <optgroup label="Pinned playlists">
+              ${playlists.filter(p => isPlaylistStarred(p)).map(p => `<option value="${escapeHtml(p)}" data-source="playlist" ${schedule?.playlist_name === p ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('')}
             </optgroup>
-            <optgroup label="Favorites">
-              ${favorites.map(f => `<option value="${escapeHtml(f)}" data-source="favorite" ${schedule?.playlist_name === f && schedule?.source_type === 'favorite' ? 'selected' : ''}>${escapeHtml(f)}</option>`).join('')}
+            <optgroup label="Music Assistant playlists">
+              ${playlists.map(p => `<option value="${escapeHtml(p)}" data-source="playlist" ${schedule?.playlist_name === p ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('')}
+            </optgroup>
+            <optgroup label="Sonos favorites">
+              ${favorites.map(f => `<option value="${escapeHtml(f)}" data-source="favorite" ${schedule?.playlist_name === f ? 'selected' : ''}>${escapeHtml(f)}</option>`).join('')}
             </optgroup>
           </select>
         </div>
-        <div class="form-group">
-          <label>Room</label>
-          <select name="room" required>
-            <option value="">Select...</option>
-            ${rooms.map(r => `<option value="${escapeHtml(r)}" ${schedule?.room === r ? 'selected' : ''}>${escapeHtml(r)}</option>`).join('')}
-          </select>
+        <div class="form-group" id="uriSourceGroup">
+          <label>Source URI / URL</label>
+          <input type="text" name="source_uri" value="${escapeHtml(schedule?.source_uri || '')}" placeholder="spotify:playlist:... or https://music.youtube.com/playlist?...">
         </div>
         <div class="form-row">
           <div class="form-group" style="flex:1">
@@ -927,6 +993,20 @@ function openScheduleModal(schedule = null) {
             <option value="custom" ${schedule?.recurrence === 'custom' ? 'selected' : ''}>Custom Days</option>
             <option value="once" ${schedule?.recurrence === 'once' ? 'selected' : ''}>One Time</option>
           </select>
+        </div>
+        <div class="sonos-playmode-row">
+          <label class="form-checkbox">
+            <input type="checkbox" name="shuffle" ${schedule?.shuffle ? 'checked' : ''}>
+            <span>Shuffle</span>
+          </label>
+          <div class="form-group">
+            <label>Repeat</label>
+            <select name="repeat_mode">
+              <option value="none" ${!schedule?.repeat_mode || schedule?.repeat_mode === 'none' ? 'selected' : ''}>Off</option>
+              <option value="all" ${schedule?.repeat_mode === 'all' ? 'selected' : ''}>Repeat all</option>
+              <option value="one" ${schedule?.repeat_mode === 'one' ? 'selected' : ''}>Repeat one</option>
+            </select>
+          </div>
         </div>
         <div class="form-group" id="customDaysGroup" style="display:${schedule?.recurrence === 'custom' ? 'block' : 'none'}">
           <label>Days</label>
@@ -961,6 +1041,16 @@ function openScheduleModal(schedule = null) {
     modal.querySelector('#customDaysGroup').style.display = recurrenceSelect.value === 'custom' ? 'block' : 'none';
     modal.querySelector('#oneDateGroup').style.display = recurrenceSelect.value === 'once' ? 'block' : 'none';
   });
+  const providerSelect = modal.querySelector('#scheduleSourceProvider');
+  const updateSourceFields = () => {
+    const usesUri = providerSelect.value === 'spotify' || providerSelect.value === 'youtube';
+    modal.querySelector('#savedSourceGroup').style.display = usesUri ? 'none' : 'block';
+    modal.querySelector('#uriSourceGroup').style.display = usesUri ? 'block' : 'none';
+    modal.querySelector('[name="source_uri"]').required = usesUri;
+    modal.querySelector('#schedulePlaylistSelect').required = !usesUri;
+  };
+  providerSelect.addEventListener('change', updateSourceFields);
+  updateSourceFields();
 
   // Cancel
   modal.querySelector('#cancelScheduleBtn').addEventListener('click', () => modal.remove());
@@ -970,13 +1060,21 @@ function openScheduleModal(schedule = null) {
   modal.querySelector('#scheduleForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
+    const provider = form.source_provider.value;
+    const usesUri = provider === 'spotify' || provider === 'youtube';
     const playlistSelect = form.querySelector('[name="playlist_name"]');
     const selectedOption = playlistSelect.selectedOptions[0];
+    const sourceUri = form.source_uri.value.trim();
+    const playlistName = usesUri
+      ? (sourceUri.split('/').pop() || `${provider} source`).slice(0, 120)
+      : playlistSelect.value;
 
     const data = {
       name: form.name.value.trim(),
-      playlist_name: playlistSelect.value,
-      source_type: selectedOption?.dataset.source || 'playlist',
+      playlist_name: playlistName,
+      source_type: usesUri ? 'url' : (selectedOption?.dataset.source || 'playlist'),
+      source_provider: provider,
+      source_uri: usesUri ? sourceUri : null,
       room: form.room.value,
       time_of_day: form.time_of_day.value + ':00',
       volume: form.volume.value ? parseInt(form.volume.value) : null,
@@ -986,6 +1084,8 @@ function openScheduleModal(schedule = null) {
         : null,
       one_time_date: form.recurrence.value === 'once' ? form.one_time_date.value || null : null,
       keep_grouped: form.keep_grouped.checked,
+      shuffle: form.shuffle.checked,
+      repeat_mode: form.repeat_mode.value,
     };
 
     try {

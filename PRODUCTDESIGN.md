@@ -539,6 +539,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 ## Decisions
 
+### 2026-05-15: Music Automations Use Music Assistant with Sonos/Home Assistant Fallback
+
+**Decision:** Redesign the resident Music page around playlist automations instead of Sonos-style alarms. Saved Music Assistant playlists and Sonos favorites are pulled into searchable categories, staff can pin favorites for quick access, and each automation can target a room, provider, playlist/URI, recurrence, volume, shuffle, repeat, and grouped-room behavior. Music Assistant is the primary playback path, Sonos HTTP API remains the fallback for Sonos-native playlists/favorites and play modes, and Home Assistant remains available as the broader media-player control plane.
+
+**Why:** Music Assistant is already installed on Alpuca and sees the Sonos S1 players, while Home Assistant also exposes the property media players. Centering the UX on providers and playlists makes Spotify, YouTube, local library, and Sonos favorites understandable to residents while preserving the reliable LAN-native Sonos fallback for schedule execution.
+
 ### 2026-05-11: Glowforge Job Prep, Not Remote Laser Control
 
 **Decision:** Add a Glowforge Job Prep workflow inside the resident Appliances/Maker Tools page that records the uploaded file name, material, thickness, board size, operation type, finish target, generated settings recipe, operator checklist, and handoff status. AlpacApps prepares and tracks the job, but Glowforge Print remains the required final confirmation surface for artwork placement, machine settings, and starting the physical laser.

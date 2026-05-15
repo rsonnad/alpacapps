@@ -191,7 +191,7 @@ HAOS successfully migrated from Rahul M4 Airtop to Alpuca (Mac mini M4).
 | **Sonos** | 14 speakers | Loaded | All rooms working — see `SONOSAUTOMATION.md` for full inventory |
 | **Google Cast** | 2 devices | Loaded | Jon + 1 other |
 | **TP-Link** | 3 devices | Loaded | Cabin 1 KL135, Nook HS220, Stair Landing HS210 |
-| **Music Assistant** | 1 entry | Loaded | Connected to Almaca :8095 |
+| **Music Assistant** | 1 entry | Loaded | Connected to Alpuca :8095 |
 | **DLNA DMR** | 1 device | Loaded | Spartan WiiM |
 | **LinkPlay** | 1 device | Loaded | Spartan WiiM |
 | **IPP (Printer)** | 1 device | Loaded | HP ENVY Photo 7800 |

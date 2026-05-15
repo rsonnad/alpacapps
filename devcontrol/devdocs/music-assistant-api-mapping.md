@@ -28,10 +28,12 @@ This document maps existing `sonos-control` actions to Music Assistant (MA) API 
 | `previous` | `player_queues/previous`, `players/cmd/previous`, `players/previous` | Track skip back. |
 | `volume` | `players/cmd/volume_set`, `players/set_volume`, `player_queues/set_volume` | Volume 0-100. |
 | `mute`/`unmute` | `players/cmd/mute`, `players/set_mute` | Uses boolean mute value. |
+| `shuffle` | `player_queues/shuffle` | Verified on Alpuca MA 2.6.0. Use queue/player id and boolean shuffle value. |
+| `repeat` | `player_queues/repeat` | Verified on Alpuca MA 2.6.0. Repeat mode is `none`, `all`, or `one`. |
 | `pauseall`/`resumeall` | player list + per-player play/pause commands | Runs in parallel across all discovered players. |
 | `join` | `players/cmd/sync`, `players/cmd/join`, `players/join` | `room` joins `other` target coordinator. |
 | `leave` | `players/cmd/unsync`, `players/cmd/leave`, `players/leave` | Removes from sync group. |
-| `playlists` | `music/playlists`, `music/library/playlists`, `playlists/list` | Returned as string names array for existing clients. |
+| `playlists` | `music/playlists/library_items`, then legacy fallbacks | Alpuca MA 2.6.0 exposes saved playlists through `music/playlists/library_items`; older guessed commands return `Invalid Command`. Returned as string names array for existing clients. |
 | `favorites` | `music/favorites`, `music/library/favorites`, `favorites/list` | Returned as string names array for existing clients. |
 | `playlist`/`favorite` | list playlists/favorites then `player_queues/play_media` variants | Resolves by name first, then falls back to raw provided name. |
 | `spotify-play` | `player_queues/play_media` variants, `players/cmd/play_media`, `music/play_uri` | Direct MA URI play path (supports enqueue). |

@@ -82,3 +82,29 @@ Tailscale IP: 100.74.59.97
 LAN IP: 192.168.1.200
 Printer proxy: com.printer-proxy on port 8913, health on 8914
 ```
+
+### Verify Music Assistant, Sonos API, and HAOS
+
+```bash
+ssh -F /dev/null -i ~/.ssh/id_ed25519 \
+  -o IdentitiesOnly=yes \
+  -o IdentityAgent=none \
+  -o PreferredAuthentications=publickey \
+  -o PasswordAuthentication=no \
+  -o StrictHostKeyChecking=accept-new \
+  alpuca@100.74.59.97 \
+  'hostname;
+   curl -sS -m 5 -o /dev/null -w "MA:%{http_code}\n" http://127.0.0.1:8095/;
+   curl -sS -m 5 -o /dev/null -w "Sonos:%{http_code}\n" http://127.0.0.1:5005/zones;
+   curl -sS -m 5 -o /dev/null -w "HAOS:%{http_code}\n" http://192.168.1.39:8123/'
+```
+
+Verified 2026-05-15:
+
+```text
+Music Assistant: com.music-assistant.server, Python listening on :8095, HTTP 200
+Sonos HTTP API: com.sonos.httpapi, node listening on :5005, /zones returned 13 zones
+HAOS: QEMU VM running haos_generic-aarch64-17.1.img, HTTP 200 from Alpuca
+Home Assistant API: 1,352 states, 37 media_player entities with local token
+Music Assistant API: players/all returns Sonos S1 players; playlist library command is music/playlists/library_items
+```

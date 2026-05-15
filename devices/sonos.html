@@ -47,18 +47,64 @@
     <!-- Tab Navigation -->
     <div class="manage-tabs" id="tabNav"></div>
 
-    <!-- Main Content - Two Column Layout -->
+    <!-- Main Content -->
     <main class="manage-content sonos-page">
+      <section class="sonos-command" id="uxNowAmbient">
+        <div class="sonos-command__header">
+          <div>
+            <p class="sonos-command__eyebrow">Resident Audio Hub</p>
+            <h2>Sonic Soundscape Center</h2>
+            <p>Live zones, playlist sources, and scheduled music automations in one place.</p>
+          </div>
+          <div class="sonos-command__tabs" role="tablist" aria-label="Music view">
+            <button type="button" id="uxNowTabBtn" data-ux-tab="now">Now</button>
+            <button type="button" id="uxAmbientTabBtn" data-ux-tab="ambient">Ambient</button>
+          </div>
+        </div>
+        <div class="sonos-command__panel">
+          <div id="uxNowPanel"></div>
+          <div id="uxAmbientPanel" class="hidden"></div>
+        </div>
+      </section>
+
       <div class="sonos-layout">
+        <div class="sonos-main">
+          <section class="section" id="zonesSection">
+            <div class="section-header">
+              <h2>Zones</h2>
+              <div class="section-header-actions">
+                <button class="btn-small staff-only" id="groupRoomsBtn" title="Group/ungroup rooms">Group Rooms</button>
+                <button class="btn-small" id="refreshZonesBtn" title="Refresh all zone states">Refresh</button>
+                <button class="btn-all-off" id="pauseAllBtn" title="Pause all zones">Pause All</button>
+              </div>
+            </div>
+            <div class="section-body">
+              <div class="sonos-zones" id="sonosZones">
+                <p class="text-muted" style="font-size: 0.85rem; padding: 2rem; text-align: center;">Loading zones...</p>
+              </div>
+              <div class="poll-status" id="pollStatus"></div>
+            </div>
+          </section>
+        </div>
 
-        <!-- LEFT: Music Library + Schedules -->
         <div class="sonos-sidebar">
+          <section class="sonos-automation-section" id="schedulesSection">
+            <div class="sonos-automation__header">
+              <div>
+                <h3>Playlist Automations</h3>
+                <p>Schedule Spotify, YouTube, Sonos, or Music Assistant sources with shuffle and repeat.</p>
+              </div>
+              <button class="btn-small staff-only" id="addScheduleBtn" title="Add a playlist automation">+ Add</button>
+            </div>
+            <div id="schedulesList">
+              <p class="text-muted" style="font-size:0.8rem;padding:0.5rem 0;text-align:center;">Loading...</p>
+            </div>
+          </section>
 
-          <!-- Spotify Search -->
           <aside class="sonos-search-card">
-            <div class="sonos-search__header" style="display:flex;align-items:center;justify-content:space-between;">
-              <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Search Spotify</h3>
-              <span id="spotifyAccountStatus" style="font-size:0.75rem;color:#888;"></span>
+            <div class="sonos-search__header">
+              <h3>Find Source</h3>
+              <span id="spotifyAccountStatus"></span>
             </div>
             <form id="spotifySearchForm" class="sonos-search__form" autocomplete="off">
               <div class="sonos-search__row">
@@ -115,56 +161,6 @@
               <p class="text-muted" style="font-size:0.8rem;padding:0.75rem 0;text-align:center;">Loading...</p>
             </div>
           </section>
-
-          <!-- Scheduled Alarms -->
-          <section class="sonos-schedules-section" id="schedulesSection">
-            <div class="sonos-schedules__header">
-              <h3>Scheduled</h3>
-              <button class="btn-small staff-only" id="addScheduleBtn" title="Add a scheduled alarm">+ Add</button>
-            </div>
-            <div id="schedulesList">
-              <p class="text-muted" style="font-size:0.8rem;padding:0.5rem 0;text-align:center;">Loading...</p>
-            </div>
-          </section>
-        </div>
-
-        <!-- RIGHT: Zone Groups -->
-        <div class="sonos-main">
-          <section class="mb-4 overflow-hidden rounded-aap-lg border border-aap-border bg-gradient-to-br from-[#1e1619] via-[#241a1e] to-[#2e2025] p-5 shadow-aap-xl" id="uxNowAmbient">
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p class="mb-1 inline-flex rounded-full border border-aap-amber/30 bg-aap-amber/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-aap-amber">Resident Audio Hub</p>
-                <h2 class="text-2xl font-extrabold tracking-[0.01em] md:text-3xl" style="color:#ffffff;">Sonic Soundscape Center</h2>
-                <p class="text-sm" style="color:rgba(255,255,255,0.85);">Quick control for what is playing now and ambient rotations.</p>
-              </div>
-              <div class="inline-flex rounded-aap-lg border border-white/20 bg-white/10 p-1 backdrop-blur-sm">
-                <button type="button" id="uxNowTabBtn" class="rounded-aap px-3 py-1.5 text-sm font-medium text-aap-dark bg-aap-amber/20" data-ux-tab="now">Now</button>
-                <button type="button" id="uxAmbientTabBtn" class="rounded-aap px-3 py-1.5 text-sm font-medium text-aap-text-muted" data-ux-tab="ambient">Ambient</button>
-              </div>
-            </div>
-            <div class="rounded-aap-lg border border-white/15 bg-white/10 p-3 backdrop-blur-sm md:p-4">
-              <div id="uxNowPanel"></div>
-              <div id="uxAmbientPanel" class="hidden"></div>
-            </div>
-          </section>
-
-          <section class="section hidden" id="zonesSection">
-            <div class="section-header">
-              <h2>Zones</h2>
-              <div class="section-header-actions">
-                <button class="btn-small staff-only" id="groupRoomsBtn" title="Group/ungroup rooms">Group Rooms</button>
-                <button class="btn-small" id="refreshZonesBtn" title="Refresh all zone states">Refresh</button>
-                <button class="btn-all-off" id="pauseAllBtn" title="Pause all zones">Pause All</button>
-              </div>
-            </div>
-            <div class="section-body">
-              <div class="sonos-zones" id="sonosZones">
-                <p class="text-muted" style="font-size: 0.85rem; padding: 2rem; text-align: center;">Loading zones...</p>
-              </div>
-              <div class="poll-status" id="pollStatus"></div>
-            </div>
-          </section>
-        </div>
 
       </div>
 

@@ -750,7 +750,7 @@ Browser / Mobile / PAI
 
 `sonos-control` routes playback and grouping actions to MA first, with Sonos fallback. Announce and EQ actions remain Sonos-proxy-based.
 
-For **Music Assistant on Almaca** (Docker, auto-start, local/hard-drive music, and schedule automation), see **`docs/music-assistant-alpaca-mac-setup.md`**.
+For **Music Assistant on Alpuca** (native install, auto-start, local/hard-drive music, and schedule automation), see **`devcontrol/devdocs/music-assistant-alpaca-mac-setup.md`**.
 
 ### Legacy Sonos Proxy Chain (Browser → Supabase → DO Droplet → Almaca)
 

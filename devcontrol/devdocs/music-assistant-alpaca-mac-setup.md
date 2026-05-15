@@ -1,6 +1,6 @@
-# Music Assistant on Almaca — Setup & Home Music Automation
+# Music Assistant on Alpuca — Setup & Home Music Automation
 
-Review and configuration guide for Music Assistant (MA) on the Almaca: Docker setup, local/hard-drive music, and scheduled playback for home music automation.
+Review and configuration guide for Music Assistant (MA) on Alpuca: native install, local/hard-drive music, and scheduled playback for home music automation.
 
 **Related:** [MUSIC-ASSISTANT-EVALUATION.md](./MUSIC-ASSISTANT-EVALUATION.md), [music-assistant-api-mapping.md](./music-assistant-api-mapping.md), [instructions/music-assistant-implementation-plan.md](../instructions/music-assistant-implementation-plan.md).
 
@@ -10,13 +10,13 @@ Review and configuration guide for Music Assistant (MA) on the Almaca: Docker se
 
 | Layer | Role |
 |-------|------|
-| **Alpuca** | Runs node-sonos-http-api (:5005). Same LAN as Sonos. Music Assistant removed 2026-03-25. |
+| **Alpuca** | Runs node-sonos-http-api (:5005), Music Assistant (:8095), and HAOS VM (:8123). Same LAN as Sonos. |
 | **Hostinger** | HTTPS proxy: `/sonos/*` → Sonos API. Reaches Alpuca via Tailscale. |
 | **Supabase** | Edge function `sonos-control` routes playback/grouping to MA first, fallback to Sonos proxy; announce/EQ stay on Sonos. |
 
 ---
 
-## 2. Music Assistant on Almaca — Checklist
+## 2. Music Assistant on Alpuca — Checklist
 
 ### 2.1 Native install (Python 3.12 venv — no Docker)
 
@@ -26,7 +26,7 @@ Review and configuration guide for Music Assistant (MA) on the Almaca: Docker se
 - [x] **Data dir:** `~/music-assistant-data/`
 - [x] **Auto-start:** LaunchAgent `~/Library/LaunchAgents/com.music-assistant.server.plist` — starts on boot, auto-restarts on crash
 - [x] **Logs:** `/tmp/music-assistant.log`
-- [x] **Web UI:** `http://192.168.1.200:8095` — verified accessible from dev machine
+- [x] **Web UI:** `http://192.168.1.200:8095` — verified accessible from dev machine; also verified from Alpuca loopback on 2026-05-15
 - [x] **Stream server:** port 8097 (auto-detected LAN IP)
 
 > **Why native, not Docker?** macOS 12 on this Intel Mac can't run Docker (QEMU/Colima fails due to missing llvm). Native pip install works fine and uses less resources.
@@ -70,7 +70,7 @@ Music Assistant can serve music from local folders or mounted drives so resident
 4. **Multiple drives/folders:** Add multiple Filesystem providers or multiple paths under one provider if supported (see MA docs).
 5. **Sync:** MA will scan and catalog; configure sync interval in provider settings if needed.
 
-### 3.2 Paths on Almaca
+### 3.2 Paths on Alpuca
 
 - Internal disk: e.g. `/Users/alpaca/Music` or a dedicated volume.
 - External USB drive: typically `/Volumes/DriveName`; ensure the drive is mounted before Docker (and MA) starts, or use a LaunchAgent to start MA after mounts are available.
@@ -87,8 +87,8 @@ Music Assistant can serve music from local folders or mounted drives so resident
 
 ### 4.1 Current state
 
-- **DB:** Table `sonos_schedules` stores: `name`, `room`, `time_of_day` (HH:MM:00), `recurrence` (daily / weekdays / weekends / custom / once), `custom_days`, `one_time_date`, `playlist_name`, `source_type` (playlist | favorite), `volume`, `keep_grouped`, `is_active`, `updated_at`.
-- **UI:** Resident Sonos page → “Schedules” section: add/edit/delete/toggle active. Data is read/written via Supabase client.
+- **DB:** Table `sonos_schedules` stores: `name`, `room`, `time_of_day` (HH:MM:00), `recurrence` (daily / weekdays / weekends / custom / once), `custom_days`, `one_time_date`, `playlist_name`, `source_type` (playlist | favorite | url), `source_provider` (music_assistant | sonos | spotify | youtube | link), `source_uri`, `shuffle`, `repeat_mode` (none | all | one), `volume`, `keep_grouped`, `is_active`, `updated_at`.
+- **UI:** Resident Sonos page → “Playlist Automations” section: add/edit/delete/toggle active, select saved MA playlists/Sonos favorites, or paste Spotify/YouTube source URIs. Data is read/written via Supabase client.
 - **Implemented:** `run-schedules` action in `sonos-control` edge function + pg_cron job (every 5 min).
 
 ### 4.2 How the schedule runner works
@@ -102,7 +102,8 @@ Music Assistant can serve music from local folders or mounted drives so resident
    - Queries `sonos_schedules WHERE is_active = true`.
    - For each schedule, checks if `time_of_day` is within ±7 minutes of now and recurrence matches today.
    - **Idempotency:** Skips if `last_fired_at` is within the last 30 minutes.
-   - Sets volume (if specified) then plays playlist/favorite via MA (fallback to Sonos proxy).
+   - Sets volume (if specified) then plays playlist/favorite/URI via MA (fallback to Sonos proxy for Sonos playlists/favorites).
+   - Applies shuffle and repeat after media load using MA queue commands (`player_queues/shuffle`, `player_queues/repeat`) with Sonos HTTP API fallback (`/{room}/shuffle/{on|off}`, `/{room}/repeat/{none|all|one}`).
    - Updates `last_fired_at`; deactivates one-time schedules after firing.
 
 **Option B — Hostinger cron script (alternative)**
@@ -119,9 +120,9 @@ Music Assistant can serve music from local folders or mounted drives so resident
 
 | Item | Where | Purpose |
 |------|--------|---------|
-| MA native (Python 3.12 venv) | Almaca | MA server, port 8095 — LaunchAgent auto-starts |
-| MA data dir | Almaca `~/music-assistant-data/` | Persistent config + database |
-| Music folders | Almaca filesystem | Local/hard-drive music → MA Filesystem provider (no Docker bind mount needed) |
+| MA native (Python 3.12 venv) | Alpuca | MA server, port 8095 — LaunchAgent auto-starts |
+| MA data dir | Alpuca `~/music-assistant-data/` | Persistent config + database |
+| Music folders | Alpuca filesystem | Local/hard-drive music → MA Filesystem provider (no Docker bind mount needed) |
 | MA API token | Supabase `MUSIC_ASSISTANT_TOKEN`, optionally Hostinger | Auth for MA API |
 | Sonos proxy | Hostinger Caddy | `/sonos/*` → Alpuca :5005 |
 | MA proxy | Hostinger Caddy | `/ma-api` → removed (MA deleted 2026-03-25) |

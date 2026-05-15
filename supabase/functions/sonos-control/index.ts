@@ -29,6 +29,8 @@ interface SonosRequest {
     | "treble"
     | "loudness"
     | "balance"
+    | "shuffle"
+    | "repeat"
     | "announce"
     | "tts_preview"
     | "musicsearch"
@@ -52,6 +54,12 @@ interface SonosRequest {
   limit?: number;
   uri?: string;
   enqueue?: boolean;
+  repeat_mode?: "none" | "all" | "one" | string | null;
+  shuffle?: boolean | null;
+  code?: string;
+  tracks?: string[];
+  description?: string;
+  public?: boolean;
 }
 
 // =============================================
@@ -456,6 +464,18 @@ function normalizeLibraryItems(result: any): Array<{ name: string; uri: string }
   })).filter((item) => item.name);
 }
 
+function normalizeRepeatMode(value: unknown): "none" | "all" | "one" {
+  const mode = String(value || "none").trim().toLowerCase();
+  if (mode === "all" || mode === "on" || mode === "repeat") return "all";
+  if (mode === "one" || mode === "track") return "one";
+  return "none";
+}
+
+function normalizeMaRepeatMode(value: unknown): "off" | "all" | "one" {
+  const mode = normalizeRepeatMode(value);
+  return mode === "none" ? "off" : mode;
+}
+
 async function maPlayUri(
   maUrl: string,
   maToken: string | null,
@@ -464,6 +484,7 @@ async function maPlayUri(
   enqueue = false,
 ) {
   const attempts: Array<{ command: string; args: Record<string, unknown> }> = [
+    { command: "player_queues/play_media", args: { queue_id: playerId, media: uri, option: enqueue ? "add" : "replace" } },
     { command: "player_queues/play_media", args: { player_id: playerId, uri, enqueue } },
     { command: "player_queues/play_media", args: { queue_id: playerId, media_uri: uri, enqueue } },
     { command: "player_queues/play_media", args: { player_id: playerId, media: [{ uri }], enqueue } },
@@ -539,6 +560,8 @@ async function tryMusicAssistantAction(
       "volume",
       "mute",
       "unmute",
+      "shuffle",
+      "repeat",
       "join",
       "leave",
       "spotify-play",
@@ -556,8 +579,9 @@ async function tryMusicAssistantAction(
   if (action === "playlists" || action === "favorites") {
     const result = await maRequestWithFallbackCommands(maUrl, maToken, action === "playlists"
       ? [
+        { command: "music/playlists/library_items", args: { limit: 500 } },
+        { command: "music/playlists/library_items" },
         { command: "music/playlists" },
-        { command: "music/library/playlists" },
         { command: "playlists/list" },
       ]
       : [
@@ -577,7 +601,11 @@ async function tryMusicAssistantAction(
       maUrl,
       maToken,
       action === "playlist"
-        ? [{ command: "music/playlists" }, { command: "music/library/playlists" }]
+        ? [
+          { command: "music/playlists/library_items", args: { limit: 500 } },
+          { command: "music/playlists/library_items" },
+          { command: "music/playlists" },
+        ]
         : [{ command: "music/favorites" }, { command: "music/library/favorites" }],
     );
     const items = normalizeLibraryItems(libraryResult);
@@ -654,7 +682,22 @@ async function tryMusicAssistantAction(
       const muteVal = action === "mute";
       return maRequestWithFallbackCommands(maUrl, maToken, [
         { command: "players/cmd/mute", args: { player_id: playerId, muted: muteVal } },
+        { command: "players/cmd/volume_mute", args: { player_id: playerId, muted: muteVal } },
         { command: "players/set_mute", args: { player_id: playerId, mute: muteVal } },
+      ]);
+    }
+    case "shuffle": {
+      const enabled = ["1", "true", "on", "yes"].includes(String(body.value).toLowerCase());
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "player_queues/shuffle", args: { queue_id: playerId, player_id: playerId, shuffle_enabled: enabled } },
+        { command: "player_queues/shuffle", args: { queue_id: playerId, shuffle: enabled } },
+      ]);
+    }
+    case "repeat": {
+      const repeatMode = normalizeMaRepeatMode(body.value);
+      return maRequestWithFallbackCommands(maUrl, maToken, [
+        { command: "player_queues/repeat", args: { queue_id: playerId, player_id: playerId, repeat_mode: repeatMode } },
+        { command: "player_queues/repeat", args: { queue_id: playerId, repeat: repeatMode } },
       ]);
     }
     case "join": {
@@ -716,7 +759,7 @@ serve(async (req) => {
     const proxyUrl = Deno.env.get("SONOS_PROXY_URL");
     const proxySecret = Deno.env.get("SONOS_PROXY_SECRET");
     const maUrl = Deno.env.get("MUSIC_ASSISTANT_URL");
-    const maToken = Deno.env.get("MUSIC_ASSISTANT_TOKEN");
+    const maToken = Deno.env.get("MUSIC_ASSISTANT_TOKEN") ?? null;
     const useMa = parseBooleanEnv(Deno.env.get("USE_MUSIC_ASSISTANT"), true);
 
     const body: SonosRequest = await req.json();
@@ -768,7 +811,7 @@ serve(async (req) => {
       // Find active schedules whose time_of_day is within ±7 minutes of now
       const { data: schedules, error: schedErr } = await supabase
         .from("sonos_schedules")
-        .select("id, name, time_of_day, recurrence, custom_days, one_time_date, last_fired_at, volume, room, source_type, playlist_name")
+        .select("id, name, time_of_day, recurrence, custom_days, one_time_date, last_fired_at, volume, room, source_type, playlist_name, source_provider, source_uri, shuffle, repeat_mode")
         .eq("is_active", true);
 
       if (schedErr) {
@@ -838,12 +881,17 @@ serve(async (req) => {
             }
           }
 
-          // Step 2: Play playlist or favorite
-          const playAction = sched.source_type === "favorite" ? "favorite" : "playlist";
+          // Step 2: Play source
+          const provider = sched.source_provider || "music_assistant";
+          const hasUri = !!sched.source_uri;
+          const playAction = hasUri || provider === "spotify" || provider === "youtube" || sched.source_type === "url"
+            ? "spotify-play"
+            : (sched.source_type === "favorite" ? "favorite" : "playlist");
           const playBody: SonosRequest = {
             action: playAction as SonosRequest["action"],
             room: sched.room,
             name: sched.playlist_name,
+            uri: sched.source_uri || undefined,
           };
 
           if (useMa && maUrl) {
@@ -852,29 +900,55 @@ serve(async (req) => {
             } catch (maErr) {
               console.warn(`Schedule runner: MA failed for "${sched.name}", trying Sonos proxy`);
               // Fallback to Sonos proxy
-              if (proxyUrl && proxySecret) {
+              if (proxyUrl && proxySecret && (playAction === "playlist" || playAction === "favorite")) {
                 const encodedRoom = encodeURIComponent(sched.room);
                 const encodedName = encodeURIComponent(sched.playlist_name);
                 await fetch(`${proxyUrl}/${encodedRoom}/${playAction}/${encodedName}`, {
                   headers: { "X-Sonos-Secret": proxySecret },
                 });
+              } else {
+                throw maErr;
               }
             }
-          } else if (proxyUrl && proxySecret) {
+          } else if (proxyUrl && proxySecret && (playAction === "playlist" || playAction === "favorite")) {
             const encodedRoom = encodeURIComponent(sched.room);
             const encodedName = encodeURIComponent(sched.playlist_name);
             await fetch(`${proxyUrl}/${encodedRoom}/${playAction}/${encodedName}`, {
               headers: { "X-Sonos-Secret": proxySecret },
             });
+          } else {
+            throw new Error(`No playback route configured for ${provider} source`);
           }
 
-          // Step 3: Update last_fired_at
+          // Step 3: Apply play mode. Run after media load so queue state exists.
+          if (sched.shuffle !== null && sched.shuffle !== undefined) {
+            const shuffleBody: SonosRequest = { action: "shuffle", room: sched.room, value: sched.shuffle ? "on" : "off" };
+            if (useMa && maUrl) {
+              try { await tryMusicAssistantAction(shuffleBody, maUrl, maToken); }
+              catch { if (proxyUrl && proxySecret) await fetch(`${proxyUrl}/${encodeURIComponent(sched.room)}/shuffle/${sched.shuffle ? "on" : "off"}`, { headers: { "X-Sonos-Secret": proxySecret } }); }
+            } else if (proxyUrl && proxySecret) {
+              await fetch(`${proxyUrl}/${encodeURIComponent(sched.room)}/shuffle/${sched.shuffle ? "on" : "off"}`, { headers: { "X-Sonos-Secret": proxySecret } });
+            }
+          }
+
+          const repeatMode = normalizeRepeatMode(sched.repeat_mode);
+          if (sched.repeat_mode !== null && sched.repeat_mode !== undefined) {
+            const repeatBody: SonosRequest = { action: "repeat", room: sched.room, value: repeatMode };
+            if (useMa && maUrl) {
+              try { await tryMusicAssistantAction(repeatBody, maUrl, maToken); }
+              catch { if (proxyUrl && proxySecret) await fetch(`${proxyUrl}/${encodeURIComponent(sched.room)}/repeat/${repeatMode}`, { headers: { "X-Sonos-Secret": proxySecret } }); }
+            } else if (proxyUrl && proxySecret) {
+              await fetch(`${proxyUrl}/${encodeURIComponent(sched.room)}/repeat/${repeatMode}`, { headers: { "X-Sonos-Secret": proxySecret } });
+            }
+          }
+
+          // Step 4: Update last_fired_at
           await supabase
             .from("sonos_schedules")
             .update({ last_fired_at: new Date().toISOString() })
             .eq("id", sched.id);
 
-          // Step 4: Deactivate one-time schedules
+          // Step 5: Deactivate one-time schedules
           if (sched.recurrence === "once") {
             await supabase
               .from("sonos_schedules")
@@ -904,6 +978,8 @@ serve(async (req) => {
       "volume",
       "mute",
       "unmute",
+      "shuffle",
+      "repeat",
       "favorite",
       "favorites",
       "playlists",
@@ -977,6 +1053,17 @@ serve(async (req) => {
         if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         path = `/${room}/unmute`;
         break;
+      case "shuffle": {
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
+        const mode = ["1", "true", "on", "yes"].includes(String(body.value).toLowerCase()) ? "on" : "off";
+        path = `/${room}/shuffle/${mode}`;
+        break;
+      }
+      case "repeat": {
+        if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
+        path = `/${room}/repeat/${normalizeRepeatMode(body.value)}`;
+        break;
+      }
       case "favorite":
         if (!room) return jsonResponse(req, { error: "Missing room" }, 400);
         if (!body.name) return jsonResponse(req, { error: "Missing name" }, 400);
@@ -1258,7 +1345,8 @@ serve(async (req) => {
           });
           return jsonResponse(req, { results, total: results.length });
         } catch (err) {
-          console.error("Spotify search error:", err.message, err.stack);
+          const error = err as Error;
+          console.error("Spotify search error:", error.message, error.stack);
           return jsonResponse(req, { error: "Spotify search failed" }, 500);
         }
       }
@@ -1553,8 +1641,9 @@ serve(async (req) => {
             track_count: trackUris.length,
           });
         } catch (err) {
-          console.error("Playlist creation error:", err.message);
-          return jsonResponse(req, { error: err.message }, 500);
+          const error = err as Error;
+          console.error("Playlist creation error:", error.message);
+          return jsonResponse(req, { error: error.message }, 500);
         }
       }
 
@@ -1587,7 +1676,8 @@ serve(async (req) => {
         sonosResponse.ok ? 200 : sonosResponse.status
       );
     }
-  } catch (error) {
+  } catch (err) {
+    const error = err as Error;
     console.error("Sonos control error:", error.message, error.stack);
     return jsonResponse(req, { error: "Internal error processing sonos control request" }, 500);
   }
