@@ -1,12 +1,12 @@
 {
-  "version": "v260515.07 10:28a",
-  "release": 1511,
-  "sha": "528b6f1fc",
-  "fullSha": "528b6f1fc5f1ed9b5090377c3af685719c44cbe6",
+  "version": "v260515.08 11:42a",
+  "release": 1512,
+  "sha": "fb6ebd806",
+  "fullSha": "fb6ebd8060ae7a38105dd38d493f40c85041d193",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmeorf1",
-  "pushedAt": "2026-05-15T15:28:20+00:00",
-  "commits": [{"sha":"528b6f1fc","message":"Add energy magnitudes infographic","author":"Rahul"}]
+  "machine": "runnervmrw5os",
+  "pushedAt": "2026-05-15T16:42:40+00:00",
+  "commits": [{"sha":"fb6ebd806","message":"Refresh Rahul bio page video","author":"Rahul"}]
 }
