@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alternative Sleep Cycles</title>
+  <meta name="description" content="A visual guide to monophasic, biphasic, segmented, and polyphasic sleep cycles, with practical guidance and safety notes.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <script type="module" src="/shared/version-info.js"></script>
+  <style>
+    :root {
+      --ink: #161616;
+      --muted: #5f646b;
+      --paper: #f5f7f4;
+      --card: #ffffff;
+      --line: rgba(22, 22, 22, 0.12);
+      --amber: #c7772f;
+      --teal: #257b73;
+      --blue: #405f9d;
+      --rose: #b94b58;
+      --night: #161616;
+      --shadow: 0 18px 45px rgba(22, 22, 22, 0.11);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #f7f8f5 0%, #edf2ef 46%, #fbfbf8 100%);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .sleep-page {
+      min-height: 100vh;
+    }
+
+    .sleep-hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
+      gap: clamp(1.5rem, 4vw, 4rem);
+      align-items: center;
+      min-height: min(760px, 92vh);
+      padding: clamp(2rem, 5vw, 5rem);
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 82% 18%, rgba(37, 123, 115, 0.35), transparent 32%),
+        radial-gradient(circle at 18% 80%, rgba(199, 119, 47, 0.24), transparent 30%),
+        linear-gradient(135deg, rgba(22, 22, 22, 0.98), rgba(34, 37, 39, 0.96)),
+        var(--night);
+      color: #fff;
+    }
+
+    .sleep-hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 120px;
+      background: linear-gradient(180deg, rgba(22, 22, 22, 0), #f7f8f5);
+      pointer-events: none;
+    }
+
+    .sleep-hero__copy,
+    .sleep-hero__visual {
+      position: relative;
+      z-index: 1;
+    }
+
+    .sleep-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin: 0 0 1rem;
+      padding: 0.38rem 0.68rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f5c884;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 780px;
+      margin: 0;
+      font-size: clamp(3rem, 8vw, 7rem);
+      line-height: 0.92;
+      letter-spacing: 0;
+    }
+
+    .sleep-hero__lead {
+      max-width: 660px;
+      margin: 1.2rem 0 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+    }
+
+    .sleep-hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .sleep-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0.72rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 8px;
+      background: #f5c884;
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .sleep-btn--ghost {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .sleep-visual-card {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+      padding: clamp(1rem, 3vw, 1.5rem);
+      backdrop-filter: blur(16px);
+    }
+
+    .rhythm-orbit {
+      position: relative;
+      width: min(100%, 380px);
+      aspect-ratio: 1;
+      margin: 0 auto 1.2rem;
+      border-radius: 50%;
+      background:
+        conic-gradient(
+          from -90deg,
+          #f5c884 0deg 28deg,
+          rgba(255, 255, 255, 0.16) 28deg 165deg,
+          #8fbcc4 165deg 214deg,
+          rgba(255, 255, 255, 0.12) 214deg 360deg
+        );
+      box-shadow: inset 0 0 0 18px rgba(22, 22, 22, 0.72);
+    }
+
+    .rhythm-orbit::before {
+      content: "";
+      position: absolute;
+      inset: 22%;
+      border-radius: 50%;
+      background: var(--night);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    }
+
+    .rhythm-orbit__center {
+      position: absolute;
+      inset: 32%;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #f7f8f5;
+      color: var(--ink);
+      text-align: center;
+      font-weight: 900;
+      line-height: 1.05;
+      box-shadow: var(--shadow);
+    }
+
+    .rhythm-orbit__label {
+      position: absolute;
+      padding: 0.35rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+      font-size: 0.74rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .rhythm-orbit__label--night {
+      top: 8%;
+      left: 12%;
+    }
+
+    .rhythm-orbit__label--nap {
+      right: 5%;
+      bottom: 28%;
+    }
+
+    .rhythm-orbit__label--wake {
+      left: 8%;
+      bottom: 15%;
+    }
+
+    .sleep-visual-card p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 0.9rem;
+    }
+
+    .sleep-content {
+      position: relative;
+      z-index: 2;
+      width: min(1180px, calc(100% - 2rem));
+      margin: -2.5rem auto 0;
+      padding-bottom: 4rem;
+    }
+
+    .sleep-principle {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .sleep-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+      padding: clamp(1rem, 3vw, 1.35rem);
+    }
+
+    .sleep-panel h2,
+    .sleep-section h2 {
+      margin: 0 0 0.65rem;
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .sleep-panel p,
+    .sleep-section p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .sleep-metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.65rem;
+      margin-top: 1rem;
+    }
+
+    .sleep-metric {
+      min-height: 96px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 0.75rem;
+    }
+
+    .sleep-metric strong {
+      display: block;
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    .sleep-metric span {
+      display: block;
+      margin-top: 0.35rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .sleep-section {
+      margin-top: 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.62);
+      box-shadow: var(--shadow);
+      padding: clamp(1rem, 3vw, 1.5rem);
+    }
+
+    .cycle-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .cycle-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      min-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      padding: 1rem;
+    }
+
+    .cycle-card--caution {
+      background: #fff6f4;
+    }
+
+    .cycle-card h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      line-height: 1.1;
+    }
+
+    .cycle-card__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0.22rem 0.52rem;
+      border-radius: 999px;
+      background: rgba(61, 139, 122, 0.12);
+      color: #276d60;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .pill--risk {
+      background: rgba(185, 87, 97, 0.12);
+      color: #9a3845;
+    }
+
+    .mini-timeline {
+      display: grid;
+      grid-template-columns: repeat(24, 1fr);
+      gap: 2px;
+      height: 34px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .mini-timeline span {
+      border-radius: 3px;
+      background: #e7e0d6;
+    }
+
+    .mini-timeline .sleep {
+      background: var(--night);
+    }
+
+    .mini-timeline .nap {
+      background: var(--teal);
+    }
+
+    .mini-timeline .quiet {
+      background: var(--blue);
+    }
+
+    .cycle-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .cycle-card ul,
+    .try-list {
+      display: grid;
+      gap: 0.55rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .cycle-card li,
+    .try-list li {
+      position: relative;
+      padding-left: 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .cycle-card li::before,
+    .try-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      overflow: hidden;
+      border-radius: 8px;
+      font-size: 0.92rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 0.8rem;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .comparison-table th {
+      background: var(--night);
+      color: #fff;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .comparison-table td {
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--muted);
+    }
+
+    .sleep-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .sleep-callout {
+      border-left: 5px solid var(--rose);
+      border-radius: 8px;
+      background: #fff3f0;
+      padding: 1rem;
+    }
+
+    .sleep-callout h3,
+    .sleep-source-card h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1rem;
+    }
+
+    .sleep-callout p {
+      color: #784149;
+    }
+
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .sleep-source-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 1rem;
+    }
+
+    .sleep-source-card a {
+      color: var(--blue);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .sleep-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      width: min(1180px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 1.5rem 0 2.5rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 960px) {
+      .sleep-hero,
+      .sleep-principle,
+      .sleep-columns {
+        grid-template-columns: 1fr;
+      }
+
+      .cycle-grid,
+      .source-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .sleep-hero {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .sleep-hero {
+        padding: 2rem 1rem 4rem;
+      }
+
+      .cycle-grid,
+      .source-grid,
+      .sleep-metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .rhythm-orbit__label {
+        font-size: 0.64rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sleep-page">
+    <span data-site-version style="display:none">v260515.01 4:02a</span>
+
+    <header class="sleep-hero">
+      <div class="sleep-hero__copy">
+        <p class="sleep-kicker">Sleep architecture guide</p>
+        <h1>Alternative Sleep Cycles</h1>
+        <p class="sleep-hero__lead">A practical map of monophasic, biphasic, segmented, and polyphasic sleep. The goal is not to sleep less. The goal is to understand how sleep can be arranged without quietly stealing recovery from your brain and body.</p>
+        <div class="sleep-hero__actions">
+          <a class="sleep-btn" href="#cycles">Compare cycles</a>
+          <a class="sleep-btn sleep-btn--ghost" href="#try">Try safely</a>
+        </div>
+      </div>
+
+      <div class="sleep-hero__visual" aria-label="Twenty four hour rhythm diagram">
+        <div class="sleep-visual-card">
+          <div class="rhythm-orbit">
+            <span class="rhythm-orbit__label rhythm-orbit__label--night">core sleep</span>
+            <span class="rhythm-orbit__label rhythm-orbit__label--nap">nap window</span>
+            <span class="rhythm-orbit__label rhythm-orbit__label--wake">wake</span>
+            <div class="rhythm-orbit__center">24h<br>rhythm</div>
+          </div>
+          <p>Most alternative schedules rearrange sleep into a longer anchor plus one or more smaller recovery blocks. The risky versions cut total sleep below what most adults need.</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="sleep-content">
+      <section class="sleep-principle" aria-label="Sleep first principles">
+        <div class="sleep-panel">
+          <h2>Start with total sleep, then choose the pattern.</h2>
+          <p>For healthy adults, the first guardrail is still enough total sleep across 24 hours. Alternative schedules can be sensible when they respect that need, especially biphasic or segmented patterns. Schedules that compress sleep into very short naps are experimental and often create sleep debt.</p>
+          <div class="sleep-metric-grid">
+            <div class="sleep-metric">
+              <strong>7+</strong>
+              <span>hours per day is the adult minimum recommended by major sleep-health guidance.</span>
+            </div>
+            <div class="sleep-metric">
+              <strong>90</strong>
+              <span>minutes is a rough full-cycle planning block, though real cycles vary by person and night.</span>
+            </div>
+            <div class="sleep-metric">
+              <strong>20</strong>
+              <span>minutes is a common short nap target because it reduces the chance of waking from deep sleep.</span>
+            </div>
+          </div>
+        </div>
+        <aside class="sleep-panel">
+          <h2>Plain-language rule</h2>
+          <p>If a schedule makes you more alert, keeps your total sleep adequate, and does not make driving or work unsafe, it may be worth experimenting with. If it requires heroic adaptation, alarms every few hours, or less than 7 hours total sleep, treat it as high risk rather than an upgrade.</p>
+        </aside>
+      </section>
+
+      <section class="sleep-section" id="cycles">
+        <h2>Common sleep cycle patterns</h2>
+        <p>These are not prescriptions. They are useful templates for understanding what people mean when they talk about alternative sleep cycles.</p>
+
+        <div class="cycle-grid">
+          <article class="cycle-card">
+            <h3>Monophasic baseline</h3>
+            <div class="cycle-card__meta">
+              <span class="pill">lowest complexity</span>
+              <span class="pill">7 to 9 hours</span>
+            </div>
+            <div class="mini-timeline" aria-label="Monophasic timeline">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span class="sleep"></span><span class="sleep"></span>
+              <span class="sleep"></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span>
+            </div>
+            <p>One consolidated sleep period, usually at night. This is the easiest schedule for social life, circadian alignment, and stable sleep timing.</p>
+            <ul>
+              <li>Best default for most adults.</li>
+              <li>Hard to beat if you can get enough sleep consistently.</li>
+              <li>Use it as the comparison point for any experiment.</li>
+            </ul>
+          </article>
+
+          <article class="cycle-card">
+            <h3>Biphasic or siesta</h3>
+            <div class="cycle-card__meta">
+              <span class="pill">practical alternative</span>
+              <span class="pill">core plus nap</span>
+            </div>
+            <div class="mini-timeline" aria-label="Biphasic timeline">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span class="nap"></span><span></span><span></span><span></span><span class="sleep"></span>
+              <span class="sleep"></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span>
+            </div>
+            <p>A main nighttime sleep with a planned daytime nap. This is one of the more realistic alternatives because it can preserve total sleep.</p>
+            <ul>
+              <li>Try a 20 minute alertness nap or a 90 minute full-cycle nap.</li>
+              <li>Keep the nap early enough that bedtime still works.</li>
+              <li>Useful for heat, split workdays, caregiving, or creative schedules.</li>
+            </ul>
+          </article>
+
+          <article class="cycle-card">
+            <h3>Segmented sleep</h3>
+            <div class="cycle-card__meta">
+              <span class="pill">two night blocks</span>
+              <span class="pill">historical pattern</span>
+            </div>
+            <div class="mini-timeline" aria-label="Segmented timeline">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span class="sleep"></span><span class="sleep"></span>
+              <span class="sleep"></span><span class="quiet"></span><span class="quiet"></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span>
+            </div>
+            <p>Two nighttime sleeps separated by a calm wake period. It can feel natural for some people, especially when the middle wake is quiet and low light.</p>
+            <ul>
+              <li>Keep the middle wake boring: dim light, reading, journaling, meditation.</li>
+              <li>Avoid phones, work email, and bright screens.</li>
+              <li>Best when total nighttime sleep still adds up.</li>
+            </ul>
+          </article>
+
+          <article class="cycle-card cycle-card--caution">
+            <h3>Everyman-style polyphasic</h3>
+            <div class="cycle-card__meta">
+              <span class="pill pill--risk">experimental</span>
+              <span class="pill pill--risk">core plus naps</span>
+            </div>
+            <div class="mini-timeline" aria-label="Everyman timeline">
+              <span></span><span></span><span></span><span class="nap"></span><span></span><span></span>
+              <span></span><span></span><span class="nap"></span><span></span><span></span><span></span>
+              <span></span><span class="nap"></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span><span class="sleep"></span>
+            </div>
+            <p>A shorter core sleep supplemented by multiple scheduled naps. People often use it to reduce total sleep, which is where risk rises.</p>
+            <ul>
+              <li>Consider only if you can protect nap timing reliably.</li>
+              <li>Avoid during heavy driving, safety-sensitive work, illness, or high stress.</li>
+              <li>Track mood, reaction time, and mistakes, not just hours awake.</li>
+            </ul>
+          </article>
+
+          <article class="cycle-card cycle-card--caution">
+            <h3>Triphasic</h3>
+            <div class="cycle-card__meta">
+              <span class="pill pill--risk">high friction</span>
+              <span class="pill pill--risk">three blocks</span>
+            </div>
+            <div class="mini-timeline" aria-label="Triphasic timeline">
+              <span></span><span></span><span class="sleep"></span><span class="sleep"></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span class="sleep"></span><span class="sleep"></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span class="sleep"></span><span class="sleep"></span><span></span><span></span><span></span><span></span>
+            </div>
+            <p>Three sleep blocks across the day. It is difficult to fit into ordinary life and often fails when meetings, meals, travel, or social obligations drift.</p>
+            <ul>
+              <li>Works against many normal schedules.</li>
+              <li>Can become chronic fragmentation if total sleep is too low.</li>
+              <li>Only practical in unusually controlled environments.</li>
+            </ul>
+          </article>
+
+          <article class="cycle-card cycle-card--caution">
+            <h3>Uberman or Dymaxion</h3>
+            <div class="cycle-card__meta">
+              <span class="pill pill--risk">not recommended</span>
+              <span class="pill pill--risk">nap-only</span>
+            </div>
+            <div class="mini-timeline" aria-label="Uberman or Dymaxion timeline">
+              <span class="nap"></span><span></span><span></span><span></span><span class="nap"></span><span></span>
+              <span></span><span></span><span class="nap"></span><span></span><span></span><span></span>
+              <span class="nap"></span><span></span><span></span><span></span><span class="nap"></span><span></span>
+              <span></span><span></span><span class="nap"></span><span></span><span></span><span></span>
+            </div>
+            <p>Very short naps only, with little or no core sleep. These schedules are famous online, but they are not supported as a healthy long-term strategy.</p>
+            <ul>
+              <li>High risk of sleep debt and impaired performance.</li>
+              <li>Bad fit for driving, caregiving, tools, or physical work.</li>
+              <li>Do not use as a productivity hack.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="sleep-section">
+        <h2>Quick comparison</h2>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Pattern</th>
+              <th>Best use case</th>
+              <th>Main risk</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Monophasic</td>
+              <td>Reliable nights, conventional work, strong routine</td>
+              <td>Not flexible when life interrupts the night block</td>
+              <td>Best default</td>
+            </tr>
+            <tr>
+              <td>Biphasic</td>
+              <td>Afternoon slump, split workday, hot climates, flexible schedule</td>
+              <td>Nap too late can delay bedtime</td>
+              <td>Most practical alternative</td>
+            </tr>
+            <tr>
+              <td>Segmented</td>
+              <td>Natural middle-of-night waking without distress</td>
+              <td>Bright light or work during the wake gap can disrupt sleep</td>
+              <td>Reasonable if total sleep is adequate</td>
+            </tr>
+            <tr>
+              <td>Polyphasic</td>
+              <td>Rare cases with tightly controlled days and protected naps</td>
+              <td>Sleep deficiency, accidents, mood and cognition problems</td>
+              <td>Experimental, usually avoid</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="sleep-section" id="try">
+        <h2>How to experiment without fooling yourself</h2>
+        <div class="sleep-columns">
+          <div class="sleep-panel">
+            <h3>Safer experiment design</h3>
+            <ul class="try-list">
+              <li>Keep total sleep at or above your normal need, especially during the first two weeks.</li>
+              <li>Change one variable at a time: nap length, nap timing, or bedtime, not all three.</li>
+              <li>Anchor wake time first. Your body usually adapts better to consistent mornings.</li>
+              <li>Use light deliberately: bright light after waking, dim light before sleep.</li>
+              <li>Measure daytime function: alertness, mood, reaction time, hunger, mistakes, and driving safety.</li>
+            </ul>
+          </div>
+          <div class="sleep-callout">
+            <h3>Stop or get help if this appears</h3>
+            <p>Persistent daytime sleepiness, falling asleep unintentionally, mood instability, worsening anxiety, drowsy driving, loud snoring with choking or gasping, or needing more caffeine just to feel normal. Those are not adaptation trophies. They are warning lights.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="sleep-section">
+        <h2>Sources and further reading</h2>
+        <p>This page is educational and is not medical advice. If you have insomnia, sleep apnea symptoms, shift-work problems, bipolar disorder, seizure risk, pregnancy, or safety-sensitive duties, talk with a clinician before changing sleep timing.</p>
+        <div class="source-grid">
+          <div class="sleep-source-card">
+            <h3>CDC sleep guidance</h3>
+            <p>Adult sleep duration guidance and public-health context.</p>
+            <a href="https://www.cdc.gov/sleep/about/index.html" target="_blank" rel="noopener">Read CDC sleep basics</a>
+          </div>
+          <div class="sleep-source-card">
+            <h3>Sleep Foundation</h3>
+            <p>Overview of polyphasic sleep patterns, possible uses, and risks.</p>
+            <a href="https://www.sleepfoundation.org/how-sleep-works/polyphasic-sleep" target="_blank" rel="noopener">Read about polyphasic sleep</a>
+          </div>
+          <div class="sleep-source-card">
+            <h3>Sleep Health consensus</h3>
+            <p>Consensus review warning about adverse outcomes from sleep-deficient polyphasic schedules.</p>
+            <a href="https://www.sciencedirect.com/science/article/pii/S2352721821000309" target="_blank" rel="noopener">Read the consensus report</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="sleep-footer">
+      <span>Alternative Sleep Cycles</span>
+      <span>Protect total sleep first. Optimize structure second.</span>
+    </footer>
+  </div>
+</body>
+</html>
