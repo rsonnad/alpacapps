@@ -14,6 +14,15 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 
 ## 2. Design Principles
 
+### 2.0 Standalone Explainer Pages
+
+**Decision:** Standalone explanatory artifacts can live as static pages under `docs/` when the goal is to publish a durable visual or analytical reference.
+
+**Why:**
+- **Immediate review and sharing.** A single HTML page can be opened locally, pushed to GitHub Pages, and linked directly without adding app navigation or database dependencies.
+- **Source transparency.** Footnotes, disclaimers, and direct source links can sit in the artifact itself, which is important for public-facing explainers that mix a speaker's claims with current-source corrections.
+- **Low operational risk.** These pages do not touch resident, payment, device-control, or admin workflows.
+
 ### 2.1 No Framework, No Build Step
 
 **Decision:** Vanilla HTML/CSS/JavaScript. No React, Vue, or Angular. No webpack, vite, or bundler.

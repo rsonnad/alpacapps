@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Energy Magnitudes: Earth, Solar, and Space Power</title>
+  <meta name="description" content="An illustrated explainer of energy magnitudes inspired by Elon Musk's solar remarks, with current-source footnotes.">
+  <style>
+    :root {
+      --ink: #17211c;
+      --muted: #5a6760;
+      --paper: #f7f2e8;
+      --panel: #fffaf0;
+      --line: #d9ccb7;
+      --coal: #252629;
+      --oil: #7b5036;
+      --gas: #4a7293;
+      --nuclear: #8a79b8;
+      --hydro: #3a8f9f;
+      --renew: #e0a82e;
+      --solar: #f2c94c;
+      --accent: #d95b43;
+      --space: #263f6a;
+      --green: #658f5e;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(242, 201, 76, .28), transparent 34rem),
+        linear-gradient(180deg, #fbf5e9 0%, #f2eadb 58%, #e9dfcf 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    a { color: inherit; }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+
+    .hero {
+      min-height: 88vh;
+      display: grid;
+      grid-template-columns: minmax(0, .95fr) minmax(340px, 1.05fr);
+      gap: 30px;
+      align-items: center;
+      padding: 26px 0 20px;
+    }
+
+    .eyebrow {
+      width: fit-content;
+      border: 1px solid rgba(23, 33, 28, .24);
+      border-radius: 999px;
+      padding: 8px 13px;
+      color: #604137;
+      background: rgba(255, 250, 240, .74);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(46px, 8vw, 104px);
+      line-height: .92;
+      letter-spacing: 0;
+    }
+
+    .lede {
+      max-width: 620px;
+      margin: 0;
+      color: #38453d;
+      font-size: clamp(18px, 2vw, 22px);
+    }
+
+    .disclaimer {
+      margin-top: 24px;
+      padding: 16px 18px;
+      border: 1px solid rgba(217, 91, 67, .34);
+      border-left: 5px solid var(--accent);
+      border-radius: 8px;
+      background: rgba(255, 250, 240, .72);
+      color: #473f38;
+      font-size: 14px;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 610px;
+      overflow: hidden;
+      border: 1px solid rgba(23, 33, 28, .14);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 17%, rgba(255, 213, 71, .92) 0 76px, rgba(255, 213, 71, .20) 77px 148px, transparent 149px),
+        linear-gradient(180deg, #213b67 0%, #466e85 38%, #f3dfad 39%, #f7f2e8 100%);
+      box-shadow: 0 28px 70px rgba(68, 52, 28, .18);
+    }
+
+    .orbit {
+      position: absolute;
+      inset: 38px 48px auto auto;
+      width: 250px;
+      height: 250px;
+      border: 1px dashed rgba(255, 255, 255, .36);
+      border-radius: 50%;
+    }
+
+    .sat {
+      position: absolute;
+      top: 45px;
+      right: 76px;
+      display: grid;
+      grid-template-columns: 54px 44px 54px;
+      gap: 4px;
+      align-items: center;
+      transform: rotate(-10deg);
+    }
+
+    .sat span {
+      height: 30px;
+      border: 2px solid rgba(255,255,255,.9);
+      background: repeating-linear-gradient(90deg, #2f82b7 0 9px, #1f5e89 10px 16px);
+    }
+
+    .sat b {
+      height: 42px;
+      border-radius: 4px;
+      background: #f5eee2;
+      border: 2px solid rgba(255,255,255,.9);
+    }
+
+    .earth-plate {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 230px;
+      background:
+        linear-gradient(160deg, transparent 0 32%, rgba(101, 143, 94, .72) 33% 56%, transparent 57%),
+        radial-gradient(ellipse at 30% 76%, #648a59 0 16%, transparent 17%),
+        radial-gradient(ellipse at 74% 73%, #85674b 0 18%, transparent 19%),
+        linear-gradient(180deg, #e7d0a3 0%, #c49b67 64%, #9a7249 100%);
+      clip-path: ellipse(78% 55% at 50% 72%);
+    }
+
+    .mini-grid {
+      position: absolute;
+      left: 58px;
+      right: 58px;
+      bottom: 80px;
+      height: 116px;
+      transform: perspective(520px) rotateX(58deg);
+      transform-origin: bottom;
+      border: 1px solid rgba(22, 50, 67, .18);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px) 0 0 / 28px 100%,
+        linear-gradient(0deg, rgba(255,255,255,.10) 1px, transparent 1px) 0 0 / 100% 24px,
+        linear-gradient(135deg, #15384f, #227195 42%, #f0bf4f);
+      box-shadow: 0 16px 34px rgba(0,0,0,.25);
+    }
+
+    .qr-tile {
+      position: absolute;
+      left: 64px;
+      bottom: 160px;
+      width: 138px;
+      padding: 10px;
+      border: 2px solid rgba(23, 33, 28, .62);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.92), rgba(255, 250, 240, .82)),
+        linear-gradient(135deg, #17364d, #2f83a6 48%, #f1c24e);
+      box-shadow: 0 16px 34px rgba(0,0,0,.24);
+      transform: rotate(-2deg);
+      text-decoration: none;
+    }
+
+    .qr-tile img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 4px;
+      background: #fff;
+      image-rendering: pixelated;
+    }
+
+    .qr-tile span {
+      display: block;
+      margin-top: 7px;
+      color: #24322b;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.15;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .callout {
+      position: absolute;
+      max-width: 230px;
+      padding: 12px 13px;
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 8px;
+      background: rgba(255,250,240,.88);
+      box-shadow: 0 14px 34px rgba(38, 39, 38, .16);
+      font-size: 13px;
+    }
+
+    .callout strong {
+      display: block;
+      font-size: 21px;
+      line-height: 1.05;
+    }
+
+    .callout.sun { top: 186px; left: 34px; }
+    .callout.grid { right: 30px; bottom: 126px; }
+    .callout.space { top: 168px; right: 38px; }
+
+    .section {
+      margin-top: 24px;
+      padding: 26px;
+      border: 1px solid rgba(23, 33, 28, .13);
+      border-radius: 8px;
+      background: rgba(255, 250, 240, .76);
+      box-shadow: 0 18px 46px rgba(78, 59, 31, .08);
+    }
+
+    .section h2 {
+      margin: 0 0 8px;
+      font-size: clamp(27px, 4vw, 46px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .section-intro {
+      max-width: 870px;
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .tw-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .region-card {
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fffdfa, #f4ead8);
+    }
+
+    .region-card h3,
+    .land-card h3,
+    .space-card h3 {
+      margin: 0 0 4px;
+      font-size: 22px;
+    }
+
+    .big-number {
+      margin: 3px 0 13px;
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .bar-stack {
+      display: flex;
+      width: 100%;
+      height: 30px;
+      overflow: hidden;
+      border-radius: 4px;
+      border: 1px solid rgba(23, 33, 28, .22);
+      background: #eee3d1;
+    }
+
+    .bar-stack span { display: block; height: 100%; }
+
+    .legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 10px;
+      margin-top: 14px;
+      font-size: 12px;
+      color: #34423a;
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 6px;
+      border-radius: 2px;
+      vertical-align: -1px;
+    }
+
+    .note {
+      margin-top: auto;
+      padding-top: 13px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .musk-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .claim {
+      padding: 17px;
+      border-radius: 8px;
+      background: #263f6a;
+      color: #fffaf0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
+    }
+
+    .claim b {
+      display: block;
+      color: #ffd66b;
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .claim span {
+      display: block;
+      margin-top: 8px;
+      color: rgba(255, 250, 240, .86);
+      font-size: 13px;
+    }
+
+    .land-layout {
+      display: grid;
+      grid-template-columns: minmax(0, .98fr) minmax(340px, 1.02fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .map-panel {
+      min-height: 500px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(0deg, rgba(255,255,255,.18) 1px, transparent 1px) 0 0 / 100% 28px,
+        linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px) 0 0 / 28px 100%,
+        linear-gradient(180deg, #dfc18a, #b88956);
+    }
+
+    .land-square {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(23, 33, 28, .68);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.14) 1px, transparent 1px) 0 0 / 18px 100%,
+        linear-gradient(0deg, rgba(255,255,255,.12) 1px, transparent 1px) 0 0 / 100% 18px,
+        linear-gradient(135deg, #17364d, #2f83a6 48%, #f1c24e);
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 1px 2px rgba(0,0,0,.45);
+      box-shadow: 0 15px 38px rgba(72, 46, 21, .22);
+    }
+
+    .land-square small {
+      display: block;
+      color: rgba(255,255,255,.88);
+      font-weight: 700;
+    }
+
+    .sq-10k { width: 118px; height: 118px; left: 30px; bottom: 34px; }
+    .sq-us-elec { width: 182px; height: 182px; left: 110px; bottom: 122px; }
+    .sq-us-primary { width: 356px; height: 356px; right: 30px; top: 38px; }
+
+    .land-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .land-card,
+    .space-card {
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fffdfa, #f5ead7);
+    }
+
+    .land-card .size {
+      margin-top: 8px;
+      color: var(--accent);
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .space-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .scale-rail {
+      margin-top: 14px;
+      height: 14px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #eadbc5;
+    }
+
+    .scale-rail span {
+      display: block;
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #355f97, #f2c94c);
+    }
+
+    .source-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .source-table th,
+    .source-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(23, 33, 28, .12);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .source-table th { color: #29362f; }
+
+    .footnotes {
+      color: #3d4741;
+      font-size: 13px;
+    }
+
+    .footnotes ol {
+      margin: 12px 0 0;
+      padding-left: 22px;
+    }
+
+    .footnotes li { margin: 10px 0; }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .pill {
+      border: 1px solid rgba(23,33,28,.18);
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(255,255,255,.48);
+      color: #3f4c45;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .land-layout,
+      .tw-grid,
+      .space-layout,
+      .musk-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .hero { min-height: auto; }
+      .hero-visual { min-height: 620px; }
+      .sq-us-primary { width: 288px; height: 288px; }
+      .sq-us-elec { left: 48px; }
+    }
+
+    @media (max-width: 560px) {
+      .page { width: min(100% - 20px, 1180px); }
+      .section { padding: 18px; }
+      .hero-visual { min-height: 620px; }
+      .callout { max-width: 190px; }
+      .callout.sun { left: 14px; }
+      .callout.space { right: 14px; }
+      .callout.grid { right: 14px; bottom: 96px; }
+      .sat { right: 32px; }
+      .orbit { right: 18px; }
+      .qr-tile {
+        left: 26px;
+        bottom: 184px;
+        width: 118px;
+      }
+      .legend { grid-template-columns: 1fr; }
+      .map-panel { min-height: 430px; }
+      .sq-us-primary { width: 236px; height: 236px; top: 36px; right: 16px; }
+      .sq-us-elec { width: 150px; height: 150px; left: 34px; bottom: 92px; }
+      .sq-10k { width: 96px; height: 96px; left: 18px; bottom: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <div class="eyebrow">Illustrated explainer, not an official energy model</div>
+        <h1 id="page-title">How big is energy?</h1>
+        <p class="lede">A visual translation of Elon Musk's solar argument: human civilization is still small, today's grid is huge at human scale, and the sun is absurdly larger than both.</p>
+        <div class="disclaimer">
+          This poster uses Musk's figures as the narrative spine from the linked video segment. Where current public sources materially differ, the difference is called out in the footnotes. All power values are shown as approximate average power unless labeled as nameplate capacity.
+        </div>
+        <div class="pill-row" aria-label="Topics covered">
+          <span class="pill">Earth energy</span>
+          <span class="pill">US electricity</span>
+          <span class="pill">China manufacturing</span>
+          <span class="pill">Solar land</span>
+          <span class="pill">Space solar</span>
+          <span class="pill">Kardashev scale</span>
+        </div>
+      </div>
+      <div class="hero-visual" aria-label="Sun, Earth, solar field, and satellite illustration">
+        <div class="orbit"></div>
+        <div class="sat" aria-hidden="true"><span></span><b></b><span></span></div>
+        <div class="callout sun"><strong>~3.8 x 10^26 W</strong> total solar luminosity</div>
+        <div class="callout space"><strong>1 GW</strong> planned space projects are still tiny next to national grids</div>
+        <div class="callout grid"><strong>0.5 TW</strong> rough US average electricity load</div>
+        <a class="qr-tile" href="https://youtu.be/j6_VfR-CyuM?t=4639" aria-label="Open video at 1 hour 17 minutes 19 seconds">
+          <img src="assets/energy-video-qr-1h17m19s.svg" alt="QR code linking to the video at 1:17:19">
+          <span>Scan for 1:17:19 source</span>
+        </a>
+        <div class="mini-grid" aria-hidden="true"></div>
+        <div class="earth-plate" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="claims-title">
+      <h2 id="claims-title">The video claims, translated</h2>
+      <p class="section-intro">Musk's argument is about orders of magnitude, so the first pass is intentionally coarse: nameplate solar has to be adjusted down for night, weather, angle, and storage losses; electricity is not the same as total primary energy.</p>
+      <div class="musk-strip">
+        <div class="claim"><b>1.5 TW/yr</b>China solar panel production capacity cited in the video.<span>He then divides by roughly 5 to think in steady-state terms.</span></div>
+        <div class="claim"><b>0.5 TW</b>US average electricity load, approximately.<span>This matches electricity, not the full US economy's primary energy use.</span></div>
+        <div class="claim"><b>18 mo.</b>Time claimed for China to make enough panels to power US electricity.<span>Using 1.5 TW/yr nameplate and /5, 18 months gives about 0.45 TW average.</span></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="mix-title">
+      <h2 id="mix-title">Energy stacks by region</h2>
+      <p class="section-intro">These stacks use current-source primary energy by fuel for the world, US, and China. The US electricity number from the video is shown separately because it is a narrower boundary.</p>
+      <div class="tw-grid">
+        <article class="region-card">
+          <h3>World</h3>
+          <div class="big-number">~19.6 TW</div>
+          <div class="bar-stack" aria-label="World primary energy mix">
+            <span style="width:31.7%; background:var(--oil)" title="Oil"></span>
+            <span style="width:26.5%; background:var(--coal)" title="Coal"></span>
+            <span style="width:23.3%; background:var(--gas)" title="Gas"></span>
+            <span style="width:4.0%; background:var(--nuclear)" title="Nuclear"></span>
+            <span style="width:6.4%; background:var(--hydro)" title="Hydro"></span>
+            <span style="width:8.2%; background:var(--renew)" title="Other renewables"></span>
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--oil)"></i>Oil 31.7%</span>
+            <span><i style="background:var(--coal)"></i>Coal 26.5%</span>
+            <span><i style="background:var(--gas)"></i>Gas 23.3%</span>
+            <span><i style="background:var(--nuclear)"></i>Nuclear 4.0%</span>
+            <span><i style="background:var(--hydro)"></i>Hydro 6.4%</span>
+            <span><i style="background:var(--renew)"></i>Other renewables 8.2%</span>
+          </div>
+          <p class="note">Primary energy basis, 2023 Energy Institute data converted from exajoules per year to average terawatts.</p>
+        </article>
+
+        <article class="region-card">
+          <h3>United States</h3>
+          <div class="big-number">~3.0 TW</div>
+          <div class="bar-stack" aria-label="United States primary energy mix">
+            <span style="width:38.0%; background:var(--oil)" title="Oil"></span>
+            <span style="width:36.5%; background:var(--gas)" title="Gas"></span>
+            <span style="width:8.7%; background:var(--coal)" title="Coal"></span>
+            <span style="width:8.1%; background:var(--nuclear)" title="Nuclear"></span>
+            <span style="width:2.3%; background:var(--hydro)" title="Hydro"></span>
+            <span style="width:6.4%; background:var(--renew)" title="Other renewables"></span>
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--oil)"></i>Oil 38.0%</span>
+            <span><i style="background:var(--gas)"></i>Gas 36.5%</span>
+            <span><i style="background:var(--coal)"></i>Coal 8.7%</span>
+            <span><i style="background:var(--nuclear)"></i>Nuclear 8.1%</span>
+            <span><i style="background:var(--hydro)"></i>Hydro 2.3%</span>
+            <span><i style="background:var(--renew)"></i>Other renewables 6.4%</span>
+          </div>
+          <p class="note">The video's ~0.5 TW comparison is a good shorthand for US electricity load, while total US primary energy is about six times larger.</p>
+        </article>
+
+        <article class="region-card">
+          <h3>China</h3>
+          <div class="big-number">~5.4 TW</div>
+          <div class="bar-stack" aria-label="China primary energy mix">
+            <span style="width:53.8%; background:var(--coal)" title="Coal"></span>
+            <span style="width:19.2%; background:var(--oil)" title="Oil"></span>
+            <span style="width:8.5%; background:var(--gas)" title="Gas"></span>
+            <span style="width:2.3%; background:var(--nuclear)" title="Nuclear"></span>
+            <span style="width:6.7%; background:var(--hydro)" title="Hydro"></span>
+            <span style="width:9.4%; background:var(--renew)" title="Other renewables"></span>
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--coal)"></i>Coal 53.8%</span>
+            <span><i style="background:var(--oil)"></i>Oil 19.2%</span>
+            <span><i style="background:var(--gas)"></i>Gas 8.5%</span>
+            <span><i style="background:var(--nuclear)"></i>Nuclear 2.3%</span>
+            <span><i style="background:var(--hydro)"></i>Hydro 6.7%</span>
+            <span><i style="background:var(--renew)"></i>Other renewables 9.4%</span>
+          </div>
+          <p class="note">China is the largest solar manufacturing base, but its own total energy stack is still dominated by coal on a primary-energy basis.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="land-title">
+      <h2 id="land-title">How much solar land?</h2>
+      <p class="section-intro">The squares below use a simple utility-scale solar rule of thumb: around 30 acres of solar project area per average megawatt delivered over a year. That bakes in land intensity plus the same rough "divide nameplate by five" intuition used in the video.</p>
+      <div class="land-layout">
+        <div class="map-panel" aria-label="Relative solar land square sizes">
+          <div class="land-square sq-us-primary"><strong>~141k sq mi</strong><small>US primary energy</small></div>
+          <div class="land-square sq-us-elec"><strong>~23k sq mi</strong><small>US electricity</small></div>
+          <div class="land-square sq-10k"><strong>10k sq mi</strong><small>100 x 100 mi</small></div>
+        </div>
+        <div class="land-list">
+          <article class="land-card">
+            <h3>Power a 1 GW average project</h3>
+            <p>About the scale of a large conventional power plant averaged over a year.</p>
+            <div class="size">~47 sq mi</div>
+          </article>
+          <article class="land-card">
+            <h3>Power US electricity</h3>
+            <p>Close to Musk's ~0.5 TW comparison boundary, after capacity-factor adjustment.</p>
+            <div class="size">~23,000 sq mi</div>
+          </article>
+          <article class="land-card">
+            <h3>Power the whole world, primary energy</h3>
+            <p>This is intentionally extreme: electrification would reduce some primary-energy waste, but the raw replacement scale is enormous.</p>
+            <div class="size">~920,000 sq mi</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="space-title">
+      <h2 id="space-title">Space power is real, but still small</h2>
+      <p class="section-intro">The video jumps from terrestrial solar to star-scale power. Today's space-solar projects are better understood as early demonstrations and future grid supplements, not near-term replacements for national energy systems.</p>
+      <div class="space-layout">
+        <article class="space-card">
+          <h3>Caltech SSPD-1</h3>
+          <p>Demonstrated wireless power transfer from a small orbital prototype.</p>
+          <div class="big-number">watts</div>
+          <div class="scale-rail"><span style="width:1%"></span></div>
+          <p class="note">Proof of principle, not grid scale.</p>
+        </article>
+        <article class="space-card">
+          <h3>1 GW space solar plan</h3>
+          <p>A 1 GW project would be meaningful infrastructure, but still tiny against national loads.</p>
+          <div class="big-number">0.001 TW</div>
+          <div class="scale-rail"><span style="width:2%"></span></div>
+          <p class="note">Roughly 0.2% of US average electricity load.</p>
+        </article>
+        <article class="space-card">
+          <h3>China annual panel output, video claim</h3>
+          <p>If 1.5 TW/year nameplate is divided by five, one year becomes about 0.3 TW average.</p>
+          <div class="big-number">0.3 TW</div>
+          <div class="scale-rail"><span style="width:60%"></span></div>
+          <p class="note">Hundreds of times larger than a 1 GW space project.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="ladder-title">
+      <h2 id="ladder-title">The magnitude ladder</h2>
+      <table class="source-table">
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Approx. average power</th>
+            <th>What it means visually</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1 GW</td>
+            <td>0.001 TW</td>
+            <td>A major power plant or ambitious single space-solar project.</td>
+          </tr>
+          <tr>
+            <td>US electricity</td>
+            <td>~0.5 TW</td>
+            <td>The number Musk is effectively using for "power the US" in the video segment.</td>
+          </tr>
+          <tr>
+            <td>US primary energy</td>
+            <td>~3 TW</td>
+            <td>All direct fuel use plus electricity; much larger than electricity alone.</td>
+          </tr>
+          <tr>
+            <td>China primary energy</td>
+            <td>~5.4 TW</td>
+            <td>A country-scale system still mostly fossil in current data.</td>
+          </tr>
+          <tr>
+            <td>World primary energy</td>
+            <td>~19.6 TW</td>
+            <td>Human civilization today: still a tiny pre-Type-I slice.</td>
+          </tr>
+          <tr>
+            <td>Sun total output</td>
+            <td>~380,000,000,000,000 TW</td>
+            <td>So large that all human energy use disappears on the same visual scale.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section footnotes" aria-labelledby="footnotes-title">
+      <h2 id="footnotes-title">Footnotes and divergences</h2>
+      <ol>
+        <li>Video basis: YouTube transcript beginning around <a href="https://youtu.be/j6_VfR-CyuM?si=dxW1sUHJABhskfGL&t=4353">1:12:33</a>; the specific solar-manufacturing comparison begins around <a href="https://youtu.be/j6_VfR-CyuM?t=4639">1:17:19</a>. The QR tile in the hero points to that exact moment.</li>
+        <li>US boundary difference: Musk's ~0.5 TW figure aligns with US electricity consumption/generation averaged over a year. US total primary energy is closer to 3 TW. See the <a href="https://www.eia.gov/energyexplained/us-energy-facts/">EIA US energy facts</a> and <a href="https://www.eia.gov/energyexplained/electricity/electricity-in-the-us.php">EIA electricity in the US</a>.</li>
+        <li>World, US, and China primary-energy fuel stacks use Energy Institute Statistical Review 2024-style primary-energy data converted from exajoules per year to average TW. A broad public overview is available from the <a href="https://www.energyinst.org/statistical-review">Energy Institute Statistical Review</a>.</li>
+        <li>China solar manufacturing: Musk cites roughly 1.5 TW/year of solar panel production capacity. IEA public materials show China dominates global solar PV manufacturing, but published capacity numbers vary by manufacturing step, year, source, and whether the number is nameplate capacity, actual output, or planned capacity. See the <a href="https://www.iea.org/reports/solar-pv-global-supply-chains">IEA solar PV supply chains report</a>.</li>
+        <li>Solar land: the land estimate uses NREL-style utility-scale PV land intensity, rounded to about 30 acres per average MW-year after capacity-factor adjustment. See NREL's <a href="https://www.nrel.gov/docs/fy13osti/56290.pdf">Land-Use Requirements for Solar Power Plants in the United States</a>.</li>
+        <li>Sun scale: total solar luminosity is around 3.8 x 10^26 W. Compared with current human primary energy near 2 x 10^13 W, the sun is not merely a billion times larger; total luminosity is roughly ten trillion times larger. Solar energy intercepted by Earth is a much smaller slice, but still thousands of times larger than human power use.</li>
+        <li>Space solar: examples include Caltech's <a href="https://www.caltech.edu/about/news/in-a-first-caltechs-space-solar-power-demonstrator-wirelessly-transmits-power-in-space">Space Solar Power Demonstrator</a>, ESA's <a href="https://www.esa.int/Enabling_Support/Space_Engineering_Technology/SOLARIS">SOLARIS</a> program, and recent commercial space-solar announcements such as <a href="https://about.fb.com/news/2026/04/powering-ai-strengthening-the-grid-space-solar-energy-and-long-duration-storage/">Meta and Overview Energy's 1 GW plan</a>. These are not yet comparable to terrestrial solar manufacturing at TW/year scale.</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>
