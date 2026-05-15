@@ -1,12 +1,12 @@
 {
-  "version": "v260515.04 9:27a",
-  "release": 1508,
-  "sha": "1c9b87ad1",
-  "fullSha": "1c9b87ad191c9e3ecde4af9e523d0155c57f6020",
+  "version": "v260515.05 10:05a",
+  "release": 1509,
+  "sha": "726d129cb",
+  "fullSha": "726d129cb604a905fa107aad3dc7d02a1b561136",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-15T14:27:25+00:00",
-  "commits": [{"sha":"1c9b87ad1","message":"Fix duplicate device subnav","author":"Paca"}]
+  "pushedAt": "2026-05-15T15:05:21+00:00",
+  "commits": [{"sha":"726d129cb","message":"Refine Sonos music page states","author":"Paca"}]
 }
