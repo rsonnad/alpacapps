@@ -91,43 +91,49 @@ Deno.serve(async (req) => {
 
     const { data: associates, error: aerr } = await supabase
       .from('associate_profiles')
-      .select('id, app_user_id, hourly_rate, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency')
+      .select('id, app_user_id, hourly_rate, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency, payout_day_of_week')
       .eq('payment_method', 'stripe')
       .not('stripe_connect_account_id', 'is', null)
       .eq('identity_verification_status', 'verified');
 
     if (aerr) throw new Error(`associates query failed: ${aerr.message}`);
 
-    // Schedule gate. Cron runs nightly at 8pm ET. Per-associate frequency decides
-    // whether to fire tonight, and what entries to include.
+    // Schedule gate. Cron fires every night at 00:00 UTC (= 8pm EDT / 7pm EST).
+    // Day-of-week / day-of-month are evaluated in ET so a "Saturday payout" means
+    // Saturday-evening-Eastern, even though that's already Sunday in UTC.
+    //
     //   daily     → fire every night; pay all unpaid (clock_out IS NOT NULL)
-    //   weekly    → fire only Saturdays; pay through end-of-Friday
-    //   biweekly  → fire only Saturdays AND >= 14 days since last successful payout; pay through end-of-Friday
-    //   monthly   → fire only first Saturday of month; pay through end-of-Friday
-    const now = new Date();
-    const dayOfWeek = now.getUTCDay(); // 0=Sun..6=Sat. UTC is fine — cron fires at 00:00 UTC, so "tonight 8pm ET" = today UTC.
-    const dayOfMonth = now.getUTCDate();
-    const isSaturday = dayOfWeek === 6;
-    const isFirstSaturdayOfMonth = isSaturday && dayOfMonth <= 7;
-    const todayDateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD UTC
+    //   weekly    → fire only on payout_day_of_week; pay through end of (chosen_day − 1) ET
+    //   biweekly  → fire only on payout_day_of_week AND >=13 days since last payout
+    //   monthly   → fire only on the first occurrence of payout_day_of_week each month
+    const TZ = 'America/New_York';
+    const etParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short'
+    }).formatToParts(new Date());
+    const etYear = etParts.find(p => p.type === 'year')!.value;
+    const etMonth = etParts.find(p => p.type === 'month')!.value;
+    const etDay = etParts.find(p => p.type === 'day')!.value;
+    const etWeekdayStr = etParts.find(p => p.type === 'weekday')!.value; // 'Sun'..'Sat'
+    const WEEKDAY_MAP: Record<string, number> = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+    const etDayOfWeek = WEEKDAY_MAP[etWeekdayStr];
+    const etDayOfMonth = parseInt(etDay, 10);
+    const etTodayStr = `${etYear}-${etMonth}-${etDay}`; // YYYY-MM-DD in ET
 
     for (const assoc of associates || []) {
       const frequency = (assoc as any).payout_frequency || 'daily';
+      const targetDow = (assoc as any).payout_day_of_week ?? 6;
 
       // Schedule gate
-      if (frequency === 'weekly' && !isSaturday) {
-        results.push({ associate_id: assoc.id, skipped: 'weekly_not_saturday', frequency });
+      if (frequency !== 'daily' && etDayOfWeek !== targetDow) {
+        results.push({ associate_id: assoc.id, skipped: `${frequency}_wrong_day_of_week`, target_dow: targetDow, today_dow: etDayOfWeek });
         continue;
       }
-      if (frequency === 'monthly' && !isFirstSaturdayOfMonth) {
-        results.push({ associate_id: assoc.id, skipped: 'monthly_not_first_saturday', frequency });
+      if (frequency === 'monthly' && etDayOfMonth > 7) {
+        // First occurrence of target_dow is always within day-of-month 1..7
+        results.push({ associate_id: assoc.id, skipped: 'monthly_not_first_occurrence', frequency, day_of_month: etDayOfMonth });
         continue;
       }
       if (frequency === 'biweekly') {
-        if (!isSaturday) {
-          results.push({ associate_id: assoc.id, skipped: 'biweekly_not_saturday', frequency });
-          continue;
-        }
         const { data: lastPayout } = await supabase
           .from('payouts')
           .select('created_at')
@@ -137,7 +143,7 @@ Deno.serve(async (req) => {
           .limit(1)
           .maybeSingle();
         if (lastPayout?.created_at) {
-          const daysSince = (now.getTime() - new Date(lastPayout.created_at).getTime()) / 86_400_000;
+          const daysSince = (Date.now() - new Date(lastPayout.created_at).getTime()) / 86_400_000;
           if (daysSince < 13) {
             results.push({ associate_id: assoc.id, skipped: 'biweekly_too_soon', days_since_last: Math.round(daysSince) });
             continue;
@@ -145,7 +151,12 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Entry window: daily pays everything; weekly/biweekly/monthly cap at end-of-yesterday (Friday).
+      // Entry window: daily pays everything unpaid; non-daily caps at end of
+      // (chosen_day − 1) ET. Since the run happens ON the chosen day, that's
+      // end-of-yesterday in ET. We approximate this as clock_out < etTodayStr,
+      // treating clock_out's date in UTC. Off-by-up-to-4h for entries clocked
+      // out in the late-night ET window of "yesterday" — acceptable; those
+      // entries just roll to next cycle.
       let entriesQuery = supabase
         .from('time_entries')
         .select('id, clock_in, clock_out, description, task_id')
@@ -153,7 +164,7 @@ Deno.serve(async (req) => {
         .eq('is_paid', false)
         .not('clock_out', 'is', null);
       if (frequency !== 'daily') {
-        entriesQuery = entriesQuery.lt('clock_out', todayDateStr); // strictly before today UTC ⇒ through Friday 23:59 UTC on Sat runs
+        entriesQuery = entriesQuery.lt('clock_out', etTodayStr);
       }
       const { data: entries, error: eerr } = await entriesQuery;
       if (eerr) { results.push({ associate_id: assoc.id, skipped: 'entries query failed', error: eerr.message }); continue; }
