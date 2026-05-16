@@ -91,20 +91,71 @@ Deno.serve(async (req) => {
 
     const { data: associates, error: aerr } = await supabase
       .from('associate_profiles')
-      .select('id, app_user_id, hourly_rate, payment_method, stripe_connect_account_id, identity_verification_status')
+      .select('id, app_user_id, hourly_rate, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency')
       .eq('payment_method', 'stripe')
       .not('stripe_connect_account_id', 'is', null)
       .eq('identity_verification_status', 'verified');
 
     if (aerr) throw new Error(`associates query failed: ${aerr.message}`);
 
+    // Schedule gate. Cron runs nightly at 8pm ET. Per-associate frequency decides
+    // whether to fire tonight, and what entries to include.
+    //   daily     → fire every night; pay all unpaid (clock_out IS NOT NULL)
+    //   weekly    → fire only Saturdays; pay through end-of-Friday
+    //   biweekly  → fire only Saturdays AND >= 14 days since last successful payout; pay through end-of-Friday
+    //   monthly   → fire only first Saturday of month; pay through end-of-Friday
+    const now = new Date();
+    const dayOfWeek = now.getUTCDay(); // 0=Sun..6=Sat. UTC is fine — cron fires at 00:00 UTC, so "tonight 8pm ET" = today UTC.
+    const dayOfMonth = now.getUTCDate();
+    const isSaturday = dayOfWeek === 6;
+    const isFirstSaturdayOfMonth = isSaturday && dayOfMonth <= 7;
+    const todayDateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD UTC
+
     for (const assoc of associates || []) {
-      const { data: entries, error: eerr } = await supabase
+      const frequency = (assoc as any).payout_frequency || 'daily';
+
+      // Schedule gate
+      if (frequency === 'weekly' && !isSaturday) {
+        results.push({ associate_id: assoc.id, skipped: 'weekly_not_saturday', frequency });
+        continue;
+      }
+      if (frequency === 'monthly' && !isFirstSaturdayOfMonth) {
+        results.push({ associate_id: assoc.id, skipped: 'monthly_not_first_saturday', frequency });
+        continue;
+      }
+      if (frequency === 'biweekly') {
+        if (!isSaturday) {
+          results.push({ associate_id: assoc.id, skipped: 'biweekly_not_saturday', frequency });
+          continue;
+        }
+        const { data: lastPayout } = await supabase
+          .from('payouts')
+          .select('created_at')
+          .eq('associate_id', assoc.id)
+          .in('status', ['processing', 'paid', 'succeeded'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (lastPayout?.created_at) {
+          const daysSince = (now.getTime() - new Date(lastPayout.created_at).getTime()) / 86_400_000;
+          if (daysSince < 13) {
+            results.push({ associate_id: assoc.id, skipped: 'biweekly_too_soon', days_since_last: Math.round(daysSince) });
+            continue;
+          }
+        }
+      }
+
+      // Entry window: daily pays everything; weekly/biweekly/monthly cap at end-of-yesterday (Friday).
+      let entriesQuery = supabase
         .from('time_entries')
         .select('id, clock_in, clock_out, description, task_id')
         .eq('associate_id', assoc.id)
         .eq('is_paid', false)
         .not('clock_out', 'is', null);
+      if (frequency !== 'daily') {
+        entriesQuery = entriesQuery.lt('clock_out', todayDateStr); // strictly before today UTC ⇒ through Friday 23:59 UTC on Sat runs
+      }
+      const { data: entries, error: eerr } = await entriesQuery;
       if (eerr) { results.push({ associate_id: assoc.id, skipped: 'entries query failed', error: eerr.message }); continue; }
       if (!entries || entries.length === 0) continue;
 
