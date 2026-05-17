@@ -146,7 +146,7 @@
   <!-- JSON-LD VideoObject -->
   <script type="application/ld+json">
   [
-    {"@context":"https://schema.org","@type":"VideoObject","name":"Jason and Rahul on Geodelic — This Week in Startups","description":"Rahul Sonnad and Jason Calacanis discuss Geodelic, startups, and mobile discovery.","thumbnailUrl":"https://alpacaplayhouse.com/rahulio/bio/jason-rahul-geodelic-2009-thumbnail.jpg?v=26051508","uploadDate":"2009-01-01","contentUrl":"https://youtu.be/SqSaek5yB1s?si=fVDNng8TSV6nuom4&t=2600","embedUrl":"https://www.youtube.com/embed/SqSaek5yB1s?start=2600"}
+    {"@context":"https://schema.org","@type":"VideoObject","name":"Jason and Rahul on Geodelic — This Week in Startups","description":"Rahul Sonnad and Jason Calacanis discuss Geodelic, startups, and mobile discovery.","thumbnailUrl":"https://alpacaplayhouse.com/rahulio/bio/jason-rahul-geodelic-2009-thumbnail.jpg?v=26051701","uploadDate":"2009-01-01","contentUrl":"https://youtu.be/SqSaek5yB1s?si=fVDNng8TSV6nuom4&t=2600","embedUrl":"https://www.youtube.com/embed/SqSaek5yB1s?start=2600"}
   ]
   </script>
 
@@ -156,31 +156,31 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* ── Glossy magazine system ── */
+    /* ── Modern tech profile system ── */
     :root {
-      --bg: #f7f8fb;
+      --bg: #f4f7fb;
       --paper: #ffffff;
-      --paper-warm: #fbfbf8;
-      --ink: #111827;
-      --text: #172033;
-      --text-secondary: #4b5565;
-      --text-dim: #7b8493;
-      --azure: #006aa6;
-      --azure-deep: #032f4f;
-      --aqua: #68d8ee;
-      --plum: #7b2445;
-      --gold: #b58a33;
-      --accent-soft: rgba(0, 106, 166, 0.1);
-      --border: rgba(17, 24, 39, 0.12);
-      --border-accent: rgba(0, 106, 166, 0.24);
-      --shadow: 0 22px 60px rgba(16, 24, 40, 0.13);
-      --shadow-soft: 0 12px 34px rgba(16, 24, 40, 0.08);
-      --radius: 8px;
+      --paper-soft: #f9fbff;
+      --ink: #0b1220;
+      --text: #182235;
+      --text-secondary: #4b5870;
+      --text-dim: #7d889a;
+      --blue: #0969da;
+      --blue-deep: #063a7a;
+      --cyan: #0ea5e9;
+      --teal: #14b8a6;
+      --violet: #5b5bd6;
+      --accent-soft: rgba(9, 105, 218, 0.09);
+      --border: rgba(15, 23, 42, 0.11);
+      --border-strong: rgba(9, 105, 218, 0.25);
+      --shadow: 0 20px 54px rgba(15, 23, 42, 0.12);
+      --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 12px;
       --radius-sm: 6px;
-      --transition: 0.28s ease;
+      --transition: 0.22s ease;
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -188,8 +188,9 @@
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background:
-        linear-gradient(120deg, rgba(0, 106, 166, 0.08), transparent 32%),
-        linear-gradient(270deg, rgba(123, 36, 69, 0.07), transparent 30%),
+        radial-gradient(circle at 16% 4%, rgba(14, 165, 233, 0.15), transparent 28rem),
+        radial-gradient(circle at 92% 8%, rgba(91, 91, 214, 0.12), transparent 30rem),
+        linear-gradient(180deg, #f8fbff 0%, #f4f7fb 48%, #ffffff 100%),
         var(--bg);
       color: var(--text);
       line-height: 1.65;
@@ -209,22 +210,24 @@
 
     /* ── Layout ── */
     .page-wrap {
-      position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 2rem;
+      position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 2rem;
     }
 
     /* ── Profile photo ── */
     .profile-photo {
-      width: min(34vw, 300px); height: min(42vw, 390px); border-radius: 4px; object-fit: cover;
-      border: 10px solid #fff; margin: 0;
+      width: clamp(190px, 24vw, 280px); height: clamp(230px, 30vw, 340px);
+      border-radius: 18px; object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.9); margin: 0;
       box-shadow: var(--shadow);
-      grid-row: 1 / span 4;
+      grid-row: 1 / span 3;
     }
 
     /* ── Hero ── */
     .hero {
-      min-height: 76vh; padding: 4.5rem 0 3.5rem; position: relative;
-      display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
-      gap: clamp(2rem, 7vw, 5rem); align-content: center; align-items: center;
+      min-height: auto; padding: clamp(3rem, 7vw, 5.8rem) 0 clamp(2.5rem, 5vw, 4rem);
+      position: relative;
+      display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      gap: clamp(2rem, 6vw, 5rem); align-content: center; align-items: center;
     }
     .hero::after {
       content: ''; position: absolute; bottom: 0; left: 0;
@@ -232,48 +235,53 @@
       opacity: 0.16;
     }
     .hero h1 {
-      font-family: 'Playfair Display', Georgia, serif; font-size: clamp(4.2rem, 11vw, 8.8rem);
-      font-weight: 800; letter-spacing: 0; line-height: 0.86;
-      color: var(--ink); margin-bottom: 1.25rem;
-      max-width: 760px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: clamp(4rem, 9vw, 7.4rem);
+      font-weight: 900; letter-spacing: 0; line-height: 0.9;
+      color: var(--ink); margin-bottom: 1rem;
+      max-width: 720px;
+      grid-column: 2;
     }
     .hero .tagline {
-      font-family: 'Space Grotesk', sans-serif; font-size: clamp(1rem, 2vw, 1.28rem); font-weight: 600;
-      color: var(--plum); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.85rem;
+      font-family: 'Space Grotesk', sans-serif; font-size: clamp(0.92rem, 1.4vw, 1.05rem); font-weight: 700;
+      color: var(--blue); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.9rem;
+      grid-column: 2;
     }
     .hero .location {
       display: inline-flex; align-items: center; gap: 0.4rem;
-      font-size: 0.96rem; color: var(--azure); font-weight: 700; letter-spacing: 0.04em;
+      font-size: 0.96rem; color: var(--blue-deep); font-weight: 700; letter-spacing: 0.02em;
+      grid-column: 2;
     }
     .hero .location::before {
       content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--gold); box-shadow: 0 0 0 5px rgba(181, 138, 51, 0.16);
+      background: var(--teal); box-shadow: 0 0 0 5px rgba(20, 184, 166, 0.14);
     }
 
     /* ── Sections ── */
     section {
-      padding: 3.6rem 0; border-top: 1px solid var(--border);
-      display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: clamp(1.5rem, 5vw, 4rem);
+      padding: clamp(2.2rem, 4vw, 3.4rem) 0; border-top: 1px solid var(--border);
+      display: grid; grid-template-columns: 170px minmax(0, 1fr); column-gap: clamp(1.5rem, 5vw, 4rem);
+      row-gap: 1rem;
     }
-    section > *:not(h2) { min-width: 0; }
+    section > *:not(h2) { grid-column: 2; min-width: 0; }
 
     h2 {
       font-family: 'Space Grotesk', sans-serif; font-size: 0.78rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.19em; color: var(--azure); margin: 0;
+      text-transform: uppercase; letter-spacing: 0.17em; color: var(--blue); margin: 0.25rem 0 0;
     }
 
-    p { font-size: clamp(1.08rem, 1.8vw, 1.28rem); color: var(--text-secondary); margin-bottom: 1.15rem; line-height: 1.78; }
+    p { max-width: 760px; font-size: clamp(1rem, 1.35vw, 1.12rem); color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.72; }
     p strong { color: var(--ink); font-weight: 700; }
 
     /* ── Editorial cards ── */
     .glass-card {
-      background: linear-gradient(180deg, var(--paper), var(--paper-warm));
+      background: linear-gradient(180deg, var(--paper), var(--paper-soft));
       border: 1px solid rgba(17, 24, 39, 0.1); border-radius: var(--radius);
-      padding: 1.35rem 1.55rem; box-shadow: var(--shadow-soft);
+      padding: 1.25rem 1.35rem; box-shadow: var(--shadow-soft);
       transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
     }
-    .glass-card:hover { border-color: var(--border-accent); transform: translateY(-2px); box-shadow: var(--shadow); }
-    .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.95rem; }
+    .glass-card:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
     .card-title {
       font-family: 'Space Grotesk', sans-serif; font-size: 1.06rem; font-weight: 700;
       color: var(--ink); margin-bottom: 0.2rem; line-height: 1.32;
@@ -282,12 +290,12 @@
     .card-desc { font-size: 0.97rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.6; }
     .card-highlight {
       font-family: 'Space Grotesk', sans-serif; font-size: 0.84rem; font-weight: 700;
-      color: var(--azure); margin-top: 0.65rem; letter-spacing: 0.02em;
+      color: var(--blue); margin-top: 0.65rem; letter-spacing: 0.02em;
     }
 
     /* ── Timeline accent bar on experience cards ── */
-    .exp-card { border-left: 4px solid var(--border-accent); }
-    .exp-card:hover { border-left-color: var(--azure); }
+    .exp-card { border-left: 4px solid var(--border-strong); }
+    .exp-card:hover { border-left-color: var(--blue); }
 
     /* ── Logo marks ── */
     .card-header { display: flex; align-items: center; gap: 0.75rem; }
@@ -300,11 +308,11 @@
     .tag-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .tag {
       font-family: 'Space Grotesk', sans-serif; font-size: 0.87rem; font-weight: 500;
-      color: var(--azure-deep); background: rgba(104, 216, 238, 0.16); border: 1px solid rgba(0, 106, 166, 0.2);
+      color: var(--blue-deep); background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(9, 105, 218, 0.18);
       border-radius: 999px; padding: 0.42rem 0.9rem; white-space: nowrap;
       transition: background var(--transition), color var(--transition);
     }
-    .tag:hover { background: rgba(181, 138, 51, 0.16); color: var(--ink); }
+    .tag:hover { background: rgba(20, 184, 166, 0.14); color: var(--ink); }
 
     /* ── Writing list ── */
     .writing-item {
@@ -321,7 +329,7 @@
       width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
       font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; font-weight: 600;
-      color: var(--azure); letter-spacing: 0.02em;
+      color: var(--blue); letter-spacing: 0.02em;
     }
     .edu-details { flex: 1; }
 
@@ -329,11 +337,11 @@
     .links-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
     .links-row a {
       font-family: 'Space Grotesk', sans-serif; font-size: 0.97rem; font-weight: 500;
-      color: var(--azure-deep); text-decoration: none; padding: 0.62rem 1.15rem;
-      border: 1px solid var(--border-accent); border-radius: 999px; background: #fff;
+      color: var(--blue-deep); text-decoration: none; padding: 0.62rem 1.15rem;
+      border: 1px solid var(--border-strong); border-radius: 999px; background: #fff;
       transition: background var(--transition), color var(--transition), box-shadow var(--transition);
     }
-    .links-row a:hover { background: var(--azure-deep); color: #fff; box-shadow: var(--shadow-soft); }
+    .links-row a:hover { background: var(--blue-deep); color: #fff; box-shadow: var(--shadow-soft); }
 
     /* ── Footer ── */
     footer {
@@ -352,11 +360,11 @@
     .firsts-list li::before {
       content: ''; position: absolute; left: 0; top: 0.7rem;
       width: 6px; height: 6px; border-radius: 50%;
-      background: var(--gold); opacity: 0.85;
+      background: var(--cyan); opacity: 0.9;
     }
 
     /* ── Video grid ── */
-    .video-grid { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 780px; gap: 0.75rem; }
+    .video-grid { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 760px; gap: 0.75rem; }
     .video-card {
       display: block; text-decoration: none; border-radius: var(--radius); overflow: hidden;
       background: #fff; border: 1px solid var(--border);
@@ -381,14 +389,16 @@
     @media (max-width: 900px) {
       .hero, section { grid-template-columns: 1fr; }
       .profile-photo { grid-row: auto; width: min(70vw, 250px); height: min(82vw, 310px); }
+      .hero h1, .hero .tagline, .hero .location { grid-column: 1; }
       .card-grid { grid-template-columns: 1fr; }
+      section > *:not(h2) { grid-column: 1; }
     }
 
     @media (max-width: 600px) {
-      .hero { min-height: auto; padding: 3.2rem 0 2.6rem; }
-      .hero h1 { font-size: 4rem; }
+      .hero { padding: 2.4rem 0 2.2rem; gap: 1.5rem; }
+      .hero h1 { font-size: 3.15rem; line-height: 0.96; }
       .page-wrap { padding: 0 1.25rem; }
-      p { font-size: 1.1rem; }
+      p { font-size: 1rem; }
       section { padding: 2.4rem 0; gap: 1rem; }
       .writing-item { flex-direction: column; gap: 0.15rem; }
       .edu-card { flex-direction: column; gap: 0.5rem; }
@@ -656,7 +666,7 @@
 
             <a class="video-card" href="https://youtu.be/SqSaek5yB1s?si=fVDNng8TSV6nuom4&amp;t=2600" target="_blank" rel="noopener">
               <div class="video-thumb">
-                <img src="jason-rahul-geodelic-2009-thumbnail.jpg?v=26051508" alt="Jason Calacanis and Rahul Sonnad on This Week in Startups" loading="lazy" width="1200" height="675">
+                <img src="jason-rahul-geodelic-2009-thumbnail.jpg?v=26051701" alt="Jason Calacanis and Rahul Sonnad on This Week in Startups" loading="lazy" width="1672" height="941">
               </div>
               <div class="video-info">
                 <div class="card-title">Jason and Rahul on Geodelic</div>
