@@ -701,12 +701,21 @@ function startStream(camIndex, quality, videoElementId) {
     });
 }
 
-// Clean up streams on page hide (save bandwidth)
+// Clean up streams on page hide (save bandwidth); restart on return.
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     for (const key of Object.keys(activeStreams)) {
       cleanupStream(key);
     }
+  } else {
+    // Page visible again — restart any grid streams that got torn down.
+    cameras.forEach((cam, i) => {
+      if (cam.model === 'Blink') return;
+      if (!activeStreams[i]) {
+        const quality = currentQualities[i] || (cam.streams.low ? 'low' : (cam.streams.med ? 'med' : 'high'));
+        startStream(i, quality);
+      }
+    });
   }
 });
 
