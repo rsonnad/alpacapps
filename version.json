@@ -1,12 +1,12 @@
 {
-  "version": "v260517.07 12:33p",
-  "release": 1522,
-  "sha": "1a3d2d48c",
-  "fullSha": "1a3d2d48ce7683a38482dbf39c4d7a7c048bb613",
+  "version": "v260517.08 12:52p",
+  "release": 1523,
+  "sha": "766f88191",
+  "fullSha": "766f8819121854fc3c287340b0d2d1e45672caad",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T17:33:59+00:00",
-  "commits": [{"sha":"1a3d2d48c","message":"Stripe webhook: upsert rows for externally-created PaymentIntents","author":"Rahul"}]
+  "pushedAt": "2026-05-17T17:52:09+00:00",
+  "commits": [{"sha":"766f88191","message":"Refine Rahul bio hero layout","author":"Rahul"}]
 }
