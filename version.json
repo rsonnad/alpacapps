@@ -1,12 +1,12 @@
 {
-  "version": "v260517.01 11:22a",
-  "release": 1516,
-  "sha": "a512fcb70",
-  "fullSha": "a512fcb70a08151419fe9fc01290b8ff10e3236b",
-  "actor": "wensonia",
+  "version": "v260517.02 12:21p",
+  "release": 1517,
+  "sha": "b15bf23d2",
+  "fullSha": "b15bf23d2add1982eb2d3bd3e576ad112576258f",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T16:22:09+00:00",
-  "commits": [{"sha":"a512fcb70","message":"Add timeout + retry to /pay/ payment flow","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-05-17T17:21:05+00:00",
+  "commits": [{"sha":"b15bf23d2","message":"Polish Rahul bio layout and thumbnail","author":"Rahul"}]
 }
