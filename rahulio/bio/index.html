@@ -370,7 +370,7 @@
       background: #fff; border: 1px solid var(--border);
       box-shadow: var(--shadow); transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
     }
-    .video-card:hover { border-color: var(--border-accent); transform: translateY(-3px); box-shadow: 0 28px 70px rgba(16, 24, 40, 0.18); }
+    .video-card:hover { border-color: var(--border-strong); transform: translateY(-3px); box-shadow: 0 28px 70px rgba(16, 24, 40, 0.18); }
     .video-thumb {
       position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #000;
     }
@@ -382,6 +382,11 @@
     .video-card:hover .video-play { opacity: 0.9; }
     .video-play svg { width: 58px; height: 58px; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.38)); }
     .video-info { padding: 1.05rem 1.25rem 1.15rem; }
+    .video-label {
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.96rem; font-weight: 700;
+      color: var(--blue); letter-spacing: 0;
+      margin-bottom: 0.45rem;
+    }
     .video-info .card-title { font-size: 1.2rem; line-height: 1.35; }
     .video-info .card-sub { margin-top: 0.25rem; }
 
@@ -669,6 +674,7 @@
                 <img src="jason-rahul-geodelic-2009-thumbnail.jpg?v=26051701" alt="Jason Calacanis and Rahul Sonnad on This Week in Startups" width="1672" height="941">
               </div>
               <div class="video-info">
+                <div class="video-label">Geodelic, startups and mobile discovery</div>
                 <div class="card-title">Jason and Rahul on Geodelic</div>
                 <div class="card-sub">This Week in Startups &middot; starts at 43:20</div>
               </div>
