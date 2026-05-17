@@ -117,9 +117,15 @@ async function loadCameras() {
     }
     grouped[stream.camera_name].streams[stream.quality] = stream;
   }
-  cameras = Object.values(grouped).sort((a, b) =>
-    (a.model || '').localeCompare(b.model || '') || a.name.localeCompare(b.name)
-  );
+  const PRIORITY_ORDER = ['Front Yard', 'Alpacamera', 'Sparadise'];
+  cameras = Object.values(grouped).sort((a, b) => {
+    const ai = PRIORITY_ORDER.indexOf(a.name);
+    const bi = PRIORITY_ORDER.indexOf(b.name);
+    if (ai !== -1 || bi !== -1) {
+      return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
+    }
+    return (a.model || '').localeCompare(b.model || '') || a.name.localeCompare(b.name);
+  });
 }
 
 // =============================================
