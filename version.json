@@ -1,12 +1,12 @@
 {
-  "version": "v260517.09 1:15p",
-  "release": 1524,
-  "sha": "e14388a28",
-  "fullSha": "e14388a28ce1e2d5147a65f3b4df3da399161437",
+  "version": "v260517.10 2:37p",
+  "release": 1525,
+  "sha": "a931310a4",
+  "fullSha": "a931310a4824e2b394e17991cb47f275824aefc8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T18:15:55+00:00",
-  "commits": [{"sha":"e14388a28","message":"Restart camera streams on tab refocus (visibilitychange)","author":"Rahul"}]
+  "pushedAt": "2026-05-17T19:37:33+00:00",
+  "commits": [{"sha":"43289b3d7","message":"Add wiz-watchdog: auto-recover unavailable WiZ bulbs in HA","author":"Paca"},{"sha":"a931310a4","message":"Merge wiz-watchdog (auto-recover unavailable WiZ bulbs)","author":"Paca"}]
 }
