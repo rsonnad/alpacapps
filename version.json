@@ -1,12 +1,12 @@
 {
-  "version": "v260517.04 12:25p",
-  "release": 1519,
-  "sha": "842480e8e",
-  "fullSha": "842480e8ed8cee0bec5d7e11d91776131e5f0945",
+  "version": "v260517.05 12:28p",
+  "release": 1520,
+  "sha": "74a0e79a1",
+  "fullSha": "74a0e79a10a090219638f33d76bf480231652426",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T17:25:30+00:00",
-  "commits": [{"sha":"842480e8e","message":"Rename cameras (Front Yard / Sparadise) and reorder top 3","author":"Rahul"}]
+  "pushedAt": "2026-05-17T17:28:18+00:00",
+  "commits": [{"sha":"74a0e79a1","message":"Add Rahul bio video label","author":"Rahul"}]
 }
