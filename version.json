@@ -1,12 +1,12 @@
 {
-  "version": "v260515.09 11:46a",
-  "release": 1513,
-  "sha": "01e40ab5b",
-  "fullSha": "01e40ab5b1e4aaf97ad150953ea4b67d736696fe",
+  "version": "v260516.01 11:03p",
+  "release": 1514,
+  "sha": "5c4d44b64",
+  "fullSha": "5c4d44b6475e471232248d0000513fef139ced4d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-15T16:46:34+00:00",
-  "commits": [{"sha":"01e40ab5b","message":"Version Rahul bio video thumbnail","author":"Rahul"}]
+  "pushedAt": "2026-05-17T04:03:37+00:00",
+  "commits": [{"sha":"5c4d44b64","message":"Add /intranet/ TOC landing for staff/admin/oracle roles","author":"Rahul"}]
 }
