@@ -1,9 +1,9 @@
 // Intranet TOC — landing page showing all tabs the current user can access.
-import { initAuth, getAuthState, onAuthStateChange } from '../shared/auth.js';
+// Always renders chrome and a TOC; auth state changes which cards (or status
+// message) are visible. We never blank the page or auto-redirect.
+import { initAuth, getAuthState, onAuthStateChange, signOut } from '../shared/auth.js';
 import { ALL_ADMIN_TABS, TAB_ICONS } from '../shared/admin-shell.js';
 import { getEnabledFeatures } from '../shared/feature-registry.js';
-import { renderHeader, initSiteComponents } from '../shared/site-components.js';
-import { errorLogger } from '../shared/error-logger.js';
 
 const SECTION_TITLES = { staff: 'Staff', admin: 'Admin' };
 
@@ -13,21 +13,15 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 
-function injectSiteHeader() {
-  const target = document.getElementById('siteHeader');
-  if (!target || target.dataset.rendered === '1') return;
-  target.innerHTML = renderHeader({ currentPath: '/intranet/' });
-  target.dataset.rendered = '1';
-  initSiteComponents();
-}
+function el(id) { return document.getElementById(id); }
 
-function renderSection(sectionId, gridEl, titleEl, tabs) {
+function renderSection(gridEl, titleEl, sectionId, tabs) {
   if (!tabs.length) {
     gridEl.innerHTML = '';
-    titleEl.hidden = true;
+    titleEl.classList.add('hidden');
     return 0;
   }
-  titleEl.hidden = false;
+  titleEl.classList.remove('hidden');
   titleEl.textContent = SECTION_TITLES[sectionId] || sectionId;
   gridEl.innerHTML = tabs.map((tab) => {
     const icon = TAB_ICONS[tab.id] || '';
@@ -44,69 +38,84 @@ function renderSection(sectionId, gridEl, titleEl, tabs) {
   return tabs.length;
 }
 
+function showStatus(html) {
+  const node = el('intranetStatus');
+  if (!node) return;
+  node.innerHTML = html;
+  node.classList.remove('hidden');
+}
+
+function hideStatus() {
+  el('intranetStatus')?.classList.add('hidden');
+}
+
 async function renderTOC(state) {
   const enabledFeatures = await getEnabledFeatures();
-  const userRole = state.appUser?.role;
-  const permissionsLoaded = state.permissions?.size > 0;
+  const userRole = state?.appUser?.role;
+  const permissionsLoaded = state?.permissions?.size > 0;
   const isAdminRole = ['admin', 'oracle'].includes(userRole);
+  const isStaffRole = ['staff', 'admin', 'oracle'].includes(userRole);
 
+  // Pick which tabs to surface based on auth state. For unauthenticated /
+  // preview users we still render every tab so the page is never blank.
   const accessible = ALL_ADMIN_TABS.filter((tab) => {
     if (tab.feature && !enabledFeatures[tab.feature]) return false;
-    if (!permissionsLoaded && isAdminRole) return true;
+    if (!state?.isAuthenticated) return true;             // preview-friendly
+    if (isAdminRole) return true;
+    if (!permissionsLoaded && isStaffRole) return true;   // perms still loading
+    if (!isStaffRole) return false;
     return state.hasPermission?.(tab.permission);
   });
 
   const staffTabs = accessible.filter((t) => t.section === 'staff');
   const adminTabs = accessible.filter((t) => t.section === 'admin');
 
-  const staffCount = renderSection('staff',
-    document.getElementById('staffGrid'),
-    document.getElementById('staffSectionTitle'),
-    staffTabs);
-  const adminCount = renderSection('admin',
-    document.getElementById('adminGrid'),
-    document.getElementById('adminSectionTitle'),
-    adminTabs);
+  const total =
+    renderSection(el('staffGrid'), el('staffSectionTitle'), 'staff', staffTabs) +
+    renderSection(el('adminGrid'), el('adminSectionTitle'), 'admin', adminTabs);
 
-  const emptyEl = document.getElementById('intranetEmpty');
-  if (emptyEl) emptyEl.classList.toggle('hidden', (staffCount + adminCount) > 0);
-}
-
-function showApp() {
-  document.getElementById('loadingOverlay')?.classList.add('hidden');
-  document.getElementById('appContent')?.classList.remove('hidden');
-}
-
-function redirectToLogin() {
-  const next = encodeURIComponent('/intranet/');
-  window.location.href = `/login/?redirect=${next}`;
-}
-
-function redirectUnauthorized(role) {
-  // Non-staff users (resident/associate/public) shouldn't see the intranet TOC.
-  if (['resident', 'associate'].includes(role)) {
-    window.location.href = '/residents/';
-  } else if (role === 'public') {
-    window.location.href = '/rentals/';
+  // Status messaging
+  if (!state || !state.isAuthenticated) {
+    showStatus('You are not signed in. <a href="/login/?redirect=%2Fintranet%2F">Sign in</a> to access these tools.');
+    el('intranetGreeting').textContent = 'Intranet preview';
+    el('intranetSubtitle').textContent = 'Sign in to actually open any of these.';
+  } else if (!isStaffRole) {
+    showStatus('Your account does not have staff access. Contact an admin if you think this is wrong.');
+  } else if (total === 0) {
+    showStatus('You don\'t have permission to view any sections yet. Ask an admin to grant access.');
   } else {
-    redirectToLogin();
+    hideStatus();
+    const name = state.appUser?.display_name || state.appUser?.email || '';
+    if (name) el('intranetGreeting').textContent = `Hi ${escapeHtml(name.split(/\s+/)[0])} — pick a section`;
+    el('intranetSubtitle').textContent = 'Everything in the staff and admin areas, in one place.';
   }
 }
 
+function wireSignOut() {
+  const btn = el('signOutBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    try {
+      await signOut();
+    } finally {
+      window.location.href = '/login/';
+    }
+  });
+}
+
 async function boot() {
-  errorLogger.setupGlobalHandlers?.();
+  // Render immediately with no auth state so the page is never blank.
+  await renderTOC(null);
+  wireSignOut();
 
   try {
     await initAuth();
   } catch (err) {
     console.error('[INTRANET]', 'initAuth failed', err);
-    redirectToLogin();
     return;
   }
 
   let state = getAuthState();
-
-  // Wait for pending → resolved (auth pipeline still loading permissions)
   if (state.isAuthenticated && state.isPending) {
     await new Promise((resolve) => {
       const t = setTimeout(resolve, 8000);
@@ -117,18 +126,13 @@ async function boot() {
     state = getAuthState();
   }
 
-  if (!state.isAuthenticated) { redirectToLogin(); return; }
-  if (!state.isStaff) { redirectUnauthorized(state.role); return; }
-
-  injectSiteHeader();
-  showApp();
+  if (state.isAuthenticated) el('signOutBtn')?.classList.remove('hidden');
   await renderTOC(state);
 
-  // Re-render if permissions arrive after initial paint
-  onAuthStateChange((newState) => {
-    if (newState.isAuthenticated && newState.isStaff) {
-      renderTOC(newState);
-    }
+  onAuthStateChange((s) => {
+    if (s.isAuthenticated) el('signOutBtn')?.classList.remove('hidden');
+    else el('signOutBtn')?.classList.add('hidden');
+    renderTOC(s);
   });
 }
 
