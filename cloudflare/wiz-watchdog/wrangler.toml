@@ -1,0 +1,9 @@
+name = "wiz-watchdog"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+account_id = "9cd3a280a54ce2a5b382602f0247b577"
+workers_dev = true
+
+# Cron trigger: every 5 minutes
+[triggers]
+crons = ["*/5 * * * *"]
