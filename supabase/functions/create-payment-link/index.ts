@@ -94,14 +94,26 @@ serve(async (req) => {
     // ACH only — low fees (0.8% capped at $5) vs card (2.9% + $0.30)
     params.append("payment_method_types[0]", "us_bank_account");
 
-    // Add metadata for tracking
-    if (person_id) params.append("metadata[person_id]", person_id);
-    if (person_name) params.append("metadata[person_name]", person_name);
-    if (category) params.append("metadata[category]", category);
-    if (assignment_id) params.append("metadata[assignment_id]", assignment_id);
+    // Add metadata for tracking. Stripe stores this on BOTH the Payment Link AND on
+    // each PaymentIntent it creates (via payment_intent_data[metadata]). The webhook
+    // fires on payment_intent.* events and reads the PI's metadata to link the
+    // charge back to a person/assignment in our DB. Without payment_intent_data
+    // mirroring, the PI arrives with metadata={} and the webhook can't tie it back.
+    const mirrorMeta = (key: string, value: string) => {
+      params.append(`metadata[${key}]`, value);
+      params.append(`payment_intent_data[metadata][${key}]`, value);
+    };
+    if (person_id) mirrorMeta("person_id", person_id);
+    if (person_name) mirrorMeta("person_name", person_name);
+    if (category) mirrorMeta("payment_type", category);
+    if (assignment_id) {
+      mirrorMeta("assignment_id", assignment_id);
+      mirrorMeta("reference_type", "assignment");
+      mirrorMeta("reference_id", assignment_id);
+    }
     if (metadata) {
       for (const [k, v] of Object.entries(metadata)) {
-        params.append(`metadata[${k}]`, v);
+        mirrorMeta(k, v);
       }
     }
 

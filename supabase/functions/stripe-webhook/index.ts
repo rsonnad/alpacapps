@@ -14,8 +14,9 @@
  * - transfer.paid → payout completed
  * - transfer.failed → payout failed
  * - transfer.reversed → payout returned
- * - payment_intent.succeeded → inbound payment completed + confirmation email
- * - payment_intent.payment_failed → inbound payment failed
+ * - payment_intent.processing → inbound payment in flight (ACH submitted); upserts pending row
+ * - payment_intent.succeeded → inbound payment completed + confirmation email; upserts row if external
+ * - payment_intent.payment_failed → inbound payment failed; upserts failed row if external
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
@@ -65,6 +66,91 @@ async function verifyStripeWebhook(rawBody: string, signature: string | null, se
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
   return expectedHex === v1;
+}
+
+/**
+ * For PaymentIntents created outside our app (Stripe Dashboard, hosted Payment Links
+ * without app metadata, manual invoices), fetch the latest charge so we can populate
+ * person_name from billing_details. Returns null on any failure.
+ */
+async function fetchChargeBillingName(
+  secretKey: string,
+  chargeId: string | null
+): Promise<{ name: string | null; email: string | null }> {
+  if (!chargeId || !secretKey) return { name: null, email: null };
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/charges/${chargeId}`, {
+      headers: { Authorization: `Bearer ${secretKey}` },
+    });
+    if (!res.ok) return { name: null, email: null };
+    const charge = await res.json() as {
+      billing_details?: { name?: string | null; email?: string | null };
+    };
+    return {
+      name: charge.billing_details?.name ?? null,
+      email: charge.billing_details?.email ?? null,
+    };
+  } catch (_e) {
+    return { name: null, email: null };
+  }
+}
+
+/**
+ * Insert a stripe_payments row for an externally-created PaymentIntent (Payment Link,
+ * Dashboard invoice, etc.). Idempotent: caller must verify no row exists for this PI
+ * before calling. Pulls amount from PI directly and person_name from the latest charge.
+ * Sets reference_type=null, reference_id=null when metadata doesn't link it to an
+ * assignment — the row is still useful as a Stripe-side receipt for the admin view.
+ */
+async function insertExternalPayment(
+  supabase: ReturnType<typeof createClient>,
+  pi: {
+    id: string;
+    amount?: number;
+    latest_charge?: string | null;
+    metadata?: Record<string, string>;
+    description?: string | null;
+    livemode?: boolean;
+  },
+  status: 'pending' | 'completed' | 'failed',
+  secretKey: string,
+  errorMessage?: string | null,
+): Promise<{ id: string; payment_type: string; amount: number; person_id: string | null; person_name: string | null } | null> {
+  const metadata = pi.metadata || {};
+  const billing = await fetchChargeBillingName(secretKey, pi.latest_charge ?? null);
+  const amountDollars = (pi.amount ?? 0) / 100;
+  const paymentType = metadata.payment_type || metadata.category || 'other';
+  const referenceType = metadata.reference_type || (metadata.assignment_id ? 'assignment' : null);
+  const referenceId = metadata.assignment_id || metadata.reference_id || null;
+  const personId = metadata.person_id || null;
+  const personName = metadata.person_name || billing.name || null;
+
+  const { data: inserted, error } = await supabase
+    .from('stripe_payments')
+    .insert({
+      payment_type: paymentType,
+      reference_type: referenceType,
+      reference_id: referenceId,
+      amount: amountDollars,
+      original_amount: amountDollars,
+      fee_amount: 0,
+      status,
+      stripe_payment_intent_id: pi.id,
+      stripe_charge_id: pi.latest_charge ?? null,
+      person_id: personId,
+      person_name: personName,
+      is_test: pi.livemode === false,
+      error_message: errorMessage ?? null,
+    })
+    .select('id, payment_type, amount, person_id, person_name')
+    .single();
+
+  if (error) {
+    console.error('insertExternalPayment failed:', error, 'PI:', pi.id);
+    return null;
+  }
+  console.log(`Inserted external stripe_payments row ${inserted.id} for PI ${pi.id} (${status})`);
+  return inserted as { id: string; payment_type: string; amount: number; person_id: string | null; person_name: string | null };
 }
 
 function formatCurrency(amount: number): string {
@@ -424,7 +510,7 @@ Deno.serve(async (req) => {
 
     const { data: config, error: configError } = await supabase
       .from('stripe_config')
-      .select('webhook_secret, sandbox_webhook_secret, test_mode')
+      .select('webhook_secret, sandbox_webhook_secret, test_mode, secret_key, sandbox_secret_key')
       .single();
 
     if (configError || !config) {
@@ -436,6 +522,7 @@ Deno.serve(async (req) => {
     }
 
     const webhookSecret = config.test_mode ? config.sandbox_webhook_secret : config.webhook_secret;
+    const activeSecretKey = (config.test_mode ? config.sandbox_secret_key : config.secret_key) || '';
     if (!webhookSecret) {
       console.warn('No webhook secret configured');
       return new Response(JSON.stringify({ received: true }), {
@@ -510,12 +597,71 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case 'payment_intent.processing': {
+        // ACH bank-debit submitted but not yet settled (3-5 business days in flight).
+        // Surfaces these in admin views so the room-rental gate can know "pending,
+        // do not trust as collected money yet."
+        const pi = event.data.object as {
+          id: string;
+          amount?: number;
+          latest_charge?: string | null;
+          metadata?: Record<string, string>;
+          description?: string | null;
+          livemode?: boolean;
+        };
+        const { data: existing } = await supabase
+          .from('stripe_payments')
+          .select('id, status')
+          .eq('stripe_payment_intent_id', pi.id);
+
+        if (existing?.length) {
+          for (const row of existing) {
+            if (row.status !== 'completed' && row.status !== 'failed') {
+              await supabase.from('stripe_payments').update({
+                status: 'pending',
+                updated_at: new Date().toISOString(),
+              }).eq('id', row.id);
+            }
+          }
+        } else {
+          await insertExternalPayment(supabase, pi, 'pending', activeSecretKey);
+        }
+        break;
+      }
+
       case 'payment_intent.succeeded': {
-        const pi = event.data.object as { id: string };
-        const { data: rows } = await supabase
+        const pi = event.data.object as {
+          id: string;
+          amount?: number;
+          latest_charge?: string | null;
+          metadata?: Record<string, string>;
+          description?: string | null;
+          livemode?: boolean;
+        };
+        const { data: existing } = await supabase
           .from('stripe_payments')
           .select('id, ledger_id, payment_type, amount, original_amount, fee_amount, person_id, person_name')
           .eq('stripe_payment_intent_id', pi.id);
+
+        let rows = existing;
+        if (!rows?.length) {
+          // Externally-created PaymentIntent (Payment Link without app metadata,
+          // Stripe Dashboard invoice). Insert a row so the admin views and
+          // confirmation email path work uniformly.
+          const inserted = await insertExternalPayment(supabase, pi, 'completed', activeSecretKey);
+          if (inserted) {
+            rows = [{
+              id: inserted.id,
+              ledger_id: null,
+              payment_type: inserted.payment_type,
+              amount: inserted.amount,
+              original_amount: inserted.amount,
+              fee_amount: 0,
+              person_id: inserted.person_id,
+              person_name: inserted.person_name,
+            }];
+          }
+        }
 
         const PAYMENT_TYPE_TO_CATEGORY: Record<string, string> = {
           rental_application: 'application_fee',
@@ -601,7 +747,16 @@ Deno.serve(async (req) => {
       }
 
       case 'payment_intent.payment_failed': {
-        const pi = event.data.object as { id: string; last_payment_error?: { message?: string } };
+        const pi = event.data.object as {
+          id: string;
+          amount?: number;
+          latest_charge?: string | null;
+          metadata?: Record<string, string>;
+          description?: string | null;
+          livemode?: boolean;
+          last_payment_error?: { message?: string };
+        };
+        const failMessage = pi.last_payment_error?.message || 'Payment failed';
         const { data: rows } = await supabase
           .from('stripe_payments')
           .select('id, ledger_id')
@@ -611,7 +766,7 @@ Deno.serve(async (req) => {
           for (const row of rows) {
             await supabase.from('stripe_payments').update({
               status: 'failed',
-              error_message: pi.last_payment_error?.message || 'Payment failed',
+              error_message: failMessage,
               updated_at: new Date().toISOString()
             }).eq('id', row.id);
             if (row.ledger_id) {
@@ -621,6 +776,10 @@ Deno.serve(async (req) => {
               }).eq('id', row.ledger_id);
             }
           }
+        } else {
+          // Critical case: ACH bounced 3-5 days after the room was already given.
+          // Insert a failed row so the admin views surface this.
+          await insertExternalPayment(supabase, pi, 'failed', activeSecretKey, failMessage);
         }
         break;
       }
