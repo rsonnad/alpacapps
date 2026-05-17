@@ -814,6 +814,25 @@
         });
     }
 
+    function fetchWithTimeout(url, opts, ms) {
+      var controller = new AbortController();
+      opts.signal = controller.signal;
+      var timeoutId = setTimeout(function() { controller.abort(); }, ms);
+      return fetch(url, opts).finally(function() { clearTimeout(timeoutId); });
+    }
+
+    function showRetryable(msg) {
+      showError('');
+      payBtn.disabled = false;
+      payBtn.innerHTML = '&#x21bb; Try Again';
+      payBtn.onclick = function(e) {
+        e.preventDefault();
+        showError('');
+        createPaymentIntentAndMount();
+      };
+      showError(msg);
+    }
+
     function createPaymentIntentAndMount() {
       var amount = getAmount();
       if (amount < 0.50) { showError('Minimum payment amount is $0.50'); return; }
@@ -825,7 +844,7 @@
       payBtn.disabled = true;
       payBtn.innerHTML = '<span class="spinner"></span> Preparing...';
 
-      fetch(SUPABASE_URL + '/functions/v1/process-stripe-payment', {
+      fetchWithTimeout(SUPABASE_URL + '/functions/v1/process-stripe-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -845,7 +864,7 @@
           buyer_email: presetEmail || null,
           payment_method: presetPaymentMethod,
         }),
-      })
+      }, 15000)
       .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
       .then(function(result) {
         if (!result.ok || !result.data.success) throw new Error(result.data.error || 'Failed to create payment');
@@ -879,9 +898,10 @@
       })
       .catch(function(err) {
         console.error('PaymentIntent error:', err);
-        showError(err.message || 'Error preparing payment.');
-        payBtn.disabled = false;
-        updatePayBtnText();
+        var msg = err.name === 'AbortError'
+          ? 'Connection timed out. Please check your internet and try again.'
+          : (err.message || 'Error preparing payment.');
+        showRetryable(msg);
       });
     }
 
@@ -899,6 +919,12 @@
       payBtn.innerHTML = '<span class="spinner"></span> Processing...';
       showError('');
 
+      var confirmTimeout = setTimeout(function() {
+        showError('Payment is taking longer than expected. Please do not close this page — if the payment went through, you will receive a confirmation email. You can also try again.');
+        payBtn.disabled = false;
+        updatePayBtnText();
+      }, 30000);
+
       stripe.confirmPayment({
         elements: elements,
         confirmParams: {
@@ -908,6 +934,7 @@
         redirect: 'if_required',
       })
       .then(function(result) {
+        clearTimeout(confirmTimeout);
         if (result.error) {
           showError(result.error.message);
           payBtn.disabled = false;
@@ -917,6 +944,7 @@
         }
       })
       .catch(function(err) {
+        clearTimeout(confirmTimeout);
         showError(err.message || 'Payment failed. Please try again.');
         payBtn.disabled = false;
         updatePayBtnText();
