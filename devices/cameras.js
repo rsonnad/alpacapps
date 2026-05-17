@@ -1554,13 +1554,13 @@ function renderEvents() {
     </div>`;
   }).join('');
 
-  // Auto-select first if none selected
+  // Auto-select first if none selected (don't scroll page on initial load)
   if (selectedEventIdx < 0 && filtered.length) {
-    window.__selectEvent(0);
+    window.__selectEvent(0, { scroll: false });
   }
 }
 
-window.__selectEvent = function(idx) {
+window.__selectEvent = function(idx, opts) {
   const filtered = getFilteredEvents();
   const ev = filtered[idx];
   if (!ev) return;
@@ -1571,9 +1571,11 @@ window.__selectEvent = function(idx) {
     el.classList.toggle('evt-thumb--active', i === idx);
   });
 
-  // Scroll active into view in the grid
-  const activeEl = document.querySelector('.evt-thumb--active');
-  if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Scroll active into view in the grid (skip on auto-select to avoid page jump)
+  if (opts?.scroll !== false) {
+    const activeEl = document.querySelector('.evt-thumb--active');
+    if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 
   // Update preview
   const cameraNames = getCameraNameMap();
