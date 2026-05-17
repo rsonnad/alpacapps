@@ -1,12 +1,12 @@
 {
-  "version": "v260516.01 11:03p",
-  "release": 1514,
-  "sha": "5c4d44b64",
-  "fullSha": "5c4d44b6475e471232248d0000513fef139ced4d",
+  "version": "v260516.02 11:08p",
+  "release": 1515,
+  "sha": "c4529a7f7",
+  "fullSha": "c4529a7f7e2a345246713c56f762c61c3dfac06e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T04:03:37+00:00",
-  "commits": [{"sha":"5c4d44b64","message":"Add /intranet/ TOC landing for staff/admin/oracle roles","author":"Rahul"}]
+  "pushedAt": "2026-05-17T04:08:56+00:00",
+  "commits": [{"sha":"c4529a7f7","message":"Make /intranet/ self-render — no broken image, always shows nav","author":"Rahul"}]
 }
