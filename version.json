@@ -1,12 +1,12 @@
 {
-  "version": "v260517.02 12:21p",
-  "release": 1517,
-  "sha": "b15bf23d2",
-  "fullSha": "b15bf23d2add1982eb2d3bd3e576ad112576258f",
+  "version": "v260517.04 12:25p",
+  "release": 1519,
+  "sha": "842480e8e",
+  "fullSha": "842480e8ed8cee0bec5d7e11d91776131e5f0945",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T17:21:05+00:00",
-  "commits": [{"sha":"b15bf23d2","message":"Polish Rahul bio layout and thumbnail","author":"Rahul"}]
+  "pushedAt": "2026-05-17T17:25:30+00:00",
+  "commits": [{"sha":"842480e8e","message":"Rename cameras (Front Yard / Sparadise) and reorder top 3","author":"Rahul"}]
 }
