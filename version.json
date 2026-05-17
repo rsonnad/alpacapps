@@ -1,12 +1,12 @@
 {
-  "version": "v260517.05 12:28p",
-  "release": 1520,
-  "sha": "74a0e79a1",
-  "fullSha": "74a0e79a10a090219638f33d76bf480231652426",
+  "version": "v260517.06 12:32p",
+  "release": 1521,
+  "sha": "dfcafdc2e",
+  "fullSha": "dfcafdc2ef84a626b53d4c608a8f585814b22748",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T17:28:18+00:00",
-  "commits": [{"sha":"74a0e79a1","message":"Add Rahul bio video label","author":"Rahul"}]
+  "pushedAt": "2026-05-17T17:32:06+00:00",
+  "commits": [{"sha":"dfcafdc2e","message":"Bust cameras.js cache (v=6) + skip page scroll on event auto-select","author":"Rahul"}]
 }
