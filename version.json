@@ -1,12 +1,12 @@
 {
-  "version": "v260517.08 12:52p",
-  "release": 1523,
-  "sha": "766f88191",
-  "fullSha": "766f8819121854fc3c287340b0d2d1e45672caad",
+  "version": "v260517.09 1:15p",
+  "release": 1524,
+  "sha": "e14388a28",
+  "fullSha": "e14388a28ce1e2d5147a65f3b4df3da399161437",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T17:52:09+00:00",
-  "commits": [{"sha":"766f88191","message":"Refine Rahul bio hero layout","author":"Rahul"}]
+  "pushedAt": "2026-05-17T18:15:55+00:00",
+  "commits": [{"sha":"e14388a28","message":"Restart camera streams on tab refocus (visibilitychange)","author":"Rahul"}]
 }
