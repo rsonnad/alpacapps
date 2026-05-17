@@ -1301,7 +1301,7 @@ const TOOL_DECLARATIONS = [
       properties: {
         camera_name: {
           type: "string",
-          description: "Camera name from the camera list (e.g., 'Alpacamera', 'Front Of House', 'Side Yard')",
+          description: "Camera name from the camera list (e.g., 'Alpacamera', 'Front Yard', 'Sparadise')",
         },
       },
       required: ["camera_name"],
