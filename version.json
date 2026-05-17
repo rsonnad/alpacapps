@@ -1,12 +1,12 @@
 {
-  "version": "v260516.02 11:08p",
-  "release": 1515,
-  "sha": "c4529a7f7",
-  "fullSha": "c4529a7f7e2a345246713c56f762c61c3dfac06e",
-  "actor": "rsonnad",
+  "version": "v260517.01 11:22a",
+  "release": 1516,
+  "sha": "a512fcb70",
+  "fullSha": "a512fcb70a08151419fe9fc01290b8ff10e3236b",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T04:08:56+00:00",
-  "commits": [{"sha":"c4529a7f7","message":"Make /intranet/ self-render — no broken image, always shows nav","author":"Rahul"}]
+  "pushedAt": "2026-05-17T16:22:09+00:00",
+  "commits": [{"sha":"a512fcb70","message":"Add timeout + retry to /pay/ payment flow","author":"Sonia Wendorff"}]
 }
