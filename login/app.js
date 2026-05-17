@@ -82,6 +82,10 @@ function getRedirectTarget(role) {
   else if (target === '/staff/' && ['resident', 'associate'].includes(role)) {
     target = '/devices/cameras.html';
   }
+  // Staff/admin/oracle land on the intranet TOC instead of the bare /staff/ redirect.
+  else if (target === '/staff/' && ['staff', 'admin', 'oracle'].includes(role)) {
+    target = '/intranet/';
+  }
   return target;
 }
 

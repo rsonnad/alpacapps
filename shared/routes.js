@@ -103,6 +103,11 @@ export const ROUTES = {
     home: '/devcontrol/',
   },
 
+  // Intranet TOC — landing page for staff/admin/oracle roles.
+  intranet: {
+    home: '/intranet/',
+  },
+
   // Public rentals deep links — moved from /spaces/* to /rentals/* in Phase 4.
   // Keep ROUTES.public.rentals === ROUTES.rentals.home in lockstep.
   rentals: {
