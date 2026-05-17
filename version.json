@@ -1,12 +1,12 @@
 {
-  "version": "v260517.06 12:32p",
-  "release": 1521,
-  "sha": "dfcafdc2e",
-  "fullSha": "dfcafdc2ef84a626b53d4c608a8f585814b22748",
+  "version": "v260517.07 12:33p",
+  "release": 1522,
+  "sha": "1a3d2d48c",
+  "fullSha": "1a3d2d48ce7683a38482dbf39c4d7a7c048bb613",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T17:32:06+00:00",
-  "commits": [{"sha":"dfcafdc2e","message":"Bust cameras.js cache (v=6) + skip page scroll on event auto-select","author":"Rahul"}]
+  "pushedAt": "2026-05-17T17:33:59+00:00",
+  "commits": [{"sha":"1a3d2d48c","message":"Stripe webhook: upsert rows for externally-created PaymentIntents","author":"Rahul"}]
 }
