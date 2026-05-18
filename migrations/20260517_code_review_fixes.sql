@@ -100,6 +100,11 @@ CREATE INDEX IF NOT EXISTS idx_time_entries_payouts_list
 -- Service-role bypasses RLS, so admin tools and edge functions still work.
 -- An associate authenticated through PostgREST may only insert/update/delete
 -- rows whose associate_id matches their own profile.
+--
+-- Note: time_entries already has policies (associates_read_own_entries etc.
+-- from a prior migration) that cover the same intent. The helper function is
+-- still useful for explicit ownership checks in service code. Leave the
+-- existing policies in place — they already enforce ownership.
 -- =============================================================
 ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;
 
@@ -114,60 +119,14 @@ AS $$
   LIMIT 1
 $$;
 
-DROP POLICY IF EXISTS "Associates read own time entries" ON time_entries;
-CREATE POLICY "Associates read own time entries" ON time_entries
-  FOR SELECT
-  USING (
-    associate_id = current_associate_profile_id()
-    OR EXISTS (
-      SELECT 1 FROM app_users
-      WHERE auth_user_id = auth.uid()
-        AND role IN ('admin', 'oracle', 'staff')
-    )
-  );
-
-DROP POLICY IF EXISTS "Associates insert own time entries" ON time_entries;
-CREATE POLICY "Associates insert own time entries" ON time_entries
-  FOR INSERT
-  WITH CHECK (
-    associate_id = current_associate_profile_id()
-    OR EXISTS (
-      SELECT 1 FROM app_users
-      WHERE auth_user_id = auth.uid()
-        AND role IN ('admin', 'oracle', 'staff')
-    )
-  );
-
-DROP POLICY IF EXISTS "Associates update own time entries" ON time_entries;
-CREATE POLICY "Associates update own time entries" ON time_entries
-  FOR UPDATE
-  USING (
-    associate_id = current_associate_profile_id()
-    OR EXISTS (
-      SELECT 1 FROM app_users
-      WHERE auth_user_id = auth.uid()
-        AND role IN ('admin', 'oracle', 'staff')
-    )
-  )
-  WITH CHECK (
-    associate_id = current_associate_profile_id()
-    OR EXISTS (
-      SELECT 1 FROM app_users
-      WHERE auth_user_id = auth.uid()
-        AND role IN ('admin', 'oracle', 'staff')
-    )
-  );
-
-DROP POLICY IF EXISTS "Admin delete time entries" ON time_entries;
-CREATE POLICY "Admin delete time entries" ON time_entries
-  FOR DELETE
-  USING (
-    EXISTS (
-      SELECT 1 FROM app_users
-      WHERE auth_user_id = auth.uid()
-        AND role IN ('admin', 'oracle')
-    )
-  );
+-- =============================================================
+-- signature_audit_log RLS policy. 015 created RLS + policy, but the
+-- policy was missing in prod (RLS on, no rows visible to anyone but
+-- service role). Re-create it.
+-- =============================================================
+DROP POLICY IF EXISTS "Service role full access" ON signature_audit_log;
+CREATE POLICY "Service role full access" ON signature_audit_log
+  FOR ALL USING (true) WITH CHECK (true);
 
 -- =============================================================
 -- #4 + #17 + #31 + #32: Audit log enhancements
@@ -381,20 +340,21 @@ BEGIN
     p_person->>'first_name', p_person->>'last_name', p_person->>'email',
     p_person->>'phone', p_person->>'whatsapp',
     NULLIF(p_person->>'date_of_birth','')::DATE,
-    p_person->>'gender', p_person->>'coliving_experience',
+    NULLIF(p_person->>'gender','')::gender_type,
+    p_person->>'coliving_experience',
     p_person->>'life_focus', p_person->>'visiting_guide_response',
     p_person->>'desired_timeframe', p_person->>'preferred_accommodation',
     p_person->>'volunteer_interest', p_person->>'pets', p_person->>'photo_url',
     p_person->>'referral_source', p_person->>'instagram', p_person->>'facebook',
     p_person->>'x_handle',
-    COALESCE(p_person->>'status', 'candidate'),
+    COALESCE(NULLIF(p_person->>'status','')::person_status, 'candidate'::person_status),
     p_person->>'notes'
   )
-  RETURNING id INTO v_person_id;
+  RETURNING people.id INTO v_person_id;
 
   INSERT INTO rental_applications (person_id, application_status)
   VALUES (v_person_id, COALESCE(p_app->>'application_status', 'inquiry'))
-  RETURNING id, status_token INTO v_app_id, v_token;
+  RETURNING rental_applications.id, rental_applications.status_token INTO v_app_id, v_token;
 
   RETURN QUERY SELECT v_person_id, v_app_id, v_token;
 END;
