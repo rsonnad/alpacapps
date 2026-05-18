@@ -162,11 +162,39 @@ async function loadSpaces() {
       spacesMap[s.id] = s.parent?.name ? `${s.name} (${s.parent.name})` : s.name;
     }
 
+    // Last-used per space for this associate (derived from time_entries)
+    const lastUsed = {};
+    if (profile?.id) {
+      const { data: recent, error: recentErr } = await supabase
+        .from('time_entries')
+        .select('space_id, clock_in')
+        .eq('associate_id', profile.id)
+        .not('space_id', 'is', null)
+        .order('clock_in', { ascending: false })
+        .limit(500);
+      if (recentErr) {
+        console.warn('Could not load recent clock-ins for space sorting:', recentErr);
+      } else {
+        for (const e of (recent || [])) {
+          if (e.space_id && !lastUsed[e.space_id]) lastUsed[e.space_id] = e.clock_in;
+        }
+      }
+    }
+
+    const labelOf = (s) => s.parent?.name ? `${s.name} (${s.parent.name})` : s.name;
+    const sortedSpaces = [...(data || [])].sort((a, b) => {
+      const aLast = lastUsed[a.id];
+      const bLast = lastUsed[b.id];
+      if (aLast && bLast) return bLast < aLast ? -1 : bLast > aLast ? 1 : 0;
+      if (aLast) return -1;
+      if (bLast) return 1;
+      return labelOf(a).localeCompare(labelOf(b));
+    });
+
     const sel = document.getElementById('spaceSelector');
     let opts = '<option value="">Select space...</option>';
-    for (const s of (data || [])) {
-      const label = s.parent?.name ? `${s.name} (${s.parent.name})` : s.name;
-      opts += `<option value="${s.id}">${escapeHtml(label)}</option>`;
+    for (const s of sortedSpaces) {
+      opts += `<option value="${s.id}">${escapeHtml(labelOf(s))}</option>`;
     }
     opts += '<option value="virtual">Virtual</option>';
     opts += '<option value="other">Other</option>';
