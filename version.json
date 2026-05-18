@@ -1,12 +1,12 @@
 {
-  "version": "v260517.12 10:22p",
-  "release": 1527,
-  "sha": "0381942c8",
-  "fullSha": "0381942c8b3b41a35a03e4d2ee9a2993c9462152",
+  "version": "v260517.13 10:34p",
+  "release": 1528,
+  "sha": "0b8ae4f2f",
+  "fullSha": "0b8ae4f2f0b1fc95927bb2fa805081af0b6ac0a7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-18T03:22:29+00:00",
-  "commits": [{"sha":"0381942c8","message":"Sync routes.ts after adding admin.applications","author":"Paca"}]
+  "pushedAt": "2026-05-18T03:34:28+00:00",
+  "commits": [{"sha":"0b8ae4f2f","message":"AA17 fixups: RPC enum casts, sig_audit_log RLS, drop dupe time_entries policies","author":"Paca"}]
 }
