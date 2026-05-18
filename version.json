@@ -1,12 +1,12 @@
 {
-  "version": "v260518.03 2:08a",
-  "release": 1531,
-  "sha": "c6064dc45",
-  "fullSha": "c6064dc45580c11385a2652f9dba044f84d174d4",
+  "version": "v260518.04 12:40p",
+  "release": 1532,
+  "sha": "33a320936",
+  "fullSha": "33a3209364024d0820e17b1335902bf793cda9f5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-18T07:08:48+00:00",
-  "commits": [{"sha":"643c02978","message":"fix(qa): user-menu Intranet link pointed to lighting page","author":"Paca"},{"sha":"257b076e3","message":"fix(qa): admin/staff tabs wrapped to multiple lines on desktop","author":"Paca"},{"sha":"c6064dc45","message":"polish(qa): intranet TOC a11y + meta improvements","author":"Paca"}]
+  "pushedAt": "2026-05-18T17:40:58+00:00",
+  "commits": [{"sha":"33a320936","message":"feat(photos): add Garage Mahal studio link in new Spaces section","author":"Rahul"}]
 }
