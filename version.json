@@ -1,12 +1,12 @@
 {
-  "version": "v260517.10 2:37p",
-  "release": 1525,
-  "sha": "a931310a4",
-  "fullSha": "a931310a4824e2b394e17991cb47f275824aefc8",
+  "version": "v260517.12 10:22p",
+  "release": 1527,
+  "sha": "0381942c8",
+  "fullSha": "0381942c8b3b41a35a03e4d2ee9a2993c9462152",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-17T19:37:33+00:00",
-  "commits": [{"sha":"43289b3d7","message":"Add wiz-watchdog: auto-recover unavailable WiZ bulbs in HA","author":"Paca"},{"sha":"a931310a4","message":"Merge wiz-watchdog (auto-recover unavailable WiZ bulbs)","author":"Paca"}]
+  "pushedAt": "2026-05-18T03:22:29+00:00",
+  "commits": [{"sha":"0381942c8","message":"Sync routes.ts after adding admin.applications","author":"Paca"}]
 }
