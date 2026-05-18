@@ -1,12 +1,12 @@
 {
-  "version": "v260517.13 10:34p",
-  "release": 1528,
-  "sha": "0b8ae4f2f",
-  "fullSha": "0b8ae4f2f0b1fc95927bb2fa805081af0b6ac0a7",
+  "version": "v260518.02 1:29a",
+  "release": 1530,
+  "sha": "b4b970c1d",
+  "fullSha": "b4b970c1d69cb46ee94638323317ef09ca2d1071",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-18T03:34:28+00:00",
-  "commits": [{"sha":"0b8ae4f2f","message":"AA17 fixups: RPC enum casts, sig_audit_log RLS, drop dupe time_entries policies","author":"Paca"}]
+  "pushedAt": "2026-05-18T06:29:15+00:00",
+  "commits": [{"sha":"b4b970c1d","message":"Strip SignWell from UI + edge function messages","author":"Paca"}]
 }
