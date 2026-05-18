@@ -49,7 +49,7 @@ function getSmsBody(type: SmsType, data: Record<string, any>): string {
       return `Hi ${data.first_name}, we received your $${data.amount} deposit.${data.remaining_balance > 0 ? ` Remaining: $${data.remaining_balance}.` : ' All deposits received!'} Thank you! - Alpaca Playhouse`;
 
     case "lease_sent":
-      return `Hi ${data.first_name}, your lease agreement has been sent for e-signature. Please check your email from SignWell and sign at your earliest convenience. - Alpaca Playhouse`;
+      return `Hi ${data.first_name}, your lease agreement is ready for e-signature. Please check your email for the signing link and sign at your earliest convenience. - Alpaca Playhouse`;
 
     case "lease_signed":
       return `Hi ${data.first_name}, your lease has been signed! Next: submit your deposits. Details sent via email. - Alpaca Playhouse`;

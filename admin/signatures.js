@@ -32,10 +32,9 @@ async function loadSignatures() {
 
     // AA17 #29: compute rentals that have a tenant signature but no
     // landlord countersign yet — surface as a banner so admins can
-    // chase them down. For the native flow we usually auto-sign the
-    // landlord at process-signature time, so any tenant row without a
-    // matching landlord row is either a SignWell-flow gap or a failed
-    // auto-sign worth investigating.
+    // chase them down. The native flow auto-signs the landlord at
+    // process-signature time, so any tenant row without a matching
+    // landlord row is a failed auto-sign worth investigating.
     const tenantApps = new Set(sigData.filter(r => r.signer_role === 'tenant' && r.rental_application_id).map(r => r.rental_application_id));
     const landlordApps = new Set(sigData.filter(r => r.signer_role === 'landlord' && r.rental_application_id).map(r => r.rental_application_id));
     const awaitingCountersign = [...tenantApps].filter(id => !landlordApps.has(id));

@@ -32,7 +32,6 @@ interface OverdueItem {
   daysOverdue: number;
   rateTerm?: string;
   spaceName?: string;
-  signwellDocumentId?: string;
 }
 
 function getEscalationLevel(daysOverdue: number): number | null {
@@ -308,7 +307,7 @@ function buildContractReminderEmail(
         </div>
 
         <div style="text-align:center;margin-bottom:24px;">
-          <p style="color:#7d6f74;font-size:14px;margin-bottom:12px;">Please check your email for the signing link from SignWell, or look for the original email titled "Signature Requested".</p>
+          <p style="color:#7d6f74;font-size:14px;margin-bottom:12px;">Please check your email for the signing link, or look for the original email titled "Please Sign".</p>
         </div>
 
         <p style="color:#7d6f74;font-size:13px;margin-top:20px;line-height:1.5;">If you've already signed, please disregard this notice &mdash; it may take a moment to process. If you have questions about the lease terms, reply to this email.</p>
@@ -330,7 +329,7 @@ Space: ${spaceName}
 Sent On: ${formatDate(item.dueDate)}
 Days Waiting: ${daysSince} days
 
-Please check your email for the signing link from SignWell, or look for the original email titled "Signature Requested".
+Please check your email for the signing link, or look for the original email titled "Please Sign".
 
 If you've already signed, please disregard this notice. If you have questions about the lease terms, reply to this email.
 
@@ -575,7 +574,7 @@ Deno.serve(async (req) => {
     const { data: unsignedContracts, error: contractError } = await supabase
       .from('rental_applications')
       .select(`
-        id, agreement_status, agreement_sent_at, signwell_document_id,
+        id, agreement_status, agreement_sent_at,
         approved_move_in, approved_lease_end,
         is_archived, is_test,
         approved_space:approved_space_id (id, name),
@@ -624,7 +623,6 @@ Deno.serve(async (req) => {
           dueDate: app.agreement_sent_at.split('T')[0],
           daysOverdue: daysSinceSent,
           spaceName: space?.name || 'your space',
-          signwellDocumentId: app.signwell_document_id,
         });
       }
     }
@@ -987,7 +985,7 @@ Alpaca Playhouse`;
               recipient_type: 'payer',
               status: 'sent',
               escalation_level: level,
-              metadata: { resend_id: resendData.id, signwell_document_id: item.signwellDocumentId },
+              metadata: { resend_id: resendData.id },
             });
             remindersSent++;
             adminContractDigest.push(item);

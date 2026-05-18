@@ -267,7 +267,6 @@ const CLOUD_SERVICES = {
   'Communications': [
     { name: 'Resend', desc: 'Transactional email (100/day free) — notifications, branded templates, inbound webhook', badge: badge('Active', 'green') },
     { name: 'Telnyx', desc: 'SMS sending/receiving for property notifications', badge: badge('Active', 'green') },
-    { name: 'SignWell', desc: 'E-signature platform for rental agreements and legal documents', badge: badge('Active', 'blue') },
     { name: 'Vapi', desc: 'Voice AI assistant — PAI phone interface for concierge calls', badge: badge('Active', 'blue') },
   ],
   'AI & Data': [
@@ -367,7 +366,7 @@ const EDGE_FUNCTION_GROUPS = {
 
 const DB_TABLE_GROUPS = [
   { name: 'Core Entities', icon: '🏠', color: '#b8a88a', desc: 'Spaces, people, bookings, media', tables: ['spaces', 'people', 'assignments', 'assignment_spaces', 'media', 'media_spaces', 'media_tags', 'media_tag_assignments', 'app_users', 'user_invitations', 'rental_applications', 'documents', 'document_index'] },
-  { name: 'Payments & Accounting', icon: '💳', color: '#059669', desc: 'Payments, ledger, billing config', tables: ['payments', 'ledger_entries', 'api_usage_log', 'square_config', 'stripe_config', 'signwell_config', 'payment_methods', 'pending_payments'] },
+  { name: 'Payments & Accounting', icon: '💳', color: '#059669', desc: 'Payments, ledger, billing config', tables: ['payments', 'ledger_entries', 'api_usage_log', 'square_config', 'stripe_config', 'payment_methods', 'pending_payments'] },
   { name: 'Communications', icon: '💬', color: '#2563eb', desc: 'SMS, email, templates', tables: ['sms_messages', 'telnyx_config', 'inbound_emails', 'pending_email_approvals', 'email_type_approval_config', 'email_templates'] },
   { name: 'Smart Home', icon: '🔌', color: '#7c3aed', desc: 'IoT devices, thermostats, vehicles', tables: ['govee_config', 'govee_devices', 'govee_models', 'nest_config', 'nest_devices', 'thermostat_rules', 'tesla_accounts', 'vehicles', 'vehicle_drivers', 'vehicle_rentals', 'lg_config', 'lg_appliances', 'push_tokens', 'laundry_watchers', 'anova_config', 'anova_ovens', 'glowforge_config', 'glowforge_machines', 'printer_config', 'printer_devices', 'camera_streams'] },
   { name: 'Audio & Media', icon: '🎵', color: '#db2777', desc: 'Sonos zones, Spotify, schedules', tables: ['sonos_config', 'sonos_schedules', 'sonos_zones', 'spotify_config'] },

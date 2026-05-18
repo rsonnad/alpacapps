@@ -56,7 +56,7 @@ const HIGH_RISK_CODES = [
   'EDGE_FUNCTION_ERROR',    // Server-side edge function failure
   'PAYMENT_ERROR',          // Payment processing failure
   'AUTH_ERROR',             // Authentication system failure
-  'SIGNWELL_ERROR',         // E-signature failure
+  'SIGNING_ERROR',          // E-signature failure
   'PAYOUT_ERROR',           // PayPal payout failure
 ];
 

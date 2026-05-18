@@ -20,15 +20,17 @@ const FONT_SIZE_H1 = 14;
 const FONT_SIZE_H2 = 12;
 const FONT_SIZE_H3 = 11;
 
-// Conversion factor: mm to SignWell 72-DPI pixels
-const MM_TO_SW_PX = 72 / 25.4; // ≈ 2.835
+// Conversion factor: mm to PDF points (72 points per inch).
+// Returned in signaturePositions so future overlay tools have the offsets;
+// the native signing flow doesn't actually consume these values.
+const MM_TO_PDF_PT = 72 / 25.4; // ≈ 2.835
 
 /**
  * Parse markdown-like content and render to PDF
  * Supports: # headers, **bold**, bullet lists, horizontal rules
  *
- * Returns signaturePositions with page numbers and Y coordinates (in SignWell 72-DPI pixels)
- * for dynamically placing SignWell signature fields on the correct page.
+ * Returns signaturePositions with page numbers and Y coordinates (in PDF points)
+ * for dynamically placing signature fields on the correct page.
  */
 async function generateLeasePdf(markdownContent, filename = 'lease-agreement.pdf') {
   // Dynamically load jsPDF from CDN if not already loaded
@@ -45,7 +47,7 @@ async function generateLeasePdf(markdownContent, filename = 'lease-agreement.pdf
 
   let y = MARGIN_TOP;
 
-  // Track signature field positions for SignWell overlay
+  // Track signature field positions for overlay
   const signaturePositions = {
     leaseSignaturePage: null,
     landlordSignatureY: null,
@@ -89,21 +91,21 @@ async function generateLeasePdf(markdownContent, filename = 'lease-agreement.pdf
       signaturePositions.waiverSignaturePage = doc.internal.getNumberOfPages();
     }
 
-    // Track signature line positions (convert mm → SignWell 72-DPI pixels)
+    // Track signature line positions (convert mm → PDF points)
     if (insideSignatureSection) {
       if (trimmedLine.includes('Landlords Signature:') || trimmedLine.includes("Landlord's Signature:")) {
-        // Place SignWell field slightly below text baseline for signing area
-        signaturePositions.landlordSignatureY = Math.round((y + 2) * MM_TO_SW_PX);
+        // Place signature field slightly below text baseline for signing area
+        signaturePositions.landlordSignatureY = Math.round((y + 2) * MM_TO_PDF_PT);
       }
       if (trimmedLine.includes('Tenants Signature:') || trimmedLine.includes("Tenant's Signature:")) {
-        signaturePositions.tenantSignatureY = Math.round((y + 2) * MM_TO_SW_PX);
+        signaturePositions.tenantSignatureY = Math.round((y + 2) * MM_TO_PDF_PT);
       }
       // Track Date: lines — match the one right after each signature block
       if (trimmedLine.startsWith('Date:') && trimmedLine.includes('___')) {
         if (signaturePositions.landlordSignatureY && !signaturePositions.landlordDateY) {
-          signaturePositions.landlordDateY = Math.round((y + 1) * MM_TO_SW_PX);
+          signaturePositions.landlordDateY = Math.round((y + 1) * MM_TO_PDF_PT);
         } else if (signaturePositions.tenantSignatureY && !signaturePositions.tenantDateY) {
-          signaturePositions.tenantDateY = Math.round((y + 1) * MM_TO_SW_PX);
+          signaturePositions.tenantDateY = Math.round((y + 1) * MM_TO_PDF_PT);
         }
       }
     }
@@ -111,10 +113,10 @@ async function generateLeasePdf(markdownContent, filename = 'lease-agreement.pdf
     // Track waiver signature positions
     if (insideWaiverSignature) {
       if (trimmedLine.startsWith('Signature:') && trimmedLine.includes('___')) {
-        signaturePositions.waiverSignatureY = Math.round((y + 2) * MM_TO_SW_PX);
+        signaturePositions.waiverSignatureY = Math.round((y + 2) * MM_TO_PDF_PT);
       }
       if (trimmedLine.startsWith('Date:') && trimmedLine.includes('___') && signaturePositions.waiverSignatureY) {
-        signaturePositions.waiverDateY = Math.round((y + 1) * MM_TO_SW_PX);
+        signaturePositions.waiverDateY = Math.round((y + 1) * MM_TO_PDF_PT);
       }
     }
 
@@ -387,7 +389,7 @@ function generateLeaseFilename(tenantName, date = new Date()) {
  * @param {Object} options - Optional metadata
  * @param {string} options.tenantName - Tenant name for the filename
  * @param {number} options.leaseOnlyPageCount - If provided, the page count of the lease-only portion
- *   (before waiver was appended). Used for placing SignWell signature fields on the correct pages.
+ *   (before waiver was appended). Used for placing signature fields on the correct pages.
  */
 async function generateAndUploadLeasePdf(markdownContent, applicationId, options = {}) {
   const displayFilename = generateLeaseFilename(options.tenantName);
@@ -405,7 +407,7 @@ async function generateAndUploadLeasePdf(markdownContent, applicationId, options
     filename: displayFilename,
     pageCount,
     signaturePositions,
-    // If a lease-only page count was provided, pass it through for SignWell field placement
+    // If a lease-only page count was provided, pass it through for signature field placement
     leaseOnlyPageCount: options.leaseOnlyPageCount || pageCount,
   };
 }

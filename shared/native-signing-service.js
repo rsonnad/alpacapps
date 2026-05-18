@@ -1,6 +1,6 @@
 /**
  * Native Signing Service
- * Replaces SignWell with in-house e-signature flow.
+ * In-house e-signature flow.
  *
  * Admin-side service that:
  * 1. Generates a unique signing token

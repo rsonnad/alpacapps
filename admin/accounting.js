@@ -963,15 +963,6 @@ const API_VENDORS = {
     ],
     costUnit: 'segment',
   },
-  signwell: {
-    label: 'SignWell',
-    color: '#6366f1',
-    metrics: [
-      { key: 'documents', label: 'Documents', monthlyLimit: 25, limitNote: '25/month free' },
-    ],
-    costPer: 0,
-    costUnit: 'doc',
-  },
   gemini: {
     label: 'Gemini',
     color: '#4285f4',
@@ -1043,7 +1034,6 @@ async function loadApiUsage() {
       inboundEmailResult,
       imageGenResult,
       voiceCallResult,
-      signwellDocsResult,
     ] = await Promise.all([
       // api_usage_log (new table — may have data going forward)
       supabase.from('api_usage_log')
@@ -1071,12 +1061,6 @@ async function loadApiUsage() {
         .select('duration_seconds, cost_cents, created_at')
         .gte('created_at', monthStart)
         .lt('created_at', monthEnd),
-      // SignWell documents (from rental_applications — source of truth)
-      supabase.from('rental_applications')
-        .select('signwell_document_id, created_at')
-        .not('signwell_document_id', 'is', null)
-        .gte('created_at', monthStart)
-        .lt('created_at', monthEnd),
     ]);
 
     const apiLog = apiLogResult.data || [];
@@ -1084,7 +1068,6 @@ async function loadApiUsage() {
     const inboundEmails = inboundEmailResult.data || [];
     const imageGenJobs = imageGenResult.data || [];
     const voiceCalls = voiceCallResult.data || [];
-    const signwellDocs = signwellDocsResult.data || [];
 
     // Count outbound emails from api_usage_log (new logging)
     const emailsFromLog = apiLog.filter(r => r.vendor === 'resend');
@@ -1130,9 +1113,6 @@ async function loadApiUsage() {
     const anthropicCount = anthropicFromLog.length;
     const anthropicCost = anthropicFromLog.reduce((s, r) => s + (parseFloat(r.estimated_cost_usd) || 0), 0);
 
-    // SignWell — count from rental_applications (source of truth)
-    const signwellCount = signwellDocs.length;
-
     // Build vendor data
     const vendorData = [
       {
@@ -1153,15 +1133,6 @@ async function loadApiUsage() {
         rows: [
           { label: 'Outbound SMS', count: smsOutboundFinal, costEach: '$0.004' },
           { label: 'Inbound SMS', count: smsInboundFinal, costEach: '$0.001' },
-        ],
-      },
-      {
-        id: 'signwell',
-        label: 'SignWell',
-        color: '#6366f1',
-        totalCost: 0,
-        rows: [
-          { label: 'Documents', count: signwellCount, monthlyLimit: 25, limitNote: '25/month free' },
         ],
       },
       {
@@ -1197,7 +1168,7 @@ async function loadApiUsage() {
     ];
 
     // Filter out vendors with zero activity (but keep limit-sensitive ones always)
-    const alwaysShow = ['resend', 'telnyx', 'signwell'];
+    const alwaysShow = ['resend', 'telnyx'];
     const filtered = vendorData.filter(v =>
       alwaysShow.includes(v.id) ||
       v.rows.some(r => r.count > 0) ||
@@ -1296,7 +1267,6 @@ const SERVICE_LABELS = {
   supabase: 'Supabase',
   telnyx: 'Telnyx',
   resend: 'Resend',
-  signwell: 'SignWell',
   vapi: 'Vapi',
   other: 'Other',
 };
@@ -1309,7 +1279,6 @@ const SERVICE_COLORS = {
   supabase: '#3ecf8e',
   telnyx: '#00c08b',
   resend: '#000',
-  signwell: '#6366f1',
   vapi: '#5b21b6',
   other: '#6b7280',
 };

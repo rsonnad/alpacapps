@@ -31,7 +31,7 @@ export const FEATURES = {
   payments_paypal: { label: 'PayPal',    core: false, description: 'PayPal payments & payouts' },
 
   // Documents
-  esignatures:{ label: 'E-Signatures',core: false, description: 'SignWell e-signature integration' },
+  esignatures:{ label: 'E-Signatures',core: false, description: 'Native in-house e-signature flow' },
   documents:  { label: 'Documents',  core: false, description: 'Lease & event agreement templates' },
 
   // Smart home

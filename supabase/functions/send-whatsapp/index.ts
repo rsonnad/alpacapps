@@ -237,7 +237,7 @@ function getPlainTextBody(type: MessageType, data: Record<string, any>): string 
     case "deposit_received":
       return `Hi ${data.first_name}, we received your $${data.amount} deposit.${data.remaining_balance > 0 ? ` Remaining: $${data.remaining_balance}.` : " All deposits received!"} Thank you! - Alpaca Playhouse`;
     case "lease_sent":
-      return `Hi ${data.first_name}, your lease agreement has been sent for e-signature. Please check your email from SignWell. - Alpaca Playhouse`;
+      return `Hi ${data.first_name}, your lease agreement is ready for e-signature. Please check your email for the signing link. - Alpaca Playhouse`;
     case "lease_signed":
       return `Hi ${data.first_name}, your lease has been signed! Next: submit your deposits. Details sent via email. - Alpaca Playhouse`;
     case "move_in_confirmed":

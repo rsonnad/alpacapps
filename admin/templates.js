@@ -89,7 +89,6 @@ async function loadTemplatesPanel() {
   }
 
   await loadTemplateHistory();
-  await loadSignwellConfig();
 
   // Load event placeholder reference
   const eventPlaceholders = eventTemplateService.getAvailablePlaceholders();
@@ -484,7 +483,6 @@ function setupEventListeners() {
   // Lease template buttons
   document.getElementById('loadDefaultTemplateBtn')?.addEventListener('click', loadDefaultTemplate);
   document.getElementById('saveTemplateBtn')?.addEventListener('click', saveTemplate);
-  document.getElementById('saveSignwellConfigBtn')?.addEventListener('click', saveSignwellConfig);
 
   // Event template buttons
   document.getElementById('loadDefaultEventTemplateBtn')?.addEventListener('click', loadDefaultEventTemplate);
@@ -1227,47 +1225,6 @@ function loadDefaultVehicleRental() {
   document.getElementById('vehicleRentalTemplateContent').value = leaseTemplateService.getDefaultTemplate('vehicle_rental');
   document.getElementById('vehicleRentalTemplateName').value = 'Vehicle Rental Agreement';
   showToast('Default vehicle rental template loaded', 'info');
-}
-
-// =============================================
-// SIGNWELL CONFIG
-// =============================================
-
-async function loadSignwellConfig() {
-  try {
-    const { data, error } = await supabase
-      .from('signwell_config')
-      .select('*')
-      .single();
-
-    if (data) {
-      document.getElementById('signwellApiKey').value = data.api_key || '';
-      document.getElementById('signwellTestMode').checked = data.test_mode !== false;
-    }
-  } catch (e) {
-    console.error('Error loading SignWell config:', e);
-  }
-}
-
-async function saveSignwellConfig() {
-  const apiKey = document.getElementById('signwellApiKey').value.trim();
-  const testMode = document.getElementById('signwellTestMode').checked;
-
-  try {
-    const { error } = await supabase
-      .from('signwell_config')
-      .upsert({
-        id: 1,
-        api_key: apiKey || null,
-        test_mode: testMode,
-        updated_at: new Date().toISOString(),
-      });
-
-    if (error) throw error;
-    showToast('SignWell configuration saved', 'success');
-  } catch (e) {
-    showToast('Error saving config: ' + e.message, 'error');
-  }
 }
 
 // =============================================

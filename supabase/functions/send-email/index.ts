@@ -405,17 +405,17 @@ the Alpaca Playhouse property AI agent`
         html: `
           <h2>Please Sign Your Lease Agreement</h2>
           <p>Hi ${data.first_name},</p>
-          <p>Your lease agreement has been sent for electronic signature.</p>
-          <p>Please check your email from SignWell and complete the signing process at your earliest convenience.</p>
+          <p>Your lease agreement is ready for electronic signature.</p>
+          <p>Please check your email for the signing link and complete the signing process at your earliest convenience.</p>
           <p><strong>Important:</strong> The lease must be signed before we can proceed with your move-in.</p>
         `,
         text: `Please Sign Your Lease Agreement
 
 Hi ${data.first_name},
 
-Your lease agreement has been sent for electronic signature.
+Your lease agreement is ready for electronic signature.
 
-Please check your email from SignWell and complete the signing process at your earliest convenience.
+Please check your email for the signing link and complete the signing process at your earliest convenience.
 
 Important: The lease must be signed before we can proceed with your move-in.
 
