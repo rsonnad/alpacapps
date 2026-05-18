@@ -41,6 +41,27 @@ Deno.serve(async (req) => {
       );
     }
 
+    // AA17 #28: per-IP rate limit. Stops token enumeration / brute-force.
+    // 30 attempts / 10 min is plenty for legitimate retries.
+    const ipForLimit = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || req.headers.get('cf-connecting-ip')
+      || req.headers.get('x-real-ip')
+      || 'unknown';
+    try {
+      const { data: allowed } = await supabase.rpc('check_rate_limit', {
+        p_bucket: 'verify_identity',
+        p_ip: ipForLimit,
+        p_max_attempts: 30,
+        p_window_seconds: 600,
+      });
+      if (allowed === false) {
+        return new Response(
+          JSON.stringify({ error: 'Too many verification attempts — please wait a few minutes and try again.' }),
+          { status: 429, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+        );
+      }
+    } catch (_e) { /* fail open */ }
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       return new Response(

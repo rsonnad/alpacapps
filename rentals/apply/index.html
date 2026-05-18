@@ -967,6 +967,14 @@
       <form id="applicationForm" novalidate>
         <div id="errorBanner" class="error-banner hidden"></div>
 
+        <!-- AA17 #10: honeypot — must stay empty. Hidden off-screen,
+             skipped by tab order. Bots fill in every visible+hidden
+             field; humans never touch this one. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+          <label for="hp_url">Leave this field blank</label>
+          <input type="text" id="hp_url" name="hp_url" tabindex="-1" autocomplete="off">
+        </div>
+
         <!-- ============================== -->
         <!-- STEP 1: Community Fit Inquiry  -->
         <!-- ============================== -->
@@ -1509,6 +1517,65 @@
     const submitBtn = document.getElementById('submitBtn');
     const spaceSelect = document.getElementById('desired_space_id');
 
+    // ==========================================
+    // AA17 #26: form draft auto-save / restore
+    // Persists every input/textarea/select value to localStorage so a
+    // refresh doesn't blow away 20 minutes of typing. Cleared on submit
+    // and skipped for the honeypot + sensitive fields.
+    // ==========================================
+    const DRAFT_KEY = 'alpaca_apply_draft_v1';
+    const DRAFT_SKIP = new Set(['hp_url']);
+    function captureDraft() {
+      if (isStep2) return; // Step 2 has its own server-loaded state
+      const draft = {};
+      form.querySelectorAll('input, textarea, select').forEach(el => {
+        if (!el.name || DRAFT_SKIP.has(el.name) || el.type === 'file' || el.type === 'password') return;
+        if (el.type === 'checkbox' || el.type === 'radio') {
+          draft[el.name] = (draft[el.name] || []).concat(el.checked ? [el.value] : []);
+        } else {
+          draft[el.name] = el.value;
+        }
+      });
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ at: Date.now(), v: draft })); } catch (_e) { /* */ }
+    }
+    function restoreDraft() {
+      if (isStep2) return;
+      let raw = null;
+      try { raw = localStorage.getItem(DRAFT_KEY); } catch (_e) { return; }
+      if (!raw) return;
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch (_e) { return; }
+      // Expire after 7 days.
+      if (!parsed?.v || (Date.now() - (parsed.at || 0)) > 7 * 86400 * 1000) {
+        try { localStorage.removeItem(DRAFT_KEY); } catch (_e) { /* */ }
+        return;
+      }
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:#fdf6ee;border:1px solid #e8a94a;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;font-size:0.9rem;';
+      banner.innerHTML = `<span>We restored your in-progress application.</span><button type="button" style="background:#c34;color:white;border:none;border-radius:4px;padding:0.4rem 0.8rem;cursor:pointer;">Discard draft</button>`;
+      form.prepend(banner);
+      banner.querySelector('button').addEventListener('click', () => {
+        try { localStorage.removeItem(DRAFT_KEY); } catch (_e) { /* */ }
+        form.reset();
+        banner.remove();
+      });
+      const draft = parsed.v;
+      for (const [name, val] of Object.entries(draft)) {
+        const els = form.querySelectorAll(`[name="${name}"]`);
+        els.forEach(el => {
+          if (el.type === 'checkbox' || el.type === 'radio') {
+            const arr = Array.isArray(val) ? val : [val];
+            el.checked = arr.includes(el.value);
+          } else if (val != null) {
+            el.value = val;
+          }
+        });
+      }
+    }
+    form.addEventListener('input', () => { clearTimeout(window.__draftTimer); window.__draftTimer = setTimeout(captureDraft, 400); });
+    form.addEventListener('change', () => { clearTimeout(window.__draftTimer); window.__draftTimer = setTimeout(captureDraft, 200); });
+    document.addEventListener('DOMContentLoaded', restoreDraft);
+
     // =============================================
     // STEP 2 INITIALIZATION
     // =============================================
@@ -1844,45 +1911,36 @@
           personData.notes = `Age: ${dobValue}`;
         }
 
-        // Insert person
-        const personResponse = await fetch(`${SUPABASE_URL}/rest/v1/people`, {
+        // Single atomic call (AA17 #10 + #20): edge function enforces
+        // rate limit + honeypot + (optional) Turnstile, then RPC inserts
+        // person + rental_application in a transaction.
+        const honeypotEl = document.getElementById('hp_url');
+        const submitResp = await fetch(`${SUPABASE_URL}/functions/v1/submit-rental-inquiry`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': `Bearer ${SUPABASE_KEY}`,
             'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
           },
-          body: JSON.stringify(personData)
+          body: JSON.stringify({
+            person: personData,
+            application: { application_status: 'inquiry' },
+            hp: honeypotEl ? honeypotEl.value : '',
+            turnstile_token: window.__turnstileToken || null,
+          }),
         });
-
-        if (!personResponse.ok) {
-          const errorData = await personResponse.json();
-          throw new Error(errorData.message || 'Failed to submit inquiry');
+        if (!submitResp.ok) {
+          const errJson = await submitResp.json().catch(() => ({}));
+          throw new Error(errJson.error || 'Failed to submit inquiry');
         }
-
-        const [person] = await personResponse.json();
-
-        // Create rental application with status='inquiry'
-        const applicationData = {
-          person_id: person.id,
-          application_status: 'inquiry'
-        };
-
-        const applicationResponse = await fetch(`${SUPABASE_URL}/rest/v1/rental_applications`, {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-          },
-          body: JSON.stringify(applicationData)
-        });
-
-        if (!applicationResponse.ok) {
-          console.error('Failed to create rental application');
+        const submitJson = await submitResp.json();
+        const person = { id: submitJson.person_id };
+        // Save the status link so the success page can show "track your application".
+        if (submitJson.status_url) {
+          try { localStorage.setItem('alpaca_last_status_url', submitJson.status_url); } catch (_e) { /* */ }
         }
+        // #26: clear any saved draft now that the form is submitted.
+        try { localStorage.removeItem('alpaca_apply_draft_v1'); } catch (_e) { /* */ }
 
         // Send admin notification email
         const accommLabels = {

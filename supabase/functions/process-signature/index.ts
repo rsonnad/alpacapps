@@ -8,9 +8,13 @@
  *   token: string,
  *   signature_image: string,  // base64 PNG of the signature
  *   document_hash: string,    // SHA-256 of the document HTML the signer saw
- *   signer_name: string,
- *   signer_email: string,
+ *   document_html?: string,   // optional archival snapshot
+ *   contact_info_update?: object,
  * }
+ *
+ * NOTE: signer_name and signer_email are intentionally ignored if sent —
+ * they are resolved server-side from the signing token's person record
+ * (see #8 in AA17). Don't trust the body for signer identity.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
@@ -28,7 +32,9 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body = await req.json();
-    const { token, signature_image, document_hash, signer_name, signer_email, document_html, contact_info_update } = body;
+    // #8: ignore client-supplied signer_name/signer_email — we look them up
+    // from the token. Keep document_hash + signature_image + contact_info_update.
+    const { token, signature_image, document_hash, document_html, contact_info_update } = body;
 
     if (!token || !signature_image || !document_hash) {
       return jsonError('Missing required fields', 400);
@@ -40,6 +46,19 @@ Deno.serve(async (req) => {
       || req.headers.get('x-real-ip')
       || 'unknown';
     const userAgent = req.headers.get('user-agent') || 'unknown';
+
+    // #7 rate-limit signing attempts per IP — 20 / 10 minutes is plenty
+    // for retries while still cutting off scripted abuse. Failures are
+    // non-fatal (degrade open).
+    try {
+      const { data: allowed } = await supabase.rpc('check_rate_limit', {
+        p_bucket: 'process_signature',
+        p_ip: ipAddress,
+        p_max_attempts: 20,
+        p_window_seconds: 600
+      });
+      if (allowed === false) return jsonError('Too many signing attempts — please wait a few minutes and try again.', 429);
+    } catch (_e) { /* fail-open */ }
 
     // ── Find the document ──────────────────────────────────────────
 
@@ -128,15 +147,55 @@ Deno.serve(async (req) => {
       .getPublicUrl(sigPath);
     const signatureImageUrl = sigUrlData.publicUrl;
 
-    // ── Record audit log ───────────────────────────────────────────
+    // ── Resolve template provenance (#17) ──────────────────────────
+    // Look up the active lease + waiver templates so we can stamp their
+    // id+version into the audit log row. Mirrors what get-signing-document
+    // rendered. The waiver_template_id may be explicitly set on the app.
+    let leaseTemplate: any = null;
+    let waiverTemplate: any = null;
+    if (docType === 'rental') {
+      const { data: lease } = await supabase
+        .from('lease_templates')
+        .select('id, version')
+        .eq('is_active', true).eq('type', 'lease')
+        .order('version', { ascending: false }).limit(1).single();
+      leaseTemplate = lease;
+      if ((rentalApp as any)?.waiver_template_id) {
+        const { data: w } = await supabase
+          .from('lease_templates')
+          .select('id, version')
+          .eq('id', (rentalApp as any).waiver_template_id)
+          .single();
+        waiverTemplate = w;
+      } else {
+        const { data: w } = await supabase
+          .from('lease_templates')
+          .select('id, version')
+          .eq('is_active', true).eq('type', 'renter_waiver')
+          .order('version', { ascending: false }).limit(1).maybeSingle();
+        waiverTemplate = w;
+      }
+    } else {
+      const { data: et } = await supabase
+        .from('lease_templates')
+        .select('id, version')
+        .eq('is_active', true).eq('type', 'event_waiver')
+        .order('version', { ascending: false }).limit(1).maybeSingle();
+      leaseTemplate = et;
+    }
 
-    // ── Record tenant audit entry ───────────────────────────────────
-    const tenantAuditEntry = {
+    // ── Record audit log ───────────────────────────────────────────
+    // #8 signer_name / signer_email come from the server-side person
+    // record, not the client body.
+    const serverSignerName = `${person?.first_name || ''} ${person?.last_name || ''}`.trim();
+    const serverSignerEmail = person?.email || '';
+
+    const tenantAuditEntry: Record<string, unknown> = {
       document_type: docType,
       rental_application_id: docType === 'rental' ? app.id : null,
       event_hosting_request_id: docType === 'event' ? app.id : null,
-      signer_name: signer_name || `${person?.first_name || ''} ${person?.last_name || ''}`.trim(),
-      signer_email: signer_email || person?.email || '',
+      signer_name: serverSignerName,
+      signer_email: serverSignerEmail,
       signer_role: 'tenant',
       ip_address: ipAddress,
       user_agent: userAgent,
@@ -144,6 +203,10 @@ Deno.serve(async (req) => {
       signature_image_url: signatureImageUrl,
       document_html: document_html || null,
       signed_at: signedAt,
+      template_id: leaseTemplate?.id || null,
+      template_version: leaseTemplate?.version || null,
+      waiver_template_id: waiverTemplate?.id || null,
+      waiver_template_version: waiverTemplate?.version || null,
     };
 
     const { error: auditErr } = await supabase
@@ -152,13 +215,37 @@ Deno.serve(async (req) => {
 
     if (auditErr) {
       console.error('Audit log error:', auditErr);
+      // #9: tenant signature was already recorded by an earlier call — reject.
+      if (auditErr.code === '23505') {
+        return jsonError('This document has already been signed.', 409);
+      }
     }
 
     // ── Record landlord auto-signature ─────────────────────────────
-    // The landlord pre-authorizes by sending the document for signing.
-    // Their signature is recorded automatically when the tenant signs.
+    // #32 capture the admin who created the signing token (best-effort)
+    // as the landlord_user_id, alongside the IP/UA captured when the
+    // signing token was issued. Until that wiring exists we keep the
+    // pre-authorized-at-send marker but link the template provenance.
     if (docType === 'rental') {
-      const landlordAudit = {
+      // #32 surface the admin who issued the signing token (best-effort).
+      // last_activity_by carries the admin's app_users.id from
+      // native-signing-service.sendForSignature().
+      let landlordUserId: string | null = null;
+      let signingTokenIssuedAt: string | null = null;
+      try {
+        const { data: appRow } = await supabase
+          .from('rental_applications')
+          .select('last_activity_by, agreement_sent_at')
+          .eq('id', app.id)
+          .single();
+        // last_activity_by is a TEXT column — accept only UUIDs.
+        if (appRow?.last_activity_by && /^[0-9a-f-]{36}$/i.test(appRow.last_activity_by)) {
+          landlordUserId = appRow.last_activity_by;
+        }
+        signingTokenIssuedAt = appRow?.agreement_sent_at || null;
+      } catch (_e) { /* best-effort */ }
+
+      const landlordAudit: Record<string, unknown> = {
         document_type: docType,
         rental_application_id: app.id,
         signer_name: 'Rahul Sonnad',
@@ -169,8 +256,15 @@ Deno.serve(async (req) => {
         document_hash,
         document_html: document_html || null,
         signed_at: signedAt,
+        template_id: leaseTemplate?.id || null,
+        template_version: leaseTemplate?.version || null,
+        waiver_template_id: waiverTemplate?.id || null,
+        waiver_template_version: waiverTemplate?.version || null,
+        landlord_user_id: landlordUserId,
+        signing_token_issued_at: signingTokenIssuedAt,
       };
-      await supabase.from('signature_audit_log').insert(landlordAudit);
+      const { error: llErr } = await supabase.from('signature_audit_log').insert(landlordAudit);
+      if (llErr && llErr.code !== '23505') console.error('Landlord audit insert failed:', llErr);
     }
 
     // ── Persist contact info collected on the signing page ─────────
@@ -241,8 +335,8 @@ Deno.serve(async (req) => {
     try {
       const fullSignedHtml = buildArchivalLeaseHtml({
         documentHtml: document_html || '',
-        signerName: signer_name || '',
-        signerEmail: signer_email || '',
+        signerName: serverSignerName,
+        signerEmail: serverSignerEmail,
         signedAt,
         ipAddress,
         userAgent,
@@ -292,8 +386,8 @@ Deno.serve(async (req) => {
           await supabase.from('waiver_signatures').insert({
             waiver_type: 'renter_waiver',
             template_version: waiverTemplate?.version || 1,
-            signer_name: signer_name || tenantAuditEntry.signer_name,
-            signer_email: signer_email || tenantAuditEntry.signer_email,
+            signer_name: serverSignerName,
+            signer_email: serverSignerEmail,
             person_id: person?.id || null,
             rental_application_id: app.id,
             signed_pdf_url: signatureImageUrl, // Link to signature for now
@@ -363,6 +457,7 @@ Deno.serve(async (req) => {
           ipAddress,
           userAgent,
           documentHash: document_hash,
+          archivalUrl: signedDocUrl,  // AA17 #19: link to executed lease
         });
 
         // Send vehicle registration email
@@ -400,6 +495,7 @@ Deno.serve(async (req) => {
           ipAddress,
           userAgent,
           documentHash: document_hash,
+          archivalUrl: signedDocUrl,  // AA17 #19
         });
 
         // Admin notification
@@ -550,6 +646,8 @@ async function sendSignedEmail(apiKey: string, opts: any) {
           <p>Hi ${opts.firstName},</p>
           <p>Your lease agreement for <strong>${opts.spaceName}</strong> has been successfully signed.</p>
 
+          ${opts.archivalUrl ? `<p style="margin: 12px 0 18px 0;"><a href="${opts.archivalUrl}" style="display:inline-block;background:#3d8b7a;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:600;">View signed lease (HTML)</a></p>` : ''}
+
           ${auditBlockHtml(opts)}
 
           <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
@@ -607,6 +705,8 @@ async function sendEventSignedEmail(apiKey: string, opts: any) {
           <h2>Event Agreement Signed!</h2>
           <p>Hi ${opts.firstName},</p>
           <p>Your event agreement for <strong>${opts.eventName}</strong> has been successfully signed.</p>
+
+          ${opts.archivalUrl ? `<p style="margin: 12px 0 18px 0;"><a href="${opts.archivalUrl}" style="display:inline-block;background:#3d8b7a;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:600;">View signed agreement (HTML)</a></p>` : ''}
 
           ${auditBlockHtml(opts)}
 

@@ -27,6 +27,25 @@ function generateToken() {
 }
 
 /**
+ * Resolve the currently signed-in admin's app_users.id, used to stamp
+ * landlord_user_id on the audit log (#32). Returns null if not signed in.
+ */
+async function getCurrentAppUserId() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return null;
+    const { data: appUser } = await supabase
+      .from('app_users')
+      .select('id')
+      .eq('auth_user_id', session.user.id)
+      .maybeSingle();
+    return appUser?.id || null;
+  } catch (_e) {
+    return null;
+  }
+}
+
+/**
  * Send a rental lease for signature
  * Creates a signing token, stores it, and emails the tenant.
  *
@@ -37,8 +56,16 @@ function generateToken() {
  */
 async function sendForSignature(applicationId, recipientEmail, recipientName) {
   const token = generateToken();
+  const issuedAt = new Date().toISOString();
   const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const signingUrl = `${SIGNING_PAGE_BASE}?token=${token}`;
+
+  // #32 capture the admin user who issued the token — process-signature
+  // will surface this as landlord_user_id in the audit log. UA is captured
+  // here; we can't know the IP from the browser so we leave it for the
+  // edge function to fill in if/when we route token issuance through one.
+  const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || null;
+  const adminUserId = await getCurrentAppUserId();
 
   // Store token on the application
   const { error } = await supabase
@@ -47,8 +74,10 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
       signing_token: token,
       signing_token_expires_at: expiresAt,
       agreement_status: 'sent',
-      agreement_sent_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      agreement_sent_at: issuedAt,
+      last_activity_at: issuedAt,
+      last_activity_by: adminUserId || 'admin',
+      updated_at: issuedAt,
     })
     .eq('id', applicationId);
 

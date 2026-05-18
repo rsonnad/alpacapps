@@ -30,10 +30,41 @@ async function loadSignatures() {
 
     sigData = data || [];
 
+    // AA17 #29: compute rentals that have a tenant signature but no
+    // landlord countersign yet — surface as a banner so admins can
+    // chase them down. For the native flow we usually auto-sign the
+    // landlord at process-signature time, so any tenant row without a
+    // matching landlord row is either a SignWell-flow gap or a failed
+    // auto-sign worth investigating.
+    const tenantApps = new Set(sigData.filter(r => r.signer_role === 'tenant' && r.rental_application_id).map(r => r.rental_application_id));
+    const landlordApps = new Set(sigData.filter(r => r.signer_role === 'landlord' && r.rental_application_id).map(r => r.rental_application_id));
+    const awaitingCountersign = [...tenantApps].filter(id => !landlordApps.has(id));
+
     // Update stats
     document.getElementById('statTotal').textContent = sigData.length;
     document.getElementById('statRentals').textContent = sigData.filter(r => r.document_type === 'rental').length;
     document.getElementById('statEvents').textContent = sigData.filter(r => r.document_type === 'event').length;
+
+    // Awaiting-countersign banner.
+    const tbodyAnchor = document.getElementById('sigTableContainer');
+    if (tbodyAnchor) {
+      const oldBanner = document.getElementById('awaitingCountersignBanner');
+      if (oldBanner) oldBanner.remove();
+      if (awaitingCountersign.length > 0) {
+        const banner = document.createElement('div');
+        banner.id = 'awaitingCountersignBanner';
+        banner.style.cssText = 'background:#fdf6ee;border-left:4px solid #d4883a;padding:0.9rem 1rem;margin:0 0 1rem;border-radius:6px;font-size:0.9rem;color:#8b6914;';
+        banner.innerHTML = `<strong>${awaitingCountersign.length} rental${awaitingCountersign.length === 1 ? '' : 's'} awaiting landlord countersign.</strong>
+          <button id="filterAwaitingBtn" type="button" style="margin-left:0.5rem;background:#8b6914;color:#fff;border:none;border-radius:4px;padding:4px 12px;font-size:0.8rem;cursor:pointer;">Show only these</button>`;
+        tbodyAnchor.parentElement.insertBefore(banner, tbodyAnchor);
+        document.getElementById('filterAwaitingBtn').addEventListener('click', () => {
+          // Re-render the table in place with just the awaiting rows.
+          const filtered = (data || []).filter(r => awaitingCountersign.includes(r.rental_application_id));
+          sigData = filtered;
+          renderRows(filtered);
+        });
+      }
+    }
     if (sigData.length > 0) {
       const latest = new Date(sigData[0].signed_at);
       document.getElementById('statLatest').textContent = latest.toLocaleDateString('en-US', {
@@ -41,14 +72,20 @@ async function loadSignatures() {
       });
     }
 
-    // Render table
-    const tbody = document.getElementById('sigTableBody');
-    if (sigData.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="padding:2rem; text-align:center; color:#999;">No signatures yet</td></tr>';
-      return;
-    }
+    renderRows(sigData);
+  } catch (err) {
+    console.error('Failed to load signatures:', err);
+    showToast('Failed to load signatures: ' + err.message, 'error');
+  }
+}
 
-    tbody.innerHTML = sigData.map((row, idx) => {
+function renderRows(rows) {
+  const tbody = document.getElementById('sigTableBody');
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:2rem; text-align:center; color:#999;">No signatures match</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((row, idx) => {
       const signedAt = new Date(row.signed_at).toLocaleString('en-US', {
         month: 'short', day: 'numeric', year: 'numeric',
         hour: 'numeric', minute: '2-digit'
@@ -80,22 +117,23 @@ async function loadSignatures() {
         <td style="padding:0.6rem 1rem;">${sigPreview}</td>
         <td style="padding:0.6rem 1rem;">${docBtn}</td>
       </tr>`;
-    }).join('');
+  }).join('');
 
-    // Delegate click events for view buttons
-    document.getElementById('sigTableBody').addEventListener('click', (e) => {
-      const target = e.target.closest('[data-action]');
-      if (!target) return;
-      if (target.dataset.action === 'view-doc') {
-        viewDocument(parseInt(target.dataset.idx, 10));
-      } else if (target.dataset.action === 'view-sig') {
-        viewSignature(target.dataset.url);
-      }
-    });
+  // Delegate click events for view buttons.
+  // Re-binding is idempotent because addEventListener dedupes identical listeners
+  // by reference — we use the same `handleSigTableClick` function each time.
+  const tbodyEl = document.getElementById('sigTableBody');
+  tbodyEl.removeEventListener('click', handleSigTableClick);
+  tbodyEl.addEventListener('click', handleSigTableClick);
+}
 
-  } catch (err) {
-    console.error('Failed to load signatures:', err);
-    showToast('Failed to load signatures: ' + err.message, 'error');
+function handleSigTableClick(e) {
+  const target = e.target.closest('[data-action]');
+  if (!target) return;
+  if (target.dataset.action === 'view-doc') {
+    viewDocument(parseInt(target.dataset.idx, 10));
+  } else if (target.dataset.action === 'view-sig') {
+    viewSignature(target.dataset.url);
   }
 }
 

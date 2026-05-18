@@ -716,8 +716,26 @@ function showPhotoBanner(phase) {
   if (afterBanner) afterBanner.style.display = phase === 'after' ? 'block' : 'none';
 }
 
+// AA17 #16: client-side photo validation. Reject anything that isn't
+// jpeg/png/webp or larger than 10 MB before we waste bandwidth uploading.
+// Server still validates (storage policies + media table CHECKs).
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+function validatePhotoFile(file) {
+  if (!file) return 'No file selected.';
+  // Some browsers omit type for HEIC etc. Sniff the extension as a fallback.
+  const ext = (file.name?.split('.').pop() || '').toLowerCase();
+  const extOk = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
+  const typeOk = ALLOWED_PHOTO_TYPES.includes((file.type || '').toLowerCase());
+  if (!typeOk && !extOk) return `Photo must be JPEG, PNG, or WEBP (got ${file.type || ext || 'unknown'}).`;
+  if (file.size > MAX_PHOTO_BYTES) return `Photo is ${(file.size / 1024 / 1024).toFixed(1)} MB — please upload one under 10 MB.`;
+  return null;
+}
+
 async function handlePhotoUpload(file) {
   if (!file) return;
+  const err = validatePhotoFile(file);
+  if (err) { showToast(err, 'error'); return; }
   showToast('Uploading photo...', 'info', 2000);
 
   try {

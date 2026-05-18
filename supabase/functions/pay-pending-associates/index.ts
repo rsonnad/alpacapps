@@ -108,7 +108,20 @@ Deno.serve(async (req) => {
       if (eerr) { results.push({ associate_id: assoc.id, skipped: 'entries query failed', error: eerr.message }); continue; }
       if (!entries || entries.length === 0) continue;
 
-      const totalHours = entries.reduce((s, e) => {
+      // #2 idempotency guard: exclude any entries already claimed by a concurrent payout.
+      // `payout_time_entries` has UNIQUE(time_entry_id) — querying it tells us which IDs
+      // are still free to claim. We re-filter `entries` before computing totals so the
+      // amount we transfer matches the entries we actually claim.
+      const candidateIds = entries.map(e => e.id);
+      const { data: alreadyClaimed } = await supabase
+        .from('payout_time_entries')
+        .select('time_entry_id')
+        .in('time_entry_id', candidateIds);
+      const claimedSet = new Set((alreadyClaimed || []).map(r => r.time_entry_id));
+      const claimableEntries = entries.filter(e => !claimedSet.has(e.id));
+      if (claimableEntries.length === 0) continue;
+
+      const totalHours = claimableEntries.reduce((s, e) => {
         const h = (new Date(e.clock_out as string).getTime() - new Date(e.clock_in as string).getTime()) / 3_600_000;
         return s + h;
       }, 0);
@@ -124,7 +137,7 @@ Deno.serve(async (req) => {
           skipped: 'insufficient_balance',
           owed: amount,
           available: availableCents / 100,
-          entry_count: entries.length
+          entry_count: claimableEntries.length
         });
         continue;
       }
@@ -146,15 +159,49 @@ Deno.serve(async (req) => {
       }
 
       // Resolve task titles for entries that have a task_id but no inline description.
-      const taskIds = Array.from(new Set(entries.map(e => (e as any).task_id).filter(Boolean))) as string[];
+      const taskIds = Array.from(new Set(claimableEntries.map(e => (e as any).task_id).filter(Boolean))) as string[];
       let taskNames: Record<string, string> = {};
       if (taskIds.length > 0) {
         const { data: tasks } = await supabase.from('tasks').select('id, title').in('id', taskIds);
         for (const t of tasks || []) if (t.title) taskNames[t.id] = t.title;
       }
-      const breakdown = rollupEntries(entries as any, rate, taskNames);
+      const breakdown = rollupEntries(claimableEntries as any, rate, taskNames);
       const dateRange = breakdown.period;
       const description = `Auto payout: ${personName} — ${totalHours.toFixed(2)} hrs ${dateRange.first} to ${dateRange.last}`;
+
+      // #2 idempotency: pre-allocate a payout row so we have an id to attach
+      // entries to, then claim entries atomically via payout_time_entries
+      // (UNIQUE on time_entry_id). If any claim fails, abort BEFORE calling
+      // Stripe — no money moves until we own the entries.
+      const { data: payoutPre, error: payoutPreErr } = await supabase
+        .from('payouts')
+        .insert({
+          associate_id: assoc.id,
+          person_id: personId,
+          person_name: personName,
+          amount,
+          payment_method: 'stripe',
+          payment_handle: assoc.stripe_connect_account_id,
+          status: 'preparing',
+          time_entry_ids: claimableEntries.map(e => e.id),
+          notes: `Auto-fired by pay-pending-associates`,
+          is_test: false
+        })
+        .select('id')
+        .single();
+      if (payoutPreErr) {
+        results.push({ associate_id: assoc.id, error: 'payout_pre_insert_failed', message: payoutPreErr.message });
+        continue;
+      }
+
+      const claimRows = claimableEntries.map(e => ({ payout_id: payoutPre.id, time_entry_id: e.id }));
+      const { error: claimErr } = await supabase.from('payout_time_entries').insert(claimRows);
+      if (claimErr) {
+        // Roll back the placeholder payout — we couldn't claim atomically.
+        await supabase.from('payouts').delete().eq('id', payoutPre.id);
+        results.push({ associate_id: assoc.id, skipped: 'concurrent_claim', message: claimErr.message });
+        continue;
+      }
 
       let transfer: { id: string };
       try {
@@ -164,10 +211,14 @@ Deno.serve(async (req) => {
           destination: assoc.stripe_connect_account_id as string,
           description: description.slice(0, 500),
           'metadata[payout_associate_id]': assoc.id,
-          'metadata[entry_count]': String(entries.length),
-          'metadata[source]': 'pay-pending-associates'
+          'metadata[entry_count]': String(claimableEntries.length),
+          'metadata[source]': 'pay-pending-associates',
+          'metadata[payout_id]': payoutPre.id
         });
       } catch (transferErr) {
+        // Roll back claim so the entries become payable again on next run.
+        await supabase.from('payout_time_entries').delete().eq('payout_id', payoutPre.id);
+        await supabase.from('payouts').delete().eq('id', payoutPre.id);
         results.push({ associate_id: assoc.id, error: 'stripe_transfer_failed', message: (transferErr as Error).message });
         continue;
       }
@@ -182,7 +233,7 @@ Deno.serve(async (req) => {
         person_name: personName,
         status: 'pending',
         description: `Stripe payout to ${personName}`,
-        notes: `Auto-fired by pay-pending-associates. Transfer ${transfer.id}. ${entries.length} entries (${dateRange.first} to ${dateRange.last}).`,
+        notes: `Auto-fired by pay-pending-associates. Transfer ${transfer.id}. ${claimableEntries.length} entries (${dateRange.first} to ${dateRange.last}).`,
         recorded_by: 'system:pay-pending-associates',
         is_test: false
       }).select('id').single();
@@ -191,25 +242,16 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const { data: payoutRow } = await supabase.from('payouts').insert({
-        associate_id: assoc.id,
-        person_id: personId,
-        person_name: personName,
-        amount,
-        payment_method: 'stripe',
-        payment_handle: assoc.stripe_connect_account_id,
-        external_payout_id: transfer.id,
-        status: 'processing',
-        time_entry_ids: entries.map(e => e.id),
-        ledger_id: ledgerRow.id,
-        notes: `Auto-fired by pay-pending-associates`,
-        is_test: false
-      }).select('id').single();
+      await supabase.from('payouts')
+        .update({ external_payout_id: transfer.id, status: 'processing', ledger_id: ledgerRow.id })
+        .eq('id', payoutPre.id);
+      const payoutRow = { id: payoutPre.id };
 
+      // #15 server-side payment_status transition; legacy is_paid is mirrored by trigger.
       const { error: uerr } = await supabase
         .from('time_entries')
-        .update({ is_paid: true, payment_id: ledgerRow.id })
-        .in('id', entries.map(e => e.id));
+        .update({ payment_status: 'paid', payment_id: ledgerRow.id })
+        .in('id', claimableEntries.map(e => e.id));
       if (uerr) {
         results.push({ associate_id: assoc.id, transfer_id: transfer.id, ledger_id: ledgerRow.id, warning: 'time_entries_update_failed', message: uerr.message });
       }
@@ -262,7 +304,7 @@ Deno.serve(async (req) => {
         person_name: personName,
         amount,
         hours: totalHours,
-        entry_count: entries.length,
+        entry_count: claimableEntries.length,
         transfer_id: transfer.id,
         ledger_id: ledgerRow.id,
         payout_id: payoutRow?.id,

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Status — Alpaca Playhouse</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <meta name="robots" content="noindex">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1c1618;min-height:100vh;line-height:1.5}
+    .site-nav{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 2rem;background:#2d3024;color:#fff;position:sticky;top:0}
+    .site-nav__logo{display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:#fff;font-size:1.1rem;font-weight:500}
+    .site-nav__icon{height:32px;width:auto}
+    .container{max-width:720px;margin:0 auto;padding:2rem 1rem 4rem}
+    .card{background:#fff;border-radius:12px;padding:2rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:1.5rem}
+    h1{font-size:1.4rem;color:#2d3024;margin-bottom:0.5rem}
+    h2{font-size:1.1rem;color:#2d3024;margin:1rem 0 0.5rem}
+    .status-pill{display:inline-block;padding:6px 14px;border-radius:14px;font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+    .status-inquiry{background:#e8e4d5;color:#5e5840}
+    .status-submitted{background:#dde9f1;color:#385878}
+    .status-under_review{background:#fff3e0;color:#8b6914}
+    .status-needs_more_info{background:#fde7d2;color:#8b4a14}
+    .status-approved{background:#e0f0ea;color:#266951}
+    .status-declined{background:#f7dada;color:#8a2a2a}
+    .status-leased{background:#cfeadf;color:#1e6448}
+    .status-archived{background:#eee;color:#888}
+    .timeline{margin:1.5rem 0;padding-left:1.5rem;border-left:2px solid #ddd}
+    .timeline-item{padding:6px 0;color:#555;font-size:0.9rem}
+    .timeline-item strong{color:#2d3024}
+    .alert{padding:1rem;border-radius:8px;margin:1rem 0}
+    .alert-info{background:#e8f4f0;border-left:4px solid #3d8b7a;color:#1c4a3e}
+    .alert-warn{background:#fdf6ee;border-left:4px solid #e8a94a;color:#8b6914}
+    .alert-danger{background:#fbe7e6;border-left:4px solid #c34;color:#8a2a2a}
+    .meta{color:#888;font-size:0.85rem;margin-top:0.5rem}
+    .loading{text-align:center;padding:3rem;color:#888}
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="https://alpacaplayhouse.com" class="site-nav__logo">
+      <img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" class="site-nav__icon">
+      <span>Alpaca Playhouse</span>
+    </a>
+  </nav>
+  <div class="container">
+    <div id="content" class="loading">Loading your application status…</div>
+  </div>
+  <script>
+    // Direct REST call — no Supabase JS dependency needed for one query.
+    const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+    const STATUS_LABELS = {
+      inquiry: 'Inquiry received',
+      submitted: 'Application submitted',
+      under_review: 'Under review',
+      needs_more_info: 'We need more information',
+      approved: 'Approved — next steps coming',
+      declined: 'Application declined',
+      leased: 'Lease signed',
+      archived: 'Archived',
+    };
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const out = document.getElementById('content');
+    async function run() {
+      if (!token) {
+        out.innerHTML = `<div class="card"><h1>No status link</h1><p>Please use the link from your confirmation email.</p></div>`;
+        return;
+      }
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/rental_applications`
+          + `?status_token=eq.${encodeURIComponent(token)}`
+          + `&select=application_status,submitted_at,created_at,reviewed_at,applicant_visible_decline_reason,needs_more_info_message,needs_more_info_requested_at,agreement_status,agreement_signed_at,status_history,approved_space:approved_space_id(name),person:person_id(first_name)`;
+        const res = await fetch(url, {
+          headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const rows = await res.json();
+        const app = rows && rows[0];
+        if (!app) {
+          out.innerHTML = `<div class="card"><h1>Link not found</h1><p>This status link is invalid or has expired.</p></div>`;
+          return;
+        }
+        render(app);
+      } catch (e) {
+        out.innerHTML = `<div class="card"><h1>Unable to load status</h1><p>${esc(e.message || 'Try again later.')}</p></div>`;
+      }
+    }
+    function render(app) {
+      const status = app.application_status || 'inquiry';
+      const firstName = app.person?.first_name || 'there';
+      const label = STATUS_LABELS[status] || status;
+      let body = '';
+      if (status === 'needs_more_info' && app.needs_more_info_message) {
+        body += `<div class="alert alert-warn"><strong>We need a bit more from you:</strong><br>${esc(app.needs_more_info_message)}</div>
+                 <p class="meta">Requested at ${app.needs_more_info_requested_at ? new Date(app.needs_more_info_requested_at).toLocaleString() : '—'}.</p>`;
+      } else if (status === 'declined') {
+        body += `<div class="alert alert-danger"><strong>Application declined.</strong>${app.applicant_visible_decline_reason ? '<br>' + esc(app.applicant_visible_decline_reason) : ''}</div>`;
+      } else if (status === 'approved') {
+        const space = app.approved_space?.name ? ` for <strong>${esc(app.approved_space.name)}</strong>` : '';
+        body += `<div class="alert alert-info"><strong>Approved!</strong> Your application${space} has been approved. You'll receive an email with the lease and next steps shortly.</div>`;
+      } else if (status === 'leased') {
+        body += `<div class="alert alert-info"><strong>All set.</strong> Your lease is signed and on file.</div>`;
+      } else if (status === 'submitted' || status === 'under_review' || status === 'inquiry') {
+        body += `<div class="alert alert-info">We've got your application and will be in touch soon.</div>`;
+      }
+      const history = Array.isArray(app.status_history) ? app.status_history : [];
+      const timeline = history.length
+        ? '<div class="timeline">' + history.map(h => `<div class="timeline-item"><strong>${esc(STATUS_LABELS[h.to] || h.to)}</strong> · ${new Date(h.at).toLocaleString()}</div>`).join('') + '</div>'
+        : '';
+      out.innerHTML = `
+        <div class="card">
+          <h1>Hi ${esc(firstName)}</h1>
+          <p style="margin-top:0.5rem;">Your application status:</p>
+          <p style="margin:0.75rem 0;"><span class="status-pill status-${status}">${esc(label)}</span></p>
+          ${body}
+          ${timeline ? '<h2>Activity</h2>' + timeline : ''}
+          <p class="meta">Bookmark this page — it updates as your application progresses. Reply to your confirmation email if anything is wrong.</p>
+        </div>
+      `;
+    }
+    function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    run();
+  </script>
+</body>
+</html>

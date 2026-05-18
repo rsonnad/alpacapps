@@ -402,6 +402,15 @@ function openPayModal(associateId) {
 
   const dateRange = getDateRange(selectedEntries);
 
+  // AA17 #14: detect rate mismatch — entries whose hourly_rate differs
+  // from the associate's current profile rate. Admin must explicitly
+  // acknowledge before we'll send the payout at the stale rate.
+  const currentRate = parseFloat(assoc.hourly_rate) || 0;
+  const mismatches = selectedEntries.filter(e => {
+    const er = parseFloat(e.hourly_rate);
+    return Number.isFinite(er) && Math.abs(er - currentRate) > 0.001;
+  });
+
   document.getElementById('payModalTitle').textContent = `Pay ${name}`;
 
   const summary = document.getElementById('payModalSummary');
@@ -414,14 +423,38 @@ function openPayModal(associateId) {
 
   // Warning if balance is low
   const warningEl = document.getElementById('payModalWarning');
+  let warningHtml = '';
   if (stripeBalance !== null && totalAmount > stripeBalance) {
-    warningEl.innerHTML = `<div class="pay-warning">Stripe balance ($${stripeBalance.toFixed(2)}) is less than the payout amount. The transfer may fail unless auto top-up is enabled.</div>`;
-  } else {
-    warningEl.innerHTML = '';
+    warningHtml += `<div class="pay-warning">Stripe balance ($${stripeBalance.toFixed(2)}) is less than the payout amount. The transfer may fail unless auto top-up is enabled.</div>`;
   }
+  if (mismatches.length > 0) {
+    const distinctRates = Array.from(new Set(mismatches.map(e => parseFloat(e.hourly_rate).toFixed(2)))).sort();
+    warningHtml += `
+      <div class="pay-warning" style="background:#fdf6ee;border-left:4px solid #d4883a;padding:10px 12px;margin-top:8px;border-radius:6px;">
+        <strong>Rate mismatch:</strong> ${mismatches.length} of ${selectedEntries.length} entries were logged at $${distinctRates.join('/$')}/hr,
+        but the current profile rate is $${currentRate.toFixed(2)}/hr.
+        The payout uses the historical (entry) rate.
+        <label style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-weight:500;cursor:pointer;">
+          <input type="checkbox" id="payRateMismatchAck" style="margin-top:3px;">
+          <span>I confirm payment at the original entry rate is intended.</span>
+        </label>
+      </div>`;
+  }
+  warningEl.innerHTML = warningHtml;
 
   document.getElementById('payNotes').value = `Payment for ${totalHours.toFixed(1)}h (${dateRange})`;
   document.getElementById('payModal').classList.add('open');
+
+  // Disable confirm until the ack is checked.
+  const confirmBtn = document.getElementById('payConfirm');
+  if (mismatches.length > 0) {
+    confirmBtn.disabled = true;
+    document.getElementById('payRateMismatchAck').addEventListener('change', (e) => {
+      confirmBtn.disabled = !e.target.checked;
+    });
+  } else {
+    confirmBtn.disabled = false;
+  }
 
   // Store selected IDs for confirm
   document.getElementById('payConfirm').dataset.entryIds = JSON.stringify(selectedEntryIds);

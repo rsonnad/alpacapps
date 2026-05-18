@@ -30,6 +30,7 @@ export const ALL_ADMIN_TABS = [
   { id: 'passwords',     label: 'Passwords',     href: ROUTES.admin.passwords,     permission: 'view_passwords',     section: 'admin', description: 'Shared credentials and password reset tools.' },
   { id: 'settings',      label: 'Settings',      href: ROUTES.admin.settings,      permission: 'view_settings',      section: 'admin', description: 'Site-wide configuration and admin preferences.' },
   { id: 'releases',      label: 'Releases',      href: ROUTES.admin.releases,      permission: 'view_settings',      section: 'admin', description: 'Recent app deployments and version history.' },
+  { id: 'applications',  label: 'Applications',  href: ROUTES.admin.applications,  permission: 'view_rentals',       section: 'admin', description: 'Triage rental applications: notes, request more info, decline, approve.' },
   { id: 'signatures',    label: 'Signatures',    href: ROUTES.admin.signatures,    permission: 'view_rentals',       section: 'admin', description: 'E-signature requests and signed-document audit.' },
   { id: 'templates',     label: 'Templates',     href: ROUTES.admin.templates,     permission: 'view_templates',     section: 'admin', feature: 'documents', description: 'Editable templates for emails, leases, and event agreements.' },
   { id: 'brand',         label: 'Brand',         href: ROUTES.admin.brand,         permission: 'view_settings',      section: 'admin', description: 'Brand tokens, logos, and visual identity controls.' },

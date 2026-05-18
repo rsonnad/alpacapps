@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Applications - AlpacAPPs Admin</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}</style>
+  <link rel="stylesheet" href="/rentals/styles.css?v=5">
+  <link rel="stylesheet" href="/rentals/admin/styles.css?v=5">
+  <link rel="stylesheet" href="/rentals/admin/manage-shared.css?v=5">
+  <link rel="stylesheet" href="../styles/site.css">
+  <link rel="stylesheet" href="../styles/tailwind.out.css">
+  <style>
+    .apps-grid { display: grid; grid-template-columns: 360px 1fr; gap: 1rem; align-items: flex-start; }
+    @media (max-width: 900px) { .apps-grid { grid-template-columns: 1fr; } }
+    .apps-list { background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:0.5rem; max-height: 80vh; overflow-y: auto; }
+    .apps-detail { background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:1.25rem; min-height: 50vh; }
+    .app-row { padding:0.6rem 0.75rem; border-radius:6px; cursor:pointer; display:flex; flex-direction:column; gap:2px; border-bottom: 1px solid #f0f0eb; }
+    .app-row:hover { background:#f5f3ec; }
+    .app-row.active { background:#e8f4f0; }
+    .app-row-name { font-weight:600; font-size:0.95rem; color:#2d3024; }
+    .app-row-meta { font-size:0.75rem; color:#888; }
+    .status-pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
+    .status-inquiry { background:#e8e4d5; color:#5e5840; }
+    .status-submitted { background:#dde9f1; color:#385878; }
+    .status-under_review { background:#fff3e0; color:#8b6914; }
+    .status-needs_more_info { background:#fde7d2; color:#8b4a14; }
+    .status-approved { background:#e0f0ea; color:#266951; }
+    .status-declined { background:#f7dada; color:#8a2a2a; }
+    .status-leased { background:#cfeadf; color:#1e6448; }
+    .status-archived { background:#eee; color:#888; }
+    .filter-bar { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.75rem; padding:0.5rem; }
+    .filter-bar input, .filter-bar select { padding:6px 10px; border:1px solid #ddd; border-radius:6px; font-size:0.85rem; }
+    .field { display:grid; grid-template-columns: 160px 1fr; gap:0.6rem; padding:6px 0; border-bottom:1px solid #f0f0eb; font-size:0.9rem; }
+    .field-label { color:#888; font-weight:500; }
+    .field-value { color:#2d3024; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:1rem; }
+    .actions button { padding:8px 14px; border:1px solid #ccc; border-radius:6px; background:#fff; cursor:pointer; font-size:0.85rem; font-weight:500; }
+    .actions button.primary { background:#3d8b7a; color:#fff; border-color:#3d8b7a; }
+    .actions button.warn { background:#e8a94a; color:#fff; border-color:#e8a94a; }
+    .actions button.danger { background:#c34; color:#fff; border-color:#c34; }
+    textarea.notes { width:100%; min-height:80px; padding:8px 10px; border:1px solid #ddd; border-radius:6px; font-family:inherit; font-size:0.9rem; box-sizing:border-box; }
+    .history { font-size:0.8rem; color:#666; margin-top:1rem; }
+    .history li { padding:3px 0; }
+  </style>
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay__logo">
+      <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40">
+    </div>
+    <div class="spinner spinner--sm"></div>
+  </div>
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
+
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+    <span data-site-version style="display:none">v260517.09 1:15p</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <main class="manage-content" style="max-width: 1240px; margin: 0 auto; padding: 1.5rem 1rem;">
+      <section style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div>
+          <h1 style="font-size:1.4rem; font-weight:600; color:#2d3024;">Rental Applications</h1>
+          <p style="color:#666; font-size:0.85rem; margin-top:0.25rem;">Triage, leave internal notes, request more info, or decline.</p>
+        </div>
+        <button id="refreshBtn" class="btn-small btn-primary">Refresh</button>
+      </section>
+
+      <div class="apps-grid">
+        <aside class="apps-list">
+          <div class="filter-bar">
+            <input type="search" id="searchInput" placeholder="Search name/email…" style="flex:1;min-width:120px;">
+            <select id="statusFilter">
+              <option value="">All statuses</option>
+              <option value="inquiry">Inquiry</option>
+              <option value="submitted">Submitted</option>
+              <option value="under_review">Under review</option>
+              <option value="needs_more_info">Needs more info</option>
+              <option value="approved">Approved</option>
+              <option value="declined">Declined</option>
+              <option value="leased">Leased</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          <div id="appsList"></div>
+        </aside>
+
+        <section class="apps-detail" id="appsDetail">
+          <p style="color:#888; text-align:center; padding:2rem;">Select an application to review.</p>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="../shared/instant-chrome.js"></script>
+  <script type="module" src="../shared/version-info.js"></script>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module" src="applications.js"></script>
+</body>
+</html>

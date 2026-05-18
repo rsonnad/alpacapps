@@ -165,10 +165,20 @@ class HoursService {
   // ---- Time Entry Management ----
 
   /**
-   * Clock in — create a new time entry
+   * Clock in — create a new time entry.
+   * #3 race-safety: reject if an open entry already exists. The DB also
+   * enforces this via `idx_time_entries_one_open_per_associate`, but the
+   * explicit pre-check gives a friendly error and avoids a DB conflict.
    */
   async clockIn(associateId, { lat, lng, spaceId, taskId } = {}) {
-    // Get current rate from profile
+    const existingOpen = await this.getActiveEntry(associateId);
+    if (existingOpen) {
+      const err = new Error('You are already clocked in. Clock out first before clocking in again.');
+      err.code = 'already_clocked_in';
+      err.existing_entry_id = existingOpen.id;
+      throw err;
+    }
+
     const { data: profile, error: profileErr } = await supabase
       .from('associate_profiles')
       .select('hourly_rate')
@@ -193,28 +203,46 @@ class HoursService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // Friendly message if the unique partial index fired (race we lost).
+      if (error.code === '23505' || /unique/i.test(error.message || '')) {
+        const friendly = new Error('You are already clocked in. Refresh the page and try again.');
+        friendly.code = 'already_clocked_in';
+        throw friendly;
+      }
+      throw error;
+    }
     return data;
   }
 
   /**
-   * Clock out — update an existing time entry with end time and duration
+   * Clock out — close an open entry using DB-side `now()` for the timestamp
+   * so the server clock (UTC) is authoritative and not the browser. The
+   * legacy browser-Date path remains as a fallback when the RPC isn't
+   * deployed yet.
    */
   async clockOut(entryId, { lat, lng, description } = {}) {
-    const clockOut = new Date();
+    // #15 Try the server-clock RPC first.
+    try {
+      const { data: rpcData, error: rpcErr } = await supabase.rpc('clock_out_server_time', {
+        p_entry_id: entryId,
+        p_lat: lat || null,
+        p_lng: lng || null,
+        p_description: description ?? null,
+      });
+      if (!rpcErr && rpcData) return Array.isArray(rpcData) ? rpcData[0] : rpcData;
+      // fall through on RPC missing
+    } catch (_e) { /* fall through */ }
 
-    // Fetch the entry to compute duration
+    const clockOut = new Date();
     const { data: entry, error: fetchErr } = await supabase
       .from('time_entries')
       .select('clock_in')
       .eq('id', entryId)
       .single();
-
     if (fetchErr) throw fetchErr;
-
     const clockIn = new Date(entry.clock_in);
-    const durationMs = clockOut - clockIn;
-    const durationMinutes = Math.round(durationMs / 60000);
+    const durationMinutes = Math.round((clockOut - clockIn) / 60000);
 
     const updates = {
       clock_out: clockOut.toISOString(),
@@ -246,6 +274,10 @@ class HoursService {
     const durationMinutes = coDate ? Math.round((coDate - ciDate) / 60000) : null;
 
     if (coDate && coDate <= ciDate) throw new Error('Clock out must be after clock in');
+    // #24 manual_reason min length matches the DB CHECK constraint.
+    if (!manualReason || manualReason.trim().length < 10) {
+      throw new Error('Please describe why this manual entry is being added (10 characters or more).');
+    }
 
     // Use provided rate or fetch from profile
     let rate = hourlyRate;
@@ -337,9 +369,20 @@ class HoursService {
   }
 
   /**
-   * Update a time entry (admin - manual edits)
+   * Update a time entry (admin or owner). RLS blocks cross-associate
+   * writes; this method also auto-logs the diff to `time_entry_edits`
+   * (#12) using the caller's app_user_id for the audit trail.
    */
-  async updateEntry(entryId, updates) {
+  async updateEntry(entryId, updates, { editedBy = null } = {}) {
+    // Fetch the current row so we can (a) diff for the audit log and
+    // (b) recompute duration if a timestamp changed.
+    const { data: before, error: beforeErr } = await supabase
+      .from('time_entries')
+      .select('clock_in, clock_out, description, hourly_rate, space_id')
+      .eq('id', entryId)
+      .single();
+    if (beforeErr) throw beforeErr;
+
     const allowed = {};
     if (updates.clock_in !== undefined) allowed.clock_in = updates.clock_in;
     if (updates.clock_out !== undefined) allowed.clock_out = updates.clock_out;
@@ -348,17 +391,9 @@ class HoursService {
     if (updates.space_id !== undefined) allowed.space_id = updates.space_id;
     allowed.updated_at = new Date().toISOString();
 
-    // Recompute duration if both clock_in and clock_out present
     if (allowed.clock_in || allowed.clock_out) {
-      // Fetch current values for any we're not updating
-      const { data: current } = await supabase
-        .from('time_entries')
-        .select('clock_in, clock_out')
-        .eq('id', entryId)
-        .single();
-
-      const ci = new Date(allowed.clock_in || current.clock_in);
-      const co = allowed.clock_out ? new Date(allowed.clock_out) : (current.clock_out ? new Date(current.clock_out) : null);
+      const ci = new Date(allowed.clock_in || before.clock_in);
+      const co = allowed.clock_out ? new Date(allowed.clock_out) : (before.clock_out ? new Date(before.clock_out) : null);
       if (co) {
         allowed.duration_minutes = Math.round((co - ci) / 60000);
       }
@@ -372,6 +407,35 @@ class HoursService {
       .single();
 
     if (error) throw error;
+
+    // #12 Auto-log every field that actually changed. Resolve editedBy
+    // from the current session if the caller didn't pass it.
+    let actor = editedBy;
+    if (!actor) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
+          const { data: appUser } = await supabase
+            .from('app_users')
+            .select('id')
+            .eq('auth_user_id', session.user.id)
+            .maybeSingle();
+          actor = appUser?.id || null;
+        }
+      } catch (_e) { /* best-effort */ }
+    }
+    if (actor) {
+      const changes = {};
+      for (const f of ['clock_in', 'clock_out', 'description', 'hourly_rate', 'space_id']) {
+        if (allowed[f] !== undefined && String(before[f] ?? '') !== String(allowed[f] ?? '')) {
+          changes[f] = { oldVal: before[f], newVal: allowed[f] };
+        }
+      }
+      if (Object.keys(changes).length > 0) {
+        try { await this.logEdit(entryId, actor, changes); } catch (_e) { /* non-fatal */ }
+      }
+    }
+
     return data;
   }
 
@@ -528,9 +592,28 @@ class HoursService {
   // ---- Work Photos ----
 
   /**
-   * Create a work photo record (after media is uploaded via media-service)
+   * Create a work photo record (after media is uploaded via media-service).
+   * #16: re-validate the underlying media row's MIME and size — defense
+   * in depth in case the upload path slips through (admin tooling, etc.).
    */
   async createWorkPhoto({ associateId, mediaId, timeEntryId, photoType, caption, workDate }) {
+    if (mediaId) {
+      const { data: media } = await supabase
+        .from('media')
+        .select('id, mime_type, file_size_bytes')
+        .eq('id', mediaId)
+        .maybeSingle();
+      if (media) {
+        const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const mime = (media.mime_type || '').toLowerCase();
+        if (!allowed.includes(mime)) {
+          throw new Error(`Photo type ${mime || 'unknown'} is not allowed. Use JPEG, PNG, or WEBP.`);
+        }
+        if (media.file_size_bytes && media.file_size_bytes > 10 * 1024 * 1024) {
+          throw new Error(`Photo is over 10 MB — please re-upload a smaller file.`);
+        }
+      }
+    }
     const { data, error } = await supabase
       .from('work_photos')
       .insert({

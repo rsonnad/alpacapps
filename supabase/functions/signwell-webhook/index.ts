@@ -11,6 +11,34 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 
+// #6 HMAC verification. Compares the provided header (hex or base64) with
+// a freshly-computed HMAC-SHA256 of the raw body. Constant-time compare.
+async function verifyHmacSha256(secret: string, body: string, provided: string): Promise<boolean> {
+  try {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw', enc.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const sigBytes = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(body)));
+    const hex = Array.from(sigBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    const b64 = btoa(String.fromCharCode(...sigBytes));
+    // Accept hex, base64, or "sha256=hex" formatting.
+    const candidates = [hex, b64, `sha256=${hex}`, `sha256=${b64}`];
+    return candidates.some(c => timingSafeEqual(c, provided));
+  } catch (e) {
+    console.error('HMAC verification error:', e);
+    return false;
+  }
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return mismatch === 0;
+}
+
 interface SignWellWebhookPayload {
   event: string;
   document_id: string;
@@ -36,9 +64,48 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Parse webhook payload
-    const payload: SignWellWebhookPayload = await req.json();
-    console.log('SignWell webhook received:', payload);
+    // #6: verify HMAC before trusting the payload. SignWell signs the raw
+    // request body with the webhook secret via `signwell-signature` header
+    // (hex-encoded HMAC-SHA256). We read raw bytes, verify, THEN parse.
+    const rawBody = await req.text();
+    const provided = req.headers.get('signwell-signature')
+      || req.headers.get('x-signwell-signature')
+      || req.headers.get('x-webhook-signature')
+      || '';
+
+    let webhookSecret = Deno.env.get('SIGNWELL_WEBHOOK_SECRET') || '';
+    if (!webhookSecret) {
+      // Fall back to config row if env var not yet set — keeps existing
+      // installs working until the secret is rotated to env.
+      const { data: cfg } = await supabase.from('signwell_config').select('webhook_secret').single();
+      webhookSecret = cfg?.webhook_secret || '';
+    }
+
+    if (!webhookSecret) {
+      console.error('SIGNWELL_WEBHOOK_SECRET not configured — refusing to process webhook');
+      return new Response(
+        JSON.stringify({ error: 'Webhook secret not configured' }),
+        { status: 503, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (!provided) {
+      return new Response(
+        JSON.stringify({ error: 'Missing webhook signature' }),
+        { status: 401, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
+      );
+    }
+    const valid = await verifyHmacSha256(webhookSecret, rawBody, provided);
+    if (!valid) {
+      console.warn('SignWell webhook signature verification failed');
+      return new Response(
+        JSON.stringify({ error: 'Invalid webhook signature' }),
+        { status: 401, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse webhook payload (now safe — signature checked)
+    const payload: SignWellWebhookPayload = JSON.parse(rawBody);
+    console.log('SignWell webhook received:', payload.event, payload.document_id);
 
     // Only handle document_completed events
     if (payload.event !== 'document_completed') {
@@ -50,6 +117,22 @@ Deno.serve(async (req) => {
     }
 
     const documentId = payload.document_id;
+
+    // #18: webhook dedupe — claim this (document_id, event_type) atomically.
+    // If the unique constraint fires, another concurrent invocation is
+    // already handling it (or it was processed earlier); return early.
+    const { error: claimErr } = await supabase
+      .from('signwell_processed_events')
+      .insert({ document_id: documentId, event_type: payload.event, payload });
+    if (claimErr) {
+      if (claimErr.code === '23505') {
+        return new Response(
+          JSON.stringify({ ok: true, idempotent: true, message: 'Event already processed' }),
+          { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.error('Failed to record processed event (proceeding anyway):', claimErr);
+    }
 
     // Try to find a rental application with this SignWell document ID
     const { data: rentalApp, error: rentalError } = await supabase
