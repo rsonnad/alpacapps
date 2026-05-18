@@ -25,10 +25,13 @@ function renderSection(gridEl, titleEl, sectionId, tabs) {
   titleEl.textContent = SECTION_TITLES[sectionId] || sectionId;
   gridEl.innerHTML = tabs.map((tab) => {
     const icon = TAB_ICONS[tab.id] || '';
+    const label = tab.description
+      ? `${tab.label} — ${tab.description}`
+      : tab.label;
     return `
-      <a class="intranet-card" href="${tab.href}">
+      <a class="intranet-card" href="${tab.href}" aria-label="${escapeHtml(label)}">
         <div class="intranet-card-head">
-          <span class="intranet-card-icon">${icon}</span>
+          <span class="intranet-card-icon" aria-hidden="true">${icon}</span>
           <span class="intranet-card-title">${escapeHtml(tab.label)}</span>
         </div>
         <div class="intranet-card-desc">${escapeHtml(tab.description || '')}</div>
