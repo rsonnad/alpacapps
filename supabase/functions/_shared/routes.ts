@@ -86,6 +86,7 @@ export const ROUTES = {
     settings:      '/admin/settings.html',
     releases:      '/admin/releases.html',
     signatures:    '/admin/signatures.html',
+    applications:  '/admin/applications.html',
     templates:     '/admin/templates.html',
     brand:         '/admin/brand.html',
     accounting:    '/admin/accounting.html',
