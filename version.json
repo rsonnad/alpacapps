@@ -1,12 +1,12 @@
 {
-  "version": "v260518.04 12:40p",
-  "release": 1532,
-  "sha": "33a320936",
-  "fullSha": "33a3209364024d0820e17b1335902bf793cda9f5",
+  "version": "v260518.05 10:46p",
+  "release": 1533,
+  "sha": "2cb026393",
+  "fullSha": "2cb02639318c7eba96c18b2314c9813eb2d11fd9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-18T17:40:58+00:00",
-  "commits": [{"sha":"33a320936","message":"feat(photos): add Garage Mahal studio link in new Spaces section","author":"Rahul"}]
+  "pushedAt": "2026-05-19T03:46:50+00:00",
+  "commits": [{"sha":"2cb026393","message":"fix(climate): surface stale Nest data + OAuth re-auth path","author":"Rahul"}]
 }
