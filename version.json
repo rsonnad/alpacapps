@@ -1,12 +1,12 @@
 {
-  "version": "v260519.01 1:47a",
-  "release": 1535,
-  "sha": "a90efbe88",
-  "fullSha": "a90efbe8806ce414c1a1785705212fe9ffe19440",
+  "version": "v260519.02 11:10a",
+  "release": 1536,
+  "sha": "9930195a3",
+  "fullSha": "9930195a395980700109ad427cb6c5503024a579",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-19T06:47:16+00:00",
-  "commits": [{"sha":"a90efbe88","message":"chore: untrack scripts/node_modules (already gitignored)","author":"Rahul"}]
+  "pushedAt": "2026-05-19T16:10:53+00:00",
+  "commits": [{"sha":"9930195a3","message":"docs(local-ai): rewrite LOCAL-AI-SETUP for Qwen 3 / DeepSeek R1 lineup","author":"Paca"}]
 }
