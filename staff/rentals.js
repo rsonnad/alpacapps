@@ -3,7 +3,7 @@
 
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../shared/supabase.js';
 import { rentalService } from '../shared/rental-service.js';
-import { emailService } from '../shared/email-service.js';
+import { emailService, sendEmail } from '../shared/email-service.js';
 import { smsService } from '../shared/sms-service.js';
 import { leaseTemplateService } from '../shared/lease-template-service.js';
 import { pdfService } from '../shared/pdf-service.js';
@@ -2012,9 +2012,19 @@ function updateRentalActions(app) {
     }
   }
 
+  // Draft lease — email the rendered lease preview HTML to an arbitrary address
+  const draftEmailDefault = (app.person?.email || '').replace(/"/g, '&quot;');
+  buttons.push(`
+    <span class="draft-lease-group" style="display:inline-flex; align-items:center; gap:0.4rem; margin-left:auto;">
+      <input type="email" id="draftLeaseEmail" placeholder="email@example.com" value="${draftEmailDefault}"
+             style="padding:0.35rem 0.5rem; border:1px solid var(--border-color, #ccc); border-radius:4px; font-size:0.85rem; min-width:200px;">
+      <button class="btn-secondary btn-small" onclick="createDraftLeaseAction()">Create Draft Lease</button>
+    </span>
+  `);
+
   // Add test toggle and archive buttons (always available)
   const testLabel = app.is_test ? 'Remove Test Flag' : 'Mark as Test';
-  buttons.push(`<button class="btn-secondary btn-small" onclick="toggleTestFlag()" style="margin-left: auto;">${testLabel}</button>`);
+  buttons.push(`<button class="btn-secondary btn-small" onclick="toggleTestFlag()">${testLabel}</button>`);
   buttons.push('<button class="btn-danger btn-small" onclick="archiveApplication()">Archive</button>');
 
   container.innerHTML = buttons.join('');
@@ -2096,6 +2106,74 @@ window.archiveApplication = async function() {
     showToast('Application archived', 'success');
   } catch (error) {
     showToast('Error: ' + error.message, 'error');
+    restore();
+  }
+};
+
+window.createDraftLeaseAction = async function() {
+  if (!currentApplicationId) return;
+  const input = document.getElementById('draftLeaseEmail');
+  const to = (input?.value || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    showToast('Enter a valid email address', 'warning');
+    input?.focus();
+    return;
+  }
+
+  // Require terms to be saved before sending a draft.
+  if (!rentalTermsFilled()) {
+    showToast('Fill in Space, Rate, and Move-in date before creating a draft', 'warning');
+    switchDetailTab('terms');
+    return;
+  }
+  const statusEl = document.getElementById('termsSaveStatus');
+  const statusText = (statusEl?.textContent || '').trim();
+  const dirty = statusText.startsWith('Unsaved') || statusText.startsWith('Saving') || statusText.startsWith('Error');
+  if (dirty) {
+    showToast('Save terms first — there are unsaved changes', 'warning');
+    switchDetailTab('terms');
+    return;
+  }
+
+  const app = allApplications.find(a => a.id === currentApplicationId);
+  const restore = setActionPaneLoading('Sending…');
+  try {
+    const [template, agreementData] = await Promise.all([
+      leaseTemplateService.getActiveTemplate(),
+      rentalService.getAgreementData(currentApplicationId),
+    ]);
+    if (!template || !agreementData) {
+      showToast('No active template or terms data. Fill in Terms first.', 'warning');
+      restore();
+      return;
+    }
+
+    const parsed = leaseTemplateService.parseTemplate(template.content, agreementData);
+    const bodyHtml = markdownToHtml(parsed);
+    const personName = [app?.person?.first_name, app?.person?.last_name].filter(Boolean).join(' ') || 'Prospective tenant';
+    const spaceName = app?.approved_space?.name || app?.desired_space?.name || '';
+    const html = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 720px; margin: 0 auto; padding: 1.5rem; color: #222;">
+        <div style="background:#fef3c7; border:1px solid #f59e0b; padding:0.75rem 1rem; border-radius:6px; margin-bottom:1rem;">
+          <strong>DRAFT — for review only.</strong> This is a non-binding preview of the lease agreement for ${personName}${spaceName ? ' (' + spaceName + ')' : ''}. No signature is being requested.
+        </div>
+        <div style="line-height:1.5;">${bodyHtml}</div>
+        <hr style="margin:2rem 0; border:none; border-top:1px solid #ddd;">
+        <p style="font-size:0.85rem; color:#666;">Sent from Alpaca Playhouse admin. Reply with any questions or requested changes.</p>
+      </div>
+    `;
+    const subject = `DRAFT lease for review — ${personName}${spaceName ? ' (' + spaceName + ')' : ''}`;
+
+    const result = await sendEmail('custom', to, { html, subject });
+    if (result.success) {
+      showToast(`Draft lease emailed to ${to}`, 'success');
+    } else {
+      showToast('Failed to send: ' + (result.error || 'unknown error'), 'error');
+    }
+  } catch (error) {
+    console.error('Create draft lease error:', error);
+    showToast('Error: ' + error.message, 'error');
+  } finally {
     restore();
   }
 };
