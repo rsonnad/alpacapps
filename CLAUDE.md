@@ -16,7 +16,7 @@
 > - `devcontrol/devdocs/MAKERDEVICES.md` — **load for:** Glowforge laser cutter, FlashForge 3D printer, Maker Tools, 3D Printing, maker device proxy/session troubleshooting
 > - `spaces/admin/devcontrol/devdocs/TESTING-GUIDE.md` — **load for:** test account credentials, auth testing, QA workflows, admin page testing
 > - `spaces/admin/devcontrol/devdocs/SECRETS-GUIDE.md` — **load for:** Bitwarden CLI, secrets management, bw-read helper, API key storage, credential access patterns
-> - `spaces/admin/devcontrol/devdocs/LOCAL-AI-SETUP.md` — **load for:** local AI models, Ollama, Atomic Chat, Qwen setup
+> - `devcontrol/devdocs/LOCAL-AI-SETUP.md` — **load for:** local AI models, Ollama, msty, Qwen 3 / DeepSeek R1 / VL setup, PortoSams2T model storage
 > - `spaces/admin/devcontrol/devdocs/clawlikeagents.md` — **load for:** AI agents overview, AlpaClaw, PAI, Hermes, model routing, adding new agents
 > - `spaces/admin/devcontrol/devdocs/spotifyapi.md` — **load for:** Spotify API, playlist creation, OAuth flow, token refresh, Dev Mode limitations
 > - `ARCHITECTURE.md` — **load for:** system architecture, component relationships, module boundaries, data flow
@@ -24,6 +24,7 @@
 > - `PRODUCTDESIGN.md` — **load for:** product decisions, UX philosophy, business model, feature prioritization
 > - `spaces/admin/devcontrol/devdocs/home-assistant-lighting-design.md` — **load for:** HAOS lighting architecture, entity naming, automation templates, migration status
 > - `spaces/admin/devcontrol/devdocs/REMOTE-ACCESS.md` — **load for:** SSH tunneling, remote access to Alpuca/UDM Pro, Tailscale, Cloudflare tunnel, port forwarding
+> - `devcontrol/devdocs/ALPUCA-MACHINE.md` — **load for:** Alpuca Mac hardware/OS, background services, moondream-indexer memory hazard + takedown, runaway-process diagnostics, tripwire setup. Canonical home — finleg and other repos link here.
 
 ## Person Lookup Routing
 

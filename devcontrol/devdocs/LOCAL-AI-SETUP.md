@@ -1,205 +1,244 @@
 # Local AI Setup Guide
 
-> For installing local AI tools on any Apple Silicon Mac.
-> Alpuca (Mac mini M4 24GB) is already set up — this guide covers both Alpuca and additional machines.
+> Operational reference for the local LLM stack on Alpuca (Mac mini M4, 24GB
+> RAM). When you bring up a new Apple-Silicon Mac, this is the recipe.
+>
+> Cross-refs:
+> - `clawlikeagents.md` — agent routing (AlpaClaw, PAI, Hermes), when to call which model
+> - `ALPUCA-MACHINE.md` — hardware, background services, the runaway-process tripwire
 
-## What's Installed on Alpuca (192.168.1.200)
+## Where models live
 
-| Component | Version | Location |
-|-----------|---------|----------|
-| msty | Latest | `/Applications/msty.app` |
-| Ollama | v0.20.0-rc0 | `brew services` (auto-starts on boot) — manually upgraded binary for Gemma 4 support |
-| Gemma 4 26B (MoE, Q4) | 17 GB | Primary model — MoE architecture (3.8B active params), 256K context, vision, thinking mode |
-| hermes-gemma4 | 17 GB | Gemma 4 26B with `num_ctx 32768` baked in — used as Hermes Agent default |
-| Qwen 2.5 Coder 14B | ~9 GB | Coding-specialized model for Hermes scripting tasks |
-| glm-ocr | 2.2 GB | OCR model for document text extraction |
-| Hermes Agent | Latest | `~/.hermes/` — always-on AI agent (Nous Research). Config: `~/.hermes/config.yaml` |
+Models are stored on the external NVMe **PortoSams2T**, symlinked from the
+canonical home Ollama looks for. This was done because the internal 228 GB SSD
+was at 97 % when models accumulated locally — and the external Samsung NVMe
+benchmarks faster than the internal in both reads and writes.
 
-Ollama API: `http://192.168.1.200:11434` (accessible from LAN)
-
-### Hermes Agent
-
-Hermes Agent (by Nous Research) is an open-source always-on AI agent with self-improving skills, persistent memory, and multi-platform messaging (Telegram, Discord, WhatsApp).
-
-- **Install dir:** `~/.hermes/` (config, skills, memory, logs)
-- **Default model:** `hermes-gemma4` (Gemma 4 26B + 32K context) via local Ollama
-- **Coding model:** `qwen2.5-coder:14b` (switch with `/model` in Hermes)
-- **Cloud fallback:** None — we use Claude via Max subscription, not Anthropic API. No `ANTHROPIC_API_KEY` exists.
-- **Service:** LaunchAgent `com.hermes-agent` (gateway mode, auto-restarts)
-- **Messaging:** Telegram bot (allowlisted to Rahul only)
-- **Skills:** 74 bundled + auto-created from experience (`~/.hermes/skills/`)
-
----
-
-## Recommended Setup
-
-| Component | What it does | Install |
-|-----------|-------------|---------|
-| **Ollama** | Model runner — serves AI models via API | `brew install ollama` |
-| **msty** | Beautiful desktop chat UI — connects to Ollama, Claude, OpenAI, etc. | [msty.app](https://msty.app) (free) |
-
-**Why msty over Atomic Chat?** msty has a polished native UI, supports multiple providers (local + cloud), conversation branching, knowledge bases, and prompt templates. Free tier is generous. Atomic Chat still works but msty is the better daily driver.
-
----
-
-## Recommended Models (March 2026)
-
-| Model | Size | Min RAM | Best for |
-|-------|------|---------|----------|
-| **Gemma 3 12B (Q4)** | 8.1 GB | 16 GB | General chat, coding, summarization — Google's best small model |
-| **Gemma 3 27B (Q4)** | 17 GB | 24 GB | Near-frontier reasoning at local speed — best bang for RAM |
-| **Qwen 3.5 9B (Q8)** | 10 GB | 24 GB | Tool-calling, structured output, multilingual (201 languages) |
-| **Qwen 3.5 9B (Q4)** | 5.6 GB | 16 GB | Same as above, lighter quantization — good for constrained RAM |
-| **Qwen 3 14B (Q4)** | 9.3 GB | 24 GB | Heavy reasoning, math, logic |
-| **DeepSeek R1 7B** | 4.7 GB | 16 GB | Chain-of-thought reasoning — shows its work |
-
-### Quick picks
-
-- **16GB MacBook Air**: Gemma 3 12B (Q4) + Qwen 3.5 9B (Q4)
-- **24GB+ Mac (like Alpuca)**: Gemma 3 27B (Q4) + Qwen 3.5 9B (Q8)
-- **Coding focus**: Qwen 3.5 9B is strongest for structured output and tool use
-- **General chat**: Gemma 3 is more natural and conversational
-
----
-
-## Install on MacBook Air (or any Mac)
-
-### Step 1: Install Ollama
-
-```bash
-brew install ollama
-brew services start ollama
+```
+~/.ollama  →  /Volumes/PortoSams2T/alpuca-offload/ollama  (symlink)
 ```
 
-### Step 2: Pull Models
+**Implication:** if `/Volumes/PortoSams2T` is ever unmounted, Ollama can't
+load models. Reads from the launchd Ollama service will fail until the drive
+is back. The drive is set up as a permanent mount.
 
-For **16GB RAM** MacBook Air:
-
-```bash
-# Primary — Google Gemma 3, excellent general model
-ollama pull gemma3:12b
-
-# Secondary — Qwen for coding and structured output
-ollama pull qwen3.5:9b
-```
-
-For **24GB+ RAM** — match Alpuca's setup:
+To verify the symlink:
 
 ```bash
-# Primary — Gemma 3 27B, near-frontier quality
-ollama pull gemma3:27b
-
-# Secondary — higher fidelity quantization
-ollama pull qwen3.5:9b-q8_0
-
-# Reasoning model
-ollama pull qwen3:14b
+ls -la ~/.ollama   # should show "-> /Volumes/PortoSams2T/alpuca-offload/ollama"
 ```
 
-### Step 3: Install msty
+## Active model lineup
 
-1. Download from [msty.app](https://msty.app) — free, native macOS app
-2. Open msty, go to Settings > Providers
-3. Add **Ollama** provider — it auto-detects `http://localhost:11434`
-4. Your pulled models appear automatically in the model picker
+Pulled from the public Ollama registry. All "up to date" as of last review.
 
-### Step 4: Verify
+| Model | Size | Role | RAM at load | When to use |
+|---|---|---|---|---|
+| `qwen3:30b-a3b` | 18 GB | General / reasoning (MoE, 3B active) | ~14 GB | Default chat, planning, summarization. Has built-in `/think` mode. |
+| `qwen3-coder:30b` | 18 GB | Coding | ~14 GB | Code generation, refactors, tool calling, structured JSON output. |
+| `qwen3-vl:30b-a3b` | 19 GB | Vision + reasoning (MoE) | ~14 GB | Screenshots, photo content, OCR-lite, image-grounded Q&A. |
+| `deepseek-r1:32b` | 19 GB | Reasoning specialist | ~17 GB | Chain-of-thought for math, multi-step debugging, test edge-case enumeration. Slow. |
+| `qwen2.5-coder:14b` | 9 GB | Lighter coding | ~9 GB | Fast pass for small coding tasks when 30b is overkill. |
+| `glm-ocr` | 2.2 GB | OCR | ~3 GB | Pure text extraction from images / scanned docs. |
 
-```bash
-ollama list
-ollama run gemma3:12b "Hello, what model are you?"
-```
+**RAM math (24 GB Alpuca):** only one large model loads at a time. Ollama
+unloads inactive models automatically after the keep-alive window (default 5
+minutes). Switching models incurs a ~15–30 s warm-up.
 
----
+### MoE (mixture of experts) — why the 30 B Qwen 3s are fast
 
-## Model Comparison: Gemma 3 vs Qwen 3.5
+`qwen3:30b-a3b`, `qwen3-coder:30b`, `qwen3-vl:30b-a3b` all use a MoE
+architecture: the model has 30 B total parameters but only ~3 B activate per
+token. Disk footprint = 30 B; runtime cost ≈ 3 B. They feel as fast as a
+small dense model.
 
-| | Gemma 3 12B | Gemma 3 27B | Qwen 3.5 9B |
+`deepseek-r1:32b` is dense — slower per token, plus it generates many "thinking" tokens before answering.
+
+## Custom modelfiles (legacy, scheduled for removal)
+
+These are tag aliases of Gemma 4 26 B / e4b with custom system prompts.
+Created before the Qwen 3 lineup arrived. They are superseded by
+`qwen3:30b-a3b` and `qwen3-coder:30b`.
+
+| Tag | Base | Purpose | Action |
 |---|---|---|---|
-| **Maker** | Google | Google | Alibaba |
-| **Conversation** | Natural, fluid | Excellent | Good, more structured |
-| **Coding** | Good | Very good | Best at this size |
-| **Tool calling** | Basic | Good | Excellent |
-| **Multimodal** | Yes (text + image) | Yes (text + image) | Yes (text + image + video) |
-| **Languages** | 35+ | 35+ | 201 |
-| **Context** | 128K tokens | 128K tokens | 128K tokens |
-| **License** | Gemma (permissive) | Gemma (permissive) | Apache 2.0 |
+| `g4f` | `gemma4:26b` | Fast Gemma alias | delete — Qwen 3 supersedes |
+| `hermes-gemma4` | `gemma4:26b` | Hermes Agent default, `num_ctx 32768` | retained until Hermes config switches to Qwen |
+| `hermes-gemma4-fast` | `gemma4:e4b` | Hermes faster alias | delete — Qwen 3 supersedes |
+| `gemma4-opencode` | `gemma4:26b` | Coding system prompt | delete — `qwen3-coder:30b` supersedes |
+| `gemma4-e4b-opencode` | `gemma4:e4b` | Lighter coding alias | delete — supersedes |
+| `gemma4:26b` | (base) | Gemma 4 26B | delete once aliases gone |
+| `gemma4:e4b` | (base) | Gemma 4 e4b | delete once aliases gone |
 
-**TL;DR**: Use Gemma 3 for chat and general tasks, Qwen 3.5 for coding and API backends.
+To reproduce one if you ever need it again, the original Modelfiles all
+follow this shape:
 
----
-
-## Use Cases
-
-### As OpenClaw Backend (Alpuca)
-Point OpenClaw edge functions at `http://192.168.1.200:11434/v1/chat/completions` (OpenAI-compatible endpoint). Zero token cost.
-
-### Claude Max Overflow
-When you hit your Claude subscription cap, switch to msty with a local model as a fallback.
-
-### Airplane / Offline (MacBook Air)
-Works fully offline after model download. Great for language lessons, writing, code review.
-
-### Big File Processing
-Feed large docs into the 128K context window for summarization, analysis, extraction.
-
----
-
-## msty Tips
-
-- **Knowledge Bases**: Drag files/folders into msty to create searchable knowledge bases. Great for codebase Q&A.
-- **Prompt Templates**: Save common prompts (code review, summarization, translation) as reusable templates.
-- **Provider Switching**: Mid-conversation, switch between local Ollama and cloud providers (Claude, OpenAI) without losing context.
-- **Conversation Branching**: Fork a conversation to explore different approaches.
-
----
-
-## Ollama Useful Commands
-
-```bash
-ollama list                     # Show installed models
-ollama run gemma3:27b           # Interactive chat (Alpuca)
-ollama run gemma3:12b           # Interactive chat (MacBook Air)
-ollama run qwen3.5:9b           # Switch to coding model
-ollama ps                       # Show loaded models (RAM usage)
-ollama stop gemma3:27b          # Unload from RAM
-brew services stop ollama       # Stop background service
-brew services start ollama      # Start background service
+```
+FROM <base>
+TEMPLATE {{ .Prompt }}
+RENDERER gemma4
+PARSER gemma4
+PARAMETER num_ctx 32768
+SYSTEM <optional system prompt>
 ```
 
-## Ollama API Examples
+## Quick invocation
+
+### CLI
 
 ```bash
-# Simple completion
-curl http://localhost:11434/api/generate -d '{
-  "model": "gemma3:12b",
-  "prompt": "Explain recursion in one sentence",
-  "stream": false
-}'
-
-# OpenAI-compatible chat endpoint (for app integrations)
-curl http://localhost:11434/v1/chat/completions -d '{
-  "model": "gemma3:12b",
-  "messages": [{"role": "user", "content": "Hello"}]
-}'
+ollama list                          # what's available
+ollama ps                            # what's loaded in RAM right now
+ollama run qwen3:30b-a3b             # interactive chat
+ollama stop qwen3:30b-a3b            # unload from RAM immediately
 ```
 
----
+### HTTP API (recommended for scripts / edge functions)
 
-## Network Access (Alpuca as LAN AI Server)
-
-By default, ollama binds to `localhost`. To serve other machines on LAN:
+Ollama exposes both a native API and an OpenAI-compatible one at port 11434.
 
 ```bash
-# Set in ~/.zshrc or launchctl env:
-export OLLAMA_HOST=0.0.0.0
+# Native API — single-shot completion
+curl -s http://localhost:11434/api/generate -d '{
+  "model": "qwen3:30b-a3b",
+  "prompt": "Summarize git rebase in one sentence.",
+  "stream": false,
+  "options": {"num_predict": 200, "temperature": 0.3}
+}' | jq -r .response
 
-# Then restart:
+# OpenAI-compatible chat endpoint — drop-in for any OpenAI SDK
+curl -s http://localhost:11434/v1/chat/completions -d '{
+  "model": "qwen3-coder:30b",
+  "messages": [{"role":"user","content":"Write a TS isEmail()."}],
+  "temperature": 0.2
+}' | jq -r '.choices[0].message.content'
+
+# Vision — pass base64-encoded image
+B64=$(base64 -i screenshot.png | tr -d '\n')
+curl -s http://localhost:11434/api/generate -d "$(jq -n \
+  --arg img "$B64" \
+  '{model:"qwen3-vl:30b-a3b",
+    prompt:"Describe this screenshot.",
+    images:[$img], stream:false}')" | jq -r .response
+```
+
+### Toggling Qwen 3's thinking mode
+
+`qwen3:30b-a3b` supports a `/think` and `/no_think` prefix:
+
+- `/think Solve: 17 * 24` → emits reasoning, slower, often more accurate.
+- `/no_think Hi` → direct response, no chain of thought.
+
+Default is `/no_think`. Use `/think` only when you actually need the
+reasoning trace — `deepseek-r1:32b` is the dedicated alternative.
+
+## Network access (Alpuca as LAN AI server)
+
+Ollama binds to `localhost` by default. To serve other devices on the home
+network (e.g., a mobile app, an Airtop laptop, the Alpaca tablet):
+
+```bash
+# Persist via launchctl so brew services picks it up
+launchctl setenv OLLAMA_HOST 0.0.0.0
 brew services restart ollama
 ```
 
-After this, any device on the network can use `http://192.168.1.200:11434` as an AI API.
+After this, any device on the LAN can use `http://192.168.1.200:11434`.
+
+## Integrations
+
+### Hermes Agent
+
+- Install dir: `~/.hermes/` (config, skills, memory, logs)
+- Default model: currently `hermes-gemma4` (Gemma 4 26B + 32K context)
+- Coding model: `qwen2.5-coder:14b` (switch with `/model` in Hermes)
+- Service: LaunchAgent `com.hermes-agent` (auto-restarts)
+- Messaging: Telegram bot (allowlisted to Rahul only)
+- Skills: 74 bundled + auto-created from experience (`~/.hermes/skills/`)
+
+**Migration TODO**: when ready, switch Hermes default to `qwen3:30b-a3b` and
+coding to `qwen3-coder:30b`. Then the Gemma 4 lineage can be deleted entirely.
+
+### msty (desktop chat UI)
+
+- Install: download from [msty.app](https://msty.app) (free, native macOS)
+- Settings → Providers → add Ollama → auto-detects `http://localhost:11434`
+- Pulled models appear in the model picker automatically
+- Good for: quick chat, conversation branching, knowledge bases (drag
+  folders in), prompt templates, mid-conversation provider switching
+
+### Edge functions / OpenClaw backend
+
+Edge functions can point at `http://192.168.1.200:11434/v1/chat/completions`
+(OpenAI-compatible endpoint) when on LAN, or via Tailscale from anywhere.
+Zero token cost.
+
+## Maintenance
+
+### Checking for upgrades
+
+The registry doesn't publish a stable "tags list" API, but you can compare
+local manifest digests against remote:
+
+```bash
+# For each installed model, compare local vs remote weights digest
+for tag_file in ~/.ollama/models/manifests/registry.ollama.ai/library/*/*; do
+  name=$(basename "$(dirname "$tag_file")")
+  tag=$(basename "$tag_file")
+  local_d=$(jq -r '.layers[] | select(.mediaType|test("model")) | .digest' "$tag_file" | head -1)
+  remote_d=$(curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+    "https://registry.ollama.ai/v2/library/$name/manifests/$tag" \
+    | jq -r '.layers[]? | select(.mediaType|test("model")) | .digest' | head -1)
+  [ "$local_d" = "$remote_d" ] && echo "✓ $name:$tag" || echo "⬆ $name:$tag UPDATE AVAILABLE"
+done
+```
+
+Custom modelfile tags (no `:` in the name like `g4f`, `hermes-gemma4`) won't
+appear in the registry — that's expected.
+
+### Removing models
+
+```bash
+ollama rm <model-name>           # removes the tag, garbage-collects blobs
+                                  # that no other tag references
+```
+
+Blobs live in `~/.ollama/models/blobs/` (i.e., on PortoSams2T via the
+symlink). Multiple tags can share a blob — e.g., `g4f` and
+`hermes-gemma4-fast` both pointed at the same gemma4:e4b blob.
+
+### Adding a new model
+
+```bash
+ollama pull <model>:<tag>        # downloads to ~/.ollama (→ PortoSams2T)
+```
+
+Inspect first:
+
+```bash
+# Check it exists and see size before pulling
+curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+  https://registry.ollama.ai/v2/library/<model>/manifests/<tag> \
+  | jq '[.layers[].size] | add / 1024 / 1024 / 1024'
+```
+
+## Local vs cloud Claude — when to use which
+
+| Task | Use |
+|---|---|
+| Anything you care about being correct | Cloud Claude (Opus / Sonnet) |
+| Hard reasoning, design judgment | Cloud Claude |
+| Offline / on a flight | `qwen3:30b-a3b` + `/think` |
+| Image content extraction at the property | `qwen3-vl:30b-a3b` |
+| Bulk text classification, no per-call cost concern | Any local model |
+| Auto test edge-case enumeration in a CI script | `deepseek-r1:32b` |
+| Pure OCR | `glm-ocr` |
+| Burning through Claude Max quota mid-week | Switch msty to local for the rest of the day |
+
+The local stack exists to be useful, not to replace cloud Claude. Treat them
+as different tools.
 
 ---
 
-*Updated 2026-03-28. msty + Ollama, Gemma 3 + Qwen 3.5 models.*
+*Last updated: 2026-05-02. PortoSams2T-backed Ollama, Qwen 3 + DeepSeek R1
+lineup. Gemma 4 family pending removal once Hermes default is switched.*
