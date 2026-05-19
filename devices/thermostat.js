@@ -31,6 +31,8 @@ let lastPollTime = null;
 let lastContactTimes = {}; // { sdmDeviceId: Date } — last successful state fetch
 let currentUserRole = null;
 let deviceScope = null;
+let nestAuthError = null; // null | string — set when getAllStates returns oauth_refresh_failed
+const STALE_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour
 
 // =============================================
 // INITIALIZATION
@@ -111,7 +113,10 @@ async function nestApi(action, params = {}) {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(err.error || `API error ${response.status}`);
+    const e = new Error(err.error || `API error ${response.status}`);
+    e.status = response.status;
+    e.code = err.code;
+    throw e;
   }
 
   return response.json();
@@ -174,9 +179,18 @@ async function refreshAllStates() {
         }
       }
     }
+    nestAuthError = null;
+    renderStaleBanner();
     supabaseHealth.recordSuccess();
   } catch (err) {
     console.warn('State refresh failed:', err.message);
+    if (err.code === 'oauth_refresh_failed' || err.status === 401) {
+      nestAuthError = err.message || 'Nest authorization expired';
+      if (hasPermission('admin_climate_settings')) {
+        document.getElementById('oauthSetupSection')?.classList.remove('hidden');
+      }
+    }
+    renderStaleBanner();
     supabaseHealth.recordFailure();
     throw err; // let PollManager circuit breaker track failures
   }
@@ -233,6 +247,56 @@ function renderThermostats() {
   }
 
   container.innerHTML = thermostats.map(t => renderCard(t)).join('');
+  renderStaleBanner();
+}
+
+function oldestContactAgeMs() {
+  const times = Object.values(lastContactTimes);
+  if (!times.length) return Infinity;
+  const oldest = Math.min(...times.map(t => t.getTime()));
+  return Date.now() - oldest;
+}
+
+function renderStaleBanner() {
+  const section = document.getElementById('thermostatsSection');
+  if (!section) return;
+  const body = section.querySelector('.section-body');
+  if (!body) return;
+
+  const ageMs = oldestContactAgeMs();
+  const isStale = ageMs > STALE_THRESHOLD_MS;
+  const isAdmin = hasPermission('admin_climate_settings');
+
+  let banner = document.getElementById('thermoStaleBanner');
+
+  if (!isStale && !nestAuthError) {
+    banner?.remove();
+    return;
+  }
+
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'thermoStaleBanner';
+    banner.style.cssText = 'background:#fff4e0;border:1px solid #f0c674;color:#7a4a00;padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.9rem;line-height:1.4;';
+    body.prepend(banner);
+  }
+
+  const ageLabel = formatAgeLabel(ageMs);
+  const reason = nestAuthError
+    ? 'Nest authorization expired — temperatures shown are cached.'
+    : `Live Nest data unavailable — temperatures shown were last refreshed ${ageLabel}.`;
+  const adminHint = isAdmin
+    ? ' Scroll to <strong>Climate Settings</strong> and click <strong>Authorize Google Account</strong> to reconnect.'
+    : ' Ask an admin to re-authorize the Nest integration.';
+  banner.innerHTML = `<strong>⚠️ Thermostat data is stale.</strong> ${reason}${adminHint}`;
+}
+
+function formatAgeLabel(ms) {
+  if (!isFinite(ms)) return 'never';
+  if (ms < 60000) return 'just now';
+  if (ms < 3600000) return `${Math.round(ms / 60000)} minutes ago`;
+  if (ms < 86400000) return `${Math.round(ms / 3600000)} hours ago`;
+  return `${Math.round(ms / 86400000)} days ago`;
 }
 
 function renderCard(t) {
@@ -504,10 +568,11 @@ async function loadNestSettings() {
     const badge = document.getElementById('nestModeBadge');
     if (badge) badge.textContent = config.test_mode ? 'Test Mode' : 'Live';
 
-    // Show OAuth setup only if no refresh token (access token auto-refreshes)
+    // Show OAuth setup if no refresh token, or if data is stale and likely
+    // the existing token is being rejected by Google (silent-stale guard).
     const oauthSection = document.getElementById('oauthSetupSection');
     const deviceSection = document.getElementById('deviceManagementSection');
-    const needsAuth = !config.refresh_token;
+    const needsAuth = !config.refresh_token || oldestContactAgeMs() > STALE_THRESHOLD_MS;
     if (needsAuth) {
       oauthSection?.classList.remove('hidden');
       deviceSection?.classList.add('hidden');

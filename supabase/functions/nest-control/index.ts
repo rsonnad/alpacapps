@@ -658,6 +658,13 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error("Nest control error:", error.message, error.stack);
+    if (typeof error?.message === "string" && error.message.startsWith("Token refresh failed:")) {
+      return jsonResponse(
+        req,
+        { error: error.message, code: "oauth_refresh_failed" },
+        401
+      );
+    }
     return jsonResponse(req, { error: "Internal error processing nest control request" }, 500);
   }
 });
