@@ -1,12 +1,12 @@
 {
-  "version": "v260518.05 10:46p",
-  "release": 1533,
-  "sha": "2cb026393",
-  "fullSha": "2cb02639318c7eba96c18b2314c9813eb2d11fd9",
+  "version": "v260518.06 11:58p",
+  "release": 1534,
+  "sha": "e6469746e",
+  "fullSha": "e6469746ecd6c22a2d64379397df0dabdc6304f0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-19T03:46:50+00:00",
-  "commits": [{"sha":"2cb026393","message":"fix(climate): surface stale Nest data + OAuth re-auth path","author":"Rahul"}]
+  "pushedAt": "2026-05-19T04:58:45+00:00",
+  "commits": [{"sha":"e6469746e","message":"ui(climate): indicate alpacaplayhouse@gmail.com for Nest re-auth","author":"Rahul"}]
 }
