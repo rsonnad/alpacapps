@@ -2164,8 +2164,10 @@ window.createDraftLeaseAction = async function() {
     `;
     const subject = `DRAFT lease for review — ${personName}${spaceName ? ' (' + spaceName + ')' : ''}`;
 
-    const result = await sendEmail('custom', to, { html, subject });
-    if (result.success) {
+    const result = await sendEmail('lease_draft', to, { html, subject });
+    if (result.success && result.status === 'pending_approval') {
+      showToast(`Queued for admin approval — check inbox for approval link, then it goes to ${to}`, 'warning');
+    } else if (result.success) {
       showToast(`Draft lease emailed to ${to}`, 'success');
     } else {
       showToast('Failed to send: ' + (result.error || 'unknown error'), 'error');

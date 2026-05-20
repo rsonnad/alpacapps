@@ -98,6 +98,8 @@ type EmailType =
   | "event_notification"
   // Custom (raw HTML passthrough)
   | "custom"
+  // Draft lease preview emailed to an arbitrary reviewer (raw HTML passthrough, no approval)
+  | "lease_draft"
   // Internal — never sent to recipients directly
   | "email_approval_request";
 
@@ -2573,6 +2575,14 @@ Thanks!
         text: data.text || "",
       };
 
+    case "lease_draft":
+      if (!data.html) throw new Error("Lease draft email requires data.html");
+      return {
+        subject: data.subject || "DRAFT lease for review — Alpaca Playhouse",
+        html: data.html,
+        text: data.text || "",
+      };
+
     default:
       throw new Error(`Unknown email type: ${type}`);
   }
@@ -2964,6 +2974,7 @@ serve(async (req) => {
     // Templates that already include their own full HTML layout and should NOT be wrapped
     const SKIP_BRAND_WRAP: EmailType[] = [
       "custom",            // raw HTML passthrough
+      "lease_draft",       // raw HTML passthrough (lease preview)
       "staff_invitation",  // has its own full branded layout
       "pai_email_reply",   // PAI-branded layout
       "payment_statement", // has its own full layout

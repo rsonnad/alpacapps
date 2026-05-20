@@ -52,6 +52,8 @@ export const EMAIL_TYPES = {
   RESERVATION_SUBMITTED: 'reservation_submitted',
   RESERVATION_APPROVED: 'reservation_approved',
   RESERVATION_DENIED: 'reservation_denied',
+  // Draft lease for reviewer (raw HTML passthrough, skips approval)
+  LEASE_DRAFT: 'lease_draft',
 };
 
 /**
@@ -86,7 +88,7 @@ export async function sendEmail(type, to, data, options = {}) {
       return { success: false, error: result.error || 'Failed to send email' };
     }
 
-    return { success: true, id: result.id };
+    return { success: true, id: result.id, status: result.status };
   } catch (error) {
     console.error('Email service error:', error);
     return { success: false, error: error.message };
