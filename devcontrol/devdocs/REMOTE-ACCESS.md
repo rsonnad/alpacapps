@@ -26,6 +26,63 @@ Internet
 
 ---
 
+## Method 0: SSH aliases (fastest, when on home LAN)
+
+On your dev Mac (and any machine where you set this up), `~/.ssh/config` should define `alpuca` (LAN-primary), `alpuca-ts` (Tailscale fallback), `alpuca-cf` (Cloudflare tunnel), and `udm` (UDM Pro via ProxyJump alpuca). Plus a `udm` shell wrapper that handles password auth via Bitwarden.
+
+**Result — same as the longer recipes below, but typed as:**
+
+```bash
+ssh alpuca                          # SSH to Alpuca over LAN
+ssh alpuca-ts                       # SSH to Alpuca over Tailscale (if on tailnet)
+udm                                 # interactive root shell on UDM Pro
+udm 'dpkg -l | grep unifi'          # one-shot command on UDM
+udm 'cat /etc/iptables.rules'       # any command, with ProxyJump + password auth handled
+```
+
+ControlMaster is enabled on the `alpuca*` hosts, so repeated commands in a 10-minute window reuse one TCP session (~40ms vs ~500ms per call).
+
+### Setup on a new machine
+
+Add to `~/.ssh/config`:
+
+```ssh-config
+Host alpuca
+  HostName 192.168.1.200
+  User paca
+
+Host alpuca-ts
+  HostName 100.74.59.97
+  User paca
+
+Host alpuca-cf
+  HostName ssh.alpacaplayhouse.com
+  User paca
+  ProxyCommand cloudflared access ssh --hostname %h
+
+Host alpuca alpuca-ts alpuca-cf
+  ControlMaster auto
+  ControlPath ~/.ssh/cm-%r@%h:%p
+  ControlPersist 10m
+
+Host udm
+  HostName 192.168.1.1
+  User root
+  ProxyJump alpuca
+  PubkeyAuthentication no
+  PreferredAuthentications keyboard-interactive,password
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+```
+
+Then drop `~/bin/udm` (already on your dev Mac — see Bitwarden item "UniFi Dream Machine Pro — Network Gateway" / field "SSH Password" for the script's data source). The wrapper reads the password from BW and runs `sshpass -p "$PASS" ssh udm "$@"`.
+
+**Why `keyboard-interactive` not `password`:** the UDM only advertises `publickey,keyboard-interactive` — setting `PreferredAuthentications password` causes "Permission denied" because there's nothing for ssh to try. `sshpass` handles keyboard-interactive fine.
+
+**To switch alpuca primary to Tailscale instead** (e.g. when this machine lives off-LAN), swap the HostNames between `alpuca` and `alpuca-ts`.
+
+---
+
 ## Method 1: Tailscale (preferred)
 
 Requires Tailscale running on your machine and the target device.
@@ -192,7 +249,7 @@ ssh paca@100.74.59.97 "sshpass -p '\$(bw-read \"UniFi Dream Machine Pro — Netw
 | `root` | SSH only | Full root shell | Firewall rules, iptables, system config |
 | `alpacaauto` | Web API | Super Admin (read-write with CSRF) | Network settings, client listing |
 
-**UDM SSH requires `-o PubkeyAuthentication=no`** — without it, SSH tries pubkey, fails, then keyboard-interactive skips the password prompt.
+**UDM SSH requires `-o PubkeyAuthentication=no`** — without it, SSH tries pubkey, fails, then keyboard-interactive skips the password prompt. The `Host udm` block in **Method 0** sets this; if invoking ssh by hand, add the flag.
 
 **Cloud remote access (`unifi.ui.com`) is DISABLED.** The admin account is local-only (no Ubiquiti SSO linked). To enable: UDM web UI → Settings → System → Administration → Remote Access.
 
