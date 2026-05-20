@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LangBang — Polish for Android tablets</title>
+  <meta property="og:title" content="LangBang — Polish for Android tablets">
+  <meta property="og:description" content="Tablet-first Polish practice with Azure neural TTS, Gemini-generated example sentences, and phoneme-level pronunciation scoring.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/langbang/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="LangBang — Polish for Android tablets">
+  <meta name="twitter:description" content="Tablet-first Polish practice — TTS, conjugation tables, sentence generator, pronunciation scoring.">
+  <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #f4f7f1;
+      --surface: #ffffff;
+      --surface2: #eef3ea;
+      --border: #c4d4ba;
+      --border-light: #d8e3cf;
+      --text: #1a2412;
+      --text-dim: #4a6040;
+      --text-muted: #7a9168;
+      --green: #2d6a1e;
+      --vine: #1a4d2e;
+      --amber: #b45309;
+      --amber-soft: rgba(180, 83, 9, 0.08);
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--green); }
+    a:hover { color: var(--vine); }
+
+    .hero {
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, #d8e8ca 0%, #dde8d2 35%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.6rem;
+      font-weight: 400;
+      color: var(--vine);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+    .hero .tagline {
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--text-dim);
+      max-width: 36rem;
+      margin: 0 auto;
+    }
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 2rem; }
+    }
+
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 3.5rem;
+    }
+
+    section { margin-bottom: 2.25rem; }
+
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--vine);
+      margin-bottom: 0.8rem;
+      letter-spacing: -0.01em;
+    }
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    p { margin-bottom: 0.8rem; }
+    p:last-child { margin-bottom: 0; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.6rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .build-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .build-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .build-card .label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .build-card a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      word-break: break-all;
+      text-decoration: none;
+      border-bottom: 1px dotted var(--border);
+      padding-bottom: 2px;
+    }
+    .build-card a:hover {
+      border-bottom-color: var(--vine);
+    }
+    .build-card .meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    ul.features {
+      list-style: none;
+      padding: 0;
+    }
+    ul.features li {
+      padding: 0.55rem 0 0.55rem 1.4rem;
+      position: relative;
+      border-bottom: 1px dashed var(--border-light);
+    }
+    ul.features li:last-child { border-bottom: none; }
+    ul.features li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-size: 0.9rem;
+      top: 0.6rem;
+    }
+    ul.features strong { color: var(--vine); }
+
+    .stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .stack span {
+      display: inline-block;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.82rem;
+      background: var(--surface2);
+      border: 1px solid var(--border-light);
+      border-radius: 999px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .note {
+      background: var(--amber-soft);
+      border-left: 3px solid var(--amber);
+      padding: 0.85rem 1.1rem;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      font-size: 0.92rem;
+      color: var(--text-dim);
+    }
+    .note strong { color: var(--amber); }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem 3rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-light);
+      margin-top: 2rem;
+    }
+    footer a { color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>LangBang</h1>
+    <p class="tagline">Polish practice for Android tablets — neural TTS, generated example sentences, phoneme-level pronunciation scoring.</p>
+  </header>
+
+  <main class="container">
+
+    <section>
+      <h2>What it is</h2>
+      <div class="card">
+        <p>LangBang is a personal-use Android tablet app for learning Polish. It runs natively on Samsung Galaxy Tab and similar hardware — landscape-first, tap-to-hear, no ads, no account required.</p>
+        <p>Lessons cover Polish phonemes, the most common verbs (with full present-tense paradigms), and the most common adjectives (with all nominative and accusative forms). Gemini generates short example sentences on demand; Azure neural TTS pronounces them; Azure Pronunciation Assessment scores how close your attempt was.</p>
+        <div class="stack">
+          <span>Kotlin</span>
+          <span>Jetpack Compose</span>
+          <span>min SDK 33</span>
+          <span>Azure Speech</span>
+          <span>Gemini 2.5 Flash</span>
+          <span>Supabase</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Builds</h2>
+      <p>APKs are published as GitHub Releases. Sideload onto your tablet via <code>adb install</code> or by opening the link directly in the tablet browser (Settings will prompt to allow install from unknown sources).</p>
+      <div class="build-grid">
+        <div class="build-card">
+          <span class="label">Latest release</span>
+          <a href="https://github.com/rsonnad/langbang/releases/latest">github.com/rsonnad/langbang/releases/latest</a>
+          <span class="meta">Signed debug APK, arm64-v8a only.</span>
+        </div>
+        <div class="build-card">
+          <span class="label">All releases</span>
+          <a href="https://github.com/rsonnad/langbang/releases">github.com/rsonnad/langbang/releases</a>
+          <span class="meta">Version history + changelogs.</span>
+        </div>
+        <div class="build-card">
+          <span class="label">Source</span>
+          <a href="https://github.com/rsonnad/langbang">github.com/rsonnad/langbang</a>
+          <span class="meta">Gradle project — open in Android Studio.</span>
+        </div>
+      </div>
+      <p style="margin-top: 1rem;" class="note"><strong>Tip.</strong> Wireless adb works great over Tailscale: <code>adb connect &lt;tab-tailnet-ip&gt;:&lt;port&gt;</code>, then <code>adb install app-arm64-v8a-debug.apk</code>.</p>
+    </section>
+
+    <section>
+      <h2>Features</h2>
+      <div class="card">
+        <ul class="features">
+          <li><strong>Lesson 1 — Pronunciation.</strong> 19 Polish phonemes (ą ę ó y ł w c ch r ć ś ń ż rz ź sz cz dz dź dż) with IPA, English approximations, and 10 example words each. Flashcard quiz mode.</li>
+          <li><strong>Lesson 2 — Core verbs.</strong> 22 most common verbs with full 6-row present-tense paradigms, grouped by conjugation class. By-pronoun mode + add-your-own via Gemini translation. Generated example sentences with EN→PL→EN→PL playback.</li>
+          <li><strong>Lesson 3 — Core adjectives.</strong> 40 most common adjectives with nominative and accusative paradigms across all five gender/number forms. Same sentence-generation flow as verbs.</li>
+          <li><strong>Pronunciation scoring.</strong> Tap the mic on any word — Azure Pronunciation Assessment returns a 0–100 accuracy score with color-coded inline feedback.</li>
+          <li><strong>Offline-friendly.</strong> Every Polish utterance and English gloss is pre-synthesized to cached mp3 at first launch, so practice continues without network.</li>
+          <li><strong>SFTP backup.</strong> One-tap backup of cached audio + user data to ALPUCA over Tailscale.</li>
+          <li><strong>Spend tracking.</strong> Live estimate of Azure TTS + Pronunciation + Gemini token costs in Settings.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Backend</h2>
+      <div class="card">
+        <p>LangBang shares the alpacapps Supabase project — same instance, dedicated <code>langbang</code> schema for isolation. The Android client uses the <code>supabase-kt</code> SDK configured with <code>defaultSchema = "langbang"</code>, so requests land in the right namespace without colliding with the alpacapps <code>public</code> schema.</p>
+        <p>Schema-creation migration lives in the alpacapps repo at <code>supabase/migrations/20260520_langbang_schema.sql</code>. To expose it via PostgREST, the <code>langbang</code> schema must be added to <em>Project Settings → API → Exposed schemas</em> in Supabase Studio.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><a href="/">← alpacaplayhouse.com</a></p>
+  </footer>
+</body>
+</html>
