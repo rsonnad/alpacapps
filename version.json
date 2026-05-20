@@ -1,12 +1,12 @@
 {
-  "version": "v260519.06 9:56p",
-  "release": 1540,
-  "sha": "5613497bc",
-  "fullSha": "5613497bc6753ab3fc768243b1438b6e0a0ffcc6",
+  "version": "v260520.01 12:12p",
+  "release": 1541,
+  "sha": "b3edc117e",
+  "fullSha": "b3edc117e5a3ba175bc516d49d36f9ea6441fc43",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-20T02:56:15+00:00",
-  "commits": [{"sha":"5613497bc","message":"docs(remote-access): add Method 0 — `ssh alpuca` / `udm` SSH aliases","author":"Rahul"}]
+  "pushedAt": "2026-05-20T17:12:45+00:00",
+  "commits": [{"sha":"b3edc117e","message":"Update spaces/ical/fuego-trailer.ics [automated]","author":"Rahul"}]
 }
