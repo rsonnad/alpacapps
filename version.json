@@ -1,12 +1,12 @@
 {
-  "version": "v260519.05 9:46p",
-  "release": 1539,
-  "sha": "424770b42",
-  "fullSha": "424770b42a6a634c277423be2d4d5dd023d1128d",
+  "version": "v260519.06 9:56p",
+  "release": 1540,
+  "sha": "5613497bc",
+  "fullSha": "5613497bc6753ab3fc768243b1438b6e0a0ffcc6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-20T02:46:34+00:00",
-  "commits": [{"sha":"424770b42","message":"fix(send-email): always bypass approval for test/review recipients","author":"Rahul"}]
+  "pushedAt": "2026-05-20T02:56:15+00:00",
+  "commits": [{"sha":"5613497bc","message":"docs(remote-access): add Method 0 — `ssh alpuca` / `udm` SSH aliases","author":"Rahul"}]
 }
