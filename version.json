@@ -1,12 +1,12 @@
 {
-  "version": "v260519.04 9:44p",
-  "release": 1538,
-  "sha": "b6cae0748",
-  "fullSha": "b6cae0748208821fad4f4f25e9d445f548600224",
+  "version": "v260519.05 9:46p",
+  "release": 1539,
+  "sha": "424770b42",
+  "fullSha": "424770b42a6a634c277423be2d4d5dd023d1128d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-20T02:44:22+00:00",
-  "commits": [{"sha":"b6cae0748","message":"fix(rentals): use dedicated lease_draft email type to bypass approval queue","author":"Rahul"}]
+  "pushedAt": "2026-05-20T02:46:34+00:00",
+  "commits": [{"sha":"424770b42","message":"fix(send-email): always bypass approval for test/review recipients","author":"Rahul"}]
 }
