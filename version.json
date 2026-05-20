@@ -1,12 +1,12 @@
 {
-  "version": "v260519.03 4:37p",
-  "release": 1537,
-  "sha": "30ed8913e",
-  "fullSha": "30ed8913e237a68fbe713c174651be8930851bb7",
+  "version": "v260519.04 9:44p",
+  "release": 1538,
+  "sha": "b6cae0748",
+  "fullSha": "b6cae0748208821fad4f4f25e9d445f548600224",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-19T21:37:31+00:00",
-  "commits": [{"sha":"30ed8913e","message":"feat(rentals): add Create Draft Lease button with email gate","author":"Rahul"}]
+  "pushedAt": "2026-05-20T02:44:22+00:00",
+  "commits": [{"sha":"b6cae0748","message":"fix(rentals): use dedicated lease_draft email type to bypass approval queue","author":"Rahul"}]
 }
