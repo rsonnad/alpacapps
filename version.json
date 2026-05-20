@@ -1,12 +1,12 @@
 {
-  "version": "v260520.01 12:12p",
-  "release": 1541,
-  "sha": "b3edc117e",
-  "fullSha": "b3edc117e5a3ba175bc516d49d36f9ea6441fc43",
+  "version": "v260520.02 6:27p",
+  "release": 1542,
+  "sha": "6109acdaf",
+  "fullSha": "6109acdafef06345497ecbf140a788e9ad78fc3a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-20T17:12:45+00:00",
-  "commits": [{"sha":"b3edc117e","message":"Update spaces/ical/fuego-trailer.ics [automated]","author":"Rahul"}]
+  "pushedAt": "2026-05-20T23:27:19+00:00",
+  "commits": [{"sha":"6109acdaf","message":"langbang tenant: schema migration + landing page","author":"Rahul"}]
 }

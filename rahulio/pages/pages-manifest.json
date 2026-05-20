@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-20T17:14:33.190Z",
+  "generatedAt": "2026-05-20T23:28:21.144Z",
   "sections": [
     "E-2 Visa",
     "Projects"
@@ -8,8 +8,8 @@
     {
       "path": "langbang/index.html",
       "title": "LangBang — Polish for Android tablets",
-      "section": "Projects",
-      "modifiedAt": "2026-05-20T00:00:00.000Z"
+      "section": null,
+      "modifiedAt": "2026-05-20T23:26:54.000Z"
     },
     {
       "path": "alternative-sleep-cycles.html",
