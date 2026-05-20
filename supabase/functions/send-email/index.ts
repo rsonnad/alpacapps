@@ -3024,7 +3024,15 @@ serve(async (req) => {
     finalHtml = finalHtml + metadataBlock;
 
     // === APPROVAL GATE ===
-    const needsApproval = await checkApprovalRequired(type);
+    // Test/review accounts always bypass approval — they are owned by the team
+    // and exist specifically for previewing outbound mail.
+    const TEST_REVIEW_ADDRESSES = new Set([
+      "rahulioson@gmail.com",
+      "alpacaplayhouse@gmail.com",
+    ]);
+    const allRecipientsAreTestReview = toArray.length > 0
+      && toArray.every(a => TEST_REVIEW_ADDRESSES.has((a || "").trim().toLowerCase()));
+    const needsApproval = !allRecipientsAreTestReview && await checkApprovalRequired(type);
     if (needsApproval) {
       const { approvalId } = await holdForApproval(
         type, toArray, from || sender.from, reply_to || sender.reply_to,
