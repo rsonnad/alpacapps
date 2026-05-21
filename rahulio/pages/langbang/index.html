@@ -229,17 +229,17 @@
 
     <section>
       <h2>Builds</h2>
-      <p>APKs are published as GitHub Releases. Sideload onto your tablet via <code>adb install</code> or by opening the link directly in the tablet browser (Settings will prompt to allow install from unknown sources).</p>
+      <p>APKs are published to the alpacapps R2 bucket. Sideload onto your tablet via <code>adb install</code> or open the link directly in the tablet browser (Settings will prompt to allow install from unknown sources).</p>
       <div class="build-grid">
         <div class="build-card">
-          <span class="label">Latest release</span>
-          <a href="https://github.com/rsonnad/langbang/releases/latest">github.com/rsonnad/langbang/releases/latest</a>
-          <span class="meta">Signed debug APK, arm64-v8a only.</span>
+          <span class="label">Latest APK</span>
+          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-latest.apk">langbang-latest.apk</a>
+          <span class="meta">Always points at the newest build. arm64-v8a, debug-signed.</span>
         </div>
         <div class="build-card">
-          <span class="label">All releases</span>
-          <a href="https://github.com/rsonnad/langbang/releases">github.com/rsonnad/langbang/releases</a>
-          <span class="meta">Version history + changelogs.</span>
+          <span class="label">Current build — v0.1.6.36</span>
+          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v36-arm64.apk">langbang-v36-arm64.apk</a>
+          <span class="meta">Pinned version for rollback or testing.</span>
         </div>
         <div class="build-card">
           <span class="label">Source</span>
@@ -247,7 +247,7 @@
           <span class="meta">Gradle project — open in Android Studio.</span>
         </div>
       </div>
-      <p style="margin-top: 1rem;" class="note"><strong>Tip.</strong> Wireless adb works great over Tailscale: <code>adb connect &lt;tab-tailnet-ip&gt;:&lt;port&gt;</code>, then <code>adb install app-arm64-v8a-debug.apk</code>.</p>
+      <p style="margin-top: 1rem;" class="note"><strong>Tip.</strong> Wireless adb works great over Tailscale: <code>adb connect &lt;tab-tailnet-ip&gt;:&lt;port&gt;</code>, then <code>adb install langbang-latest.apk</code>.</p>
     </section>
 
     <section>
