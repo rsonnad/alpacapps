@@ -1,12 +1,12 @@
 {
-  "version": "v260521.03 1:05a",
-  "release": 1548,
-  "sha": "a236e625e",
-  "fullSha": "a236e625ece5b6054a770ff4e8da6aef76204fc5",
+  "version": "v260521.04 1:14a",
+  "release": 1549,
+  "sha": "eadf31a54",
+  "fullSha": "eadf31a54865ac96f0b309e5f23fec00aca12aac",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-21T06:05:31+00:00",
-  "commits": [{"sha":"a236e625e","message":"langbang page: pinned APK → v44 (now-playing controls)","author":"Rahul"}]
+  "pushedAt": "2026-05-21T06:14:51+00:00",
+  "commits": [{"sha":"eadf31a54","message":"langbang page: pinned APK → v45 (multi-word must-contain filter)","author":"Rahul"}]
 }
