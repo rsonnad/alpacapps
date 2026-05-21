@@ -1,12 +1,12 @@
 {
-  "version": "v260521.01 12:20a",
-  "release": 1546,
-  "sha": "3c358f8da",
-  "fullSha": "3c358f8da07903597e808f879aa4fd34bc73a774",
+  "version": "v260521.02 12:35a",
+  "release": 1547,
+  "sha": "34df41de5",
+  "fullSha": "34df41de5ba456801bf3058bd7d72020a7752abf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-21T05:20:23+00:00",
-  "commits": [{"sha":"3c358f8da","message":"langbang page: pinned APK → v39 (random-play sheet redesign)","author":"Rahul"}]
+  "pushedAt": "2026-05-21T05:35:58+00:00",
+  "commits": [{"sha":"34df41de5","message":"langbang page: pinned APK → v42 (adverbs toggle enabled + past tense)","author":"Rahul"}]
 }
