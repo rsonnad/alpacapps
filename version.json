@@ -1,12 +1,12 @@
 {
-  "version": "v260520.05 11:57p",
-  "release": 1545,
-  "sha": "2acbb2e1d",
-  "fullSha": "2acbb2e1df7d24555dba5a70529635bc9a337f73",
+  "version": "v260521.01 12:20a",
+  "release": 1546,
+  "sha": "3c358f8da",
+  "fullSha": "3c358f8da07903597e808f879aa4fd34bc73a774",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-21T04:57:54+00:00",
-  "commits": [{"sha":"2acbb2e1d","message":"langbang: pre-gen audio Edge Function + pinned APK → v37","author":"Rahul"}]
+  "pushedAt": "2026-05-21T05:20:23+00:00",
+  "commits": [{"sha":"3c358f8da","message":"langbang page: pinned APK → v39 (random-play sheet redesign)","author":"Rahul"}]
 }
