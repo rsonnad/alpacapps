@@ -1,12 +1,12 @@
 {
-  "version": "v260520.03 11:34p",
-  "release": 1543,
-  "sha": "c82c83a62",
-  "fullSha": "c82c83a622a275a04ba099540d8ad9df4c780ff3",
+  "version": "v260520.04 11:52p",
+  "release": 1544,
+  "sha": "82ef3a752",
+  "fullSha": "82ef3a752b181bdb970b88180d58eb9d8d60465d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmg397c",
-  "pushedAt": "2026-05-21T04:34:58+00:00",
-  "commits": [{"sha":"c82c83a62","message":"langbang page: bump pinned APK to v0.1.6.36","author":"Rahul"}]
+  "machine": "runnervmrw5os",
+  "pushedAt": "2026-05-21T04:52:54+00:00",
+  "commits": [{"sha":"82ef3a752","message":"langbang page: add Lesson 4 — Common adverbs","author":"Rahul"}]
 }
