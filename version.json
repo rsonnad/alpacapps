@@ -1,12 +1,12 @@
 {
-  "version": "v260521.02 12:35a",
-  "release": 1547,
-  "sha": "34df41de5",
-  "fullSha": "34df41de5ba456801bf3058bd7d72020a7752abf",
+  "version": "v260521.03 1:05a",
+  "release": 1548,
+  "sha": "a236e625e",
+  "fullSha": "a236e625ece5b6054a770ff4e8da6aef76204fc5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmg397c",
-  "pushedAt": "2026-05-21T05:35:58+00:00",
-  "commits": [{"sha":"34df41de5","message":"langbang page: pinned APK → v42 (adverbs toggle enabled + past tense)","author":"Rahul"}]
+  "machine": "runnervmrw5os",
+  "pushedAt": "2026-05-21T06:05:31+00:00",
+  "commits": [{"sha":"a236e625e","message":"langbang page: pinned APK → v44 (now-playing controls)","author":"Rahul"}]
 }
