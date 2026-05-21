@@ -1,12 +1,12 @@
 {
-  "version": "v260520.04 11:52p",
-  "release": 1544,
-  "sha": "82ef3a752",
-  "fullSha": "82ef3a752b181bdb970b88180d58eb9d8d60465d",
+  "version": "v260520.05 11:57p",
+  "release": 1545,
+  "sha": "2acbb2e1d",
+  "fullSha": "2acbb2e1df7d24555dba5a70529635bc9a337f73",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-21T04:52:54+00:00",
-  "commits": [{"sha":"82ef3a752","message":"langbang page: add Lesson 4 — Common adverbs","author":"Rahul"}]
+  "machine": "runnervmg397c",
+  "pushedAt": "2026-05-21T04:57:54+00:00",
+  "commits": [{"sha":"2acbb2e1d","message":"langbang: pre-gen audio Edge Function + pinned APK → v37","author":"Rahul"}]
 }
