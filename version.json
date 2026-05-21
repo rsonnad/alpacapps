@@ -1,12 +1,12 @@
 {
-  "version": "v260520.02 6:27p",
-  "release": 1542,
-  "sha": "6109acdaf",
-  "fullSha": "6109acdafef06345497ecbf140a788e9ad78fc3a",
+  "version": "v260520.03 11:34p",
+  "release": 1543,
+  "sha": "c82c83a62",
+  "fullSha": "c82c83a622a275a04ba099540d8ad9df4c780ff3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-20T23:27:19+00:00",
-  "commits": [{"sha":"6109acdaf","message":"langbang tenant: schema migration + landing page","author":"Rahul"}]
+  "machine": "runnervmg397c",
+  "pushedAt": "2026-05-21T04:34:58+00:00",
+  "commits": [{"sha":"c82c83a62","message":"langbang page: bump pinned APK to v0.1.6.36","author":"Rahul"}]
 }
