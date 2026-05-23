@@ -1,12 +1,12 @@
 {
-  "version": "v260523.01 12:30p",
-  "release": 1550,
-  "sha": "2b0bc57dd",
-  "fullSha": "2b0bc57dd874f5b406a128529f20d617b7e99154",
+  "version": "v260523.02 12:32p",
+  "release": 1551,
+  "sha": "4c0a9a0b0",
+  "fullSha": "4c0a9a0b0375f5a9484bdaf69652381b4e765599",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-23T17:30:31+00:00",
-  "commits": [{"sha":"2b0bc57dd","message":"docs(public): add local AI models reference page","author":"Paca"}]
+  "pushedAt": "2026-05-23T17:32:12+00:00",
+  "commits": [{"sha":"4c0a9a0b0","message":"docs(public): rename local-ai-models.html to alpuca-local-ai-models.html","author":"Paca"}]
 }
