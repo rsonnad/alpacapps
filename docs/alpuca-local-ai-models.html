@@ -135,7 +135,7 @@
   <div class="hero-inner">
     <div class="crumb"><a href="/docs/">&larr; Docs</a></div>
     <h1>Local AI Models on <span>Alpuca</span></h1>
-    <p>The current lineup of large language models running on the Alpaca Playhouse Mac mini. All open weights, served locally via Ollama, no per-call cost.</p>
+    <p>Reference for the open-weight LLMs running on the Alpaca Playhouse Mac mini, served via Ollama. If your project has LAN or tailnet access to the host, this page tells you what's available and how to call it.</p>
   </div>
 </div>
 
@@ -258,6 +258,71 @@ curl -s http://localhost:11434/api/generate -d "$(jq -n \
     <h3>Thinking mode toggle (Qwen 3)</h3>
     <p>Prefix a prompt with <code>/think</code> to get chain-of-thought reasoning, or <code>/no_think</code> for a direct response. Default is direct.</p>
     <pre><code id="api-think">ollama run qwen3:30b-a3b "/think What is 17 * 24?"</code><button class="copy-btn" onclick="copyText('api-think')">Copy</button></pre>
+  </div>
+
+  <div class="section">
+    <h2>Calling from another machine or another repo</h2>
+    <p>Ollama listens on all interfaces on port <code>11434</code>, so any client on the same LAN (or joined to the tailnet) can call it directly &mdash; no SDK install, no model download. Replace <code>localhost</code> in the examples above with the Alpuca host you can reach.</p>
+
+    <div class="callout">
+      <strong>Network-level access only.</strong> Ollama has no auth by default. Anyone who can reach <code>11434</code> can use the models. Keep the host behind your LAN, VPN, or tailnet &mdash; do not port-forward to the public internet.
+    </div>
+
+    <h3>Recommended pattern: one env var, one base URL</h3>
+    <p>In any consumer repo, define a single environment variable for the base URL and let everything else read from it:</p>
+    <pre><code id="env-pattern"># .env (or your platform's secret store)
+ALPUCA_OLLAMA_URL=http://&lt;alpuca-host&gt;:11434
+
+# Then in code (any language with an OpenAI SDK):
+#   baseURL = `${process.env.ALPUCA_OLLAMA_URL}/v1`
+#   apiKey  = "ollama"          // value is ignored, but most SDKs require non-empty</code><button class="copy-btn" onclick="copyText('env-pattern')">Copy</button></pre>
+    <p>The actual host (LAN IP or tailnet name) lives in your project's credentials store, not on this public page.</p>
+
+    <h3>Discover what's loaded right now</h3>
+    <p>List installed models programmatically &mdash; useful for guard clauses in scripts that fail gracefully if a model isn't pulled:</p>
+    <pre><code id="api-tags">curl -s $ALPUCA_OLLAMA_URL/api/tags | jq -r '.models[].name'</code><button class="copy-btn" onclick="copyText('api-tags')">Copy</button></pre>
+
+    <h3>Liveness check (CI / health monitor)</h3>
+    <pre><code id="api-liveness">curl -fsS --max-time 3 $ALPUCA_OLLAMA_URL/api/tags &gt; /dev/null \
+  && echo "alpuca ollama OK" || echo "alpuca ollama DOWN"</code><button class="copy-btn" onclick="copyText('api-liveness')">Copy</button></pre>
+
+    <h3>Node.js (using the OpenAI SDK)</h3>
+    <pre><code id="node-openai">import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: `${process.env.ALPUCA_OLLAMA_URL}/v1`,
+  apiKey: "ollama", // ignored by Ollama, but the SDK requires a value
+});
+
+const r = await client.chat.completions.create({
+  model: "qwen3-coder:30b",
+  messages: [{ role: "user", content: "Write a TypeScript isEmail()." }],
+});
+console.log(r.choices[0].message.content);</code><button class="copy-btn" onclick="copyText('node-openai')">Copy</button></pre>
+
+    <h3>Python (using the OpenAI SDK)</h3>
+    <pre><code id="py-openai">from openai import OpenAI
+import os
+
+client = OpenAI(
+    base_url=f"{os.environ['ALPUCA_OLLAMA_URL']}/v1",
+    api_key="ollama",
+)
+
+r = client.chat.completions.create(
+    model="qwen3:30b-a3b",
+    messages=[{"role": "user", "content": "Summarize git rebase in one sentence."}],
+)
+print(r.choices[0].message.content)</code><button class="copy-btn" onclick="copyText('py-openai')">Copy</button></pre>
+
+    <h3>Things to know before integrating</h3>
+    <ul>
+      <li><strong>One model at a time</strong> &mdash; the host has 24 GB RAM. Calling a different model triggers a 15&ndash;30 s warm-up while it swaps in. Pin your service to a single model when possible.</li>
+      <li><strong>No rate limiting at the server</strong> &mdash; if you hammer it from multiple clients, requests queue. Plan for ~5&ndash;15 s per response on the 30 B models, much longer if <code>deepseek-r1</code> is the target.</li>
+      <li><strong>Streaming works</strong> &mdash; set <code>stream: true</code> for token-by-token output. Useful for UIs and progress indicators.</li>
+      <li><strong>Default keep-alive</strong> is 5 minutes &mdash; after that idle, the model unloads from RAM and the next call eats the warm-up.</li>
+      <li><strong>Availability</strong> &mdash; the host is a Mac mini, not enterprise infra. Treat it as best-effort. For high-availability traffic, fall back to a cloud provider.</li>
+    </ul>
   </div>
 
   <div class="section">
