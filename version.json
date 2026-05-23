@@ -1,12 +1,12 @@
 {
-  "version": "v260521.04 1:14a",
-  "release": 1549,
-  "sha": "eadf31a54",
-  "fullSha": "eadf31a54865ac96f0b309e5f23fec00aca12aac",
+  "version": "v260523.01 12:30p",
+  "release": 1550,
+  "sha": "2b0bc57dd",
+  "fullSha": "2b0bc57dd874f5b406a128529f20d617b7e99154",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmrw5os",
-  "pushedAt": "2026-05-21T06:14:51+00:00",
-  "commits": [{"sha":"eadf31a54","message":"langbang page: pinned APK → v45 (multi-word must-contain filter)","author":"Rahul"}]
+  "machine": "runnervmg397c",
+  "pushedAt": "2026-05-23T17:30:31+00:00",
+  "commits": [{"sha":"2b0bc57dd","message":"docs(public): add local AI models reference page","author":"Paca"}]
 }
