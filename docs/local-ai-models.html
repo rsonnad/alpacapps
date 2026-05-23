@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local AI Models &mdash; AlpacApps</title>
+  <meta name="description" content="Reference page for the local AI model lineup running on Alpuca (Mac mini M4) via Ollama: Qwen 3, Qwen 3 Coder, Qwen 3 VL, DeepSeek R1, GLM-OCR.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-strong: #a87f4f;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --code-bg: #faf8f5;
+      --success: #6b8e5a;
+      --success-light: #eef5eb;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-warm);
+      line-height: 1.6;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .hero {
+      background: var(--text);
+      color: #fff;
+      padding: 2.5rem 2rem 2rem;
+    }
+    .hero-inner { max-width: 1000px; margin: 0 auto; }
+    .crumb { font-size: 0.9rem; margin-bottom: 1rem; }
+    .crumb a { color: var(--accent); text-decoration: none; }
+    .crumb a:hover { color: #fff; }
+    .hero h1 { font-size: 2.1rem; font-weight: 400; line-height: 1.2; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 1rem; color: #b0b0b0; margin-top: 0.6rem; max-width: 720px; }
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+    .section { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 1.75rem 2rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+    .section h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--text); }
+    .section h3 { font-size: 1.05rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: var(--text); }
+    .section p { margin-bottom: 0.85rem; }
+    .section p:last-child { margin-bottom: 0; }
+    strong { font-weight: 600; }
+
+    table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 0; font-size: 0.92rem; }
+    th, td { padding: 0.7rem 0.8rem; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: var(--accent-light); font-weight: 600; color: var(--accent-strong); font-size: 0.82rem; letter-spacing: 0.02em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: none; }
+    td.size { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    td code { font-size: 0.86em; }
+    td a { color: var(--accent-strong); text-decoration: none; border-bottom: 1px solid transparent; }
+    td a:hover { border-bottom-color: var(--accent-strong); }
+
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: var(--accent-light);
+      color: #6b5230;
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.86em;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 0.75rem 0 1rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      position: relative;
+    }
+    pre code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      color: var(--text);
+      background: none;
+      padding: 0;
+    }
+    .copy-btn {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 4px; padding: 0.3rem 0.7rem;
+      font-size: 0.75rem; cursor: pointer; font-weight: 600;
+      font-family: inherit; transition: background 0.2s;
+    }
+    .copy-btn:hover { background: var(--accent-strong); }
+
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--accent-light);
+      padding: 0.9rem 1.25rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    .callout.success { border-color: var(--success); background: var(--success-light); }
+
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.85rem; }
+    li { margin-bottom: 0.35rem; }
+    li::marker { color: var(--accent); }
+
+    .badge {
+      display: inline-block; padding: 0.1rem 0.45rem; border-radius: 3px;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em;
+      text-transform: uppercase; background: var(--accent-light); color: var(--accent-strong);
+      margin-left: 0.4em; vertical-align: middle;
+    }
+    .badge.moe { background: #e8f0e6; color: var(--success); }
+
+    .meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem; text-align: center; }
+
+    @media (max-width: 640px) {
+      .hero { padding: 1.75rem 1rem 1.25rem; }
+      .hero h1 { font-size: 1.6rem; }
+      .container { padding: 1rem; }
+      .section { padding: 1.25rem; }
+      table { font-size: 0.85rem; }
+      th, td { padding: 0.55rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="crumb"><a href="/docs/">&larr; Docs</a></div>
+    <h1>Local AI Models on <span>Alpuca</span></h1>
+    <p>The current lineup of large language models running on the Alpaca Playhouse Mac mini. All open weights, served locally via Ollama, no per-call cost.</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="section">
+    <h2>Hardware</h2>
+    <p>One Apple Silicon Mac mini (M4, 24 GB unified memory) serves as the local AI host. Models are stored on attached fast NVMe and loaded into memory on demand. Only one large model is resident in RAM at a time &mdash; Ollama swaps automatically when you call a different one.</p>
+  </div>
+
+  <div class="section">
+    <h2>Active models</h2>
+    <p>Each row links to the canonical entry on the Ollama library and the upstream Hugging Face model card.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Size</th>
+          <th>Role</th>
+          <th>When to use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <code>qwen3:30b-a3b</code>
+            <span class="badge moe">MoE</span><br>
+            <a href="https://ollama.com/library/qwen3:30b-a3b" target="_blank" rel="noopener">Ollama</a> &middot;
+            <a href="https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507" target="_blank" rel="noopener">HF</a>
+          </td>
+          <td class="size">18 GB</td>
+          <td>General / reasoning</td>
+          <td>Default for chat, planning, summarization. Has a built-in <code>/think</code> mode for chain-of-thought when needed.</td>
+        </tr>
+        <tr>
+          <td>
+            <code>qwen3-coder:30b</code>
+            <span class="badge moe">MoE</span><br>
+            <a href="https://ollama.com/library/qwen3-coder:30b" target="_blank" rel="noopener">Ollama</a> &middot;
+            <a href="https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct" target="_blank" rel="noopener">HF</a>
+          </td>
+          <td class="size">18 GB</td>
+          <td>Coding</td>
+          <td>Code generation, refactors, tool calling, structured JSON output.</td>
+        </tr>
+        <tr>
+          <td>
+            <code>qwen3-vl:30b-a3b</code>
+            <span class="badge moe">MoE</span><br>
+            <a href="https://ollama.com/library/qwen3-vl:30b-a3b" target="_blank" rel="noopener">Ollama</a> &middot;
+            <a href="https://huggingface.co/Qwen/Qwen3-VL-30B-A3B-Instruct" target="_blank" rel="noopener">HF</a>
+          </td>
+          <td class="size">19 GB</td>
+          <td>Vision + reasoning</td>
+          <td>Screenshots, photo content, image-grounded Q&amp;A, light OCR.</td>
+        </tr>
+        <tr>
+          <td>
+            <code>deepseek-r1:32b</code><br>
+            <a href="https://ollama.com/library/deepseek-r1:32b" target="_blank" rel="noopener">Ollama</a> &middot;
+            <a href="https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B" target="_blank" rel="noopener">HF</a>
+          </td>
+          <td class="size">19 GB</td>
+          <td>Reasoning specialist</td>
+          <td>Hard chain-of-thought: math, multi-step debugging, enumerating edge cases for test automation. Slower per token because it thinks before answering.</td>
+        </tr>
+        <tr>
+          <td>
+            <code>qwen2.5-coder:14b</code><br>
+            <a href="https://ollama.com/library/qwen2.5-coder:14b" target="_blank" rel="noopener">Ollama</a>
+          </td>
+          <td class="size">9 GB</td>
+          <td>Lighter coding</td>
+          <td>Quick coding tasks when the 30 B Qwen Coder is overkill. Useful on smaller-RAM machines.</td>
+        </tr>
+        <tr>
+          <td>
+            <code>glm-ocr</code><br>
+            <a href="https://ollama.com/library/glm-ocr" target="_blank" rel="noopener">Ollama</a>
+          </td>
+          <td class="size">2.2 GB</td>
+          <td>OCR</td>
+          <td>Plain text extraction from images and scanned documents. Specialized, no general chat.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Why the 30 B Qwen models feel fast <span class="badge moe">MoE</span></h2>
+    <p>The Qwen 3 30B-A3B family uses a <strong>mixture-of-experts</strong> architecture. The model has 30 billion total parameters on disk, but only about <strong>3 billion activate per token</strong>. Runtime cost is closer to a small dense model while the model retains the knowledge of a much larger one. This is what makes it practical to run on a Mac mini.</p>
+    <p>By contrast, <code>deepseek-r1:32b</code> is dense &mdash; all 32 B parameters fire on every token, and it generates many internal &ldquo;thinking&rdquo; tokens before producing the final answer. Plan for tens of seconds per response.</p>
+  </div>
+
+  <div class="section">
+    <h2>Calling the models</h2>
+    <p>Ollama exposes two HTTP endpoints on port <code>11434</code> &mdash; its own native API and an OpenAI-compatible chat endpoint. From the host machine:</p>
+    <h3>Native API</h3>
+    <pre><code id="api-native">curl -s http://localhost:11434/api/generate -d '{
+  "model": "qwen3:30b-a3b",
+  "prompt": "Summarize git rebase in one sentence.",
+  "stream": false
+}' | jq -r .response</code><button class="copy-btn" onclick="copyText('api-native')">Copy</button></pre>
+
+    <h3>OpenAI-compatible (drop-in for any OpenAI SDK)</h3>
+    <pre><code id="api-openai">curl -s http://localhost:11434/v1/chat/completions -d '{
+  "model": "qwen3-coder:30b",
+  "messages": [{"role":"user","content":"Write a TypeScript isEmail()."}],
+  "temperature": 0.2
+}' | jq -r '.choices[0].message.content'</code><button class="copy-btn" onclick="copyText('api-openai')">Copy</button></pre>
+
+    <h3>Vision (image input via base64)</h3>
+    <pre><code id="api-vision">B64=$(base64 -i screenshot.png | tr -d '\n')
+curl -s http://localhost:11434/api/generate -d "$(jq -n \
+  --arg img \"$B64\" \
+  '{model:\"qwen3-vl:30b-a3b\",
+    prompt:\"Describe this screenshot.\",
+    images:[$img], stream:false}')" | jq -r .response</code><button class="copy-btn" onclick="copyText('api-vision')">Copy</button></pre>
+
+    <h3>Thinking mode toggle (Qwen 3)</h3>
+    <p>Prefix a prompt with <code>/think</code> to get chain-of-thought reasoning, or <code>/no_think</code> for a direct response. Default is direct.</p>
+    <pre><code id="api-think">ollama run qwen3:30b-a3b "/think What is 17 * 24?"</code><button class="copy-btn" onclick="copyText('api-think')">Copy</button></pre>
+  </div>
+
+  <div class="section">
+    <h2>Local vs cloud Claude &mdash; choosing</h2>
+    <p>The local stack exists to be useful, not to replace cloud Claude. Treat them as different tools.</p>
+    <table>
+      <thead>
+        <tr><th>Task</th><th>Use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>High-stakes reasoning, design judgment, code review you depend on</td><td>Cloud Claude (Opus / Sonnet)</td></tr>
+        <tr><td>Default daily chat &amp; planning</td><td><code>qwen3:30b-a3b</code></td></tr>
+        <tr><td>Code generation in tools / scripts</td><td><code>qwen3-coder:30b</code></td></tr>
+        <tr><td>Describing or extracting info from images</td><td><code>qwen3-vl:30b-a3b</code></td></tr>
+        <tr><td>Generating thorough test edge cases / automation flows</td><td><code>deepseek-r1:32b</code></td></tr>
+        <tr><td>Pure OCR of scanned documents</td><td><code>glm-ocr</code></td></tr>
+        <tr><td>Offline (flight, off-grid)</td><td>Any local model</td></tr>
+        <tr><td>Bulk classification jobs with no per-call cost concern</td><td>Any local model</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Desktop UI</h2>
+    <p>The cleanest way to chat with the local stack is <a href="https://msty.app" target="_blank" rel="noopener">msty</a> &mdash; a free native macOS app that auto-detects Ollama at <code>http://localhost:11434</code> and lets you switch providers mid-conversation, branch threads, and drop files into knowledge bases.</p>
+    <p>For programmatic use, any OpenAI SDK works by pointing the base URL at <code>http://localhost:11434/v1</code>.</p>
+  </div>
+
+  <p class="meta">Last updated 2026-05-19. Models running on Alpuca via Ollama. Open weights, fully local.</p>
+</div>
+
+<script>
+  function copyText(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const text = el.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = el.parentElement.querySelector('.copy-btn');
+      if (!btn) return;
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 1400);
+    });
+  }
+</script>
+
+</body>
+</html>
