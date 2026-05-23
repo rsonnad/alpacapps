@@ -1,12 +1,12 @@
 {
-  "version": "v260523.02 12:32p",
-  "release": 1551,
-  "sha": "4c0a9a0b0",
-  "fullSha": "4c0a9a0b0375f5a9484bdaf69652381b4e765599",
+  "version": "v260523.03 12:34p",
+  "release": 1552,
+  "sha": "9d783fb38",
+  "fullSha": "9d783fb380d285f4425e7b13e3c9c900a0f00dcb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-23T17:32:12+00:00",
-  "commits": [{"sha":"4c0a9a0b0","message":"docs(public): rename local-ai-models.html to alpuca-local-ai-models.html","author":"Paca"}]
+  "pushedAt": "2026-05-23T17:34:05+00:00",
+  "commits": [{"sha":"9d783fb38","message":"docs(public): make alpuca-local-ai-models consumable from other repos","author":"Paca"}]
 }
