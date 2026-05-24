@@ -56,19 +56,27 @@
       font-size: 0.88rem;
     }
     table.balance th, table.balance td, table.credits th, table.credits td {
-      padding: 0.55rem 0.7rem; text-align: left;
+      padding: 0.45rem 0.55rem; text-align: left;
       border-bottom: 1px solid #eee;
+      vertical-align: top;
     }
     table.balance th, table.credits th {
-      background: #faf9f7; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.4px; color: #666;
+      background: #faf9f7; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; color: #666;
     }
     table.balance td.num, table.credits td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
     table.balance tr.subtle td { color: #666; font-size: 0.85rem; }
     table.balance tr.total td { font-weight: 700; color: #2d3024; border-top: 2px solid #2d3024; border-bottom: none; padding-top: 0.7rem; }
     table.balance tr.deduct td.num { color: #2a7a4a; }
     table.balance tr.add td.num { color: #b34c2e; }
+    table.credits { font-size: 0.78rem; }
     table.credits td.check { text-align: center; width: 1.5rem; }
     table.credits td.check::before { content: '☐'; font-size: 1rem; color: #999; }
+    table.credits .desc { font-size: 0.78rem; color: #555; margin-top: 0.15rem; font-style: italic; }
+    table.credits tr.notdone td { background: #fbf6f4; color: #944; }
+    table.credits tr.notdone td.check::before { content: '✗'; color: #c44; }
+    table.credits tr.subtotal td { background: #faf9f7; font-weight: 700; }
+    table.credits tr.grandtotal td { background: #f0f4fa; font-weight: 700; border-top: 2px solid #2d3024; }
+    table.credits .date-col { font-size: 0.72rem; color: #777; white-space: nowrap; }
 
     .signature-block {
       display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
@@ -119,36 +127,413 @@
         <h2>3. Credits Applied Since Agreement #2</h2>
 
         <h3>3.1 Provisional Genesis Project Credits (Sep – Nov 2025)</h3>
-        <p>The following line items are credited <strong>provisionally</strong> based on completion percentages reflected in the Genesis Alpaca Playhouse Capital Projects spreadsheet as of Nov 7, 2025. Each item is subject to in-person verification by Owner; any item determined to be incomplete or improperly executed shall be removed from credit and the balance adjusted accordingly. Owner reserves the right to walk the site and verify each item before final credit is applied.</p>
+        <p>The following line items reflect the bathroom work scheduled under the Sep 11, 2025 Work Resumption Agreement #2. They are reproduced from the "Genesis Alpaca Playhouse Capital Projects" spreadsheet (last modified Nov 7, 2025), and credited <strong>provisionally</strong> against the balance based on the completion percentages and cash payments recorded there. Each item is subject to in-person verification by Owner; any item determined to be incomplete or improperly executed shall be removed from credit and the balance adjusted accordingly. Owner reserves the right to walk the site and verify each item before final credit is applied.</p>
+
+        <p>The "Cash Paid" column reflects amounts that Owner already paid Contractor in cash during Sep–Oct 2025 under Agreement #2's payment schedule (60% on completion, 30% in arrears, 10% on full project completion). The "Nov 7 Credit" column reflects additional completion credit recognized by Owner as of Nov 7, 2025 for work that had been done but not yet been paid. The "Provisional Credit" column is the sum of the two and is what is being applied against the $40,236 balance.</p>
 
         <table class="credits">
           <thead>
             <tr>
-              <th style="width:1.5rem">Verified</th>
+              <th style="width:1.5rem">✓</th>
               <th>Task</th>
-              <th class="num">Value</th>
-              <th class="num">% Credited</th>
-              <th class="num">Credit</th>
+              <th class="date-col">Scheduled</th>
+              <th class="date-col">Actual</th>
+              <th class="num">Task<br>Value</th>
+              <th class="num">% Complete<br>(Nov 7, 2025)</th>
+              <th class="num">Cash Paid<br>(Sep–Oct)</th>
+              <th class="num">Nov 7<br>Credit</th>
+              <th class="num">Provisional<br>Credit</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td class="check"></td><td>Remove and replace insulation</td><td class="num">$100</td><td class="num">100%</td><td class="num">$100</td></tr>
-            <tr><td class="check"></td><td>Install remaining windows lower level</td><td class="num">$100</td><td class="num">30%</td><td class="num">$30</td></tr>
-            <tr><td class="check"></td><td>Pressurize / finish water supply + shower valve</td><td class="num">$250</td><td class="num">60% (paid 60% + 30% in arrears)</td><td class="num">$150</td></tr>
-            <tr><td class="check"></td><td>Finish first floor framing &amp; sheeting, storage, landing</td><td class="num">$350</td><td class="num">100%</td><td class="num">$420*</td></tr>
-            <tr><td class="check"></td><td>Hook up drain line to septic</td><td class="num">$300</td><td class="num">90%</td><td class="num">$180</td></tr>
-            <tr><td class="check"></td><td>Build out shower and waterproof</td><td class="num">$600</td><td class="num">100%</td><td class="num">$600</td></tr>
-            <tr><td class="check"></td><td>Tile first floor and porch area</td><td class="num">$1,200</td><td class="num">30% (60% paid – per spreadsheet)</td><td class="num">$360</td></tr>
-            <tr><td class="check"></td><td>Sheetrock first floor walls and ceiling</td><td class="num">$300</td><td class="num">80%</td><td class="num">$240</td></tr>
-            <tr><td class="check"></td><td>Install interior doors, casing, hardware</td><td class="num">$250</td><td class="num">50%</td><td class="num">$125</td></tr>
-            <tr><td class="check"></td><td>Tile shower and knee walls, full wall behind sinks</td><td class="num">$1,400</td><td class="num">50%</td><td class="num">$700</td></tr>
-            <tr><td class="check"></td><td>Install bathroom cabinets and top</td><td class="num">$200</td><td class="num">70%</td><td class="num">$140</td></tr>
-            <tr><td class="check"></td><td>Install plumbing fixtures, toilets, sinks, shower fixtures</td><td class="num">$450</td><td class="num">50%</td><td class="num">$225</td></tr>
-            <tr style="background:#faf9f7;font-weight:700"><td colspan="4">Provisional total (Sep – Nov 2025)</td><td class="num">$3,270</td></tr>
+
+            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 1 — Sep 2 – Sep 8, 2025</td></tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Remove and replace insulation</strong>
+                <div class="desc">Strip damaged batt insulation from bathroom walls and ceiling cavities and re-install fresh insulation prior to sheetrock.</div>
+              </td>
+              <td class="date-col">2-Sep-25</td>
+              <td class="date-col">Started 2-Sep-25</td>
+              <td class="num">$100</td>
+              <td class="num">100%</td>
+              <td class="num">—</td>
+              <td class="num">$100</td>
+              <td class="num">$100</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Install remaining windows — lower level</strong>
+                <div class="desc">Set and trim out the remaining ground-floor bathroom windows previously left rough-framed.</div>
+              </td>
+              <td class="date-col">2-Sep-25</td>
+              <td class="date-col">2-Sep-25 (same-day complete)</td>
+              <td class="num">$100</td>
+              <td class="num">30% (per Nov 7 reconciliation, despite same-day "complete" note)</td>
+              <td class="num">$60<br><span style="font-size:0.7rem;color:#888">(60% upfront)</span></td>
+              <td class="num">$30</td>
+              <td class="num">$90</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Pressurize and finish water supply, install shower valve</strong>
+                <div class="desc">Complete potable water rough-in, pressure-test the supply lines, and install the mixing valve / diverter for the shower assembly.</div>
+              </td>
+              <td class="date-col">3-Sep-25</td>
+              <td class="date-col">Start &amp; complete 3-Sep-25</td>
+              <td class="num">$250</td>
+              <td class="num">~90% (60% + 30% per Agreement #2 schedule)</td>
+              <td class="num">$150<br><span style="font-size:0.7rem;color:#888">(60% + 30% paid 1-Oct-25)</span></td>
+              <td class="num">—</td>
+              <td class="num">$150</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Finish first floor framing and sheeting, including storage and landing</strong>
+                <div class="desc">Complete the lower-level wall framing, OSB sheathing, framing for the under-stair storage area, and the upstairs landing structure.</div>
+              </td>
+              <td class="date-col">8-Sep-25</td>
+              <td class="date-col">Started 8-Sep-25, completed 9-Sep-25</td>
+              <td class="num">$350</td>
+              <td class="num">100% (full payout)</td>
+              <td class="num">$420<sup>†</sup><br><span style="font-size:0.7rem;color:#888">(paid 11-Sep-25)</span></td>
+              <td class="num">—</td>
+              <td class="num">$420</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Hook up drain line to septic</strong>
+                <div class="desc">Run and tie in the bathroom waste drain to the existing septic lateral; bed, slope, and back-fill the trench.</div>
+              </td>
+              <td class="date-col">9-Sep-25</td>
+              <td class="date-col">Started 8-Sep-25, completed 9-Sep-25</td>
+              <td class="num">$300</td>
+              <td class="num">~90% (60% paid + 30% recognized on 1-Oct-25)</td>
+              <td class="num">$180<br><span style="font-size:0.7rem;color:#888">(60% upfront)</span></td>
+              <td class="num">$90</td>
+              <td class="num">$270</td>
+            </tr>
+
+            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 1 cont. / Week 2 — Sep 10 – Sep 17, 2025</td></tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Build out shower and waterproof</strong>
+                <div class="desc">Frame the shower curb and bench, install tile backer board, apply RedGard / Schluter waterproofing membrane, and prep for tile.</div>
+              </td>
+              <td class="date-col">10-Sep-25 — Mon 8-Sep target completion</td>
+              <td class="date-col">Started 10-Sep-25; completion not recorded</td>
+              <td class="num">$600</td>
+              <td class="num">100% (per Nov 7 reconciliation)</td>
+              <td class="num">—</td>
+              <td class="num">$600</td>
+              <td class="num">$600</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Tile first floor and porch area</strong>
+                <div class="desc">Set, grout, and seal floor tile across the lower-level bathroom and the adjacent covered porch slab.</div>
+              </td>
+              <td class="date-col">11-Sep-25</td>
+              <td class="date-col">Completed 4-Oct-25 (3+ weeks behind schedule)</td>
+              <td class="num">$1,200</td>
+              <td class="num">~90% (60% paid + 30% Nov 7 recognition)</td>
+              <td class="num">$720<br><span style="font-size:0.7rem;color:#888">(60% upfront)</span></td>
+              <td class="num">$360</td>
+              <td class="num">$1,080</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Sheetrock first floor walls and ceiling</strong>
+                <div class="desc">Hang, tape, mud, sand, and prime sheetrock on lower-level bathroom walls and ceiling.</div>
+              </td>
+              <td class="date-col">17-Sep-25</td>
+              <td class="date-col">Not recorded as complete</td>
+              <td class="num">$300</td>
+              <td class="num">80%</td>
+              <td class="num">—</td>
+              <td class="num">$240</td>
+              <td class="num">$240</td>
+            </tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Paint interior</strong>
+                <div class="desc">Prime and paint lower-level bathroom walls, ceiling, and trim.</div>
+              </td>
+              <td class="date-col">17-Sep-25 (Week 3)</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$400</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 3 — Sep 15 – Sep 19, 2025</td></tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Frame up upper level walls (exterior and interior)</strong>
+                <div class="desc">Stick-frame the second-story exterior walls and interior partitions for the changing room / upper bathroom.</div>
+              </td>
+              <td class="date-col">18-Sep-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$800</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Install windows and exterior doors</strong>
+                <div class="desc">Set and flash the upper-level windows and exterior doors (entry door 36"×80–84", interior 32"×80" per quote).</div>
+              </td>
+              <td class="date-col">19-Sep-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$450</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 4 — Sep 22 – Sep 26, 2025</td></tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Install stairway and treads</strong>
+                <div class="desc">Build and install the stringers and finished treads connecting the lower bathroom to the upper level / terrace.</div>
+              </td>
+              <td class="date-col">22-Sep-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$450</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Install interior closet door</strong>
+                <div class="desc">Hang and trim the closet door inside the bathroom.</div>
+              </td>
+              <td class="date-col">22-Sep-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$60</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Install interior doors including casing and hardware</strong>
+                <div class="desc">Pre-hang and finish-install the bathroom-stall and changing-room interior doors with full casing, jambs, knobs, and strike hardware.</div>
+              </td>
+              <td class="date-col">22-Sep-25</td>
+              <td class="date-col">Partial</td>
+              <td class="num">$250</td>
+              <td class="num">50%</td>
+              <td class="num">—</td>
+              <td class="num">$125</td>
+              <td class="num">$125</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Tile shower and knee walls, including full wall behind sinks</strong>
+                <div class="desc">Set tile on shower surround, knee walls, and the full back wall behind the vanity sinks; include all cuts, niches, and grout.</div>
+              </td>
+              <td class="date-col">23-Sep-25</td>
+              <td class="date-col">Partial</td>
+              <td class="num">$1,400</td>
+              <td class="num">50%</td>
+              <td class="num">—</td>
+              <td class="num">$700</td>
+              <td class="num">$700</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Install bathroom cabinets and top, including cutting top</strong>
+                <div class="desc">Set vanity cabinets, scribe and cut the stone/quartz top to fit, and secure the top with fasteners and silicone bedding.</div>
+              </td>
+              <td class="date-col">25-Sep-25</td>
+              <td class="date-col">Partial</td>
+              <td class="num">$200</td>
+              <td class="num">70%</td>
+              <td class="num">—</td>
+              <td class="num">$140</td>
+              <td class="num">$140</td>
+            </tr>
+
+            <tr>
+              <td class="check"></td>
+              <td>
+                <strong>Install plumbing fixtures — toilets, sinks (in &amp; out), shower handles &amp; fixtures</strong>
+                <div class="desc">Final-set both toilets, both sinks (interior and exterior), supply stops, P-traps, shower control trim, shower head, and outdoor shower fixtures.</div>
+              </td>
+              <td class="date-col">25-Sep-25</td>
+              <td class="date-col">Partial</td>
+              <td class="num">$450</td>
+              <td class="num">50%</td>
+              <td class="num">—</td>
+              <td class="num">$225</td>
+              <td class="num">$225</td>
+            </tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Install wrap and siding on exterior — lower level</strong>
+                <div class="desc">Apply weather wrap and exterior siding (style to be confirmed with Owner) to the ground-floor exterior walls.</div>
+              </td>
+              <td class="date-col">26-Sep-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$650</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Insulate walls (upper level)</strong>
+                <div class="desc">Install batt insulation in upper-level exterior wall cavities prior to sheetrock.</div>
+              </td>
+              <td class="date-col">26-Sep-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$200</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 5 &amp; Oct overflow — Sep 29 – Oct 3, 2025</td></tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Install flooring and patio tile upstairs</strong>
+                <div class="desc">Set finished flooring inside the upper level and tile the adjoining outdoor patio surface.</div>
+              </td>
+              <td class="date-col">29-Sep-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$1,100</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Paint interior walls upstairs</strong>
+                <div class="desc">Prime and paint upper-level interior walls and ceiling.</div>
+              </td>
+              <td class="date-col">30-Sep-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$300</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Install exterior wrap and siding (upper)</strong>
+                <div class="desc">Wrap and side the upper-level exterior walls including window/door trim and freeze boards.</div>
+              </td>
+              <td class="date-col">2-Oct-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$750</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr class="notdone">
+              <td class="check"></td>
+              <td>
+                <strong>Install railing on patio and stairway</strong>
+                <div class="desc">Install the steel railing system on the upper terrace and the stairway between floors.</div>
+              </td>
+              <td class="date-col">3-Oct-25</td>
+              <td class="date-col">Not started</td>
+              <td class="num">$400</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+
+            <tr class="subtotal">
+              <td colspan="4">Subtotal — completed/partial (items above with non-zero credit)</td>
+              <td class="num">$5,300</td>
+              <td class="num">—</td>
+              <td class="num">$1,530</td>
+              <td class="num">$2,610</td>
+              <td class="num">$4,140</td>
+            </tr>
+            <tr class="notdone subtotal">
+              <td colspan="4">Subtotal — not started / not credited (13 items)</td>
+              <td class="num">$5,860</td>
+              <td class="num">0%</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+            <tr class="grandtotal">
+              <td colspan="4">Grand total — bathroom scope under Agreement #2</td>
+              <td class="num">$11,160</td>
+              <td class="num">~37%</td>
+              <td class="num">$1,530</td>
+              <td class="num">$2,610</td>
+              <td class="num"><strong>$4,140</strong></td>
+            </tr>
           </tbody>
         </table>
-        <p style="font-size:0.82rem;color:#666">* "Finish first floor framing" was paid out at $420 per the spreadsheet (full 60% + 30% + 10%); the line value of $350 is the listed task price. Final credit will be normalized to the lesser of paid amount or completion-verified value.</p>
-        <p style="font-size:0.82rem;color:#666"><strong>Note:</strong> Owner's records currently estimate the Sep–Nov 2025 provisional total at approximately <strong>$2,790 – $3,270</strong> depending on which spreadsheet column is treated as authoritative. The figure used in §4 below is <strong>$2,790</strong> (the more conservative "Paid 11/7/2025" column) pending reconciliation.</p>
+
+        <p style="font-size:0.82rem;color:#666"><sup>†</sup> "Finish first floor framing &amp; sheeting" was paid out at $420 against a listed task value of $350. The $70 overage is treated as Contractor's earned premium for early/quality completion and is preserved in the credit figure.</p>
+
+        <p style="font-size:0.82rem;color:#666"><strong>Reconciliation note — what credit actually applies against the $40,236.</strong> The "Provisional Credit" column above totals <strong>$4,140</strong> if every column-tracked amount is credited. However, Owner's standing reconciliation (memo of Nov 7, 2025) treats only the <strong>Nov 7 reconciliation column ($2,610)</strong> as additional credit against the debt — on the theory that the "Cash Paid" amounts ($1,530) were already paid out to Contractor in cash during Sep–Oct 2025 and therefore <em>do not</em> reduce the underlying $40,236 balance (they were paid for living expenses, not as debt repayment). For Agreement #3, Owner is using the conservative figure of <strong>$2,790</strong> as a slightly rounded version of the $2,610 reconciliation total to allow for any small items missed in the spreadsheet. The parties will reconcile the exact figure jointly per §8 below — the range under discussion is $2,610 – $4,140.</p>
+
+        <p style="font-size:0.82rem;color:#666">The above table covers <strong>only the bathroom scope.</strong> Other Genesis projects (Sauna Complex Awning, South Red Container Awning, Spartan Trailer Beams, Backyard Terrace Awning, Tile Labor, fencing, etc.) are referenced in Agreement #2 and the Capital Projects spreadsheet but no additional credit is being claimed for those under this Agreement #3 absent further site verification.</p>
 
         <h3>3.2 Tracked Labor Credits (Feb 19 – May 21, 2026)</h3>
         <p>Contractor has logged <strong>232.62 hours</strong> across <strong>37 worked days</strong> in the Alpaca Playhouse time-tracking system (alpacapps) from Feb 19, 2026 through May 21, 2026, with the first clock-in matching the activation of Contractor's associate profile. At the agreed labor rate of <strong>$40.00 per hour</strong>, this represents <strong>$9,304.80</strong> in work credit applied against the balance.</p>
