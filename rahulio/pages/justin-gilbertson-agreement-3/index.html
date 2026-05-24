@@ -16,13 +16,17 @@
       min-height: 100vh;
       margin: 0;
     }
-    .container { max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    .container { max-width: 1180px; margin: 2rem auto; padding: 0 1rem; }
     .card {
       background: white;
       border-radius: 12px;
-      padding: 2.25rem;
+      padding: 2.5rem 3rem;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
+    /* Keep narrative text comfortably readable */
+    .narrow { max-width: 760px; }
+    /* Allow wide tables to use full card width */
+    .wide-table-wrap { margin: 0 -1rem 1.25rem; overflow-x: auto; }
     h1 { font-size: 1.6rem; color: #2d3024; margin: 0 0 0.25rem; }
     .subtitle { color: #666; margin-bottom: 1.5rem; font-size: 0.92rem; line-height: 1.5; }
     .meta-grid {
@@ -33,16 +37,17 @@
     }
     .meta-grid strong { color: #2d3024; }
 
-    .agreement { font-size: 0.92rem; line-height: 1.7; color: #3a3a3a; }
-    .agreement h2 { font-size: 1.15rem; font-weight: 700; color: #2d3024; margin: 1.9rem 0 0.5rem; padding-top: 0.5rem; border-top: 1px solid #eee; }
+    .agreement { font-size: 0.95rem; line-height: 1.7; color: #3a3a3a; }
+    .agreement h2 { font-size: 1.2rem; font-weight: 700; color: #2d3024; margin: 2rem 0 0.6rem; padding-top: 0.5rem; border-top: 1px solid #eee; max-width: 820px; }
     .agreement h2:first-of-type { border-top: none; padding-top: 0; }
-    .agreement h3 { font-size: 1rem; font-weight: 700; color: #2d3024; margin: 1.25rem 0 0.4rem; }
-    .agreement p { margin: 0 0 0.7rem; }
-    .agreement ul, .agreement ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+    .agreement h3 { font-size: 1.02rem; font-weight: 700; color: #2d3024; margin: 1.25rem 0 0.4rem; max-width: 820px; }
+    .agreement p { margin: 0 0 0.75rem; max-width: 820px; }
+    .agreement ul, .agreement ol { padding-left: 1.5rem; margin-bottom: 0.75rem; max-width: 820px; }
     .agreement li { margin-bottom: 0.4rem; }
     .agreement strong { color: #1a1a1a; }
+    .agreement table { max-width: none; }
 
-    .info-box { border-radius: 8px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .info-box { border-radius: 8px; padding: 1rem 1.25rem; margin: 1.25rem 0; max-width: 820px; }
     .info-box--amber { background: #fef9e7; border: 1px solid #f0c040; }
     .info-box--green { background: #f0faf4; border: 1px solid #27ae60; }
     .info-box--red   { background: #fef2f2; border: 1px solid #e74c3c; }
@@ -51,32 +56,88 @@
     .info-box ul:last-child, .info-box p:last-child { margin-bottom: 0; }
 
     /* Balance table */
-    table.balance, table.credits {
+    table.balance {
       width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.25rem;
-      font-size: 0.88rem;
+      font-size: 0.92rem;
     }
-    table.balance th, table.balance td, table.credits th, table.credits td {
-      padding: 0.45rem 0.55rem; text-align: left;
+    table.balance th, table.balance td {
+      padding: 0.55rem 0.7rem; text-align: left;
       border-bottom: 1px solid #eee;
       vertical-align: top;
     }
-    table.balance th, table.credits th {
+    table.balance th {
       background: #faf9f7; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; color: #666;
     }
-    table.balance td.num, table.credits td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    table.balance td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
     table.balance tr.subtle td { color: #666; font-size: 0.85rem; }
     table.balance tr.total td { font-weight: 700; color: #2d3024; border-top: 2px solid #2d3024; border-bottom: none; padding-top: 0.7rem; }
     table.balance tr.deduct td.num { color: #2a7a4a; }
     table.balance tr.add td.num { color: #b34c2e; }
-    table.credits { font-size: 0.78rem; }
-    table.credits td.check { text-align: center; width: 1.5rem; }
-    table.credits td.check::before { content: '☐'; font-size: 1rem; color: #999; }
-    table.credits .desc { font-size: 0.78rem; color: #555; margin-top: 0.15rem; font-style: italic; }
-    table.credits tr.notdone td { background: #fbf6f4; color: #944; }
-    table.credits tr.notdone td.check::before { content: '✗'; color: #c44; }
-    table.credits tr.subtotal td { background: #faf9f7; font-weight: 700; }
-    table.credits tr.grandtotal td { background: #f0f4fa; font-weight: 700; border-top: 2px solid #2d3024; }
-    table.credits .date-col { font-size: 0.72rem; color: #777; white-space: nowrap; }
+
+    /* Credits table — wide, with fixed column widths */
+    table.credits {
+      width: 100%; min-width: 1080px;
+      border-collapse: collapse; margin: 0.5rem 0;
+      font-size: 0.82rem; table-layout: fixed;
+    }
+    table.credits col.c-check    { width: 32px; }
+    table.credits col.c-task     { width: 32%; }
+    table.credits col.c-sched    { width: 9%; }
+    table.credits col.c-actual   { width: 14%; }
+    table.credits col.c-value    { width: 70px; }
+    table.credits col.c-pct      { width: 11%; }
+    table.credits col.c-cash     { width: 90px; }
+    table.credits col.c-nov      { width: 80px; }
+    table.credits col.c-prov     { width: 95px; }
+
+    table.credits th, table.credits td {
+      padding: 0.55rem 0.65rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+      line-height: 1.45;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    table.credits th {
+      background: #2d3024; color: #fff;
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;
+      font-weight: 600;
+      border-bottom: none;
+      vertical-align: bottom;
+    }
+    table.credits th small { display: block; font-weight: 400; opacity: 0.75; font-size: 0.66rem; margin-top: 0.15rem; }
+    table.credits td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    table.credits td.center { text-align: center; }
+    table.credits tbody tr:nth-child(even of :not(.week-banner):not(.notdone):not(.subtotal):not(.grandtotal)) {
+      background: #fafaf7;
+    }
+    table.credits .task-title { display: block; font-weight: 700; color: #2d3024; }
+    table.credits .desc { display: block; font-size: 0.74rem; color: #666; margin-top: 0.2rem; font-style: italic; font-weight: 400; line-height: 1.4; }
+    table.credits .cash-note { display: block; font-size: 0.66rem; color: #888; margin-top: 0.15rem; font-weight: 400; }
+    table.credits td.check { text-align: center; padding-top: 0.7rem; }
+    table.credits td.check::before { content: '☐'; font-size: 1.1rem; color: #aaa; }
+    table.credits tr.notdone td { background: #fbf4f2; color: #884; }
+    table.credits tr.notdone td.check::before { content: '—'; color: #c66; }
+    table.credits tr.notdone .task-title { color: #944; }
+    table.credits tr.notdone .desc { color: #a87; }
+    table.credits tr.week-banner td {
+      background: #efece4;
+      font-weight: 700; color: #2d3024;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px;
+      padding: 0.5rem 0.65rem;
+      border-bottom: 1px solid #d8d2c2;
+    }
+    table.credits tr.subtotal td { background: #f3f0e8; font-weight: 700; padding: 0.65rem; }
+    table.credits tr.subtotal.notdone td { background: #f5e8e3; color: #944; }
+    table.credits tr.grandtotal td {
+      background: #2d3024; color: #fff; font-weight: 700;
+      padding: 0.85rem 0.65rem;
+      font-size: 0.92rem;
+      border-top: none;
+    }
+    table.credits .date-cell { font-size: 0.74rem; color: #555; white-space: normal; }
+    table.credits .date-cell strong { color: #333; }
 
     .signature-block {
       display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
@@ -88,15 +149,23 @@
     .footnote { font-size: 0.78rem; color: #888; margin-top: 2rem; padding-top: 1rem; border-top: 1px dashed #ddd; }
 
     @media print {
+      @page { size: letter landscape; margin: 0.5in; }
       body { background: white; }
       .container { margin: 0; max-width: none; padding: 0; }
-      .card { box-shadow: none; padding: 1rem; }
+      .card { box-shadow: none; padding: 0; }
       .agreement h2 { page-break-after: avoid; }
       tr, table { page-break-inside: avoid; }
+      .wide-table-wrap { overflow: visible; margin: 0; }
+      table.credits { min-width: 0; font-size: 0.7rem; }
+    }
+    @media (max-width: 900px) {
+      .card { padding: 1.5rem 1.25rem; }
+      .wide-table-wrap { margin: 0 -1.25rem 1.25rem; padding: 0 1.25rem; }
     }
     @media (max-width: 600px) {
       .signature-block { grid-template-columns: 1fr; }
       .meta-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+      .card { padding: 1rem 0.75rem; }
     }
   </style>
 </head>
@@ -131,32 +200,44 @@
 
         <p>The "Cash Paid" column reflects amounts that Owner already paid Contractor in cash during Sep–Oct 2025 under Agreement #2's payment schedule (60% on completion, 30% in arrears, 10% on full project completion). The "Nov 7 Credit" column reflects additional completion credit recognized by Owner as of Nov 7, 2025 for work that had been done but not yet been paid. The "Provisional Credit" column is the sum of the two and is what is being applied against the $40,236 balance.</p>
 
+        <div class="wide-table-wrap">
         <table class="credits">
+          <colgroup>
+            <col class="c-check">
+            <col class="c-task">
+            <col class="c-sched">
+            <col class="c-actual">
+            <col class="c-value">
+            <col class="c-pct">
+            <col class="c-cash">
+            <col class="c-nov">
+            <col class="c-prov">
+          </colgroup>
           <thead>
             <tr>
-              <th style="width:1.5rem">✓</th>
+              <th class="center">✓</th>
               <th>Task</th>
-              <th class="date-col">Scheduled</th>
-              <th class="date-col">Actual</th>
+              <th>Scheduled</th>
+              <th>Actual</th>
               <th class="num">Task<br>Value</th>
-              <th class="num">% Complete<br>(Nov 7, 2025)</th>
-              <th class="num">Cash Paid<br>(Sep–Oct)</th>
+              <th class="num">Complete <small>Nov 7 '25</small></th>
+              <th class="num">Cash Paid <small>Sep–Oct</small></th>
               <th class="num">Nov 7<br>Credit</th>
               <th class="num">Provisional<br>Credit</th>
             </tr>
           </thead>
           <tbody>
 
-            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 1 — Sep 2 – Sep 8, 2025</td></tr>
+            <tr class="week-banner"><td colspan="9">Week 1 — Sep 2 – Sep 8, 2025</td></tr>
 
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Remove and replace insulation</strong>
-                <div class="desc">Strip damaged batt insulation from bathroom walls and ceiling cavities and re-install fresh insulation prior to sheetrock.</div>
+                <span class="task-title">Remove and replace insulation</span>
+                <span class="desc">Strip damaged batt insulation from bathroom walls and ceiling cavities and re-install fresh insulation prior to sheetrock.</span>
               </td>
-              <td class="date-col">2-Sep-25</td>
-              <td class="date-col">Started 2-Sep-25</td>
+              <td class="date-cell">2-Sep-25</td>
+              <td class="date-cell">Started 2-Sep-25</td>
               <td class="num">$100</td>
               <td class="num">100%</td>
               <td class="num">—</td>
@@ -167,14 +248,14 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Install remaining windows — lower level</strong>
-                <div class="desc">Set and trim out the remaining ground-floor bathroom windows previously left rough-framed.</div>
+                <span class="task-title">Install remaining windows — lower level</span>
+                <span class="desc">Set and trim out the remaining ground-floor bathroom windows previously left rough-framed.</span>
               </td>
-              <td class="date-col">2-Sep-25</td>
-              <td class="date-col">2-Sep-25 (same-day complete)</td>
+              <td class="date-cell">2-Sep-25</td>
+              <td class="date-cell">2-Sep-25 (same-day)</td>
               <td class="num">$100</td>
-              <td class="num">30% (per Nov 7 reconciliation, despite same-day "complete" note)</td>
-              <td class="num">$60<br><span style="font-size:0.7rem;color:#888">(60% upfront)</span></td>
+              <td class="num">30%</td>
+              <td class="num">$60<span class="cash-note">60% upfront</span></td>
               <td class="num">$30</td>
               <td class="num">$90</td>
             </tr>
@@ -182,14 +263,14 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Pressurize and finish water supply, install shower valve</strong>
-                <div class="desc">Complete potable water rough-in, pressure-test the supply lines, and install the mixing valve / diverter for the shower assembly.</div>
+                <span class="task-title">Pressurize water supply, install shower valve</span>
+                <span class="desc">Complete potable water rough-in, pressure-test the supply lines, and install the mixing valve / diverter for the shower assembly.</span>
               </td>
-              <td class="date-col">3-Sep-25</td>
-              <td class="date-col">Start &amp; complete 3-Sep-25</td>
+              <td class="date-cell">3-Sep-25</td>
+              <td class="date-cell">Complete 3-Sep-25</td>
               <td class="num">$250</td>
-              <td class="num">~90% (60% + 30% per Agreement #2 schedule)</td>
-              <td class="num">$150<br><span style="font-size:0.7rem;color:#888">(60% + 30% paid 1-Oct-25)</span></td>
+              <td class="num">~90%</td>
+              <td class="num">$150<span class="cash-note">60% + 30% paid 1-Oct</span></td>
               <td class="num">—</td>
               <td class="num">$150</td>
             </tr>
@@ -197,14 +278,14 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Finish first floor framing and sheeting, including storage and landing</strong>
-                <div class="desc">Complete the lower-level wall framing, OSB sheathing, framing for the under-stair storage area, and the upstairs landing structure.</div>
+                <span class="task-title">Finish first floor framing, sheeting, storage, landing</span>
+                <span class="desc">Complete the lower-level wall framing, OSB sheathing, framing for the under-stair storage area, and the upstairs landing structure.</span>
               </td>
-              <td class="date-col">8-Sep-25</td>
-              <td class="date-col">Started 8-Sep-25, completed 9-Sep-25</td>
+              <td class="date-cell">8-Sep-25</td>
+              <td class="date-cell">8–9-Sep-25</td>
               <td class="num">$350</td>
-              <td class="num">100% (full payout)</td>
-              <td class="num">$420<sup>†</sup><br><span style="font-size:0.7rem;color:#888">(paid 11-Sep-25)</span></td>
+              <td class="num">100%</td>
+              <td class="num">$420<sup>†</sup><span class="cash-note">paid 11-Sep</span></td>
               <td class="num">—</td>
               <td class="num">$420</td>
             </tr>
@@ -212,30 +293,30 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Hook up drain line to septic</strong>
-                <div class="desc">Run and tie in the bathroom waste drain to the existing septic lateral; bed, slope, and back-fill the trench.</div>
+                <span class="task-title">Hook up drain line to septic</span>
+                <span class="desc">Run and tie in the bathroom waste drain to the existing septic lateral; bed, slope, and back-fill the trench.</span>
               </td>
-              <td class="date-col">9-Sep-25</td>
-              <td class="date-col">Started 8-Sep-25, completed 9-Sep-25</td>
+              <td class="date-cell">9-Sep-25</td>
+              <td class="date-cell">8–9-Sep-25</td>
               <td class="num">$300</td>
-              <td class="num">~90% (60% paid + 30% recognized on 1-Oct-25)</td>
-              <td class="num">$180<br><span style="font-size:0.7rem;color:#888">(60% upfront)</span></td>
+              <td class="num">~90%</td>
+              <td class="num">$180<span class="cash-note">60% upfront</span></td>
               <td class="num">$90</td>
               <td class="num">$270</td>
             </tr>
 
-            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 1 cont. / Week 2 — Sep 10 – Sep 17, 2025</td></tr>
+            <tr class="week-banner"><td colspan="9">Week 1 cont. / Week 2 — Sep 10 – Sep 17, 2025</td></tr>
 
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Build out shower and waterproof</strong>
-                <div class="desc">Frame the shower curb and bench, install tile backer board, apply RedGard / Schluter waterproofing membrane, and prep for tile.</div>
+                <span class="task-title">Build out shower and waterproof</span>
+                <span class="desc">Frame the shower curb and bench, install tile backer board, apply RedGard / Schluter waterproofing membrane, and prep for tile.</span>
               </td>
-              <td class="date-col">10-Sep-25 — Mon 8-Sep target completion</td>
-              <td class="date-col">Started 10-Sep-25; completion not recorded</td>
+              <td class="date-cell">10-Sep-25</td>
+              <td class="date-cell">Started 10-Sep</td>
               <td class="num">$600</td>
-              <td class="num">100% (per Nov 7 reconciliation)</td>
+              <td class="num">100%</td>
               <td class="num">—</td>
               <td class="num">$600</td>
               <td class="num">$600</td>
@@ -244,14 +325,14 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Tile first floor and porch area</strong>
-                <div class="desc">Set, grout, and seal floor tile across the lower-level bathroom and the adjacent covered porch slab.</div>
+                <span class="task-title">Tile first floor and porch area</span>
+                <span class="desc">Set, grout, and seal floor tile across the lower-level bathroom and the adjacent covered porch slab.</span>
               </td>
-              <td class="date-col">11-Sep-25</td>
-              <td class="date-col">Completed 4-Oct-25 (3+ weeks behind schedule)</td>
+              <td class="date-cell">11-Sep-25</td>
+              <td class="date-cell">Complete 4-Oct-25 <em>(3+ wk late)</em></td>
               <td class="num">$1,200</td>
-              <td class="num">~90% (60% paid + 30% Nov 7 recognition)</td>
-              <td class="num">$720<br><span style="font-size:0.7rem;color:#888">(60% upfront)</span></td>
+              <td class="num">~90%</td>
+              <td class="num">$720<span class="cash-note">60% upfront</span></td>
               <td class="num">$360</td>
               <td class="num">$1,080</td>
             </tr>
@@ -259,11 +340,11 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Sheetrock first floor walls and ceiling</strong>
-                <div class="desc">Hang, tape, mud, sand, and prime sheetrock on lower-level bathroom walls and ceiling.</div>
+                <span class="task-title">Sheetrock first floor walls and ceiling</span>
+                <span class="desc">Hang, tape, mud, sand, and prime sheetrock on lower-level bathroom walls and ceiling.</span>
               </td>
-              <td class="date-col">17-Sep-25</td>
-              <td class="date-col">Not recorded as complete</td>
+              <td class="date-cell">17-Sep-25</td>
+              <td class="date-cell">Not recorded</td>
               <td class="num">$300</td>
               <td class="num">80%</td>
               <td class="num">—</td>
@@ -274,11 +355,11 @@
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Paint interior</strong>
-                <div class="desc">Prime and paint lower-level bathroom walls, ceiling, and trim.</div>
+                <span class="task-title">Paint interior</span>
+                <span class="desc">Prime and paint lower-level bathroom walls, ceiling, and trim.</span>
               </td>
-              <td class="date-col">17-Sep-25 (Week 3)</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">17-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$400</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -286,16 +367,16 @@
               <td class="num">—</td>
             </tr>
 
-            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 3 — Sep 15 – Sep 19, 2025</td></tr>
+            <tr class="week-banner"><td colspan="9">Week 3 — Sep 15 – Sep 19, 2025</td></tr>
 
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Frame up upper level walls (exterior and interior)</strong>
-                <div class="desc">Stick-frame the second-story exterior walls and interior partitions for the changing room / upper bathroom.</div>
+                <span class="task-title">Frame up upper level walls (exterior &amp; interior)</span>
+                <span class="desc">Stick-frame the second-story exterior walls and interior partitions for the changing room / upper bathroom.</span>
               </td>
-              <td class="date-col">18-Sep-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">18-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$800</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -306,11 +387,11 @@
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Install windows and exterior doors</strong>
-                <div class="desc">Set and flash the upper-level windows and exterior doors (entry door 36"×80–84", interior 32"×80" per quote).</div>
+                <span class="task-title">Install windows and exterior doors</span>
+                <span class="desc">Set and flash the upper-level windows and exterior doors (entry 36"×80–84", interior 32"×80" per quote).</span>
               </td>
-              <td class="date-col">19-Sep-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">19-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$450</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -318,16 +399,16 @@
               <td class="num">—</td>
             </tr>
 
-            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 4 — Sep 22 – Sep 26, 2025</td></tr>
+            <tr class="week-banner"><td colspan="9">Week 4 — Sep 22 – Sep 26, 2025</td></tr>
 
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Install stairway and treads</strong>
-                <div class="desc">Build and install the stringers and finished treads connecting the lower bathroom to the upper level / terrace.</div>
+                <span class="task-title">Install stairway and treads</span>
+                <span class="desc">Build and install the stringers and finished treads connecting the lower bathroom to the upper level / terrace.</span>
               </td>
-              <td class="date-col">22-Sep-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">22-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$450</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -338,11 +419,11 @@
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Install interior closet door</strong>
-                <div class="desc">Hang and trim the closet door inside the bathroom.</div>
+                <span class="task-title">Install interior closet door</span>
+                <span class="desc">Hang and trim the closet door inside the bathroom.</span>
               </td>
-              <td class="date-col">22-Sep-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">22-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$60</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -353,11 +434,11 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Install interior doors including casing and hardware</strong>
-                <div class="desc">Pre-hang and finish-install the bathroom-stall and changing-room interior doors with full casing, jambs, knobs, and strike hardware.</div>
+                <span class="task-title">Install interior doors, casing &amp; hardware</span>
+                <span class="desc">Pre-hang and finish-install the bathroom-stall and changing-room interior doors with full casing, jambs, knobs, and strike hardware.</span>
               </td>
-              <td class="date-col">22-Sep-25</td>
-              <td class="date-col">Partial</td>
+              <td class="date-cell">22-Sep-25</td>
+              <td class="date-cell">Partial</td>
               <td class="num">$250</td>
               <td class="num">50%</td>
               <td class="num">—</td>
@@ -368,11 +449,11 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Tile shower and knee walls, including full wall behind sinks</strong>
-                <div class="desc">Set tile on shower surround, knee walls, and the full back wall behind the vanity sinks; include all cuts, niches, and grout.</div>
+                <span class="task-title">Tile shower and knee walls + wall behind sinks</span>
+                <span class="desc">Set tile on shower surround, knee walls, and the full back wall behind the vanity sinks; include all cuts, niches, and grout.</span>
               </td>
-              <td class="date-col">23-Sep-25</td>
-              <td class="date-col">Partial</td>
+              <td class="date-cell">23-Sep-25</td>
+              <td class="date-cell">Partial</td>
               <td class="num">$1,400</td>
               <td class="num">50%</td>
               <td class="num">—</td>
@@ -383,11 +464,11 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Install bathroom cabinets and top, including cutting top</strong>
-                <div class="desc">Set vanity cabinets, scribe and cut the stone/quartz top to fit, and secure the top with fasteners and silicone bedding.</div>
+                <span class="task-title">Install bathroom cabinets and top</span>
+                <span class="desc">Set vanity cabinets, scribe and cut the stone/quartz top to fit, and secure the top with fasteners and silicone bedding.</span>
               </td>
-              <td class="date-col">25-Sep-25</td>
-              <td class="date-col">Partial</td>
+              <td class="date-cell">25-Sep-25</td>
+              <td class="date-cell">Partial</td>
               <td class="num">$200</td>
               <td class="num">70%</td>
               <td class="num">—</td>
@@ -398,11 +479,11 @@
             <tr>
               <td class="check"></td>
               <td>
-                <strong>Install plumbing fixtures — toilets, sinks (in &amp; out), shower handles &amp; fixtures</strong>
-                <div class="desc">Final-set both toilets, both sinks (interior and exterior), supply stops, P-traps, shower control trim, shower head, and outdoor shower fixtures.</div>
+                <span class="task-title">Plumbing fixtures — toilets, sinks, shower</span>
+                <span class="desc">Final-set both toilets, both sinks (interior and exterior), supply stops, P-traps, shower control trim, shower head, and outdoor shower fixtures.</span>
               </td>
-              <td class="date-col">25-Sep-25</td>
-              <td class="date-col">Partial</td>
+              <td class="date-cell">25-Sep-25</td>
+              <td class="date-cell">Partial</td>
               <td class="num">$450</td>
               <td class="num">50%</td>
               <td class="num">—</td>
@@ -413,11 +494,11 @@
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Install wrap and siding on exterior — lower level</strong>
-                <div class="desc">Apply weather wrap and exterior siding (style to be confirmed with Owner) to the ground-floor exterior walls.</div>
+                <span class="task-title">Wrap and siding on exterior — lower level</span>
+                <span class="desc">Apply weather wrap and exterior siding (style to be confirmed with Owner) to the ground-floor exterior walls.</span>
               </td>
-              <td class="date-col">26-Sep-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">26-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$650</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -428,11 +509,11 @@
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Insulate walls (upper level)</strong>
-                <div class="desc">Install batt insulation in upper-level exterior wall cavities prior to sheetrock.</div>
+                <span class="task-title">Insulate walls (upper level)</span>
+                <span class="desc">Install batt insulation in upper-level exterior wall cavities prior to sheetrock.</span>
               </td>
-              <td class="date-col">26-Sep-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">26-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$200</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -440,16 +521,16 @@
               <td class="num">—</td>
             </tr>
 
-            <tr style="background:#fafafa"><td colspan="9" style="font-weight:700;color:#2d3024;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px">Week 5 &amp; Oct overflow — Sep 29 – Oct 3, 2025</td></tr>
+            <tr class="week-banner"><td colspan="9">Week 5 &amp; Oct overflow — Sep 29 – Oct 3, 2025</td></tr>
 
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Install flooring and patio tile upstairs</strong>
-                <div class="desc">Set finished flooring inside the upper level and tile the adjoining outdoor patio surface.</div>
+                <span class="task-title">Flooring and patio tile upstairs</span>
+                <span class="desc">Set finished flooring inside the upper level and tile the adjoining outdoor patio surface.</span>
               </td>
-              <td class="date-col">29-Sep-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">29-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$1,100</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -460,11 +541,11 @@
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Paint interior walls upstairs</strong>
-                <div class="desc">Prime and paint upper-level interior walls and ceiling.</div>
+                <span class="task-title">Paint interior walls upstairs</span>
+                <span class="desc">Prime and paint upper-level interior walls and ceiling.</span>
               </td>
-              <td class="date-col">30-Sep-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">30-Sep-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$300</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -475,11 +556,11 @@
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Install exterior wrap and siding (upper)</strong>
-                <div class="desc">Wrap and side the upper-level exterior walls including window/door trim and freeze boards.</div>
+                <span class="task-title">Exterior wrap and siding (upper)</span>
+                <span class="desc">Wrap and side the upper-level exterior walls including window/door trim and freeze boards.</span>
               </td>
-              <td class="date-col">2-Oct-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">2-Oct-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$750</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -490,11 +571,11 @@
             <tr class="notdone">
               <td class="check"></td>
               <td>
-                <strong>Install railing on patio and stairway</strong>
-                <div class="desc">Install the steel railing system on the upper terrace and the stairway between floors.</div>
+                <span class="task-title">Install railing on patio and stairway</span>
+                <span class="desc">Install the steel railing system on the upper terrace and the stairway between floors.</span>
               </td>
-              <td class="date-col">3-Oct-25</td>
-              <td class="date-col">Not started</td>
+              <td class="date-cell">3-Oct-25</td>
+              <td class="date-cell">Not started</td>
               <td class="num">$400</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -503,15 +584,15 @@
             </tr>
 
             <tr class="subtotal">
-              <td colspan="4">Subtotal — completed/partial (items above with non-zero credit)</td>
+              <td colspan="4">Subtotal — completed/partial (12 items)</td>
               <td class="num">$5,300</td>
               <td class="num">—</td>
               <td class="num">$1,530</td>
               <td class="num">$2,610</td>
               <td class="num">$4,140</td>
             </tr>
-            <tr class="notdone subtotal">
-              <td colspan="4">Subtotal — not started / not credited (13 items)</td>
+            <tr class="subtotal notdone">
+              <td colspan="4">Subtotal — not started / not credited (11 items)</td>
               <td class="num">$5,860</td>
               <td class="num">0%</td>
               <td class="num">—</td>
@@ -524,10 +605,11 @@
               <td class="num">~37%</td>
               <td class="num">$1,530</td>
               <td class="num">$2,610</td>
-              <td class="num"><strong>$4,140</strong></td>
+              <td class="num">$4,140</td>
             </tr>
           </tbody>
         </table>
+        </div>
 
         <p style="font-size:0.82rem;color:#666"><sup>†</sup> "Finish first floor framing &amp; sheeting" was paid out at $420 against a listed task value of $350. The $70 overage is treated as Contractor's earned premium for early/quality completion and is preserved in the credit figure.</p>
 
