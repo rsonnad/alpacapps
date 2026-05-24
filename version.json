@@ -1,12 +1,12 @@
 {
-  "version": "v260523.03 12:34p",
-  "release": 1552,
-  "sha": "9d783fb38",
-  "fullSha": "9d783fb380d285f4425e7b13e3c9c900a0f00dcb",
+  "version": "v260523.04 8:39p",
+  "release": 1553,
+  "sha": "0572fd677",
+  "fullSha": "0572fd67724c5ab292735321d74cab1d21691c84",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-23T17:34:05+00:00",
-  "commits": [{"sha":"9d783fb38","message":"docs(public): make alpuca-local-ai-models consumable from other repos","author":"Paca"}]
+  "pushedAt": "2026-05-24T01:39:20+00:00",
+  "commits": [{"sha":"0572fd677","message":"Add Justin Gilbertson Work Resumption Agreement #3 (private, noindex)","author":"Paca"}]
 }
