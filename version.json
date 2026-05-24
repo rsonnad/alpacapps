@@ -1,12 +1,12 @@
 {
-  "version": "v260524.01 12:12a",
-  "release": 1555,
-  "sha": "8fc9b905c",
-  "fullSha": "8fc9b905c38431362a3474afe72cd3479d973bad",
+  "version": "v260524.02 12:18a",
+  "release": 1556,
+  "sha": "c4eaac245",
+  "fullSha": "c4eaac245563d90a77363021e1b2076fa9ac2623",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-24T05:12:14+00:00",
-  "commits": [{"sha":"8fc9b905c","message":"Agreement #3: fix table formatting","author":"Paca"}]
+  "pushedAt": "2026-05-24T05:18:06+00:00",
+  "commits": [{"sha":"c4eaac245","message":"Agreement #3: make all math and rates explicit","author":"Paca"}]
 }
