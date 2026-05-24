@@ -48,6 +48,60 @@
     .agreement table { max-width: none; }
 
     .info-box { border-radius: 8px; padding: 1rem 1.25rem; margin: 1.25rem 0; max-width: 820px; }
+
+    /* Math box — shows a step-by-step formula */
+    .math-box {
+      background: #fbfaf6;
+      border: 1px solid #d8d2c2;
+      border-radius: 8px;
+      padding: 0.85rem 1.1rem;
+      margin: 0.75rem 0 1rem;
+      max-width: 820px;
+      font-size: 0.9rem;
+    }
+    .math-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 0.35rem 0;
+      border-bottom: 1px dotted #e5e0d2;
+    }
+    .math-row:last-child { border-bottom: none; }
+    .math-row .math-label { color: #4a4438; padding-right: 1rem; }
+    .math-row .math-value {
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+      font-weight: 600; color: #2d3024; font-family: 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 0.92rem;
+    }
+    .math-row.math-subtotal { background: #f3efe2; margin: 0 -1.1rem; padding: 0.4rem 1.1rem; border-bottom: 1px solid #d8d2c2; }
+    .math-row.math-subtotal .math-label { font-weight: 600; }
+    .math-row.math-total {
+      background: #2d3024; color: #fff;
+      margin: 0.3rem -1.1rem -0.85rem;
+      padding: 0.65rem 1.1rem;
+      border-radius: 0 0 8px 8px;
+      border-bottom: none;
+    }
+    .math-row.math-total .math-label { color: #fff; font-weight: 700; }
+    .math-row.math-total .math-value { color: #fff; font-size: 1.05rem; }
+
+    /* Rates grid */
+    .rates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .rate-card {
+      background: #fbfaf6;
+      border: 1px solid #d8d2c2;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+    }
+    .rate-card .rate-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #777; }
+    .rate-card .rate-value { font-size: 1.15rem; font-weight: 700; color: #2d3024; margin: 0.25rem 0 0.4rem; font-family: 'SF Mono', Menlo, Consolas, monospace; }
+    .rate-card .rate-note { font-size: 0.78rem; color: #555; line-height: 1.5; }
+
+    /* Inline math (rate × qty = result) */
+    code.calc { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 0.88em; background: #f3efe2; padding: 0.1em 0.4em; border-radius: 4px; color: #2d3024; }
     .info-box--amber { background: #fef9e7; border: 1px solid #f0c040; }
     .info-box--green { background: #f0faf4; border: 1px solid #27ae60; }
     .info-box--red   { background: #fef2f2; border: 1px solid #e74c3c; }
@@ -191,14 +245,59 @@
         <p>This agreement reconciles the outstanding balance established under <strong>Work Resumption Agreement #2 (Sep 11, 2025)</strong>, applies all work and project credits earned by Contractor since that date, and establishes a continuing path by which Contractor may fully discharge the remaining balance through ongoing labor.</p>
 
         <h2>2. Acknowledgment of Prior Balance</h2>
-        <p>The parties acknowledge that under Agreement #2, Contractor owed Owner a balance of <strong>$40,236.00</strong>, representing the difference between amounts paid by Owner and the value of work delivered under the original Genesis project quotes (#2516, #2517, #2522, #2524 et al.), as detailed in the "Genesis Alpaca Playhouse Capital Projects" financial schedule referenced therein.</p>
+        <p>The parties acknowledge that under Agreement #2, Contractor owed Owner a balance of <strong>$40,236.00</strong>, representing the difference between amounts paid by Owner and the value of work delivered under the original Genesis project quotes (#2516, #2517, #2522, #2524 et al.), as detailed in the "Genesis Alpaca Playhouse Capital Projects" financial schedule referenced therein. This figure is derived as follows:</p>
 
-        <h2>3. Credits Applied Since Agreement #2</h2>
+        <div class="math-box">
+          <div class="math-row"><span class="math-label">Cash already paid by Owner to Contractor (Mar–Aug 2025)</span><span class="math-value">$46,851.00</span></div>
+          <div class="math-row"><span class="math-label">Plus: remaining cost to complete unfinished work (per Capital Projects spreadsheet)</span><span class="math-value">+$25,960.00</span></div>
+          <div class="math-row math-subtotal"><span class="math-label">= Total Owner outlay to deliver the originally-contracted project</span><span class="math-value">$72,811.00</span></div>
+          <div class="math-row"><span class="math-label">Less: original contracted value of full project (four structures)</span><span class="math-value">−$32,575.00</span></div>
+          <div class="math-row math-total"><span class="math-label">= Outstanding balance owed Contractor → Owner at Sep 11, 2025</span><span class="math-value">$40,236.00</span></div>
+        </div>
+        <p style="font-size:0.82rem;color:#666">The Owner's total project outlay is now <strong>223.5% of the originally-contracted price</strong> ($72,811 / $32,575). The $40,236 figure represents the overage Contractor owes Owner to make Owner whole.</p>
 
-        <h3>3.1 Provisional Genesis Project Credits (Sep – Nov 2025)</h3>
+        <h2 id="rates">3. Rates and Unit Values Used in This Agreement</h2>
+        <p>All dollar figures appearing elsewhere in this Agreement are computed using exactly the rates below. Both parties acknowledge that these are the agreed unit values and that any disagreement with any computed amount should be resolved by checking the rate × quantity formula rather than by re-pricing the underlying unit.</p>
+
+        <div class="rates-grid">
+          <div class="rate-card">
+            <div class="rate-label">Contractor labor rate (work-off credit)</div>
+            <div class="rate-value">$40.00 / hour</div>
+            <div class="rate-note">Applied to all hours logged in the alpacapps time-tracking system from Feb 19, 2026 onward. This is the agreed rate for credit-against-balance purposes and is distinct from the per-task fixed labor prices used Sep–Nov 2025 (see §4.1).</div>
+          </div>
+          <div class="rate-card">
+            <div class="rate-label">Sep–Nov 2025 per-task labor prices</div>
+            <div class="rate-value">Fixed, per Contractor's 8/27/2025 quote</div>
+            <div class="rate-note">For the Sep–Nov 2025 bathroom scope, Contractor's labor was priced per task (not hourly) per Justin's "Plan Forward" email of Aug 27, 2025 (e.g. "Build out shower and waterproof: $600"). The task values shown in the §4.1 table are reproduced verbatim from that quote.</div>
+          </div>
+          <div class="rate-card">
+            <div class="rate-label">Tesla Casper — vehicle value</div>
+            <div class="rate-value">$290.00 / month</div>
+            <div class="rate-note">Owner's imputed monthly value of providing the Tesla Casper for Contractor's use. Period: Feb 1, 2026 – present. (See §5 — provided complementary; not charged back.)</div>
+          </div>
+          <div class="rate-card">
+            <div class="rate-label">Tesla Casper — insurance value</div>
+            <div class="rate-value">$180.00 / month</div>
+            <div class="rate-note">Owner's actual carry cost for insuring the Tesla while in Contractor's use. Same Feb 1, 2026 – present period. Complementary; not charged back.</div>
+          </div>
+          <div class="rate-card">
+            <div class="rate-label">Tesla Casper — charging</div>
+            <div class="rate-value">$10.00 / worked day</div>
+            <div class="rate-note">Per-day charging cost for days Contractor logged on-site (37 days through May 21, 2026). Complementary; not charged back.</div>
+          </div>
+          <div class="rate-card">
+            <div class="rate-label">Conditional interest rate (§7)</div>
+            <div class="rate-value">7.95% annualized simple</div>
+            <div class="rate-note">US Bank 2nd mortgage variable rate per Agreement #2; daily rate = 7.95% / 365 = 0.02178% per day. Waived as long as Contractor works steadily — see §7 for trigger conditions and retroactive accrual formula.</div>
+          </div>
+        </div>
+
+        <h2>4. Credits Applied Since Agreement #2</h2>
+
+        <h3>4.1 Provisional Genesis Project Credits (Sep – Nov 2025)</h3>
         <p>The following line items reflect the bathroom work scheduled under the Sep 11, 2025 Work Resumption Agreement #2. They are reproduced from the "Genesis Alpaca Playhouse Capital Projects" spreadsheet (last modified Nov 7, 2025), and credited <strong>provisionally</strong> against the balance based on the completion percentages and cash payments recorded there. Each item is subject to in-person verification by Owner; any item determined to be incomplete or improperly executed shall be removed from credit and the balance adjusted accordingly. Owner reserves the right to walk the site and verify each item before final credit is applied.</p>
 
-        <p>The "Cash Paid" column reflects amounts that Owner already paid Contractor in cash during Sep–Oct 2025 under Agreement #2's payment schedule (60% on completion, 30% in arrears, 10% on full project completion). The "Nov 7 Credit" column reflects additional completion credit recognized by Owner as of Nov 7, 2025 for work that had been done but not yet been paid. The "Provisional Credit" column is the sum of the two and is what is being applied against the $40,236 balance.</p>
+        <p><strong>Pricing basis:</strong> The "Task Value" column reproduces verbatim the per-task labor prices Contractor quoted in his "Plan Forward" email of Aug 27, 2025 (see linked thread in footer). These are <strong>fixed per-task labor prices, not hourly figures</strong> — Contractor set them himself, and Owner accepted them in his Aug 27 reply ("Ok, this looks like $10k labor. It is workable."). Each task's "Provisional Credit" is then computed as: <code class="calc">task_value × completion_%</code>, capped so that no cell credits Contractor twice for an amount already paid in cash. The "Cash Paid" column reflects amounts Owner already paid Contractor in cash during Sep–Oct 2025 under Agreement #2's payment schedule (60% on completion, 30% in arrears, 10% on full project completion). The "Nov 7 Credit" column reflects additional completion credit Owner recognized as of Nov 7, 2025 for work done but not yet paid. The "Provisional Credit" column is the row-wise sum of the two.</p>
 
         <div class="wide-table-wrap">
         <table class="credits">
@@ -617,56 +716,73 @@
 
         <p style="font-size:0.82rem;color:#666">The above table covers <strong>only the bathroom scope.</strong> Other Genesis projects (Sauna Complex Awning, South Red Container Awning, Spartan Trailer Beams, Backyard Terrace Awning, Tile Labor, fencing, etc.) are referenced in Agreement #2 and the Capital Projects spreadsheet but no additional credit is being claimed for those under this Agreement #3 absent further site verification.</p>
 
-        <h3>3.2 Tracked Labor Credits (Feb 19 – May 21, 2026)</h3>
-        <p>Contractor has logged <strong>232.62 hours</strong> across <strong>37 worked days</strong> in the Alpaca Playhouse time-tracking system (alpacapps) from Feb 19, 2026 through May 21, 2026, with the first clock-in matching the activation of Contractor's associate profile. At the agreed labor rate of <strong>$40.00 per hour</strong>, this represents <strong>$9,304.80</strong> in work credit applied against the balance.</p>
+        <h3>4.2 Tracked Labor Credits (Feb 19 – May 21, 2026)</h3>
+        <p>From <strong>Feb 19, 2026</strong> (activation of Contractor's associate profile in the alpacapps time-tracking system) through <strong>May 21, 2026</strong> (most recent clock-in as of this Agreement), Contractor has logged labor as follows:</p>
 
-        <h2>4. Net Balance Reconciliation</h2>
-        <table class="balance">
-          <tr>
-            <td>Balance acknowledged under Agreement #2 (Sep 11, 2025)</td>
-            <td class="num">$40,236.00</td>
-          </tr>
-          <tr class="deduct">
-            <td>Less: Provisional Sep–Nov 2025 Genesis credits (subject to verification — §3.1)</td>
-            <td class="num">−$2,790.00</td>
-          </tr>
-          <tr class="deduct">
-            <td>Less: Tracked alpacapps labor Feb 19 – May 21, 2026 (232.62 hr × $40) (§3.2)</td>
-            <td class="num">−$9,304.80</td>
-          </tr>
-          <tr class="total">
-            <td>Net balance remaining as of May 23, 2026 (provisional)</td>
-            <td class="num">$28,141.20</td>
-          </tr>
-        </table>
-
-        <div class="info-box info-box--blue">
-          <h3>Tesla Casper Vehicle — Complementary</h3>
-          <p>Effective February 2026, Owner has provided Contractor with use of the Tesla Casper vehicle, including insurance and charging while on-site. The full value of this benefit (vehicle use, insurance, and per-day charging) is <strong>provided on a complementary basis</strong> and is <strong>not added to the balance</strong> above. Owner reserves the right to discontinue this benefit at any time on reasonable notice and to convert it to a charged-back item under a future amendment if the working relationship materially deteriorates.</p>
+        <div class="math-box">
+          <div class="math-row"><span class="math-label">Tracked hours (from <code class="calc">time_entries</code>, hidden entries excluded)</span><span class="math-value">232.62 hr</span></div>
+          <div class="math-row"><span class="math-label">Worked days (distinct calendar days with a clock-in)</span><span class="math-value">37 days</span></div>
+          <div class="math-row"><span class="math-label">Average hours per worked day</span><span class="math-value">232.62 / 37 = 6.29 hr</span></div>
+          <div class="math-row"><span class="math-label">Labor rate (per §3)</span><span class="math-value">$40.00 / hr</span></div>
+          <div class="math-row math-total"><span class="math-label">Labor credit applied: <code class="calc">232.62 hr × $40.00</code></span><span class="math-value">$9,304.80</span></div>
         </div>
 
-        <h2>5. Continuing Work-Off Terms</h2>
+        <p style="font-size:0.82rem;color:#666">All entries are currently flagged <code class="calc">is_paid = false</code> in the database — meaning none of these hours have triggered a cash payout. The full $9,304.80 therefore credits against the balance.</p>
+
+        <h2>5. Net Balance Reconciliation</h2>
+        <div class="math-box">
+          <div class="math-row"><span class="math-label">Balance acknowledged under Agreement #2 (Sep 11, 2025) — see §2</span><span class="math-value">$40,236.00</span></div>
+          <div class="math-row"><span class="math-label">Less: Provisional Sep–Nov 2025 Genesis credits (per §4.1, subject to verification)</span><span class="math-value">−$2,790.00</span></div>
+          <div class="math-row"><span class="math-label">Less: Tracked alpacapps labor (per §4.2): <code class="calc">232.62 hr × $40.00/hr</code></span><span class="math-value">−$9,304.80</span></div>
+          <div class="math-row math-subtotal"><span class="math-label">Sum of credits</span><span class="math-value">−$12,094.80</span></div>
+          <div class="math-row math-total"><span class="math-label">Net balance remaining as of May 23, 2026 (provisional)</span><span class="math-value">$28,141.20</span></div>
+        </div>
+        <p style="font-size:0.82rem;color:#666">The $28,141.20 figure is the operative balance for §6 work-off terms and §7 interest provisions. If joint site verification per §9 revises the §4.1 figure upward (toward $4,140 maximum) or downward (toward $2,610 conservative), the net balance shifts inversely.</p>
+
+        <h2>6. Tesla Casper Vehicle — Complementary</h2>
+        <div class="info-box info-box--blue">
+          <p>Effective Feb 1, 2026, Owner has provided Contractor with use of the Tesla Casper vehicle, including insurance and charging on worked days. The imputed value of this benefit is shown below for transparency, but is <strong>provided on a complementary basis and is NOT added to the balance in §5</strong>.</p>
+          <div class="math-box" style="background:#e8f0fb;border-color:#9bbeea;margin-top:0.75rem">
+            <div class="math-row"><span class="math-label">Benefit period: Feb 1, 2026 → May 23, 2026 = 111 days = <code class="calc">111 / 30.4375</code> months</span><span class="math-value">3.65 months</span></div>
+            <div class="math-row"><span class="math-label">Vehicle: <code class="calc">$290.00/mo × 3.65 mo</code></span><span class="math-value">$1,057.58</span></div>
+            <div class="math-row"><span class="math-label">Insurance: <code class="calc">$180.00/mo × 3.65 mo</code></span><span class="math-value">$656.43</span></div>
+            <div class="math-row"><span class="math-label">Charging: <code class="calc">$10.00/day × 37 worked days</code></span><span class="math-value">$370.00</span></div>
+            <div class="math-row math-total"><span class="math-label">Total imputed Tesla value (complementary — not charged back)</span><span class="math-value">$2,084.01</span></div>
+          </div>
+          <p style="margin-top:0.75rem;font-size:0.85rem">Owner reserves the right to discontinue this benefit at any time on reasonable notice and to convert it to a charged-back item under a future amendment if the working relationship materially deteriorates. If converted, the rates above (§3) and the worked-day count would apply going forward from the conversion date.</p>
+        </div>
+
+        <h2>7. Continuing Work-Off Terms</h2>
         <ul>
           <li>Contractor will continue to log all work performed at the Alpaca Playhouse via the alpacapps time-tracking system, with clock-in/clock-out timestamps and a task reference for each entry.</li>
-          <li>The labor rate for credit-against-balance purposes is fixed at <strong>$40.00 per hour</strong>.</li>
+          <li>The labor rate for credit-against-balance purposes is fixed at <strong>$40.00 per hour</strong> (per §3).</li>
+          <li>Each work session credits the balance by <code class="calc">duration_hours × $40.00</code>. The balance per §5 is updated continuously as new time entries land.</li>
           <li>Time entries are subject to Owner review and approval; entries flagged as unreasonable, duplicative, or not corresponding to delivered work may be rejected from credit.</li>
           <li>Any additional materials, third-party costs, or rentals advanced by Owner on Contractor's behalf during the work-off period will be added to the balance unless otherwise agreed in writing.</li>
         </ul>
 
-        <h2>6. Conditional Interest Waiver — Continuity Requirement</h2>
+        <h2>8. Conditional Interest Waiver — Continuity Requirement</h2>
         <div class="info-box info-box--amber">
           <h3>Interest is waived only so long as Contractor continues working steadily to discharge the balance.</h3>
           <ul>
-            <li>So long as Contractor is performing logged, verifiable work toward the balance, <strong>no interest accrues</strong> and the previously-applicable rate (~7.95%, US Bank 2nd mortgage variable, per Agreement #2) is held in abeyance.</li>
+            <li>So long as Contractor is performing logged, verifiable work toward the balance, <strong>no interest accrues</strong> and the interest rate set in §3 (7.95% annualized) is held in abeyance.</li>
             <li><strong>Stop-Work Trigger:</strong> If Contractor's logged work activity for the Owner ceases for any period <strong>greater than two (2) consecutive weeks</strong>, at any time prior to the balance being paid in full, the waiver is automatically and immediately revoked.</li>
-            <li><strong>Retroactive Accrual:</strong> Upon revocation, interest at the Agreement #2 rate (~7.95% annualized, US Bank 2nd mortgage variable) becomes immediately due, calculated <strong>retroactively from May 17, 2025</strong> (the date by which the original project was contractually required to have been completed) on the <strong>original $40,236.00 principal</strong>, less work credits at the dates they were earned.</li>
-            <li>Once retroactively triggered, interest continues to accrue prospectively on the then-remaining balance until paid in full.</li>
+            <li><strong>Retroactive Accrual Formula:</strong> Upon revocation, interest becomes immediately due, calculated <strong>retroactively from May 17, 2025</strong> (the date by which the original project was contractually required to have been completed) on the <strong>original $40,236.00 principal</strong>, using simple interest:
+              <div class="math-box" style="background:#fef5d9;border-color:#e0b94d;margin:0.6rem 0 0.3rem">
+                <div class="math-row"><span class="math-label">Formula: <code class="calc">accrued = $40,236.00 × 0.0795 × (days_since_5/17/2025 ÷ 365)</code></span></div>
+                <div class="math-row"><span class="math-label">Daily rate: <code class="calc">7.95% ÷ 365</code></span><span class="math-value">0.02178% / day</span></div>
+                <div class="math-row"><span class="math-label">Per-day dollar accrual on $40,236 principal</span><span class="math-value">$8.76 / day</span></div>
+                <div class="math-row"><span class="math-label">Worked example — if triggered today (May 23, 2026, 371 days after 5/17/2025):</span><span class="math-value">&nbsp;</span></div>
+                <div class="math-row math-total"><span class="math-label"><code class="calc">$40,236 × 0.0795 × (371 / 365)</code></span><span class="math-value">$3,251.34</span></div>
+              </div>
+            </li>
+            <li>Once retroactively triggered, interest continues to accrue prospectively at the same daily rate on the then-remaining balance until paid in full.</li>
             <li>Bona-fide medical, family-emergency, or weather-related interruptions communicated to Owner in writing at the time of the interruption may, at Owner's sole discretion, be excluded from the two-week stop-work calculation.</li>
-            <li><strong>Full Waiver:</strong> Interest is permanently waived in its entirety only if Contractor works continuously (without any two-week-or-greater gap) until the entire balance is paid down to $0.</li>
+            <li><strong>Full Waiver:</strong> Interest is permanently waived in its entirety only if Contractor works continuously (without any two-week-or-greater gap) until the entire balance is paid down to $0. With the current §5 balance of $28,141.20 and continued work at the recent average pace of <code class="calc">6.29 hr/day × $40 = $251.60/day</code> on roughly <code class="calc">~3 worked days/week</code>, full payoff would be reached in approximately <strong>~37 worked weeks</strong> (≈ 9 calendar months at current pace) from the date of this Agreement, after which the interest waiver becomes permanent.</li>
           </ul>
         </div>
 
-        <h2>7. Damages and Other Prior Terms</h2>
+        <h2>9. Damages and Other Prior Terms</h2>
         <p>All provisions of Agreement #2 not expressly modified by this Agreement #3 remain in full force, including but not limited to:</p>
         <ul>
           <li>The $8,000 wedding-related damages and ongoing $2,100/month rental losses, which remain conditionally forgiven on the same terms as Agreement #2;</li>
@@ -675,22 +791,22 @@
           <li>The treatment of work stoppage exceeding three (3) consecutive days without documented emergency as a material breach of the underlying contractor relationship.</li>
         </ul>
 
-        <h2>8. Reconciliation and Verification</h2>
+        <h2>10. Reconciliation and Verification</h2>
         <ul>
-          <li>The $2,790 figure in §4 is <strong>provisional</strong>. Owner and Contractor will jointly walk the site and verify each Sep–Nov 2025 line item in §3.1 within 30 days of signing this agreement.</li>
+          <li>The $2,790 figure in §5 is <strong>provisional</strong>. Owner and Contractor will jointly walk the site and verify each Sep–Nov 2025 line item in §4.1 within 30 days of signing this agreement.</li>
           <li>The reconciled balance will be recorded as an addendum to this agreement and will become the binding figure as of the verification date.</li>
           <li>Any disputes over individual line-item credit shall be resolved by Owner's good-faith determination based on the physical condition of the work.</li>
         </ul>
 
-        <h2>9. Binding Terms</h2>
+        <h2>11. Binding Terms</h2>
         <ul>
           <li>This agreement, once signed by both parties, becomes a binding modification of and supplement to Agreement #2.</li>
           <li>In the event of any legal action to enforce this agreement, the prevailing party shall be entitled to recover reasonable attorney fees and costs from the non-prevailing party.</li>
           <li>This agreement may be executed in counterparts and via electronic signature.</li>
         </ul>
 
-        <h2>10. Contractor Acceptance</h2>
-        <p><em>"I acknowledge and agree to all terms in this Work Resumption Agreement #3 dated May 23, 2026. I understand that the balance shown above is provisional pending site verification of Sep–Nov 2025 credits, that the interest waiver in §6 is conditional on continuous work, and that any stoppage greater than two consecutive weeks before the balance is paid in full will retroactively activate interest accrual from May 17, 2025 on the original $40,236.00 principal. I agree to all other terms of Agreement #2 as continued and reaffirmed herein, including my responsibility for attorney fees and collection costs."</em></p>
+        <h2>12. Contractor Acceptance</h2>
+        <p><em>"I acknowledge and agree to all terms in this Work Resumption Agreement #3 dated May 23, 2026. I understand that the balance shown in §5 ($28,141.20) is provisional pending site verification of Sep–Nov 2025 credits, that the interest waiver in §8 is conditional on continuous work, and that any stoppage greater than two consecutive weeks before the balance is paid in full will retroactively activate interest accrual from May 17, 2025 on the original $40,236.00 principal at 7.95% annualized simple (per §3 and §8). I agree to all other terms of Agreement #2 as continued and reaffirmed herein, including my responsibility for attorney fees and collection costs."</em></p>
 
         <div class="signature-block">
           <div>
