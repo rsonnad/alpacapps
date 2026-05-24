@@ -1,12 +1,12 @@
 {
-  "version": "v260523.04 8:39p",
-  "release": 1553,
-  "sha": "0572fd677",
-  "fullSha": "0572fd67724c5ab292735321d74cab1d21691c84",
+  "version": "v260523.05 8:47p",
+  "release": 1554,
+  "sha": "0ba33192a",
+  "fullSha": "0ba33192a21d0c85a60aabb37d192b6c541df50e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-24T01:39:20+00:00",
-  "commits": [{"sha":"0572fd677","message":"Add Justin Gilbertson Work Resumption Agreement #3 (private, noindex)","author":"Paca"}]
+  "pushedAt": "2026-05-24T01:47:21+00:00",
+  "commits": [{"sha":"0ba33192a","message":"Agreement #3: spell out Sep-Nov 2025 bathroom line items in full","author":"Paca"}]
 }
