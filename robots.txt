@@ -8,4 +8,5 @@ Disallow: /admin/
 Disallow: /devcontrol/
 Disallow: /devices/
 Disallow: /mistiq/
+Disallow: /rahulio/pages/justin-gilbertson-agreement-3/
 Sitemap: https://alpacaplayhouse.com/sitemap.xml
