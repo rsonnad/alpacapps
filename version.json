@@ -1,12 +1,12 @@
 {
-  "version": "v260525.04 1:10p",
-  "release": 1560,
-  "sha": "dab5757db",
-  "fullSha": "dab5757dbce7eb3ae832f59c9bbf8f455a4d4c49",
+  "version": "v260525.05 1:20p",
+  "release": 1561,
+  "sha": "850df8ab4",
+  "fullSha": "850df8ab41d5fbac04cf472c6dc73ae583e0fed4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-25T18:10:43+00:00",
-  "commits": [{"sha":"dab5757db","message":"auth: route associates/residents home when they hit gated admin pages","author":"Rahul"}]
+  "pushedAt": "2026-05-25T18:20:27+00:00",
+  "commits": [{"sha":"850df8ab4","message":"add pending-approvals-digest: daily 8am CT email to alpacaplayhouse@gmail.com listing every entry stuck in pending_email_approvals >1h, with one-click approve / approve-type buttons per row. Scheduled via pg_cron 'pending-approvals-digest-daily' (0 13 * * * = 8am CDT). Backstop for missed initial approval-request notifications (e.g., Sean McGoldrick's lease sat unsent for 5 days).","author":"Rahul"}]
 }
