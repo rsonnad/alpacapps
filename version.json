@@ -1,12 +1,12 @@
 {
-  "version": "v260524.02 12:18a",
-  "release": 1556,
-  "sha": "c4eaac245",
-  "fullSha": "c4eaac245563d90a77363021e1b2076fa9ac2623",
+  "version": "v260525.01 12:35p",
+  "release": 1557,
+  "sha": "e2a991b8c",
+  "fullSha": "e2a991b8c85802fd78f4349d788bbdb163ee147e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-24T05:18:06+00:00",
-  "commits": [{"sha":"c4eaac245","message":"Agreement #3: make all math and rates explicit","author":"Paca"}]
+  "pushedAt": "2026-05-25T17:35:58+00:00",
+  "commits": [{"sha":"e2a991b8c","message":"admin nav: rename Applications → Rental Apps + add clipboard icon","author":"Rahul"}]
 }
