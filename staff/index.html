@@ -17,7 +17,8 @@
       if (raw) {
         var role = (JSON.parse(raw) || {}).role;
         if (role === 'public') target = '/rentals/';
-        else if (role === 'resident' || role === 'associate') target = '/devices/cameras.html';
+        else if (role === 'associate') target = '/associates/worktracking.html';
+        else if (role === 'resident') target = '/devices/cameras.html';
       }
     } catch (e) { /* fall through to default */ }
     window.location.replace(target + qs);

@@ -78,8 +78,12 @@ function getRedirectTarget(role) {
   if (['public'].includes(role)) {
     target = '/rentals/';
   }
-  // Resident/associate users go to resident area by default (not admin)
-  else if (target === '/staff/' && ['resident', 'associate'].includes(role)) {
+  // Associates land on their work tracking page
+  else if (target === '/staff/' && role === 'associate') {
+    target = '/associates/worktracking.html';
+  }
+  // Residents go to the device cameras view
+  else if (target === '/staff/' && role === 'resident') {
     target = '/devices/cameras.html';
   }
   // Staff/admin/oracle land on the intranet TOC instead of the bare /staff/ redirect.
