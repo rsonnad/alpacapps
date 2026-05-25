@@ -13,7 +13,7 @@ import { initNavTabList, scrollActiveIntoView } from './tab-utils.js';
 import { getEnabledFeatures } from './feature-registry.js';
 import { ALL_ADMIN_TABS } from './admin-tabs.js';
 import { STAFF_PERMISSION_KEYS, ADMIN_PERMISSION_KEYS, renderContextSwitcher } from './context-switcher.js';
-import { ROUTES } from './routes.js';
+import { ROUTES, ROLE_LANDING_PAGES, NON_ADMIN_ROLES } from './routes.js';
 
 // =============================================
 // TAB DEFINITIONS
@@ -595,6 +595,18 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       if (onReadyCalled) {
         console.warn('[admin-shell] Transient auth state change after page authorized — keeping current state');
         return;
+      }
+      // Associates/residents/public don't live in /staff/* or /admin/* — bounce
+      // them to their landing page instead of showing an Access Denied card they
+      // can't act on. They typically got here from a stale tab or a shared link.
+      const role = state.appUser?.role;
+      if (NON_ADMIN_ROLES.has(role)) {
+        const landing = ROLE_LANDING_PAGES[role] || ROUTES.intranet.home;
+        if (window.location.pathname !== landing) {
+          transitionBootState('redirecting');
+          window.location.replace(landing);
+          return;
+        }
       }
       transitionBootState('unauthorized');
       renderAccessDenied(state, activeTab);

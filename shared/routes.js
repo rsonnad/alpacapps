@@ -130,6 +130,33 @@ export const ROUTES = {
 };
 
 /**
+ * Default landing page per role. Used by:
+ *  - login/app.js  — where to send a user after sign-in
+ *  - shared/admin-shell.js — where to silently bounce a user who lands on a
+ *    page they don't have permission for (so an associate who clicks a
+ *    /staff/rentals.html link goes to their work tracking page instead of
+ *    seeing an Access Denied card).
+ *
+ * If a role isn't listed, the caller falls back to `ROUTES.intranet.home`.
+ */
+export const ROLE_LANDING_PAGES = {
+  public:    ROUTES.public.rentals,
+  associate: ROUTES.associates.worktracking,
+  resident:  ROUTES.devices.cameras,
+  staff:     ROUTES.intranet.home,
+  admin:     ROUTES.intranet.home,
+  oracle:    ROUTES.intranet.home,
+  demo:      ROUTES.intranet.home,
+};
+
+/**
+ * Roles that don't belong in /staff/* or /admin/* pages at all. When one of
+ * these users hits a permission-gated admin page, redirect them silently
+ * to their landing page instead of showing the Access Denied overlay.
+ */
+export const NON_ADMIN_ROLES = new Set(['public', 'associate', 'resident']);
+
+/**
  * Convert a route path to a fully-qualified absolute URL.
  * Use in edge function email templates and any context where a full URL is needed.
  *

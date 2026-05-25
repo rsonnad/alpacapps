@@ -1,6 +1,7 @@
 // Login page application
 import { supabase } from '../shared/supabase.js';
 import { initAuth, signInWithGoogle, signInWithPassword, signUpWithPassword, signOut, getAuthState, onAuthStateChange } from '../shared/auth.js';
+import { ROLE_LANDING_PAGES, ROUTES } from '../shared/routes.js';
 
 const CACHED_AUTH_KEY = 'genalpaca-cached-auth';
 
@@ -70,27 +71,21 @@ function showState(state, message = '') {
 }
 
 /**
- * Get the appropriate redirect target based on user role
+ * Get the appropriate redirect target based on user role.
+ *
+ * Role → landing page mapping lives in shared/routes.js (ROLE_LANDING_PAGES)
+ * so admin-shell.js can use the same map when redirecting users away from
+ * pages they can't access.
  */
 function getRedirectTarget(role) {
-  let target = redirectUrl;
-  // Public users always go to consumer spaces view
-  if (['public'].includes(role)) {
-    target = '/rentals/';
-  }
-  // Associates land on their work tracking page
-  else if (target === '/staff/' && role === 'associate') {
-    target = '/associates/worktracking.html';
-  }
-  // Residents go to the device cameras view
-  else if (target === '/staff/' && role === 'resident') {
-    target = '/devices/cameras.html';
-  }
-  // Staff/admin/oracle land on the intranet TOC instead of the bare /staff/ redirect.
-  else if (target === '/staff/' && ['staff', 'admin', 'oracle'].includes(role)) {
-    target = '/intranet/';
-  }
-  return target;
+  const landing = ROLE_LANDING_PAGES[role] || ROUTES.intranet.home;
+  // Public users always bounce to the public landing page, regardless of
+  // whatever deep link sent them to login.
+  if (role === 'public') return landing;
+  // If no specific redirect was requested (login default), use the role's landing page.
+  if (redirectUrl === '/staff/' || !redirectUrl) return landing;
+  // Honor the explicit redirect target (e.g. ?redirect=/admin/users.html).
+  return redirectUrl;
 }
 
 /**
