@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-05-25T18:21:17.010Z",
+  "generatedAt": "2026-05-25T18:50:19.109Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
     {
+      "path": "langbang/index.html",
+      "title": "LangBang — Polish for Android tablets",
+      "section": null,
+      "modifiedAt": "2026-05-25T18:48:15.000Z"
+    },
+    {
       "path": "justin-gilbertson-agreement-3/index.html",
       "title": "Work Resumption Agreement #3 — Justin Gilbertson",
       "section": null,
       "modifiedAt": "2026-05-24T05:18:06.000Z"
-    },
-    {
-      "path": "langbang/index.html",
-      "title": "LangBang — Polish for Android tablets",
-      "section": null,
-      "modifiedAt": "2026-05-21T06:14:47.000Z"
     },
     {
       "path": "alternative-sleep-cycles.html",

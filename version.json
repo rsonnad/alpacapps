@@ -1,12 +1,12 @@
 {
-  "version": "v260525.05 1:20p",
-  "release": 1561,
-  "sha": "850df8ab4",
-  "fullSha": "850df8ab41d5fbac04cf472c6dc73ae583e0fed4",
+  "version": "v260525.06 1:49p",
+  "release": 1562,
+  "sha": "b7e514229",
+  "fullSha": "b7e51422976b73b85516a8dbb74a12ce82369f77",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-25T18:20:27+00:00",
-  "commits": [{"sha":"850df8ab4","message":"add pending-approvals-digest: daily 8am CT email to alpacaplayhouse@gmail.com listing every entry stuck in pending_email_approvals >1h, with one-click approve / approve-type buttons per row. Scheduled via pg_cron 'pending-approvals-digest-daily' (0 13 * * * = 8am CDT). Backstop for missed initial approval-request notifications (e.g., Sean McGoldrick's lease sat unsent for 5 days).","author":"Rahul"}]
+  "pushedAt": "2026-05-25T18:49:25+00:00",
+  "commits": [{"sha":"b7e514229","message":"langbang page: pinned APK → v68 (catch up from v45)","author":"Rahul"}]
 }
