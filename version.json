@@ -1,12 +1,12 @@
 {
-  "version": "v260525.01 12:35p",
-  "release": 1557,
-  "sha": "e2a991b8c",
-  "fullSha": "e2a991b8c85802fd78f4349d788bbdb163ee147e",
+  "version": "v260525.02 12:45p",
+  "release": 1558,
+  "sha": "cd0ffe7b9",
+  "fullSha": "cd0ffe7b9c54c5a633fc6b4c1c256f439d40ae83",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-25T17:35:58+00:00",
-  "commits": [{"sha":"e2a991b8c","message":"admin nav: rename Applications → Rental Apps + add clipboard icon","author":"Rahul"}]
+  "pushedAt": "2026-05-25T17:45:23+00:00",
+  "commits": [{"sha":"cd0ffe7b9","message":"staff/index.html: role-aware redirect so associates/residents land on /devices/cameras.html instead of /staff/spaces.html (which denies them).","author":"Rahul"}]
 }
