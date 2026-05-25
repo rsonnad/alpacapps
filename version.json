@@ -1,12 +1,12 @@
 {
-  "version": "v260525.03 12:48p",
-  "release": 1559,
-  "sha": "216a21c2b",
-  "fullSha": "216a21c2b9ca2c3c8e2c5cecbbf597b467049324",
+  "version": "v260525.04 1:10p",
+  "release": 1560,
+  "sha": "dab5757db",
+  "fullSha": "dab5757dbce7eb3ae832f59c9bbf8f455a4d4c49",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-25T17:48:35+00:00",
-  "commits": [{"sha":"216a21c2b","message":"auth redirect: associates → /associates/worktracking.html","author":"Rahul"}]
+  "pushedAt": "2026-05-25T18:10:43+00:00",
+  "commits": [{"sha":"dab5757db","message":"auth: route associates/residents home when they hit gated admin pages","author":"Rahul"}]
 }
