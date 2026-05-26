@@ -1,12 +1,12 @@
 {
-  "version": "v260526.05 1:37p",
-  "release": 1570,
-  "sha": "cc977166b",
-  "fullSha": "cc977166b5bee201fa44bbce0368e30d2f6edd2e",
+  "version": "v260526.06 1:41p",
+  "release": 1571,
+  "sha": "55aaf108b",
+  "fullSha": "55aaf108b873d010375b933fdbc21bf28f98a485",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-26T18:37:45+00:00",
-  "commits": [{"sha":"cc977166b","message":"Justin agreement #3: add §2 plain-English walkthrough","author":"Rahul"}]
+  "pushedAt": "2026-05-26T18:41:29+00:00",
+  "commits": [{"sha":"55aaf108b","message":"Justin agreement #3: expand $25,960 line — explain WHY it's in debt","author":"Rahul"}]
 }
