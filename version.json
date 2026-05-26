@@ -1,12 +1,12 @@
 {
-  "version": "v260526.01 1:10p",
-  "release": 1566,
-  "sha": "8a04801c3",
-  "fullSha": "8a04801c33c1c3fa6d82556df0c42cdfb3774269",
+  "version": "v260526.02 1:17p",
+  "release": 1567,
+  "sha": "09468924b",
+  "fullSha": "09468924b0996a8df00de8eeaacdb2eb4ee4f7dd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-26T18:10:22+00:00",
-  "commits": [{"sha":"8a04801c3","message":"Justin agreement #3: bump work-off rate $40 → $45/hr","author":"Rahul"}]
+  "pushedAt": "2026-05-26T18:17:06+00:00",
+  "commits": [{"sha":"09468924b","message":"Justin agreement #3: move Tesla content to Appendix A","author":"Rahul"}]
 }
