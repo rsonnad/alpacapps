@@ -1,12 +1,12 @@
 {
-  "version": "v260525.06 1:49p",
-  "release": 1562,
-  "sha": "b7e514229",
-  "fullSha": "b7e51422976b73b85516a8dbb74a12ce82369f77",
+  "version": "v260525.08 8:56p",
+  "release": 1564,
+  "sha": "298907567",
+  "fullSha": "2989075677c5443f290b229e83a74efc4c3111c8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-25T18:49:25+00:00",
-  "commits": [{"sha":"b7e514229","message":"langbang page: pinned APK → v68 (catch up from v45)","author":"Rahul"}]
+  "pushedAt": "2026-05-26T01:56:19+00:00",
+  "commits": [{"sha":"298907567","message":"Document Ollama headless launchd setup","author":"Paca"}]
 }
