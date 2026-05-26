@@ -29,8 +29,9 @@ const NAME_TO_SLUG: Record<string, string> = {
   "Jon's Room": 'jons-room',
   'Magic Bus': 'magic-bus',
   'Master Pasture Suite': 'master-pasture-suite',
-  'Odyssey of Static Van Life': 'odyssey-of-static-van-life',
-  'Pequneo Largo Suite': 'pequneo-largo-suite',
+  'Odyssey Van': 'odyssey-van',
+  'Pequeno Largo Suite': 'pequeno-largo-suite',
+  'Sharingwood Basement': 'sharingwood-basement',
   'Playhouse': 'playhouse',
   'Skyloft': 'skyloft',
   'Skyloft Bed 1': 'skyloft-bed-1',
@@ -65,7 +66,7 @@ serve(async (req) => {
     const { data: assignments } = await supabase
       .from('assignments')
       .select('id, start_date, end_date, status, airbnb_uid, assignment_spaces(space_id)')
-      .in('status', ['prospect', 'active', 'pending_contract', 'contract_sent']);
+      .in('status', ['active', 'pending_contract', 'contract_sent']);
 
     // Also fetch approved applications (not yet moved in) to block their dates
     const { data: approvedApps } = await supabase
