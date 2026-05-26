@@ -1,12 +1,12 @@
 {
-  "version": "v260526.04 1:33p",
-  "release": 1569,
-  "sha": "a8ed3aed1",
-  "fullSha": "a8ed3aed11765929b85a003bfe4061fba37a5b79",
+  "version": "v260526.05 1:37p",
+  "release": 1570,
+  "sha": "cc977166b",
+  "fullSha": "cc977166b5bee201fa44bbce0368e30d2f6edd2e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-26T18:33:26+00:00",
-  "commits": [{"sha":"a8ed3aed1","message":"rahulio/pages: add global nav header + version pill to all pages","author":"Rahul"}]
+  "pushedAt": "2026-05-26T18:37:45+00:00",
+  "commits": [{"sha":"cc977166b","message":"Justin agreement #3: add §2 plain-English walkthrough","author":"Rahul"}]
 }
