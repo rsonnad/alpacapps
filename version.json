@@ -1,12 +1,12 @@
 {
-  "version": "v260526.07 1:51p",
-  "release": 1572,
-  "sha": "939b7fbb2",
-  "fullSha": "939b7fbb232291f55502aa6a636f59605adab615",
+  "version": "v260526.08 1:54p",
+  "release": 1573,
+  "sha": "277956467",
+  "fullSha": "277956467514be05047cc9a34011b2010c5a2aab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-26T18:51:12+00:00",
-  "commits": [{"sha":"939b7fbb2","message":"Justin agreement #3: fix §2 walkthrough — analogy + consistent WHY","author":"Rahul"}]
+  "pushedAt": "2026-05-26T18:54:14+00:00",
+  "commits": [{"sha":"277956467","message":"Justin agreement #3: add WHY callouts to §4.1, §4.2, §4.3, §7","author":"Rahul"}]
 }
