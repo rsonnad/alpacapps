@@ -1,12 +1,12 @@
 {
-  "version": "v260525.09 9:21p",
-  "release": 1565,
-  "sha": "6fb755b15",
-  "fullSha": "6fb755b153392e243b223b82290ed41d30d987df",
-  "actor": "wensonia",
+  "version": "v260526.01 1:10p",
+  "release": 1566,
+  "sha": "8a04801c3",
+  "fullSha": "8a04801c33c1c3fa6d82556df0c42cdfb3774269",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-26T02:21:49+00:00",
-  "commits": [{"sha":"6fb755b15","message":"Fix iCal integration: remove prospect blocking, fix slug maps, regenerate all .ics","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-05-26T18:10:22+00:00",
+  "commits": [{"sha":"8a04801c3","message":"Justin agreement #3: bump work-off rate $40 → $45/hr","author":"Rahul"}]
 }
