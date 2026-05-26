@@ -126,3 +126,49 @@ Hostinger SSH follow-up needed:
 - ~/.ssh/alpacapps-hostinger.pass was missing on this machine.
 - Bitwarden was locked, so Hostinger password could not be retrieved during the check.
 ```
+
+## Resend (transactional email from Alpuca)
+
+Used for alerts that need to reach the user while away — memory-pressure-guard,
+backup status, lights healthcheck, etc. macOS sendmail/postfix does NOT deliver
+to Gmail; always use Resend.
+
+### Recipe (verified 2026-05-25)
+
+```bash
+RESEND_KEY=$(cat ~/.config/resend/key | tr -d '\n')
+curl -s -X POST 'https://api.resend.com/emails' \
+  -H "Authorization: Bearer $RESEND_KEY" \
+  -H 'Content-Type: application/json' \
+  -d "$(jq -n \
+    --arg from "notifications@alpacaplayhouse.com" \
+    --arg to   "rahulioson@gmail.com" \
+    --arg subject "your subject" \
+    --arg text    "your body" \
+    '{from: $from, to: [$to], subject: $subject, text: $text}')"
+```
+
+Success returns `{"id":"<uuid>"}`. Failure returns `{"name":"...","message":"..."}`.
+
+### Key location
+
+`~/.config/resend/key` — 36-byte API key, no newline. (Also at
+`/Users/alpuca/.config/rvault-backup/resend-key.txt` for older scripts.)
+
+### Sender domain
+
+`notifications@alpacaplayhouse.com` is the verified sender. Do not change the
+`from:` without verifying a new domain in the Resend dashboard.
+
+### Live consumers
+
+- `~/bin/memory-pressure-guard.sh` — alerts on Python > 8 GB
+- `~/bin/rvault-backup-status.sh` — daily backup status to rahulioson@gmail.com
+- `~/bin/lights-healthcheck.sh`
+- `~/bin/oracle-montreal-provision.sh`
+
+### Do NOT use
+
+- `mail` / `sendmail` / `postfix` on macOS — they accept input but silently
+  fail to deliver to Gmail (residential IP block + unauthenticated SMTP).
+  Verified broken 2026-05-25: `mailq` reports "mail system is down".
