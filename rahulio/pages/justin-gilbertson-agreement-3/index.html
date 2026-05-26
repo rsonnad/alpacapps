@@ -262,7 +262,7 @@
         <div class="rates-grid">
           <div class="rate-card">
             <div class="rate-label">Contractor labor rate (work-off credit)</div>
-            <div class="rate-value">$40.00 / hour</div>
+            <div class="rate-value">$45.00 / hour</div>
             <div class="rate-note">Applied to all hours logged in the alpacapps time-tracking system from Feb 19, 2026 onward. This is the agreed rate for credit-against-balance purposes and is distinct from the per-task fixed labor prices used Sep–Nov 2025 (see §4.1).</div>
           </div>
           <div class="rate-card">
@@ -723,21 +723,21 @@
           <div class="math-row"><span class="math-label">Tracked hours (from <code class="calc">time_entries</code>, hidden entries excluded)</span><span class="math-value">232.62 hr</span></div>
           <div class="math-row"><span class="math-label">Worked days (distinct calendar days with a clock-in)</span><span class="math-value">37 days</span></div>
           <div class="math-row"><span class="math-label">Average hours per worked day</span><span class="math-value">232.62 / 37 = 6.29 hr</span></div>
-          <div class="math-row"><span class="math-label">Labor rate (per §3)</span><span class="math-value">$40.00 / hr</span></div>
-          <div class="math-row math-total"><span class="math-label">Labor credit applied: <code class="calc">232.62 hr × $40.00</code></span><span class="math-value">$9,304.80</span></div>
+          <div class="math-row"><span class="math-label">Labor rate (per §3)</span><span class="math-value">$45.00 / hr</span></div>
+          <div class="math-row math-total"><span class="math-label">Labor credit applied: <code class="calc">232.62 hr × $45.00</code></span><span class="math-value">$10,467.90</span></div>
         </div>
 
-        <p style="font-size:0.82rem;color:#666">All entries are currently flagged <code class="calc">is_paid = false</code> in the database — meaning none of these hours have triggered a cash payout. The full $9,304.80 therefore credits against the balance.</p>
+        <p style="font-size:0.82rem;color:#666">All entries are currently flagged <code class="calc">is_paid = false</code> in the database — meaning none of these hours have triggered a cash payout. The full $10,467.90 therefore credits against the balance.</p>
 
         <h2>5. Net Balance Reconciliation</h2>
         <div class="math-box">
           <div class="math-row"><span class="math-label">Balance acknowledged under Agreement #2 (Sep 11, 2025) — see §2</span><span class="math-value">$40,236.00</span></div>
           <div class="math-row"><span class="math-label">Less: Provisional Sep–Nov 2025 Genesis credits (per §4.1, subject to verification)</span><span class="math-value">−$2,790.00</span></div>
-          <div class="math-row"><span class="math-label">Less: Tracked alpacapps labor (per §4.2): <code class="calc">232.62 hr × $40.00/hr</code></span><span class="math-value">−$9,304.80</span></div>
-          <div class="math-row math-subtotal"><span class="math-label">Sum of credits</span><span class="math-value">−$12,094.80</span></div>
-          <div class="math-row math-total"><span class="math-label">Net balance remaining as of May 23, 2026 (provisional)</span><span class="math-value">$28,141.20</span></div>
+          <div class="math-row"><span class="math-label">Less: Tracked alpacapps labor (per §4.2): <code class="calc">232.62 hr × $45.00/hr</code></span><span class="math-value">−$10,467.90</span></div>
+          <div class="math-row math-subtotal"><span class="math-label">Sum of credits</span><span class="math-value">−$13,257.90</span></div>
+          <div class="math-row math-total"><span class="math-label">Net balance remaining as of May 23, 2026 (provisional)</span><span class="math-value">$26,978.10</span></div>
         </div>
-        <p style="font-size:0.82rem;color:#666">The $28,141.20 figure is the operative balance for §6 work-off terms and §7 interest provisions. If joint site verification per §9 revises the §4.1 figure upward (toward $4,140 maximum) or downward (toward $2,610 conservative), the net balance shifts inversely.</p>
+        <p style="font-size:0.82rem;color:#666">The $26,978.10 figure is the operative balance for §6 work-off terms and §7 interest provisions. If joint site verification per §9 revises the §4.1 figure upward (toward $4,140 maximum) or downward (toward $2,610 conservative), the net balance shifts inversely.</p>
 
         <h2>6. Tesla Casper Vehicle — Complementary</h2>
         <div class="info-box info-box--blue">
@@ -755,8 +755,8 @@
         <h2>7. Continuing Work-Off Terms</h2>
         <ul>
           <li>Contractor will continue to log all work performed at the Alpaca Playhouse via the alpacapps time-tracking system, with clock-in/clock-out timestamps and a task reference for each entry.</li>
-          <li>The labor rate for credit-against-balance purposes is fixed at <strong>$40.00 per hour</strong> (per §3).</li>
-          <li>Each work session credits the balance by <code class="calc">duration_hours × $40.00</code>. The balance per §5 is updated continuously as new time entries land.</li>
+          <li>The labor rate for credit-against-balance purposes is fixed at <strong>$45.00 per hour</strong> (per §3).</li>
+          <li>Each work session credits the balance by <code class="calc">duration_hours × $45.00</code>. The balance per §5 is updated continuously as new time entries land.</li>
           <li>Time entries are subject to Owner review and approval; entries flagged as unreasonable, duplicative, or not corresponding to delivered work may be rejected from credit.</li>
           <li>Any additional materials, third-party costs, or rentals advanced by Owner on Contractor's behalf during the work-off period will be added to the balance unless otherwise agreed in writing.</li>
         </ul>
@@ -778,7 +778,7 @@
             </li>
             <li>Once retroactively triggered, interest continues to accrue prospectively at the same daily rate on the then-remaining balance until paid in full.</li>
             <li>Bona-fide medical, family-emergency, or weather-related interruptions communicated to Owner in writing at the time of the interruption may, at Owner's sole discretion, be excluded from the two-week stop-work calculation.</li>
-            <li><strong>Full Waiver:</strong> Interest is permanently waived in its entirety only if Contractor works continuously (without any two-week-or-greater gap) until the entire balance is paid down to $0. With the current §5 balance of $28,141.20 and continued work at the recent average pace of <code class="calc">6.29 hr/day × $40 = $251.60/day</code> on roughly <code class="calc">~3 worked days/week</code>, full payoff would be reached in approximately <strong>~37 worked weeks</strong> (≈ 9 calendar months at current pace) from the date of this Agreement, after which the interest waiver becomes permanent.</li>
+            <li><strong>Full Waiver:</strong> Interest is permanently waived in its entirety only if Contractor works continuously (without any two-week-or-greater gap) until the entire balance is paid down to $0. With the current §5 balance of $26,978.10 and continued work at the recent average pace of <code class="calc">6.29 hr/day × $45 = $283.05/day</code> on roughly <code class="calc">~3 worked days/week</code>, full payoff would be reached in approximately <strong>~32 worked weeks</strong> (≈ 7 calendar months at current pace) from the date of this Agreement, after which the interest waiver becomes permanent.</li>
           </ul>
         </div>
 
@@ -806,7 +806,7 @@
         </ul>
 
         <h2>12. Contractor Acceptance</h2>
-        <p><em>"I acknowledge and agree to all terms in this Work Resumption Agreement #3 dated May 23, 2026. I understand that the balance shown in §5 ($28,141.20) is provisional pending site verification of Sep–Nov 2025 credits, that the interest waiver in §8 is conditional on continuous work, and that any stoppage greater than two consecutive weeks before the balance is paid in full will retroactively activate interest accrual from May 17, 2025 on the original $40,236.00 principal at 7.95% annualized simple (per §3 and §8). I agree to all other terms of Agreement #2 as continued and reaffirmed herein, including my responsibility for attorney fees and collection costs."</em></p>
+        <p><em>"I acknowledge and agree to all terms in this Work Resumption Agreement #3 dated May 23, 2026. I understand that the balance shown in §5 ($26,978.10) is provisional pending site verification of Sep–Nov 2025 credits, that the interest waiver in §8 is conditional on continuous work, and that any stoppage greater than two consecutive weeks before the balance is paid in full will retroactively activate interest accrual from May 17, 2025 on the original $40,236.00 principal at 7.95% annualized simple (per §3 and §8). I agree to all other terms of Agreement #2 as continued and reaffirmed herein, including my responsibility for attorney fees and collection costs."</em></p>
 
         <div class="signature-block">
           <div>
