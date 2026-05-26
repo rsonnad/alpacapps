@@ -41,9 +41,10 @@ Pulled from the public Ollama registry. All "up to date" as of last review.
 | `qwen2.5-coder:14b` | 9 GB | Lighter coding | ~9 GB | Fast pass for small coding tasks when 30b is overkill. |
 | `glm-ocr` | 2.2 GB | OCR | ~3 GB | Pure text extraction from images / scanned docs. |
 
-**RAM math (24 GB Alpuca):** only one large model loads at a time. Ollama
-unloads inactive models automatically after the keep-alive window (default 5
-minutes). Switching models incurs a ~15–30 s warm-up.
+**RAM math (24 GB Alpuca):** only one large model should load at a time.
+Alpuca's LaunchAgent sets `OLLAMA_MAX_LOADED_MODELS=1`,
+`OLLAMA_NUM_PARALLEL=1`, and `OLLAMA_KEEP_ALIVE=2m` so inactive models unload
+quickly. Switching models incurs a ~15–30 s warm-up.
 
 ### MoE (mixture of experts) — why the 30 B Qwen 3s are fast
 
@@ -134,16 +135,42 @@ reasoning trace — `deepseek-r1:32b` is the dedicated alternative.
 
 ## Network access (Alpuca as LAN AI server)
 
-Ollama binds to `localhost` by default. To serve other devices on the home
-network (e.g., a mobile app, an Airtop laptop, the Alpaca tablet):
+Ollama binds to `localhost` by default, but Alpuca is intentionally configured
+as a LAN/tailnet AI server. The canonical service is:
 
-```bash
-# Persist via launchctl so brew services picks it up
-launchctl setenv OLLAMA_HOST 0.0.0.0
-brew services restart ollama
+```text
+~/Library/LaunchAgents/homebrew.mxcl.ollama.plist
 ```
 
-After this, any device on the LAN can use `http://192.168.1.200:11434`.
+Important environment in that plist:
+
+```text
+OLLAMA_HOST=0.0.0.0
+OLLAMA_FLASH_ATTENTION=1
+OLLAMA_KV_CACHE_TYPE=q8_0
+OLLAMA_KEEP_ALIVE=2m
+OLLAMA_MAX_LOADED_MODELS=1
+OLLAMA_NUM_PARALLEL=1
+```
+
+There should be no manual `ollama serve` process. The old crontab `@reboot`
+line that launched Ollama by hand is disabled, and `~/scripts/hermes-watchdog.sh`
+kicks `homebrew.mxcl.ollama` through launchd instead of starting a second
+server.
+
+Verify:
+
+```bash
+launchctl list | grep -i ollama
+lsof -nP -iTCP:11434 -sTCP:LISTEN
+ollama ps
+curl -sS http://127.0.0.1:11434/api/tags | jq '.models | length'
+curl -sS http://192.168.1.200:11434/api/tags | jq '.models | length'
+```
+
+Any device on the LAN or tailnet can use `http://192.168.1.200:11434`.
+Do not port-forward this service to the public internet; Ollama does not
+provide authentication by itself.
 
 ## Integrations
 
