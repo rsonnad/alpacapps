@@ -1,12 +1,12 @@
 {
-  "version": "v260526.02 1:17p",
-  "release": 1567,
-  "sha": "09468924b",
-  "fullSha": "09468924b0996a8df00de8eeaacdb2eb4ee4f7dd",
+  "version": "v260526.03 1:28p",
+  "release": 1568,
+  "sha": "98b6a5414",
+  "fullSha": "98b6a541418c2d79a903aef84dc843aa4420b107",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-26T18:17:06+00:00",
-  "commits": [{"sha":"09468924b","message":"Justin agreement #3: move Tesla content to Appendix A","author":"Rahul"}]
+  "pushedAt": "2026-05-26T18:28:46+00:00",
+  "commits": [{"sha":"489196c52","message":"Justin agreement #3: add §4.2 substitute-labor + civil/criminal clause","author":"Rahul"},{"sha":"98b6a5414","message":"Justin agreement #3: rate $45→$50, abandonment subtotal, §4 framing note","author":"Rahul"}]
 }
