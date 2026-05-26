@@ -1,12 +1,12 @@
 {
-  "version": "v260525.08 8:56p",
-  "release": 1564,
-  "sha": "298907567",
-  "fullSha": "2989075677c5443f290b229e83a74efc4c3111c8",
-  "actor": "rsonnad",
+  "version": "v260525.09 9:21p",
+  "release": 1565,
+  "sha": "6fb755b15",
+  "fullSha": "6fb755b153392e243b223b82290ed41d30d987df",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-26T01:56:19+00:00",
-  "commits": [{"sha":"298907567","message":"Document Ollama headless launchd setup","author":"Paca"}]
+  "pushedAt": "2026-05-26T02:21:49+00:00",
+  "commits": [{"sha":"6fb755b15","message":"Fix iCal integration: remove prospect blocking, fix slug maps, regenerate all .ics","author":"Sonia Wendorff"}]
 }
