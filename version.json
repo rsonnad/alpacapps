@@ -1,12 +1,12 @@
 {
-  "version": "v260526.03 1:28p",
-  "release": 1568,
-  "sha": "98b6a5414",
-  "fullSha": "98b6a541418c2d79a903aef84dc843aa4420b107",
+  "version": "v260526.04 1:33p",
+  "release": 1569,
+  "sha": "a8ed3aed1",
+  "fullSha": "a8ed3aed11765929b85a003bfe4061fba37a5b79",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmg397c",
-  "pushedAt": "2026-05-26T18:28:46+00:00",
-  "commits": [{"sha":"489196c52","message":"Justin agreement #3: add §4.2 substitute-labor + civil/criminal clause","author":"Rahul"},{"sha":"98b6a5414","message":"Justin agreement #3: rate $45→$50, abandonment subtotal, §4 framing note","author":"Rahul"}]
+  "pushedAt": "2026-05-26T18:33:26+00:00",
+  "commits": [{"sha":"a8ed3aed1","message":"rahulio/pages: add global nav header + version pill to all pages","author":"Rahul"}]
 }
