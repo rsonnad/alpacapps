@@ -1,12 +1,12 @@
 {
-  "version": "v260527.01 11:37p",
-  "release": 1576,
-  "sha": "e6bbbe6df",
-  "fullSha": "e6bbbe6df46f813bad445a6e8c1117cc750408e2",
+  "version": "v260528.01 12:46a",
+  "release": 1577,
+  "sha": "d1379961d",
+  "fullSha": "d1379961dd09b2b5b3974632ed900aedb07f4661",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-28T04:37:59+00:00",
-  "commits": [{"sha":"e6bbbe6df","message":"langbang page: pinned APK → v70","author":"Rahul"}]
+  "machine": "runnervmg397c",
+  "pushedAt": "2026-05-28T05:46:58+00:00",
+  "commits": [{"sha":"d1379961d","message":"langbang page: pinned APK → v72","author":"Rahul"}]
 }
