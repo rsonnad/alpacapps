@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-05-26T19:06:30.512Z",
+  "generatedAt": "2026-05-28T04:38:53.726Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
+    {
+      "path": "langbang/index.html",
+      "title": "LangBang — Polish for Android tablets",
+      "section": null,
+      "modifiedAt": "2026-05-28T04:37:59.000Z"
+    },
     {
       "path": "justin-gilbertson-agreement-3/index.html",
       "title": "Work Resumption Agreement #3 — Justin Gilbertson",
@@ -98,12 +104,6 @@
     {
       "path": "india-business-visa.html",
       "title": "Indian Visa via Business: Step-by-Step for EU Citizens",
-      "section": null,
-      "modifiedAt": "2026-05-26T18:33:26.000Z"
-    },
-    {
-      "path": "langbang/index.html",
-      "title": "LangBang — Polish for Android tablets",
       "section": null,
       "modifiedAt": "2026-05-26T18:33:26.000Z"
     },
