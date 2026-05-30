@@ -1,12 +1,12 @@
 {
-  "version": "v260529.05 8:24p",
-  "release": 1591,
-  "sha": "4f97ad4d8",
-  "fullSha": "4f97ad4d8a6e77dead0e2be545d9cd0b36ed7490",
+  "version": "v260529.06 8:33p",
+  "release": 1592,
+  "sha": "c9340032d",
+  "fullSha": "c9340032de6a18b4cb748838df55acc41f162b36",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-30T01:24:36+00:00",
-  "commits": [{"sha":"4f97ad4d8","message":"langbang page: QR sideload + auto-download note, pin v0.1.8.87","author":"Rahul"}]
+  "pushedAt": "2026-05-30T01:33:51+00:00",
+  "commits": [{"sha":"c9340032d","message":"langbang page: pinned APK → v91","author":"Rahul"}]
 }
