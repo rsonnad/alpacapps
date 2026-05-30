@@ -1,12 +1,12 @@
 {
-  "version": "v260530.01 3:47a",
-  "release": 1601,
-  "sha": "e78da17c4",
-  "fullSha": "e78da17c43da5fca4e35c9b293a1e3655c3923f5",
+  "version": "v260530.02 5:47p",
+  "release": 1602,
+  "sha": "227e38e72",
+  "fullSha": "227e38e720cff435fbe452d4a3107b97955e7d4d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-30T08:47:24+00:00",
-  "commits": [{"sha":"e78da17c4","message":"langbang page: pinned APK → v115","author":"Rahul"}]
+  "pushedAt": "2026-05-30T22:47:39+00:00",
+  "commits": [{"sha":"227e38e72","message":"infra: add CrossPaste to the tools list","author":"Rahul"}]
 }
