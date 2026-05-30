@@ -230,7 +230,15 @@
 
     <section>
       <h2>Builds</h2>
-      <p>APKs are published to the alpacapps R2 bucket. Sideload onto your tablet via <code>adb install</code> or open the link directly in the tablet browser (Settings will prompt to allow install from unknown sources).</p>
+      <p>APKs are published to the alpacapps R2 bucket. Easiest install: <strong>scan the QR on the tablet</strong> and tap through (Settings will prompt to allow install from unknown sources). No cable, no adb.</p>
+      <div style="display:flex; gap:1.5rem; align-items:center; flex-wrap:wrap; margin:1rem 0; padding:1.25rem; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md);">
+        <img src="install-qr.svg" alt="Scan to install langbang-latest.apk" width="160" height="160" style="flex-shrink:0;">
+        <div>
+          <h3 style="margin-bottom:0.3rem;">Scan to install</h3>
+          <p style="margin-bottom:0.4rem;">Point the tablet camera at the code — it opens <code>langbang-latest.apk</code> straight from R2. Tap the download, then tap the file to install.</p>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">Audio downloads itself on first launch (wifi) — no extra step.</p>
+        </div>
+      </div>
       <div class="build-grid">
         <div class="build-card">
           <span class="label">Latest APK</span>
@@ -238,8 +246,8 @@
           <span class="meta">Always points at the newest build. arm64-v8a, debug-signed.</span>
         </div>
         <div class="build-card">
-          <span class="label">Current build — v0.1.8.86</span>
-          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v86-arm64.apk">langbang-v86-arm64.apk</a>
+          <span class="label">Current build — v0.1.8.87</span>
+          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v87-arm64.apk">langbang-v87-arm64.apk</a>
           <span class="meta">Pinned version for rollback or testing.</span>
         </div>
         <div class="build-card">
@@ -248,7 +256,7 @@
           <span class="meta">Gradle project — open in Android Studio.</span>
         </div>
       </div>
-      <p style="margin-top: 1rem;" class="note"><strong>Tip.</strong> Wireless adb works great over Tailscale: <code>adb connect &lt;tab-tailnet-ip&gt;:&lt;port&gt;</code>, then <code>adb install langbang-latest.apk</code>.</p>
+      <p style="margin-top: 1rem;" class="note"><strong>Note.</strong> Audio is pre-generated to the shared R2 cache and pulled automatically on launch, so a fresh install is fully voiced without any manual download. adb is no longer needed for installs or audio.</p>
     </section>
 
     <section>
