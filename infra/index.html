@@ -1065,6 +1065,27 @@
 
       <div class="svc-row">
         <label class="calc-svc">
+          <input type="checkbox" data-svc="crosspaste" onchange="recalcCost()">
+          <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">CrossPaste</span><span class="calc-svc__desc">Open-source clipboard sync across Mac, Windows, Linux, iOS &amp; Android</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>Open-source, end-to-end-encrypted clipboard manager that syncs whatever you copy across every device on your local network &mdash; no account and no cloud server required.</p>
+          <ul>
+            <li><strong>Universal clipboard:</strong> Copy text, rich text, HTML, links, images, or files on one device and paste instantly on another &mdash; millisecond sync over your LAN.</li>
+            <li><strong>Cross-platform:</strong> Native apps for macOS, Windows, Linux, iOS, and Android.</li>
+            <li><strong>Private by default:</strong> End-to-end encrypted and stored locally &mdash; your clipboard never leaves your network.</li>
+            <li><strong>Clipboard history:</strong> Searchable history with unlimited records and automatic space management.</li>
+            <li><strong>Why it&rsquo;s here:</strong> Handy for moving prompts, snippets, screenshots, and links between your dev machine, phone, and home server while you build.</li>
+          </ul>
+          <p><a href="https://crosspaste.com" target="_blank">Go to CrossPaste &rarr;</a></p>
+        </details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc">
           <input type="checkbox" data-svc="telnyx" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
           <span class="svc-icon"><img src="https://cdn.simpleicons.org/telnyx/00C08B" alt="Telnyx"></span>
@@ -1677,6 +1698,7 @@ function recalcCost() {
     'cloudflare-d1': { basic: 0, complicated: 0, hyper: 0 },
     'open-brain':  { basic: 0, complicated: 0, hyper: 0 },
     'gstack':      { basic: 0, complicated: 0, hyper: 0 },
+    'crosspaste':  { basic: 0, complicated: 0, hyper: 0 },
     'workers':     { basic: 0, complicated: 60, hyper: 144 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
@@ -1690,7 +1712,7 @@ function recalcCost() {
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
     'open-brain': 'Open Brain (session dashboard)',
-    'gstack': 'gstack (QA & skills)', 'workers': 'Background Workers (Hostinger VPS)', 'domain': 'Custom domain',
+    'gstack': 'gstack (QA & skills)', 'crosspaste': 'CrossPaste (clipboard sync)', 'workers': 'Background Workers (Hostinger VPS)', 'domain': 'Custom domain',
     'iphone': 'iPhone App (Apple Developer)', 'android': 'Android App (Google Play)',
     'homeserver': 'Home Server (used Mac)'
   };
