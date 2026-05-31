@@ -1,12 +1,12 @@
 {
-  "version": "v260530.08 7:38p",
-  "release": 1608,
-  "sha": "6ca7f7d39",
-  "fullSha": "6ca7f7d395392d4bc3a56758d7ceffbcfb2311ae",
+  "version": "v260530.09 7:45p",
+  "release": 1609,
+  "sha": "d423c934d",
+  "fullSha": "d423c934dcd4e3f024e4a045edc4f6bffa03b320",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-31T00:38:48+00:00",
-  "commits": [{"sha":"6ca7f7d39","message":"langbang page: pinned APK → v123","author":"Rahul"}]
+  "pushedAt": "2026-05-31T00:45:42+00:00",
+  "commits": [{"sha":"d423c934d","message":"docs: add sponic tablet setup runbook","author":"Rahul"}]
 }
