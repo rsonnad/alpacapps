@@ -1,12 +1,12 @@
 {
-  "version": "v260530.27 9:40p",
-  "release": 1627,
-  "sha": "2b503746d",
-  "fullSha": "2b503746d22278a7e86d2e611259b62b3f690a52",
+  "version": "v260530.28 9:44p",
+  "release": 1628,
+  "sha": "584138815",
+  "fullSha": "5841388154dcd2e632471ad51cf28e987d27179b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-31T02:40:54+00:00",
-  "commits": [{"sha":"2b503746d","message":"Use full names in Rahul bio video metadata","author":"Rahul"}]
+  "pushedAt": "2026-05-31T02:44:38+00:00",
+  "commits": [{"sha":"584138815","message":"langbang page: pinned APK → v163","author":"Rahul"}]
 }
