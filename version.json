@@ -1,12 +1,12 @@
 {
-  "version": "v260530.25 9:37p",
-  "release": 1625,
-  "sha": "2cd3087f7",
-  "fullSha": "2cd3087f75456a54aeed0795415f97d6582f9d01",
+  "version": "v260530.27 9:40p",
+  "release": 1627,
+  "sha": "2b503746d",
+  "fullSha": "2b503746d22278a7e86d2e611259b62b3f690a52",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-31T02:37:39+00:00",
-  "commits": [{"sha":"2cd3087f7","message":"Use full names in Rahul bio video title","author":"Rahul"}]
+  "pushedAt": "2026-05-31T02:40:54+00:00",
+  "commits": [{"sha":"2b503746d","message":"Use full names in Rahul bio video metadata","author":"Rahul"}]
 }
