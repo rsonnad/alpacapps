@@ -39,7 +39,8 @@ On the tablet:
 
 Samsung/Android may turn Wireless debugging off after Wi-Fi changes, sleep, or
 reboot. LangBang now carries a dev helper that can re-enable the global
-`adb_wifi_enabled` setting after boot and app launch. Tailscale autostart is a
+`adb_wifi_enabled` setting after boot, package replacement, app start, and
+activity resume. Tailscale autostart is a
 separate device setting: set Android's Always-on VPN to `com.tailscale.ipn` once
 with adb secure settings, then exempt Tailscale from Samsung background limits.
 
@@ -89,8 +90,8 @@ adbd restart, developer-options reset, or OS updates.
 
 ## Install LangBang Dev Helper
 
-LangBang includes `AdbWifiKeeper`, which re-enables Wireless debugging on app
-start, package replacement, and boot:
+LangBang includes `AdbWifiKeeper`, which re-enables Wireless debugging on boot,
+package replacement, app start, and activity resume:
 
 ```text
 settings global adb_wifi_enabled=1
@@ -239,7 +240,7 @@ debugging; the Mac still needs the Tailscale route to reach the tablet.
 6. Install LangBang or another helper APK with:
    - `WRITE_SECURE_SETTINGS` declared
    - `RECEIVE_BOOT_COMPLETED` declared
-   - boot/app-start logic that sets `settings global adb_wifi_enabled=1`
+   - boot/app-start/resume logic that sets `settings global adb_wifi_enabled=1`
 7. Grant `WRITE_SECURE_SETTINGS` once from adb.
 8. Set Tailscale as Always-on VPN with adb secure settings.
 9. Configure Tailscale battery/background settings.
