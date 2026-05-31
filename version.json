@@ -1,12 +1,12 @@
 {
-  "version": "v260530.11 8:06p",
-  "release": 1611,
-  "sha": "c867aace1",
-  "fullSha": "c867aace1a619a334b667c95356956e30c64e598",
+  "version": "v260530.12 8:08p",
+  "release": 1612,
+  "sha": "089d20e2c",
+  "fullSha": "089d20e2c40cc881a83da0d750c7d3b1bba0af9d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-31T01:06:42+00:00",
-  "commits": [{"sha":"c867aace1","message":"langbang page: pinned APK → v129","author":"Rahul"}]
+  "pushedAt": "2026-05-31T01:08:32+00:00",
+  "commits": [{"sha":"089d20e2c","message":"docs: note tablet adb resume hook","author":"Rahul"}]
 }
