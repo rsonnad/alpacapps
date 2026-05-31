@@ -1,12 +1,12 @@
 {
-  "version": "v260530.10 7:58p",
-  "release": 1610,
-  "sha": "7ce03b1f6",
-  "fullSha": "7ce03b1f6bfce174b89d30a30d5e6cc5ac2c66a0",
+  "version": "v260530.11 8:06p",
+  "release": 1611,
+  "sha": "c867aace1",
+  "fullSha": "c867aace1a619a334b667c95356956e30c64e598",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-31T00:58:37+00:00",
-  "commits": [{"sha":"7ce03b1f6","message":"docs: correct sponic tablet reboot recipe","author":"Rahul"}]
+  "pushedAt": "2026-05-31T01:06:42+00:00",
+  "commits": [{"sha":"c867aace1","message":"langbang page: pinned APK → v129","author":"Rahul"}]
 }
