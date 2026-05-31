@@ -1,12 +1,12 @@
 {
-  "version": "v260530.09 7:45p",
-  "release": 1609,
-  "sha": "d423c934d",
-  "fullSha": "d423c934dcd4e3f024e4a045edc4f6bffa03b320",
+  "version": "v260530.10 7:58p",
+  "release": 1610,
+  "sha": "7ce03b1f6",
+  "fullSha": "7ce03b1f6bfce174b89d30a30d5e6cc5ac2c66a0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-31T00:45:42+00:00",
-  "commits": [{"sha":"d423c934d","message":"docs: add sponic tablet setup runbook","author":"Rahul"}]
+  "pushedAt": "2026-05-31T00:58:37+00:00",
+  "commits": [{"sha":"7ce03b1f6","message":"docs: correct sponic tablet reboot recipe","author":"Rahul"}]
 }
