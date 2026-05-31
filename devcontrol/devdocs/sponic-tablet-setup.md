@@ -7,7 +7,7 @@ It is not the old hallway kiosk runbook. The target pattern is:
 - Tailscale installed and signed into the Sponic/AlpacApps tailnet
 - Android Developer options enabled
 - Wireless debugging kept on by LangBang's dev helper
-- Tailscale set as Android's Always-on VPN by LangBang's dev helper
+- Tailscale set as Android's Always-on VPN by one-time adb secure settings
 - adb promoted to fixed TCP port `5555` whenever possible
 - Mac-side wrapper `~/bin/adb-tab` reconnects over the tablet's Tailscale IP
 
@@ -39,10 +39,9 @@ On the tablet:
 
 Samsung/Android may turn Wireless debugging off after Wi-Fi changes, sleep, or
 reboot. LangBang now carries a dev helper that can re-enable the global
-`adb_wifi_enabled` setting after boot and app launch. The same helper also sets
-Tailscale as Android's Always-on VPN by writing `always_on_vpn_app` to
-`com.tailscale.ipn` and keeping VPN lockdown disabled. These writes only work
-after the one-time secure-settings grant below.
+`adb_wifi_enabled` setting after boot and app launch. Tailscale autostart is a
+separate device setting: set Android's Always-on VPN to `com.tailscale.ipn` once
+with adb secure settings, then exempt Tailscale from Samsung background limits.
 
 ## One-Time Mac Pairing
 
@@ -90,13 +89,12 @@ adbd restart, developer-options reset, or OS updates.
 
 ## Install LangBang Dev Helper
 
-LangBang includes `AdbWifiKeeper`, which does two dev-device repairs on app
+LangBang includes `AdbWifiKeeper`, which re-enables Wireless debugging on app
 start, package replacement, and boot:
 
-1. Re-enables Wireless debugging by setting `settings global adb_wifi_enabled=1`.
-2. Sets Tailscale as Android's Always-on VPN:
-   - `settings secure always_on_vpn_app=com.tailscale.ipn`
-   - `settings secure always_on_vpn_lockdown=0`
+```text
+settings global adb_wifi_enabled=1
+```
 
 Normal Android apps cannot do this unless the permission is granted from adb.
 
@@ -128,16 +126,51 @@ adb -s 100.103.110.7:5555 shell am force-stop com.sponic.langbang
 adb -s 100.103.110.7:5555 shell monkey -p com.sponic.langbang 1 >/dev/null
 sleep 2
 adb -s 100.103.110.7:5555 shell settings get global adb_wifi_enabled
-adb -s 100.103.110.7:5555 shell settings get secure always_on_vpn_app
-adb -s 100.103.110.7:5555 shell settings get secure always_on_vpn_lockdown
 ```
 
 Expected output:
 
 ```text
 1
+```
+
+## Set Tailscale To Autostart After Reboot
+
+Set Android's Always-on VPN setting to Tailscale directly with adb. This is the
+piece that made Tailscale rejoin the tailnet automatically in the 2026-05-31
+reboot test.
+
+```bash
+adb -s 100.103.110.7:5555 shell settings put secure always_on_vpn_app com.tailscale.ipn
+adb -s 100.103.110.7:5555 shell settings put secure always_on_vpn_lockdown 0
+
+adb -s 100.103.110.7:5555 shell dumpsys deviceidle whitelist +com.tailscale.ipn
+adb -s 100.103.110.7:5555 shell cmd appops set com.tailscale.ipn RUN_IN_BACKGROUND allow
+adb -s 100.103.110.7:5555 shell cmd appops set com.tailscale.ipn RUN_ANY_IN_BACKGROUND allow
+
+adb -s 100.103.110.7:5555 shell dumpsys deviceidle whitelist +com.sponic.langbang
+adb -s 100.103.110.7:5555 shell cmd appops set com.sponic.langbang RUN_IN_BACKGROUND allow
+adb -s 100.103.110.7:5555 shell cmd appops set com.sponic.langbang RUN_ANY_IN_BACKGROUND allow
+```
+
+Verify:
+
+```bash
+adb -s 100.103.110.7:5555 shell settings get secure always_on_vpn_app
+adb -s 100.103.110.7:5555 shell settings get secure always_on_vpn_lockdown
+adb -s 100.103.110.7:5555 shell dumpsys deviceidle whitelist | grep -E 'tailscale|langbang'
+adb -s 100.103.110.7:5555 shell cmd appops get com.tailscale.ipn | grep RUN_.*BACKGROUND
+```
+
+Expected output includes:
+
+```text
 com.tailscale.ipn
 0
+user,com.tailscale.ipn,...
+user,com.sponic.langbang,...
+RUN_IN_BACKGROUND: allow
+RUN_ANY_IN_BACKGROUND: allow
 ```
 
 ## Mac Wrapper Behavior
@@ -157,12 +190,17 @@ has been restored by the helper.
 
 ## Tailscale Reboot Dependency
 
-The 2026-05-31 reboot test proved the LangBang helper can bring Wireless
-debugging back. It also showed the next dependency: adb cannot reconnect if
-Tailscale does not rejoin the tailnet after boot. LangBang v0.1.8.124 and later
-set Tailscale as Android's Always-on VPN, which is Android's built-in mechanism
-for starting a VPN after boot. After every new tablet setup, verify Tailscale
-separately:
+The 2026-05-31 reboot test proved the full recovery chain:
+
+- Tailscale rejoined the tailnet by itself after 31 seconds.
+- `adb tcpip 5555` did not survive reboot, as expected.
+- Wireless debugging came back on dynamic port `41063`.
+- `~/bin/adb-tab` found `41063`, ran `adb tcpip 5555`, and reconnected to
+  `100.103.110.7:5555`.
+- Android confirmed `adb_wifi_enabled=1`, `always_on_vpn_app=com.tailscale.ipn`,
+  and `service.adb.tcp.port=5555`.
+
+After every new tablet setup, verify Tailscale separately:
 
 ```bash
 # From the Mac, after rebooting the tablet:
@@ -202,10 +240,10 @@ debugging; the Mac still needs the Tailscale route to reach the tablet.
    - `WRITE_SECURE_SETTINGS` declared
    - `RECEIVE_BOOT_COMPLETED` declared
    - boot/app-start logic that sets `settings global adb_wifi_enabled=1`
-   - boot/app-start logic that sets Tailscale as `always_on_vpn_app`
 7. Grant `WRITE_SECURE_SETTINGS` once from adb.
-8. Configure Tailscale battery/background settings.
-9. Reboot and verify both:
+8. Set Tailscale as Always-on VPN with adb secure settings.
+9. Configure Tailscale battery/background settings.
+10. Reboot and verify both:
    - `tailscale ping <tablet-ip>` succeeds
    - `adb connect <tablet-ip>:5555` succeeds
 
