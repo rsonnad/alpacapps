@@ -1,12 +1,12 @@
 {
-  "version": "v260530.20 9:22p",
-  "release": 1620,
-  "sha": "0ea3a7d8b",
-  "fullSha": "0ea3a7d8b2b05a38291d37e9c20b90e8299a82f3",
+  "version": "v260530.21 9:24p",
+  "release": 1621,
+  "sha": "056879a2e",
+  "fullSha": "056879a2e5f395b6c4312f1c2c86967aec5b7ae5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-05-31T02:22:43+00:00",
-  "commits": [{"sha":"0ea3a7d8b","message":"Update Rahul bio education wording","author":"Rahul"}]
+  "pushedAt": "2026-05-31T02:24:19+00:00",
+  "commits": [{"sha":"056879a2e","message":"langbang page: pinned APK → v152","author":"Rahul"}]
 }
