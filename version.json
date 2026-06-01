@@ -1,12 +1,12 @@
 {
-  "version": "v260531.36 8:52p",
-  "release": 1666,
-  "sha": "5bf915325",
-  "fullSha": "5bf915325ae18b412ca83cf44a8e621c27c2819f",
+  "version": "v260601.01 12:29a",
+  "release": 1667,
+  "sha": "36998ea7f",
+  "fullSha": "36998ea7fbe8c74efa96408ef02b241c601a63b2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-01T01:52:30+00:00",
-  "commits": [{"sha":"5bf915325","message":"langbang page: add build-history (all versions) page + CLD redesign-fork preview builds","author":"Rahul"}]
+  "pushedAt": "2026-06-01T05:29:39+00:00",
+  "commits": [{"sha":"36998ea7f","message":"langbang builds page: label preview fork as 'Claude UX redesign 236'","author":"Rahul"}]
 }
