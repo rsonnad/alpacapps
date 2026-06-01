@@ -1,12 +1,12 @@
 {
-  "version": "v260531.35 8:12p",
-  "release": 1665,
-  "sha": "fdb60f05c",
-  "fullSha": "fdb60f05c1508c82d08f4e2be00e65cde4cc0512",
+  "version": "v260531.36 8:52p",
+  "release": 1666,
+  "sha": "5bf915325",
+  "fullSha": "5bf915325ae18b412ca83cf44a8e621c27c2819f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-01T01:12:25+00:00",
-  "commits": [{"sha":"fdb60f05c","message":"langbang page: pinned APK → v239","author":"Rahul"}]
+  "pushedAt": "2026-06-01T01:52:30+00:00",
+  "commits": [{"sha":"5bf915325","message":"langbang page: add build-history (all versions) page + CLD redesign-fork preview builds","author":"Rahul"}]
 }

@@ -1,15 +1,21 @@
 {
-  "generatedAt": "2026-06-01T01:13:16.240Z",
+  "generatedAt": "2026-06-01T01:53:21.073Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
     {
+      "path": "langbang/builds.html",
+      "title": "LangBang — Build history (all versions)",
+      "section": null,
+      "modifiedAt": "2026-06-01T01:52:28.000Z"
+    },
+    {
       "path": "langbang/index.html",
       "title": "LangBang — Polish for Android tablets",
       "section": null,
-      "modifiedAt": "2026-06-01T01:12:23.000Z"
+      "modifiedAt": "2026-06-01T01:52:28.000Z"
     },
     {
       "path": "justin-gilbertson-agreement-3/index.html",
