@@ -1,12 +1,12 @@
 {
-  "version": "v260601.02 9:39a",
-  "release": 1668,
-  "sha": "df00ca841",
-  "fullSha": "df00ca8419ebccc1ef0834ec135f0441f07bce32",
+  "version": "v260601.03 9:41a",
+  "release": 1669,
+  "sha": "bc1552981",
+  "fullSha": "bc1552981dda72043573e55416e36a47849797f3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-01T14:39:20+00:00",
-  "commits": [{"sha":"b69ef2120","message":"langbang builds: add Codex 5.5 (current) + Claude UX v0.1.8.237 fork cards","author":"Rahul"},{"sha":"df00ca841","message":"langbang builds: label forks by model (CLD=Claude v237, CDX=Codex v239 current)","author":"Rahul"}]
+  "pushedAt": "2026-06-01T14:41:23+00:00",
+  "commits": [{"sha":"bc1552981","message":"langbang page: pinned APK → v242","author":"Rahul"}]
 }
