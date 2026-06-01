@@ -1,12 +1,12 @@
 {
-  "version": "v260601.05 9:57a",
-  "release": 1671,
-  "sha": "a9a208b75",
-  "fullSha": "a9a208b750d0913de9ede285ffe21dd7fcc469f3",
+  "version": "v260601.06 10:02a",
+  "release": 1672,
+  "sha": "d3c22763b",
+  "fullSha": "d3c22763bc147a235f8b0526fa9cdc76702bd980",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-01T14:57:38+00:00",
-  "commits": [{"sha":"a9a208b75","message":"langbang page: pinned APK → v245","author":"Rahul"}]
+  "pushedAt": "2026-06-01T15:02:14+00:00",
+  "commits": [{"sha":"d3c22763b","message":"langbang builds: Claude UX v0.1.8.245 (top-bar polish)","author":"Rahul"}]
 }
