@@ -33,6 +33,9 @@
     .fork-card .links{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;margin-top:.7rem}
     .fork-card a{font-family:'JetBrains Mono',monospace;font-size:.9rem;text-decoration:none;
       border-bottom:1px dotted var(--border);padding-bottom:2px}
+    .fork-card.fork-current{border-left-color:var(--green)}
+    .fork-card+.fork-card{margin-top:1rem}
+    .chan-codex{color:var(--green)!important;background:rgba(45,106,30,.08)!important}
     table{width:100%;border-collapse:collapse;font-size:.9rem;background:var(--surface);
       border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
     th{text-align:left;font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);
@@ -61,15 +64,24 @@
     <p class="crumbs"><a href="./">← LangBang home</a></p>
 
     <section>
-      <h2>Redesign preview forks</h2>
-      <p>Experimental UI-redesign builds. These are <strong>previews — not the canonical latest</strong>, so the in-app updater will not auto-install them. Grab one here to compare against the shipped build.</p>
+      <h2>Redesign forks</h2>
+      <p>Two parallel UI-redesign forks built side-by-side from the same base. The <strong>Codex 5.5</strong> build is the current shipped build; the <strong>Claude UX</strong> build is an alternative preview the in-app updater won't auto-install. Pinned APKs never change, so either is installable for side-by-side comparison.</p>
+      <div class="fork-card fork-current">
+        <span class="chan chan-codex">Codex 5.5 redesign</span>
+        <h3>Codex 5.5 redesign v0.1.8.239 <span class="badge">current</span></h3>
+        <p style="margin:0;color:var(--text-dim);font-size:.92rem;">The current shipped build (also served as <code>langbang-latest.apk</code>) — the parallel redesign by the Codex 5.5 fork.</p>
+        <div class="links">
+          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/builds/langbang-codex-latest.apk">langbang-codex-latest.apk</a>
+          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/builds/langbang-codex-v239-arm64.apk">langbang-codex-v239-arm64.apk (pinned)</a>
+        </div>
+      </div>
       <div class="fork-card">
         <span class="chan">Claude UX redesign</span>
-        <h3>Claude UX redesign 236 — full visual &amp; control-consistency pass</h3>
-        <p style="margin:0;color:var(--text-dim);font-size:.92rem;">New control vocabulary (one color = one job), unified Selection-bar filters, dark Now-Voicing dock, word-aligned phrase rows, pronunciation Tour, and a rebuilt quiz flow. Identified as <code>CLD · v.236</code> in the app's top bar.</p>
+        <h3>Claude UX redesign v0.1.8.237</h3>
+        <p style="margin:0;color:var(--text-dim);font-size:.92rem;">New control vocabulary (one color = one job), unified Selection-bar filters, a light Now-Voicing dock (filters above the line, transport stacked on the right), word-aligned phrase rows, pronunciation Tour, and a rebuilt quiz flow. Shows as <code>v.237</code> in the app's top bar.</p>
         <div class="links">
           <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/builds/langbang-cld-latest.apk">langbang-cld-latest.apk</a>
-          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/builds/langbang-cld-v236-arm64.apk">langbang-cld-v236-arm64.apk (pinned)</a>
+          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/builds/langbang-cld-v237-arm64.apk">langbang-cld-v237-arm64.apk (pinned)</a>
         </div>
       </div>
     </section>
@@ -189,7 +201,7 @@
 <tr><td class="v">v0.1.8.18</td><td>2026-05-19</td><td>59 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v18-arm64.apk">langbang-v18-arm64.apk</a></td></tr>
         </tbody>
       </table>
-      <p class="note"><strong>Note.</strong> Build numbers are auto-incremented per assemble, so gaps in the sequence are normal (not every local build is published). Redesign-fork builds (e.g. the <code>Claude UX redesign</code>) share the counter but live under <code>langbang/builds/</code> and are listed separately above.</p>
+      <p class="note"><strong>Note.</strong> Build numbers are auto-incremented per assemble, so gaps in the sequence are normal (not every local build is published). Redesign-fork builds (the <code>Codex 5.5</code> and <code>Claude UX</code> redesigns) share the counter but live under <code>langbang/builds/</code> and are listed separately above.</p>
     </section>
   </main>
   <footer><p><a href="/">← alpacaplayhouse.com</a></p></footer>
