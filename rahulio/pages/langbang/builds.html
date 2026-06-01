@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LangBang — Build history (all versions)</title>
+  <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap');
+    :root{--bg:#f4f7f1;--surface:#fff;--surface2:#eef3ea;--border:#c4d4ba;--border-light:#d8e3cf;
+      --text:#1a2412;--text-dim:#4a6040;--text-muted:#7a9168;--green:#2d6a1e;--vine:#1a4d2e;
+      --amber:#b45309;--amber-soft:rgba(180,83,9,.08);--blue:#2f6fe6;--blue-soft:rgba(47,111,230,.08);
+      --radius-md:10px;--radius-lg:14px;--shadow-md:0 2px 8px rgba(0,0,0,.06);}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);
+      line-height:1.65;min-height:100vh;-webkit-font-smoothing:antialiased}
+    a{color:var(--green)}a:hover{color:var(--vine)}
+    .hero{padding:2.6rem 1.5rem 2rem;text-align:center;
+      background:linear-gradient(180deg,#d8e8ca 0%,#dde8d2 35%,var(--bg) 100%);border-bottom:1px solid var(--border)}
+    .hero h1{font-family:'DM Serif Display',serif;font-size:2.3rem;font-weight:400;color:var(--vine);letter-spacing:-.02em}
+    .hero .tagline{font-size:1rem;font-style:italic;color:var(--text-dim);max-width:40rem;margin:.4rem auto 0}
+    .container{max-width:880px;margin:0 auto;padding:2.2rem 1.25rem 3.5rem}
+    section{margin-bottom:2.25rem}
+    h2{font-family:'DM Serif Display',serif;font-size:1.5rem;font-weight:400;color:var(--vine);margin-bottom:.8rem}
+    p{margin-bottom:.8rem}
+    .crumbs{font-size:.9rem;margin-bottom:1.2rem}
+    .fork-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--blue);
+      border-radius:var(--radius-lg);padding:1.3rem 1.5rem;box-shadow:var(--shadow-md)}
+    .fork-card .chan{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;
+      text-transform:uppercase;letter-spacing:.08em;color:var(--blue);background:var(--blue-soft);
+      padding:.18rem .55rem;border-radius:999px;margin-bottom:.5rem}
+    .fork-card h3{font-size:1.05rem;color:var(--text);margin-bottom:.3rem}
+    .fork-card .links{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;margin-top:.7rem}
+    .fork-card a{font-family:'JetBrains Mono',monospace;font-size:.9rem;text-decoration:none;
+      border-bottom:1px dotted var(--border);padding-bottom:2px}
+    table{width:100%;border-collapse:collapse;font-size:.9rem;background:var(--surface);
+      border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+    th{text-align:left;font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);
+      font-weight:600;padding:.7rem .9rem;border-bottom:2px solid var(--border-light);background:var(--surface2)}
+    td{padding:.55rem .9rem;border-bottom:1px solid var(--border-light);color:var(--text-dim);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    td.v{font-family:'JetBrains Mono',monospace;color:var(--text);white-space:nowrap}
+    td a{font-family:'JetBrains Mono',monospace;text-decoration:none;border-bottom:1px dotted var(--border);word-break:break-all}
+    .badge{display:inline-block;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+      color:#fff;background:var(--green);padding:.05rem .4rem;border-radius:4px;margin-left:.4rem;vertical-align:middle}
+    .note{background:var(--amber-soft);border-left:3px solid var(--amber);padding:.85rem 1.1rem;
+      border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.9rem;color:var(--text-dim);margin-top:1rem}
+    .note strong{color:var(--amber)}
+    footer{text-align:center;padding:2rem 1rem 3rem;font-size:.85rem;color:var(--text-muted);
+      border-top:1px solid var(--border-light);margin-top:2rem}
+    footer a{color:var(--text-dim)}
+  </style>
+  <script src="/rahulio/page-header.js" defer></script>
+</head>
+<body>
+  <header class="hero">
+    <h1>LangBang — Build history</h1>
+    <p class="tagline">Every published build. Pinned APKs never change once uploaded, so any version here is installable for rollback, testing, or side-by-side comparison.</p>
+  </header>
+  <main class="container">
+    <p class="crumbs"><a href="./">← LangBang home</a></p>
+
+    <section>
+      <h2>Redesign preview forks</h2>
+      <p>Experimental UI-redesign builds. These are <strong>previews — not the canonical latest</strong>, so the in-app updater will not auto-install them. Grab one here to compare against the shipped build.</p>
+      <div class="fork-card">
+        <span class="chan">CLD · redesign fork</span>
+        <h3>Full visual / control-consistency redesign — v0.1.8.236</h3>
+        <p style="margin:0;color:var(--text-dim);font-size:.92rem;">New control vocabulary (one color = one job), unified Selection-bar filters, dark Now-Voicing dock, word-aligned phrase rows, pronunciation Tour, and a rebuilt quiz flow. Tagged <code>CLD</code> in the app's top bar.</p>
+        <div class="links">
+          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/builds/langbang-cld-latest.apk">langbang-cld-latest.apk</a>
+          <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/builds/langbang-cld-v236-arm64.apk">langbang-cld-v236-arm64.apk (pinned)</a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>All canonical builds</h2>
+      <p>Newest first. The current shipped build is also served at <a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-latest.apk">langbang-latest.apk</a>.</p>
+      <table>
+        <thead><tr><th>Version</th><th>Published</th><th>Size</th><th>Download</th></tr></thead>
+        <tbody>
+<tr><td class="v">v0.1.8.239 <span class="badge">current</span></td><td>2026-06-01</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v239-arm64.apk">langbang-v239-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.231</td><td>2026-06-01</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v231-arm64.apk">langbang-v231-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.229</td><td>2026-06-01</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v229-arm64.apk">langbang-v229-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.218</td><td>2026-06-01</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v218-arm64.apk">langbang-v218-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.215</td><td>2026-06-01</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v215-arm64.apk">langbang-v215-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.213</td><td>2026-06-01</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v213-arm64.apk">langbang-v213-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.212</td><td>2026-06-01</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v212-arm64.apk">langbang-v212-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.211</td><td>2026-05-31</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v211-arm64.apk">langbang-v211-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.210</td><td>2026-05-31</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v210-arm64.apk">langbang-v210-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.207</td><td>2026-05-31</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v207-arm64.apk">langbang-v207-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.205</td><td>2026-05-31</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v205-arm64.apk">langbang-v205-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.203</td><td>2026-05-31</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v203-arm64.apk">langbang-v203-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.200</td><td>2026-05-31</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v200-arm64.apk">langbang-v200-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.198</td><td>2026-05-31</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v198-arm64.apk">langbang-v198-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.197</td><td>2026-05-31</td><td>67 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v197-arm64.apk">langbang-v197-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.194</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v194-arm64.apk">langbang-v194-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.193</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v193-arm64.apk">langbang-v193-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.192</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v192-arm64.apk">langbang-v192-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.190</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v190-arm64.apk">langbang-v190-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.187</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v187-arm64.apk">langbang-v187-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.185</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v185-arm64.apk">langbang-v185-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.184</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v184-arm64.apk">langbang-v184-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.182</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v182-arm64.apk">langbang-v182-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.181</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v181-arm64.apk">langbang-v181-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.180</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v180-arm64.apk">langbang-v180-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.178</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v178-arm64.apk">langbang-v178-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.177</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v177-arm64.apk">langbang-v177-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.176</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v176-arm64.apk">langbang-v176-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.175</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v175-arm64.apk">langbang-v175-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.174</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v174-arm64.apk">langbang-v174-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.173</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v173-arm64.apk">langbang-v173-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.170</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v170-arm64.apk">langbang-v170-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.169</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v169-arm64.apk">langbang-v169-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.168</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v168-arm64.apk">langbang-v168-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.167</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v167-arm64.apk">langbang-v167-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.165</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v165-arm64.apk">langbang-v165-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.163</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v163-arm64.apk">langbang-v163-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.161</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v161-arm64.apk">langbang-v161-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.159</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v159-arm64.apk">langbang-v159-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.157</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v157-arm64.apk">langbang-v157-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.154</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v154-arm64.apk">langbang-v154-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.152</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v152-arm64.apk">langbang-v152-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.150</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v150-arm64.apk">langbang-v150-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.148</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v148-arm64.apk">langbang-v148-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.143</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v143-arm64.apk">langbang-v143-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.141</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v141-arm64.apk">langbang-v141-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.139</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v139-arm64.apk">langbang-v139-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.137</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v137-arm64.apk">langbang-v137-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.134</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v134-arm64.apk">langbang-v134-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.132</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v132-arm64.apk">langbang-v132-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.129</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v129-arm64.apk">langbang-v129-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.124</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v124-arm64.apk">langbang-v124-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.123</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v123-arm64.apk">langbang-v123-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.122</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v122-arm64.apk">langbang-v122-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.121</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v121-arm64.apk">langbang-v121-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.120</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v120-arm64.apk">langbang-v120-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.119</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v119-arm64.apk">langbang-v119-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.118</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v118-arm64.apk">langbang-v118-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.117</td><td>2026-05-31</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v117-arm64.apk">langbang-v117-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.115</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v115-arm64.apk">langbang-v115-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.111</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v111-arm64.apk">langbang-v111-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.108</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v108-arm64.apk">langbang-v108-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.107</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v107-arm64.apk">langbang-v107-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.103</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v103-arm64.apk">langbang-v103-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.101</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v101-arm64.apk">langbang-v101-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.99</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v99-arm64.apk">langbang-v99-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.97</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v97-arm64.apk">langbang-v97-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.95</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v95-arm64.apk">langbang-v95-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.93</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v93-arm64.apk">langbang-v93-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.91</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v91-arm64.apk">langbang-v91-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.87</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v87-arm64.apk">langbang-v87-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.86</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v86-arm64.apk">langbang-v86-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.85</td><td>2026-05-30</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v85-arm64.apk">langbang-v85-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.84</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v84-arm64.apk">langbang-v84-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.83</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v83-arm64.apk">langbang-v83-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.82</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v82-arm64.apk">langbang-v82-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.81</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v81-arm64.apk">langbang-v81-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.78</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v78-arm64.apk">langbang-v78-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.77</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v77-arm64.apk">langbang-v77-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.76</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v76-arm64.apk">langbang-v76-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.73</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v73-arm64.apk">langbang-v73-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.72</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v72-arm64.apk">langbang-v72-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.70</td><td>2026-05-28</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v70-arm64.apk">langbang-v70-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.68</td><td>2026-05-24</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v68-arm64.apk">langbang-v68-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.66</td><td>2026-05-24</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v66-arm64.apk">langbang-v66-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.64</td><td>2026-05-24</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v64-arm64.apk">langbang-v64-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.62</td><td>2026-05-24</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v62-arm64.apk">langbang-v62-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.60</td><td>2026-05-23</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v60-arm64.apk">langbang-v60-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.59</td><td>2026-05-23</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v59-arm64.apk">langbang-v59-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.58</td><td>2026-05-23</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v58-arm64.apk">langbang-v58-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.57</td><td>2026-05-22</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v57-arm64.apk">langbang-v57-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.56</td><td>2026-05-22</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v56-arm64.apk">langbang-v56-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.54</td><td>2026-05-22</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v54-arm64.apk">langbang-v54-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.53</td><td>2026-05-22</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v53-arm64.apk">langbang-v53-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.52</td><td>2026-05-22</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v52-arm64.apk">langbang-v52-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.50</td><td>2026-05-21</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v50-arm64.apk">langbang-v50-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.48</td><td>2026-05-21</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v48-arm64.apk">langbang-v48-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.47</td><td>2026-05-21</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v47-arm64.apk">langbang-v47-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.45</td><td>2026-05-21</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v45-arm64.apk">langbang-v45-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.44</td><td>2026-05-21</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v44-arm64.apk">langbang-v44-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.42</td><td>2026-05-21</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v42-arm64.apk">langbang-v42-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.39</td><td>2026-05-21</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v39-arm64.apk">langbang-v39-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.37</td><td>2026-05-21</td><td>66 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v37-arm64.apk">langbang-v37-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.36</td><td>2026-05-21</td><td>65 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v36-arm64.apk">langbang-v36-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.35</td><td>2026-05-21</td><td>65 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v35-arm64.apk">langbang-v35-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.34</td><td>2026-05-21</td><td>65 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v34-arm64.apk">langbang-v34-arm64.apk</a></td></tr>
+<tr><td class="v">v0.1.8.18</td><td>2026-05-19</td><td>59 MB</td><td><a href="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/langbang/langbang-v18-arm64.apk">langbang-v18-arm64.apk</a></td></tr>
+        </tbody>
+      </table>
+      <p class="note"><strong>Note.</strong> Build numbers are auto-incremented per assemble, so gaps in the sequence are normal (not every local build is published). Redesign-fork builds (e.g. <code>CLD</code>) share the counter but live under <code>langbang/builds/</code> and are listed separately above.</p>
+    </section>
+  </main>
+  <footer><p><a href="/">← alpacaplayhouse.com</a></p></footer>
+</body>
+</html>
