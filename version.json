@@ -1,12 +1,12 @@
 {
-  "version": "v260601.01 12:29a",
-  "release": 1667,
-  "sha": "36998ea7f",
-  "fullSha": "36998ea7fbe8c74efa96408ef02b241c601a63b2",
+  "version": "v260601.02 9:39a",
+  "release": 1668,
+  "sha": "df00ca841",
+  "fullSha": "df00ca8419ebccc1ef0834ec135f0441f07bce32",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-01T05:29:39+00:00",
-  "commits": [{"sha":"36998ea7f","message":"langbang builds page: label preview fork as 'Claude UX redesign 236'","author":"Rahul"}]
+  "pushedAt": "2026-06-01T14:39:20+00:00",
+  "commits": [{"sha":"b69ef2120","message":"langbang builds: add Codex 5.5 (current) + Claude UX v0.1.8.237 fork cards","author":"Rahul"},{"sha":"df00ca841","message":"langbang builds: label forks by model (CLD=Claude v237, CDX=Codex v239 current)","author":"Rahul"}]
 }
