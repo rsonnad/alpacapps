@@ -134,7 +134,7 @@ lsof -ti:8443 | xargs kill
 | Shell (SSH) | `ssh paca@mac.alpu.ca` | terminal (same as `paca@100.74.59.97`) |
 
 - **On-tailnet only.** It resolves for everyone, but `100.74.59.97` is a Tailscale CGNAT address — it only *connects* from devices joined to the tailnet. Off-tailnet, use Method 2 (Cloudflare tunnel) for SSH.
-- **Maintenance.** Tailscale IPs are sticky — they change only if Alpuca is removed and re-added to the tailnet. If that happens, update the A record. `alpu.ca` lives on a **separate** Cloudflare account (`rahulioson@gmail.com`, NS `luke/lisa`), not the main `wingsiebird` one. Edit it via the **`Cloudflare-D1`** token field of Bitwarden item **`Cloudflare — Rah Hul Account (alpu.ca)`** (zone id `5258bd9d21828c4a66c318a5d085fa0c`); the sibling `Token Factory` / `Redirect Rules Token` fields lack DNS perms. _(Record added 2026-06-08.)_
+- **Maintenance.** Tailscale IPs are sticky — they change only if Alpuca is removed and re-added to the tailnet. If that happens, update the A record. `alpu.ca` lives on a **separate** Cloudflare account (`rahulioson@gmail.com`, NS `luke/lisa`), not the main `wingsiebird` one. Edit it via the **`Cloudflare-D1`** token field of Bitwarden item **`Cloudflare — Rah Hul Account (alpu.ca)`** (zone id `5258bd9d21828c4a66c318a5d085fa0c`). Per that item's notes legend, both `Cloudflare-D1` (Zone DNS + Page Rules) and `Cloudflare-D2` (Zone DNS + Email Routing) have DNS edit; `Token Factory` / `Redirect Rules Token` do not. _(Record added 2026-06-08.)_
 
 ### Almaca Volume Checks
 
