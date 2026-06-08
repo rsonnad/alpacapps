@@ -1,12 +1,12 @@
 {
-  "version": "v260608.02 10:12a",
-  "release": 1693,
-  "sha": "895f4b860",
-  "fullSha": "895f4b860338ca5bd8fc5100868746f3035004c5",
+  "version": "v260608.03 2:11p",
+  "release": 1694,
+  "sha": "6e6fe9f3a",
+  "fullSha": "6e6fe9f3a891cc08329aec90ce368c8ab791f068",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-08T15:12:10+00:00",
-  "commits": [{"sha":"895f4b860","message":"docs: add mac.alpu.ca friendly access (SMB/VNC/SSH) to Alpuca docs","author":"Rahul"}]
+  "pushedAt": "2026-06-08T19:11:54+00:00",
+  "commits": [{"sha":"6e6fe9f3a","message":"docs: clarify both Cloudflare-D1 and -D2 have alpu.ca DNS edit","author":"Rahul"}]
 }
