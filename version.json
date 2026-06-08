@@ -1,12 +1,12 @@
 {
-  "version": "v260608.01 9:57a",
-  "release": 1692,
-  "sha": "434a068c8",
-  "fullSha": "434a068c8e29e4eecffbe177207799f1ae1af988",
+  "version": "v260608.02 10:12a",
+  "release": 1693,
+  "sha": "895f4b860",
+  "fullSha": "895f4b860338ca5bd8fc5100868746f3035004c5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-08T14:57:31+00:00",
-  "commits": [{"sha":"434a068c8","message":"fix(payroll): resume auto-payouts + add silent-failure alerts","author":"Rahul"}]
+  "pushedAt": "2026-06-08T15:12:10+00:00",
+  "commits": [{"sha":"895f4b860","message":"docs: add mac.alpu.ca friendly access (SMB/VNC/SSH) to Alpuca docs","author":"Rahul"}]
 }
