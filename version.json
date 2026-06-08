@@ -1,12 +1,12 @@
 {
-  "version": "v260603.01 1:17a",
-  "release": 1691,
-  "sha": "ee55f227b",
-  "fullSha": "ee55f227be41ad0a3e024df3bc8bfadf90699c9b",
+  "version": "v260608.01 9:57a",
+  "release": 1692,
+  "sha": "434a068c8",
+  "fullSha": "434a068c8e29e4eecffbe177207799f1ae1af988",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-03T06:17:18+00:00",
-  "commits": [{"sha":"ee55f227b","message":"langbang page: move APK links to new R2","author":"Rahul"}]
+  "pushedAt": "2026-06-08T14:57:31+00:00",
+  "commits": [{"sha":"434a068c8","message":"fix(payroll): resume auto-payouts + add silent-failure alerts","author":"Rahul"}]
 }
