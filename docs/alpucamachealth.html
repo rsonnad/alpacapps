@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alpuca — Machine Health History</title>
+  <meta name="description" content="Daily health history for Alpuca, the AlpacApps home server (Mac mini M4). Memory, swap, disk, watchdogs, and services — checked every night.">
+  <meta property="og:title" content="Alpuca — Machine Health History">
+  <meta property="og:description" content="Daily health history for the Alpuca home server — memory, swap, disk, watchdogs, and services.">
+  <meta property="og:url" content="https://alpacaplayhouse.com/docs/alpucamachealth.html">
+  <meta property="og:type" content="website">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    :root{
+      --bg:#faf8f5; --card:#ffffff; --text:#1a1a1a; --muted:#6b6b6b;
+      --border:#e7e2da; --accent:#b4633a; --accent-soft:#f3e7df;
+      --green:#2e8b57; --green-bg:#e8f5ec; --yellow:#b8860b; --yellow-bg:#fcf4e0;
+      --red:#c0392b; --red-bg:#fbeae8; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#16130f; --card:#211d18; --text:#ece7df; --muted:#a39a8c;
+        --border:#37312a; --accent-soft:#2c2118; --green-bg:#16291d; --yellow-bg:#2a2310; --red-bg:#2c1714; }
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+    .wrap{max-width:960px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+    header h1{margin:.2rem 0 .15rem;font-size:1.6rem}
+    header p{margin:0;color:var(--muted);font-size:.92rem}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;margin:1.1rem 0}
+    .verdict{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+    .verdict .badge{font-size:1.15rem;font-weight:700;padding:.25rem .7rem;border-radius:999px}
+    .b-green{background:var(--green-bg);color:var(--green)}
+    .b-yellow{background:var(--yellow-bg);color:var(--yellow)}
+    .b-red{background:var(--red-bg);color:var(--red)}
+    .verdict .when{color:var(--muted);font-size:.9rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;margin-top:1rem}
+    .stat{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:.55rem .7rem}
+    .stat .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+    .stat .v{font-size:1.05rem;font-weight:600;margin-top:.1rem}
+    .stat.ok .v{color:var(--green)} .stat.warn .v{color:var(--yellow)} .stat.bad .v{color:var(--red)}
+    .flags{margin:.8rem 0 0;padding:0;list-style:none}
+    .flags li{background:var(--red-bg);color:var(--red);border-radius:7px;padding:.35rem .6rem;margin:.3rem 0;font-size:.9rem}
+    h2{font-size:1.05rem;margin:1.6rem 0 .5rem}
+    .charts{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+    @media(max-width:640px){.charts{grid-template-columns:1fr}}
+    .chart{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.8rem .9rem}
+    .chart .title{font-size:.8rem;color:var(--muted);margin-bottom:.3rem}
+    svg{width:100%;height:60px;display:block}
+    table{width:100%;border-collapse:collapse;font-size:.83rem;background:var(--card);
+      border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    th,td{padding:.45rem .55rem;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+    th:first-child,td:first-child{text-align:left} th{background:var(--accent-soft);color:var(--text);font-weight:600;position:sticky;top:0}
+    td.st{text-align:center}
+    .tbl-scroll{overflow-x:auto;border-radius:10px}
+    tr:last-child td{border-bottom:none}
+    .muted{color:var(--muted)}
+    footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.82rem}
+    code{font-family:var(--mono);background:var(--accent-soft);padding:.05rem .35rem;border-radius:5px;font-size:.85em}
+    #status{color:var(--muted);font-size:.9rem}
+    .refresh{float:right;font-size:.8rem;color:var(--accent);cursor:pointer;background:none;border:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🦙 Alpuca — Machine Health</h1>
+      <p>Mac mini M4 · 24&nbsp;GB · checked nightly from Oracle Phoenix over Tailscale · pass/fail thresholds mirror the machine's on-box memory-pressure guard.</p>
+    </header>
+
+    <section class="card" id="summary"><p id="status">Loading latest health snapshot…</p></section>
+
+    <h2>Trends <button class="refresh" onclick="load()">↻ refresh</button></h2>
+    <div class="charts">
+      <div class="chart"><div class="title">Swap used (MB) — lower is better</div><svg id="spark-swap" viewBox="0 0 300 60" preserveAspectRatio="none"></svg></div>
+      <div class="chart"><div class="title">Boot disk used (%)</div><svg id="spark-boot" viewBox="0 0 300 60" preserveAspectRatio="none"></svg></div>
+    </div>
+
+    <h2>Daily history</h2>
+    <div class="tbl-scroll">
+      <table id="histtable">
+        <thead><tr>
+          <th>Date</th><th>Status</th><th>Swap&nbsp;MB</th><th>Comp&nbsp;MB</th><th>Free&nbsp;MB</th>
+          <th>Boot%</th><th>Porto%</th><th>rvault%</th><th>Load</th><th>Up&nbsp;d</th>
+          <th>Ollama</th><th>HAOS</th><th>Indexer</th><th>Watchdogs</th>
+        </tr></thead>
+        <tbody><tr><td colspan="14" class="muted">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <footer>
+      <p><strong>What this tracks.</strong> Each night a job on the always-on Oracle Phoenix server SSHes into Alpuca over Tailscale and records: memory pressure (swap, compressor, free), the <code>moondream-indexer</code> runaway-process hazard, any oversized Python process, boot &amp; external-volume usage (<code>PortoSams2T</code>, <code>rvault20</code>), the <code>gme-sniffer</code> + <code>memory-pressure-guard</code> watchdogs, recent guard kills, the Ollama model server, and the Home Assistant VM. A daily summary is also emailed.</p>
+      <p>🔴 = problem · 🟡 = worth noting · ✅ = healthy. Runbook: <code>devcontrol/devdocs/ALPUCA-MACHINE.md</code>. <span id="lastupd"></span></p>
+    </footer>
+  </div>
+
+<script>
+const SUPABASE_URL='https://aphrrfprbixmhissnjfn.supabase.co';
+const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
+const EMO={green:'✅',yellow:'🟡',red:'🔴'};
+const num=(m,k)=>{const v=m&&m[k]; const n=parseFloat(v); return isNaN(n)?null:n;};
+const show=(v,suf='')=>v===null||v===undefined||v===''||v==='-1'?'–':(v+suf);
+
+function statClass(level){return level==='red'?'bad':level==='yellow'?'warn':'ok';}
+
+function buildSummary(row){
+  const el=document.getElementById('summary');
+  if(!row){el.innerHTML='<p id="status">No data yet — the first nightly run will populate this.</p>';return;}
+  const m=row.metrics||{}, v=row.verdict||'green', reach=row.reachable!==false;
+  const flags=Array.isArray(row.flags)?row.flags:[];
+  const swap=num(m,'swap_mb'), boot=num(m,'boot_pct'), oll=num(m,'ollama_models');
+  const cells=[];
+  const add=(k,val,level)=>cells.push(`<div class="stat ${statClass(level)}"><div class="k">${k}</div><div class="v">${val}</div></div>`);
+  if(reach){
+    add('Swap', show(m.swap_mb,' MB'), swap>8192?'red':swap>=2048?'yellow':'green');
+    add('Mem pressure', `${show(m.comp_mb)} / ${show(m.free_mb)} MB`, 'green');
+    add('Boot disk', show(m.boot_pct,'%'), boot>90?'red':boot>80?'yellow':'green');
+    add('PortoSams2T', m.porto_mounted==='1'?show(m.porto_pct,'%'):'UNMOUNTED', m.porto_mounted==='1'?'green':'red');
+    add('rvault20', m.rvault_mounted==='1'?show(m.rvault_pct,'%'):'UNMOUNTED', m.rvault_mounted==='1'?'green':'red');
+    add('Indexer chain', m.indexer_down==='1'?'down ✓':'RUNNING', m.indexer_down==='1'?'green':'red');
+    add('Oversized Python', num(m,'oversized_py')>0?(m.oversized_py+' >8GB'):'none', num(m,'oversized_py')>0?'red':'green');
+    add('Watchdogs', (m.wd_sniffer==='1'&&m.wd_guard==='1')?'loaded ✓':'MISSING', (m.wd_sniffer==='1'&&m.wd_guard==='1')?'green':'red');
+    add('Guard kills 24h', m.guard_kill_24h==='1'?'FIRED':'none', m.guard_kill_24h==='1'?'red':'green');
+    add('Ollama', oll>=0?(oll+' models'):'down', oll<0?'red':oll===0?'yellow':'green');
+    add('HAOS VM', m.haos_up==='1'?'running':'DOWN', m.haos_up==='1'?'green':'red');
+    add('Uptime / load', `${show(m.up_days)}d / ${show(m.load15)}`, num(m,'load15')>8?'yellow':'green');
+  } else {
+    add('Reachable','NO — Tailscale failed','red');
+  }
+  el.innerHTML=
+    `<div class="verdict"><span class="badge b-${v}">${EMO[v]||''} ${v.toUpperCase()}</span>`+
+    `<span class="when">snapshot for <strong>${row.date}</strong></span></div>`+
+    `<div class="grid">${cells.join('')}</div>`+
+    (flags.length?`<ul class="flags">${flags.map(f=>`<li>⚠️ ${f}</li>`).join('')}</ul>`:'');
+}
+
+function sparkline(id, rows, key, opts={}){
+  const svg=document.getElementById(id); if(!svg)return;
+  const pts=rows.slice().reverse().map(r=>num(r.metrics,key)).filter(v=>v!==null);
+  if(pts.length===0){svg.innerHTML='<text x="6" y="34" fill="#999" font-size="11">no data</text>';return;}
+  const W=300,H=60,pad=6;
+  const max=Math.max(opts.max||0, ...pts), min=Math.min(0, ...pts);
+  const span=(max-min)||1;
+  const x=i=>pad+(pts.length<2?0:i*(W-2*pad)/(pts.length-1));
+  const y=v=>H-pad-(v-min)/span*(H-2*pad);
+  if(pts.length===1){
+    svg.innerHTML=`<circle cx="${x(0)}" cy="${y(pts[0])}" r="3.5" fill="${opts.color||'#b4633a'}"></circle>`+
+      `<text x="${x(0)+8}" y="${y(pts[0])+4}" font-size="11" fill="#888">${pts[0]}</text>`;return;
+  }
+  const d=pts.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const area=`${d} L${x(pts.length-1).toFixed(1)},${H-pad} L${x(0).toFixed(1)},${H-pad} Z`;
+  svg.innerHTML=`<path d="${area}" fill="${opts.color||'#b4633a'}" opacity="0.12"></path>`+
+    `<path d="${d}" fill="none" stroke="${opts.color||'#b4633a'}" stroke-width="1.8"></path>`+
+    `<circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(pts[pts.length-1]).toFixed(1)}" r="3" fill="${opts.color||'#b4633a'}"></circle>`;
+}
+
+function buildTable(rows){
+  const tb=document.querySelector('#histtable tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="14" class="muted">No history yet.</td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const m=r.metrics||{};
+    const c=[
+      r.date, EMO[r.verdict]||'?',
+      show(m.swap_mb), show(m.comp_mb), show(m.free_mb), show(m.boot_pct,'%'),
+      show(m.porto_mounted==='1'?m.porto_pct:'x','%'), show(m.rvault_mounted==='1'?m.rvault_pct:'x','%'),
+      show(m.load15), show(m.up_days), show(m.ollama_models),
+      m.haos_up==='1'?'✓':'✗', m.indexer_down==='1'?'✓':'✗',
+      (m.wd_sniffer==='1'&&m.wd_guard==='1')?'✓':'✗'
+    ];
+    return '<tr><td>'+c[0]+'</td><td class="st">'+c[1]+'</td>'+c.slice(2).map(x=>'<td>'+x+'</td>').join('')+'</tr>';
+  }).join('');
+}
+
+async function load(){
+  const status=document.getElementById('status');
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/alpuca_health_history?select=*&order=date.desc&limit=90`,
+      {headers:{apikey:ANON,Authorization:'Bearer '+ANON}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    buildSummary(rows[0]);
+    sparkline('spark-swap',rows,'swap_mb',{color:'#c0392b',max:1000});
+    sparkline('spark-boot',rows,'boot_pct',{color:'#b4633a',max:100});
+    buildTable(rows);
+    const lu=document.getElementById('lastupd');
+    if(rows[0]&&rows[0].updated_at) lu.textContent='Last updated '+new Date(rows[0].updated_at).toLocaleString()+'.';
+  }catch(e){
+    if(status) status.textContent='Could not load health data: '+e.message;
+    document.querySelector('#histtable tbody').innerHTML='<tr><td colspan="14" class="muted">Load error: '+e.message+'</td></tr>';
+  }
+}
+load();
+</script>
+</body>
+</html>

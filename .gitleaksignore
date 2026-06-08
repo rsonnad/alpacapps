@@ -1,0 +1,3 @@
+# Public Supabase anon key (anon role, RLS-protected) — designed to ship in
+# client-side JS and already present in shared/supabase.js. Safe to commit.
+docs/alpucamachealth.html:jwt:100
