@@ -123,6 +123,19 @@ lsof -ti:8443 | xargs kill
 | AlpineMac (MacBook Pro 15) | `100.67.3.39` | Kiosk |
 | Entry Tablet (Galaxy Tab) | `100.103.110.7` | Hall kiosk |
 
+### Friendly DNS name — `mac.alpu.ca` (Finder SMB · Screen Sharing · SSH)
+
+`mac.alpu.ca` is a public Cloudflare A record → Alpuca's Tailscale IP `100.74.59.97`. It exists so you can reach Alpuca by an easy name **without** relying on Tailscale MagicDNS, which isn't configured on every client (e.g. `alpuca.tail9c9221.ts.net` does **not** resolve in Finder on rahul-m4-airtop — that's the exact failure this name fixes).
+
+| Service | Connect with | How |
+|---|---|---|
+| Files (SMB) | `smb://mac.alpu.ca` | Finder → **Go → Connect to Server** (⌘K) |
+| Screen sharing (VNC) | `vnc://mac.alpu.ca` | Finder ⌘K, or Screen Sharing.app |
+| Shell (SSH) | `ssh paca@mac.alpu.ca` | terminal (same as `paca@100.74.59.97`) |
+
+- **On-tailnet only.** It resolves for everyone, but `100.74.59.97` is a Tailscale CGNAT address — it only *connects* from devices joined to the tailnet. Off-tailnet, use Method 2 (Cloudflare tunnel) for SSH.
+- **Maintenance.** Tailscale IPs are sticky — they change only if Alpuca is removed and re-added to the tailnet. If that happens, update the A record. `alpu.ca` lives on a **separate** Cloudflare account (`rahulioson@gmail.com`, NS `luke/lisa`), not the main `wingsiebird` one. Edit it via the **`Cloudflare-D1`** token field of Bitwarden item **`Cloudflare — Rah Hul Account (alpu.ca)`** (zone id `5258bd9d21828c4a66c318a5d085fa0c`); the sibling `Token Factory` / `Redirect Rules Token` fields lack DNS perms. _(Record added 2026-06-08.)_
+
 ### Almaca Volume Checks
 
 Use this from any machine with the repo and Tailscale access to verify the legacy Almaca MacBook and its mounted volumes.

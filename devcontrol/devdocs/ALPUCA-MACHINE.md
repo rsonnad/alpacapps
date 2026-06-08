@@ -10,6 +10,14 @@ Living reference for the primary Mac (`Alpuca.local`, user `alpuca`). Anything
 learned about long-running processes, gotchas, or non-obvious config lives
 here so future sessions don't have to rediscover it.
 
+## Reaching this machine
+
+Friendly name **`mac.alpu.ca`** → Alpuca's Tailscale IP `100.74.59.97`, usable from any tailnet device (no MagicDNS needed):
+
+- `smb://mac.alpu.ca` — files (Finder ⌘K) · `vnc://mac.alpu.ca` — screen sharing · `ssh paca@mac.alpu.ca` — shell
+
+Resolves publicly but only *connects* on-tailnet (CGNAT IP). Full method list (LAN / Tailscale / Cloudflare tunnel) + the DNS-record maintenance recipe: `devcontrol/devdocs/REMOTE-ACCESS.md`.
+
 ## Hardware & OS
 
 - **Hostname:** `Alpuca` (tailnet MagicDNS: `alpuca@alpuca`)
