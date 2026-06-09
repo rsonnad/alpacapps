@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>More Than I Thought — ukulele</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper:   #fdfaf3;
+      --ink:     #2b2622;
+      --soft:    #6f655c;
+      --accent:  #c47a2b;
+      --accent2: #b0691f;
+      --rule:    #ece2d2;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 12% 0%, #f4ead6 0%, transparent 45%),
+        radial-gradient(ellipse at 100% 100%, #efe2cf 0%, transparent 50%),
+        #f7efe1;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding: 1.1rem;
+    }
+
+    .sheet {
+      max-width: 940px;
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      box-shadow: 0 1px 2px rgba(60,40,20,.05), 0 14px 40px -18px rgba(80,55,25,.28);
+      padding: clamp(1.4rem, 3.5vw, 2.6rem) clamp(1.3rem, 4vw, 3rem) 1.6rem;
+    }
+
+    /* ── Header ── */
+    .head { text-align: center; margin-bottom: 1.3rem; }
+    .eyebrow {
+      font: 600 .68rem/1 "SF Mono", Menlo, Consolas, monospace;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: .7rem;
+    }
+    .head h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+      font-size: clamp(1.9rem, 5vw, 2.9rem);
+      letter-spacing: -.01em;
+      line-height: 1.05;
+    }
+    .head .sub {
+      margin-top: .55rem;
+      color: var(--soft);
+      font-size: .9rem;
+    }
+    .head .sub b { color: var(--accent2); font-weight: 600; }
+
+    /* ── Chord reference row ── */
+    .chordref {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: clamp(.7rem, 2.5vw, 1.6rem);
+      padding: 1.1rem 0 1.2rem;
+      margin-bottom: .4rem;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+    .chip { text-align: center; }
+    .chip .diag { display: block; }
+    .chip figcaption {
+      margin-top: .25rem;
+      font: 700 .92rem/1 "SF Mono", Menlo, monospace;
+      color: var(--ink);
+    }
+    .diag .fl  { stroke: #d9ccb6; stroke-width: 1; }
+    .diag .nut { stroke: #7a6a52; stroke-width: 3; }
+    .diag .sl  { stroke: #cabfa8; stroke-width: 1; }
+    .diag .dot  { fill: var(--accent); }
+    .diag .open { fill: none; stroke: #9a8a70; stroke-width: 1.4; }
+
+    /* ── Song body ── */
+    .song { padding-top: 1.2rem; column-gap: 3rem; }
+    @media (min-width: 760px) { .song { column-count: 2; } }
+
+    .sec {
+      break-inside: avoid;
+      -webkit-column-break-inside: avoid;
+      margin-bottom: 1.5rem;
+    }
+    .sec h2 {
+      font: 600 .66rem/1 "SF Mono", Menlo, monospace;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: .7rem;
+      padding-bottom: .35rem;
+      border-bottom: 1px dashed var(--rule);
+    }
+
+    /* chord-over-word lines */
+    .line {
+      margin-bottom: .42rem;
+      line-height: 1.18;
+    }
+    .line .w {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: bottom;
+      margin-right: .42ch;
+    }
+    .w .c {
+      font: 700 .8rem/1 "SF Mono", Menlo, Consolas, monospace;
+      color: var(--accent);
+      height: 1.15em;
+      white-space: nowrap;
+    }
+    .w .t {
+      font-size: 1.1rem;
+      letter-spacing: .005em;
+    }
+    .line.muted { margin-top: .15rem; }
+    .line.muted .t {
+      font-size: .92rem;
+      color: #9a8d7d;
+      font-style: italic;
+      letter-spacing: .02em;
+    }
+
+    /* ── Footer ── */
+    .foot {
+      margin-top: .6rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--rule);
+      text-align: center;
+      color: var(--soft);
+      font-size: .78rem;
+    }
+    .foot a { color: var(--accent2); text-decoration: none; }
+    .foot a:hover { text-decoration: underline; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .sheet { box-shadow: none; border: none; max-width: none; }
+    }
+  </style>
+  <script src="/rahulio/page-header.js" defer></script>
+</head>
+<body>
+  <main class="sheet">
+    <header class="head">
+      <div class="eyebrow">Ukulele &middot; GCEA</div>
+      <h1>More Than I Thought</h1>
+      <p class="sub">Four chords, played soft &mdash; <b>C</b> &middot; <b>G</b> &middot; <b>F</b> &middot; <b>Dm</b></p>
+    </header>
+
+    <section class="chordref" id="chordref"></section>
+
+    <section class="song" id="song"></section>
+
+    <footer class="foot">
+      <p>A song &middot; published by <a href="/rahulio">Rahul Sonnad</a></p>
+    </footer>
+  </main>
+
+  <script>
+    /* ── Ukulele chord shapes (frets per string, low→high: G C E A) ── */
+    const CHORDS = {
+      C:  [0, 0, 0, 3],
+      G:  [0, 2, 3, 2],
+      F:  [2, 0, 1, 0],
+      Dm: [2, 2, 1, 0],
+    };
+    const CHORD_ORDER = ['C', 'G', 'F', 'Dm'];
+
+    function diagram(name) {
+      const frets = CHORDS[name];
+      const W = 62, H = 86, padX = 11, top = 21, fh = 14, n = 4;
+      const span = W - padX * 2;
+      const xs = Array.from({ length: n }, (_, i) => padX + span * i / (n - 1));
+      let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" class="diag" role="img" aria-label="${name} ukulele chord">`;
+      for (let f = 0; f <= 4; f++) {
+        const y = top + f * fh;
+        s += `<line x1="${padX}" y1="${y}" x2="${W - padX}" y2="${y}" class="fl"/>`;
+      }
+      s += `<line x1="${padX}" y1="${top}" x2="${W - padX}" y2="${top}" class="nut"/>`;
+      xs.forEach(x => { s += `<line x1="${x}" y1="${top}" x2="${x}" y2="${top + 4 * fh}" class="sl"/>`; });
+      frets.forEach((fr, i) => {
+        const x = xs[i];
+        if (fr === 0) s += `<circle cx="${x}" cy="${top - 8}" r="3.2" class="open"/>`;
+        else s += `<circle cx="${x}" cy="${top + (fr - 0.5) * fh}" r="5" class="dot"/>`;
+      });
+      return s + `</svg>`;
+    }
+
+    document.getElementById('chordref').innerHTML =
+      CHORD_ORDER.map(c => `<figure class="chip">${diagram(c)}<figcaption>${c}</figcaption></figure>`).join('');
+
+    /* ── Lyrics: words + chord placed above a word index ── */
+    const SONG = [
+      { label: 'Verse 1', lines: [
+        { words: ['Your','laugh','and','that','look','in','those','eyes,'], chords: { 0:'C', 6:'G' } },
+        { words: ['rail','trips,','and','blue','sunny','skies.'],           chords: { 0:'F', 4:'C' } },
+        { words: ['Baby','hands','fly','over','your','skin,'],              chords: { 0:'C', 4:'G' } },
+        { words: ['Nights','end,','and','the','mornings','begin,'],         chords: { 0:'F', 4:'C' } },
+      ]},
+      { label: 'Chorus', lines: [
+        { words: ['and','you','ask','how','do','I','feel?'],               chords: { 0:'Dm', 6:'G' } },
+        { words: ['And','I','think','could','this','be','real?'],          chords: { 0:'Dm', 6:'C' } },
+        { words: ['and','you','lay','down','next','to','me,'],             chords: { 0:'Dm', 6:'G' } },
+        { words: ['and','you','sleep','so','blissfully,'],                 chords: { 0:'Dm', 3:'C' } },
+        { words: ['and','now','there','is','no','where','left','to','hide,'], chords: { 0:'Dm', 6:'F', 7:'G' } },
+      ]},
+      { label: 'Outro', lines: [
+        { words: ['Doggy','dreams,','cross','over','high','hopes,'],        chords: { 0:'C', 4:'G' } },
+        { words: ['fast','walks,','where','the','darkness','elopes,'],      chords: { 0:'F', 4:'C' } },
+        { words: ["She's",'more','than','I','thought','she','could','be...'], chords: { 0:'F', 4:'G', 7:'C' } },
+      ]},
+      { label: 'Verse 2', lines: [
+        { words: ['Claude','Codes','my','PESEL','ID,'],                     chords: { 0:'C', 3:'G' } },
+      ]},
+    ];
+
+    function renderLine(line) {
+      const cls = 'line' + (line.muted ? ' muted' : '');
+      const lang = line.lang ? ` lang="${line.lang}"` : '';
+      const ws = line.words.map((w, i) => {
+        const c = (line.chords && line.chords[i]) || '';
+        return `<span class="w"><span class="c">${c}</span><span class="t">${w}</span></span>`;
+      }).join('');
+      return `<div class="${cls}"${lang}>${ws}</div>`;
+    }
+
+    document.getElementById('song').innerHTML = SONG.map(sec =>
+      `<section class="sec"><h2>${sec.label}</h2>${sec.lines.map(renderLine).join('')}</section>`
+    ).join('');
+  </script>
+</body>
+</html>
