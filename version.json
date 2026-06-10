@@ -1,12 +1,12 @@
 {
-  "version": "v260610.02 8:37a",
-  "release": 1699,
-  "sha": "76c9f90f42",
-  "fullSha": "76c9f90f4221f8e209b8d8123869ee62b5e82cb2",
+  "version": "v260610.03 8:54a",
+  "release": 1700,
+  "sha": "794f7e03c4",
+  "fullSha": "794f7e03c441a321a236308174cefe960d192e33",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jyl0",
-  "pushedAt": "2026-06-10T13:37:08+00:00",
-  "commits": [{"sha":"76c9f90f42","message":"Publish MFK project notes page","author":"Rahul"}]
+  "pushedAt": "2026-06-10T13:54:11+00:00",
+  "commits": [{"sha":"794f7e03c4","message":"Honor payout_frequency in pay-pending-associates (fix daily over-payment)","author":"Rahul"}]
 }
