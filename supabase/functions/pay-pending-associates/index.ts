@@ -120,14 +120,44 @@ Deno.serve(async (req) => {
 
     const { data: associates, error: aerr } = await supabase
       .from('associate_profiles')
-      .select('id, app_user_id, hourly_rate, payment_method, stripe_connect_account_id, identity_verification_status')
+      .select('id, app_user_id, hourly_rate, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency, payout_day_of_week')
       .eq('payment_method', 'stripe')
       .not('stripe_connect_account_id', 'is', null)
       .eq('identity_verification_status', 'verified');
 
     if (aerr) throw new Error(`associates query failed: ${aerr.message}`);
 
+    // Day-of-week (0=Sun .. 6=Sat) in America/Chicago, so a configured payout
+    // day means that weekday in Texas regardless of the cron's UTC fire time.
+    const DOW: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    const todayDowCentral = DOW[
+      new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', weekday: 'short' }).format(new Date())
+    ];
+
     for (const assoc of associates || []) {
+      // --- Pay cadence gate ---------------------------------------------
+      // Honor each associate's payout_frequency. 'daily' (or null) pays every
+      // run, as before. 'weekly'/'biweekly'/'monthly' only pay on their
+      // configured payout_day_of_week (default Saturday). The cron still runs
+      // daily; this gate decides whether THIS associate is due today. Because
+      // the 02:30 UTC run lands on exactly one Central weekday per week, a
+      // weekly associate is paid once per week. Entry-level idempotency
+      // (payout_time_entries UNIQUE) still prevents any double-claim.
+      const freq = (assoc.payout_frequency || 'daily').toLowerCase();
+      if (freq !== 'daily') {
+        const payDay = assoc.payout_day_of_week ?? 6; // default Saturday
+        if (todayDowCentral !== payDay) {
+          results.push({
+            associate_id: assoc.id,
+            skipped: 'not_payout_day',
+            frequency: freq,
+            payout_day_of_week: payDay,
+            today_dow_central: todayDowCentral
+          });
+          continue;
+        }
+      }
+
       const { data: entries, error: eerr } = await supabase
         .from('time_entries')
         .select('id, clock_in, clock_out, description, task_id')
@@ -349,7 +379,7 @@ Deno.serve(async (req) => {
     // Never let a payroll problem be silent. Any associate that did NOT get a
     // transfer_id is a failure the admin must see — except benign concurrent-claim
     // idempotency (another payout already grabbed the entries, not a real problem).
-    const failures = results.filter((r: any) => !r.transfer_id && r.skipped !== 'concurrent_claim');
+    const failures = results.filter((r: any) => !r.transfer_id && r.skipped !== 'concurrent_claim' && r.skipped !== 'not_payout_day');
     if (failures.length > 0) {
       const rows = failures.map((f: any) => {
         const who = f.person_name || f.associate_id;
