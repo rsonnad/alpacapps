@@ -172,3 +172,58 @@ Success returns `{"id":"<uuid>"}`. Failure returns `{"name":"...","message":"...
 - `mail` / `sendmail` / `postfix` on macOS — they accept input but silently
   fail to deliver to Gmail (residential IP block + unauthenticated SMTP).
   Verified broken 2026-05-25: `mailq` reports "mail system is down".
+
+## alpu.ca Cloudflare Short Links
+
+Use when adding or debugging `https://alpu.ca/...` short links. The zone lives
+in Rahul's separate Cloudflare account, not the main Wingsiebird account.
+
+### Credentials
+
+- **Bitwarden item:** `"Cloudflare — Rah Hul Account (alpu.ca)"`
+- **Token field:** `"Cloudflare-D1"`
+- **Zone ID:** `5258bd9d21828c4a66c318a5d085fa0c`
+
+If `bw-read` is not defined in a noninteractive shell, source the shared profile
+first:
+
+```bash
+source ~/Documents/CodingProjects/portsie/scripts/bw-profile.sh >/dev/null
+```
+
+### List Current Page Rules
+
+```bash
+source ~/Documents/CodingProjects/portsie/scripts/bw-profile.sh >/dev/null
+TOKEN=$(bw-read "Cloudflare — Rah Hul Account (alpu.ca)" "Cloudflare-D1")
+ZONE=5258bd9d21828c4a66c318a5d085fa0c
+curl -sS "https://api.cloudflare.com/client/v4/zones/$ZONE/pagerules?status=active&per_page=100" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  | jq -r '.result[] | [.priority, .id, .targets[0].constraint.value, .actions[0].value.url] | @tsv'
+```
+
+### Add a Short Link
+
+```bash
+source ~/Documents/CodingProjects/portsie/scripts/bw-profile.sh >/dev/null
+TOKEN=$(bw-read "Cloudflare — Rah Hul Account (alpu.ca)" "Cloudflare-D1")
+ZONE=5258bd9d21828c4a66c318a5d085fa0c
+curl -sS -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/pagerules" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "targets": [{"target":"url","constraint":{"operator":"matches","value":"alpu.ca/example*"}}],
+    "actions": [{"id":"forwarding_url","value":{"url":"https://alpacaplayhouse.com/target.html","status_code":301}}],
+    "priority": 3,
+    "status": "active"
+  }'
+```
+
+### Priority Gotcha
+
+For these Page Rules, the higher priority number wins. Keep specific short links
+above the catchall rule and the catchall (`alpu.ca/*`) at the lowest priority.
+Verified 2026-06-10 while adding `alpu.ca/mfknotes`: the catchall at priority 3
+swallowed `kidsaudio` and `mfknotes`; changing order to specific links at higher
+numbers and catchall at priority 1 fixed both.
