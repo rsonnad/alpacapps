@@ -216,17 +216,19 @@
         { words: ['Nights','end,','and','the','mornings','begin,'],         chords: { 0:'F', 4:'C' } },
       ]},
       { label: 'Chorus', lines: [
-        { words: ['and','you','ask','how','do','I','feel?'],               chords: { 0:'Dm', 6:'G' } },
-        { words: ['And','I','think','could','this','be','real?'],          chords: { 0:'Dm', 6:'C' } },
+        { words: ['and','you','ask','how','do','I','feel?'],               chords: { 0:'Dm', 4:'G' } },
+        { words: ['And','I','think','could','this','be','real?'],          chords: { 0:'Dm', 4:'C' } },
+        { words: ['and','you','lay','down','by','my','side,'],             chords: { 0:'Dm', 6:'G' } },
+        { words: ['and','now','there','is','no','where','left','to','hide,'], chords: { 0:'Dm', 6:'F', 7:'G' } },
         { words: ['and','you','lay','down','next','to','me,'],             chords: { 0:'Dm', 6:'G' } },
-        { words: ['and','you','sleep','so','blissfully,'],                 chords: { 0:'Dm', 3:'C' } },
-      ]},
-      { label: 'Outro', lines: [
-        { words: ['Doggy','dreams,','cross','over','high','hopes,'],        chords: { 0:'C', 4:'G' } },
-        { words: ['fast','walks,','where','the','darkness','elopes,'],      chords: { 0:'F', 4:'C' } },
-        { words: ["She's",'more','than','I','thought','she','could','be...'], chords: { 0:'F', 4:'G', 7:'C' } },
+        { words: ['i','watch','you','sleep','so','blissfully,'],           chords: { 0:'Dm', 4:'F', 5:'G' } },
       ]},
       { label: 'Verse 2', lines: [
+        { words: ['Doggy','dreams,','cross','over','high','hopes,'],        chords: { 0:'C', 4:'G' } },
+        { words: ['fast','walks,','where','the','darkness','elopes,'],      chords: { 0:'F', 4:'C' } },
+        { words: ['shes','more','than','i','thought','she','could','be.'],  chords: { 0:'F', 4:'G', 7:'C' } },
+      ]},
+      { label: '', lines: [
         { words: ['Claude','Codes','my','PESEL','ID,'],                     chords: { 0:'C', 3:'G' } },
       ]},
     ];
@@ -242,7 +244,7 @@
     }
 
     document.getElementById('song').innerHTML = SONG.map(sec =>
-      `<section class="sec"><h2>${sec.label}</h2>${sec.lines.map(renderLine).join('')}</section>`
+      `<section class="sec">${sec.label ? `<h2>${sec.label}</h2>` : ''}${sec.lines.map(renderLine).join('')}</section>`
     ).join('');
   </script>
 </body>
