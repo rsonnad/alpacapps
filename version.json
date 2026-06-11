@@ -1,12 +1,12 @@
 {
-  "version": "v260611.03 1:58p",
-  "release": 1704,
-  "sha": "8381da2f6d",
-  "fullSha": "8381da2f6d7703c719c82769d1d6f9501765f8d2",
+  "version": "v260611.04 2:31p",
+  "release": 1705,
+  "sha": "9c4e769f88",
+  "fullSha": "9c4e769f88477ab867e0a148aa3a961389007b7f",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm1li68",
-  "pushedAt": "2026-06-11T18:58:31+00:00",
-  "commits": [{"sha":"8381da2f6d","message":"Document Supabase Telnyx webhook deploy recipe","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-06-11T19:31:33+00:00",
+  "commits": [{"sha":"9c4e769f88","message":"Add Telnyx debug credential helper","author":"Sonia Wendorff"}]
 }
