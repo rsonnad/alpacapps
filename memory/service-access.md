@@ -2,6 +2,45 @@
 
 Verified copy-paste recipes for external services and machines. Prefer these before rediscovering credentials or hostnames.
 
+## Supabase Management API and Edge Deploy
+
+Use for AlpacApps Supabase project `aphrrfprbixmhissnjfn`.
+
+### Get Management Token
+
+Preferred Bitwarden item:
+
+```bash
+MGMT_TOKEN=$(bw get item "fd5b3ae7-d6a7-4e57-8475-b410007ea3a7" 2>/dev/null \
+  | python3 -c "import sys,json; item=json.load(sys.stdin); [print(f['value'], end='') for f in item.get('fields', []) if f['name'] == 'Management API Token']")
+```
+
+If Bitwarden is locked, unlock first:
+
+```bash
+export BW_SESSION=$(~/bin/bw-unlock)
+```
+
+### Run SQL
+
+```bash
+curl -sS -X POST "https://api.supabase.com/v1/projects/aphrrfprbixmhissnjfn/database/query" \
+  -H "Authorization: Bearer $MGMT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"select now()"}'
+```
+
+### Deploy Telnyx Webhook
+
+`telnyx-webhook` must allow external Telnyx POSTs through Supabase's gateway.
+
+```bash
+SUPABASE_ACCESS_TOKEN="$MGMT_TOKEN" \
+  supabase functions deploy telnyx-webhook --no-verify-jwt --project-ref aphrrfprbixmhissnjfn
+```
+
+Verified 2026-06-11: redeploying with `--no-verify-jwt` changed unsigned probes from Supabase gateway `401 UNAUTHORIZED_NO_AUTH_HEADER` to handler-level `403 Missing signature`, confirming the function is reachable while Telnyx signature verification remains enforced.
+
 ## Almaca SSH and Tailscale
 
 Use when checking the legacy ALMACA MacBook Pro 16, including mounted local volumes such as `SW-SDCAM`.
