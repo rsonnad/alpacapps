@@ -155,6 +155,13 @@ Success returns `{"id":"<uuid>"}`. Failure returns `{"name":"...","message":"...
 `~/.config/resend/key` — 36-byte API key, no newline. (Also at
 `/Users/alpuca/.config/rvault-backup/resend-key.txt` for older scripts.)
 
+### Bitwarden fallback
+
+If checking Resend delivery from this Mac, use Bitwarden item id
+`4ddf12ff-f86d-4fca-a681-b410007ea3a7`, field `Alpacabe MCP Key`.
+There is a duplicate `Resend — Email API` item with no fields, so name-only
+lookups can select the empty duplicate and fail.
+
 ### Sender domain
 
 `notifications@alpacaplayhouse.com` is the verified sender. Do not change the
@@ -166,6 +173,8 @@ Success returns `{"id":"<uuid>"}`. Failure returns `{"name":"...","message":"...
 - `~/bin/rvault-backup-status.sh` — daily backup status to rahulioson@gmail.com
 - `~/bin/lights-healthcheck.sh`
 - `~/bin/oracle-montreal-provision.sh`
+- Oracle Phoenix `/home/ubuntu/.alpuca-health/alpuca_health_check.py` — daily
+  Alpuca machine-health email and `alpuca_health_history` update
 
 ### Do NOT use
 
