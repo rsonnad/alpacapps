@@ -41,6 +41,35 @@ SUPABASE_ACCESS_TOKEN="$MGMT_TOKEN" \
 
 Verified 2026-06-11: redeploying with `--no-verify-jwt` changed unsigned probes from Supabase gateway `401 UNAUTHORIZED_NO_AUTH_HEADER` to handler-level `403 Missing signature`, confirming the function is reachable while Telnyx signature verification remains enforced.
 
+### Pass Telnyx Debug Credentials To Another Codebase
+
+Use the helper to print shell exports without committing secrets:
+
+```bash
+cd "/Users/soniawendorff/Coding repos/alpacapps"
+eval "$(MGMT_TOKEN="$MGMT_TOKEN" ./scripts/telnyx-debug-env.sh exports)"
+cd "/path/to/other/project"
+```
+
+The target shell will have:
+
+```text
+ALPACAPPS_SUPABASE_PROJECT_REF
+ALPACAPPS_SUPABASE_URL
+ALPACAPPS_SUPABASE_MGMT_TOKEN
+TELNYX_API_KEY
+TELNYX_PHONE_NUMBER
+TELNYX_MESSAGING_PROFILE_ID
+TELNYX_WEBHOOK_URL
+```
+
+To verify recent inbound Telnyx webhook deliveries from any project:
+
+```bash
+cd "/Users/soniawendorff/Coding repos/alpacapps"
+MGMT_TOKEN="$MGMT_TOKEN" ./scripts/telnyx-debug-env.sh deliveries
+```
+
 ## Almaca SSH and Tailscale
 
 Use when checking the legacy ALMACA MacBook Pro 16, including mounted local volumes such as `SW-SDCAM`.
