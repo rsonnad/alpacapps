@@ -174,7 +174,10 @@ lookups can select the empty duplicate and fail.
 - `~/bin/lights-healthcheck.sh`
 - `~/bin/oracle-montreal-provision.sh`
 - Oracle Phoenix `/home/ubuntu/.alpuca-health/alpuca_health_check.py` — daily
-  Alpuca machine-health email and `alpuca_health_history` update
+  Alpuca machine-health email and `alpuca_health_history` update. The Phoenix
+  crontab runs at `5 5,6 * * *` UTC with a `TZ=America/Chicago date +\%H`
+  guard because `CRON_TZ=America/Chicago` was observed sending at `00:05 UTC`,
+  not midnight Central.
 
 ### Do NOT use
 
