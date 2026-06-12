@@ -548,6 +548,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 ## Decisions
 
+### 2026-06-12: Public Rahulio Pages Default Open
+
+**Decision:** Rahulio personal pages default to public access when no `page_access_settings` row exists, and permanent indexed pages should use `initPublicPage()` instead of the mutable personal-page privacy shell. Public SEO pointers are audited against the static pages index, sitemap, robots tags, and live access rows before deploy.
+
+**Why:** A public article can be valid static HTML, listed in the sitemap, and still be covered by the client-side access overlay if a live privacy row is accidentally set to private. Public-by-default behavior matches the intended publishing model, while explicit private rows still protect pages that need restricted access.
+
 ### 2026-05-15: Music Automations Use Music Assistant with Sonos/Home Assistant Fallback
 
 **Decision:** Redesign the resident Music page around playlist automations instead of Sonos-style alarms. Saved Music Assistant playlists and Sonos favorites are pulled into searchable categories, staff can pin favorites for quick access, and each automation can target a room, provider, playlist/URI, recurrence, volume, shuffle, repeat, and grouped-room behavior. Music Assistant is the primary playback path, Sonos HTTP API remains the fallback for Sonos-native playlists/favorites and play modes, and Home Assistant remains available as the broader media-player control plane.

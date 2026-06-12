@@ -1,16 +1,10 @@
 {
-  "generatedAt": "2026-06-11T19:32:56.212Z",
+  "generatedAt": "2026-06-12T13:53:47.828Z",
   "sections": [
     "E-2 Visa",
     "Projects"
   ],
   "entries": [
-    {
-      "path": "songs/morethanithought.html",
-      "title": "More Than I Thought — ukulele",
-      "section": null,
-      "modifiedAt": "2026-06-10T14:09:04.000Z"
-    },
     {
       "path": "mfkprojectnotes.html",
       "title": "MFK Project Notes",
@@ -28,12 +22,6 @@
       "title": "LangBang — Polish for Android tablets",
       "section": null,
       "modifiedAt": "2026-06-03T06:16:47.000Z"
-    },
-    {
-      "path": "justin-gilbertson-agreement-3/index.html",
-      "title": "Work Resumption Agreement #3 — Justin Gilbertson",
-      "section": null,
-      "modifiedAt": "2026-05-26T19:05:28.000Z"
     },
     {
       "path": "1517app/index.html",

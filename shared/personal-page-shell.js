@@ -2,7 +2,7 @@
  * Personal Page Shell — Auth gate + header + privacy controls for personal pages
  *
  * Sits between public-shell.js (no auth) and resident-shell.js (heavy auth + tabs).
- * Default: requires authentication, any registered user can view.
+ * Default: public, unless a page_access_settings row says otherwise.
  * Owners (admin/oracle) see a floating settings FAB to manage visibility + grants.
  */
 
@@ -13,6 +13,8 @@ import { setupVersionInfo } from './version-info.js';
 import { ROUTES } from './routes.js';
 
 // ── Constants ──────────────────────────────────────────────────────────
+const DEFAULT_VISIBILITY = 'public';
+const SETTINGS_LOAD_FAILURE_VISIBILITY = 'registered';
 const ROLE_LEVEL = { oracle: 4, admin: 3, staff: 2, demo: 2, resident: 1, associate: 1, public: 0 };
 const VISIBILITY_OPTIONS = [
   { value: 'public',         label: 'Public',    icon: 'globe',  desc: 'Anyone — no login required' },
@@ -78,7 +80,7 @@ function getVisibilityIcon(v) {
 function updateSettingsButtonIcon() {
   const btn = document.getElementById('ppSettingsBtn');
   if (!btn) return;
-  const vis = pageSettings?.visibility || 'registered';
+  const vis = pageSettings?.visibility || DEFAULT_VISIBILITY;
   const color = VIS_COLORS[vis] || '#8c8279';
   btn.innerHTML = getVisibilityIcon(vis);
   btn.style.color = color;
@@ -109,16 +111,16 @@ function showToast(msg, type = 'info', duration = 4000) {
 
 // ── Access Check ───────────────────────────────────────────────────────
 function checkAccess(state, settings, grants) {
+  const visibility = settings?.visibility || DEFAULT_VISIBILITY;
+  if (visibility === 'public') return true;
   if (!state?.appUser) return false;
 
-  const visibility = settings?.visibility || 'registered';
   const userRole = state.appUser.role || 'public';
   const userEmail = (state.appUser.email || '').toLowerCase();
 
   // Admin/oracle always have access
   if (['admin', 'oracle'].includes(userRole)) return true;
 
-  if (visibility === 'public') return true;
   if (visibility === 'registered') return state.isAuthenticated;
 
   if (visibility.startsWith('role:')) {
@@ -334,7 +336,7 @@ function injectOwnerToolbar() {
   const btn = document.createElement('button');
   btn.id = 'ppSettingsBtn';
   btn.title = 'Page access settings';
-  const vis = pageSettings?.visibility || 'registered';
+  const vis = pageSettings?.visibility || DEFAULT_VISIBILITY;
   btn.innerHTML = getVisibilityIcon(vis);
   btn.style.color = VIS_COLORS[vis] || '#8c8279';
   wrap.appendChild(btn);
@@ -380,7 +382,7 @@ function renderPanel() {
   const panel = document.getElementById('ppSettingsPanel');
   if (!panel) return;
 
-  const currentVis = pageSettings?.visibility || 'registered';
+  const currentVis = pageSettings?.visibility || DEFAULT_VISIBILITY;
 
   let grantsHtml = '';
   if (currentVis === 'private') {
@@ -666,11 +668,11 @@ export async function initPersonalPage(options = {}) {
   try {
     pageSettings = await fetchPageSettings(pagePath);
   } catch (e) {
-    console.warn('[personal-page-shell] Failed to fetch page settings, defaulting to registered:', e);
-    pageSettings = null;
+    console.warn('[personal-page-shell] Failed to fetch page settings, requiring sign-in for safety:', e);
+    pageSettings = { page_path: pagePath, visibility: SETTINGS_LOAD_FAILURE_VISIBILITY };
   }
 
-  const visibility = pageSettings?.visibility || 'registered';
+  const visibility = pageSettings?.visibility || DEFAULT_VISIBILITY;
 
   // Step 3: If public, no auth needed
   if (visibility === 'public') {

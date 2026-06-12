@@ -10,6 +10,7 @@
     "css:build": "tailwindcss -i styles/tailwind.css -o styles/tailwind.out.css --minify",
     "css:watch": "tailwindcss -i styles/tailwind.css -o styles/tailwind.out.css --watch",
     "glowforge:refresh-session": "node scripts/refresh-glowforge-session.js",
+    "public-pages:audit": "node scripts/audit-public-page-access.js",
     "rahulio-pages-manifest": "node scripts/rahulio-pages-manifest.js"
   },
   "repository": {

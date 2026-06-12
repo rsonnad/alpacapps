@@ -12,9 +12,11 @@ When you ship a new public page (e.g. `rahulio/pages/some-new-page.html`):
 2. **Set canonical + OG + JSON-LD meta tags** (templates below).
 3. **Add it to `sitemap.xml`** so Google can discover it.
 4. **Run `node scripts/rahulio-pages-manifest.js`** to regenerate the static link list at `rahulio/pages/index.html`. This is the most important link-equity step — see below.
-5. **Add at least one in-context link** from a related, already-indexed page (e.g. a "Related" callout). One contextual link beats five low-context ones.
-6. **(Optional)** Submit to Bing Webmaster Tools for fast non-Google coverage.
-7. **Push, wait for CI, verify HTTP 200 on the live URL.**
+5. **Use `initPublicPage()` for indexed pages.** Do not leave sitemap pages behind `initPersonalPage()`; personal pages default open, but an explicit access row can still hide them.
+6. **Run `npm run public-pages:audit`** before pushing. It checks `sitemap.xml`, `rahulio/pages/pages-manifest.json`, the static pages index, page robots tags, and live `page_access_settings` rows.
+7. **Add at least one in-context link** from a related, already-indexed page (e.g. a "Related" callout). One contextual link beats five low-context ones.
+8. **(Optional)** Submit to Bing Webmaster Tools for fast non-Google coverage.
+9. **Push, wait for CI, verify HTTP 200 on the live URL.**
 
 That's the floor. Everything below is rationale, the priority order of link types, and what to do when a page sits in "Discovered, not indexed" purgatory.
 
@@ -65,7 +67,10 @@ grep "some-new-page.html" rahulio/pages/index.html
 
 # 5. Add it to sitemap.xml (see template below)
 
-# 6. Commit + push — CI deploys to GitHub Pages
+# 6. Verify public access + SEO pointers
+npm run public-pages:audit
+
+# 7. Commit + push — CI deploys to GitHub Pages
 ```
 
 If a page is listed in the JSON manifest but **not** showing up as a static `<a>` in `rahulio/pages/index.html`, the regen script wasn't run. Run it.

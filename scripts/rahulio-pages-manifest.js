@@ -18,6 +18,7 @@ const STATIC_BEGIN = '<!-- BEGIN_STATIC_PAGES_LIST';
 const STATIC_END = '<!-- END_STATIC_PAGES_LIST -->';
 
 const TITLE_RE = /<title[^>]*>([\s\S]*?)<\/title>/i;
+const ROBOTS_NOINDEX_RE = /<meta\s+name=["']robots["']\s+content=["'][^"']*\bnoindex\b[^"']*["']/i;
 
 function extractTitle(html) {
   const m = html.match(TITLE_RE);
@@ -122,9 +123,14 @@ function main() {
     const full = path.join(PAGES_DIR, rel);
     let title = null;
     let modifiedAt = null;
+    let html = '';
 
     try {
-      const html = fs.readFileSync(full, 'utf8');
+      html = fs.readFileSync(full, 'utf8');
+      if (ROBOTS_NOINDEX_RE.test(html)) {
+        console.warn('Skipping noindex page', rel);
+        continue;
+      }
       title = extractTitle(html);
       if (!title) {
         console.warn('Warning: no <title> found in', rel, '— using filename as fallback');
