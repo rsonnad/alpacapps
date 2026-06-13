@@ -1,12 +1,12 @@
 {
-  "version": "v260613.01 5:31a",
-  "release": 1707,
-  "sha": "5708144ecd",
-  "fullSha": "5708144ecd26e14fd9c6ecf656958ca6e1e971f0",
+  "version": "v260613.02 11:51a",
+  "release": 1708,
+  "sha": "d4ef59c603",
+  "fullSha": "d4ef59c603c9b71bc4ae92a15831ff5cfce5f937",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm1li68",
-  "pushedAt": "2026-06-13T10:31:28+00:00",
-  "commits": [{"sha":"5708144ecd","message":"Fix: after-photo warning persists after upload in clock-out prompt","author":"Rahul"}]
+  "pushedAt": "2026-06-13T16:51:33+00:00",
+  "commits": [{"sha":"d4ef59c603","message":"Add Gemini AI cost tracking: dashboard + daily Cloud Monitoring sync","author":"Rahul"}]
 }
