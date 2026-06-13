@@ -754,9 +754,26 @@ async function handlePhotoUpload(file) {
 
     showToast('Photo uploaded!', 'success');
     await refreshTodayPhotos();
+    await refreshAfterPhotoWarning();
   } catch (err) {
     showToast('Failed to upload photo: ' + err.message, 'error');
   }
+}
+
+/**
+ * If the clock-out prompt is open, re-check whether an after photo exists
+ * and hide/show the warning accordingly. Called after every photo upload
+ * so the warning clears as soon as the associate uploads their after photo.
+ */
+async function refreshAfterPhotoWarning() {
+  const warning = document.getElementById('afterPhotoWarning');
+  const prompt = document.getElementById('clockoutPrompt');
+  if (!warning || !prompt?.classList.contains('visible')) return;
+  if (!activeEntry?.id) { warning.style.display = 'none'; return; }
+  try {
+    const photos = await hoursService.getWorkPhotos(profile.id, { timeEntryId: activeEntry.id });
+    warning.style.display = photos.some(p => p.photo_type === 'after') ? 'none' : 'block';
+  } catch (_) {}
 }
 
 async function handleFileUpload(file) {
