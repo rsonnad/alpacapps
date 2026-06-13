@@ -90,6 +90,7 @@ export const ROUTES = {
     templates:     '/admin/templates.html',
     brand:         '/admin/brand.html',
     accounting:    '/admin/accounting.html',
+    aiCosts:       '/admin/usage.html',
     notifications: '/admin/notifications.html',
     testdev:       '/admin/testdev.html',
     testSuite:     '/admin/test-suite.html',

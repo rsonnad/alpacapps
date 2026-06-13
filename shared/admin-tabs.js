@@ -35,6 +35,7 @@ export const ALL_ADMIN_TABS = [
   { id: 'templates',     label: 'Templates',     href: ROUTES.admin.templates,     permission: 'view_templates',     section: 'admin', feature: 'documents', description: 'Editable templates for emails, leases, and event agreements.' },
   { id: 'brand',         label: 'Brand',         href: ROUTES.admin.brand,         permission: 'view_settings',      section: 'admin', description: 'Brand tokens, logos, and visual identity controls.' },
   { id: 'accounting',    label: 'Accounting',    href: ROUTES.admin.accounting,    permission: 'view_accounting',    section: 'admin', description: 'Ledger, payouts, and financial reporting.' },
+  { id: 'aiCosts',       label: 'AI Costs',      href: ROUTES.admin.aiCosts,       permission: 'view_accounting',    section: 'admin', description: 'Gemini API token usage and estimated spend by model and project.' },
   { id: 'notifications', label: 'Notifications', href: ROUTES.admin.notifications, permission: 'view_settings',      section: 'admin', description: 'System notifications, alerts, and delivery channels.' },
   { id: 'testdev',       label: 'Test Dev',      href: ROUTES.admin.testdev,       permission: 'view_settings',      section: 'admin', description: 'Developer testing scratchpad.' },
   { id: 'testsuite',     label: 'Test Suite',    href: ROUTES.admin.testSuite,     permission: 'view_settings',      section: 'admin', description: 'Automated test suite results and runs.' },
