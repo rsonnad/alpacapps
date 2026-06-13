@@ -1,12 +1,12 @@
 {
-  "version": "v260612.01 8:53a",
-  "release": 1706,
-  "sha": "46accc228b",
-  "fullSha": "46accc228b4359e43c71c883faf7979fdb6e3061",
+  "version": "v260613.01 5:31a",
+  "release": 1707,
+  "sha": "5708144ecd",
+  "fullSha": "5708144ecd26e14fd9c6ecf656958ca6e1e971f0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm1li68",
-  "pushedAt": "2026-06-12T13:53:58+00:00",
-  "commits": [{"sha":"46accc228b","message":"Fix public Rahulio page access defaults","author":"Rahul"}]
+  "pushedAt": "2026-06-13T10:31:28+00:00",
+  "commits": [{"sha":"5708144ecd","message":"Fix: after-photo warning persists after upload in clock-out prompt","author":"Rahul"}]
 }
