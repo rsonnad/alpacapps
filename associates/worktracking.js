@@ -333,27 +333,42 @@ async function handleClockIn() {
 }
 
 async function showClockoutPrompt() {
-  document.getElementById('clockoutPrompt').classList.add('visible');
-  document.getElementById('clockoutDesc').value = '';
+  const prompt = document.getElementById('clockoutPrompt');
 
-  // Switch to Today tab, show After photo banner, and scroll to photo section
+  // If already open, re-click means "I'm done with photos" — scroll up to the prompt
+  if (prompt?.classList.contains('visible')) {
+    prompt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  prompt.classList.add('visible');
+  document.getElementById('clockoutDesc').value = '';
   switchToTab('today');
   setPhotoType('after');
-  showPhotoBanner('after');
-  setTimeout(() => {
-    document.getElementById('photoSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 300);
 
-  // Check if after photos exist for this session
+  // Check photos first so we know where to send the user
+  let hasAfterPhotos = false;
   const warning = document.getElementById('afterPhotoWarning');
   if (activeEntry?.id && warning) {
     try {
       const photos = await hoursService.getWorkPhotos(profile.id, { timeEntryId: activeEntry.id });
-      const hasAfterPhotos = photos.some(p => p.photo_type === 'after');
+      hasAfterPhotos = photos.some(p => p.photo_type === 'after');
       warning.style.display = hasAfterPhotos ? 'none' : 'block';
     } catch (_) {
       warning.style.display = 'none';
     }
+  }
+
+  if (hasAfterPhotos) {
+    // Photos already uploaded — scroll to the prompt so they can submit
+    showPhotoBanner(null);
+    setTimeout(() => prompt.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+  } else {
+    // Need photos — show the banner and scroll down to take them
+    showPhotoBanner('after');
+    setTimeout(() => {
+      document.getElementById('photoSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   }
 }
 
@@ -772,7 +787,13 @@ async function refreshAfterPhotoWarning() {
   if (!activeEntry?.id) { warning.style.display = 'none'; return; }
   try {
     const photos = await hoursService.getWorkPhotos(profile.id, { timeEntryId: activeEntry.id });
-    warning.style.display = photos.some(p => p.photo_type === 'after') ? 'none' : 'block';
+    const hasAfter = photos.some(p => p.photo_type === 'after');
+    warning.style.display = hasAfter ? 'none' : 'block';
+    if (hasAfter) {
+      // Photo confirmed — hide the banner and scroll up to the submit prompt
+      showPhotoBanner(null);
+      prompt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   } catch (_) {}
 }
 
