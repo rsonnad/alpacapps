@@ -1,12 +1,12 @@
 {
-  "version": "v260615.01 7:46a",
-  "release": 1709,
-  "sha": "8b58c5f464",
-  "fullSha": "8b58c5f46406b18d2923a5bcfe1289913626719e",
+  "version": "v260620.01 3:59a",
+  "release": 1710,
+  "sha": "5f3c354ccf",
+  "fullSha": "5f3c354ccfa1c72fe85f5ad5e3d93978aaed478d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm1li68",
-  "pushedAt": "2026-06-15T12:46:17+00:00",
-  "commits": [{"sha":"8b58c5f464","message":"Fix: clock-out scroll trap trapping associates in photo loop","author":"Rahul"}]
+  "machine": "runnervm7b5n9",
+  "pushedAt": "2026-06-20T08:59:18+00:00",
+  "commits": [{"sha":"5f3c354ccf","message":"Fix: clock-out photo grid empties at UTC midnight (Austin TZ mismatch)","author":"Rahul"}]
 }
