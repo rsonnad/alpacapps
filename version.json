@@ -1,12 +1,12 @@
 {
-  "version": "v260620.01 3:59a",
-  "release": 1710,
-  "sha": "5f3c354ccf",
-  "fullSha": "5f3c354ccfa1c72fe85f5ad5e3d93978aaed478d",
+  "version": "v260620.02 3:41p",
+  "release": 1711,
+  "sha": "3de2f09b4a",
+  "fullSha": "3de2f09b4ada800f7a051f74bb60bd5378824b6f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm7b5n9",
-  "pushedAt": "2026-06-20T08:59:18+00:00",
-  "commits": [{"sha":"5f3c354ccf","message":"Fix: clock-out photo grid empties at UTC midnight (Austin TZ mismatch)","author":"Rahul"}]
+  "pushedAt": "2026-06-20T20:41:37+00:00",
+  "commits": [{"sha":"3de2f09b4a","message":"Fix: auto-payout dropped per-day daily_extra, underpaying associates","author":"Rahul"}]
 }
