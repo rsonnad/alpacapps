@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
 
     const { data: associates, error: aerr } = await supabase
       .from('associate_profiles')
-      .select('id, app_user_id, hourly_rate, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency, payout_day_of_week')
+      .select('id, app_user_id, hourly_rate, daily_extra, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency, payout_day_of_week')
       .eq('payment_method', 'stripe')
       .not('stripe_connect_account_id', 'is', null)
       .eq('identity_verification_status', 'verified');
@@ -185,7 +185,18 @@ Deno.serve(async (req) => {
         return s + h;
       }, 0);
       const rate = parseFloat(assoc.hourly_rate as unknown as string) || 0;
-      const amount = Math.round(totalHours * rate * 100) / 100;
+      // Daily extra: a flat per-day stipend (associate_profiles.daily_extra) that
+      // applies once per distinct calendar day worked — same day-grouping as the
+      // payout breakdown / email (clock_in date). This was historically dropped
+      // here, silently underpaying any associate with a daily_extra by that amount
+      // per work-day. hourly + extra = total transferred.
+      const dailyExtra = parseFloat(assoc.daily_extra as unknown as string) || 0;
+      const workDayCount = new Set(
+        claimableEntries.filter(e => e.clock_out).map(e => (e.clock_in as string).slice(0, 10))
+      ).size;
+      const extraAmount = Math.round(dailyExtra * workDayCount * 100) / 100;
+      const hourlyAmount = Math.round(totalHours * rate * 100) / 100;
+      const amount = Math.round((hourlyAmount + extraAmount) * 100) / 100;
       const amountCents = Math.round(amount * 100);
 
       if (amountCents <= 0) continue;
@@ -248,7 +259,7 @@ Deno.serve(async (req) => {
           // 2026-05-18 until this fix — matches stripe-payout/paypal-payout convention.
           status: 'pending',
           time_entry_ids: claimableEntries.map(e => e.id),
-          notes: `Auto-fired by pay-pending-associates`,
+          notes: `Auto-fired by pay-pending-associates${extraAmount > 0 ? ` (incl $${extraAmount.toFixed(2)} daily extra: ${workDayCount} day${workDayCount === 1 ? '' : 's'} × $${dailyExtra.toFixed(2)})` : ''}`,
           is_test: false
         })
         .select('id')
@@ -297,7 +308,7 @@ Deno.serve(async (req) => {
         person_name: personName,
         status: 'pending',
         description: `Stripe payout to ${personName}`,
-        notes: `Auto-fired by pay-pending-associates. Transfer ${transfer.id}. ${claimableEntries.length} entries (${dateRange.first} to ${dateRange.last}).`,
+        notes: `Auto-fired by pay-pending-associates. Transfer ${transfer.id}. ${claimableEntries.length} entries (${dateRange.first} to ${dateRange.last}).${extraAmount > 0 ? ` Incl $${extraAmount.toFixed(2)} daily extra (${workDayCount} day${workDayCount === 1 ? '' : 's'} × $${dailyExtra.toFixed(2)}); hourly $${hourlyAmount.toFixed(2)}.` : ''}`,
         recorded_by: 'system:pay-pending-associates',
         is_test: false
       }).select('id').single();
@@ -347,6 +358,9 @@ Deno.serve(async (req) => {
                 payment_method: 'Stripe (ACH)',
                 hours: totalHours.toFixed(2),
                 hourly_rate: rate.toFixed(2),
+                hourly_subtotal: hourlyAmount.toFixed(2),
+                daily_extra: dailyExtra.toFixed(2),
+                daily_extra_total: extraAmount.toFixed(2),
                 payout_date: today,
                 expected_deposit_date: eta,
                 transfer_id: transfer.id,

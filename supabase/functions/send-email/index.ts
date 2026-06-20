@@ -2534,7 +2534,8 @@ This is an automated weekly schedule report from Alpaca Playhouse.`
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 8px;">
             <tr><td style="padding:16px 20px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                ${data.hours ? `<tr><td style="padding:0 0 6px;"><strong>Hours</strong></td><td style="padding:0 0 6px;text-align:right;">${data.hours}${data.hourly_rate ? ` @ $${data.hourly_rate}/hr` : ''}</td></tr>` : ''}
+                ${data.hours ? `<tr><td style="padding:0 0 6px;"><strong>Hours</strong></td><td style="padding:0 0 6px;text-align:right;">${data.hours}${data.hourly_rate ? ` @ $${data.hourly_rate}/hr` : ''}${data.hourly_subtotal && Number(data.daily_extra_total) > 0 ? ` = $${data.hourly_subtotal}` : ''}</td></tr>` : ''}
+                ${data.daily_extra_total && Number(data.daily_extra_total) > 0 ? `<tr><td style="padding:0 0 6px;"><strong>Daily extra</strong></td><td style="padding:0 0 6px;text-align:right;">$${data.daily_extra_total}${data.day_count ? ` (${data.day_count} day${data.day_count === 1 ? '' : 's'}${data.daily_extra ? ` × $${data.daily_extra}` : ''})` : ''}</td></tr>` : ''}
                 ${periodLine ? `<tr><td style="padding:0 0 6px;"><strong>Period</strong></td><td style="padding:0 0 6px;text-align:right;">${periodLine}</td></tr>` : ''}
                 ${data.payout_date ? `<tr><td style="padding:0 0 6px;"><strong>Sent</strong></td><td style="padding:0 0 6px;text-align:right;">${data.payout_date}</td></tr>` : ''}
                 ${data.expected_deposit_date ? `<tr><td style="padding:0 0 6px;"><strong>Expected in your account</strong></td><td style="padding:0 0 6px;text-align:right;">${data.expected_deposit_date}</td></tr>` : ''}
@@ -2553,7 +2554,7 @@ Hi ${data.first_name || data.recipient_name || 'there'},
 
 A ${data.payment_method || 'payout'} for $${data.amount} just went out to your linked account.
 
-${data.hours ? `Hours: ${data.hours}${data.hourly_rate ? ` @ $${data.hourly_rate}/hr` : ''}\n` : ''}${periodLine ? `Period: ${periodLine}\n` : ''}${data.payout_date ? `Sent: ${data.payout_date}\n` : ''}${data.expected_deposit_date ? `Expected in account: ${data.expected_deposit_date}\n` : ''}${data.transfer_id ? `Transfer: ${data.transfer_id}\n` : ''}${breakdownText}${data.notes ? `\n\n${data.notes}` : ''}
+${data.hours ? `Hours: ${data.hours}${data.hourly_rate ? ` @ $${data.hourly_rate}/hr` : ''}${data.hourly_subtotal && Number(data.daily_extra_total) > 0 ? ` = $${data.hourly_subtotal}` : ''}\n` : ''}${data.daily_extra_total && Number(data.daily_extra_total) > 0 ? `Daily extra: $${data.daily_extra_total}${data.day_count ? ` (${data.day_count} day${data.day_count === 1 ? '' : 's'}${data.daily_extra ? ` × $${data.daily_extra}` : ''})` : ''}\n` : ''}${periodLine ? `Period: ${periodLine}\n` : ''}${data.payout_date ? `Sent: ${data.payout_date}\n` : ''}${data.expected_deposit_date ? `Expected in account: ${data.expected_deposit_date}\n` : ''}${data.transfer_id ? `Transfer: ${data.transfer_id}\n` : ''}${breakdownText}${data.notes ? `\n\n${data.notes}` : ''}
 
 Thanks!
 — Alpaca Playhouse`,
