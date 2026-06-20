@@ -8,7 +8,7 @@ import { hoursService, HoursService, PHOTO_TYPE_LABELS } from '../shared/hours-s
 import { mediaService } from '../shared/media-service.js';
 import { PAYMENT_METHOD_LABELS } from '../shared/accounting-service.js';
 import { identityService } from '../shared/identity-service.js';
-import { AUSTIN_TIMEZONE } from '../shared/timezone.js';
+import { AUSTIN_TIMEZONE, getAustinTodayISO } from '../shared/timezone.js';
 import { projectService } from '../shared/project-service.js';
 import { payoutService } from '../shared/payout-service.js';
 import { initTabList } from '../shared/tab-utils.js';
@@ -534,7 +534,10 @@ function updateTimerDisplay() {
 // =============================================
 async function refreshToday() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    // Austin "today", not UTC — work_date and clock_in are bucketed in Austin
+    // time. Using a UTC date here empties the list every evening once UTC rolls
+    // past midnight (7pm–midnight Austin / CDT). See refreshTodayPhotos.
+    const today = getAustinTodayISO();
     const entries = await hoursService.getEntries(profile.id, { dateFrom: today, dateTo: today });
 
     let totalMins = 0, totalAmt = 0;
@@ -586,7 +589,12 @@ async function refreshToday() {
 // =============================================
 async function refreshTodayPhotos() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    // work_date is written in Austin time (handlePhotoUpload uses
+    // toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })). Read it back
+    // with the SAME Austin date — a UTC date here returns zero rows for any
+    // photo uploaded between 7pm and midnight Austin (after UTC midnight),
+    // which silently wipes the grid even though the upload succeeded.
+    const today = getAustinTodayISO();
     const photos = await hoursService.getPhotosForDate(profile.id, today);
     const grid = document.getElementById('todayPhotos');
 
