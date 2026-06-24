@@ -707,6 +707,20 @@
     -->
   </div>
 
+  <div class="setup-step" style="border-color: var(--accent); border-width: 2px;">
+    <h2>
+      <span class="step-num" style="background: var(--accent); width: 56px; border-radius: 999px; font-size: 0.78rem; letter-spacing: 0.03em;">Prep</span>
+      Optional account setup homework
+      <span class="step-time">15&ndash;30 min</span>
+    </h2>
+    <p>If you want the setup session to go faster, create the core accounts first: GitHub, Cloudflare, Supabase, Resend, and Google Cloud for auth. The wizard can still walk you through this later.</p>
+    <p style="margin: 0;">
+      <a href="/infra/accountsetup/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
+        Account setup checklist &rarr;
+      </a>
+    </p>
+  </div>
+
   <!-- STEP 0: Prerequisites -->
   <div class="setup-step" style="border-left: 3px solid var(--success);">
     <h2>
@@ -1088,7 +1102,7 @@
         <label class="calc-svc">
           <input type="checkbox" data-svc="telnyx" onchange="recalcCost()">
           <span class="calc-svc__check">&check;</span>
-          <span class="svc-icon"><img src="https://cdn.simpleicons.org/telnyx/00C08B" alt="Telnyx"></span>
+          <span class="svc-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="#00A884" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 8h10M7 11h6" stroke="#00A884" stroke-width="2" stroke-linecap="round"/></svg></span>
           <span class="calc-svc__info"><span class="calc-svc__name">Telnyx</span><span class="calc-svc__desc">SMS notifications</span></span>
           <span class="cost-badge cost-payg" style="margin-left:auto;">~$0.004/SMS</span>
         </label>
@@ -1629,6 +1643,7 @@
 
   <!-- Footer links — all entry points cross-linked -->
   <div class="footer-links">
+    <a href="/infra/accountsetup/">Account setup homework</a>
     <a href="/docs/getting-started.html">Quick start (for humans)</a>
     <a href="/infra/setup-guide.html">Step-by-step guide (for Claude Chat)</a>
     <a href="/docs/alpacappsinfra.html">Full manual setup guide</a>

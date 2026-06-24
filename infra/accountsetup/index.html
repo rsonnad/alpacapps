@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlpacApps Infra — Account Setup Homework</title>
+  <meta name="description" content="Optional pre-setup checklist for creating GitHub, Cloudflare, Supabase, Resend, and Google Cloud accounts before starting AlpacApps Infra.">
+  <meta property="og:title" content="AlpacApps Infra — Account Setup Homework">
+  <meta property="og:description" content="Create the core accounts and save credentials safely before starting the AlpacApps setup wizard.">
+  <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:url" content="https://alpacaplayhouse.com/infra/accountsetup/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AlpacApps">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AlpacApps Infra — Account Setup Homework">
+  <meta name="twitter:description" content="Create the core accounts and save credentials safely before starting the AlpacApps setup wizard.">
+  <meta name="twitter:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
+  <meta name="twitter:image:alt" content="AlpacApps Infra — account setup checklist">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --success: #6b8e5a;
+      --success-light: #eef5eb;
+      --warning-bg: #fceee9;
+      --warning-border: #c75b3a;
+      --info-bg: #edf4fb;
+      --info-border: #5c7da3;
+      --claude-bg: #f3effc;
+      --claude-border: #7c6a9a;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-warm);
+      line-height: 1.7;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); transition: color 0.2s; overflow-wrap: anywhere; }
+    a:hover { color: #a08050; }
+    p { margin-bottom: 0.85rem; }
+    ul, ol { padding-left: 1.45rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.38rem; }
+    li::marker { color: var(--accent); font-weight: 700; }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--accent-light);
+      color: #6b5230;
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.86em;
+      overflow-wrap: anywhere;
+    }
+
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: calc(80px + 1rem) 1.5rem 0;
+    }
+    .hero-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(26,26,26,0.08), 0 1px 3px rgba(26,26,26,0.06);
+      overflow: hidden;
+      position: relative;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), rgba(201,168,124,0.3));
+      border-radius: 16px 16px 0 0;
+    }
+    .hero-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 16px 16px 0 0;
+    }
+    .hero-text {
+      padding: 2rem 2.5rem 2.5rem;
+    }
+    .eyebrow {
+      display: inline-block;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.55rem;
+    }
+    h1 {
+      font-size: 2.35rem;
+      font-weight: 400;
+      line-height: 1.18;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    h1 span { color: var(--accent); }
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin-bottom: 1.25rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 0.45rem 1.25rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(201,168,124,0.2);
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      min-width: 0;
+    }
+    .section {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      min-width: 0;
+    }
+    .section h2 {
+      font-size: 1.45rem;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+    .section h3 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin: 1.5rem 0 0.55rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.055em;
+    }
+    .section h3:first-of-type { margin-top: 1rem; }
+    .muted { color: var(--text-muted); }
+    .small { font-size: 0.86rem; }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-top: 1.1rem;
+    }
+    .quick-card {
+      background: var(--bg-warm);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      min-height: 112px;
+      min-width: 0;
+    }
+    .quick-card strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.92rem;
+    }
+    .quick-card span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .callout {
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      margin: 1rem 0;
+      border: 1px solid var(--border);
+      background: var(--bg-warm);
+      min-width: 0;
+    }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout--secure {
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+    }
+    .callout--info {
+      background: var(--info-bg);
+      border-color: var(--info-border);
+    }
+    .callout--done {
+      background: var(--success-light);
+      border-color: var(--success);
+    }
+
+    .service {
+      border-top: 1px solid var(--border);
+      padding-top: 1.35rem;
+      margin-top: 1.35rem;
+      min-width: 0;
+    }
+    .service:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .service-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.45rem;
+    }
+    .service-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .service-title h2 { margin: 0; }
+    .service-title .tag {
+      margin-left: auto;
+      white-space: nowrap;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-radius: 999px;
+      padding: 0.22rem 0.65rem;
+      color: var(--success);
+      background: var(--success-light);
+      border: 1px solid rgba(107,142,90,0.18);
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 0.9rem;
+      min-width: 0;
+    }
+    .mini-panel {
+      background: var(--bg-warm);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      min-width: 0;
+    }
+    .mini-panel h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    .mini-panel ul { margin-bottom: 0; }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      min-height: 42px;
+      padding: 0.62rem 1.1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      border: 1px solid transparent;
+    }
+    .button--primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .button--primary:hover { color: #fff; background: #a08050; }
+    .button--secondary {
+      color: var(--text);
+      background: var(--bg);
+      border-color: var(--border);
+    }
+    .button--secondary:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .prompt-block {
+      position: relative;
+      background: var(--claude-bg);
+      border: 2px solid var(--claude-border);
+      border-radius: 8px;
+      padding: 1.35rem;
+      margin: 1rem 0;
+      font-size: 0.83rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: #5a4a7a;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(124,106,154,0.15);
+      color: #5a4a7a;
+      border: none;
+      border-radius: 6px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(124,106,154,0.25); }
+
+    .footer-links {
+      text-align: center;
+      padding: 2rem 0;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .footer-links a { margin: 0 1rem; }
+
+    @media (max-width: 720px) {
+      .hero { padding-top: calc(72px + 1rem); }
+      .hero-text { padding: 1.5rem 1.75rem 1.75rem; text-align: center; }
+      h1 { font-size: 1.85rem; }
+      .section { padding: 1.5rem; }
+      .quick-grid, .split { grid-template-columns: 1fr; }
+      .service-title { align-items: flex-start; }
+      .service-title .tag { margin-left: 0; }
+      .service-title { flex-wrap: wrap; }
+      .footer-links a { display: block; margin: 0.35rem 0; }
+    }
+
+    @media print {
+      body { background: white; }
+      .aap-header, .aap-mobile-nav { display: none; }
+      .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<span data-site-version style="display:none;">v260620.02 3:41p</span>
+<div id="siteHeader"></div>
+
+<!-- ⚠️ HERO BANNER — Intentionally matches the Infra banner card pattern. -->
+<div class="hero">
+  <div class="hero-card">
+    <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="AlpacApps — AI-powered platform with alpacas" class="hero-image" width="1509" height="475">
+    <div class="hero-text">
+      <span class="eyebrow">Optional pre-setup homework</span>
+      <h1>Create your <span>core accounts</span> first</h1>
+      <p><strong>This is optional.</strong> The setup wizard can walk you through these accounts later, but creating them beforehand makes the AlpacApps Infra setup smoother and avoids context switching while Claude is configuring your project.</p>
+      <span class="badge">15&ndash;30 minutes before setup</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+  <section class="section">
+    <h2>What to prepare</h2>
+    <p>Create or confirm access to the services AlpacApps uses for the basic clone: repository hosting, DNS/infrastructure, database/auth/storage, email, and Google Sign-In.</p>
+    <div class="quick-grid" aria-label="Core account checklist">
+      <div class="quick-card"><strong>GitHub</strong><span>Source code, repo access, and static deploy workflow.</span></div>
+      <div class="quick-card"><strong>Cloudflare</strong><span>DNS, Pages, D1 session logging, and R2 storage.</span></div>
+      <div class="quick-card"><strong>Supabase</strong><span>Postgres database, auth, storage, and edge functions.</span></div>
+      <div class="quick-card"><strong>Resend</strong><span>Transactional email and optional inbound email webhooks.</span></div>
+      <div class="quick-card"><strong>Google Cloud</strong><span>OAuth app for Google Sign-In through Supabase Auth.</span></div>
+      <div class="quick-card"><strong>Password Manager</strong><span>One secure place for passwords, recovery codes, and API keys.</span></div>
+    </div>
+    <div class="callout callout--info">
+      <p><strong>Keep setup flexible:</strong> You do not need to create every project, token, or API key today. Account creation is enough. The wizard will create project-specific resources when it knows your app name, domain, and Supabase project ref.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Save credentials safely first</h2>
+    <p>Use a password manager as the source of truth. A private Google Doc is useful as a checklist, but it should not become the long-term home for passwords, API keys, OAuth secrets, or recovery codes.</p>
+
+    <div class="split">
+      <div class="mini-panel">
+        <h3>Best option: password manager</h3>
+        <ol>
+          <li>Use your existing password manager if you already have one.</li>
+          <li>If you do not, install <a href="https://bitwarden.com/download/" target="_blank" rel="noopener">Bitwarden</a> and create a free account.</li>
+          <li>Install the browser extension so it can generate and save strong passwords during signup.</li>
+          <li>Create a folder named <strong>AlpacApps Setup</strong>.</li>
+          <li>Add one login item per service: GitHub, Cloudflare, Supabase, Resend, and Google Cloud.</li>
+        </ol>
+      </div>
+      <div class="mini-panel">
+        <h3>Okay option: private Google Doc</h3>
+        <ol>
+          <li>Create a Google Doc named <strong>AlpacApps Account Setup</strong>.</li>
+          <li>Set sharing to <strong>Restricted</strong>, not public or link-access.</li>
+          <li>Use it for service URLs, usernames, setup status, and notes.</li>
+          <li>For secrets, write <strong>Stored in Bitwarden</strong> or the name of your password manager item.</li>
+          <li>If you temporarily paste a secret there, move it to a password manager and delete it from the doc.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="callout callout--secure">
+      <p><strong>Do not save secrets in public places.</strong> Never put passwords, API keys, OAuth client secrets, recovery codes, or database passwords in a public Google Doc, GitHub issue, Slack channel, screenshot, or checked-in repo file.</p>
+    </div>
+
+    <h3>Copyable credential tracker</h3>
+    <p class="small muted">Use this in a private doc or as notes inside your password manager. Put actual secret values only in the password manager fields.</p>
+    <div class="prompt-block" id="tracker-template"><button class="copy-btn" onclick="copyById('tracker-template')">Copy</button>AlpacApps Account Setup
+
+Project name:
+Domain, if any:
+Primary setup email:
+
+GitHub
+- Login URL: https://github.com
+- Username:
+- Email:
+- Password: stored in password manager
+- 2FA recovery codes: stored in password manager
+- Notes:
+
+Cloudflare
+- Login URL: https://dash.cloudflare.com
+- Email:
+- Account name:
+- Account ID, if known:
+- Global API Key: stored in password manager
+- Domain/zone, if any:
+- Notes:
+
+Supabase
+- Login URL: https://supabase.com/dashboard
+- Email:
+- Organization:
+- Project ref, if already created:
+- Database password: stored in password manager
+- Anon/service keys, if already created: stored in password manager
+- Notes:
+
+Resend
+- Login URL: https://resend.com
+- Email:
+- Domain, if verified:
+- API key: stored in password manager
+- Notes:
+
+Google Cloud / OAuth
+- Login URL: https://console.cloud.google.com
+- Google account:
+- Project name:
+- Project ID:
+- OAuth Client ID:
+- OAuth Client Secret: stored in password manager
+- Notes:</div>
+  </section>
+
+  <section class="section">
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/github/181717" alt="" width="22" height="22"></span>
+        <h2>GitHub</h2>
+        <span class="tag">Free</span>
+      </div>
+      <p>GitHub hosts your AlpacApps clone and gives Claude/Codex a place to commit and push changes. The setup flow uses GitHub CLI OAuth, so you do not need to create a Personal Access Token beforehand.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Create it</h3>
+          <ol>
+            <li>Go to <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>.</li>
+            <li>Create or sign in to your account.</li>
+            <li>Verify your email address.</li>
+            <li>Enable 2FA if GitHub prompts you.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Save it</h3>
+          <ul>
+            <li>Username</li>
+            <li>Login email</li>
+            <li>Password manager item name</li>
+            <li>2FA/recovery code location</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/cloudflare/F38020" alt="" width="22" height="22"></span>
+        <h2>Cloudflare</h2>
+        <span class="tag">Free core</span>
+      </div>
+      <p>Cloudflare handles DNS, Cloudflare Pages hosting, D1 session logging, and R2 object storage. During setup, Claude uses your Cloudflare email and Global API Key once to create a scoped project token.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Create it</h3>
+          <ol>
+            <li>Go to <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">dash.cloudflare.com/sign-up</a>.</li>
+            <li>Create or sign in to your account.</li>
+            <li>Verify your email.</li>
+            <li>If you already own a domain, add it later when the wizard asks.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Save it</h3>
+          <ul>
+            <li>Cloudflare email</li>
+            <li>Account name</li>
+            <li>Domain name, if any</li>
+            <li>Global API Key location: <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">Profile &rarr; API Tokens</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>Optional ahead of time:</strong> In Cloudflare, go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">Profile &rarr; API Tokens</a>, find <strong>Global API Key</strong>, click <strong>View</strong>, and save it in your password manager. The main setup page explains this same step.</p>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/supabase/3ECF8E" alt="" width="22" height="22"></span>
+        <h2>Supabase</h2>
+        <span class="tag">Free tier</span>
+      </div>
+      <p>Supabase provides Postgres, auth, storage, and edge functions. It is usually best to create the account now and let the wizard create the project later so the project name, region, and auth URLs line up correctly.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Create it</h3>
+          <ol>
+            <li>Go to <a href="https://supabase.com/dashboard/sign-up" target="_blank" rel="noopener">supabase.com/dashboard/sign-up</a>.</li>
+            <li>Create or sign in to your account.</li>
+            <li>Create a free organization if prompted.</li>
+            <li>Stop there unless you already know your project name and database password.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Save it</h3>
+          <ul>
+            <li>Supabase login email</li>
+            <li>Organization name</li>
+            <li>Project ref, if already created</li>
+            <li>Database password, if already created</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>If you pre-create a project:</strong> save the database password immediately. Supabase will not show it again, and the setup wizard needs it for database connection validation.</p>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/resend/000000" alt="" width="22" height="22"></span>
+        <h2>Resend</h2>
+        <span class="tag">Free tier</span>
+      </div>
+      <p>Resend sends transactional email such as welcome emails, booking confirmations, and notifications. You can create the account now and wait to create the API key until Claude is ready to validate it.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Create it</h3>
+          <ol>
+            <li>Go to <a href="https://resend.com/signup" target="_blank" rel="noopener">resend.com/signup</a>.</li>
+            <li>Create or sign in to your account.</li>
+            <li>Verify your email.</li>
+            <li>Optional: wait on domain verification until Cloudflare DNS is ready.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Save it</h3>
+          <ul>
+            <li>Resend login email</li>
+            <li>Domain status, if any</li>
+            <li>API key location: <a href="https://resend.com/api-keys" target="_blank" rel="noopener">resend.com/api-keys</a></li>
+            <li>From-address plan, if known</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/googlecloud/4285F4" alt="" width="22" height="22"></span>
+        <h2>Google Cloud for auth</h2>
+        <span class="tag">Free</span>
+      </div>
+      <p>Google Cloud supplies the OAuth client used by Supabase Auth for "Sign in with Google." The final redirect URI depends on your Supabase project ref, so account creation is the main homework.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Create it</h3>
+          <ol>
+            <li>Use the Google account you want to own the project.</li>
+            <li>Open <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>.</li>
+            <li>Accept terms if this is your first Google Cloud login.</li>
+            <li>Optional: create a project at <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com/projectcreate</a>.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Save it</h3>
+          <ul>
+            <li>Google account email</li>
+            <li>Google Cloud project name</li>
+            <li>Project ID, if created</li>
+            <li>OAuth Client ID and Client Secret, once created</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>Usually later:</strong> OAuth credentials are easiest after Supabase exists, because the authorized redirect URI will be <code>https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Ready for the setup wizard</h2>
+    <p>You are ready when you can sign in to GitHub, Cloudflare, Supabase, Resend, and Google Cloud, and you know where the saved credentials live.</p>
+    <div class="callout callout--done">
+      <p><strong>What to tell Claude:</strong> "I already created the core service accounts. Credentials are saved in my password manager. Continue the AlpacApps Infra setup."</p>
+    </div>
+    <div class="cta-row">
+      <a class="button button--primary" href="/infra/">Start AlpacApps Infra setup</a>
+      <a class="button button--secondary" href="/infra/setup-guide.html">Open step-by-step guide</a>
+      <a class="button button--secondary" href="/infra/llm-setup-instructions.md">LLM setup instructions</a>
+    </div>
+  </section>
+
+  <div class="footer-links">
+    <a href="/infra/">Infra home</a>
+    <a href="/docs/alpacappsinfra.html">Full manual setup guide</a>
+    <a href="/infra/updates.html">Sync new features</a>
+    <a href="https://github.com/rsonnad/alpacapps-infra">Template repo</a>
+  </div>
+</main>
+
+<script>
+function copyById(id) {
+  var el = document.getElementById(id);
+  var text = el.textContent.replace(/^\s*Copy\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = el.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
+
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module" src="/shared/version-info.js"></script>
+<script type="module">
+  import { initPublicPage } from '/shared/public-shell.js';
+  initPublicPage({ transparent: false, light: false });
+</script>
+
+</body>
+</html>
