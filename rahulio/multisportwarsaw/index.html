@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MultiSport Warsaw — within 30 min of the hotel</title>
+  <meta name="description" content="Every MultiSport sport &amp; fitness venue within 30 minutes of the Grand Mercure Warszawa by foot, bike or transit — with overviews, a map, and how the card actually pays off.">
+  <meta property="og:title" content="MultiSport Warsaw — within 30 min of the hotel">
+  <meta property="og:description" content="MultiSport gyms, pools, climbing, yoga & racket venues within 30 min of Grand Mercure Warszawa, by foot/bike/transit. Plus how the card pays off.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/multisportwarsaw/">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root{
+      --bg:#f6f7fb; --surface:#ffffff; --surface2:#f0f2f8; --border:#e2e6ef; --border-strong:#d3d9e6;
+      --text:#171a23; --text-soft:#3a4252; --text-dim:#69728a; --text-muted:#9aa3b8;
+      --accent:#d4883a; --accent-dk:#b56e26;
+      --ok:#138a4f; --ok-bg:#e7f6ee; --ok-bd:#b6e2c9;
+      --no:#9aa3b8; --no-bg:#f0f2f8;
+      --gym:#2563eb; --pool:#0891b2; --climb:#ea580c; --yoga:#7c3aed; --racket:#db2777;
+      --shadow:0 1px 3px rgba(20,26,45,.06),0 6px 18px rgba(20,26,45,.05);
+      --shadow-lg:0 8px 30px rgba(20,26,45,.10);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{color:var(--accent-dk);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+
+    /* ---------- hero ---------- */
+    .hero{background:
+        radial-gradient(900px 380px at 88% -8%,rgba(212,136,58,.16),transparent 60%),
+        radial-gradient(700px 360px at 6% 0%,rgba(37,99,235,.10),transparent 55%),
+        linear-gradient(180deg,#1c1618 0%,#241c20 100%);
+      color:#f5f0e8;padding:38px 0 30px;border-bottom:3px solid var(--accent)}
+    .hero .wrap{display:block}
+    .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:.74rem;font-weight:700;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--accent);background:rgba(212,136,58,.12);
+      border:1px solid rgba(212,136,58,.32);padding:5px 11px;border-radius:999px}
+    h1{font-size:clamp(1.7rem,4.4vw,2.7rem);line-height:1.08;margin:14px 0 8px;font-weight:800;letter-spacing:-.02em}
+    h1 .hl{color:var(--accent)}
+    .sub{color:#d8d2c7;max-width:680px;font-size:1.02rem}
+    .sub b{color:#fff;font-weight:600}
+    .stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+    .stat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;
+      padding:11px 15px;min-width:96px}
+    .stat .n{font-size:1.5rem;font-weight:800;line-height:1;color:#fff}
+    .stat .l{font-size:.72rem;color:#c9c3b8;margin-top:5px;text-transform:uppercase;letter-spacing:.06em}
+    .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;font-size:.8rem;color:#c9c3b8}
+    .legend span{display:inline-flex;align-items:center;gap:6px}
+    .dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none}
+
+    /* ---------- controls ---------- */
+    .controls{position:sticky;top:38px;z-index:500;background:rgba(246,247,251,.92);
+      backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--border);padding:11px 0}
+    .controls .wrap{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+    .search{flex:1 1 190px;min-width:150px;position:relative}
+    .search input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--border-strong);border-radius:10px;
+      font-size:.9rem;background:var(--surface);font-family:inherit;color:var(--text)}
+    .search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,136,58,.15)}
+    .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-muted)}
+    .chips{display:flex;flex-wrap:wrap;gap:7px}
+    .chip{border:1px solid var(--border-strong);background:var(--surface);color:var(--text-soft);
+      padding:7px 12px;border-radius:999px;font-size:.82rem;font-weight:600;cursor:pointer;
+      display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:.13s}
+    .chip:hover{border-color:var(--text-muted)}
+    .chip[aria-pressed="true"]{color:#fff;border-color:transparent}
+    .chip.cat[aria-pressed="true"]{background:var(--c)}
+    .chip.cat .dot{background:var(--c)}
+    .chip[aria-pressed="true"] .dot{background:#fff}
+    .chip.mode[aria-pressed="true"]{background:var(--ok);border-color:transparent}
+    select.sort{margin-left:auto;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-soft);
+      padding:8px 10px;border-radius:10px;font-size:.82rem;font-weight:600;font-family:inherit;cursor:pointer}
+
+    /* ---------- layout ---------- */
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;padding:22px 0 10px;align-items:start}
+    .resultcount{font-size:.82rem;color:var(--text-dim);margin:0 0 12px;font-weight:600}
+    .resultcount b{color:var(--text)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:13px}
+
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 15px 13px;
+      box-shadow:var(--shadow);position:relative;overflow:hidden;display:flex;flex-direction:column}
+    .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+    .card .ctype{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.05em;color:var(--c)}
+    .card h3{margin:7px 0 4px;font-size:1.04rem;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+    .card h3 a{color:var(--text)}
+    .card .ov{font-size:.86rem;color:var(--text-soft);margin:0 0 9px}
+    .card .tip{font-size:.78rem;color:var(--text-dim);background:var(--surface2);border-radius:8px;
+      padding:7px 9px;margin:0 0 11px;display:flex;gap:7px;line-height:1.4}
+    .card .tip .ic{flex:none}
+    .badges{display:flex;gap:6px;margin-bottom:11px;flex-wrap:wrap}
+    .badge{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;font-weight:700;padding:5px 9px;border-radius:8px;
+      border:1px solid transparent}
+    .badge.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+    .badge.no{background:var(--no-bg);color:var(--no)}
+    .badge .u{font-weight:500;font-size:.74rem;opacity:.8}
+    .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+    .act{font-size:.76rem;font-weight:600;color:var(--text-soft);border:1px solid var(--border-strong);
+      border-radius:7px;padding:5px 9px;cursor:pointer;background:var(--surface);display:inline-flex;align-items:center;gap:5px}
+    .act:hover{border-color:var(--accent);color:var(--accent-dk);text-decoration:none}
+    .act.pin{border-color:var(--border-strong)}
+    .addr{font-size:.74rem;color:var(--text-muted);margin-top:9px}
+
+    /* map */
+    .mapcol{position:sticky;top:108px}
+    #map{height:560px;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);background:#dfe3ea}
+    .maphint{font-size:.74rem;color:var(--text-dim);margin-top:8px;text-align:center}
+    .leaflet-popup-content{font-family:'Inter',sans-serif;margin:11px 13px}
+    .pop h4{margin:0 0 3px;font-size:.95rem}
+    .pop .pt{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+    .pop .pb{font-size:.8rem;color:#444;margin-bottom:7px}
+    .pop a{font-size:.78rem;font-weight:600}
+
+    /* near section */
+    .near-wrap{margin:14px 0 0}
+    .near-toggle{width:100%;text-align:left;background:var(--surface);border:1px dashed var(--border-strong);
+      border-radius:12px;padding:13px 16px;cursor:pointer;font-size:.9rem;font-weight:600;color:var(--text-soft);
+      display:flex;align-items:center;gap:10px}
+    .near-toggle:hover{border-color:var(--text-muted)}
+    .near-toggle .arw{margin-left:auto;transition:.2s}
+    .near-toggle[aria-expanded="true"] .arw{transform:rotate(90deg)}
+    .near-body{display:none;margin-top:13px}
+    .near-body.open{display:block}
+    .near-note{font-size:.82rem;color:var(--text-dim);background:#fff8ef;border:1px solid #f0e0c8;border-radius:10px;
+      padding:10px 13px;margin-bottom:13px}
+    .card.dim{opacity:.92}
+    .card.dim::before{opacity:.6}
+
+    /* ---------- sections ---------- */
+    section.block{padding:34px 0}
+    .block h2{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+    .block .lead{color:var(--text-dim);max-width:720px;margin:0 0 22px}
+    .econ{background:var(--surface);border-top:1px solid var(--border)}
+
+    .tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:8px}
+    .tier{border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--surface);box-shadow:var(--shadow)}
+    .tier.best{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow-lg)}
+    .tier .badge-best{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--accent-dk)}
+    .tier .tn{font-size:1.15rem;font-weight:800;margin:2px 0 2px}
+    .tier .pr{font-size:1.7rem;font-weight:800;letter-spacing:-.02em}
+    .tier .pr small{font-size:.8rem;font-weight:600;color:var(--text-dim)}
+    .tier .fx{font-size:.78rem;color:var(--text-dim);margin-top:2px}
+    .tier ul{margin:13px 0 0;padding:0;list-style:none;font-size:.85rem;color:var(--text-soft)}
+    .tier li{padding:5px 0 5px 22px;position:relative}
+    .tier li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:800}
+
+    .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:18px}
+    .panel{border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--surface)}
+    .panel h3{margin:0 0 11px;font-size:1.02rem;font-weight:700;display:flex;align-items:center;gap:8px}
+    .panel ul{margin:0;padding-left:2px;list-style:none}
+    .panel li{position:relative;padding:6px 0 6px 24px;font-size:.86rem;color:var(--text-soft);border-bottom:1px solid var(--surface2)}
+    .panel li:last-child{border-bottom:none}
+    .panel li .k{color:var(--text);font-weight:600}
+    .panel li::before{content:"";position:absolute;left:4px;top:13px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+    .panel.warn li::before{background:var(--climb)}
+    .calc{background:var(--surface2);border-radius:12px;padding:15px 17px;margin-top:16px;font-size:.88rem;color:var(--text-soft)}
+    .calc b{color:var(--text)}
+    .calc .row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px dashed var(--border)}
+    .calc .row:last-child{border-bottom:none}
+
+    .note{font-size:.78rem;color:var(--text-muted);margin-top:16px;line-height:1.5}
+
+    footer{background:#1c1618;color:#c9c3b8;padding:28px 0;font-size:.82rem;line-height:1.6}
+    footer a{color:var(--accent)}
+    footer .meth{max-width:780px}
+    footer code{background:rgba(255,255,255,.08);padding:1px 6px;border-radius:5px;font-size:.78rem}
+
+    @media(max-width:880px){
+      .layout{grid-template-columns:1fr}
+      .mapcol{position:static;order:-1}
+      #map{height:340px}
+      .controls{top:38px}
+    }
+    @media(max-width:560px){
+      .stat{flex:1 1 calc(50% - 5px);min-width:0}
+      select.sort{margin-left:0;width:100%}
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <span class="eyebrow">🎟️ MultiSport · Warszawa</span>
+      <h1>Sweat within <span class="hl">30 minutes</span> of the hotel</h1>
+      <p class="sub">Every MultiSport venue you can reach from <b>Grand Mercure Warszawa</b> (ul. Krucza 28) in
+        under half an hour <b>on foot, by bike, or by public transit</b> — with a quick read on each place and how
+        to make the card pay for itself.</p>
+      <div class="stats" id="stats"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </header>
+
+  <nav class="controls">
+    <div class="wrap">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="Search venue, area or activity…" autocomplete="off">
+      </label>
+      <div class="chips" id="catchips"></div>
+      <div class="chips" id="modechips"></div>
+      <select class="sort" id="sort">
+        <option value="best">Sort: Nearest</option>
+        <option value="walk">Sort: Walk time</option>
+        <option value="bike">Sort: Bike time</option>
+        <option value="name">Sort: Name A–Z</option>
+        <option value="cat">Sort: Category</option>
+      </select>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="layout">
+      <main>
+        <p class="resultcount" id="count"></p>
+        <div class="grid" id="grid"></div>
+
+        <div class="near-wrap">
+          <button class="near-toggle" id="nearToggle" aria-expanded="false">
+            <span>🚇</span>
+            <span>Show <b id="nearN">…</b> venues a bit farther out (30–45 min) — several are ~30 min by Metro</span>
+            <span class="arw">›</span>
+          </button>
+          <div class="near-body" id="nearBody">
+            <div class="near-note">
+              These sit just past the 30‑minute bike radius, but Warsaw’s two Metro lines move faster than my
+              estimate assumes — places like Ursynów are realistically ~30 min on <b>Metro&nbsp;M1</b>. Tap a
+              venue’s <b>Transit</b> link to see Google’s live door‑to‑door time.
+            </div>
+            <div class="grid" id="nearGrid"></div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="mapcol">
+        <div id="map"></div>
+        <p class="maphint">🏨 = your hotel · coloured dots = venues · tap a dot or a card’s <b>Map</b> pin</p>
+      </aside>
+    </div>
+  </div>
+
+  <section class="block econ">
+    <div class="wrap">
+      <h2>Does the MultiSport card pay off?</h2>
+      <p class="lead">MultiSport (by Benefit Systems) is a single card that gets you into thousands of gyms, pools,
+        climbing walls, studios and courts across Poland — one entry per venue per day. Here’s the quick economics
+        for a stay in Warsaw.</p>
+
+      <div class="tiers">
+        <div class="tier">
+          <div class="tn">8&nbsp;entries / month</div>
+          <div class="pr">130&nbsp;zł <small>/mo</small></div>
+          <div class="fx">≈ $33 · €30</div>
+          <ul><li>8 visits a month</li><li>Same venue network</li><li>Best for ~2×/week</li></ul>
+        </div>
+        <div class="tier">
+          <div class="tn">Classic</div>
+          <div class="pr">225&nbsp;zł <small>/mo</small></div>
+          <div class="fx">≈ $56 · €52</div>
+          <ul><li>One entry per day</li><li>Any venue, every day</li><li>Best for daily‑ish training</li></ul>
+        </div>
+        <div class="tier best">
+          <div class="badge-best">★ most flexible</div>
+          <div class="tn">Unlimited (Plus)</div>
+          <div class="pr">280&nbsp;zł <small>/mo</small></div>
+          <div class="fx">≈ $70 · €65</div>
+          <ul><li>Unlimited entries/day</li><li>Stack a swim + a climb same day</li><li>Best if you go a lot</li></ul>
+        </div>
+      </div>
+      <p class="note">Prices shown are typical 2025 self‑pay list rates (e.g. via a Warsaw association membership such
+        as ACA). Through a Polish employer the co‑pay is usually lower. FX is approximate.</p>
+
+      <div class="cols">
+        <div class="panel">
+          <h3>📋 How entry works</h3>
+          <ul>
+            <li><span class="k">Personalised card.</span> Photo + ID checked at the desk — it’s not transferable.</li>
+            <li><span class="k">One entry per venue per day.</span> Re‑entry to the same place needs another day.</li>
+            <li><span class="k">Classic vs Unlimited.</span> Classic = one facility a day; Unlimited lets you hit several.</li>
+            <li><span class="k">Book classes in the app.</span> Yoga, Pilates and pool lanes often need a reservation.</li>
+            <li><span class="k">Bring a padlock & flip‑flops.</span> Standard for Polish gyms and pools.</li>
+          </ul>
+        </div>
+        <div class="panel warn">
+          <h3>⚠️ Surcharge gotchas</h3>
+          <ul>
+            <li><span class="k">Climbing.</span> Bouldering is often free before 3pm on weekdays; after 3pm &amp; weekends add ~20&nbsp;zł. Shoe/harness rental is extra.</li>
+            <li><span class="k">Pools.</span> Entry is usually time‑limited (~45–90 min); some aqua parks restrict zones/saunas.</li>
+            <li><span class="k">Racket sports.</span> Tennis / squash / badminton are usually only <i>partly</i> covered — you reserve and may top up court time.</li>
+            <li><span class="k">Boutique studios.</span> Many yoga/Pilates studios cap you at a set number of entries per month.</li>
+            <li><span class="k">Always confirm in the app.</span> Partner terms change per venue.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>🧮 Break‑even, fast</h3>
+          <div class="calc">
+            <div class="row"><span>Gym drop‑in (Just GYM, Well Fitness…)</span><b>39–49 zł</b></div>
+            <div class="row"><span>Fitness / yoga class</span><b>40–70 zł</b></div>
+            <div class="row"><span>Municipal pool (OSiR)</span><b>15–25 zł</b></div>
+            <div class="row"><span>Climbing day pass</span><b>35–55 zł</b></div>
+          </div>
+          <p style="font-size:.85rem;margin:13px 0 0;color:var(--text-soft)">
+            At ~45&nbsp;zł a visit, <b>Unlimited (280&nbsp;zł)</b> breaks even at <b>~6–7 visits/month</b>, and the
+            <b>8×</b> plan at <b>~3</b>. Go three times a week and the card is a rounding error — plus you can sample
+            a different gym, pool or wall every day on Unlimited.</p>
+          <p class="note">Visitor tip: MultiSport is an employer/association benefit, not sold to tourists at the door.
+            Get it via a Polish employer, a coworking/association membership, or look at equivalent cards
+            (Medicover Sport, FitProfit, OK System) that share much of the same venue list.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap meth">
+      <p><b>How these times were built.</b> The 55 venues come from the public “Warszawa: MultiSport — kluby wg
+        kategorii” Google&nbsp;My&nbsp;Map (deduped from 101 pins across two imports). Each address was geocoded, then
+        <b>walking</b> and <b>cycling</b> times were computed with real street routing (OSRM / OpenStreetMap) from the
+        hotel at ul.&nbsp;Krucza&nbsp;28. <b>Transit</b> is a calibrated door‑to‑door estimate for Warsaw (access +
+        wait + ride + transfer) and is marked with “~”. For an exact, live figure on any venue, use its
+        <b>Transit</b> / <b>Walk</b> / <b>Bike</b> link — they open Google Maps directions from the hotel.
+        “Within 30 min” means reachable in ≤30 min by at least one of the three modes.</p>
+      <p style="margin-top:12px">Sources: <a href="https://www.kartamultisport.pl/en" target="_blank" rel="noopener">kartamultisport.pl</a>,
+        <a href="https://www.acawarsaw.com/multisport_en.html" target="_blank" rel="noopener">ACA Warsaw pricing</a>,
+        OpenStreetMap routing. Routing &amp; map data © OpenStreetMap contributors.</p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+  const DATA = {"hotel":{"name":"Grand Mercure Warszawa (Śródmieście)","address":"ul. Krucza 28, 00-522 Warszawa","lat":52.2277265,"lon":21.0187375},"threshold_min":30.0,"near_max_min":45.0,"total_on_map":55,"qualifying":38,"near_count":14,"venues":[{"name":"Zdrofit Centrum Krucza","address":"Krucza 50, Warszawa, Polska","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2313842,"lon":21.0169664,"walk_min":6.7,"bike_min":5.2,"transit_min":14.8,"best_min":5.2,"tier":"within"},{"name":"Crux Bouldering Hoża","address":"Hoża 51, Warszawa","category_en":"Climbing / Alternative","overview":"Bouldering gym — ropeless climbing, beginner-friendly.","ms_note":"Usually covered; shoe rental extra, peak-hour surcharge possible.","lat":52.2251416,"lon":21.0097273,"walk_min":10.5,"bike_min":5.5,"transit_min":15.4,"best_min":5.5,"tier":"within"},{"name":"Yoga Republic Śniadeckich","address":"Śniadeckich 18, Warszawa","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.220799,"lon":21.0132868,"walk_min":16.0,"bike_min":7.2,"transit_min":16.7,"best_min":7.2,"tier":"within"},{"name":"Yoga Republic Plac Zbawiciela","address":"plac Zbawiciela 2, Warszawa, Polska","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.2195631,"lon":21.0186133,"walk_min":14.0,"bike_min":7.5,"transit_min":16.1,"best_min":7.5,"tier":"within"},{"name":"Zdrofit Sezam Marszałkowska","address":"Marszałkowska 126/134, Warszawa, Polska","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2347824,"lon":21.0094665,"walk_min":16.3,"bike_min":8.6,"transit_min":16.9,"best_min":8.6,"tier":"within"},{"name":"Zdrofit Politechnika (Polna)","address":"Polna 11, Warszawa, Polska","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2179743,"lon":21.0142322,"walk_min":19.6,"bike_min":8.7,"transit_min":17.9,"best_min":8.7,"tier":"within"},{"name":"Koma Yoga Studio Powiśle","address":"Wilanowska 6, Warszawa","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.2307325,"lon":21.0397276,"walk_min":22.9,"bike_min":10.1,"transit_min":18.7,"best_min":10.1,"tier":"within"},{"name":"Yoga Beat Studio","address":"Leszczyńska 12, Warszawa","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.2401059,"lon":21.0233953,"walk_min":25.4,"bike_min":10.1,"transit_min":20.1,"best_min":10.1,"tier":"within"},{"name":"Zdrofit Varso (Chmielna)","address":"Chmielna 71, Warszawa, Polska","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2284973,"lon":20.9989952,"walk_min":22.7,"bike_min":10.2,"transit_min":18.5,"best_min":10.2,"tier":"within"},{"name":"Zdrofit Plac Unii","address":"Puławska 2, Warszawa","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2127411,"lon":21.0187592,"walk_min":26.5,"bike_min":10.7,"transit_min":20.2,"best_min":10.7,"tier":"within"},{"name":"Zdrofit Rondo ONZ","address":"Rondo ONZ 1, Warszawa, Polska","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.23271,"lon":20.999569,"walk_min":25.6,"bike_min":10.7,"transit_min":19.1,"best_min":10.7,"tier":"within"},{"name":"147 Break Nowogrodzka (Bilard/Dart)","address":"Nowogrodzka 84/86, Warszawa","category_en":"Climbing / Alternative","overview":"Billiards, pool & darts club — tables and oche, sociable evening option.","ms_note":"Covered as a MultiSport 'Alternative' activity; table time may be capped.","lat":52.224449,"lon":20.9905374,"walk_min":29.8,"bike_min":10.9,"transit_min":19.7,"best_min":10.9,"tier":"within"},{"name":"CityFit Twarda (24h)","address":"Twarda 18, Warszawa, Polska","category_en":"Gym / Fitness chain","overview":"CityFit — 24/7 self-service gym, app entry, no contracts.","ms_note":"Core MultiSport gym; open round the clock.","lat":52.2346867,"lon":20.9992753,"walk_min":27.5,"bike_min":12.0,"transit_min":19.6,"best_min":12.0,"tier":"within"},{"name":"Joga Studio Grzegorza Nieściera","address":"Grzybowska 37A, Warszawa","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.2368258,"lon":21.0000455,"walk_min":27.5,"bike_min":12.4,"transit_min":19.9,"best_min":12.4,"tier":"within"},{"name":"Zdrofit Europlex","address":"Puławska 17, Warszawa","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2100439,"lon":21.0224914,"walk_min":29.8,"bike_min":12.5,"transit_min":21.1,"best_min":12.5,"tier":"within"},{"name":"Zdrofit Mennica Towers","address":"Prosta 18, Warszawa, Polska","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2327343,"lon":20.9931585,"walk_min":32.3,"bike_min":12.6,"transit_min":20.5,"best_min":12.6,"tier":"within"},{"name":"At Studio Warsaw","address":"Grzybowska 49, Warszawa","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.2341866,"lon":20.9893269,"walk_min":38.2,"bike_min":14.7,"transit_min":21.8,"best_min":14.7,"tier":"within"},{"name":"Zdrofit Warsaw Spire","address":"plac Europejski 1, Warszawa, Polska","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2321822,"lon":20.9840929,"walk_min":41.6,"bike_min":15.3,"transit_min":22.5,"best_min":15.3,"tier":"within"},{"name":"Zdrofit Browary Warszawskie","address":"Grzybowska 58, Warszawa","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2345632,"lon":20.9881123,"walk_min":39.2,"bike_min":15.4,"transit_min":22.0,"best_min":15.4,"tier":"within"},{"name":"Zdrofit Rondo Daszyńskiego","address":"Prosta 67, Warszawa","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2293993,"lon":20.9836258,"walk_min":40.2,"bike_min":15.4,"transit_min":22.4,"best_min":15.4,"tier":"within"},{"name":"Just GYM Dziekońskiego (24/7)","address":"Dziekońskiego 1, Warszawa","category_en":"Gym / Fitness chain","overview":"Just GYM — 24/7 no-frills gym, strength & cardio, no staff desk at night.","ms_note":"Core MultiSport gym; app/QR entry, open round the clock.","lat":52.1946583,"lon":21.0474959,"walk_min":62.5,"bike_min":20.5,"transit_min":33.8,"best_min":20.5,"tier":"within"},{"name":"Pływalnia OSiR Ochota","address":"Rokosowska 10, Warszawa","category_en":"Pool / Wellness","overview":"Municipal swimming pool (OSiR/city) — lane swimming, lessons.","ms_note":"Strong MultiSport value; entry often time-limited (~45–90 min).","lat":52.2150394,"lon":20.9728617,"walk_min":55.6,"bike_min":20.9,"transit_min":34.6,"best_min":20.9,"tier":"within"},{"name":"Total Fitness Ochota","address":"Rokosowska 10, Warszawa","category_en":"Gym / Fitness chain","overview":"Total Fitness — large full-service club: gym, classes, wellness zones.","ms_note":"Core MultiSport gym; one entry/day.","lat":52.2150394,"lon":20.9728617,"walk_min":55.6,"bike_min":20.9,"transit_min":34.6,"best_min":20.9,"tier":"within"},{"name":"Wodny Park Warszawianka","address":"Merliniego 4, Warszawa","category_en":"Pool / Wellness","overview":"Large aquatic park — Olympic & recreational pools, slides, thermal pools, saunas.","ms_note":"Great MultiSport value; aqua zone usually included, some saunas may surcharge.","lat":52.1948805,"lon":21.0265101,"walk_min":53.8,"bike_min":20.9,"transit_min":32.4,"best_min":20.9,"tier":"within"},{"name":"Hangar 646 Gocław","address":"Wał Miedzeszyński 646, Warszawa","category_en":"Climbing / Alternative","overview":"Trampoline park — jumping arenas, foam pits, ninja & airbag zones.","ms_note":"Covered as 'Alternative'; great for a fun session, socks/extras may cost.","lat":52.2221203,"lon":21.0831046,"walk_min":70.4,"bike_min":21.2,"transit_min":37.2,"best_min":21.2,"tier":"within"},{"name":"Zdrofit Dworzec Gdański","address":"Słomińskiego 4, Warszawa","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2588161,"lon":20.9967795,"walk_min":56.0,"bike_min":22.3,"transit_min":32.2,"best_min":22.3,"tier":"within"},{"name":"Zdrofit Centrum Koneser","address":"Plac Konesera 8, Warszawa","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.2561511,"lon":21.0440119,"walk_min":62.8,"bike_min":22.8,"transit_min":35.1,"best_min":22.8,"tier":"within"},{"name":"Kahuna Squash & Badminton","address":"Magazynowa 7, Warszawa","category_en":"Racket sports","overview":"Squash & badminton courts, by reservation.","ms_note":"Often only partly covered — court time may need a top-up; reserve ahead.","lat":52.1855766,"lon":21.0048685,"walk_min":80.0,"bike_min":23.2,"transit_min":38.1,"best_min":23.2,"tier":"within"},{"name":"WKT Mera Korty","address":"Bohaterów Września 9, Warszawa","category_en":"Racket sports","overview":"Racket courts — tennis/squash, by reservation.","ms_note":"Often only partly covered — court time may need a top-up; reserve ahead.","lat":52.2131116,"lon":20.9595899,"walk_min":67.5,"bike_min":23.5,"transit_min":37.5,"best_min":23.5,"tier":"within"},{"name":"Calypso Fitness Westfield Arkadia","address":"al. Jana Pawła II 82, Warszawa","category_en":"Gym / Fitness chain","overview":"Calypso — fitness chain (often in malls): gym + classes, some with pool/sauna.","ms_note":"Core MultiSport gym; one entry/day.","lat":52.2558041,"lon":20.9845036,"walk_min":62.2,"bike_min":23.7,"transit_min":34.0,"best_min":23.7,"tier":"within"},{"name":"Total Fitness Wola","address":"Wolska 84/86, Warszawa","category_en":"Gym / Fitness chain","overview":"Total Fitness — large full-service club: gym, classes, wellness zones.","ms_note":"Core MultiSport gym; one entry/day.","lat":52.2322566,"lon":20.9593889,"walk_min":68.9,"bike_min":24.3,"transit_min":34.8,"best_min":24.3,"tier":"within"},{"name":"Hangar 646 Mokotów","address":"Domaniewska 37A, Warszawa","category_en":"Climbing / Alternative","overview":"Trampoline park — jumping arenas, foam pits, ninja & airbag zones.","ms_note":"Covered as 'Alternative'; great for a fun session, socks/extras may cost.","lat":52.1823094,"lon":21.0071469,"walk_min":83.1,"bike_min":24.5,"transit_min":39.4,"best_min":24.5,"tier":"within"},{"name":"Pływalnia OSiR Inflancka","address":"Inflancka 8, Warszawa","category_en":"Pool / Wellness","overview":"Municipal swimming pool (OSiR/city) — lane swimming, lessons.","ms_note":"Strong MultiSport value; entry often time-limited (~45–90 min).","lat":52.2554325,"lon":20.9898931,"walk_min":58.0,"bike_min":24.9,"transit_min":32.4,"best_min":24.9,"tier":"within"},{"name":"Pływalnia OSiR Potocka","address":"Potocka 1, Warszawa","category_en":"Pool / Wellness","overview":"Municipal swimming pool (OSiR/city) — lane swimming, lessons.","ms_note":"Strong MultiSport value; entry often time-limited (~45–90 min).","lat":52.2769987,"lon":20.9865855,"walk_min":92.6,"bike_min":28.0,"transit_min":43.6,"best_min":28.0,"tier":"within"},{"name":"Hangar 646 Praga","address":"Radzymińska 116, Warszawa","category_en":"Climbing / Alternative","overview":"Trampoline park — jumping arenas, foam pits, ninja & airbag zones.","ms_note":"Covered as 'Alternative'; great for a fun session, socks/extras may cost.","lat":52.2684285,"lon":21.06133,"walk_min":85.5,"bike_min":28.7,"transit_min":41.3,"best_min":28.7,"tier":"within"},{"name":"Joga Żoliborz Rydygiera","address":"Rydygiera 19, Warszawa","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.2583411,"lon":20.9722316,"walk_min":75.8,"bike_min":28.9,"transit_min":38.7,"best_min":28.9,"tier":"within"},{"name":"Pływalnia OSiR Wola - Nowa Fala","address":"Garbińskiego 1, Warszawa","category_en":"Pool / Wellness","overview":"Municipal swimming pool (OSiR/city) — lane swimming, lessons.","ms_note":"Strong MultiSport value; entry often time-limited (~45–90 min).","lat":52.2348962,"lon":20.943766,"walk_min":85.9,"bike_min":29.4,"transit_min":38.6,"best_min":29.4,"tier":"within"},{"name":"Centrum Joga Żoliborz Paska","address":"Paska 10, Warszawa","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.2743389,"lon":20.9762889,"walk_min":91.1,"bike_min":29.8,"transit_min":44.7,"best_min":29.8,"tier":"within"}],"near_venues":[{"name":"Just GYM Broniewskiego (24/7)","address":"Broniewskiego 28, Warszawa","category_en":"Gym / Fitness chain","overview":"Just GYM — 24/7 no-frills gym, strength & cardio, no staff desk at night.","ms_note":"Core MultiSport gym; app/QR entry, open round the clock.","lat":52.2671894,"lon":20.9638207,"walk_min":91.8,"bike_min":30.4,"transit_min":40.2,"best_min":30.4,"tier":"near"},{"name":"147 Break Zamieniecka (Bilard/Dart)","address":"Zamieniecka 80, Warszawa","category_en":"Climbing / Alternative","overview":"Billiards, pool & darts club — tables and oche, sociable evening option.","ms_note":"Covered as a MultiSport 'Alternative' activity; table time may be capped.","lat":52.2407004,"lon":21.1020914,"walk_min":89.4,"bike_min":32.2,"transit_min":42.7,"best_min":32.2,"tier":"near"},{"name":"147 Break Fort Wola (Bilard/Dart)","address":"Połczyńska 4, Warszawa","category_en":"Climbing / Alternative","overview":"Billiards, pool & darts club — tables and oche, sociable evening option.","ms_note":"Covered as a MultiSport 'Alternative' activity; table time may be capped.","lat":52.2235867,"lon":20.9258979,"walk_min":97.4,"bike_min":32.6,"transit_min":41.5,"best_min":32.6,"tier":"near"},{"name":"Zdrofit Ursynów KEN","address":"al. Komisji Edukacji Narodowej 93, Warszawa","category_en":"Gym / Fitness chain","overview":"Zdrofit — full-service fitness club: machines, free weights, group classes (often sauna).","ms_note":"Core MultiSport gym; one entry/day, classes included.","lat":52.1559757,"lon":21.0334512,"walk_min":117.2,"bike_min":33.3,"transit_min":47.8,"best_min":33.3,"tier":"near"},{"name":"Total Fitness Wilanów","address":"al. Rzeczypospolitej 14, Warszawa","category_en":"Gym / Fitness chain","overview":"Total Fitness — large full-service club: gym, classes, wellness zones.","ms_note":"Core MultiSport gym; one entry/day.","lat":52.1641045,"lon":21.0709276,"walk_min":112.4,"bike_min":33.7,"transit_min":47.0,"best_min":33.7,"tier":"near"},{"name":"Centrum Wspinaczkowe Murall Ochota","address":"Al. Jerozolimskie 200, Warszawa","category_en":"Climbing / Alternative","overview":"Large climbing & bouldering centre — roped walls + boulders, gear rental.","ms_note":"Usually covered; harness/shoe rental and weekend/after-3pm slots may surcharge.","lat":52.1946337,"lon":20.9254336,"walk_min":108.2,"bike_min":34.0,"transit_min":47.1,"best_min":34.0,"tier":"near"},{"name":"Well Fitness Ursynów","address":"Polinezyjska 10, Warszawa","category_en":"Gym / Fitness chain","overview":"Well Fitness — mid-range club: gym floor, classes, some sites with pool.","ms_note":"Core MultiSport gym; one entry/day.","lat":52.1521943,"lon":21.0446853,"walk_min":129.8,"bike_min":35.2,"transit_min":49.5,"best_min":35.2,"tier":"near"},{"name":"Calypso Fitness Wola Park","address":"Górczewska 124, Warszawa","category_en":"Gym / Fitness chain","overview":"Calypso — fitness chain (often in malls): gym + classes, some with pool/sauna.","ms_note":"Core MultiSport gym; one entry/day.","lat":52.2421488,"lon":20.9304651,"walk_min":103.5,"bike_min":35.3,"transit_min":43.1,"best_min":35.3,"tier":"near"},{"name":"Silva Court Puławska","address":"Puławska 538, Warszawa","category_en":"Racket sports","overview":"Racket courts — tennis/squash, by reservation.","ms_note":"Often only partly covered — court time may need a top-up; reserve ahead.","lat":52.109601,"lon":21.0178728,"walk_min":201.9,"bike_min":37.1,"transit_min":67.2,"best_min":37.1,"tier":"near"},{"name":"Aloha Pilates Wilanów","address":"al. Rzeczypospolitej 1, Warszawa","category_en":"Yoga / Pilates","overview":"Pilates studio — reformer &/or mat classes, small groups.","ms_note":"Often capped at a set number of entries/month; book classes in the app.","lat":52.1540478,"lon":21.0815929,"walk_min":131.7,"bike_min":37.5,"transit_min":53.5,"best_min":37.5,"tier":"near"},{"name":"OSiR Polonez Targówek","address":"Łabiszyńska 20, Warszawa","category_en":"Pool / Wellness","overview":"Municipal swimming pool (OSiR/city) — lane swimming, lessons.","ms_note":"Strong MultiSport value; entry often time-limited (~45–90 min).","lat":52.2989415,"lon":21.0337277,"walk_min":131.9,"bike_min":38.3,"transit_min":57.0,"best_min":38.3,"tier":"near"},{"name":"Centrum Wspinaczkowe Murall Annopol","address":"Annopol 22, Warszawa","category_en":"Climbing / Alternative","overview":"Large climbing & bouldering centre — roped walls + boulders, gear rental.","ms_note":"Usually covered; harness/shoe rental and weekend/after-3pm slots may surcharge.","lat":52.3138192,"lon":21.0131449,"walk_min":156.0,"bike_min":41.7,"transit_min":64.3,"best_min":41.7,"tier":"near"},{"name":"Well Fitness Bemowo Radiowa","address":"Radiowa 1A, Warszawa","category_en":"Gym / Fitness chain","overview":"Well Fitness — mid-range club: gym floor, classes, some sites with pool.","ms_note":"Core MultiSport gym; one entry/day.","lat":52.252138,"lon":20.9124923,"walk_min":123.9,"bike_min":42.1,"transit_min":49.7,"best_min":42.1,"tier":"near"},{"name":"Just GYM Rosoła (24/7)","address":"Rosoła 11, Warszawa","category_en":"Gym / Fitness chain","overview":"Just GYM — 24/7 no-frills gym, strength & cardio, no staff desk at night.","ms_note":"Core MultiSport gym; app/QR entry, open round the clock.","lat":52.1348911,"lon":21.0728182,"walk_min":162.1,"bike_min":43.9,"transit_min":56.8,"best_min":43.9,"tier":"near"}]};
+  const HOTEL = DATA.hotel;
+  const CATS = {
+    'Gym / Fitness chain': {color:'#2563eb', icon:'🏋️', short:'Gyms'},
+    'Pool / Wellness':     {color:'#0891b2', icon:'🏊', short:'Pools'},
+    'Climbing / Alternative':{color:'#ea580c', icon:'🧗', short:'Climb / Alt'},
+    'Yoga / Pilates':      {color:'#7c3aed', icon:'🧘', short:'Yoga / Pilates'},
+    'Racket sports':       {color:'#db2777', icon:'🎾', short:'Racket'},
+  };
+  const catMeta = c => CATS[c] || {color:'#64748b', icon:'•', short:c};
+  const enc = s => encodeURIComponent(s);
+  const place = v => `https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lon}`;
+  const dir = (v,m) => `https://www.google.com/maps/dir/?api=1&origin=${HOTEL.lat},${HOTEL.lon}&destination=${v.lat},${v.lon}&travelmode=${m}`;
+
+  // ---- state ----
+  const state = {q:'', cats:new Set(), modes:new Set(), sort:'best'};
+  let markers = {};   // name -> leaflet marker
+
+  // ---- stats + legend ----
+  (function(){
+    const byCat = {};
+    DATA.venues.forEach(v=>byCat[v.category_en]=(byCat[v.category_en]||0)+1);
+    const stats = [
+      {n:DATA.qualifying, l:'within 30 min'},
+      {n:byCat['Gym / Fitness chain']||0, l:'gyms'},
+      {n:byCat['Pool / Wellness']||0, l:'pools'},
+      {n:byCat['Climbing / Alternative']||0, l:'climb / alt'},
+      {n:(byCat['Yoga / Pilates']||0), l:'yoga / pilates'},
+    ];
+    document.getElementById('stats').innerHTML = stats.map(s=>
+      `<div class="stat"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`).join('');
+    document.getElementById('legend').innerHTML = Object.entries(CATS).map(([k,m])=>
+      `<span><i class="dot" style="background:${m.color}"></i>${m.short}</span>`).join('');
+    document.getElementById('nearN').textContent = DATA.near_count;
+  })();
+
+  // ---- category + mode chips ----
+  const catChipsEl = document.getElementById('catchips');
+  Object.entries(CATS).forEach(([k,m])=>{
+    const b=document.createElement('button');
+    b.className='chip cat'; b.style.setProperty('--c',m.color); b.setAttribute('aria-pressed','false');
+    b.innerHTML=`<i class="dot"></i>${m.short}`;
+    b.onclick=()=>{ state.cats.has(k)?state.cats.delete(k):state.cats.add(k);
+      b.setAttribute('aria-pressed', state.cats.has(k)); render(); };
+    catChipsEl.appendChild(b);
+  });
+  const modeChipsEl=document.getElementById('modechips');
+  [['walk','🚶 Walkable'],['bike','🚴 Bikeable'],['transit','🚇 Transit']].forEach(([m,label])=>{
+    const b=document.createElement('button');
+    b.className='chip mode'; b.setAttribute('aria-pressed','false'); b.textContent=label;
+    b.onclick=()=>{ state.modes.has(m)?state.modes.delete(m):state.modes.add(m);
+      b.setAttribute('aria-pressed', state.modes.has(m)); render(); };
+    modeChipsEl.appendChild(b);
+  });
+  document.getElementById('q').oninput=e=>{state.q=e.target.value.toLowerCase();render();};
+  document.getElementById('sort').onchange=e=>{state.sort=e.target.value;render();};
+
+  // ---- card builder ----
+  function badge(icon,label,min,approx){
+    const ok = min!=null && min<=30;
+    const cls = ok?'ok':'no';
+    const val = min==null?'—':`${approx?'~':''}${Math.round(min)}`;
+    return `<span class="badge ${cls}" title="${label}">${icon} ${val}<span class="u">min</span></span>`;
+  }
+  function cardHTML(v,dim){
+    const m=catMeta(v.category_en);
+    return `<article class="card${dim?' dim':''}" style="--c:${m.color}" data-name="${enc(v.name)}">
+      <span class="ctype">${m.icon} ${v.category_en}</span>
+      <h3><a href="${place(v)}" target="_blank" rel="noopener">${v.name}</a></h3>
+      <p class="ov">${v.overview}</p>
+      <div class="tip"><span class="ic">🎟️</span><span>${v.ms_note}</span></div>
+      <div class="badges">
+        ${badge('🚶','Walking',v.walk_min,false)}
+        ${badge('🚴','Cycling',v.bike_min,false)}
+        ${badge('🚇','Transit (estimate)',v.transit_min,true)}
+      </div>
+      <div class="actions">
+        <button class="act pin" data-focus="${enc(v.name)}">📍 Map</button>
+        <a class="act" href="${dir(v,'walking')}" target="_blank" rel="noopener">🚶 Walk</a>
+        <a class="act" href="${dir(v,'bicycling')}" target="_blank" rel="noopener">🚴 Bike</a>
+        <a class="act" href="${dir(v,'transit')}" target="_blank" rel="noopener">🚇 Transit</a>
+      </div>
+      <div class="addr">📍 ${v.address.replace(/,\s*Pol(ska|and)\s*$/i,'')}</div>
+    </article>`;
+  }
+
+  function passes(v){
+    if(state.cats.size && !state.cats.has(v.category_en)) return false;
+    if(state.modes.size){
+      const ok=[...state.modes].some(m=>{
+        const t = m==='walk'?v.walk_min : m==='bike'?v.bike_min : v.transit_min;
+        return t!=null && t<=30;
+      });
+      if(!ok) return false;
+    }
+    if(state.q){
+      const hay=(v.name+' '+v.address+' '+v.category_en+' '+v.overview).toLowerCase();
+      if(!hay.includes(state.q)) return false;
+    }
+    return true;
+  }
+  const sorters={
+    best:(a,b)=>(a.best_min??999)-(b.best_min??999),
+    walk:(a,b)=>(a.walk_min??999)-(b.walk_min??999),
+    bike:(a,b)=>(a.bike_min??999)-(b.bike_min??999),
+    name:(a,b)=>a.name.localeCompare(b.name),
+    cat:(a,b)=>a.category_en.localeCompare(b.category_en)||(a.best_min??999)-(b.best_min??999),
+  };
+
+  function render(){
+    const list = DATA.venues.filter(passes).sort(sorters[state.sort]);
+    document.getElementById('grid').innerHTML = list.length
+      ? list.map(v=>cardHTML(v,false)).join('')
+      : `<p style="color:var(--text-dim);grid-column:1/-1;padding:30px 0">No venues match — try clearing a filter.</p>`;
+    const total=DATA.venues.length;
+    document.getElementById('count').innerHTML =
+      `Showing <b>${list.length}</b> of ${total} venues within 30&nbsp;min`+
+      (state.cats.size||state.modes.size||state.q?` <span style="color:var(--accent-dk);cursor:pointer" id="clearf">· clear filters</span>`:``);
+    const cf=document.getElementById('clearf'); if(cf) cf.onclick=clearFilters;
+
+    // near list
+    const nearList = DATA.near_venues.filter(passes).sort(sorters[state.sort]);
+    document.getElementById('nearGrid').innerHTML = nearList.length
+      ? nearList.map(v=>cardHTML(v,true)).join('')
+      : `<p style="color:var(--text-dim);grid-column:1/-1">No farther venues match this filter.</p>`;
+
+    wireFocus();
+    updateMarkers(new Set(list.concat(nearList).map(v=>v.name)));
+  }
+  function clearFilters(){
+    state.q='';state.cats.clear();state.modes.clear();
+    document.getElementById('q').value='';
+    document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    render();
+  }
+  function wireFocus(){
+    document.querySelectorAll('[data-focus]').forEach(b=>{
+      b.onclick=()=>focusVenue(decodeURIComponent(b.dataset.focus));
+    });
+  }
+
+  // ---- map ----
+  let map, nearLayerOn=false;
+  function initMap(){
+    map=L.map('map',{scrollWheelZoom:false}).setView([HOTEL.lat,HOTEL.lon],13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+      attribution:'&copy; OpenStreetMap, &copy; CARTO', maxZoom:19, subdomains:'abcd'}).addTo(map);
+    map.on('click',()=>map.scrollWheelZoom.enable());
+
+    const hicon=L.divIcon({className:'',html:`<div style="font-size:26px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))">🏨</div>`,
+      iconSize:[26,26],iconAnchor:[13,24]});
+    L.marker([HOTEL.lat,HOTEL.lon],{icon:hicon,zIndexOffset:1000})
+      .addTo(map).bindPopup(`<div class="pop"><h4>${HOTEL.name}</h4><div class="pb">${HOTEL.address}<br>Start point for all times.</div></div>`);
+
+    const all=DATA.venues.concat(DATA.near_venues);
+    const pts=[[HOTEL.lat,HOTEL.lon]];
+    all.forEach(v=>{
+      const m=catMeta(v.category_en);
+      const near=v.tier==='near';
+      const mk=L.circleMarker([v.lat,v.lon],{
+        radius:near?6:7, color:'#fff', weight:2, fillColor:m.color,
+        fillOpacity:near?0.55:0.95, opacity:near?0.6:1
+      }).bindPopup(
+        `<div class="pop"><div class="pt" style="color:${m.color}">${m.icon} ${v.category_en}</div>`+
+        `<h4>${v.name}</h4>`+
+        `<div class="pb">🚶 ${v.walk_min!=null?Math.round(v.walk_min):'—'} · 🚴 ${v.bike_min!=null?Math.round(v.bike_min):'—'} · 🚇 ~${v.transit_min!=null?Math.round(v.transit_min):'—'} min</div>`+
+        `<a href="${dir(v,'transit')}" target="_blank" rel="noopener">Directions ↗</a></div>`);
+      mk._msNear=near;
+      if(!near) mk.addTo(map);
+      markers[v.name]=mk;
+      if(!near) pts.push([v.lat,v.lon]);
+    });
+    map.fitBounds(pts,{padding:[30,30]});
+  }
+  function updateMarkers(visibleNames){
+    Object.entries(markers).forEach(([name,mk])=>{
+      // within-tier markers toggle by filter; near markers only when the near section is expanded
+      const shouldShow = mk._msNear ? (nearLayerOn && visibleNames.has(name)) : visibleNames.has(name);
+      if(shouldShow && !map.hasLayer(mk)) mk.addTo(map);
+      else if(!shouldShow && map.hasLayer(mk)) map.removeLayer(mk);
+    });
+  }
+  function focusVenue(name){
+    const mk=markers[name]; if(!mk) return;
+    if(!map.hasLayer(mk)) mk.addTo(map);
+    map.setView(mk.getLatLng(),15,{animate:true});
+    mk.openPopup();
+    if(window.innerWidth<=880) document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  // ---- near toggle ----
+  const nt=document.getElementById('nearToggle');
+  nt.onclick=()=>{
+    const open=nt.getAttribute('aria-expanded')==='true';
+    nt.setAttribute('aria-expanded',!open);
+    document.getElementById('nearBody').classList.toggle('open',!open);
+    nearLayerOn=!open; render();
+  };
+
+  // ---- go ----
+  initMap();
+  render();
+  </script>
+  <script src="/rahulio/page-header.js" defer></script>
+</body>
+</html>
