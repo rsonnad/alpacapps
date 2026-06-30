@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Model Y: The Safest Car for John &amp; Colleen</title>
+  <meta property="og:title" content="The Model Y: The Safest Car for John & Colleen">
+  <meta property="og:description" content="A data-driven case for the safest SUV ever made — built for Des Moines retirees. The safety that matters most at 76, the real cost of ownership, and how to actually buy one in Iowa.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/tesladesmoines.html">
+  <meta property="og:image" content="https://alpacaplayhouse.com/rahulio/pages/images/get-a-tesla-og.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Model Y: The Safest Car for John & Colleen">
+  <meta name="twitter:description" content="A data-driven case for the safest SUV ever made — built for Des Moines retirees.">
+  <meta name="twitter:image" content="https://alpacaplayhouse.com/rahulio/pages/images/get-a-tesla-og.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg: #faf8f6;
+      --surface: #ffffff;
+      --surface2: #f4f1ee;
+      --surface3: #ebe7e3;
+      --border: #e2ddd8;
+      --border-light: #d0c8c0;
+      --text: #1a1a1a;
+      --text-soft: #3d3d3d;
+      --text-dim: #6b6b6b;
+      --text-muted: #9a9a9a;
+      --accent: #7c5cbf;
+      --accent-soft: rgba(124, 92, 191, 0.08);
+      --green: #16a34a;
+      --green-soft: rgba(22, 163, 74, 0.07);
+      --green-border: rgba(22, 163, 74, 0.22);
+      --yellow: #ca8a04;
+      --yellow-soft: rgba(202, 138, 4, 0.07);
+      --yellow-border: rgba(202, 138, 4, 0.22);
+      --red: #dc2626;
+      --red-soft: rgba(220, 38, 38, 0.06);
+      --red-border: rgba(220, 38, 38, 0.20);
+      --purple: #9333ea;
+      --purple-soft: rgba(147, 51, 234, 0.07);
+      --purple-border: rgba(147, 51, 234, 0.20);
+      --orange: #ea580c;
+      --orange-soft: rgba(234, 88, 12, 0.07);
+      --teal: #0d9488;
+      --teal-soft: rgba(13, 148, 136, 0.07);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 4.5rem 1.5rem 3rem;
+      text-align: center;
+      background: linear-gradient(180deg, #f0e8f5 0%, #f6f0eb 40%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(147,51,234,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, #7c5cbf 0%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero .subtitle {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      max-width: 580px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+
+    /* ── Thesis Summary Cards ── */
+    .thesis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 720px;
+      margin: 0 auto 1.75rem;
+      text-align: left;
+    }
+    .thesis-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      position: relative;
+    }
+    .thesis-card.full-width {
+      grid-column: 1 / -1;
+      text-align: center;
+      background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+      border-color: rgba(124,92,191,0.25);
+    }
+    .thesis-card .tc-icon {
+      font-size: 1.3rem;
+      margin-bottom: 0.35rem;
+    }
+    .thesis-card .tc-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .thesis-card .tc-headline {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      margin-bottom: 0.25rem;
+    }
+    .thesis-card .tc-detail {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .thesis-card .tc-chips {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .thesis-card.full-width .tc-headline {
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+    .thesis-card.full-width .tc-detail {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ── Vehicle inventory strip ── */
+    .hero-inventory {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding-top: 0.5rem;
+    }
+    .hero-inv-item {
+      text-align: center;
+    }
+    .hero-inv-item .inv-num {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    .hero-inv-item .inv-num.blue { color: var(--accent); }
+    .hero-inv-item .inv-num.green { color: var(--green); }
+    .hero-inv-item .inv-num.purple { color: var(--purple); }
+    .hero-inv-item .inv-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+    }
+
+    /* ── Container ── */
+    .container { max-width: 920px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ── Expandable Sections ── */
+    .case-section {
+      margin: 2rem 0;
+    }
+    .section-toggle {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .section-toggle:hover {
+      border-color: var(--border-light);
+      background: var(--surface2);
+    }
+    .section-toggle[aria-expanded="true"] {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom-color: transparent;
+    }
+    .section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .section-toggle-text h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.15rem;
+    }
+    .section-toggle-text p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .section-chevron {
+      margin-left: auto;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      transition: transform 0.25s;
+      flex-shrink: 0;
+    }
+    .section-toggle[aria-expanded="true"] .section-chevron {
+      transform: rotate(180deg);
+    }
+    .section-body {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      padding: 1.5rem;
+    }
+    .section-body.open {
+      display: block;
+    }
+
+    /* ── Content blocks inside sections ── */
+    .content-block {
+      margin-bottom: 1.5rem;
+    }
+    .content-block:last-child { margin-bottom: 0; }
+    .content-block h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .content-block p {
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-callout {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+      margin: 0.75rem 0;
+    }
+    .stat-callout .big-num {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .stat-callout .context {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-top: 0.25rem;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    .compare-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.15rem;
+    }
+    .compare-card.highlight {
+      border-color: var(--green-border);
+      background: var(--green-soft);
+    }
+    .compare-card.dim {
+      opacity: 0.75;
+    }
+    .compare-card .card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .compare-card .card-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .compare-card .card-detail {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+    }
+
+    .risk-bar {
+      margin: 0.75rem 0;
+    }
+    .risk-bar-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      margin-bottom: 0.3rem;
+    }
+    .risk-bar-label .rank { font-weight: 600; }
+    .risk-bar-track {
+      height: 8px;
+      background: var(--surface3);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .risk-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 0.4rem;
+      flex-shrink: 0;
+    }
+    .timeline-item .year-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.1rem;
+    }
+    .timeline-item .desc {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .savings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 0.75rem 0;
+    }
+    .savings-table th {
+      text-align: left;
+      font-weight: 600;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 2px solid var(--border-light);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+    .savings-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-soft);
+    }
+    .savings-table .savings-val {
+      font-weight: 700;
+      color: var(--green);
+    }
+    .savings-table .cost-val {
+      color: var(--red);
+    }
+    .savings-table .total-row td {
+      border-top: 2px solid var(--border-light);
+      border-bottom: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding-top: 0.8rem;
+    }
+
+    .bottom-line-box {
+      background: linear-gradient(135deg, var(--green-soft), var(--surface));
+      border: 1px solid var(--green-border);
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+      margin-top: 1rem;
+    }
+    .bottom-line-box .headline {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--green);
+      margin-bottom: 0.3rem;
+    }
+    .bottom-line-box .detail {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 3rem 0;
+    }
+
+    /* ── Vehicle Listings Section ── */
+    .listings-header {
+      margin-bottom: 1.5rem;
+    }
+    .listings-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+    }
+    .listings-header p {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Reference pricing */
+    .ref-pricing {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .ref-pricing h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+    }
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.6rem;
+    }
+    .ref-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }
+    .ref-card .trim { font-weight: 600; font-size: 0.85rem; }
+    .ref-card .msrp { font-size: 1.15rem; font-weight: 700; color: var(--accent); margin: 0.15rem 0; }
+    .ref-card .detail { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* HW4 box */
+    .hw4-box {
+      background: var(--surface);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius-lg);
+      padding: 1.15rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .hw4-box h3 { color: var(--green); margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 700; }
+    .hw4-box ul { padding-left: 1.2rem; color: var(--text-dim); font-size: 0.85rem; }
+    .hw4-box li { margin-bottom: 0.25rem; }
+    .hw4-box strong { color: var(--text-soft); }
+
+    /* Buy-path launchpad */
+    .buypath-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0 0.5rem;
+    }
+    .buypath-card {
+      display: block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.9rem 1.05rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .buypath-card:hover { border-color: var(--accent); background: var(--surface); box-shadow: var(--shadow); }
+    .buypath-card .bp-title { font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; }
+    .buypath-card .bp-desc { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.2rem; }
+    .buypath-card .bp-go { font-size: 0.76rem; color: var(--accent); font-weight: 600; margin-top: 0.4rem; }
+
+    /* Filter bar */
+    .filters {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.9rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .sort-bar select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: inherit;
+    }
+
+    /* Vehicle cards */
+    .cards { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.15rem 1.25rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .card:hover {
+      border-color: var(--border-light);
+      box-shadow: var(--shadow);
+    }
+    .card.great-deal { border-left: 3px solid var(--green); }
+    .card.good-deal { border-left: 3px solid var(--yellow); }
+    .card.fair-deal { border-left: 3px solid var(--border-light); }
+
+    .card-main { min-width: 0; }
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.4rem;
+    }
+    .card-year { font-size: 1.2rem; font-weight: 800; }
+    .card-trim { font-size: 1rem; font-weight: 500; color: var(--text-dim); }
+
+    .badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.18rem 0.5rem;
+      border-radius: 100px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .badge-hw4 { background: var(--green-soft); color: var(--green); border: 1px solid var(--green-border); }
+    .badge-hw4-likely { background: var(--yellow-soft); color: var(--yellow); border: 1px solid var(--yellow-border); }
+    .badge-hw3 { background: var(--red-soft); color: var(--red); border: 1px solid var(--red-border); }
+    .badge-fsd { background: var(--purple-soft); color: var(--purple); border: 1px solid var(--purple-border); }
+    .badge-deal-great { background: var(--green-soft); color: var(--green); }
+    .badge-deal-good { background: var(--yellow-soft); color: var(--yellow); }
+
+    .card-specs {
+      display: flex;
+      gap: 1.15rem;
+      flex-wrap: wrap;
+      margin: 0.35rem 0;
+    }
+    .spec { font-size: 0.82rem; color: var(--text-dim); }
+    .spec strong { color: var(--text-soft); font-weight: 600; }
+
+    .card-features {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.4rem;
+    }
+    .feature-chip {
+      font-size: 0.7rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.12rem 0.4rem;
+      color: var(--text-dim);
+    }
+
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      min-width: 130px;
+    }
+    .card-price { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+    .card-savings { font-size: 0.78rem; margin-top: 0.1rem; }
+    .card-savings.positive { color: var(--green); }
+    .card-savings.negative { color: var(--red); }
+    .card-link {
+      display: inline-block;
+      margin-top: 0.6rem;
+      padding: 0.45rem 1.1rem;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    .card-link:hover { opacity: 0.85; }
+
+    .card-loc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+    }
+    .source-icon {
+      font-size: 0.68rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      color: var(--text-muted);
+    }
+
+    /* Top Picks */
+    .top-picks {
+      margin-bottom: 2rem;
+    }
+    .top-picks h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .pick-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .pick-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .pick-card:hover {
+      border-color: var(--border-light);
+      box-shadow: var(--shadow);
+    }
+    .pick-rank {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .pick-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a1a; }
+    .pick-rank.silver { background: linear-gradient(135deg, #c4b5cb, #a78baf); color: #1a1a1a; }
+    .pick-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+    .pick-rank.blue { background: var(--accent); color: #fff; }
+    .pick-rank.star { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a1a; width: 42px; height: 42px; font-size: 1.3rem; }
+    .pick-card.featured {
+      border: 2px solid var(--purple);
+      background: linear-gradient(135deg, rgba(147,51,234,0.03), var(--surface));
+      box-shadow: 0 2px 12px rgba(147,51,234,0.10);
+      position: relative;
+    }
+    .pick-card.featured::before {
+      content: 'OUR TOP PICK';
+      position: absolute;
+      top: -10px;
+      left: 1.25rem;
+      background: linear-gradient(135deg, var(--purple), #7c5cbf);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.65rem;
+      border-radius: 100px;
+    }
+    .pick-info h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+    .pick-info .pick-why {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      margin-bottom: 0.2rem;
+    }
+    .pick-info .pick-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .pick-price-col {
+      text-align: right;
+      min-width: 100px;
+    }
+    .pick-price-col .price {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .pick-price-col .savings {
+      font-size: 0.75rem;
+      color: var(--green);
+    }
+    .pick-price-col a {
+      display: inline-block;
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .pick-price-col a:hover { text-decoration: underline; }
+
+    .ev-durability-box {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+    }
+    .ev-durability-box h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .ev-durability-box p {
+      color: var(--text-soft);
+      margin-bottom: 0.3rem;
+    }
+    .ev-durability-box .note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-dim);
+    }
+
+    .disclaimer {
+      margin-top: 2.5rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .disclaimer strong { color: var(--text-dim); }
+
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .footer a { color: var(--accent); }
+
+    /* ── Summary graphic strip on section toggles ── */
+    .section-summary {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 100px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .summary-chip .chip-num {
+      font-weight: 800;
+    }
+    .summary-chip.red { background: var(--red-soft); color: var(--red); border-color: var(--red-border); }
+    .summary-chip.green { background: var(--green-soft); color: var(--green); border-color: var(--green-border); }
+    .summary-chip.purple { background: var(--purple-soft); color: var(--purple); border-color: var(--purple-border); }
+    .summary-chip.teal { background: var(--teal-soft); color: var(--teal); border-color: rgba(13,148,136,0.22); }
+    .summary-chip.accent { background: var(--accent-soft); color: var(--accent); border-color: rgba(124,92,191,0.22); }
+
+    @media (max-width: 700px) {
+      .hero { padding: 2rem 1rem 1.5rem; }
+      .hero h1 { font-size: 1.6rem; }
+      .hero .subtitle { font-size: 0.9rem; margin-bottom: 1.25rem; }
+      .hero img { width: 160px !important; height: 160px !important; }
+      .thesis-grid { grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+      .thesis-card { padding: 0.9rem 1rem; }
+      .thesis-card .tc-headline { font-size: 0.95rem; }
+      .thesis-card .tc-detail { font-size: 0.75rem; }
+      .thesis-card.full-width .tc-headline { font-size: 1.05rem; }
+      .hero-inventory { gap: 1rem; }
+      .hero-inv-item .inv-num { font-size: 1.25rem; }
+      .hero-inv-item .inv-label { font-size: 0.62rem; }
+      .container { padding: 0 1rem; }
+      .case-section { margin: 1.25rem 0; }
+      .section-toggle { padding: 1rem; gap: 0.75rem; }
+      .section-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+      .section-toggle-text h3 { font-size: 0.9rem; }
+      .section-toggle-text p { font-size: 0.75rem; }
+      .section-body { padding: 1rem; }
+      .content-block h4 { font-size: 0.88rem; }
+      .content-block p { font-size: 0.85rem; }
+      .stat-callout { padding: 0.9rem 1rem; }
+      .stat-callout .big-num { font-size: 1.6rem; }
+      .stat-callout .context { font-size: 0.78rem; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .compare-card .card-value { font-size: 1.15rem; }
+      .compare-card .card-detail { font-size: 0.72rem; }
+      .risk-bar-label { font-size: 0.75rem; flex-direction: column; align-items: flex-start; gap: 0.1rem; }
+      .risk-bar-label .rank { font-size: 0.7rem; }
+      .timeline-item { gap: 0.75rem; }
+      .timeline-item .desc { font-size: 0.8rem; }
+      .savings-table { font-size: 0.72rem; }
+      .savings-table th, .savings-table td { padding: 0.4rem 0.35rem; }
+      .savings-table .total-row td { font-size: 0.82rem; }
+      .bottom-line-box { padding: 1rem; }
+      .bottom-line-box .headline { font-size: 0.9rem; }
+      .bottom-line-box .detail { font-size: 0.8rem; }
+      .card { grid-template-columns: 1fr; padding: 1rem; }
+      .card-right {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 0;
+      }
+      .card-year { font-size: 1.05rem; }
+      .card-trim { font-size: 0.88rem; }
+      .card-price { font-size: 1.2rem; }
+      .card-link { padding: 0.4rem 0.9rem; font-size: 0.78rem; }
+      .ref-pricing { padding: 1rem; }
+      .ref-grid { grid-template-columns: 1fr 1fr; }
+      .ref-card { padding: 0.7rem 0.85rem; }
+      .ref-card .msrp { font-size: 1rem; }
+      .hw4-box { padding: 1rem; }
+      .hw4-box ul { font-size: 0.8rem; }
+      .listings-header h2 { font-size: 1.3rem; }
+      .filters { gap: 0.3rem; }
+      .filter-btn { padding: 0.35rem 0.7rem; font-size: 0.72rem; }
+      .pick-card { grid-template-columns: auto 1fr; gap: 0.6rem; padding: 0.85rem; }
+      .pick-rank { width: 30px; height: 30px; font-size: 0.82rem; }
+      .pick-info h4 { font-size: 0.85rem; }
+      .pick-info .pick-why { font-size: 0.75rem; }
+      .pick-price-col { grid-column: 1 / -1; text-align: left; display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+      .pick-price-col .price { font-size: 1rem; }
+      .ev-durability-box { padding: 0.85rem 1rem; font-size: 0.8rem; }
+      .ev-durability-box h4 { font-size: 0.82rem; }
+      .top-picks h3 { font-size: 1rem; }
+      .section-divider { margin: 2rem 0; }
+      .disclaimer { padding: 1rem; font-size: 0.72rem; }
+      /* Safety feature grid: single column on mobile */
+      .safety-features-grid { grid-template-columns: 1fr !important; }
+      .summary-chip { font-size: 0.65rem; padding: 0.15rem 0.4rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <script src="/rahulio/page-header.js" defer></script>
+</head>
+<body>
+  <div id="siteHeader"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  HERO                                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="hero">
+  <img src="images/get-a-tesla-og.png" alt="The safest SUV ever tested" style="width:220px;height:220px;border-radius:50%;object-fit:cover;margin-bottom:1.25rem;border:4px solid var(--border);box-shadow:var(--shadow-lg);">
+  <div class="hero-eyebrow">For John &amp; Colleen &middot; Des Moines, Iowa</div>
+  <h1>The Safest Car You Can Buy &mdash; the <em>Model Y</em></h1>
+  <div class="subtitle">
+    The first vehicle in history to pass the government's new safety tests &mdash; and exactly the kind of protection that matters most at 76. Here's the safety case, what it really costs to own, and how to actually get one in Iowa.
+  </div>
+
+  <!-- ── Thesis summary: Danger → Solution → Cost → Iowa reality ── -->
+  <div class="thesis-grid">
+    <div class="thesis-card" style="border-left:3px solid var(--red);">
+      <div class="tc-icon">&#9888;&#65039;</div>
+      <div class="tc-label">The danger at 76</div>
+      <div class="tc-headline">It's not crashing more &mdash; it's surviving the crash</div>
+      <div class="tc-detail">Drivers 75+ are about <strong>4&times; as likely to die in a side-impact</strong> and <strong>3&times; in a frontal crash</strong> as middle-aged drivers &mdash; because the body is more fragile, not because they drive worse. The car around you is the variable you control. (IIHS, 2024)</div>
+    </div>
+    <div class="thesis-card" style="border-left:3px solid var(--green);">
+      <div class="tc-icon">&#128737;&#65039;</div>
+      <div class="tc-label">The solution</div>
+      <div class="tc-headline">Model Y: 5&#9733; NHTSA &amp; the 1st car ever to pass the new safety tests</div>
+      <div class="tc-detail">Lowest rollover risk of any SUV tested, 6.3% injury probability, and AI that brakes for cars, pedestrians &amp; cyclists in the split-second you can't. (NHTSA, May 2026)</div>
+    </div>
+    <div class="thesis-card" style="border-left:3px solid var(--teal);">
+      <div class="tc-icon">&#128176;</div>
+      <div class="tc-label">The bottom line</div>
+      <div class="tc-headline" style="color:var(--teal);">Cheaper to run, simpler to own</div>
+      <div class="tc-detail">No gas, no oil changes. Charge in your own garage overnight and wake up &ldquo;full&rdquo; every morning &mdash; never stand at a pump in an Iowa winter again. Roughly $1,000+/yr less than a gas SUV.</div>
+      <div class="tc-chips">
+        <span class="summary-chip green">$0 gas</span>
+        <span class="summary-chip green">$0 oil changes</span>
+        <span class="summary-chip teal">~4&cent;/mile</span>
+        <span class="summary-chip teal">Charge at home</span>
+      </div>
+    </div>
+    <div class="thesis-card" style="border-left:3px solid var(--purple);">
+      <div class="tc-icon">&#128205;</div>
+      <div class="tc-label">The Iowa reality</div>
+      <div class="tc-headline" style="color:var(--purple);">&ldquo;Few Teslas in Iowa&rdquo;? You're not limited to Iowa</div>
+      <div class="tc-detail">Iowa restricts direct sales, but there's a Tesla gallery &amp; service hub in <strong>Urbandale</strong>, and Tesla can ship a used one to you from anywhere in the country. Far more choice than the local lot.</div>
+      <div class="tc-chips">
+        <span class="summary-chip purple">Urbandale gallery</span>
+        <span class="summary-chip accent">Used cars shipped in</span>
+        <span class="summary-chip accent">Order new online</span>
+      </div>
+    </div>
+    <div class="thesis-card full-width">
+      <div class="tc-headline">The safest car on the road, at the age safety matters most.</div>
+      <div class="tc-detail">For a 76-year-old, the vehicle is the single biggest controllable factor in surviving a crash. The Model Y is at once the best at <em>avoiding</em> a crash (AI watching every direction, 24/7) and <em>surviving</em> one (among the lowest injury probabilities of any car ever tested). That combination doesn't exist in any other vehicle at any price.</div>
+    </div>
+  </div>
+
+  <!-- ── Vehicle inventory (secondary) ── -->
+  <div style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">Available near Des Moines</div>
+  <div class="hero-inventory">
+    <div class="hero-inv-item">
+      <span class="inv-num blue" id="totalCount">0</span>
+      <span class="inv-label">Used Model Y</span>
+    </div>
+    <div class="hero-inv-item">
+      <span class="inv-num green" id="hw4Count">0</span>
+      <span class="inv-label">HW4 (2023+)</span>
+    </div>
+    <div class="hero-inv-item">
+      <span class="inv-num purple">$399</span>
+      <span class="inv-label">New lease/mo*</span>
+    </div>
+    <div class="hero-inv-item">
+      <span class="inv-num" id="priceRange" style="color:var(--text);">&mdash;</span>
+      <span class="inv-label">Used Price Range</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 1: THE RISK                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--red-soft);color:var(--red);">&#9888;&#65039;</div>
+    <div class="section-toggle-text">
+      <h3>The Risk: At 76, the Car Is the Difference Between a Fender-Bender and a Funeral</h3>
+      <p>Why crash protection &mdash; not driving skill &mdash; is the safety decision that matters most after 75</p>
+      <div class="section-summary">
+        <span class="summary-chip red">4&times; side-impact death risk</span>
+        <span class="summary-chip red">3&times; frontal</span>
+        <span class="summary-chip red">It's fragility, not skill</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+
+    <div class="content-block">
+      <h4>&#129658; The uncomfortable truth about age and crashes</h4>
+      <p>Here's what the research actually says &mdash; and it's not what most people assume. Older drivers don't crash dramatically more often than middle-aged drivers. The reason fatality rates climb after 70 is <strong>fragility</strong>: the same crash that a 45-year-old walks away from can be fatal for a 76-year-old, mostly due to chest injuries and medical complications. IIHS found fragility accounts for <strong>about 77% of the elevated death rate</strong> for drivers ages 75&ndash;79.</p>
+      <p>What does that mean for John &amp; Colleen? It means the single most powerful thing you can do for your safety is put a car around you that (1) does everything possible to <em>avoid</em> the crash, and (2) protects your body extraordinarily well <em>if</em> one happens. That is precisely what the Model Y is built to do.</p>
+    </div>
+
+    <div class="stat-callout">
+      <div class="big-num" style="color:var(--red);">4&times; &amp; 3&times;</div>
+      <div class="context">Drivers 75 and older are about <strong>4 times as likely to die in a side-impact crash</strong> and about <strong>3 times as likely in a frontal crash</strong> as middle-aged drivers in the same collision. The crash is often identical &mdash; the outcome isn't. (IIHS, Fatality Facts 2024)</div>
+    </div>
+
+    <div class="content-block">
+      <h4>&#128202; Where the danger actually is</h4>
+      <p>For the oldest drivers, the highest-risk situations are <strong>multiple-vehicle intersection crashes</strong> &mdash; they account for 46% of fatal crashes for drivers 85+, versus about 24% for middle-aged drivers. Left turns, cross traffic, that car you didn't see coming. These are exactly the moments where a car that watches all directions and brakes on its own changes the outcome.</p>
+    </div>
+
+    <div class="risk-bar">
+      <div class="risk-bar-label">
+        <span>Surviving the crash (fragility)</span>
+        <span class="rank" style="color:var(--red);"><strong>The #1 factor after 75</strong> &mdash; the car's protection is the variable</span>
+      </div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:100%;background:var(--red);"></div></div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label">
+        <span>Avoiding the crash (intersections, cross-traffic)</span>
+        <span class="rank" style="color:var(--orange);">Huge &mdash; where automatic braking earns its keep</span>
+      </div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:78%;background:var(--orange);"></div></div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label">
+        <span>Driving more miles / driving worse</span>
+        <span class="rank" style="color:var(--text-dim);">Smaller factor &mdash; retirees often drive less, not worse</span>
+      </div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:22%;background:var(--text-muted);"></div></div>
+    </div>
+
+    <div class="content-block" style="margin-top:1rem;">
+      <h4>&#128666; The trap to avoid: the &ldquo;retirement car&rdquo;</h4>
+      <p>IIHS has a pointed warning for exactly this decision. Drivers 70+ disproportionately hang on to older, smaller, lighter cars &mdash; what they call <strong>&ldquo;retirement vehicles,&rdquo;</strong> often 16+ years old and missing modern safety tech. The data is stark: vehicles <strong>without electronic stability control had 37% higher fatality odds</strong> for drivers 70+, and those <strong>without head-protecting side airbags doubled the risk</strong>. Only about 1 in 4 older drivers' cars even had automatic emergency braking.</p>
+      <p>IIHS estimates that if older drivers simply drove vehicles with the same safety profile as middle-aged drivers, it would save roughly <strong>90 lives a year</strong>. The lesson isn't &ldquo;buy something small and easy to park.&rdquo; It's the opposite: <strong>buy the safest, most technology-forward car you can &mdash; especially now.</strong></p>
+    </div>
+
+    <div class="bottom-line-box">
+      <div class="headline">The bottom line</div>
+      <div class="detail">At 76, safety isn't about driving more carefully &mdash; you already do. It's about the machine wrapped around you when something goes wrong. Choosing a car with the best crash protection <em>and</em> the best crash-avoidance technology is the most effective health decision on this list, and it's a one-time purchase decision. The Model Y is the strongest answer money can buy.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 2: WHY TESLA                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--green-soft);color:var(--green);">&#128737;&#65039;</div>
+    <div class="section-toggle-text">
+      <h3>Why the Model Y: The Safest Car Ever Tested &mdash; Now With Government Proof</h3>
+      <p>5-star NHTSA, lowest rollover of any SUV, and the first vehicle in history to pass NHTSA's new driver-assistance tests</p>
+      <div class="section-summary">
+        <span class="summary-chip green">5&#9733; NHTSA</span>
+        <span class="summary-chip green">1st to pass new ADAS tests</span>
+        <span class="summary-chip green">6.3% injury risk</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+
+    <div class="content-block">
+      <h4>&#127881; Brand-new (May 2026): the first car ever to pass the government's new safety tests</h4>
+      <p>This is the headline that makes the Model Y the right car right now. In May 2026, <strong>NHTSA announced the Tesla Model Y is the first vehicle to pass its new advanced driver-assistance (ADAS) safety benchmark</strong> &mdash; added to the government's New Car Assessment Program specifically to verify the technologies that prevent crashes.</p>
+    </div>
+
+    <div class="safety-features-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin:0.75rem 0;">
+      <div style="background:var(--green-soft);border:1px solid var(--green-border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Pedestrian Automatic Emergency Braking</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Brakes for people in the road &mdash; the new test it just passed</div>
+      </div>
+      <div style="background:var(--green-soft);border:1px solid var(--green-border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Lane-Keeping Assistance</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Gently keeps you centered if you start to drift</div>
+      </div>
+      <div style="background:var(--green-soft);border:1px solid var(--green-border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Blind-Spot Warning + Intervention</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Warns &mdash; and can steer you back &mdash; if a car is beside you</div>
+      </div>
+      <div style="background:var(--green-soft);border:1px solid var(--green-border);border-radius:8px;padding:0.75rem 0.9rem;">
+        <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.2rem;">Forward Collision Warning + Crash-Imminent Braking</div>
+        <div style="font-size:0.78rem;color:var(--text-dim);">Sees the stopped car ahead and brakes before you can</div>
+      </div>
+    </div>
+    <div class="content-block">
+      <p style="font-size:0.85rem;color:var(--text-dim);">The Model Y passed all four <em>new</em> tests (pedestrian braking, lane-keeping, blind-spot warning, blind-spot intervention) <strong>and</strong> the four original ones (forward collision warning, crash-imminent braking, dynamic brake support, lane-departure warning) &mdash; the only vehicle to clear the whole set. These are exactly the systems that protect against the intersection and cross-traffic crashes most dangerous to older drivers.</p>
+    </div>
+
+    <div class="content-block">
+      <h4>&#11088; And it was already the safest at surviving a crash</h4>
+      <p>The crash-avoidance tech is new; the crash <em>protection</em> has been class-leading for years. The Model Y earned a <strong>5-star overall rating from NHTSA</strong> &mdash; the highest possible &mdash; with 5 stars in frontal, side, and rollover. Its overall probability of injury in a crash is just <strong>6.3%</strong>, among the lowest ever recorded. For a body that's more fragile at 76, that protection isn't a luxury &mdash; it's the whole point.</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card highlight">
+        <div class="card-label">Rollover Risk</div>
+        <div class="card-value" style="color:var(--green);">7.9%</div>
+        <div class="card-detail">Lowest of any SUV ever tested by NHTSA &mdash; the heavy floor battery keeps it planted</div>
+      </div>
+      <div class="compare-card highlight">
+        <div class="card-label">Probability of Injury</div>
+        <div class="card-value" style="color:var(--green);">6.3%</div>
+        <div class="card-detail">Among the lowest of any vehicle &mdash; a huge front crumple zone with no engine block</div>
+      </div>
+    </div>
+
+    <div class="content-block">
+      <h4>&#129302; What this feels like day to day</h4>
+      <p>None of this requires &ldquo;self-driving&rdquo; or learning anything complicated. These features are <strong>standard, always on, and free</strong> &mdash; they work whether you touch a single setting or not. The car simply watches the road in every direction and helps in the moments a person can't react fast enough: the kid who darts out, the truck that runs the red, the car sitting in your blind spot on the interstate. It's a co-pilot that never gets tired, never looks at a phone, and never has a slow morning.</p>
+    </div>
+
+    <div class="stat-callout">
+      <div class="big-num" style="color:var(--green);">9&times; safer</div>
+      <div class="context">Tesla with Autopilot engaged: 1 crash per ~6.4 million miles. The U.S. average: 1 per ~700,000 miles. Even without Autopilot, Teslas record about half the crash rate of the national average. (Tesla Vehicle Safety Report)</div>
+    </div>
+
+    <div class="content-block">
+      <h4>&#128187; Hardware 4: why the model year matters</h4>
+      <p>Every 2024-and-newer Model Y ships with <strong>Hardware 4 (HW4)</strong> &mdash; the current-generation camera and computer system (5-megapixel cameras vs. 1.2, far more processing power). It matters for one simple reason: Tesla's safety features keep improving through free <strong>over-the-air updates</strong>, and HW4 is the platform that future improvements are built for. Buying a 2023-or-newer HW4 car means the car you get this year keeps getting a little safer and smarter for years, at no extra cost.</p>
+    </div>
+
+    <div class="bottom-line-box">
+      <div class="headline">Best at avoiding crashes AND best at surviving them</div>
+      <div class="detail">The Model Y is the only vehicle that is simultaneously a government-certified leader at <strong>preventing</strong> a crash and one of the best ever at <strong>protecting you in</strong> one. For the exact risk profile of a 76-year-old &mdash; where surviving the impact is everything &mdash; that pairing is uniquely valuable.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 3: OWNERSHIP / IT GETS BETTER         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--purple-soft);color:var(--purple);">&#128640;</div>
+    <div class="section-toggle-text">
+      <h3>The Car That Improves While It Sits in Your Garage</h3>
+      <p>Free over-the-air updates, why HW4 keeps it current, and the everyday conveniences that matter at 76</p>
+      <div class="section-summary">
+        <span class="summary-chip purple">Free OTA updates</span>
+        <span class="summary-chip accent">Stays current for years</span>
+        <span class="summary-chip purple">Preheats from your phone</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body">
+
+    <div class="content-block">
+      <h4>&#128246; Your car gets better overnight &mdash; for free</h4>
+      <p>Unlike a normal car that's frozen the day you buy it, a Tesla updates itself the way a phone does. New safety improvements, smoother braking, better visibility tools, even comfort features arrive automatically over Wi-Fi while it's parked. The Model Y you buy this year is meaningfully better next year &mdash; no dealer visit, no cost.</p>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--green);"></div>
+      <div>
+        <div class="year-label">Today</div>
+        <div class="desc"><strong>Standard Autopilot</strong> keeps a set speed and a safe following distance and centers you in your lane on the highway &mdash; it takes the fatigue out of long drives to see the grandkids or down I-35.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--accent);"></div>
+      <div>
+        <div class="year-label">Optional, anytime</div>
+        <div class="desc"><strong>Full Self-Driving (Supervised)</strong> can handle city streets and turns with you supervising. It's a <em>$99/month</em> subscription you can turn on for a road trip and cancel after &mdash; you never have to buy it, and you never need it for the safety features that matter.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--purple);"></div>
+      <div>
+        <div class="year-label">Why HW4</div>
+        <div class="desc"><strong>The newest features are built for Hardware 4.</strong> A 2023+ HW4 car stays on the receiving end of improvements for years, which is also why these cars hold their value well (more on that below).</div>
+      </div>
+    </div>
+
+    <div class="content-block" style="margin-top:1rem;">
+      <h4>&#10052;&#65039; The little things that matter most in an Iowa winter</h4>
+      <p>From your phone, on the couch: <strong>warm the car and defrost the windows</strong> before you walk outside &mdash; no scraping, no sitting in the cold. It's always &ldquo;full&rdquo; in the morning because it charged in your garage overnight, so <strong>no gas-station trips in January</strong>. The seats and steering wheel are heated. And there's no engine to maintain &mdash; no oil changes, no belts, no transmission &mdash; which means fewer trips to a service department, period.</p>
+    </div>
+
+    <div class="bottom-line-box" style="background:linear-gradient(135deg, var(--purple-soft), var(--surface));border-color:var(--purple-border);">
+      <div class="headline" style="color:var(--purple);">You're buying the last several years of progress &mdash; and the next several</div>
+      <div class="detail">A 2023&ndash;2025 Model Y with HW4 gives you today's class-leading safety and the runway to keep improving. It's the rare purchase that's worth <em>more</em> peace of mind every year you own it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 4: THE MATH                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--teal-soft);color:var(--teal);">&#128176;</div>
+    <div class="section-toggle-text">
+      <h3>The Money: Buy Used, Lease New, or Buy New &mdash; and What Each Really Costs</h3>
+      <p>Three sensible ways to get into a Model Y, plus why it's cheaper to live with than a gas SUV</p>
+      <div class="section-summary">
+        <span class="summary-chip teal">Used from ~$28K</span>
+        <span class="summary-chip purple">Lease ~$399&ndash;$549/mo</span>
+        <span class="summary-chip green">~$5K less to run vs gas</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+
+    <div class="content-block">
+      <h4>&#129518; First: which path fits you?</h4>
+      <p>You mentioned you're open to a used one <em>or</em> leasing a new one &mdash; both are smart, and the right answer depends on how long you want to keep it and whether you'd rather own or keep a fixed monthly bill. Here's the honest trade-off:</p>
+    </div>
+
+    <table class="savings-table">
+      <thead>
+        <tr>
+          <th>Path</th>
+          <th>Roughly</th>
+          <th>Best if&hellip;</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Buy used (2023&ndash;2025, HW4)</strong></td>
+          <td>$28K&ndash;$39K once</td>
+          <td>You want to own it, keep it many years, and get the most car per dollar. Best total value.</td>
+        </tr>
+        <tr>
+          <td><strong>Lease new</strong></td>
+          <td>~$399&ndash;$549/mo</td>
+          <td>You'd rather have a predictable monthly cost, always-new with full warranty, the very latest safety, and no resale hassle. Great if you drive under ~10K mi/yr.</td>
+        </tr>
+        <tr>
+          <td><strong>Buy new</strong></td>
+          <td>$48,990 (LR AWD)</td>
+          <td>You want the newest build (with the just-certified safety suite) and plan to own it long-term.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="content-block">
+      <p style="font-size:0.85rem;"><strong>Our read for John &amp; Colleen:</strong> if you like the idea of simplicity and always being in a current, fully-warrantied car, <strong>leasing a new Long Range</strong> is a clean, low-worry choice &mdash; predictable monthly cost, latest safety, walk away in 3 years. If you'd rather own and get maximum value, a <strong>low-mileage 2024&ndash;2025 used Long Range with confirmed HW4</strong> is the sweet spot. Both are right; neither is a mistake.</p>
+    </div>
+
+    <div class="content-block">
+      <h4>&#9981;&#65039; Why it's cheaper to <em>live with</em> than a gas SUV</h4>
+      <p>However you get into it, the running costs are dramatically lower than a comparable new gas SUV (think RAV4, CR-V, or a Lexus). Here's a 5-year comparison at a retiree-typical <strong>10,000 miles/year</strong>:</p>
+    </div>
+
+    <table class="savings-table">
+      <thead>
+        <tr>
+          <th>Category (5 yr, 10K mi/yr)</th>
+          <th>Gas SUV</th>
+          <th>Model Y</th>
+          <th>You keep</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Fuel / Energy</strong></td>
+          <td class="cost-val">$5,500</td>
+          <td>$2,000</td>
+          <td class="savings-val">+$3,500</td>
+        </tr>
+        <tr>
+          <td style="font-size:0.78rem;color:var(--text-muted);padding-left:1.5rem;">&#8627; per mile</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">~11&cent;/mi (gas)</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">~4&cent;/mi (home charging)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>Maintenance</strong></td>
+          <td class="cost-val">$3,500</td>
+          <td>$1,500</td>
+          <td class="savings-val">+$2,000</td>
+        </tr>
+        <tr>
+          <td style="font-size:0.78rem;color:var(--text-muted);padding-left:1.5rem;">&#8627; what you skip</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">Oil, belts, transmission, brakes</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">Tires, wipers, cabin filter</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>Gas-station trips avoided</strong></td>
+          <td class="cost-val">~250 stops</td>
+          <td>0</td>
+          <td class="savings-val">priceless in January</td>
+        </tr>
+        <tr class="total-row">
+          <td>5-Year Running-Cost Savings</td>
+          <td></td>
+          <td></td>
+          <td class="savings-val">~$5,500</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="content-block">
+      <h4>&#128200; And it holds its value</h4>
+      <p>If you buy rather than lease, resale matters &mdash; and this is where Teslas are unusual. They depreciate slowly, and HW4 cars in particular stay in demand because they keep receiving the newest features. A well-kept Model Y is one of the easier vehicles to sell when the time comes, to a dealer, to Tesla, or to a private buyer. You're not pouring money into something that evaporates.</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card dim">
+        <div class="card-label">New gas SUV</div>
+        <div class="card-value" style="font-size:1.2rem;">More to run</div>
+        <div class="card-detail">Gas + oil + bigger repair bills, frozen feature set, weekly fuel stops</div>
+      </div>
+      <div class="compare-card highlight">
+        <div class="card-label">Model Y</div>
+        <div class="card-value" style="font-size:1.2rem;color:var(--green);">~$5,500 less / 5 yr</div>
+        <div class="card-detail">Charges at home, near-zero maintenance, improves over time, strong resale</div>
+      </div>
+    </div>
+
+    <div class="bottom-line-box">
+      <div class="headline">The safest car is also the cheaper one to own</div>
+      <div class="detail">You rarely get to pick the safest <em>and</em> the most economical option at the same time. Here you do. Whether you lease a new one for a fixed monthly cost or buy a low-mileage used one outright, the Model Y costs roughly <strong>$5,000+ less to run over five years</strong> than a comparable gas SUV &mdash; while giving you the best crash protection and crash-avoidance tech on the market.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 5: HOW TO BUY ONE IN IOWA             -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--accent-soft);color:var(--accent);">&#128205;</div>
+    <div class="section-toggle-text">
+      <h3>How to Actually Buy a Tesla in Iowa</h3>
+      <p>Why there are &ldquo;few Teslas in Iowa,&rdquo; and the simple ways around it &mdash; including the gallery right in Urbandale</p>
+      <div class="section-summary">
+        <span class="summary-chip accent">Gallery in Urbandale</span>
+        <span class="summary-chip purple">Order new online</span>
+        <span class="summary-chip green">Used shipped to you</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+
+    <div class="content-block">
+      <h4>&#129513; Why the lots look empty &mdash; and why that's not a problem</h4>
+      <p>Iowa law restricts car <em>manufacturers</em> from selling directly to the public, so Tesla can't run a traditional sales dealership in the state the way Ford or Toyota do. That's the real reason you're seeing &ldquo;few Teslas in Iowa.&rdquo; But here's the good news: <strong>you were never limited to what's sitting on an Iowa lot.</strong> Tesla's whole model is built around ordering remotely and delivering to you, and that works fine for Iowans. There are three clean paths:</p>
+    </div>
+
+    <div class="content-block">
+      <h4>1&#65039;&#8419; See and drive one locally &mdash; Urbandale</h4>
+      <p>Tesla operates a <strong>Gallery and Service Center at 2601 104th St, Urbandale, IA 50322</strong>, right in the Des Moines metro. The gallery is open Tuesday&ndash;Saturday, you can look over the Model Y in person, and you can <strong>book a demo drive</strong>. This is almost certainly the &ldquo;dealership&rdquo; you're standing in. Use it to sit in the car and drive it &mdash; then order whichever way makes sense.</p>
+    </div>
+
+    <div class="content-block">
+      <h4>2&#65039;&#8419; Buy a new one &mdash; order online, no haggling</h4>
+      <p>A new Model Y is <strong>ordered on Tesla's website</strong> at a fixed, published price &mdash; no negotiating, no back-and-forth, no add-ons. You pick the color and trim, and Tesla arranges delivery. Leasing is done the same way, right in the order screen. For many people this is a relief: the price is the price, and it's the same for everyone.</p>
+    </div>
+
+    <div class="content-block">
+      <h4>3&#65039;&#8419; Buy a used one &mdash; and have it shipped in</h4>
+      <p>Used Teslas can be sold by anyone, so these are widely available. Two great options: <strong>Tesla's own used inventory</strong> (search the whole country and have the car delivered to Urbandale &mdash; this single fact erases the &ldquo;few in Iowa&rdquo; problem), and <strong>local used-car dealers</strong> &mdash; for example, BMW of Des Moines recently listed a 2024 Long Range with about 7,500 miles. CarGurus, Carvana, cars.com, and Edmunds all show what's available near you right now.</p>
+    </div>
+
+    <div class="content-block">
+      <h4>&#128295; Service &amp; charging, handled</h4>
+      <p>The Urbandale Service Center covers the metro, and Tesla's <strong>mobile service can come to your home</strong> for many repairs &mdash; no trip needed. For charging, Tesla will help arrange a simple home charger install in your garage; you plug in at night and never think about it. Road trips use the Supercharger network, which is the most reliable fast-charging in the country.</p>
+    </div>
+
+    <div class="bottom-line-box" style="background:linear-gradient(135deg, var(--accent-soft), var(--surface));border-color:rgba(124,92,191,0.25);">
+      <div class="headline" style="color:var(--accent);">&ldquo;Few Teslas in Iowa&rdquo; is a myth once you order remotely</div>
+      <div class="detail">Between the Urbandale gallery, online ordering for new cars, and nationwide used inventory delivered to your door, John &amp; Colleen have <strong>more</strong> Model Y choice than they'd have at any single dealership &mdash; not less. The thin local lots are an illusion created by an old law, not a real limit on what you can get.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  DIVIDER INTO LISTINGS                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section-divider"></div>
+
+<div class="listings-header">
+  <h2>Find Your Model Y &mdash; Near Des Moines</h2>
+  <p>Live search links + a real snapshot of HW4 (2023&ndash;2025) inventory near Des Moines &middot; June 2026</p>
+</div>
+
+<!-- Live search launchpad (the part that always works) -->
+<div class="ref-pricing">
+  <h3>Start Here: Live Inventory (cars sell fast &mdash; these links stay current)</h3>
+  <div class="buypath-grid">
+    <a class="buypath-card" href="https://www.tesla.com/inventory/used/my" target="_blank" rel="noopener">
+      <div class="bp-title">&#11088; Tesla Used Inventory</div>
+      <div class="bp-desc">Search the whole country, filter to HW4, and have it delivered to Urbandale. Best way around &ldquo;few in Iowa.&rdquo;</div>
+      <div class="bp-go">Search Tesla used &rarr;</div>
+    </a>
+    <a class="buypath-card" href="https://www.tesla.com/modely/design" target="_blank" rel="noopener">
+      <div class="bp-title">&#128666; Order New / Lease</div>
+      <div class="bp-desc">Build a new Model Y, see the lease quote, fixed price. Latest safety build.</div>
+      <div class="bp-go">Design &amp; price &rarr;</div>
+    </a>
+    <a class="buypath-card" href="https://www.cargurus.com/Cars/l-Used-Tesla-Model-Y-Des-Moines-d3044_L10108" target="_blank" rel="noopener">
+      <div class="bp-title">&#128269; CarGurus &mdash; Des Moines</div>
+      <div class="bp-desc">Used Model Y near you, sortable by price, miles, distance.</div>
+      <div class="bp-go">Browse CarGurus &rarr;</div>
+    </a>
+    <a class="buypath-card" href="https://www.cars.com/shopping/tesla-model_y/des_moines-ia/" target="_blank" rel="noopener">
+      <div class="bp-title">&#128269; Cars.com &mdash; Des Moines</div>
+      <div class="bp-desc">Another deep used pool, including nearby dealers.</div>
+      <div class="bp-go">Browse Cars.com &rarr;</div>
+    </a>
+    <a class="buypath-card" href="https://www.carvana.com/cars/tesla-model-y-in-des-moines-ia" target="_blank" rel="noopener">
+      <div class="bp-title">&#128666; Carvana &mdash; delivered</div>
+      <div class="bp-desc">Buy online with a return window, delivered to your driveway.</div>
+      <div class="bp-go">Browse Carvana &rarr;</div>
+    </a>
+    <a class="buypath-card" href="https://www.tesla.com/findus/location/service/desmoines" target="_blank" rel="noopener">
+      <div class="bp-title">&#128205; Tesla Urbandale Gallery</div>
+      <div class="bp-desc">2601 104th St, Urbandale. See it, book a demo drive. (515) 318-6048.</div>
+      <div class="bp-go">Hours &amp; demo drive &rarr;</div>
+    </a>
+  </div>
+</div>
+
+<!-- New pricing reference -->
+<div class="ref-pricing">
+  <h3>2026 Model Y New Pricing (for deal comparison)</h3>
+  <div class="ref-grid">
+    <div class="ref-card">
+      <div class="trim">Long Range AWD</div>
+      <div class="msrp">$48,990</div>
+      <div class="detail">~327 mi &middot; HW4 &middot; the comfortable pick</div>
+    </div>
+    <div class="ref-card">
+      <div class="trim">Standard / RWD</div>
+      <div class="msrp">$39,990</div>
+      <div class="detail">Most affordable new &middot; HW4 &middot; less range</div>
+    </div>
+    <div class="ref-card">
+      <div class="trim">Lease (LR RWD)</div>
+      <div class="msrp">~$399/mo</div>
+      <div class="detail">36 mo &middot; ~$2,100 due at signing*</div>
+    </div>
+    <div class="ref-card">
+      <div class="trim">Full Self-Driving</div>
+      <div class="msrp">$99/mo</div>
+      <div class="detail">Optional &middot; cancel anytime &middot; never required</div>
+    </div>
+  </div>
+</div>
+
+<!-- HW4 explainer -->
+<div class="hw4-box">
+  <h3>&#9989; Hardware 4 (HW4) &mdash; How to Make Sure You Get It</h3>
+  <ul>
+    <li><strong>2024 &amp; 2025 Model Y:</strong> All have HW4 &mdash; guaranteed, no checking needed. This is the safe, simple choice.</li>
+    <li><strong>2023 Model Y (built after ~June 2023):</strong> Most have HW4, but it's worth confirming.</li>
+    <li><strong>2023 Model Y (early build):</strong> May have the older HW3. Still a fine, safe car &mdash; just not on the newest feature track long-term.</li>
+    <li><strong>How to verify in 10 seconds:</strong> ask the seller, or in the car tap <em>Controls &rarr; Software</em> and look for &ldquo;Hardware 4&rdquo; / &ldquo;AI4.&rdquo; When in doubt, buy a <strong>2024 or newer</strong> and skip the question entirely.</li>
+  </ul>
+</div>
+
+<!-- Top Recommendations -->
+<div class="top-picks" id="topPicks">
+  <h3>&#127942; Our Picks for John &amp; Colleen</h3>
+  <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.75rem;">Long Range or Standard recommended &mdash; the Performance trim's extra power and firmer ride aren't needed. Long Range gives the best range and a smoother, quieter, more comfortable ride. (Snapshot of real listings, June 2026 &mdash; click through for live availability.)</p>
+  <div class="pick-cards" id="pickCards"></div>
+</div>
+
+<!-- EV Durability Note -->
+<div class="ev-durability-box">
+  <h4>&#128267; Why a used Tesla with some miles is still &ldquo;barely broken in&rdquo;</h4>
+  <p>An electric motor has roughly <strong>20 moving parts</strong> versus about 2,000 in a gas engine &mdash; no oil to degrade, no timing belt to snap, no transmission to fail. Tesla batteries are warrantied to 120,000 miles and routinely last <strong>200,000&ndash;300,000+ miles</strong> with most of their range intact. A Model Y with 40,000&ndash;50,000 miles is in its early youth.</p>
+  <div class="note">That's why the higher-mileage used cars below are often the best <em>value</em>: a real discount, with very little mechanical risk. You're not inheriting someone's worn-out engine &mdash; there isn't one.</div>
+</div>
+
+<!-- Filters -->
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="hw4-confirmed">HW4 Guaranteed (2024+)</button>
+  <button class="filter-btn" data-filter="hw4-any">Any HW4</button>
+  <button class="filter-btn" data-filter="long-range">Long Range</button>
+  <button class="filter-btn" data-filter="great-deals">Best Value</button>
+  <button class="filter-btn" data-filter="under-35k">Under $35k</button>
+  <button class="filter-btn" data-filter="low-miles">Low Miles</button>
+</div>
+
+<div class="sort-bar">
+  Sort by:
+  <select id="sortSelect">
+    <option value="deal">Best Value</option>
+    <option value="price-asc">Price: Low to High</option>
+    <option value="price-desc">Price: High to Low</option>
+    <option value="miles-asc">Miles: Low to High</option>
+    <option value="year-desc">Year: Newest First</option>
+  </select>
+  <span id="visibleCount" style="margin-left:auto;">&mdash;</span>
+</div>
+
+<div class="cards" id="cardContainer"></div>
+
+<div class="disclaimer">
+  <strong>Disclaimer:</strong> Vehicle listings are a representative snapshot taken from CarGurus the week of June 2026 for the Des Moines, IA area &mdash; prices, mileage, and availability change daily, so always use the live search links above and confirm details with the seller. &ldquo;Save vs new&rdquo; compares to 2026 new MSRP and is an estimate. HW4 is guaranteed on 2024-and-newer cars; for 2023 cars it is &ldquo;likely&rdquo; based on model year and should be verified by VIN/build date or in the car's software menu. Iowa restricts direct manufacturer sales; new Teslas are ordered online and a Tesla gallery/service center operates in Urbandale. This page is informational and not financial or purchasing advice. Sources: IIHS (Fatality Facts 2024 &amp; &ldquo;retirement vehicles&rdquo; research), NHTSA (5-star rating &amp; May 2026 ADAS announcement), Tesla Vehicle Safety Report, KBB / Edmunds / CarsDirect (pricing), CarGurus / Cars.com / Carvana (inventory).
+</div>
+
+<div class="footer">
+  <p>Built for John &amp; Colleen &middot; Des Moines, Iowa &middot; June 2026</p>
+  <p style="margin-top:0.3rem;">Made with <a href="https://claude.ai" target="_blank">Claude</a> &middot; *Lease figures are illustrative &mdash; confirm current offers at tesla.com</p>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ── Toggle sections ──
+function toggleSection(btn) {
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', !expanded);
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open', !expanded);
+}
+
+// ── Vehicle Data (real snapshot, CarGurus near Des Moines, June 2026) ──
+// No VINs available from the source; HW4 is "confirmed" for 2024+ and "likely" for 2023.
+const SEARCH_CARGURUS = "https://www.cargurus.com/Cars/l-Used-Tesla-Model-Y-Des-Moines-d3044_L10108";
+const VEHICLES = [
+  { year:2025, trim:"Long Range", drive:"RWD", price:38997, mileage:24214, hw:"HW4", hwConf:"confirmed", loc:"Store transfer → Urbandale, IA", source:"CarGurus", link:SEARCH_CARGURUS },
+  { year:2025, trim:"Performance", drive:"AWD", price:39147, mileage:47250, hw:"HW4", hwConf:"confirmed", loc:"Home delivery — Naperville, IL", source:"CarGurus", link:SEARCH_CARGURUS },
+  { year:2023, trim:"Long Range", drive:"AWD", price:38247, mileage:10748, hw:"HW4", hwConf:"likely", loc:"Store transfer → Urbandale, IA", source:"CarGurus", link:SEARCH_CARGURUS },
+  { year:2023, trim:"Long Range", drive:"AWD", price:34097, mileage:45746, hw:"HW4", hwConf:"likely", loc:"Store transfer → Urbandale, IA", source:"CarGurus", link:SEARCH_CARGURUS },
+  { year:2023, trim:"Long Range", drive:"AWD", price:33128, mileage:33869, hw:"HW4", hwConf:"likely", loc:"Home delivery — Wall Township, NJ", source:"CarGurus", link:SEARCH_CARGURUS },
+  { year:2023, trim:"Long Range", drive:"AWD", price:32597, mileage:53776, hw:"HW4", hwConf:"likely", loc:"Store transfer → Urbandale, IA", source:"CarGurus", link:SEARCH_CARGURUS },
+  { year:2023, trim:"Performance", drive:"AWD", price:34676, mileage:53310, hw:"HW4", hwConf:"likely", loc:"Urbandale, IA (7 mi)", source:"CarGurus", link:SEARCH_CARGURUS },
+  { year:2023, trim:"Performance", drive:"AWD", price:34673, mileage:46904, hw:"HW4", hwConf:"likely", loc:"Waukee, IA (12 mi)", source:"CarGurus", link:SEARCH_CARGURUS },
+  { year:2023, trim:"RWD", drive:"RWD", price:27800, mileage:36663, hw:"HW4", hwConf:"likely", loc:"Home delivery — Waukegan, IL", source:"CarGurus", link:SEARCH_CARGURUS },
+];
+
+// ── New MSRP reference (2026) ──
+const NEW_MSRP = {
+  'Long Range': 48990,
+  'Performance': 51490,
+  'RWD': 39990,
+  'Standard Range': 39990,
+  'Unknown': 48990,
+};
+
+function getDealScore(v) {
+  const msrp = NEW_MSRP[v.trim] || 48990;
+  const savings = msrp - v.price;
+  const savingsPct = (savings / msrp * 100);
+  // EVs last 200K+ miles, so mileage penalty is much lower than gas cars
+  const mileagePenalty = (v.mileage || 0) * 0.04;
+  const adjustedSavings = savings - mileagePenalty;
+  const dealScore = adjustedSavings;
+
+  let dealRating;
+  if (savingsPct > 25 && adjustedSavings > 10000) dealRating = 'Great Deal';
+  else if (savingsPct > 12 && adjustedSavings > 4000) dealRating = 'Good Deal';
+  else dealRating = 'Fair';
+
+  return { savings, savingsPct, adjustedSavings, dealScore, dealRating, msrp };
+}
+
+function fmt$(n) { return '$' + n.toLocaleString(); }
+function fmtMi(n) { return n ? n.toLocaleString() + ' mi' : 'N/A'; }
+function trimLabel(v) { return v.trim === 'RWD' ? 'Rear-Wheel Drive' : v.trim + (v.drive ? ' ' + v.drive : ''); }
+
+function renderCard(v) {
+  const deal = getDealScore(v);
+  const dealClass = deal.dealRating === 'Great Deal' ? 'great-deal' : deal.dealRating === 'Good Deal' ? 'good-deal' : 'fair-deal';
+
+  const hwBadge = v.hwConf === 'confirmed'
+    ? `<span class="badge badge-hw4">HW4 &#10003;</span>`
+    : `<span class="badge badge-hw4-likely">HW4 likely &mdash; verify</span>`;
+
+  const dealBadge = deal.dealRating === 'Great Deal'
+    ? `<span class="badge badge-deal-great">&#9733; Best Value</span>`
+    : deal.dealRating === 'Good Deal'
+      ? `<span class="badge badge-deal-good">Good Value</span>`
+      : '';
+
+  return `
+    <div class="card ${dealClass}" data-year="${v.year}" data-hw="${v.hw}" data-hwconf="${v.hwConf}" data-trim="${v.trim}" data-price="${v.price}" data-deal="${deal.dealScore}" data-mileage="${v.mileage||999999}">
+      <div class="card-main">
+        <div class="card-top">
+          <span class="card-year">${v.year}</span>
+          <span class="card-trim">Model Y ${trimLabel(v)}</span>
+          ${hwBadge}${dealBadge}
+          <span class="source-icon">${v.source}</span>
+        </div>
+        <div class="card-specs">
+          <div class="spec"><strong>Miles:</strong> ${fmtMi(v.mileage)}</div>
+          <div class="spec"><strong>Hardware:</strong> ${v.hwConf === 'confirmed' ? 'HW4 (guaranteed)' : 'HW4 likely (2023)'}</div>
+        </div>
+        <div class="card-loc">&#128205; ${v.loc}</div>
+      </div>
+      <div class="card-right">
+        <div>
+          <div class="card-price">${fmt$(v.price)}</div>
+          <div class="card-savings ${deal.savings > 0 ? 'positive' : 'negative'}">
+            ${deal.savings > 0 ? `~${fmt$(deal.savings)} under new` : ''}
+          </div>
+          <div style="font-size:0.7rem;color:var(--text-muted);text-align:right;">
+            vs ${fmt$(deal.msrp)} new
+          </div>
+        </div>
+        <a class="card-link" href="${v.link}" target="_blank" rel="noopener">See live &rarr;</a>
+      </div>
+    </div>`;
+}
+
+// ── Render & filtering ──
+const container = document.getElementById('cardContainer');
+let currentFilter = 'all';
+let currentSort = 'deal';
+
+function applyFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+  render();
+}
+
+function render() {
+  let filtered = VEHICLES.filter(v => {
+    if (currentFilter === 'hw4-confirmed') return v.hwConf === 'confirmed';
+    if (currentFilter === 'hw4-any') return v.hw === 'HW4';
+    if (currentFilter === 'long-range') return v.trim === 'Long Range';
+    if (currentFilter === 'great-deals') return getDealScore(v).dealRating === 'Great Deal';
+    if (currentFilter === 'under-35k') return v.price < 35000;
+    if (currentFilter === 'low-miles') return (v.mileage || 999999) < 40000;
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    if (currentSort === 'deal') return getDealScore(b).dealScore - getDealScore(a).dealScore;
+    if (currentSort === 'price-asc') return a.price - b.price;
+    if (currentSort === 'price-desc') return b.price - a.price;
+    if (currentSort === 'miles-asc') return (a.mileage||999999) - (b.mileage||999999);
+    if (currentSort === 'year-desc') return b.year - a.year || a.price - b.price;
+    return 0;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state">No vehicles match this filter. Try the live search links above &mdash; inventory changes daily.</div>';
+  } else {
+    container.innerHTML = filtered.map(renderCard).join('');
+  }
+
+  document.getElementById('visibleCount').textContent = `${filtered.length} of ${VEHICLES.length} shown`;
+}
+
+// Stats
+const hw4Any = VEHICLES.filter(v => v.hw === 'HW4');
+const prices = VEHICLES.map(v => v.price);
+document.getElementById('totalCount').textContent = VEHICLES.length;
+document.getElementById('hw4Count').textContent = hw4Any.length;
+document.getElementById('priceRange').textContent = `${fmt$(Math.min(...prices))} – ${fmt$(Math.max(...prices))}`;
+
+// Event listeners
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+});
+document.getElementById('sortSelect').addEventListener('change', (e) => {
+  currentSort = e.target.value;
+  render();
+});
+
+// ── Picks for John & Colleen ──
+// Recommend Long Range / Standard (comfort) over Performance.
+// Prefer guaranteed HW4 (2024+); flag 2023 "likely HW4" with a verification note.
+function renderTopPicks() {
+  const used = new Set();
+  const picks = [];
+  const isComfort = v => v.trim === 'Long Range' || v.trim === 'RWD' || v.trim === 'Standard Range';
+  const take = (arr) => arr.find(v => !used.has(v));
+  const claim = (v) => { if (v) used.add(v); return v; };
+
+  // Featured: newest guaranteed-HW4 comfort trim, fewest miles
+  const featured = claim(
+    take([...VEHICLES].filter(v => v.hwConf === 'confirmed' && isComfort(v))
+      .sort((a, b) => (b.year - a.year) || ((a.mileage||9e9) - (b.mileage||9e9))))
+    || take([...VEHICLES].filter(v => v.hwConf === 'confirmed').sort((a, b) => b.year - a.year))
+  );
+  if (featured) picks.push({
+    v: featured, rank: 'star', featured: true,
+    tag: 'Best Overall — Newest + Guaranteed HW4',
+    tagColor: 'var(--purple)', tagBg: 'var(--purple-soft)',
+    why: `A ${featured.year} with guaranteed HW4 — no hardware to verify, future-proof for years. ${fmtMi(featured.mileage)}, ${fmt$(getDealScore(featured).savings)} under a new one. The simple, worry-free choice: newest safety, nothing to second-guess.`
+  });
+
+  // Lowest miles (longevity) — comfort trim preferred
+  const lowMiles = claim(take([...VEHICLES].filter(isComfort).sort((a, b) => (a.mileage||9e9) - (b.mileage||9e9))));
+  if (lowMiles) picks.push({
+    v: lowMiles, rank: 'gold',
+    tag: 'Lowest Miles — Decades of Life Left',
+    tagColor: 'var(--green)', tagBg: 'var(--green-soft)',
+    why: `Only ${fmtMi(lowMiles.mileage)} — barely broken in for an EV that lasts 200K+ miles. ${fmt$(getDealScore(lowMiles).savings)} under new.${lowMiles.hwConf !== 'confirmed' ? ' A 2023, so confirm HW4 before buying.' : ''}`,
+    unverified: lowMiles.hwConf !== 'confirmed'
+  });
+
+  // Best value (adjusted savings) — comfort trim
+  const bestValue = claim(take([...VEHICLES].filter(isComfort).sort((a, b) => getDealScore(b).adjustedSavings - getDealScore(a).adjustedSavings)));
+  if (bestValue) picks.push({
+    v: bestValue, rank: 'silver',
+    tag: 'Best Value',
+    tagColor: 'var(--teal)', tagBg: 'var(--teal-soft)',
+    why: `Strong price for the miles — about ${fmt$(getDealScore(bestValue).savings)} under a new one. A roomy Long Range with plenty of range for Des Moines and road trips.${bestValue.hwConf !== 'confirmed' ? ' Confirm HW4 (2023 build).' : ''}`,
+    unverified: bestValue.hwConf !== 'confirmed'
+  });
+
+  // Lowest price overall (entry point)
+  const lowPrice = claim(take([...VEHICLES].sort((a, b) => a.price - b.price)));
+  if (lowPrice) picks.push({
+    v: lowPrice, rank: 'bronze',
+    tag: 'Lowest Price In',
+    tagColor: 'var(--accent)', tagBg: 'var(--accent-soft)',
+    why: `The most affordable way into a Model Y here at ${fmt$(lowPrice.price)}.${lowPrice.trim === 'RWD' ? ' Rear-wheel drive means a bit less range — fine for around-town, just note it before winter road trips.' : ''}${lowPrice.hwConf !== 'confirmed' ? ' 2023 build — confirm HW4.' : ''}`,
+    unverified: lowPrice.hwConf !== 'confirmed'
+  });
+
+  const pickContainer = document.getElementById('pickCards');
+  pickContainer.innerHTML = picks.slice(0, 4).map((p, i) => {
+    const deal = getDealScore(p.v);
+    const verifyWarning = p.unverified
+      ? `<div style="margin-top:0.5rem;padding:0.5rem 0.7rem;background:var(--yellow-soft);border:1px solid var(--yellow-border);border-radius:8px;font-size:0.78rem;color:var(--yellow);">
+           <strong>✅ Quick check:</strong> This is a 2023, so HW4 is very likely but not guaranteed. Ask the seller to confirm &ldquo;Hardware 4 / AI4&rdquo; (it's in the car's software menu) before buying. Prefer zero guesswork? A 2024-or-newer car is guaranteed HW4.
+         </div>`
+      : '';
+    return `
+      <div class="pick-card${p.featured ? ' featured' : ''}">
+        <div class="pick-rank ${p.rank}">${p.featured ? '★' : (i + 1)}</div>
+        <div class="pick-info">
+          <h4>${p.v.year} Model Y ${trimLabel(p.v)}</h4>
+          <div class="pick-why">${p.why}</div>
+          ${verifyWarning}
+          <span class="pick-tag" style="background:${p.tagBg};color:${p.tagColor};border:1px solid ${p.tagColor}33;">${p.tag}</span>
+        </div>
+        <div class="pick-price-col">
+          <div class="price">${fmt$(p.v.price)}</div>
+          <div class="savings">${fmt$(deal.savings)} off new</div>
+          <a href="${p.v.link}" target="_blank" rel="noopener">See live →</a>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+renderTopPicks();
+
+// Initial render
+render();
+</script>
+
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
+</script>
+</body>
+</html>
