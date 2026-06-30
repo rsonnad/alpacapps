@@ -1,12 +1,12 @@
 {
-  "version": "v260624.02 8:53a",
-  "release": 1713,
-  "sha": "4d8a28fa5b",
-  "fullSha": "4d8a28fa5b699cb2ab22e5a7e1afeffa6bc072d9",
+  "version": "v260630.01 4:45p",
+  "release": 1714,
+  "sha": "e188d0ae24",
+  "fullSha": "e188d0ae245b8bc261d74651d41d6c602f603dc9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm7b5n9",
-  "pushedAt": "2026-06-24T13:53:21+00:00",
-  "commits": [{"sha":"4d8a28fa5b","message":"Trigger Pages deploy for infra account setup","author":"Rahul"}]
+  "machine": "runnervmkkn4f",
+  "pushedAt": "2026-06-30T21:45:13+00:00",
+  "commits": [{"sha":"e188d0ae24","message":"Add tesladesmoines.html — Model Y case for John & Colleen (DSM retirees)","author":"Rahul"}]
 }
