@@ -1,12 +1,12 @@
 {
-  "version": "v260630.01 4:45p",
-  "release": 1714,
-  "sha": "e188d0ae24",
-  "fullSha": "e188d0ae245b8bc261d74651d41d6c602f603dc9",
+  "version": "v260630.02 4:59p",
+  "release": 1715,
+  "sha": "16028dc182",
+  "fullSha": "16028dc182417be4b2b1b2d32727a7f3b75e92c0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmkkn4f",
-  "pushedAt": "2026-06-30T21:45:13+00:00",
-  "commits": [{"sha":"e188d0ae24","message":"Add tesladesmoines.html — Model Y case for John & Colleen (DSM retirees)","author":"Rahul"}]
+  "machine": "runnervmmklqx",
+  "pushedAt": "2026-06-30T21:59:07+00:00",
+  "commits": [{"sha":"16028dc182","message":"Add /rahulio/multisportwarsaw: MultiSport venues within 30 min of hotel","author":"Rahul"}]
 }
