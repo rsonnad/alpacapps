@@ -1,12 +1,12 @@
 {
-  "version": "v260630.02 4:59p",
-  "release": 1715,
-  "sha": "16028dc182",
-  "fullSha": "16028dc182417be4b2b1b2d32727a7f3b75e92c0",
+  "version": "v260702.01 3:13a",
+  "release": 1716,
+  "sha": "b52bda47ca",
+  "fullSha": "b52bda47ca752fb997a5cb42108ca1f3cf3d98b4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmklqx",
-  "pushedAt": "2026-06-30T21:59:07+00:00",
-  "commits": [{"sha":"16028dc182","message":"Add /rahulio/multisportwarsaw: MultiSport venues within 30 min of hotel","author":"Rahul"}]
+  "pushedAt": "2026-07-02T08:13:24+00:00",
+  "commits": [{"sha":"b52bda47ca","message":"Update infra setup guidance","author":"Rahul"}]
 }
