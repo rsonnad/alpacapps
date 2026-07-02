@@ -1,12 +1,12 @@
 {
-  "version": "v260702.02 2:44p",
-  "release": 1717,
-  "sha": "ca79820727",
-  "fullSha": "ca798207274720e3da23b9f18de8ff0dec9f5984",
+  "version": "v260702.03 3:38p",
+  "release": 1718,
+  "sha": "5260f91091",
+  "fullSha": "5260f9109128f744adde9e1e89a71d3787d9fe30",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-02T19:44:33+00:00",
-  "commits": [{"sha":"ca79820727","message":"Add Spartan trailer lease draft","author":"RedPanda"}]
+  "pushedAt": "2026-07-02T20:38:05+00:00",
+  "commits": [{"sha":"5260f91091","message":"Regenerate Spartan lease from active template","author":"RedPanda"}]
 }
