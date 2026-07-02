@@ -548,6 +548,18 @@ Each external service was chosen for specific reasons. This section documents wh
 
 ## Decisions
 
+### 2026-07-02: Infra Setup Uses Claude Code Directly
+
+**Decision:** Remove Conductor from AlpacApps Infra setup guidance. New project setup now treats GitHub Pages, Supabase, and Claude Code as the core path, with optional services configured directly through Claude Code. Clone-facing generated directives use the adopter's GitHub Pages URL by default and explicitly tell operators to replace it with their own custom domain when configured.
+
+**Why:** Conductor made the first-run path feel like another required platform choice and created stale setup instructions. Hardcoded `alpacaplayhouse.com` references in clone-facing directives caused adopters to inherit the source project's domain instead of using their own deployed URL.
+
+### 2026-07-02: Google Sign-In Setup Must Split Google and Supabase Tasks
+
+**Decision:** Google Sign-In setup instructions must call out the account owner, Google Cloud project, OAuth consent screen, Testing vs Published state, Web application OAuth client, Supabase callback URL, authorized JavaScript origins, Supabase Google provider, and Supabase Site URL.
+
+**Why:** "Set up Google auth" was too vague for new adopters. The failure mode is usually not code; it is one missing dashboard setting: wrong Google account, test user not added, OAuth app still in Testing, callback URL missing, or Supabase Site URL still pointing at the wrong domain.
+
 ### 2026-06-12: Public Rahulio Pages Default Open
 
 **Decision:** Rahulio personal pages default to public access when no `page_access_settings` row exists, and permanent indexed pages should use `initPublicPage()` instead of the mutable personal-page privacy shell. Public SEO pointers are audited against the static pages index, sitemap, robots tags, and live access rows before deploy.

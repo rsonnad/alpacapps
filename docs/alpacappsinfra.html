@@ -1015,7 +1015,7 @@
   <!-- Service picker (shown after Personal/Business is selected) -->
   <div id="service-picker" style="display: none; background: var(--bg); border: 2px solid var(--accent); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; box-shadow: var(--shadow);">
     <p style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">Which services do you want to set up now?</p>
-    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">GitHub Pages, Supabase, Conductor, and Claude Code are always included. Pick what else you need &mdash; you can add more later.</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">GitHub Pages, Supabase, and Claude Code are always included. Pick what else you need &mdash; you can add more later.</p>
 
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
 
@@ -1084,7 +1084,7 @@
 
     <!-- Picked summary + scroll cue -->
     <div id="picked-summary" style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.9rem;">
-      <strong>Your setup path:</strong> <span id="picked-list">GitHub Pages &rarr; Claude Code &rarr; Supabase &rarr; Conductor &rarr; Resend</span>
+      <strong>Your setup path:</strong> <span id="picked-list">GitHub Pages &rarr; Claude Code &rarr; Supabase &rarr; Resend</span>
       <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.35rem 0 0;">Follow the steps below in order. Only the sections you picked will be highlighted.</p>
     </div>
   </div>
@@ -1147,7 +1147,7 @@
             <span>Website + Hosting</span>
             <span>Tailwind CSS v4</span>
           </div>
-          <div class="layer-services">Supabase &bull; GitHub Pages &bull; Conductor &bull; Tailwind &bull; Free</div>
+          <div class="layer-services">Supabase &bull; GitHub Pages &bull; Claude Code &bull; Tailwind &bull; Free</div>
         </div>
 
       </div>
@@ -1167,19 +1167,18 @@
       <a href="#github"><span class="num">1</span> GitHub + Starter Template</a>
       <a href="#claude-code"><span class="num">2</span> Install Claude Code &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">Free week here</a></a>
       <a href="#supabase"><span class="num">3</span> Supabase</a>
-      <a href="#conductor"><span class="num">4</span> Conductor</a>
-      <a href="#google-auth"><span class="num">5</span> Google Sign-In</a>
-      <a href="#gemini"><span class="num">6</span> Google Gemini (AI)</a>
-      <a href="#resend"><span class="num">7</span> Resend (Email)</a>
-      <a href="#telnyx"><span class="num">8</span> Telnyx (SMS)</a>
-      <a href="#square"><span class="num">9</span> Square (Payments)</a>
-      <a href="#stripe"><span class="num">10</span> Stripe (Payments)</a>
-      <a href="#signwell"><span class="num">11</span> SignWell (E-Signatures)</a>
-      <a href="#workers"><span class="num">12</span> Background Workers</a>
-      <a href="#domain"><span class="num">13</span> Custom Domain</a>
-      <a href="#template"><span class="num">14</span> Context System</a>
-      <a href="#checklist"><span class="num">15</span> Day-One Checklist</a>
-      <a href="#mobile"><span class="num">16</span> Mobile App (iOS &amp; Android)</a>
+      <a href="#google-auth"><span class="num">4</span> Google Sign-In</a>
+      <a href="#gemini"><span class="num">5</span> Google Gemini (AI)</a>
+      <a href="#resend"><span class="num">6</span> Resend (Email)</a>
+      <a href="#telnyx"><span class="num">7</span> Telnyx (SMS)</a>
+      <a href="#square"><span class="num">8</span> Square (Payments)</a>
+      <a href="#stripe"><span class="num">9</span> Stripe (Payments)</a>
+      <a href="#signwell"><span class="num">10</span> SignWell (E-Signatures)</a>
+      <a href="#workers"><span class="num">11</span> Background Workers</a>
+      <a href="#domain"><span class="num">12</span> Custom Domain</a>
+      <a href="#template"><span class="num">13</span> Context System</a>
+      <a href="#checklist"><span class="num">14</span> Day-One Checklist</a>
+      <a href="#mobile"><span class="num">15</span> Mobile App (iOS &amp; Android)</a>
     </div>
   </nav>
 
@@ -1213,15 +1212,6 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="calc-svc__info">
           <span class="calc-svc__name">Supabase</span>
           <span class="calc-svc__desc">Database, storage, auth, edge functions</span>
-        </span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc calc-svc--core calc-svc--locked">
-        <input type="checkbox" checked disabled data-svc="conductor">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info">
-          <span class="calc-svc__name">Conductor</span>
-          <span class="calc-svc__desc">Parallel AI coding agents (Mac app)</span>
         </span>
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
@@ -1515,7 +1505,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
   <details class="section" id="claude-code">
       <summary><h2><img src="https://cdn.simpleicons.org/claude" alt="Claude" class="service-icon">2. Install Claude Code &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent); font-weight: 600;">Get a free week</a></h2></summary>
     <div class="section-body">
-    <p>Claude Code is the AI developer that powers everything. You need it installed before setting up Conductor (Step 4), which is where you&rsquo;ll do all your actual work.</p>
+    <p>Claude Code is the AI developer that powers everything. You use it directly after cloning the repo: it writes code, configures services, runs checks, commits, and pushes.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
       <strong><a href="https://claude.ai/referral/fzGCallNug" target="_blank" style="color: var(--accent);">Click here for a free week of Claude Pro</a></strong> &mdash; no credit card required to start. This referral link gives you a full week of Pro-level usage to get your project set up.
@@ -1538,7 +1528,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       You can also install Claude Code as a standalone CLI: <code>npm install -g @anthropic-ai/claude-code</code>. Same features, same skills.
     </div>
 
-    <p style="font-size: 0.9rem; color: var(--text-muted);">That&rsquo;s it for now &mdash; you&rsquo;ll use Claude Code through <strong>Conductor</strong> (Step 4), which gives you a much better workflow with parallel agents and workspace management.</p>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">That&rsquo;s it for now &mdash; once your repo is cloned, open it in Claude Code and paste the setup instructions from the next steps.</p>
   </div>
   </details>
 
@@ -1602,95 +1592,22 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 4. Conductor -->
-  <details class="section" id="conductor">
-      <summary><h2>4. Conductor &mdash; Your Development Hub <span class="cost-badge cost-free">Free</span></h2></summary>
-    <div class="section-body">
-    <p>Conductor is where you&rsquo;ll do all your work. It&rsquo;s a Mac app that runs multiple Claude Code agents in parallel &mdash; each in its own workspace with its own branch. Instead of working in a single Claude Code session, you manage everything from Conductor.</p>
-
-    <div class="callout" style="border-color: var(--success); background: var(--success-light);">
-      <strong>This is your main tool from here on.</strong> After this step, you&rsquo;ll use Conductor for all development &mdash; building features, fixing bugs, setting up services, running tests. Each task gets its own workspace with a dedicated Claude Code agent.
-    </div>
-
-    <h3><span class="step-label step-you">1. Install Conductor</span></h3>
-    <ol>
-      <li>Download from <a href="https://conductor.build" target="_blank" style="color: var(--accent); font-weight: 600;">conductor.build</a></li>
-      <li>Open Conductor and point it at the project folder you cloned in Step 1</li>
-    </ol>
-
-    <h3><span class="step-label step-you">2. Create your first workspace and run the setup wizard</span></h3>
-    <ol>
-      <li>Create a new workspace in Conductor (name it something like &ldquo;setup&rdquo;)</li>
-      <li>In that workspace, type:
-        <pre data-lang="type in Conductor workspace"><code>/setup-alpacapps-infra</code></pre>
-      </li>
-      <li>The wizard will configure your project based on the profile you picked above &mdash; pruning unused modules, creating database tables, and pushing everything</li>
-    </ol>
-
-    <div style="background: rgba(217,119,6,0.06); border: 2px solid rgba(217,119,6,0.3); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1rem 0;">
-      <p style="font-weight: 600; font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">The wizard configures your project based on the profile you picked above.</p>
-      <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">It prunes unused modules, configures <code>.claudeignore</code>, creates your database tables, and pushes everything. If you picked <strong>Personal / Business</strong>, only the services you selected will be set up.</p>
-    </div>
-
-    <div class="callout warning" style="font-size: 0.85rem; border-color: #EF4444;">
-      <strong>Don&rsquo;t skip the setup wizard.</strong> If you don&rsquo;t run it, your project will have all the property management modules cluttering your codebase even if you don&rsquo;t need them.
-    </div>
-
-    <div class="callout warning" style="font-size: 0.85rem;">
-      <strong>Slash command not working?</strong>
-      The <code>/setup-alpacapps-infra</code> skill requires the <strong>Max plan ($100/month)</strong> or higher. If you're on the Pro plan, type this instead:
-      <pre data-lang="type in Conductor workspace" style="margin: 0.75rem 0 0.25rem 0;"><code>Read .claude/skills/setup-alpacapps-infra/SKILL.md and follow those instructions to set up my project</code></pre>
-      This does the exact same thing &mdash; Claude reads the setup guide and walks you through it step by step.
-    </div>
-
-    <h3><span class="step-label step-you">3. How to work with Conductor going forward</span></h3>
-    <p>After the setup wizard finishes, this is how you build with Conductor:</p>
-    <ol>
-      <li><strong>One task per workspace.</strong> Want to add a payments page and fix a bug? Create two workspaces and run them in parallel.</li>
-      <li><strong>Each workspace gets its own git branch</strong> so agents never conflict with each other.</li>
-      <li><strong>Just tell it what you want in plain English.</strong> Paste credentials, describe features, ask questions &mdash; the agent handles the code.</li>
-    </ol>
-
-    <div class="conversation">
-      <div class="you">"Set up Supabase. Here are my credentials: project ref is abc123, password is ..."</div>
-      <div class="ai">installs Supabase CLI, links project, creates tables with RLS, creates storage buckets, commits and pushes</div>
-    </div>
-
-    <div class="conversation" style="margin-top: 0.5rem;">
-      <div class="you">"Build a tenant portal with a login page, profile editor, and payment history"</div>
-      <div class="ai">creates pages, writes auth guards, adds Supabase queries, commits and pushes &mdash; site updates automatically</div>
-    </div>
-
-    <div class="callout" style="border-color: #d4883a; background: #fef9f0;">
-      <strong>Stuck on any step?</strong> Take a screenshot, paste it into any Conductor workspace, and ask: <em>&ldquo;What do I do?&rdquo;</em> &mdash; Claude can read screenshots and will walk you through it.
-    </div>
-
-    <h3>What the rest of this guide is for</h3>
-    <p>The sections below explain each service in detail. For each one, you:</p>
-    <ol>
-      <li><strong>You</strong> create the account and copy credentials (in your browser)</li>
-      <li><strong>You</strong> paste the credentials into a Conductor workspace</li>
-      <li><strong>Claude</strong> handles everything else &mdash; updates config files, installs CLIs, creates tables, writes edge functions, deploys, and pushes code</li>
-    </ol>
-    <p>You never need to edit files yourself. Just tell Claude what you want.</p>
-  </div>
-  </details>
-
-  <!-- 5. Google Auth -->
+  <!-- 4. Google Auth -->
   <details class="section" id="google-auth">
-      <summary><h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">5. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/google" alt="Google" class="service-icon">4. Google Sign-In (Optional) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
-    <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase has built-in support &mdash; you just need to create a Google Cloud project and get OAuth credentials.</p>
+    <p>If your app needs user login (admin dashboard, customer accounts, etc.), the easiest option is &ldquo;Sign in with Google.&rdquo; Supabase handles the auth flow, but you still need a Google account that owns the OAuth app and a Supabase project that has the Google provider enabled.</p>
 
     <div class="callout" style="border-color: var(--accent); background: var(--accent-light);">
-      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 6 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
+      <strong>Same Google Cloud project:</strong> This step and <a href="#gemini">Step 5 (Google Gemini)</a> both use Google Cloud. Create <strong>one project</strong> and use it for both &mdash; no need to set up two.
     </div>
 
     <h3><span class="step-label step-you">1. Create a Google Cloud project</span></h3>
     <ol>
-      <li>Go to <a href="https://console.cloud.google.com/projectcreate" target="_blank">console.cloud.google.com &rarr; New Project</a></li>
-      <li>Name it anything (e.g., &ldquo;My Salon App&rdquo;) and click <strong>Create</strong></li>
-      <li>Make sure the new project is selected in the top-left dropdown</li>
+      <li>Sign in with the Google account that should own this app&rsquo;s login configuration.</li>
+      <li>Go to <a href="https://console.cloud.google.com/projectcreate" target="_blank">console.cloud.google.com &rarr; New Project</a>.</li>
+      <li>Name it after your app (e.g., &ldquo;My Salon App&rdquo;) and click <strong>Create</strong>.</li>
+      <li>Make sure the new project is selected in the top-left project dropdown before creating credentials.</li>
     </ol>
 
     <h3><span class="step-label step-you">2. Set up the OAuth consent screen</span></h3>
@@ -1705,11 +1622,13 @@ Don't ask me for permission at each step — just do the work end to end and sho
           <li><strong>Developer contact email:</strong> your email</li>
         </ul>
       </li>
-      <li>Click <strong>Save and Continue</strong> through the Scopes, Test Users, and Summary steps (defaults are fine)</li>
+      <li>Click <strong>Save and Continue</strong> through Scopes. Basic Google sign-in only needs email/profile/openid, which Google adds automatically.</li>
+      <li>On <strong>Test users</strong>, add every email that should be able to sign in before the app is published.</li>
+      <li>Click through Summary and save the consent screen.</li>
     </ol>
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
-      <strong>Publishing status:</strong> Your app starts in &ldquo;Testing&rdquo; mode, which means only test users you add can sign in. To let anyone sign in, click <strong>Publish App</strong> on the consent screen page. Google may ask you to verify your app if you use sensitive scopes, but basic sign-in (email/profile) doesn&rsquo;t require verification.
+      <strong>Publishing status:</strong> Your app starts in &ldquo;Testing&rdquo; mode, which means only test users can sign in. Before sharing the app broadly, return to the consent screen and click <strong>Publish App</strong>. Basic sign-in with email/profile/openid normally does not require Google verification; sensitive scopes can.
     </div>
 
     <h3><span class="step-label step-you">3. Create OAuth credentials</span></h3>
@@ -1718,7 +1637,12 @@ Don't ask me for permission at each step — just do the work end to end and sho
       <li>Click <strong>+ Create Credentials</strong> &rarr; <strong>OAuth client ID</strong></li>
       <li>Application type: <strong>Web application</strong></li>
       <li>Name: anything (e.g., &ldquo;Supabase Auth&rdquo;)</li>
-      <li>Under <strong>Authorized redirect URIs</strong>, add:
+      <li>Under <strong>Authorized JavaScript origins</strong>, add your deployed site origin:
+        <pre><code>https://USERNAME.github.io</code></pre>
+        If you configured a custom domain, add that too:
+        <pre><code>https://YOUR_DOMAIN</code></pre>
+      </li>
+      <li>Under <strong>Authorized redirect URIs</strong>, add the Supabase callback URL:
         <pre><code>https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co/auth/v1/callback</code></pre>
       </li>
       <li>Click <strong>Create</strong> and copy the <strong>Client ID</strong> and <strong>Client Secret</strong></li>
@@ -1730,6 +1654,11 @@ Don't ask me for permission at each step — just do the work end to end and sho
       <li>Find <strong>Google</strong> in the list and toggle it <strong>on</strong></li>
       <li>Paste your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
       <li>Click <strong>Save</strong></li>
+      <li>Go to <strong>Authentication &rarr; URL Configuration</strong>. Set <strong>Site URL</strong> to your deployed GitHub Pages URL, or to your custom domain if you have one.</li>
+      <li>Add both allowed redirect URLs if you use both:
+        <pre><code>https://USERNAME.github.io/REPO/
+https://YOUR_DOMAIN/</code></pre>
+      </li>
     </ol>
 
     <h3><span class="step-label step-paste">Give Claude these credentials</span></h3>
@@ -1737,6 +1666,8 @@ Don't ask me for permission at each step — just do the work end to end and sho
 - Google Client ID: `your-client-id.apps.googleusercontent.com`
 - Auth is handled by Supabase Auth (no edge function needed)
 - Redirect URI: `https://<span class="supa-ref">YOUR_PROJECT_REF</span>.supabase.co/auth/v1/callback`
+- Site URL: `https://USERNAME.github.io/REPO/` or `https://YOUR_DOMAIN/`
+- OAuth consent status: Testing with test users added, or Published
 - Sign-in method: supabase.auth.signInWithOAuth({ provider: 'google' })</code></pre>
 
     <h3><span class="step-label step-claude">Then tell Claude</span></h3>
@@ -1748,9 +1679,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 6. Gemini -->
+  <!-- 5. Gemini -->
   <details class="section" id="gemini">
-      <summary><h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">6. Google Gemini (AI) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/googlegemini" alt="Google Gemini" class="service-icon">5. Google Gemini (AI) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
     <p>Optional. Useful for fuzzy matching (e.g., matching bank transaction sender names to tenants).</p>
 
@@ -1776,9 +1707,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 7. Resend -->
+  <!-- 6. Resend -->
   <details class="section" id="resend">
-      <summary><h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">7. Resend (Email) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/resend" alt="Resend" class="service-icon">6. Resend (Email) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1802,9 +1733,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 8. Telnyx -->
+  <!-- 7. Telnyx -->
   <details class="section" id="telnyx">
-      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">8. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=telnyx.com" alt="Telnyx" class="service-icon">7. Telnyx (SMS) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1845,9 +1776,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 9. Square -->
+  <!-- 8. Square -->
   <details class="section" id="square">
-      <summary><h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">9. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/square" alt="Square" class="service-icon">8. Square (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1883,9 +1814,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 10. Stripe -->
+  <!-- 9. Stripe -->
   <details class="section" id="stripe">
-      <summary><h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">10. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/stripe" alt="Stripe" class="service-icon">9. Stripe (Payments) <span class="cost-badge cost-payg">Pay-as-you-go</span></h2></summary>
     <div class="section-body">
     <p>Stripe handles ACH bank transfers (0.8% capped at $5), card payments (2.9% + 30&cent;), and outbound payouts to associates via Stripe Connect ($0.25/payout).</p>
 
@@ -1927,9 +1858,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 11. SignWell -->
+  <!-- 10. SignWell -->
   <details class="section" id="signwell">
-      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">11. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://www.google.com/s2/favicons?sz=64&amp;domain=signwell.com" alt="SignWell" class="service-icon">10. SignWell (E-Signatures) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -1959,9 +1890,9 @@ Don't ask me for permission at each step — just do the work end to end and sho
   </div>
   </details>
 
-  <!-- 12. Cloudflare R2 -->
+  <!-- 11. Cloudflare R2 -->
   <details class="section" id="cloudflare-r2-setup">
-      <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">12. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
+      <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
     <p>S3-compatible object storage with 10 GB free and zero egress fees. The setup wizard creates <strong>two R2 buckets</strong> automatically using your Cloudflare Global API Key:</p>
     <ul>
@@ -2088,9 +2019,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 13. Background Workers -->
+  <!-- 12. Background Workers -->
   <details class="section" id="workers">
-      <summary><h2>13. Background Workers (Optional)</h2></summary>
+      <summary><h2>12. Background Workers (Optional)</h2></summary>
     <div class="section-body">
 
     <p>Some features need always-on processes that can&rsquo;t run in the browser or in Supabase Edge Functions. These run on a cloud VM (recommended: Hostinger VPS $5&ndash;12/mo, or any provider).</p>
@@ -2147,9 +2078,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 14. Custom Domain -->
+  <!-- 13. Custom Domain -->
   <details class="section" id="domain">
-      <summary><h2>14. Custom Domain (Optional)</h2></summary>
+      <summary><h2>13. Custom Domain (Optional)</h2></summary>
     <div class="section-body">
 
     <div class="callout" style="border-color: var(--text-muted); background: var(--bg-warm);">
@@ -2224,9 +2155,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 15. CLAUDE.md Templates -->
+  <!-- 14. CLAUDE.md Templates -->
   <details class="section" id="template">
-      <summary><h2>15. On-Demand Context System</h2></summary>
+      <summary><h2>14. On-Demand Context System</h2></summary>
     <div class="section-body">
     <p>Claude Code reads <code>CLAUDE.md</code> at the start of every conversation. To keep this fast and efficient, we use an <strong>on-demand context loading</strong> pattern: CLAUDE.md stays slim (~30 lines) and indexes separate <code>docs/*.md</code> files that Claude only loads when the task requires them.</p>
 
@@ -2274,9 +2205,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 16. Day-One Checklist -->
+  <!-- 15. Day-One Checklist -->
   <details class="section" id="checklist">
-      <summary><h2>16. Day-One Checklist</h2></summary>
+      <summary><h2>15. Day-One Checklist</h2></summary>
     <div class="section-body">
 
     <h3><span class="step-label step-you">You do (in your browser)</span></h3>
@@ -2287,7 +2218,6 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
       <li>Enable GitHub Pages on the repo</li>
       <li>Create Supabase account and project</li>
       <li>Copy: project ref, anon key, DB password, and session pooler connection string</li>
-      <li>Download and install Conductor from <a href="https://conductor.build" target="_blank">conductor.build</a></li>
     </ul>
 
     <p><strong>User Login &mdash; Free (Google OAuth):</strong></p>
@@ -2367,9 +2297,9 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
   </div>
   </details>
 
-  <!-- 17. Mobile App -->
+  <!-- 16. Mobile App -->
   <details class="section" id="mobile">
-      <summary><h2>17. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2></summary>
+      <summary><h2>16. Mobile App (iOS &amp; Android) <span class="cost-badge cost-free">Free to develop</span></h2></summary>
     <div class="section-body">
     <p>Fully native mobile apps for iOS and Android. Each platform uses its native UI toolkit for the best possible experience &mdash; SwiftUI on iOS, Jetpack Compose on Android.</p>
 
@@ -2500,7 +2430,7 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
         <text x="370" y="153" text-anchor="middle" fill="#8B5CF6" font-size="14">GH</text>
         <text x="392" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">GitHub Pages</text>
         <text x="362" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Static HTML/JS/CSS hosting</text>
-        <text x="362" y="192" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">alpacaplayhouse.com</text>
+        <text x="362" y="192" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">yourdomain.com or USERNAME.github.io</text>
         <text x="362" y="207" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">/spaces/ /residents/ /admin/ /auth/</text>
 
         <line x1="500" y1="220" x2="500" y2="285" stroke="#3ECF8E" stroke-width="2" marker-end="url(#ad-arrowSupabase)" opacity="0.7"/>
@@ -2648,7 +2578,6 @@ function recalcCost() {
   var svcCosts = {
     'github':      { basic: 0, complicated: 0, hyper: 0 },
     'supabase':    { basic: 0, complicated: 0, hyper: 300 },
-    'conductor':   { basic: 0, complicated: 0, hyper: 0 },
     'claude':      { basic: 0, complicated: 320, hyper: 2400 },
     'google-auth': { basic: 0, complicated: 0, hyper: 0 },
     'resend':      { basic: 0, complicated: 0, hyper: 0 },
@@ -2669,7 +2598,6 @@ function recalcCost() {
   var svcLabels = {
     'github':      'GitHub Pages',
     'supabase':    'Supabase',
-    'conductor':   'Conductor',
     'claude':      'Claude Code',
     'google-auth': 'Google Sign-In',
     'gemini':      'Google Gemini (AI)',
@@ -2702,7 +2630,7 @@ function recalcCost() {
   };
 
   // Gather selected services. Core always included.
-  var selected = ['github', 'supabase', 'conductor', 'claude'];
+  var selected = ['github', 'supabase', 'claude'];
   document.querySelectorAll('#calc-services input[data-svc]:not(:disabled)').forEach(function(cb) {
     if (cb.checked) selected.push(cb.dataset.svc);
   });
@@ -2929,8 +2857,8 @@ function downloadClaudeMd() {
     '- `openLightbox(url)` for images\n' +
     '- Tailwind: use design tokens from `@theme` block (see `docs/PATTERNS.md`). Run `npm run css:build` after new classes.\n\n' +
     '## Quick Refs\n\n' +
-    '- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | Conductor | GitHub Pages\n' +
-    '- **Live:** https://USERNAME.github.io/REPO/\n' +
+    '- **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages\n' +
+    '- **Live:** https://USERNAME.github.io/REPO/ (replace with https://YOUR_DOMAIN/ if you configure a custom domain)\n' +
     '- **Architecture:** Browser \u2192 GitHub Pages \u2192 Supabase (no server-side code)\n';
 
   downloadFile(template, 'CLAUDE.md');
@@ -2946,7 +2874,8 @@ function downloadClaudeLocalMd() {
     '> **Links:** Always include clickable URLs to affected pages after every push.\n' +
     '> **SQL:** Run migrations directly via Management API \u2014 never ask user to run SQL manually.\n\n' +
     '## Live URLs\n\n' +
-    '- https://USERNAME.github.io/REPO/ (GitHub Pages)\n';
+    '- https://USERNAME.github.io/REPO/ (GitHub Pages)\n' +
+    '- https://YOUR_DOMAIN/ (custom domain, if configured)\n';
 
   downloadFile(template, 'CLAUDE.local.md');
 }
@@ -3043,13 +2972,13 @@ function updatePickedServices() {
     if (cb.checked) picks.push(cb.dataset.pick);
   });
 
-  var parts = ['GitHub Pages', 'Claude Code', 'Supabase', 'Conductor'];
+  var parts = ['GitHub Pages', 'Claude Code', 'Supabase'];
   picks.forEach(function(p) { parts.push(pickLabels[p] || p); });
   document.getElementById('picked-list').textContent = parts.join(' \u2192 ');
 
   // Highlight/dim sections based on picks
   // Always-visible sections: github, claude-code, supabase, architecture, checklist, template
-  var alwaysShow = ['github', 'claude-code', 'supabase', 'conductor', 'architecture', 'checklist', 'template'];
+  var alwaysShow = ['github', 'claude-code', 'supabase', 'architecture', 'checklist', 'template'];
   var pickedSections = picks.map(function(p) { return pickToSection[p]; }).filter(Boolean);
   var allVisible = alwaysShow.concat(pickedSections);
 

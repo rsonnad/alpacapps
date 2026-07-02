@@ -619,15 +619,15 @@ Google Cloud / OAuth
         <h2>Google Cloud for auth</h2>
         <span class="tag">Free</span>
       </div>
-      <p>Google Cloud supplies the OAuth client used by Supabase Auth for "Sign in with Google." The final redirect URI depends on your Supabase project ref, so account creation is the main homework.</p>
+      <p>Google Cloud supplies the OAuth client used by Supabase Auth for "Sign in with Google." Create or choose the Google account that should own login for this app now; finish the OAuth client after Supabase exists so the callback URL and site URL are correct.</p>
       <div class="split">
         <div class="mini-panel">
           <h3>Create it</h3>
           <ol>
-            <li>Use the Google account you want to own the project.</li>
+            <li>Use the Google account you want to own the app&rsquo;s login configuration.</li>
             <li>Open <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>.</li>
             <li>Accept terms if this is your first Google Cloud login.</li>
-            <li>Optional: create a project at <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com/projectcreate</a>.</li>
+            <li>Optional: create a project at <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com/projectcreate</a> and name it after your app.</li>
           </ol>
         </div>
         <div class="mini-panel">
@@ -636,12 +636,12 @@ Google Cloud / OAuth
             <li>Google account email</li>
             <li>Google Cloud project name</li>
             <li>Project ID, if created</li>
-            <li>OAuth Client ID and Client Secret, once created</li>
+            <li>OAuth Client ID and Client Secret, once created and saved in Supabase or a password manager</li>
           </ul>
         </div>
       </div>
       <div class="callout">
-        <p><strong>Usually later:</strong> OAuth credentials are easiest after Supabase exists, because the authorized redirect URI will be <code>https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback</code>.</p>
+        <p><strong>Usually later:</strong> OAuth credentials are easiest after Supabase exists, because the authorized redirect URI will be <code>https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback</code>. The deployed app URL also matters: use <code>https://USERNAME.github.io/REPO/</code> by default, or <code>https://YOUR_DOMAIN/</code> if you configured a custom domain.</p>
       </div>
     </div>
   </section>

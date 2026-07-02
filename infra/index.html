@@ -1030,7 +1030,10 @@
         <details class="svc-expand"><summary>Learn more</summary>
           <p>&ldquo;Sign in with Google&rdquo; powered by Supabase Auth. Users authenticate with their Google account &mdash; no passwords to store or manage.</p>
           <ul>
-            <li><strong>Setup:</strong> Create a Google Cloud project, get OAuth credentials, enable the Google provider in Supabase. The setup wizard handles the code.</li>
+            <li><strong>Google account:</strong> Use the Google account that should own the app&rsquo;s OAuth configuration. Create or select one Google Cloud project for the app.</li>
+            <li><strong>Google setup:</strong> Configure the OAuth consent screen, add test users while the app is in Testing mode, and create a Web application OAuth client.</li>
+            <li><strong>Redirects:</strong> Add <code>https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback</code> in Google, then set your GitHub Pages URL or custom domain as the Supabase Site URL.</li>
+            <li><strong>Supabase setup:</strong> Enable the Google provider under Authentication &rarr; Providers and paste the OAuth Client ID and Client Secret. The setup wizard handles the app code.</li>
             <li><strong>How it works:</strong> One-click Google login redirects through Supabase, which creates a user record and returns a session token. Your app checks the token to gate admin pages.</li>
             <li><strong>Use cases:</strong> Admin dashboards, customer portals, any page that needs user accounts.</li>
           </ul>
@@ -1501,7 +1504,7 @@
           <text x="370" y="153" text-anchor="middle" fill="#F6821F" font-size="14">CF</text>
           <text x="392" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Cloudflare Pages</text>
           <text x="362" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">Static HTML/JS/CSS hosting</text>
-          <text x="362" y="192" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">alpacaplayhouse.com</text>
+          <text x="362" y="192" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">yourdomain.com or USERNAME.github.io</text>
           <text x="362" y="207" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">/spaces/ /residents/ /admin/ /auth/</text>
 
           <line x1="500" y1="220" x2="500" y2="285" stroke="#3ECF8E" stroke-width="2" marker-end="url(#ad-arrowSupabase)" opacity="0.7"/>

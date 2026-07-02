@@ -513,10 +513,6 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
       Start building by telling Claude Code what you want &mdash; it handles the code, commits, and deploys.
     </div>
 
-    <div class="callout" style="border-color: var(--text-muted); background: #f5f5f5;">
-      <strong>Advanced: Conductor (parallel agents)</strong>
-      <p style="margin-bottom:0">Want to run multiple Claude Code agents in parallel? Download <a href="https://conductor.build">Conductor</a> &mdash; it lets you create separate workspaces that each run their own agent on their own git branch. Great for tackling multiple tasks simultaneously.</p>
-    </div>
   </div>
 
   <!-- Optional services reference -->
@@ -527,10 +523,14 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     <h3>Google Sign-In (OAuth)</h3>
     <ul>
       <li>Google Cloud Console: <a href="https://console.cloud.google.com/">console.cloud.google.com</a></li>
-      <li>Create a new project, then go to <strong>APIs &amp; Services &rarr; Credentials</strong></li>
-      <li>Set up OAuth consent screen (External), then create OAuth 2.0 Client ID (Web application)</li>
+      <li>Use the Google account that should own the app login configuration, then create or select a Google Cloud project for the app</li>
+      <li>Set up the OAuth consent screen: choose External for public apps, fill in app name/support email/developer email, and add test users while the app is in Testing mode</li>
+      <li>Create an OAuth 2.0 Client ID with application type <strong>Web application</strong></li>
+      <li>Add authorized JavaScript origins for the deployed site: <code>https://USERNAME.github.io</code> and, if configured, <code>https://YOUR_DOMAIN</code></li>
       <li>Add authorized redirect URI: <code>https://PROJECT_REF.supabase.co/auth/v1/callback</code></li>
-      <li>User provides: Client ID and Client Secret</li>
+      <li>In Supabase, enable <strong>Authentication &rarr; Providers &rarr; Google</strong>, paste the Client ID and Client Secret, and set the Site URL to the project&rsquo;s GitHub Pages URL or custom domain</li>
+      <li>Publish the OAuth consent screen before broad launch; Testing mode only allows listed test users</li>
+      <li>User provides Claude Code: Client ID, project ref, deployed site URL, and whether the OAuth app is Testing or Published. Keep the Client Secret in Supabase or the password manager.</li>
     </ul>
 
     <h3>Resend (Email)</h3>

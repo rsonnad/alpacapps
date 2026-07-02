@@ -9,7 +9,6 @@ AlpacApps is a full-stack platform using:
 - **GitHub Pages** — static site hosting (free)
 - **Supabase** — PostgreSQL database, auth, storage, edge functions (free tier)
 - **Claude Code** — AI developer agent that writes and deploys code
-- **Conductor** — Mac app for running parallel Claude Code agents (macOS only)
 - **Tailwind CSS v4** — styling framework
 
 Architecture: Browser → GitHub Pages → Supabase (no server-side code). Edge functions handle sensitive operations.
@@ -41,13 +40,11 @@ The user pastes a setup prompt into Claude Code. Claude Code should:
 
 5. **Set up Supabase** — Create project, configure auth, run initial migrations
 
-6. **Install Conductor** — Download and install the Mac app (macOS only)
-
-### Phase 2: Switch to Conductor
-Once Conductor is installed, the user switches from Claude Code in the terminal to Conductor for:
-- Running the setup wizard (configures services based on user's needs)
-- All future development (each task gets its own workspace with a dedicated AI agent)
-- Code pushes to GitHub and the site updates automatically
+### Phase 2: Continue in Claude Code
+Once the repo is cloned locally, the user continues in Claude Code for:
+- Running the setup wizard or setup prompt (configures services based on user's needs)
+- Future development tasks
+- Code pushes to GitHub so the site updates automatically
 
 ## Detailed Step-by-Step Guide
 
@@ -61,7 +58,6 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 |---------|---------|
 | GitHub Pages | Static site hosting, CI/CD via push to main |
 | Supabase | PostgreSQL, auth, file storage, edge functions |
-| Conductor | Parallel AI coding agents (macOS only) |
 | Claude Code | AI developer — writes, tests, deploys code |
 
 ### Optional services
@@ -85,6 +81,16 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 | iPhone App | Native iOS (Swift/SwiftUI) + App Store | $99/yr (Apple Developer) |
 | Android App | Native Android (Kotlin/Compose) + Play Store | $25 one-time (Google Play) |
 | Home Server | Local Mac for HAOS, cameras, media, 30+ devices | ~$150 one-time |
+
+### Google Sign-In setup requirements
+When the user selects Google Sign-In:
+1. They need a Google account that will own the app's Google Cloud project.
+2. In Google Cloud, they create or select a project, configure the OAuth consent screen, and add test users while the app is in Testing mode.
+3. They create an OAuth client with application type `Web application`.
+4. Authorized JavaScript origins should include the deployed GitHub Pages origin, e.g. `https://USERNAME.github.io`, and the custom domain origin if they configured one, e.g. `https://YOUR_DOMAIN`.
+5. Authorized redirect URI must be `https://PROJECT_REF.supabase.co/auth/v1/callback`.
+6. In Supabase, enable `Authentication -> Providers -> Google`, paste the Client ID and Client Secret, and set URL Configuration's Site URL to the user's GitHub Pages URL or their custom domain.
+7. For broad launch, the OAuth consent screen must be Published. In Testing mode, only listed test users can sign in.
 
 ## Project Profiles
 
@@ -167,7 +173,6 @@ When updating an existing project from the template (`https://github.com/rsonnad
 
 ## Platform Notes
 
-- **Conductor**: macOS only (as of March 2026). Non-Mac users use Claude Code directly in the terminal.
 - **iPhone App**: Native Swift/SwiftUI, requires macOS for Xcode builds
 - **Android App**: Native Kotlin/Jetpack Compose, builds on any OS via Android Studio
 - **Home Server**: Requires a dedicated Mac on the local network running HAOS
