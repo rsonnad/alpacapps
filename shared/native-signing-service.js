@@ -58,7 +58,7 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
   const token = generateToken();
   const issuedAt = new Date().toISOString();
   const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
-  const signingUrl = `${SIGNING_PAGE_BASE}?token=${token}`;
+  let signingUrl = `${SIGNING_PAGE_BASE}?token=${token}`;
 
   // #32 capture the admin user who issued the token — process-signature
   // will surface this as landlord_user_id in the audit log. UA is captured
@@ -83,24 +83,57 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
 
   if (error) throw error;
 
-  // Fetch the rendered lease HTML + payment methods so the email is self-contained.
+  // Fetch details we need for the email + the ID-upload token.
+  const { data: appRow } = await supabase
+    .from('rental_applications')
+    .select('reservation_deposit_amount, require_deposit, person_id, person:person_id(first_name, last_name)')
+    .eq('id', applicationId)
+    .single();
+
+  // Mint a photo-ID upload token and thread it into the signing link so the
+  // signer completes signature + ID on a single page (combined flow). Best
+  // effort: if this fails we still send a normal (sign-only) signing link.
+  try {
+    const { data: idToken, error: idErr } = await supabase
+      .from('upload_tokens')
+      .insert({
+        rental_application_id: applicationId,
+        person_id: appRow?.person_id || null,
+        token_type: 'identity_verification',
+        expires_at: expiresAt,
+        created_by: adminUserId || 'admin',
+      })
+      .select('token')
+      .single();
+    if (idErr) throw idErr;
+    if (idToken?.token) {
+      signingUrl += `&idt=${idToken.token}`;
+      await supabase
+        .from('rental_applications')
+        .update({ identity_verification_status: 'link_sent', updated_at: issuedAt })
+        .eq('id', applicationId);
+    }
+  } catch (e) {
+    console.warn('Could not mint ID upload token for signing link:', e?.message || e);
+  }
+
+  // Fetch the rendered lease HTML so the email is self-contained.
   // Tenant can read everything inline and only follow the Sign button when ready.
   const { documentHtml, waiverHtml } = await fetchSigningDocument(token);
-  const paymentSummaryHtml = await buildRentalPaymentSummary(applicationId);
+
+  // Prepaid / no-deposit guests (e.g. Airbnb-booked short-term stays) get no
+  // payment instructions in the signing email.
+  const skipPayments = appRow?.require_deposit === false;
 
   // Default the online-payment CTAs to the reservation deposit (what's due
   // now to hold the space). At move-in the tenant will be sent a separate
   // request for the remaining balance.
-  const { data: appRow } = await supabase
-    .from('rental_applications')
-    .select('reservation_deposit_amount, person:person_id(first_name, last_name)')
-    .eq('id', applicationId)
-    .single();
   const ctaAmount = Number(appRow?.reservation_deposit_amount || 0);
   const ctaDesc = appRow?.person
     ? `${appRow.person.first_name} ${appRow.person.last_name} — Reservation Deposit`.trim()
     : 'Reservation Deposit';
-  const paymentMethodsHtml = await fetchPaymentMethodsHtml({ amount: ctaAmount, description: ctaDesc });
+  const paymentSummaryHtml = skipPayments ? '' : await buildRentalPaymentSummary(applicationId);
+  const paymentMethodsHtml = skipPayments ? '' : await fetchPaymentMethodsHtml({ amount: ctaAmount, description: ctaDesc });
 
   await sendSigningEmail(recipientEmail, recipientName, signingUrl, 'rental', null, {
     documentHtml,

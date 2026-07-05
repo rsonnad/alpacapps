@@ -3796,45 +3796,55 @@ async function sendForSignature() {
       recipientName,
     );
 
-    // Also send a notification email via Resend
-    const emailResult = await emailService.sendLeaseSent({ person: app.person });
+    // Prepaid / no-deposit guests (e.g. Airbnb-booked short-term stays) get a
+    // single self-contained signing email — which now also carries the photo-ID
+    // upload link (combined sign + ID page). Skip the extra notification and
+    // deposit-request emails so they receive exactly one message.
+    const skipExtras = app.require_deposit === false;
 
-    // Automatically send deposit request email with payment instructions
-    // Include ID verification link if not yet verified
-    let idUploadUrl = null;
-    if (app.identity_verification_status !== 'verified') {
-      try {
-        const { uploadUrl } = await identityService.requestVerification(
-          currentApplicationId, app.person_id, authState?.user?.email
-        );
-        idUploadUrl = uploadUrl;
-      } catch (e) {
-        console.warn('Could not generate ID upload link:', e);
-      }
-    }
-    const charges = getPreMoveInCharges(app);
-    const depositApp = {
-      person: app.person,
-      move_in_deposit: charges.moveInDue,
-      security_deposit: charges.securityDeposit,
-      identity_verification_status: app.identity_verification_status,
-      id_upload_url: idUploadUrl,
-    };
-    const depositEmailResult = await emailService.sendDepositRequested(depositApp);
-
-    // Mark deposit as requested in the database
-    if (depositEmailResult.success) {
-      await supabase.from('rental_applications').update({
-        deposit_requested_at: new Date().toISOString()
-      }).eq('id', currentApplicationId);
-    }
-
-    if (emailResult.success && depositEmailResult.success) {
-      showToast('Lease sent for signature, notification & deposit request emails sent', 'success');
-    } else if (emailResult.success) {
-      showToast('Lease sent for signature & notification sent (deposit email failed)', 'warning');
+    if (skipExtras) {
+      showToast('Sent for signature — one email with signing + ID upload', 'success');
     } else {
-      showToast('Lease sent for signature (some notification emails failed)', 'warning');
+      // Also send a notification email via Resend
+      const emailResult = await emailService.sendLeaseSent({ person: app.person });
+
+      // Automatically send deposit request email with payment instructions
+      // Include ID verification link if not yet verified
+      let idUploadUrl = null;
+      if (app.identity_verification_status !== 'verified') {
+        try {
+          const { uploadUrl } = await identityService.requestVerification(
+            currentApplicationId, app.person_id, authState?.user?.email
+          );
+          idUploadUrl = uploadUrl;
+        } catch (e) {
+          console.warn('Could not generate ID upload link:', e);
+        }
+      }
+      const charges = getPreMoveInCharges(app);
+      const depositApp = {
+        person: app.person,
+        move_in_deposit: charges.moveInDue,
+        security_deposit: charges.securityDeposit,
+        identity_verification_status: app.identity_verification_status,
+        id_upload_url: idUploadUrl,
+      };
+      const depositEmailResult = await emailService.sendDepositRequested(depositApp);
+
+      // Mark deposit as requested in the database
+      if (depositEmailResult.success) {
+        await supabase.from('rental_applications').update({
+          deposit_requested_at: new Date().toISOString()
+        }).eq('id', currentApplicationId);
+      }
+
+      if (emailResult.success && depositEmailResult.success) {
+        showToast('Lease sent for signature, notification & deposit request emails sent', 'success');
+      } else if (emailResult.success) {
+        showToast('Lease sent for signature & notification sent (deposit email failed)', 'warning');
+      } else {
+        showToast('Lease sent for signature (some notification emails failed)', 'warning');
+      }
     }
   } catch (error) {
     console.error('Error sending for signature:', error);
