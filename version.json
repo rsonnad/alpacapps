@@ -1,12 +1,12 @@
 {
-  "version": "v260705.01 6:15p",
-  "release": 1719,
-  "sha": "f730c15c3f",
-  "fullSha": "f730c15c3ffc337ab742bed61c01f244da76919a",
+  "version": "v260706.01 1:08a",
+  "release": 1720,
+  "sha": "30d370e07d",
+  "fullSha": "30d370e07dbf0aa598bceae7371fc5c8c7045e31",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-05T23:15:26+00:00",
-  "commits": [{"sha":"f730c15c3f","message":"Combine sign + ID upload on one page; single email for prepaid guests","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-07-06T06:08:38+00:00",
+  "commits": [{"sha":"30d370e07d","message":"get-signing-document: per-application lease template override","author":"Sonia Wendorff"}]
 }
