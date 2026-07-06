@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
         application_fee_amount,
         additional_terms,
         waiver_template_id,
+        signing_lease_template_id,
         approved_space:approved_space_id (id, name, type),
         person:person_id (id, first_name, last_name, email, phone, current_address, emergency_contact_name, emergency_contact_phone, emergency_contact_email, emergency_contact_relationship)
       `)
@@ -60,15 +61,29 @@ Deno.serve(async (req) => {
         return jsonError('This document has already been signed.', 409);
       }
 
-      // Get the active lease template
-      const { data: template } = await supabase
-        .from('lease_templates')
-        .select('content')
-        .eq('is_active', true)
-        .eq('type', 'lease')
-        .order('version', { ascending: false })
-        .limit(1)
-        .single();
+      // Per-application override: a specific lease template can be pinned to
+      // an application (e.g. a short-term guest agreement for a prepaid,
+      // Airbnb-booked stay). Falls back to the active lease template when unset.
+      let template = null;
+      if (rentalApp.signing_lease_template_id) {
+        const { data: pinned } = await supabase
+          .from('lease_templates')
+          .select('content')
+          .eq('id', rentalApp.signing_lease_template_id)
+          .single();
+        template = pinned || null;
+      }
+      if (!template) {
+        const { data: activeTemplate } = await supabase
+          .from('lease_templates')
+          .select('content')
+          .eq('is_active', true)
+          .eq('type', 'lease')
+          .order('version', { ascending: false })
+          .limit(1)
+          .single();
+        template = activeTemplate || null;
+      }
 
       if (!template) {
         return jsonError('No active lease template found', 500);
