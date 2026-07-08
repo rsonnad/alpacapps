@@ -1,12 +1,12 @@
 {
-  "version": "v260708.05 4:48a",
-  "release": 1725,
-  "sha": "eb78b03619",
-  "fullSha": "eb78b03619efd0fb4f8b9b48293ee428f95de8ea",
+  "version": "v260708.06 5:36a",
+  "release": 1726,
+  "sha": "381ab66465",
+  "fullSha": "381ab664654fd01607d5023c381cda0e2dbb6681",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-08T09:48:55+00:00",
-  "commits": [{"sha":"eb78b03619","message":"Add 581 Leisure purchase value tab","author":"Rahul"}]
+  "pushedAt": "2026-07-08T10:36:28+00:00",
+  "commits": [{"sha":"381ab66465","message":"Rebalance 581 Leisure offer value","author":"Rahul"}]
 }
