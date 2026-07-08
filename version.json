@@ -1,12 +1,12 @@
 {
-  "version": "v260708.16 10:27a",
-  "release": 1736,
-  "sha": "8a90a58f87",
-  "fullSha": "8a90a58f87cdba7abcae0d03047fa81b20e2f43c",
+  "version": "v260708.17 10:39a",
+  "release": 1737,
+  "sha": "9b9357ff37",
+  "fullSha": "9b9357ff37e932f40bc84fe46eba7275154f8e61",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-08T15:27:53+00:00",
-  "commits": [{"sha":"8a90a58f87","message":"Add Bastrop CAD record tab","author":"Rahul"}]
+  "pushedAt": "2026-07-08T15:39:54+00:00",
+  "commits": [{"sha":"9b9357ff37","message":"Add CAD and Earth links","author":"Rahul"}]
 }
