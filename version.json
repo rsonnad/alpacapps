@@ -1,12 +1,12 @@
 {
-  "version": "v260708.14 9:57a",
-  "release": 1734,
-  "sha": "7d523f9b85",
-  "fullSha": "7d523f9b85d57e61e63b7a65bfa1b3435554ee79",
+  "version": "v260708.15 9:59a",
+  "release": 1735,
+  "sha": "71e68b7897",
+  "fullSha": "71e68b78975b9366046cc0128770ce7696baa05c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-08T14:57:41+00:00",
-  "commits": [{"sha":"7d523f9b85","message":"Add task creation link to clock-in email","author":"Rahul"}]
+  "machine": "runnervmkkn4f",
+  "pushedAt": "2026-07-08T14:59:30+00:00",
+  "commits": [{"sha":"71e68b7897","message":"Document token-based Supabase deploy flow","author":"Rahul"}]
 }
