@@ -1,12 +1,12 @@
 {
-  "version": "v260708.11 9:33a",
-  "release": 1731,
-  "sha": "b2b857ffd3",
-  "fullSha": "b2b857ffd3e5c3eb2d610a3acd0e007ee1b5c9fc",
+  "version": "v260708.12 9:37a",
+  "release": 1732,
+  "sha": "3bf7949de9",
+  "fullSha": "3bf7949de932b5f5e224849724748ed6c2be477d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-08T14:33:35+00:00",
-  "commits": [{"sha":"b2b857ffd3","message":"Add asset profile identifier block","author":"Rahul"}]
+  "pushedAt": "2026-07-08T14:37:37+00:00",
+  "commits": [{"sha":"3bf7949de9","message":"Update 581 Leisure SEO title","author":"Rahul"}]
 }
