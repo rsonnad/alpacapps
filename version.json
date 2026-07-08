@@ -1,12 +1,12 @@
 {
-  "version": "v260708.07 7:28a",
-  "release": 1727,
-  "sha": "522ed1a9a7",
-  "fullSha": "522ed1a9a75797271aa65490df4e0f5ed836b9e4",
+  "version": "v260708.08 7:50a",
+  "release": 1728,
+  "sha": "2c22abc63d",
+  "fullSha": "2c22abc63d6c7ceb71be79f77072095970c97216",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-08T12:28:39+00:00",
-  "commits": [{"sha":"522ed1a9a7","message":"Make 581 Leisure purchase price editable","author":"Rahul"}]
+  "pushedAt": "2026-07-08T12:50:58+00:00",
+  "commits": [{"sha":"2c22abc63d","message":"Add recent comps for 581 Leisure offer","author":"Rahul"}]
 }
