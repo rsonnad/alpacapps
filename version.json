@@ -1,12 +1,12 @@
 {
-  "version": "v260708.02 3:28a",
-  "release": 1722,
-  "sha": "e085a0f41f",
-  "fullSha": "e085a0f41f2fe250cc81499d543a6e4de2de5e77",
+  "version": "v260708.03 4:31a",
+  "release": 1723,
+  "sha": "d049c2f50b",
+  "fullSha": "d049c2f50b8d8b354fb5a965e52cd36cf07c5ae7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-08T08:28:56+00:00",
-  "commits": [{"sha":"e085a0f41f","message":"Harden 581 Leisure diligence page","author":"Rahul"}]
+  "pushedAt": "2026-07-08T09:31:35+00:00",
+  "commits": [{"sha":"d049c2f50b","message":"Enhance 581 Leisure cash flow model","author":"Rahul"}]
 }
