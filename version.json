@@ -1,12 +1,12 @@
 {
-  "version": "v260708.04 4:39a",
-  "release": 1724,
-  "sha": "38f06105ed",
-  "fullSha": "38f06105ed58e05432da2820b6b4610789b17ba9",
+  "version": "v260708.05 4:48a",
+  "release": 1725,
+  "sha": "eb78b03619",
+  "fullSha": "eb78b03619efd0fb4f8b9b48293ee428f95de8ea",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-08T09:39:06+00:00",
-  "commits": [{"sha":"38f06105ed","message":"Refine 581 Leisure tax rate model","author":"Rahul"}]
+  "pushedAt": "2026-07-08T09:48:55+00:00",
+  "commits": [{"sha":"eb78b03619","message":"Add 581 Leisure purchase value tab","author":"Rahul"}]
 }
