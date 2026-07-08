@@ -232,11 +232,13 @@ psql "postgres://postgres.YOUR_REF:YOUR_URL_ENCODED_PASSWORD@aws-0-REGION.pooler
 
 ### Supabase CLI Access (for Claude)
 
-supabase functions deploy <function-name>
-supabase functions logs <function-name>
-supabase secrets set KEY=value
+SUPABASE_ACCESS_TOKEN="$(bw-read "Supabase — AlpacApps Project" "Management API Token")" \
+  supabase functions deploy <function-name> --project-ref aphrrfprbixmhissnjfn
+supabase functions logs <function-name> --project-ref aphrrfprbixmhissnjfn
+supabase secrets set KEY=value --project-ref aphrrfprbixmhissnjfn
 
-**For Claude:** Install the Supabase CLI if not present, login, and link to the project.
+**For Claude:** Prefer the explicit token + `--project-ref` path on this Mac.
+Direct `supabase functions deploy <function-name>` only works if the local CLI is already authenticated and linked correctly.
 Run these commands directly — don't ask the user to run them manually.
 ```
 
