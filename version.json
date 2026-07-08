@@ -1,12 +1,12 @@
 {
-  "version": "v260708.08 7:50a",
-  "release": 1728,
-  "sha": "2c22abc63d",
-  "fullSha": "2c22abc63d6c7ceb71be79f77072095970c97216",
+  "version": "v260708.09 8:16a",
+  "release": 1729,
+  "sha": "69bad39879",
+  "fullSha": "69bad3987912751f5a2293842ed810ecf9a6e747",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-08T12:50:58+00:00",
-  "commits": [{"sha":"2c22abc63d","message":"Add recent comps for 581 Leisure offer","author":"Rahul"}]
+  "machine": "runnervmkkn4f",
+  "pushedAt": "2026-07-08T13:16:49+00:00",
+  "commits": [{"sha":"69bad39879","message":"Add 581 Leisure title and tax record details","author":"Rahul"}]
 }
