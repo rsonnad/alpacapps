@@ -1,12 +1,12 @@
 {
-  "version": "v260708.03 4:31a",
-  "release": 1723,
-  "sha": "d049c2f50b",
-  "fullSha": "d049c2f50b8d8b354fb5a965e52cd36cf07c5ae7",
+  "version": "v260708.04 4:39a",
+  "release": 1724,
+  "sha": "38f06105ed",
+  "fullSha": "38f06105ed58e05432da2820b6b4610789b17ba9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-08T09:31:35+00:00",
-  "commits": [{"sha":"d049c2f50b","message":"Enhance 581 Leisure cash flow model","author":"Rahul"}]
+  "machine": "runnervm5mmn9",
+  "pushedAt": "2026-07-08T09:39:06+00:00",
+  "commits": [{"sha":"38f06105ed","message":"Refine 581 Leisure tax rate model","author":"Rahul"}]
 }
