@@ -14,6 +14,7 @@ let initialized = false;
 let debounceTimer = null;
 let currentView = 'tasks';
 let allInquiries = [];
+let initialTaskLinkHandled = false;
 
 // ---- Init ----
 initAdminPage({
@@ -25,6 +26,7 @@ initAdminPage({
     await Promise.all([loadSpaces(), loadAssignees()]);
     bindEvents();
     await loadTasks();
+    handleInitialTaskLink();
   }
 });
 
@@ -345,6 +347,47 @@ function openAddModal() {
   document.getElementById('inputStatus').value = 'open';
   document.getElementById('adminTaskPhotos').innerHTML = '';
   document.getElementById('taskModal').classList.add('open');
+}
+
+function handleInitialTaskLink() {
+  if (initialTaskLinkHandled) return;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('newTask') !== '1') return;
+
+  initialTaskLinkHandled = true;
+  openAddModal();
+
+  const assignedTo = params.get('assignedTo');
+  const assignedName = params.get('assignedName');
+  const assigneeSel = document.getElementById('inputAssignee');
+
+  if (assignedTo) {
+    const exactUserOption = Array.from(assigneeSel.options).find(opt => opt.value.startsWith(`user:${assignedTo}:`));
+    if (exactUserOption) {
+      assigneeSel.value = exactUserOption.value;
+    }
+  }
+
+  if (!assigneeSel.value && assignedName) {
+    const exactNameOption = Array.from(assigneeSel.options).find(opt => opt.value === `name:${assignedName}`);
+    if (exactNameOption) {
+      assigneeSel.value = exactNameOption.value;
+    }
+  }
+
+  if (!assigneeSel.value && assignedName) {
+    const fallbackOption = document.createElement('option');
+    fallbackOption.value = `name:${assignedName}`;
+    fallbackOption.textContent = `${assignedName} (from link)`;
+    assigneeSel.appendChild(fallbackOption);
+    assigneeSel.value = fallbackOption.value;
+  }
+
+  const cleaned = new URL(window.location.href);
+  cleaned.searchParams.delete('newTask');
+  cleaned.searchParams.delete('assignedTo');
+  cleaned.searchParams.delete('assignedName');
+  window.history.replaceState({}, '', cleaned.toString());
 }
 
 async function openEditModal(task) {

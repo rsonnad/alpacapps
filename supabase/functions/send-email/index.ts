@@ -2047,6 +2047,13 @@ the Alpaca Playhouse property AI agent`
       const tasks = data.tasks || [];
       const pLabels: Record<number, string> = { 1: 'Urgent', 2: 'High', 3: 'Medium', 4: 'Low' };
       const pColors: Record<number, string> = { 1: '#dc2626', 2: '#ea580c', 3: '#ca8a04', 4: '#2563eb' };
+      const createTaskUrl = (() => {
+        const url = new URL('https://alpacaplayhouse.com/staff/projects.html');
+        url.searchParams.set('newTask', '1');
+        if (data.associate_user_id) url.searchParams.set('assignedTo', data.associate_user_id);
+        if (data.display_name) url.searchParams.set('assignedName', data.display_name);
+        return url.toString();
+      })();
 
       const taskRows = tasks.length > 0
         ? tasks.map((t: any) => {
@@ -2063,7 +2070,14 @@ the Alpaca Playhouse property AI agent`
           <h2 style="margin:0 0 4px;">You're Clocked In</h2>
           <p style="margin:0 0 20px;color:#7d6f74;font-size:14px;">${data.first_name} clocked in at ${data.clock_in_time}${data.space_name ? ` — ${data.space_name}` : ''}.</p>
 
-          <p style="margin:0 0 8px;font-weight:600;font-size:16px;">📋 Your Task List</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 8px;">
+            <tr>
+              <td style="font-weight:600;font-size:16px;">📋 Your Task List</td>
+              <td align="right">
+                <a href="${createTaskUrl}" style="color:#3d8b7a;font-size:13px;font-weight:600;text-decoration:none;">+ new task</a>
+              </td>
+            </tr>
+          </table>
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 20px;">
             <tr><td style="padding:12px 16px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -2085,6 +2099,8 @@ the Alpaca Playhouse property AI agent`
 ${data.first_name} clocked in at ${data.clock_in_time}${data.space_name ? ` — ${data.space_name}` : ''}.
 
 YOUR TASK LIST:
+Create a task for ${data.display_name || data.first_name}: ${createTaskUrl}
+
 ${tasks.length > 0 ? tasks.map((t: any) => `• ${t.title}${t.location ? ` (${t.location})` : ''}${t.notes ? ` — ${t.notes}` : ''}`).join('\n') : 'No open tasks — you\'re all caught up!'}
 
 BEFORE PHOTOS REQUIRED

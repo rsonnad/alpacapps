@@ -701,7 +701,9 @@ async function sendClockInEmail() {
 
   const emailData = {
     associate_email: authState.appUser.email,
+    associate_user_id: authState.appUser.id,
     first_name: authState.appUser.first_name || authState.appUser.display_name || 'Team Member',
+    display_name: authState.appUser.display_name || authState.appUser.first_name || 'Team Member',
     space_name: spaceName,
     clock_in_time: HoursService.formatTime(activeEntry?.clock_in || new Date().toISOString()),
     tasks: taskList,
