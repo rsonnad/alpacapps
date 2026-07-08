@@ -1,12 +1,12 @@
 {
-  "version": "v260708.10 8:25a",
-  "release": 1730,
-  "sha": "fda355aee2",
-  "fullSha": "fda355aee2c19c9b169a0df5bc02cdbfb7b646b6",
+  "version": "v260708.11 9:33a",
+  "release": 1731,
+  "sha": "b2b857ffd3",
+  "fullSha": "b2b857ffd3e5c3eb2d610a3acd0e007ee1b5c9fc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-08T13:25:14+00:00",
-  "commits": [{"sha":"fda355aee2","message":"Add 581 Leisure maintenance budget tab","author":"Rahul"}]
+  "machine": "runnervmkkn4f",
+  "pushedAt": "2026-07-08T14:33:35+00:00",
+  "commits": [{"sha":"b2b857ffd3","message":"Add asset profile identifier block","author":"Rahul"}]
 }
