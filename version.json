@@ -1,12 +1,12 @@
 {
-  "version": "v260708.12 9:37a",
-  "release": 1732,
-  "sha": "3bf7949de9",
-  "fullSha": "3bf7949de932b5f5e224849724748ed6c2be477d",
+  "version": "v260708.13 9:48a",
+  "release": 1733,
+  "sha": "84eaf60b3e",
+  "fullSha": "84eaf60b3ea96ab74595927f9f7564c6bf71f55e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-08T14:37:37+00:00",
-  "commits": [{"sha":"3bf7949de9","message":"Update 581 Leisure SEO title","author":"Rahul"}]
+  "pushedAt": "2026-07-08T14:48:35+00:00",
+  "commits": [{"sha":"84eaf60b3e","message":"Match 581 Leisure hero title","author":"Rahul"}]
 }
