@@ -1,12 +1,12 @@
 {
-  "version": "v260708.09 8:16a",
-  "release": 1729,
-  "sha": "69bad39879",
-  "fullSha": "69bad3987912751f5a2293842ed810ecf9a6e747",
+  "version": "v260708.10 8:25a",
+  "release": 1730,
+  "sha": "fda355aee2",
+  "fullSha": "fda355aee2c19c9b169a0df5bc02cdbfb7b646b6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-08T13:16:49+00:00",
-  "commits": [{"sha":"69bad39879","message":"Add 581 Leisure title and tax record details","author":"Rahul"}]
+  "machine": "runnervm5mmn9",
+  "pushedAt": "2026-07-08T13:25:14+00:00",
+  "commits": [{"sha":"fda355aee2","message":"Add 581 Leisure maintenance budget tab","author":"Rahul"}]
 }
