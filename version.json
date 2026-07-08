@@ -1,12 +1,12 @@
 {
-  "version": "v260708.15 9:59a",
-  "release": 1735,
-  "sha": "71e68b7897",
-  "fullSha": "71e68b78975b9366046cc0128770ce7696baa05c",
+  "version": "v260708.16 10:27a",
+  "release": 1736,
+  "sha": "8a90a58f87",
+  "fullSha": "8a90a58f87cdba7abcae0d03047fa81b20e2f43c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-08T14:59:30+00:00",
-  "commits": [{"sha":"71e68b7897","message":"Document token-based Supabase deploy flow","author":"Rahul"}]
+  "pushedAt": "2026-07-08T15:27:53+00:00",
+  "commits": [{"sha":"8a90a58f87","message":"Add Bastrop CAD record tab","author":"Rahul"}]
 }
