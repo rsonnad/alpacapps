@@ -1,12 +1,12 @@
 {
-  "version": "v260706.01 1:08a",
-  "release": 1720,
-  "sha": "30d370e07d",
-  "fullSha": "30d370e07dbf0aa598bceae7371fc5c8c7045e31",
-  "actor": "wensonia",
+  "version": "v260708.01 3:21a",
+  "release": 1721,
+  "sha": "15ee38a45b",
+  "fullSha": "15ee38a45b3356d2b83580232b29e4c43fb18f2a",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-06T06:08:38+00:00",
-  "commits": [{"sha":"30d370e07d","message":"get-signing-document: per-application lease template override","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-07-08T08:21:28+00:00",
+  "commits": [{"sha":"15ee38a45b","message":"Add 581 Leisure property diligence page","author":"Rahul"}]
 }
