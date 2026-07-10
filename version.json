@@ -1,12 +1,12 @@
 {
-  "version": "v260708.17 10:39a",
-  "release": 1737,
-  "sha": "9b9357ff37",
-  "fullSha": "9b9357ff37e932f40bc84fe46eba7275154f8e61",
+  "version": "v260710.01 3:54a",
+  "release": 1738,
+  "sha": "913230e455",
+  "fullSha": "913230e455463fa2500140e31ccb200f21fda5e8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmkkn4f",
-  "pushedAt": "2026-07-08T15:39:54+00:00",
-  "commits": [{"sha":"9b9357ff37","message":"Add CAD and Earth links","author":"Rahul"}]
+  "machine": "runnervm5mmn9",
+  "pushedAt": "2026-07-10T08:54:45+00:00",
+  "commits": [{"sha":"913230e455","message":"Add offer and buyer tax analysis","author":"Rahul"}]
 }
