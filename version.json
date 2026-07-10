@@ -1,12 +1,12 @@
 {
-  "version": "v260710.06 4:38p",
-  "release": 1743,
-  "sha": "7399d204eb",
-  "fullSha": "7399d204eb74b3d53930e24dc0639ac7fb1f56ab",
+  "version": "v260710.07 4:56p",
+  "release": 1744,
+  "sha": "b17f441592",
+  "fullSha": "b17f44159242c6ad6528c0d48e8c3293f8147f46",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-10T21:38:55+00:00",
-  "commits": [{"sha":"7399d204eb","message":"Add R2 certificate detail PDF link","author":"Rahul"}]
+  "pushedAt": "2026-07-10T21:56:11+00:00",
+  "commits": [{"sha":"b17f441592","message":"Organize 581 Leisure source links","author":"Rahul"}]
 }
