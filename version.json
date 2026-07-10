@@ -1,12 +1,12 @@
 {
-  "version": "v260710.03 7:35a",
-  "release": 1740,
-  "sha": "42edf6a4ef",
-  "fullSha": "42edf6a4efaf97c2a78f9351d8c4c3e59af91dc8",
+  "version": "v260710.04 10:42a",
+  "release": 1741,
+  "sha": "d77e25a80d",
+  "fullSha": "d77e25a80d454b35049a94c40624af52cd3b6032",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-10T12:35:14+00:00",
-  "commits": [{"sha":"42edf6a4ef","message":"Align mortgage model with owner occupancy","author":"Rahul"}]
+  "pushedAt": "2026-07-10T15:42:08+00:00",
+  "commits": [{"sha":"d77e25a80d","message":"Correct manufactured-home lender ranking","author":"Rahul"}]
 }
