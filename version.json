@@ -1,12 +1,12 @@
 {
-  "version": "v260710.04 10:42a",
-  "release": 1741,
-  "sha": "d77e25a80d",
-  "fullSha": "d77e25a80d454b35049a94c40624af52cd3b6032",
+  "version": "v260710.05 4:15p",
+  "release": 1742,
+  "sha": "3bf62933a4",
+  "fullSha": "3bf62933a402372404fd64e0204c505126926bad",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-10T15:42:08+00:00",
-  "commits": [{"sha":"d77e25a80d","message":"Correct manufactured-home lender ranking","author":"Rahul"}]
+  "pushedAt": "2026-07-10T21:15:33+00:00",
+  "commits": [{"sha":"3bf62933a4","message":"Fix TDHCA ownership search links","author":"Rahul"}]
 }
