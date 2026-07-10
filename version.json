@@ -1,12 +1,12 @@
 {
-  "version": "v260710.02 6:54a",
-  "release": 1739,
-  "sha": "d45665118f",
-  "fullSha": "d45665118f30cdc3b9722d2216a2947208aeedbf",
+  "version": "v260710.03 7:35a",
+  "release": 1740,
+  "sha": "42edf6a4ef",
+  "fullSha": "42edf6a4efaf97c2a78f9351d8c4c3e59af91dc8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-10T11:54:44+00:00",
-  "commits": [{"sha":"d45665118f","message":"Add seller offer presentation and revised valuation","author":"Rahul"}]
+  "pushedAt": "2026-07-10T12:35:14+00:00",
+  "commits": [{"sha":"42edf6a4ef","message":"Align mortgage model with owner occupancy","author":"Rahul"}]
 }
