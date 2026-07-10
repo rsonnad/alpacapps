@@ -1,12 +1,12 @@
 {
-  "version": "v260710.01 3:54a",
-  "release": 1738,
-  "sha": "913230e455",
-  "fullSha": "913230e455463fa2500140e31ccb200f21fda5e8",
+  "version": "v260710.02 6:54a",
+  "release": 1739,
+  "sha": "d45665118f",
+  "fullSha": "d45665118f30cdc3b9722d2216a2947208aeedbf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-10T08:54:45+00:00",
-  "commits": [{"sha":"913230e455","message":"Add offer and buyer tax analysis","author":"Rahul"}]
+  "pushedAt": "2026-07-10T11:54:44+00:00",
+  "commits": [{"sha":"d45665118f","message":"Add seller offer presentation and revised valuation","author":"Rahul"}]
 }
