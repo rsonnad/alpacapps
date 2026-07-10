@@ -1,12 +1,12 @@
 {
-  "version": "v260710.05 4:15p",
-  "release": 1742,
-  "sha": "3bf62933a4",
-  "fullSha": "3bf62933a402372404fd64e0204c505126926bad",
+  "version": "v260710.06 4:38p",
+  "release": 1743,
+  "sha": "7399d204eb",
+  "fullSha": "7399d204eb74b3d53930e24dc0639ac7fb1f56ab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-10T21:15:33+00:00",
-  "commits": [{"sha":"3bf62933a4","message":"Fix TDHCA ownership search links","author":"Rahul"}]
+  "pushedAt": "2026-07-10T21:38:55+00:00",
+  "commits": [{"sha":"7399d204eb","message":"Add R2 certificate detail PDF link","author":"Rahul"}]
 }
