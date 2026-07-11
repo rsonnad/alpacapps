@@ -1,12 +1,12 @@
 {
-  "version": "v260710.07 4:56p",
-  "release": 1744,
-  "sha": "b17f441592",
-  "fullSha": "b17f44159242c6ad6528c0d48e8c3293f8147f46",
+  "version": "v260710.08 8:51p",
+  "release": 1745,
+  "sha": "cfd4d831da",
+  "fullSha": "cfd4d831daf5605902bcece18ae1762d907d51ae",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-10T21:56:11+00:00",
-  "commits": [{"sha":"b17f441592","message":"Organize 581 Leisure source links","author":"Rahul"}]
+  "pushedAt": "2026-07-11T01:51:25+00:00",
+  "commits": [{"sha":"cfd4d831da","message":"Clarify property source categories","author":"Rahul"}]
 }
