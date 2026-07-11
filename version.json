@@ -1,12 +1,12 @@
 {
-  "version": "v260710.08 8:51p",
-  "release": 1745,
-  "sha": "cfd4d831da",
-  "fullSha": "cfd4d831daf5605902bcece18ae1762d907d51ae",
+  "version": "v260711.01 12:00p",
+  "release": 1746,
+  "sha": "ecc970f35a",
+  "fullSha": "ecc970f35a302240cf9cadc452369d45b3256251",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-11T01:51:25+00:00",
-  "commits": [{"sha":"cfd4d831da","message":"Clarify property source categories","author":"Rahul"}]
+  "pushedAt": "2026-07-11T17:00:39+00:00",
+  "commits": [{"sha":"ecc970f35a","message":"Add land and structure value allocation","author":"Rahul"}]
 }
