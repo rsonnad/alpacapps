@@ -169,6 +169,27 @@ async function fetchEmailContent(emailId: string, apiKey: string): Promise<{ htm
 }
 
 /**
+ * Strip an HTML email body down to plain text.
+ * Used as a fallback when a sender (e.g. Venmo) provides no text/plain part.
+ */
+function htmlToPlainText(html: string): string {
+  if (!html) return "";
+  let text = html.replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, " ");
+  text = text.replace(/<(br|p|div|tr|li|h[1-6])[^>]*>/gi, "\n");
+  text = text.replace(/<[^>]+>/g, " ");
+  text = text
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+  text = text.replace(/[ \t]+/g, " ");
+  text = text.replace(/\n\s*\n+/g, "\n");
+  return text.trim();
+}
+
+/**
  * Forward an email via Resend send API.
  */
 async function forwardEmail(
@@ -2166,6 +2187,90 @@ function parseCashAppPayment(bodyText: string, fromAddress: string): CashAppPaym
 }
 
 // =============================================
+// VENMO PAYMENT PARSING (person-to-person transfers)
+// =============================================
+
+interface VenmoPayment {
+  amount: number;
+  senderName: string;
+  transactionId: string | null;
+  memo: string | null;
+}
+
+interface OutboundVenmoPayment {
+  amount: number;
+  recipientName: string;
+  transactionId: string | null;
+  memo: string | null;
+}
+
+const VENMO_MONTH_NAMES = /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i;
+
+/**
+ * Extract the free-text note Venmo shows above the "See transaction" button.
+ * Venmo repeats the "X paid you $Y.YY" header 2-3 times in the HTML (visual + accessible
+ * variants); only the last repetition is immediately followed by the note (or, if the
+ * sender left no note, a bare month-name icon caption). Matching up to "See transaction"
+ * while forbidding a `$` in between naturally lands on that last repetition, since any
+ * earlier attempt runs into the next repeated header's `$` first.
+ */
+function extractVenmoMemo(normalized: string, headerPattern: RegExp): string | null {
+  const memoMatch = normalized.match(new RegExp(`${headerPattern.source}\\s+([^$]+?)\\s*See transaction`, "i"));
+  if (!memoMatch) return null;
+  const candidate = memoMatch[1]
+    .replace(/[\u{1F300}-\u{1FAFF}☀-➿]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!candidate || VENMO_MONTH_NAMES.test(candidate)) return null;
+  return candidate;
+}
+
+/**
+ * Parse an inbound Venmo payment notification ("NAME paid you $X.XX").
+ */
+function parseVenmoPayment(bodyText: string, fromAddress: string): VenmoPayment | null {
+  const fromLower = (fromAddress || "").toLowerCase();
+  if (!fromLower.includes("venmo.com")) return null;
+
+  const normalized = bodyText.replace(/\s+/g, " ").trim();
+  const headerPattern = /([A-Z][A-Za-z .'-]{1,60}?) paid you \$\s*([\d,]+)\s*\.\s*(\d{2})/;
+  const headerMatch = normalized.match(headerPattern);
+  if (!headerMatch) return null;
+
+  const txMatch = normalized.match(/Transaction ID\s*(\d+)/i);
+
+  return {
+    amount: parseFloat(`${headerMatch[2].replace(/,/g, "")}.${headerMatch[3]}`),
+    senderName: headerMatch[1].trim(),
+    transactionId: txMatch ? txMatch[1] : null,
+    memo: extractVenmoMemo(normalized, /paid you \$\s*[\d,]+\s*\.\s*\d{2}/),
+  };
+}
+
+/**
+ * Parse an outbound Venmo payment notification ("You paid NAME $X.XX") — money
+ * sent FROM the Alpaca Playhouse Venmo account (refund/payout).
+ */
+function parseOutboundVenmoPayment(bodyText: string, fromAddress: string): OutboundVenmoPayment | null {
+  const fromLower = (fromAddress || "").toLowerCase();
+  if (!fromLower.includes("venmo.com")) return null;
+
+  const normalized = bodyText.replace(/\s+/g, " ").trim();
+  const headerPattern = /You paid ([A-Z][A-Za-z .'-]{1,60}?) \$\s*([\d,]+)\s*\.\s*(\d{2})/;
+  const headerMatch = normalized.match(headerPattern);
+  if (!headerMatch) return null;
+
+  const txMatch = normalized.match(/Transaction ID\s*(\d+)/i);
+
+  return {
+    amount: parseFloat(`${headerMatch[2].replace(/,/g, "")}.${headerMatch[3]}`),
+    recipientName: headerMatch[1].trim(),
+    transactionId: txMatch ? txMatch[1] : null,
+    memo: extractVenmoMemo(normalized, /You paid [A-Za-z .'-]{1,60}? \$\s*[\d,]+\s*\.\s*\d{2}/),
+  };
+}
+
+// =============================================
 // OUTBOUND ZELLE PAYMENT PARSING (sent payments / refunds)
 // =============================================
 
@@ -3297,6 +3402,24 @@ async function sendPaymentNotification(
         ${applicationId ? `<p><a href="${adminUrl}" style="display:inline-block;padding:10px 20px;background:#00d632;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">View Application</a></p>` : ""}
       </div>
     `;
+  } else if (type === "auto_recorded_venmo") {
+    subject = `Venmo Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    html = `
+      <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+        <h2 style="color:#008CFF;">&#x2705; Venmo Payment Auto-Recorded</h2>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>
+          ${parsed.confirmationNumber ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Transaction ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.confirmationNumber}</td></tr>` : ""}
+          ${details.memo ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Memo</td><td style="padding:8px;border-bottom:1px solid #eee;">${details.memo}</td></tr>` : ""}
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Venmo</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${details.category || 'other'}</td></tr>
+        </table>
+        ${details.breakdownHtml || ""}
+        ${applicationId ? `<p><a href="${adminUrl}" style="display:inline-block;padding:10px 20px;background:#008CFF;color:white;text-decoration:none;border-radius:4px;margin-top:10px;">View Application</a></p>` : ""}
+      </div>
+    `;
   } else if (type === "auto_recorded_coinbase") {
     subject = `Coinbase Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
     html = `
@@ -3363,7 +3486,11 @@ async function handlePaymentEmail(
   supabase: any,
   resendApiKey: string
 ): Promise<void> {
-  const bodyText = emailRecord.body_text || "";
+  // Some senders (e.g. Venmo) only provide an HTML body — no text/plain part.
+  // Fall back to a stripped version of the HTML so parsers below still have content to match against.
+  const bodyText = emailRecord.body_text?.trim()
+    ? emailRecord.body_text
+    : htmlToPlainText(emailRecord.body_html || "");
   const fromAddress = emailRecord.from_address || "";
 
   // 1a. Try to parse as PayPal payment first
@@ -3390,6 +3517,22 @@ async function handlePaymentEmail(
     return;
   }
 
+  // 1b3. Try to parse as outbound Venmo payment (refund/payout sent)
+  const outboundVenmoParsed = parseOutboundVenmoPayment(bodyText, fromAddress);
+  if (outboundVenmoParsed) {
+    console.log(`Parsed outbound Venmo payment: $${outboundVenmoParsed.amount} to ${outboundVenmoParsed.recipientName}, txn=${outboundVenmoParsed.transactionId}, memo="${outboundVenmoParsed.memo || ""}"`);
+    await handleOutboundVenmoPayment(supabase, resendApiKey, outboundVenmoParsed);
+    return;
+  }
+
+  // 1b4. Try to parse as inbound Venmo payment
+  const venmoParsed = parseVenmoPayment(bodyText, fromAddress);
+  if (venmoParsed) {
+    console.log(`Parsed Venmo payment: $${venmoParsed.amount} from ${venmoParsed.senderName}, txn=${venmoParsed.transactionId}, memo="${venmoParsed.memo || ""}"`);
+    await handleParsedVenmoPayment(supabase, resendApiKey, venmoParsed, emailRecord);
+    return;
+  }
+
   // 1c. Try to parse as outbound Zelle payment (refund/payout sent)
   const outboundParsed = parseOutboundZellePayment(bodyText);
   if (outboundParsed) {
@@ -3401,7 +3544,7 @@ async function handlePaymentEmail(
   // 1d. Try to parse as inbound Zelle payment
   const parsed = parseZellePayment(bodyText);
   if (!parsed) {
-    console.log("Could not parse payment from email (tried PayPal + Coinbase + Zelle + outbound Zelle), forwarding to admin for review");
+    console.log("Could not parse payment from email (tried PayPal + Coinbase + Cash App + Venmo + Zelle + outbound Zelle), forwarding to admin for review");
     // Forward the unrecognized email to admin for manual classification
     try {
       const subject = emailRecord.subject || "Unknown payment email";
@@ -4152,6 +4295,307 @@ async function handleParsedCashAppPayment(
     applicationId: "",
     pendingApps: "",
   });
+}
+
+/**
+ * Handle an inbound Venmo payment (person paid the Alpaca Playhouse Venmo account).
+ */
+async function handleParsedVenmoPayment(
+  supabase: any,
+  resendApiKey: string,
+  venmo: VenmoPayment,
+  emailRecord: any
+): Promise<void> {
+  // Dedup: skip if this Venmo transaction was already recorded
+  if (venmo.transactionId) {
+    const { data: existing } = await supabase
+      .from("ledger")
+      .select("id")
+      .eq("notes", `Venmo receipt: ${venmo.transactionId}`)
+      .limit(1)
+      .maybeSingle();
+    if (existing) {
+      console.log(`Venmo receipt ${venmo.transactionId} already recorded, skipping`);
+      return;
+    }
+  }
+
+  const nameMatch = await matchByName(supabase, venmo.senderName);
+  const today = new Date().toISOString().split("T")[0];
+  const txNote = venmo.transactionId ? `Venmo receipt: ${venmo.transactionId}` : `Venmo receipt (${venmo.senderName})`;
+  const memoStr = venmo.memo ? ` — "${venmo.memo}"` : "";
+
+  if (nameMatch) {
+    const application = await findDepositApplication(supabase, nameMatch.person_id);
+    if (application) {
+      const moveIn = Number(application.move_in_deposit_amount || 0);
+      const security = Number(application.security_deposit_amount || 0);
+      const approvedRate = Number(application.approved_rate || 0);
+      const moveInDate = application.approved_move_in ? new Date(application.approved_move_in) : null;
+
+      // Try to split amount = (rent or move-in) + security
+      const breakdown: { category: string; amount: number; period_start?: string; period_end?: string }[] = [];
+
+      if (Math.abs(venmo.amount - (moveIn + security)) < 0.01) {
+        if (moveIn > 0) breakdown.push({ category: "move_in_deposit", amount: moveIn });
+        if (security > 0) breakdown.push({ category: "security_deposit", amount: security });
+      } else if (security > 0 && approvedRate > 0 && moveInDate) {
+        // Compute prorated rent for partial first month
+        const year = moveInDate.getUTCFullYear();
+        const month = moveInDate.getUTCMonth();
+        const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+        const dayOfMonth = moveInDate.getUTCDate();
+        const remainingDays = daysInMonth - dayOfMonth + 1;
+        const prorated = Math.round((approvedRate * remainingDays / daysInMonth) * 100) / 100;
+        if (Math.abs(venmo.amount - (prorated + security)) < 0.02) {
+          const periodStart = moveInDate.toISOString().split("T")[0];
+          const periodEnd = new Date(Date.UTC(year, month + 1, 0)).toISOString().split("T")[0];
+          breakdown.push({ category: "prorated_rent", amount: prorated, period_start: periodStart, period_end: periodEnd });
+          breakdown.push({ category: "security_deposit", amount: security });
+        }
+      }
+
+      if (breakdown.length > 0) {
+        for (let i = 0; i < breakdown.length; i++) {
+          const b = breakdown[i];
+          await supabase.from("ledger").insert({
+            direction: "income",
+            category: b.category,
+            amount: b.amount,
+            payment_method: "venmo",
+            transaction_date: today,
+            person_id: nameMatch.person_id,
+            person_name: nameMatch.name,
+            rental_application_id: application.id,
+            status: "completed",
+            description: `${b.category.replace(/_/g, " ")} from ${nameMatch.name} (Venmo)${memoStr}`,
+            notes: i === 0 ? txNote : `${txNote}-2`,
+            recorded_by: "system:venmo-email",
+            period_start: b.period_start || null,
+            period_end: b.period_end || null,
+          });
+        }
+
+        const updates: Record<string, any> = { deposit_confirmed_at: new Date().toISOString() };
+        let allPaid = true;
+        if (breakdown.find((b) => b.category === "security_deposit")) {
+          updates.security_deposit_paid = true;
+          updates.security_deposit_paid_at = new Date().toISOString();
+          updates.security_deposit_method = "venmo";
+        }
+        if (breakdown.find((b) => b.category === "move_in_deposit")) {
+          updates.move_in_deposit_paid = true;
+          updates.move_in_deposit_paid_at = new Date().toISOString();
+          updates.move_in_deposit_method = "venmo";
+        } else {
+          allPaid = false;
+        }
+        updates.deposit_status = allPaid ? "received" : "partial";
+        await supabase.from("rental_applications").update(updates).eq("id", application.id);
+
+        const breakdownHtml = `<p style="margin-top:12px;"><strong>Recorded as:</strong></p><ul>${breakdown
+          .map((b) => `<li>$${b.amount.toFixed(2)} — ${b.category.replace(/_/g, " ")}</li>`)
+          .join("")}</ul>`;
+
+        await sendPaymentNotification(resendApiKey, "auto_recorded_venmo", {
+          parsed: { amount: venmo.amount, senderName: venmo.senderName, confirmationNumber: venmo.transactionId },
+          personName: nameMatch.name,
+          applicationId: application.id,
+          category: breakdown.map((b) => b.category).join(" + "),
+          breakdownHtml,
+          memo: venmo.memo,
+        });
+        console.log(`Venmo payment split-recorded: ${breakdown.map((b) => `${b.category}=$${b.amount}`).join(", ")} for ${nameMatch.name}`);
+        return;
+      }
+
+      // Couldn't split cleanly — record as a single "other" row tied to the app and notify
+      await supabase.from("ledger").insert({
+        direction: "income",
+        category: "other",
+        amount: venmo.amount,
+        payment_method: "venmo",
+        transaction_date: today,
+        person_id: nameMatch.person_id,
+        person_name: nameMatch.name,
+        rental_application_id: application.id,
+        status: "completed",
+        description: `Venmo payment from ${nameMatch.name} (needs review — could not split)${memoStr}`,
+        notes: txNote,
+        recorded_by: "system:venmo-email",
+      });
+      await sendPaymentNotification(resendApiKey, "auto_recorded_venmo", {
+        parsed: { amount: venmo.amount, senderName: venmo.senderName, confirmationNumber: venmo.transactionId },
+        personName: nameMatch.name,
+        applicationId: application.id,
+        category: "other (needs review)",
+        memo: venmo.memo,
+      });
+      return;
+    }
+
+    // No deposit application — check for active assignment (likely rent)
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id, rate_amount")
+      .eq("person_id", nameMatch.person_id)
+      .in("status", ["active", "pending_contract", "contract_sent"])
+      .order("start_date", { ascending: false })
+      .limit(1)
+      .single();
+
+    const category = assignment ? "rent" : "other";
+    await supabase.from("ledger").insert({
+      direction: "income",
+      category,
+      amount: venmo.amount,
+      payment_method: "venmo",
+      transaction_date: today,
+      person_id: nameMatch.person_id,
+      person_name: nameMatch.name,
+      assignment_id: assignment?.id || null,
+      status: "completed",
+      description: `Venmo payment from ${nameMatch.name}${memoStr}`,
+      notes: txNote,
+      recorded_by: "system:venmo-email",
+      is_test: false,
+    });
+    await sendPaymentNotification(resendApiKey, "auto_recorded_venmo", {
+      parsed: { amount: venmo.amount, senderName: venmo.senderName, confirmationNumber: venmo.transactionId },
+      personName: nameMatch.name,
+      applicationId: "",
+      category,
+      memo: venmo.memo,
+    });
+    return;
+  }
+
+  // No name match — try amount matching
+  const amountMatches = await matchByAmount(supabase, venmo.amount);
+  if (amountMatches.length === 1) {
+    const zelleEquiv: ZellePayment = {
+      amount: venmo.amount,
+      senderName: venmo.senderName,
+      confirmationNumber: venmo.transactionId,
+      bank: "venmo",
+    };
+    await createConfirmationRequest(supabase, resendApiKey, zelleEquiv, amountMatches[0], emailRecord.id);
+    return;
+  }
+
+  console.log("Venmo payment: no match found, notifying admin");
+  await sendPaymentNotification(resendApiKey, "no_match", {
+    parsed: { amount: venmo.amount, senderName: venmo.senderName, confirmationNumber: venmo.transactionId },
+    personName: "",
+    applicationId: "",
+    pendingApps: "",
+  });
+}
+
+/**
+ * Handle an outbound Venmo payment (refund/payout sent from the Alpaca Playhouse Venmo account).
+ * Creates an expense ledger entry and notifies admin.
+ */
+async function handleOutboundVenmoPayment(
+  supabase: any,
+  resendApiKey: string,
+  outbound: OutboundVenmoPayment
+): Promise<void> {
+  // Dedup: skip if this Venmo transaction was already recorded
+  if (outbound.transactionId) {
+    const { data: existing } = await supabase
+      .from("ledger")
+      .select("id")
+      .eq("notes", `Venmo receipt: ${outbound.transactionId}`)
+      .limit(1)
+      .maybeSingle();
+    if (existing) {
+      console.log(`Outbound Venmo receipt ${outbound.transactionId} already recorded, skipping`);
+      return;
+    }
+  }
+
+  const nameMatch = await matchByName(supabase, outbound.recipientName);
+  const personId = nameMatch?.person_id || null;
+  const personName = nameMatch?.name || outbound.recipientName;
+
+  const today = new Date().toISOString().split("T")[0];
+
+  // Same memo-based categorization convention as outbound Zelle
+  const memoLower = (outbound.memo || "").toLowerCase();
+  let category = "other";
+  if (/refund|deposit return/i.test(memoLower)) {
+    category = "refund";
+  } else if (/clean|maint|repair|lawn|landscap|plumb|electric|paint|handyman|contractor|work/i.test(memoLower)) {
+    category = "associate_payment";
+  } else if (/decor|suppli|order|purchas|merch|material|equipment|furniture|appliance|hardware|tool|part/i.test(memoLower)) {
+    category = "merchandise";
+  } else if (nameMatch) {
+    category = "associate_payment";
+  }
+
+  const memoStr = outbound.memo ? ` — "${outbound.memo}"` : "";
+  const txStr = outbound.transactionId ? `, txn#${outbound.transactionId}` : "";
+  const txNote = outbound.transactionId ? `Venmo receipt: ${outbound.transactionId}` : outbound.memo || null;
+
+  const { data: ledgerEntry, error: ledgerError } = await supabase.from("ledger").insert({
+    direction: "expense",
+    category,
+    amount: outbound.amount,
+    payment_method: "venmo",
+    transaction_date: today,
+    person_id: personId,
+    person_name: personName,
+    status: "completed",
+    description: `Outbound Venmo to ${personName}${memoStr} (auto-recorded${txStr})`,
+    notes: txNote,
+    recorded_by: "system:venmo-outbound-email",
+  }).select("id").single();
+
+  if (ledgerError) {
+    console.error("Failed to create outbound Venmo ledger entry:", ledgerError);
+  } else {
+    console.log(`Outbound Venmo ledger entry created: ${ledgerEntry.id}, $${outbound.amount} to ${personName}, category=${category}`);
+  }
+
+  const adminEmail = "team@alpacaplayhouse.com";
+  const categoryLabel = category === "associate_payment" ? "Contractor Payment" : category === "refund" ? "Refund" : category === "merchandise" ? "Merchandise/Supplies" : "Other (verify)";
+  const subject = `Outbound Venmo Recorded: $${outbound.amount.toFixed(2)} to ${personName}${outbound.memo ? ` — ${outbound.memo}` : ""}`;
+  const html = `
+    <div style="font-family:-apple-system,sans-serif;max-width:600px;">
+      <h2 style="color:#008CFF;">&#x2705; Outbound Payment Auto-Recorded</h2>
+      <table style="border-collapse:collapse;width:100%;">
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${outbound.amount.toFixed(2)}</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Sent To</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.recipientName}</td></tr>
+        ${nameMatch ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Matched To</td><td style="padding:8px;border-bottom:1px solid #eee;">${personName}</td></tr>` : `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Match</td><td style="padding:8px;border-bottom:1px solid #eee;color:#e67e22;">No person match found</td></tr>`}
+        ${outbound.memo ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Memo</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.memo}</td></tr>` : ""}
+        ${outbound.transactionId ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Transaction ID</td><td style="padding:8px;border-bottom:1px solid #eee;">${outbound.transactionId}</td></tr>` : ""}
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Method</td><td style="padding:8px;border-bottom:1px solid #eee;">Venmo</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Category</td><td style="padding:8px;border-bottom:1px solid #eee;">${categoryLabel}</td></tr>
+      </table>
+      <p style="color:#666;font-size:0.85rem;margin-top:12px;">This outbound payment was auto-recorded in the ledger. Verify the category in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a>.</p>
+    </div>
+  `;
+
+  try {
+    await fetch(`${RESEND_API_URL}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
+        to: [adminEmail],
+        subject,
+        html,
+      }),
+    });
+    console.log("Outbound Venmo payment notification sent to admin");
+  } catch (err) {
+    console.error("Failed to send outbound Venmo notification:", err);
+  }
 }
 
 /**
