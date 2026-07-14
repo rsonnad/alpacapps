@@ -1,12 +1,12 @@
 {
-  "version": "v260714.01 5:02p",
-  "release": 1747,
-  "sha": "0d14b56345",
-  "fullSha": "0d14b56345e82e5cdfd1a72893cd957ce25be379",
+  "version": "v260714.02 5:07p",
+  "release": 1748,
+  "sha": "c2b495221b",
+  "fullSha": "c2b495221b774b5bfbbbff052198f961557a53f5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-14T22:02:09+00:00",
-  "commits": [{"sha":"0d14b56345","message":"feat(payments): add Venmo email parser, fall back to HTML body","author":"Rahul"}]
+  "pushedAt": "2026-07-14T22:07:36+00:00",
+  "commits": [{"sha":"c2b495221b","message":"fix(payments): don't mark deposit_status partial when no move-in deposit is due","author":"Rahul"}]
 }
