@@ -1,12 +1,12 @@
 {
-  "version": "v260711.01 12:00p",
-  "release": 1746,
-  "sha": "ecc970f35a",
-  "fullSha": "ecc970f35a302240cf9cadc452369d45b3256251",
+  "version": "v260714.01 5:02p",
+  "release": 1747,
+  "sha": "0d14b56345",
+  "fullSha": "0d14b56345e82e5cdfd1a72893cd957ce25be379",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-11T17:00:39+00:00",
-  "commits": [{"sha":"ecc970f35a","message":"Add land and structure value allocation","author":"Rahul"}]
+  "pushedAt": "2026-07-14T22:02:09+00:00",
+  "commits": [{"sha":"0d14b56345","message":"feat(payments): add Venmo email parser, fall back to HTML body","author":"Rahul"}]
 }
