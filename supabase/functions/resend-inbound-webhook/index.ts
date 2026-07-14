@@ -4185,7 +4185,6 @@ async function handleParsedCashAppPayment(
         }
 
         const updates: Record<string, any> = { deposit_confirmed_at: new Date().toISOString() };
-        let allPaid = true;
         if (breakdown.find((b) => b.category === "security_deposit")) {
           updates.security_deposit_paid = true;
           updates.security_deposit_paid_at = new Date().toISOString();
@@ -4195,10 +4194,13 @@ async function handleParsedCashAppPayment(
           updates.move_in_deposit_paid = true;
           updates.move_in_deposit_paid_at = new Date().toISOString();
           updates.move_in_deposit_method = "cashapp";
-        } else {
-          allPaid = false;
         }
-        updates.deposit_status = allPaid ? "received" : "partial";
+        // "Paid in full" means every deposit that was actually required is now paid —
+        // not that this particular payment covered a move-in deposit. A tenant with no
+        // move-in deposit due (moveIn <= 0) should never get stuck on "partial".
+        const moveInSatisfied = moveIn <= 0 || updates.move_in_deposit_paid === true;
+        const securitySatisfied = security <= 0 || updates.security_deposit_paid === true;
+        updates.deposit_status = moveInSatisfied && securitySatisfied ? "received" : "partial";
         await supabase.from("rental_applications").update(updates).eq("id", application.id);
 
         const breakdownHtml = `<p style="margin-top:12px;"><strong>Recorded as:</strong></p><ul>${breakdown
@@ -4377,7 +4379,6 @@ async function handleParsedVenmoPayment(
         }
 
         const updates: Record<string, any> = { deposit_confirmed_at: new Date().toISOString() };
-        let allPaid = true;
         if (breakdown.find((b) => b.category === "security_deposit")) {
           updates.security_deposit_paid = true;
           updates.security_deposit_paid_at = new Date().toISOString();
@@ -4387,10 +4388,13 @@ async function handleParsedVenmoPayment(
           updates.move_in_deposit_paid = true;
           updates.move_in_deposit_paid_at = new Date().toISOString();
           updates.move_in_deposit_method = "venmo";
-        } else {
-          allPaid = false;
         }
-        updates.deposit_status = allPaid ? "received" : "partial";
+        // "Paid in full" means every deposit that was actually required is now paid —
+        // not that this particular payment covered a move-in deposit. A tenant with no
+        // move-in deposit due (moveIn <= 0) should never get stuck on "partial".
+        const moveInSatisfied = moveIn <= 0 || updates.move_in_deposit_paid === true;
+        const securitySatisfied = security <= 0 || updates.security_deposit_paid === true;
+        updates.deposit_status = moveInSatisfied && securitySatisfied ? "received" : "partial";
         await supabase.from("rental_applications").update(updates).eq("id", application.id);
 
         const breakdownHtml = `<p style="margin-top:12px;"><strong>Recorded as:</strong></p><ul>${breakdown
