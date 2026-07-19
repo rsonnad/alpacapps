@@ -221,7 +221,8 @@ function getContrastRatio(hex1, hex2) {
   const l2 = getRelativeLuminance(hex2);
   const lighter = Math.max(l1, l2);
   const darker = Math.min(l1, l2);
-  return ((lighter + 0.05) / (darker + 0.05)).toFixed(1);
+  // Returns a Number — callers format it themselves (e.g. ratio.toFixed(1)).
+  return (lighter + 0.05) / (darker + 0.05);
 }
 
 function renderContrastPairings() {
@@ -253,7 +254,7 @@ function renderContrastPairings() {
         </div>
         <div class="brand-contrast-meta">
           <span class="brand-contrast-label">${p.label}</span>
-          <span class="brand-contrast-badge ${badgeClass}">${badge} ${ratio}:1</span>
+          <span class="brand-contrast-badge ${badgeClass}">${badge} ${ratio.toFixed(1)}:1</span>
         </div>
       </div>`;
   }).join('')}</div>`;
