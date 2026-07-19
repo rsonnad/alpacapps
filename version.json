@@ -1,12 +1,12 @@
 {
-  "version": "v260714.02 5:07p",
-  "release": 1748,
-  "sha": "c2b495221b",
-  "fullSha": "c2b495221b774b5bfbbbff052198f961557a53f5",
+  "version": "v260719.01 8:21a",
+  "release": 1749,
+  "sha": "dc799e96f7",
+  "fullSha": "dc799e96f7ecea6fc2c23fae75b8b00cb4291a08",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm5mmn9",
-  "pushedAt": "2026-07-14T22:07:36+00:00",
-  "commits": [{"sha":"c2b495221b","message":"fix(payments): don't mark deposit_status partial when no move-in deposit is due","author":"Rahul"}]
+  "machine": "runnervm3jd5f",
+  "pushedAt": "2026-07-19T13:21:02+00:00",
+  "commits": [{"sha":"dc799e96f7","message":"fix(brand): getContrastRatio returns a Number, not a string","author":"Rahul"}]
 }
