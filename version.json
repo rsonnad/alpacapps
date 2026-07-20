@@ -1,12 +1,12 @@
 {
-  "version": "v260720.02 2:35p",
-  "release": 1751,
-  "sha": "1ee7c3083a",
-  "fullSha": "1ee7c3083a22359973fe487d6ef1e649f3cae711",
+  "version": "v260720.03 2:41p",
+  "release": 1752,
+  "sha": "9bcf20578b",
+  "fullSha": "9bcf20578b48f28c1da61a0242eeaa275e1ee6b4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jd5f",
-  "pushedAt": "2026-07-20T19:35:31+00:00",
-  "commits": [{"sha":"1ee7c3083a","message":"fix(leases): preserve signed executions on reissue","author":"Rahul"}]
+  "pushedAt": "2026-07-20T19:41:08+00:00",
+  "commits": [{"sha":"9bcf20578b","message":"fix(leases): reject replaced signing tokens","author":"Rahul"}]
 }
