@@ -360,7 +360,7 @@ Deno.serve(async (req) => {
     // ── Update application status ──────────────────────────────────
 
     if (docType === 'rental') {
-      const { error: appUpdateErr } = await supabase
+      const { data: updatedApp, error: appUpdateErr } = await supabase
         .from('rental_applications')
         .update({
           agreement_status: 'signed',
@@ -371,8 +371,13 @@ Deno.serve(async (req) => {
           updated_at: signedAt,
         })
         .eq('id', app.id)
-        .eq('signing_token', token);
+        .eq('signing_token', token)
+        .select('id')
+        .maybeSingle();
       if (appUpdateErr) throw appUpdateErr;
+      if (!updatedApp) {
+        return jsonError('This signing link was replaced before completion. Please use the most recent link.', 409);
+      }
 
       // Record waiver signature if applicable
       if (rentalApp?.waiver_template_id) {
