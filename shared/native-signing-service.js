@@ -60,6 +60,18 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
   const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
   let signingUrl = `${SIGNING_PAGE_BASE}?token=${token}`;
 
+  // A completed agreement may be reissued only as a new execution. Retaining
+  // the previous execution's audit rows prevents a later signature from being
+  // mistaken for, or overwriting, the earlier record.
+  const { data: existingApp, error: existingAppError } = await supabase
+    .from('rental_applications')
+    .select('signing_version, agreement_status')
+    .eq('id', applicationId)
+    .single();
+  if (existingAppError) throw existingAppError;
+  const signingVersion = Number(existingApp?.signing_version || 1)
+    + (existingApp?.agreement_status === 'signed' ? 1 : 0);
+
   // #32 capture the admin user who issued the token — process-signature
   // will surface this as landlord_user_id in the audit log. UA is captured
   // here; we can't know the IP from the browser so we leave it for the
@@ -75,6 +87,7 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
       signing_token_expires_at: expiresAt,
       agreement_status: 'sent',
       agreement_sent_at: issuedAt,
+      signing_version: signingVersion,
       last_activity_at: issuedAt,
       last_activity_by: adminUserId || 'admin',
       updated_at: issuedAt,

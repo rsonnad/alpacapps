@@ -70,6 +70,7 @@ Deno.serve(async (req) => {
         signing_token_expires_at,
         agreement_status,
         agreement_document_url,
+        signing_version,
         approved_rate,
         approved_rate_term,
         security_deposit_amount,
@@ -184,88 +185,10 @@ Deno.serve(async (req) => {
       leaseTemplate = et;
     }
 
-    // ── Record audit log ───────────────────────────────────────────
     // #8 signer_name / signer_email come from the server-side person
     // record, not the client body.
     const serverSignerName = `${person?.first_name || ''} ${person?.last_name || ''}`.trim();
     const serverSignerEmail = person?.email || '';
-
-    const tenantAuditEntry: Record<string, unknown> = {
-      document_type: docType,
-      rental_application_id: docType === 'rental' ? app.id : null,
-      event_hosting_request_id: docType === 'event' ? app.id : null,
-      signer_name: serverSignerName,
-      signer_email: serverSignerEmail,
-      signer_role: 'tenant',
-      ip_address: ipAddress,
-      user_agent: userAgent,
-      document_hash,
-      signature_image_url: signatureImageUrl,
-      document_html: document_html || null,
-      signed_at: signedAt,
-      template_id: leaseTemplate?.id || null,
-      template_version: leaseTemplate?.version || null,
-      waiver_template_id: waiverTemplate?.id || null,
-      waiver_template_version: waiverTemplate?.version || null,
-    };
-
-    const { error: auditErr } = await supabase
-      .from('signature_audit_log')
-      .insert(tenantAuditEntry);
-
-    if (auditErr) {
-      console.error('Audit log error:', auditErr);
-      // #9: tenant signature was already recorded by an earlier call — reject.
-      if (auditErr.code === '23505') {
-        return jsonError('This document has already been signed.', 409);
-      }
-    }
-
-    // ── Record landlord auto-signature ─────────────────────────────
-    // #32 capture the admin who created the signing token (best-effort)
-    // as the landlord_user_id, alongside the IP/UA captured when the
-    // signing token was issued. Until that wiring exists we keep the
-    // pre-authorized-at-send marker but link the template provenance.
-    if (docType === 'rental') {
-      // #32 surface the admin who issued the signing token (best-effort).
-      // last_activity_by carries the admin's app_users.id from
-      // native-signing-service.sendForSignature().
-      let landlordUserId: string | null = null;
-      let signingTokenIssuedAt: string | null = null;
-      try {
-        const { data: appRow } = await supabase
-          .from('rental_applications')
-          .select('last_activity_by, agreement_sent_at')
-          .eq('id', app.id)
-          .single();
-        // last_activity_by is a TEXT column — accept only UUIDs.
-        if (appRow?.last_activity_by && /^[0-9a-f-]{36}$/i.test(appRow.last_activity_by)) {
-          landlordUserId = appRow.last_activity_by;
-        }
-        signingTokenIssuedAt = appRow?.agreement_sent_at || null;
-      } catch (_e) { /* best-effort */ }
-
-      const landlordAudit: Record<string, unknown> = {
-        document_type: docType,
-        rental_application_id: app.id,
-        signer_name: 'Rahul Sonnad',
-        signer_email: 'alpacaplayhouse@gmail.com',
-        signer_role: 'landlord',
-        ip_address: 'auto-signed (pre-authorized at send)',
-        user_agent: 'AlpacApps Native Signing System',
-        document_hash,
-        document_html: document_html || null,
-        signed_at: signedAt,
-        template_id: leaseTemplate?.id || null,
-        template_version: leaseTemplate?.version || null,
-        waiver_template_id: waiverTemplate?.id || null,
-        waiver_template_version: waiverTemplate?.version || null,
-        landlord_user_id: landlordUserId,
-        signing_token_issued_at: signingTokenIssuedAt,
-      };
-      const { error: llErr } = await supabase.from('signature_audit_log').insert(landlordAudit);
-      if (llErr && llErr.code !== '23505') console.error('Landlord audit insert failed:', llErr);
-    }
 
     // ── Persist contact info collected on the signing page ─────────
     //
@@ -331,6 +254,10 @@ Deno.serve(async (req) => {
     // the landlord's pre-signature, the tenant's drawn signature,
     // and the audit metadata, so opening the URL later shows the
     // executed agreement exactly as it was at signing time.
+    if (!document_html?.trim()) {
+      return jsonError('Cannot complete signing without an archival copy of the agreement.', 422);
+    }
+
     let signedDocUrl: string | null = null;
     try {
       const fullSignedHtml = buildArchivalLeaseHtml({
@@ -349,20 +276,91 @@ Deno.serve(async (req) => {
         .upload(objectPath, new Blob([fullSignedHtml], { type: 'text/html; charset=utf-8' }), {
           cacheControl: '31536000', upsert: false,
         });
-      if (uploadErr) {
-        console.error('Failed to upload signed lease HTML:', uploadErr);
-      } else {
-        const { data: urlData } = supabase.storage.from('lease-documents').getPublicUrl(objectPath);
-        signedDocUrl = urlData?.publicUrl || null;
-      }
+      if (uploadErr) throw uploadErr;
+      const { data: urlData } = supabase.storage.from('lease-documents').getPublicUrl(objectPath);
+      signedDocUrl = urlData?.publicUrl || null;
+      if (!signedDocUrl) throw new Error('Unable to resolve archival lease URL');
     } catch (e) {
-      console.error('Archival HTML save failed (non-fatal):', e);
+      console.error('Archival HTML save failed:', e);
+      return jsonError('Could not preserve the executed lease. Nothing was marked signed; please try again.', 500);
+    }
+
+    // ── Record audit log only after the immutable agreement exists ──
+    // A signature is not a completed execution until the exact document the
+    // signer saw is safely retained. Each reissue has its own version.
+    const signingVersion = docType === 'rental'
+      ? Number((rentalApp as any)?.signing_version || 1)
+      : 1;
+    const tenantAuditEntry: Record<string, unknown> = {
+      document_type: docType,
+      rental_application_id: docType === 'rental' ? app.id : null,
+      event_hosting_request_id: docType === 'event' ? app.id : null,
+      signer_name: serverSignerName,
+      signer_email: serverSignerEmail,
+      signer_role: 'tenant',
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      document_hash,
+      signature_image_url: signatureImageUrl,
+      document_html,
+      signed_at: signedAt,
+      template_id: leaseTemplate?.id || null,
+      template_version: leaseTemplate?.version || null,
+      waiver_template_id: waiverTemplate?.id || null,
+      waiver_template_version: waiverTemplate?.version || null,
+      signing_version: signingVersion,
+    };
+    const { error: auditErr } = await supabase.from('signature_audit_log').insert(tenantAuditEntry);
+    if (auditErr) {
+      console.error('Tenant audit log error:', auditErr);
+      return jsonError(auditErr.code === '23505' ? 'This document has already been signed.' : 'Could not preserve the signature audit trail.', auditErr.code === '23505' ? 409 : 500);
+    }
+
+    if (docType === 'rental') {
+      let landlordUserId: string | null = null;
+      let signingTokenIssuedAt: string | null = null;
+      try {
+        const { data: appRow } = await supabase
+          .from('rental_applications')
+          .select('last_activity_by, agreement_sent_at')
+          .eq('id', app.id)
+          .single();
+        if (appRow?.last_activity_by && /^[0-9a-f-]{36}$/i.test(appRow.last_activity_by)) {
+          landlordUserId = appRow.last_activity_by;
+        }
+        signingTokenIssuedAt = appRow?.agreement_sent_at || null;
+      } catch (_e) { /* best-effort */ }
+
+      const landlordAudit: Record<string, unknown> = {
+        document_type: docType,
+        rental_application_id: app.id,
+        signer_name: 'Rahul Sonnad',
+        signer_email: 'alpacaplayhouse@gmail.com',
+        signer_role: 'landlord',
+        ip_address: 'auto-signed (pre-authorized at send)',
+        user_agent: 'AlpacApps Native Signing System',
+        document_hash,
+        document_html,
+        signed_at: signedAt,
+        template_id: leaseTemplate?.id || null,
+        template_version: leaseTemplate?.version || null,
+        waiver_template_id: waiverTemplate?.id || null,
+        waiver_template_version: waiverTemplate?.version || null,
+        landlord_user_id: landlordUserId,
+        signing_token_issued_at: signingTokenIssuedAt,
+        signing_version: signingVersion,
+      };
+      const { error: landlordAuditErr } = await supabase.from('signature_audit_log').insert(landlordAudit);
+      if (landlordAuditErr) {
+        console.error('Landlord audit log error:', landlordAuditErr);
+        return jsonError('Could not preserve the landlord signature audit trail.', 500);
+      }
     }
 
     // ── Update application status ──────────────────────────────────
 
     if (docType === 'rental') {
-      await supabase
+      const { error: appUpdateErr } = await supabase
         .from('rental_applications')
         .update({
           agreement_status: 'signed',
@@ -372,7 +370,9 @@ Deno.serve(async (req) => {
           ...(signedDocUrl ? { agreement_document_url: signedDocUrl } : {}),
           updated_at: signedAt,
         })
-        .eq('id', app.id);
+        .eq('id', app.id)
+        .eq('signing_token', token);
+      if (appUpdateErr) throw appUpdateErr;
 
       // Record waiver signature if applicable
       if (rentalApp?.waiver_template_id) {
@@ -522,7 +522,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('process-signature error:', error);
-    return jsonError(error.message || 'Internal error', 500);
+    return jsonError(error instanceof Error ? error.message : 'Internal error', 500);
   }
 });
 
@@ -636,9 +636,8 @@ async function sendSignedEmail(apiKey: string, opts: any) {
       body: JSON.stringify({
         from: SENDER_MAP.pai.from,
         to: [opts.to],
-        // Landlord copy: same fully-signed HTML the tenant receives, so both
-        // parties have the executed agreement on file in their inbox.
-        bcc: ['alpacaplayhouse@gmail.com'],
+        // Both parties receive the same executed agreement and archival link.
+        cc: ['alpacaplayhouse@gmail.com'],
         reply_to: SENDER_MAP.pai.reply_to,
         subject: opts.subject,
         html: `
