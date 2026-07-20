@@ -263,8 +263,8 @@
       text-align: center;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
     }
-    .pulse-cell strong { display: block; color: var(--ink); font: 700 clamp(.78rem, 2vw, 1rem)/1 var(--mono); }
-    .pulse-cell small { display: block; margin-top: .34rem; color: var(--muted); font: 600 .62rem/1 var(--mono); }
+    .pulse-cell strong { display: block; color: var(--ink); font: 700 clamp(.73rem, 1.6vw, .92rem)/1.1 var(--mono); }
+    .pulse-cell small { display: block; margin-top: .34rem; color: var(--muted); font: 600 .6rem/1.2 var(--mono); }
     .pulse-cell.rest strong { color: var(--pine); }
     .pulse-cell.active { transform: translateY(-3px); border-color: var(--coral); background: #fff0e9; box-shadow: 0 8px 20px rgba(228,119,95,.13); }
     .dock-note { margin: .75rem .2rem 0; color: var(--muted); font-size: .72rem; text-align: center; }
@@ -280,6 +280,32 @@
     .section h2 { max-width: 770px; font-size: clamp(2.4rem, 6vw, 5.1rem); font-weight: 500; letter-spacing: -.045em; }
     .section-intro { max-width: 710px; margin: 1rem 0 0; color: var(--muted); font-size: 1.05rem; }
     .dark .section-intro, .pine .section-intro { color: rgba(255,255,255,.7); }
+
+    .legend-section { padding-bottom: 1rem; }
+    .legend-shell {
+      overflow: hidden;
+      border: 1px solid #d7e3dc;
+      border-radius: 28px;
+      background: rgba(255,253,248,.9);
+      box-shadow: 0 20px 60px rgba(20,33,54,.08);
+    }
+    .legend-banner { display: grid; grid-template-columns: .72fr 1.28fr; gap: 2rem; padding: clamp(1.5rem, 4vw, 2.8rem); background: var(--pine); color: white; }
+    .legend-banner h2 { font-size: clamp(2.2rem, 5vw, 4.4rem); }
+    .legend-banner p { max-width: 690px; margin: .6rem 0 0; color: rgba(255,255,255,.74); }
+    .legend-banner .section-number { color: var(--sun); }
+    .legend-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .legend-card { min-width: 0; padding: clamp(1.15rem, 2.4vw, 1.65rem); border-right: 1px solid var(--line); }
+    .legend-card:last-child { border-right: 0; }
+    .legend-card h3 { color: var(--pine); font-size: .83rem; letter-spacing: .08em; text-transform: uppercase; }
+    .legend-card p { margin: .7rem 0 0; color: var(--muted); font-size: .84rem; }
+    .legend-card strong { color: var(--ink); }
+    .legend-symbols { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .9rem; }
+    .legend-symbols span { padding: .45rem .55rem; border: 1px solid #dce2dd; border-radius: 9px; background: #f5f5f0; color: var(--ink); font: 700 .76rem/1 var(--mono); }
+    .count-say { margin-top: .9rem; padding: .7rem .8rem; border-radius: 11px; background: #fff0e9; color: #824839; font: 700 .69rem/1.55 var(--mono); }
+    .decoded-example { display: grid; grid-template-columns: auto 1fr; gap: 0 1rem; align-items: center; margin: 0 clamp(1.15rem, 2.4vw, 1.65rem) clamp(1.15rem, 2.4vw, 1.65rem); padding: 1rem 1.1rem; border: 1px dashed #b9c9c0; border-radius: 16px; background: #edf5f1; }
+    .decoded-example > b { grid-row: 1 / 4; color: var(--pine); font: 800 clamp(1.35rem, 3vw, 2rem)/1 var(--mono); }
+    .decoded-example span { color: var(--muted); font-size: .8rem; }
+    .decoded-example span strong { color: var(--ink); }
 
     .setup-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
     .setup-card {
@@ -318,19 +344,25 @@
     .string-line small { color: rgba(255,255,255,.55); font: 600 .72rem/1 var(--mono); text-align: right; }
     .ownership-note { margin: 1.25rem 0 0; padding: 1rem; border-left: 3px solid var(--sun); background: rgba(244,181,91,.08); color: rgba(255,255,255,.76); font-size: .9rem; }
 
-    .pattern-stage { display: grid; grid-template-columns: 1fr .72fr; gap: 1.2rem; align-items: stretch; }
+    .pattern-stage { display: grid; gap: 1.2rem; align-items: stretch; }
     .pattern-card, .explain-card { min-width: 0; padding: clamp(1.2rem, 3vw, 2rem); border: 1px solid var(--line); border-radius: 24px; background: var(--paper); box-shadow: 0 18px 50px rgba(20,33,54,.08); }
     .pattern-card h3, .explain-card h3 { font-size: 1.05rem; }
-    .count-ribbon { display: grid; grid-template-columns: repeat(8, minmax(54px, 1fr)); gap: .45rem; min-width: 590px; margin-top: 1.25rem; }
-    .count-box { padding: .95rem .25rem; border-radius: 14px; background: #f2f2ec; text-align: center; }
+    .pattern-read-order { margin: .45rem 0 0; color: var(--muted); font-size: .84rem; }
+    .pattern-read-order strong { color: var(--ink); }
+    .count-ribbon { display: grid; grid-template-columns: repeat(8, minmax(104px, 1fr)); gap: .45rem; min-width: 890px; margin-top: 1.25rem; }
+    .count-box { padding: .75rem .4rem .9rem; border-radius: 14px; background: #f2f2ec; text-align: center; }
     .count-box:nth-child(4), .count-box:nth-child(8) { background: #e6f1ed; }
-    .count-box b { display: block; font: 800 1.25rem/1 var(--mono); }
-    .count-box span { display: block; margin-top: .55rem; color: var(--coral); font: 700 .7rem/1 var(--mono); }
-    .count-box small { display: block; margin-top: .35rem; color: var(--muted); font-size: .65rem; }
+    .count-box .cell-label { display: block; margin: 0 0 .5rem; color: var(--muted); font: 700 .54rem/1 var(--mono); letter-spacing: .08em; }
+    .count-box b { display: block; font: 800 1.15rem/1 var(--mono); }
+    .count-box b em { color: var(--muted); font-size: .68rem; font-style: normal; }
+    .count-box span { display: block; margin-top: .58rem; color: var(--coral); font: 700 .7rem/1.15 var(--mono); }
+    .count-box span i { color: var(--muted); font-style: normal; }
+    .count-box small:not(.cell-label) { display: block; margin-top: .45rem; color: var(--pine); font: 700 .64rem/1 var(--mono); }
     .scroll-x { max-width: 100%; overflow-x: auto; padding-bottom: .55rem; scrollbar-color: var(--pine) transparent; }
     .pattern-caption { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem; color: var(--muted); font-size: .82rem; }
     .pattern-caption strong { color: var(--pine); }
     .equation { margin: 1.35rem 0; padding: 1.25rem; border-radius: 16px; background: var(--night); color: white; font: 700 clamp(.95rem, 2vw, 1.2rem)/1.5 var(--mono); }
+    .equation small { display: block; margin-top: .65rem; color: rgba(255,255,255,.55); font-size: .68rem; }
     .explain-card ol { margin: 0; padding-left: 1.1rem; color: var(--muted); }
     .explain-card li + li { margin-top: .7rem; }
     .ring-note { margin: 1.2rem 0 0; padding: .9rem 1rem; border-radius: 14px; background: #fff0e9; color: #824839; font-size: .88rem; }
@@ -447,6 +479,10 @@
       .mode-switch button { flex: 1; }
       .section-head { grid-template-columns: 1fr; gap: .8rem; }
       .setup-grid, .chord-grid { grid-template-columns: repeat(2, 1fr); }
+      .legend-banner { grid-template-columns: 1fr; gap: .8rem; }
+      .legend-grid { grid-template-columns: repeat(2, 1fr); }
+      .legend-card:nth-child(2) { border-right: 0; }
+      .legend-card:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
       .hand-map, .pattern-stage, .practice-grid { grid-template-columns: 1fr; }
       .progression { grid-template-columns: repeat(2, 1fr); }
       .progression-card:nth-child(2)::after { content: "↘"; }
@@ -463,9 +499,15 @@
       .tempo-block input { grid-column: 1 / -1; grid-row: 2; }
       .pulse-strip { gap: .22rem; }
       .pulse-strip { grid-template-columns: repeat(4, 1fr); gap: .35rem; }
-      .pulse-cell { min-height: 57px; padding-inline: .15rem; border-radius: 9px; }
-      .pulse-cell small { font-size: .62rem; }
+      .pulse-cell { min-height: 67px; padding-inline: .15rem; border-radius: 9px; }
+      .pulse-cell small { font-size: .56rem; }
       .section { padding: 4.2rem 0; }
+      .legend-section { padding-bottom: 0; }
+      .legend-grid { grid-template-columns: 1fr; }
+      .legend-card { border-right: 0; border-bottom: 1px solid var(--line); }
+      .legend-card:last-child { border-bottom: 0; }
+      .decoded-example { grid-template-columns: 1fr; gap: .5rem; }
+      .decoded-example > b { grid-row: auto; margin-bottom: .25rem; }
       .setup-grid, .chord-grid, .progression, .tabs-grid, .video-grid, .fixes { grid-template-columns: 1fr; }
       .progression-card::after { content: "↓" !important; right: 50%; top: auto; bottom: -.95rem; transform: translateX(50%); }
       .progression-card:last-child::after { content: "↻" !important; }
@@ -523,7 +565,7 @@
         <div class="hero-chips" aria-label="Lesson setup">
           <span class="hero-chip">Capo 3</span>
           <span class="hero-chip">Standard tuning</span>
-          <span class="hero-chip">P · I · M fingers</span>
+          <span class="hero-chip">Thumb · index · middle</span>
           <span class="hero-chip">Beginner → song feel</span>
         </div>
       </div>
@@ -563,20 +605,67 @@
       </div>
     </div>
     <div class="pulse-strip" id="pulseStrip" aria-label="Picking steps">
-      <div class="pulse-cell" data-step="0"><strong>A / E</strong><small>1 · P</small></div>
-      <div class="pulse-cell" data-step="1"><strong>G</strong><small>&amp; · I</small></div>
-      <div class="pulse-cell" data-step="2"><strong>D</strong><small>2 · P</small></div>
-      <div class="pulse-cell" data-step="3"><strong>B</strong><small>&amp; · M</small></div>
-      <div class="pulse-cell" data-step="4"><strong>A / E</strong><small>3 · P</small></div>
-      <div class="pulse-cell" data-step="5"><strong>G</strong><small>&amp; · I</small></div>
-      <div class="pulse-cell" data-step="6"><strong>D</strong><small>4 · P</small></div>
-      <div class="pulse-cell rest" data-step="7"><strong>ring</strong><small>&amp; · —</small></div>
+      <div class="pulse-cell" data-step="0"><strong>5/A or 6/E</strong><small>count 1 · Thumb</small></div>
+      <div class="pulse-cell" data-step="1"><strong>3/G</strong><small>count &amp; · Index</small></div>
+      <div class="pulse-cell" data-step="2"><strong>4/D</strong><small>count 2 · Thumb</small></div>
+      <div class="pulse-cell" data-step="3"><strong>2/B</strong><small>count &amp; · Middle</small></div>
+      <div class="pulse-cell" data-step="4"><strong>5/A or 6/E</strong><small>count 3 · Thumb</small></div>
+      <div class="pulse-cell" data-step="5"><strong>3/G</strong><small>count &amp; · Index</small></div>
+      <div class="pulse-cell" data-step="6"><strong>4/D</strong><small>count 4 · Thumb</small></div>
+      <div class="pulse-cell rest" data-step="7"><strong>LET RING</strong><small>count &amp; · no pluck</small></div>
     </div>
-    <p class="dock-note"><b>Quarter-note BPM:</b> Learn mode = one chord for 4 beats. Song feel = one chord for 2 beats (half a 4/4 bar).</p>
+    <p class="dock-note"><b>5/A or 6/E means the bass string:</b> use string 5 (A) for C, G/B and Am7; use string 6 (low E) for G, D/F♯ and Em. Learn mode = one chord for 4 beats.</p>
     <p id="loopStatus" class="sr-only" aria-live="polite"></p>
   </section>
 
   <main>
+    <section class="section compact legend-section" id="legend">
+      <div class="wrap">
+        <div class="legend-shell">
+          <div class="legend-banner">
+            <span class="section-number">00 · Read this first</span>
+            <div>
+              <h2>How to read every symbol</h2>
+              <p>The page uses four different kinds of information. They are not interchangeable: a string number tells you <em>where to pick</em>, a finger tells you <em>what to pick with</em>, and a count tells you <em>when to pick</em>.</p>
+            </div>
+          </div>
+
+          <div class="legend-grid">
+            <article class="legend-card">
+              <h3>1 · Guitar strings</h3>
+              <div class="legend-symbols" aria-label="Guitar string numbers and note names"><span>6 = low E</span><span>5 = A</span><span>4 = D</span><span>3 = G</span><span>2 = B</span><span>1 = high e</span></div>
+              <p><strong>These are strings, not frets.</strong> String 6 is the thickest; string 1 is the thinnest. So <strong>5/A</strong> means “pick the A string.”</p>
+            </article>
+
+            <article class="legend-card">
+              <h3>2 · The count</h3>
+              <div class="count-say">1 &amp; 2 &amp; 3 &amp; 4 &amp;<br>ONE and TWO and THREE and FOUR and</div>
+              <p><strong>&amp; is spoken “and.”</strong> It is the halfway point between two numbered beats—not a string, fret, or finger.</p>
+            </article>
+
+            <article class="legend-card">
+              <h3>3 · Picking fingers</h3>
+              <div class="legend-symbols"><span>P = Thumb</span><span>I = Index</span><span>M = Middle</span></div>
+              <p>These letters describe the <strong>right hand</strong>. They come from traditional names: <em>pulgar, índice, medio</em>. This guide spells out the English names first.</p>
+            </article>
+
+            <article class="legend-card">
+              <h3>4 · Frets</h3>
+              <div class="legend-symbols"><span>0 = open</span><span>1–4 = fret</span><span>× = skip</span></div>
+              <p>Numbers are <strong>frets only inside a tab line or chord shape</strong>. In chord-diagram dots, 1–4 name your left-hand fingers: index, middle, ring, pinky.</p>
+            </article>
+          </div>
+
+          <div class="decoded-example">
+            <b>5/A · Thumb · count 1</b>
+            <span><strong>WHERE:</strong> string 5, the A string</span>
+            <span><strong>WITH:</strong> your picking-hand thumb (P)</span>
+            <span><strong>WHEN:</strong> on beat 1</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section compact" id="setup">
       <div class="wrap">
         <div class="section-head">
@@ -645,32 +734,33 @@
 
         <div class="pattern-stage">
           <article class="pattern-card">
-            <h3>The core loop on a five-string chord</h3>
+            <h3>The core loop for C, G/B and Am7</h3>
+            <p class="pattern-read-order">Read every column from top to bottom: <strong>STRING → PICKING FINGER → COUNT.</strong> These large numbers are string numbers, not frets.</p>
             <div class="scroll-x">
               <div class="count-ribbon" aria-label="Picking order">
-                <div class="count-box"><b>5</b><span>P</span><small>1</small></div>
-                <div class="count-box"><b>3</b><span>I</span><small>&amp;</small></div>
-                <div class="count-box"><b>4</b><span>P</span><small>2</small></div>
-                <div class="count-box"><b>2</b><span>M</span><small>&amp;</small></div>
-                <div class="count-box"><b>5</b><span>P</span><small>3</small></div>
-                <div class="count-box"><b>3</b><span>I</span><small>&amp;</small></div>
-                <div class="count-box"><b>4</b><span>P</span><small>4</small></div>
-                <div class="count-box"><b>—</b><span>ring</span><small>&amp;</small></div>
+                <div class="count-box"><small class="cell-label">STRING</small><b>5 <em>/ A</em></b><span>Thumb <i>(P)</i></span><small>COUNT 1</small></div>
+                <div class="count-box"><small class="cell-label">STRING</small><b>3 <em>/ G</em></b><span>Index <i>(I)</i></span><small>COUNT &amp;</small></div>
+                <div class="count-box"><small class="cell-label">STRING</small><b>4 <em>/ D</em></b><span>Thumb <i>(P)</i></span><small>COUNT 2</small></div>
+                <div class="count-box"><small class="cell-label">STRING</small><b>2 <em>/ B</em></b><span>Middle <i>(M)</i></span><small>COUNT &amp;</small></div>
+                <div class="count-box"><small class="cell-label">STRING</small><b>5 <em>/ A</em></b><span>Thumb <i>(P)</i></span><small>COUNT 3</small></div>
+                <div class="count-box"><small class="cell-label">STRING</small><b>3 <em>/ G</em></b><span>Index <i>(I)</i></span><small>COUNT &amp;</small></div>
+                <div class="count-box"><small class="cell-label">STRING</small><b>4 <em>/ D</em></b><span>Thumb <i>(P)</i></span><small>COUNT 4</small></div>
+                <div class="count-box"><small class="cell-label">NO NEW STRING</small><b>—</b><span>Let ring</span><small>COUNT &amp;</small></div>
               </div>
             </div>
-            <div class="pattern-caption"><span><strong>C · G/B · Am7:</strong> bass is string 5</span><span><strong>G · D/F♯ · Em:</strong> swap both 5s for string 6</span></div>
+            <div class="pattern-caption"><span><strong>For C · G/B · Am7:</strong> both bass notes use string 5 (A).</span><span><strong>For G · D/F♯ · Em:</strong> use string 6 (low E) in both bass slots instead.</span></div>
           </article>
 
           <article class="explain-card">
             <h3>Say it before you play it</h3>
-            <div class="equation">P · I · P · M<br>P · I · P · —</div>
+            <div class="equation">Thumb · Index · Thumb · Middle<br>Thumb · Index · Thumb · let ring<small>Short notation: P · I · P · M · P · I · P · —</small></div>
             <ol>
               <li>Mute the strings with your left hand.</li>
               <li>Loop the motion until all seven attacks are equally spaced.</li>
               <li>Add one C chord. Let every note keep ringing.</li>
               <li>Only then add the chord changes.</li>
             </ol>
-            <p class="ring-note">The last “&amp;” is silent. Hear the previous D-string note continue through it.</p>
+            <p class="ring-note">On the last “and,” do not pluck a new string. Let the previous D-string note continue while your hand resets.</p>
           </article>
         </div>
       </div>
@@ -984,10 +1074,11 @@
         candidate.classList.toggle('active', active);
         candidate.setAttribute('aria-pressed', String(active));
       });
-      const labels = timingMode === 'learn'
-        ? [['1','P'],['&','I'],['2','P'],['&','M'],['3','P'],['&','I'],['4','P'],['&','—']]
-        : [['1','P'],['e','I'],['&','P'],['a','M'],['2','P'],['e','I'],['&','P'],['a','—']];
-      pulseCells.forEach((cell, index) => { cell.querySelector('small').textContent = `${labels[index][0]} · ${labels[index][1]}`; });
+      const counts = timingMode === 'learn'
+        ? ['1', '&', '2', '&', '3', '&', '4', '&']
+        : ['1', 'e', '&', 'a', '2', 'e', '&', 'a'];
+      const fingers = ['Thumb', 'Index', 'Thumb', 'Middle', 'Thumb', 'Index', 'Thumb', 'no pluck'];
+      pulseCells.forEach((cell, index) => { cell.querySelector('small').textContent = `count ${counts[index]} · ${fingers[index]}`; });
       rescheduleFromCurrentStep();
     }));
 
