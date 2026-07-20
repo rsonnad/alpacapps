@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A visual, beginner-friendly fingerpicking guide to Landslide: chord shapes, string-by-string tabs, timing, practice loop, and song roadmap.">
+  <link rel="canonical" href="https://alpacaplayhouse.com/rahulio/pages/music/landslide/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Landslide — Visual Fingerpicking Guide">
+  <meta property="og:description" content="See the pattern, hear the pulse, and learn the chord loop one small move at a time.">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/music/landslide/">
+  <title>Landslide — Visual Fingerpicking Guide</title>
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,650&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --night: #111827;
+      --night-2: #17213a;
+      --ink: #182033;
+      --muted: #657086;
+      --paper: #fffdf8;
+      --mist: #f1f3ee;
+      --line: #dfe3dd;
+      --snow: #f8f7ef;
+      --pine: #1d675c;
+      --pine-2: #2f8877;
+      --sun: #f4b55b;
+      --coral: #e4775f;
+      --lavender: #9ca9d8;
+      --shadow: 0 24px 70px rgba(13, 24, 43, .14);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 12%, rgba(244,181,91,.13), transparent 23rem),
+        radial-gradient(circle at 92% 44%, rgba(29,103,92,.12), transparent 30rem),
+        var(--mist);
+      font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    svg { display: block; }
+    .wrap { width: min(1160px, calc(100% - 2rem)); margin-inline: auto; }
+    :where(a, button, input):focus-visible {
+      outline: 3px solid var(--coral);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 5px rgba(255,255,255,.75);
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 720px;
+      overflow: hidden;
+      color: white;
+      background:
+        radial-gradient(circle at 74% 18%, rgba(244,181,91,.24), transparent 12rem),
+        linear-gradient(150deg, #10182c 0%, #182746 54%, #1d4e59 100%);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .65;
+      background-image:
+        radial-gradient(circle at 15% 22%, #fff 0 1px, transparent 1.5px),
+        radial-gradient(circle at 36% 13%, #fff 0 1px, transparent 1.5px),
+        radial-gradient(circle at 59% 25%, #fff 0 1px, transparent 1.5px),
+        radial-gradient(circle at 83% 9%, #fff 0 1px, transparent 1.5px),
+        radial-gradient(circle at 93% 31%, #fff 0 1px, transparent 1.5px);
+      background-size: 280px 230px, 330px 270px, 390px 290px, 450px 310px, 510px 340px;
+    }
+
+    .hero-nav {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: 5.2rem;
+      font-size: .82rem;
+      color: rgba(255,255,255,.72);
+    }
+
+    .hero-nav a { text-decoration: none; }
+    .hero-nav a:hover { color: white; }
+    .lesson-mark { display: flex; align-items: center; gap: .6rem; font-weight: 700; letter-spacing: .04em; }
+    .lesson-mark::before { content: ""; width: 28px; height: 2px; background: var(--sun); box-shadow: 7px 6px 0 var(--coral); }
+
+    .hero-grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1.12fr .88fr;
+      gap: clamp(2rem, 6vw, 6rem);
+      align-items: center;
+      padding: clamp(4.2rem, 9vw, 7rem) 0 11rem;
+    }
+
+    .kicker {
+      margin: 0 0 1rem;
+      color: var(--sun);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { margin: 0; line-height: 1.08; }
+    h1, h2 { font-family: "Fraunces", Georgia, serif; }
+    h1 { font-size: clamp(4rem, 11vw, 8.7rem); font-weight: 500; letter-spacing: -.055em; }
+    .hero-lede { max-width: 610px; margin: 1.15rem 0 0; color: rgba(255,255,255,.8); font-size: clamp(1rem, 2.1vw, 1.25rem); }
+
+    .hero-chips { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.65rem; }
+    .hero-chip {
+      padding: .58rem .78rem;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
+      backdrop-filter: blur(8px);
+      color: rgba(255,255,255,.9);
+      font-size: .78rem;
+      font-weight: 600;
+    }
+
+    .hero-visual { position: relative; min-height: 380px; }
+    .orbit {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: min(31vw, 390px);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 50%;
+      box-shadow: 0 0 0 36px rgba(255,255,255,.025), 0 0 0 74px rgba(255,255,255,.018);
+    }
+
+    .guitar-lines {
+      position: absolute;
+      inset: 11% 3% 8%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 25px;
+      transform: rotate(-8deg);
+    }
+    .guitar-lines span {
+      display: block;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35) 13%, rgba(255,255,255,.82) 62%, transparent);
+      transform-origin: left;
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .guitar-lines span:nth-child(2) { animation-delay: -.4s; }
+    .guitar-lines span:nth-child(3) { animation-delay: -.8s; }
+    .guitar-lines span:nth-child(4) { animation-delay: -1.2s; }
+    .guitar-lines span:nth-child(5) { animation-delay: -1.6s; }
+    .guitar-lines span:nth-child(6) { animation-delay: -2s; }
+
+    .pluck-sequence {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: min(30vw, 360px);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+    }
+    .pluck-sequence b {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--paper);
+      color: var(--night);
+      box-shadow: 0 10px 30px rgba(0,0,0,.24);
+      font: 700 .84rem/1 var(--mono);
+    }
+    .pluck-sequence b:nth-child(1) { left: 2%; top: 48%; background: var(--sun); }
+    .pluck-sequence b:nth-child(2) { left: 25%; top: 14%; }
+    .pluck-sequence b:nth-child(3) { left: 58%; top: 7%; }
+    .pluck-sequence b:nth-child(4) { right: 1%; top: 35%; background: var(--coral); color: white; }
+    .pluck-sequence b:nth-child(5) { right: 9%; bottom: 14%; background: var(--sun); }
+    .pluck-sequence b:nth-child(6) { left: 43%; bottom: 2%; }
+    .pluck-sequence b:nth-child(7) { left: 10%; bottom: 17%; }
+    .pluck-sequence b:nth-child(8) { left: 42%; top: 43%; background: rgba(255,255,255,.12); color: white; border: 1px dashed rgba(255,255,255,.35); box-shadow: none; }
+
+    .mountains { position: absolute; left: 0; right: 0; bottom: -2px; height: 240px; z-index: 1; }
+    .mountains svg { width: 100%; height: 100%; }
+
+    .practice-dock {
+      position: relative;
+      z-index: 6;
+      width: min(1060px, calc(100% - 2rem));
+      margin: -74px auto 0;
+      padding: 1.15rem;
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 24px;
+      background: rgba(255,253,248,.94);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .dock-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1.2rem; align-items: center; }
+    .play-button {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      min-width: 146px;
+      padding: .84rem 1rem;
+      border: 0;
+      border-radius: 15px;
+      background: var(--pine);
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 10px 24px rgba(29,103,92,.23);
+    }
+    .play-button:hover { background: #15584f; }
+    .play-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.14); }
+
+    .tempo-block { display: grid; grid-template-columns: auto minmax(130px, 1fr) auto; gap: .8rem; align-items: center; }
+    .tempo-block label { color: var(--muted); font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    input[type="range"] { width: 100%; accent-color: var(--coral); }
+    .tempo-value { min-width: 67px; color: var(--ink); font: 700 .9rem/1 var(--mono); }
+
+    .mode-switch { display: flex; padding: 4px; border-radius: 13px; background: #e9ece7; }
+    .mode-switch button { padding: .65rem .8rem; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-size: .78rem; font-weight: 700; }
+    .mode-switch button.active { background: white; color: var(--ink); box-shadow: 0 3px 10px rgba(0,0,0,.08); }
+
+    .pulse-strip { display: grid; grid-template-columns: repeat(8, 1fr); gap: .4rem; margin-top: 1rem; }
+    .pulse-cell {
+      position: relative;
+      min-width: 0;
+      padding: .65rem .2rem .55rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8f8f4;
+      text-align: center;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .pulse-cell strong { display: block; color: var(--ink); font: 700 clamp(.78rem, 2vw, 1rem)/1 var(--mono); }
+    .pulse-cell small { display: block; margin-top: .34rem; color: var(--muted); font: 600 .62rem/1 var(--mono); }
+    .pulse-cell.rest strong { color: var(--pine); }
+    .pulse-cell.active { transform: translateY(-3px); border-color: var(--coral); background: #fff0e9; box-shadow: 0 8px 20px rgba(228,119,95,.13); }
+    .dock-note { margin: .75rem .2rem 0; color: var(--muted); font-size: .72rem; text-align: center; }
+    .dock-note b { color: var(--ink); }
+
+    .section { padding: clamp(4.5rem, 9vw, 8rem) 0; }
+    .section.compact { padding-top: 4.5rem; }
+    .section.dark { color: white; background: var(--night); }
+    .section.pine { color: white; background: var(--pine); }
+    .section-head { display: grid; grid-template-columns: .55fr 1.45fr; gap: 2rem; align-items: end; margin-bottom: 2.8rem; }
+    .section-number { color: var(--coral); font: 700 .78rem/1 var(--mono); letter-spacing: .15em; text-transform: uppercase; }
+    .section.dark .section-number, .section.pine .section-number { color: var(--sun); }
+    .section h2 { max-width: 770px; font-size: clamp(2.4rem, 6vw, 5.1rem); font-weight: 500; letter-spacing: -.045em; }
+    .section-intro { max-width: 710px; margin: 1rem 0 0; color: var(--muted); font-size: 1.05rem; }
+    .dark .section-intro, .pine .section-intro { color: rgba(255,255,255,.7); }
+
+    .setup-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .setup-card {
+      min-height: 190px;
+      padding: 1.35rem;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,253,248,.82);
+    }
+    .setup-card .icon { display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: 1.4rem; border-radius: 13px; background: #e8f1ed; color: var(--pine); font-weight: 800; }
+    .setup-card h3 { font-size: 1rem; }
+    .setup-card p { margin: .5rem 0 0; color: var(--muted); font-size: .88rem; }
+    .setup-card b { color: var(--ink); }
+
+    .hand-map { display: grid; grid-template-columns: .8fr 1.2fr; gap: 1.2rem; }
+    .hand-card, .string-card {
+      padding: clamp(1.3rem, 3vw, 2.2rem);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 24px;
+      background: rgba(255,255,255,.055);
+    }
+    .hand-card h3, .string-card h3 { margin-bottom: 1.25rem; color: var(--sun); font-size: 1rem; }
+    .finger-list { display: grid; gap: .75rem; }
+    .finger-row { display: grid; grid-template-columns: 46px 1fr auto; gap: .85rem; align-items: center; padding: .8rem; border-radius: 14px; background: rgba(255,255,255,.05); }
+    .finger-badge { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--sun); color: var(--night); font: 800 1rem/1 var(--mono); }
+    .finger-row:nth-child(2) .finger-badge { background: var(--lavender); }
+    .finger-row:nth-child(3) .finger-badge { background: var(--coral); color: white; }
+    .finger-row span { color: rgba(255,255,255,.67); font-size: .82rem; }
+    .finger-row b { font-size: .94rem; }
+    .finger-row code { color: white; font: 700 .82rem/1 var(--mono); }
+
+    .string-stack { display: grid; gap: .42rem; }
+    .string-line { display: grid; grid-template-columns: 42px 1fr 74px; align-items: center; gap: .8rem; }
+    .string-line b { font: 700 .84rem/1 var(--mono); }
+    .string-line i { display: block; height: var(--thickness); border-radius: 999px; background: linear-gradient(90deg, rgba(255,255,255,.18), rgba(255,255,255,.78), rgba(255,255,255,.18)); }
+    .string-line small { color: rgba(255,255,255,.55); font: 600 .72rem/1 var(--mono); text-align: right; }
+    .ownership-note { margin: 1.25rem 0 0; padding: 1rem; border-left: 3px solid var(--sun); background: rgba(244,181,91,.08); color: rgba(255,255,255,.76); font-size: .9rem; }
+
+    .pattern-stage { display: grid; grid-template-columns: 1fr .72fr; gap: 1.2rem; align-items: stretch; }
+    .pattern-card, .explain-card { min-width: 0; padding: clamp(1.2rem, 3vw, 2rem); border: 1px solid var(--line); border-radius: 24px; background: var(--paper); box-shadow: 0 18px 50px rgba(20,33,54,.08); }
+    .pattern-card h3, .explain-card h3 { font-size: 1.05rem; }
+    .count-ribbon { display: grid; grid-template-columns: repeat(8, minmax(54px, 1fr)); gap: .45rem; min-width: 590px; margin-top: 1.25rem; }
+    .count-box { padding: .95rem .25rem; border-radius: 14px; background: #f2f2ec; text-align: center; }
+    .count-box:nth-child(4), .count-box:nth-child(8) { background: #e6f1ed; }
+    .count-box b { display: block; font: 800 1.25rem/1 var(--mono); }
+    .count-box span { display: block; margin-top: .55rem; color: var(--coral); font: 700 .7rem/1 var(--mono); }
+    .count-box small { display: block; margin-top: .35rem; color: var(--muted); font-size: .65rem; }
+    .scroll-x { max-width: 100%; overflow-x: auto; padding-bottom: .55rem; scrollbar-color: var(--pine) transparent; }
+    .pattern-caption { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem; color: var(--muted); font-size: .82rem; }
+    .pattern-caption strong { color: var(--pine); }
+    .equation { margin: 1.35rem 0; padding: 1.25rem; border-radius: 16px; background: var(--night); color: white; font: 700 clamp(.95rem, 2vw, 1.2rem)/1.5 var(--mono); }
+    .explain-card ol { margin: 0; padding-left: 1.1rem; color: var(--muted); }
+    .explain-card li + li { margin-top: .7rem; }
+    .ring-note { margin: 1.2rem 0 0; padding: .9rem 1rem; border-radius: 14px; background: #fff0e9; color: #824839; font-size: .88rem; }
+
+    .chord-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .chord-card {
+      position: relative;
+      overflow: hidden;
+      padding: 1.2rem;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--paper);
+    }
+    .chord-card::after { content: ""; position: absolute; right: -25px; bottom: -30px; width: 90px; height: 90px; border: 16px solid rgba(29,103,92,.07); border-radius: 50%; }
+    .chord-name { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; margin-bottom: .8rem; }
+    .chord-name h3 { font-family: "Fraunces", Georgia, serif; font-size: 1.55rem; }
+    .chord-name code { color: var(--muted); font: 600 .74rem/1 var(--mono); }
+    .chord-diagram { min-height: 162px; display: grid; place-items: center; }
+    .chord-diagram svg { width: 128px; height: 154px; overflow: visible; }
+    .chord-tip { margin: .65rem 0 0; color: var(--muted); font-size: .79rem; }
+
+    .pivot-card { display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: center; margin-top: 1.2rem; padding: 1.1rem 1.25rem; border: 1px solid #d7e7e0; border-radius: 18px; background: #edf5f1; }
+    .pivot-card .pivot-icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--pine); color: white; font: 800 1.2rem/1 var(--mono); }
+    .pivot-card p { margin: .2rem 0 0; color: var(--muted); font-size: .88rem; }
+
+    .progression { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
+    .progression-card { position: relative; padding: 1.2rem; border: 1px solid rgba(255,255,255,.11); border-radius: 19px; background: rgba(255,255,255,.06); }
+    .progression-card::after { content: "→"; position: absolute; right: -.72rem; top: 50%; z-index: 2; transform: translateY(-50%); color: var(--sun); font-size: 1.2rem; }
+    .progression-card:last-child::after { content: "↻"; }
+    .progression-card .order { color: var(--sun); font: 700 .68rem/1 var(--mono); }
+    .progression-card h3 { margin-top: .55rem; font-family: "Fraunces", Georgia, serif; font-size: 2rem; }
+    .progression-card p { margin: .35rem 0 0; color: rgba(255,255,255,.6); font-size: .78rem; }
+
+    .tabs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+    .tab-card { min-width: 0; padding: 1.1rem; border-radius: 19px; background: rgba(255,255,255,.96); color: var(--ink); }
+    .tab-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; margin-bottom: .65rem; }
+    .tab-card h4 { margin: 0; font-family: "Fraunces", Georgia, serif; font-size: 1.25rem; }
+    .tab-card-head code { color: var(--muted); font: 600 .66rem/1 var(--mono); }
+    .tab-table { width: 100%; min-width: 445px; border-collapse: collapse; table-layout: fixed; font: 700 .72rem/1 var(--mono); }
+    .tab-table th, .tab-table td { height: 24px; padding: 0; text-align: center; border-bottom: 1px solid #e7e8e2; }
+    .tab-table th:first-child, .tab-table td:first-child { width: 30px; color: var(--muted); text-align: left; }
+    .tab-table thead th { height: 25px; color: var(--muted); font-size: .62rem; }
+    .tab-table td.note { color: var(--ink); background: #fff0e9; border-radius: 5px; }
+    .tab-table td.rest { color: var(--pine); }
+
+    .roadmap { display: grid; gap: .65rem; }
+    .roadmap-row { display: grid; grid-template-columns: 125px 1fr auto; gap: 1rem; align-items: center; padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,253,248,.76); }
+    .roadmap-row h3 { font-size: .9rem; }
+    .chord-flow { display: flex; flex-wrap: wrap; gap: .38rem; color: var(--muted); font: 700 .78rem/1.5 var(--mono); }
+    .chord-flow b { padding: .25rem .45rem; border-radius: 7px; background: white; color: var(--pine); border: 1px solid #d9e6e0; }
+    .roadmap-row small { color: var(--muted); text-align: right; }
+    .roadmap-note { margin-top: 1rem; color: var(--muted); font-size: .86rem; }
+    .six-string-example { margin-top: 1.2rem; padding: clamp(1rem, 2.5vw, 1.5rem); border: 1px solid #d7e7e0; border-radius: 20px; background: #edf5f1; }
+    .six-string-example > h3 { color: var(--pine); font-size: 1rem; }
+    .six-string-example > p { margin: .35rem 0 0; color: var(--muted); font-size: .84rem; }
+
+    .practice-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 1.2rem; }
+    .ladder { display: grid; gap: .7rem; }
+    .ladder-step { display: grid; grid-template-columns: auto 1fr auto; gap: .85rem; align-items: center; padding: 1rem; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(255,255,255,.07); }
+    .ladder-step input { width: 22px; height: 22px; accent-color: var(--sun); }
+    .ladder-step label { cursor: pointer; }
+    .ladder-step label b { display: block; }
+    .ladder-step label span { display: block; margin-top: .15rem; color: rgba(255,255,255,.62); font-size: .8rem; }
+    .ladder-step code { color: var(--sun); font: 700 .75rem/1 var(--mono); }
+    .ladder-step.done { opacity: .62; }
+    .ladder-step.done label b { text-decoration: line-through; }
+
+    .fixes { display: grid; grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+    .fix-card { padding: 1rem; border-radius: 16px; background: rgba(0,0,0,.1); }
+    .fix-card h3 { color: var(--sun); font-size: .91rem; }
+    .fix-card p { margin: .38rem 0 0; color: rgba(255,255,255,.68); font-size: .81rem; }
+
+    .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+    .video-card { overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: var(--paper); box-shadow: 0 14px 35px rgba(20,33,54,.08); }
+    .video-frame { aspect-ratio: 16 / 9; background: var(--night); }
+    .video-poster {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-image: linear-gradient(rgba(10,17,31,.18), rgba(10,17,31,.5)), var(--poster);
+      background-size: cover;
+      background-position: center;
+      color: white;
+      text-decoration: none;
+    }
+    .video-poster::after { content: ""; position: absolute; inset: 0; border: 1px solid rgba(255,255,255,.16); transition: background .2s ease; }
+    .video-poster:hover::after { background: rgba(244,181,91,.11); }
+    .video-play { position: relative; z-index: 2; display: grid; place-items: center; width: 66px; height: 66px; padding-left: 4px; border: 1px solid rgba(255,255,255,.6); border-radius: 50%; background: rgba(17,24,39,.78); box-shadow: 0 14px 35px rgba(0,0,0,.3); font-size: 1.3rem; transition: transform .2s ease, background .2s ease; }
+    .video-poster:hover .video-play { transform: scale(1.08); background: var(--coral); }
+    .watch-label { position: absolute; z-index: 2; left: 1rem; bottom: 1rem; padding: .45rem .65rem; border-radius: 9px; background: rgba(17,24,39,.82); font-size: .73rem; font-weight: 700; }
+    .video-copy { padding: 1.15rem; }
+    .video-copy .source-label { color: var(--coral); font: 700 .67rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+    .video-copy h3 { margin-top: .5rem; font-size: 1rem; }
+    .video-copy p { margin: .5rem 0 0; color: var(--muted); font-size: .82rem; }
+    .text-source { margin-top: 1rem; padding: 1.1rem; border: 1px dashed #bfc8c1; border-radius: 17px; color: var(--muted); font-size: .86rem; }
+    .text-source a { color: var(--pine); font-weight: 700; }
+
+    .footer { padding: 2rem 0 3.5rem; color: var(--muted); font-size: .78rem; }
+    .footer-row { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+    .footer a { color: var(--pine); font-weight: 700; text-decoration: none; }
+    .source-disclaimer { max-width: 720px; }
+
+    @keyframes breathe { 0%,100% { transform: scaleX(.93); opacity: .45; } 50% { transform: scaleX(1.04); opacity: .9; } }
+
+    @media (max-width: 900px) {
+      .hero { min-height: auto; }
+      .hero-grid { grid-template-columns: 1fr; padding-bottom: 12rem; }
+      .hero-visual { display: none; }
+      .dock-row { grid-template-columns: 1fr; }
+      .play-button { justify-content: center; width: 100%; }
+      .mode-switch button { flex: 1; }
+      .section-head { grid-template-columns: 1fr; gap: .8rem; }
+      .setup-grid, .chord-grid { grid-template-columns: repeat(2, 1fr); }
+      .hand-map, .pattern-stage, .practice-grid { grid-template-columns: 1fr; }
+      .progression { grid-template-columns: repeat(2, 1fr); }
+      .progression-card:nth-child(2)::after { content: "↘"; }
+    }
+
+    @media (max-width: 640px) {
+      .wrap { width: min(100% - 1.2rem, 1160px); }
+      .hero-nav { padding-top: 4.7rem; }
+      .hero-nav span:last-child { display: none; }
+      h1 { font-size: clamp(3.7rem, 21vw, 6rem); }
+      .hero-grid { padding-top: 3.6rem; }
+      .practice-dock { width: calc(100% - 1rem); padding: .8rem; border-radius: 19px; }
+      .tempo-block { grid-template-columns: auto 1fr; }
+      .tempo-block input { grid-column: 1 / -1; grid-row: 2; }
+      .pulse-strip { gap: .22rem; }
+      .pulse-strip { grid-template-columns: repeat(4, 1fr); gap: .35rem; }
+      .pulse-cell { min-height: 57px; padding-inline: .15rem; border-radius: 9px; }
+      .pulse-cell small { font-size: .62rem; }
+      .section { padding: 4.2rem 0; }
+      .setup-grid, .chord-grid, .progression, .tabs-grid, .video-grid, .fixes { grid-template-columns: 1fr; }
+      .progression-card::after { content: "↓" !important; right: 50%; top: auto; bottom: -.95rem; transform: translateX(50%); }
+      .progression-card:last-child::after { content: "↻" !important; }
+      .string-line { grid-template-columns: 35px 1fr 60px; }
+      .pattern-caption { flex-direction: column; }
+      .roadmap-row { grid-template-columns: 1fr; }
+      .roadmap-row small { text-align: left; }
+      .footer-row { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+
+    @media print {
+      @page { margin: .55in; }
+      body { background: white; color: #111; }
+      .hero { min-height: auto; color: #111; background: white; }
+      .hero::before, .hero-visual, .mountains, .practice-dock, .video-grid, #siteHeader { display: none !important; }
+      .hero-nav { padding-top: 0; color: #555; }
+      .hero-grid { display: block; padding: 1.2rem 0 1.8rem; }
+      .kicker, .section-number { color: #555 !important; }
+      .hero-lede { color: #333; }
+      .hero-chip { color: #111; border-color: #aaa; background: white; }
+      .section { padding: 1.1rem 0; background: white !important; color: #111 !important; break-inside: avoid; }
+      .section h2 { font-size: 2rem; }
+      .section-head { margin-bottom: 1rem; }
+      .section-intro, .dark .section-intro, .pine .section-intro { color: #444; }
+      .setup-card, .hand-card, .string-card, .progression-card, .ladder-step, .fix-card { color: #111; background: white; border: 1px solid #bbb; }
+      .finger-row, .ownership-note { color: #111; background: #eee; }
+      .finger-row span, .string-line small, .progression-card p, .ladder-step label span, .fix-card p { color: #444; }
+      .string-line i { background: #555; }
+      .tabs-grid { grid-template-columns: 1fr; }
+      .tab-table { min-width: 0; }
+      .tab-card { border: 1px solid #bbb; }
+      .footer { padding-bottom: 0; }
+    }
+  </style>
+  <script src="/rahulio/page-header.js" defer></script>
+</head>
+<body>
+  <div id="siteHeader"></div>
+
+  <header class="hero">
+    <div class="wrap hero-nav">
+      <a class="lesson-mark" href="/rahulio/pages/">Rahulio music notes</a>
+      <span>Visual fingerpicking lesson · acoustic guitar</span>
+    </div>
+
+    <div class="wrap hero-grid">
+      <div>
+        <p class="kicker">One pattern · four-slot loop · make it flow</p>
+        <h1>Landslide</h1>
+        <p class="hero-lede">A visual path into the iconic fingerpicked motion—slow enough to understand, structured enough to remember, and musical from the very first loop.</p>
+        <div class="hero-chips" aria-label="Lesson setup">
+          <span class="hero-chip">Capo 3</span>
+          <span class="hero-chip">Standard tuning</span>
+          <span class="hero-chip">P · I · M fingers</span>
+          <span class="hero-chip">Beginner → song feel</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="orbit"></div>
+        <div class="guitar-lines"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="pluck-sequence"><b>A</b><b>G</b><b>D</b><b>B</b><b>A</b><b>G</b><b>D</b><b>↝</b></div>
+      </div>
+    </div>
+
+    <div class="mountains" aria-hidden="true">
+      <svg viewBox="0 0 1440 260" preserveAspectRatio="none">
+        <path fill="#17213a" d="M0 185 188 74l118 78L504 24l187 160L840 75l177 115 185-142 238 158v54H0Z"/>
+        <path fill="#253855" d="m0 206 257-105 136 103 172-85 199 107 206-120 152 92 196-71 122 89v44H0Z"/>
+        <path fill="#f1f3ee" d="m0 232 220-50 184 35 221-59 188 55 172-37 213 57 242-35v62H0Z"/>
+      </svg>
+    </div>
+  </header>
+
+  <section class="practice-dock" aria-label="Interactive picking practice loop">
+    <div class="dock-row">
+      <button class="play-button" id="playLoop" type="button" aria-pressed="false">
+        <span class="play-icon" aria-hidden="true">▶</span>
+        <span class="play-copy">Start pattern</span>
+      </button>
+
+      <div class="tempo-block">
+        <label for="tempo">Practice tempo</label>
+        <input id="tempo" type="range" min="40" max="100" step="2" value="52">
+        <output class="tempo-value" id="tempoValue" for="tempo">52 BPM</output>
+      </div>
+
+      <div class="mode-switch" aria-label="Timing mode">
+        <button type="button" class="active" data-mode="learn" aria-pressed="true">Learn · 8ths</button>
+        <button type="button" data-mode="song" aria-pressed="false">Song feel · 16ths</button>
+      </div>
+    </div>
+    <div class="pulse-strip" id="pulseStrip" aria-label="Picking steps">
+      <div class="pulse-cell" data-step="0"><strong>A / E</strong><small>1 · P</small></div>
+      <div class="pulse-cell" data-step="1"><strong>G</strong><small>&amp; · I</small></div>
+      <div class="pulse-cell" data-step="2"><strong>D</strong><small>2 · P</small></div>
+      <div class="pulse-cell" data-step="3"><strong>B</strong><small>&amp; · M</small></div>
+      <div class="pulse-cell" data-step="4"><strong>A / E</strong><small>3 · P</small></div>
+      <div class="pulse-cell" data-step="5"><strong>G</strong><small>&amp; · I</small></div>
+      <div class="pulse-cell" data-step="6"><strong>D</strong><small>4 · P</small></div>
+      <div class="pulse-cell rest" data-step="7"><strong>ring</strong><small>&amp; · —</small></div>
+    </div>
+    <p class="dock-note"><b>Quarter-note BPM:</b> Learn mode = one chord for 4 beats. Song feel = one chord for 2 beats (half a 4/4 bar).</p>
+    <p id="loopStatus" class="sr-only" aria-live="polite"></p>
+  </section>
+
+  <main>
+    <section class="section compact" id="setup">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-number">01 · Set up</span>
+          <div>
+            <h2>Before the first note</h2>
+            <p class="section-intro">Make four choices now and the rest of the page will read literally. Every fret number below is counted from the capo.</p>
+          </div>
+        </div>
+
+        <div class="setup-grid">
+          <article class="setup-card"><span class="icon">3</span><h3>Capo</h3><p>Clamp it just behind the <b>3rd fret</b>. Treat the capo as the new nut.</p></article>
+          <article class="setup-card"><span class="icon">E</span><h3>Tuning</h3><p>Use standard tuning: <b>E A D G B e</b>, low to high.</p></article>
+          <article class="setup-card"><span class="icon">RH</span><h3>Picking hand</h3><p>Use <b>thumb, index, middle</b>. The ring finger can relax.</p></article>
+          <article class="setup-card"><span class="icon">52</span><h3>Starting speed</h3><p>Begin at <b>48–52 BPM</b>. Evenness matters more than speed.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="hand-map">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-number">02 · Hand map</span>
+          <div>
+            <h2>Give every finger one job</h2>
+            <p class="section-intro">The motion becomes much easier when your picking hand stops making decisions. Park each finger over its home string and let the thumb travel.</p>
+          </div>
+        </div>
+
+        <div class="hand-map">
+          <article class="hand-card">
+            <h3>Right-hand ownership</h3>
+            <div class="finger-list">
+              <div class="finger-row"><span class="finger-badge">P</span><div><b>Thumb</b><span>moves between bass strings</span></div><code>6 · 5 · 4</code></div>
+              <div class="finger-row"><span class="finger-badge">I</span><div><b>Index</b><span>stays parked</span></div><code>string 3</code></div>
+              <div class="finger-row"><span class="finger-badge">M</span><div><b>Middle</b><span>stays parked</span></div><code>string 2</code></div>
+            </div>
+            <p class="ownership-note"><strong>The rule:</strong> P plays the bass and D string. Index always takes G. Middle always takes B. Keep the hand quiet.</p>
+          </article>
+
+          <article class="string-card">
+            <h3>How tab is oriented</h3>
+            <div class="string-stack" aria-label="Guitar strings from thin to thick">
+              <div class="string-line"><b>1 · e</b><i style="--thickness:1px"></i><small>thin · top of tab</small></div>
+              <div class="string-line"><b>2 · B</b><i style="--thickness:1.4px"></i><small>M lives here</small></div>
+              <div class="string-line"><b>3 · G</b><i style="--thickness:1.8px"></i><small>I lives here</small></div>
+              <div class="string-line"><b>4 · D</b><i style="--thickness:2.3px"></i><small>P returns here</small></div>
+              <div class="string-line"><b>5 · A</b><i style="--thickness:3px"></i><small>C · G/B · Am7 bass</small></div>
+              <div class="string-line"><b>6 · E</b><i style="--thickness:3.8px"></i><small>G · D/F♯ · Em bass</small></div>
+            </div>
+            <p class="ownership-note"><strong>Tab number = fret.</strong> A zero means open. An x means do not play. Read time from left to right.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pattern">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-number">03 · The engine</span>
+          <div>
+            <h2>Seven notes. Eight spaces.</h2>
+            <p class="section-intro">The final empty space is not a mistake—it is what lets the chord breathe and your hand reset before the next bass note.</p>
+          </div>
+        </div>
+
+        <div class="pattern-stage">
+          <article class="pattern-card">
+            <h3>The core loop on a five-string chord</h3>
+            <div class="scroll-x">
+              <div class="count-ribbon" aria-label="Picking order">
+                <div class="count-box"><b>5</b><span>P</span><small>1</small></div>
+                <div class="count-box"><b>3</b><span>I</span><small>&amp;</small></div>
+                <div class="count-box"><b>4</b><span>P</span><small>2</small></div>
+                <div class="count-box"><b>2</b><span>M</span><small>&amp;</small></div>
+                <div class="count-box"><b>5</b><span>P</span><small>3</small></div>
+                <div class="count-box"><b>3</b><span>I</span><small>&amp;</small></div>
+                <div class="count-box"><b>4</b><span>P</span><small>4</small></div>
+                <div class="count-box"><b>—</b><span>ring</span><small>&amp;</small></div>
+              </div>
+            </div>
+            <div class="pattern-caption"><span><strong>C · G/B · Am7:</strong> bass is string 5</span><span><strong>G · D/F♯ · Em:</strong> swap both 5s for string 6</span></div>
+          </article>
+
+          <article class="explain-card">
+            <h3>Say it before you play it</h3>
+            <div class="equation">P · I · P · M<br>P · I · P · —</div>
+            <ol>
+              <li>Mute the strings with your left hand.</li>
+              <li>Loop the motion until all seven attacks are equally spaced.</li>
+              <li>Add one C chord. Let every note keep ringing.</li>
+              <li>Only then add the chord changes.</li>
+            </ol>
+            <p class="ring-note">The last “&amp;” is silent. Hear the previous D-string note continue through it.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="chords">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-number">04 · Shapes</span>
+          <div>
+            <h2>Build the chord family</h2>
+            <p class="section-intro">The first three shapes do most of the work. The remaining shapes turn the corner into the pre-chorus and chorus. Numbers inside the dots are fretting fingers: 1 index, 2 middle, 3 ring, 4 pinky.</p>
+          </div>
+        </div>
+        <div class="chord-grid" id="chordGrid"></div>
+        <div class="pivot-card">
+          <span class="pivot-icon">↻</span>
+          <div><strong>The C → G/B → Am7 pivot</strong><p>Keep the index finger near B-string fret 1. For G/B, the pinky reaches B-string fret 3; then lift it and drop the middle finger to D-string fret 2 for Am7. Small movements, no flying fingers.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="verse-loop">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-number">05 · Main loop</span>
+          <div>
+            <h2>The verse, without the fog</h2>
+            <p class="section-intro">Cycle these four slots. In learn mode, each eight-slot pattern lasts a full four-beat bar. For the recording-like feel, the same motion becomes sixteenth notes, so each chord lasts two beats.</p>
+          </div>
+        </div>
+
+        <div class="progression" aria-label="Verse chord progression">
+          <article class="progression-card"><span class="order">01</span><h3>C</h3><p>Start on A-string fret 3</p></article>
+          <article class="progression-card"><span class="order">02</span><h3>G/B</h3><p>B bass under the same open strings</p></article>
+          <article class="progression-card"><span class="order">03</span><h3>Am7</h3><p>Open A becomes the bass</p></article>
+          <article class="progression-card"><span class="order">04</span><h3>G/B</h3><p>Return, then loop to C</p></article>
+        </div>
+
+        <div class="tabs-grid" id="verseTabs"></div>
+      </div>
+    </section>
+
+    <section class="section" id="roadmap">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-number">06 · Form</span>
+          <div>
+            <h2>Know where the trail turns</h2>
+            <p class="section-intro">Learn the harmonic landmarks instead of memorizing a wall of tab. The same right-hand engine carries nearly everything.</p>
+          </div>
+        </div>
+
+        <div class="roadmap">
+          <article class="roadmap-row"><h3>Intro / verse</h3><div class="chord-flow"><b>C</b><span>→</span><b>G/B</b><span>→</span><b>Am7</b><span>→</span><b>G/B</b></div><small>repeat the home loop</small></article>
+          <article class="roadmap-row"><h3>Verse variation</h3><div class="chord-flow"><b>C</b><span>→</span><b>G/B</b><span>→</span><b>Am7</b><span>→</span><b>Am7 · G/B</b></div><small>split the last cell</small></article>
+          <article class="roadmap-row"><h3>Pre-chorus</h3><div class="chord-flow"><b>C</b><span>→</span><b>G/B</b><span>→</span><b>Am7</b><span>→</span><b>D/F♯</b></div><small>bass moves to string 6</small></article>
+          <article class="roadmap-row"><h3>Chorus · A</h3><div class="chord-flow"><b>G</b><span>→</span><b>D7/F♯</b><span>→</span><b>Em</b><span>→</span><b>Em</b></div><small>keep the thumb on 6 and 4</small></article>
+          <article class="roadmap-row"><h3>Chorus · B</h3><div class="chord-flow"><b>C</b><span>→</span><b>G/B</b><span>→</span><b>Am7</b><span>→</span><b>D/F♯</b></div><small>then return home</small></article>
+          <article class="roadmap-row"><h3>Solo bed / outro</h3><div class="chord-flow"><b>verse loop × 3</b><span>→</span><b>pre-chorus × 1</b></div><small>add fills only after rhythm is solid</small></article>
+        </div>
+        <p class="roadmap-note">This is a learning roadmap, not a lyric sheet or note-for-note transcription. Use the recording and the linked video lessons below to hear the section lengths and variations.</p>
+        <div class="six-string-example">
+          <h3>When the bass moves to string 6</h3>
+          <p>For G and D/F♯, use the same seven-note hand motion but replace both string-5 bass notes with string 6. These two examples make the switch literal.</p>
+          <div class="tabs-grid" id="sixStringTabs"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section pine" id="practice">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-number">07 · Practice</span>
+          <div>
+            <h2>Climb in five small steps</h2>
+            <p class="section-intro">Check off a step only when you can repeat it three times without stopping. Your progress stays on this device.</p>
+          </div>
+        </div>
+
+        <div class="practice-grid">
+          <div class="ladder" id="practiceLadder">
+            <div class="ladder-step"><input id="step1" type="checkbox" data-practice="muted"><label for="step1"><b>Quiet-hand loop</b><span>Mute all strings. P · I · P · M · P · I · P · rest.</span></label><code>48 BPM</code></div>
+            <div class="ladder-step"><input id="step2" type="checkbox" data-practice="c"><label for="step2"><b>One clear C</b><span>Eight slots, no buzz, every note allowed to ring.</span></label><code>50 BPM</code></div>
+            <div class="ladder-step"><input id="step3" type="checkbox" data-practice="loop"><label for="step3"><b>Four-shape loop</b><span>C · G/B · Am7 · G/B, eyes on the fretting hand.</span></label><code>52 BPM</code></div>
+            <div class="ladder-step"><input id="step4" type="checkbox" data-practice="nolook"><label for="step4"><b>No-look right hand</b><span>Watch the chord changes; trust each picking finger's home.</span></label><code>60 BPM</code></div>
+            <div class="ladder-step"><input id="step5" type="checkbox" data-practice="song"><label for="step5"><b>Song-feel slots</b><span>Switch to 16ths without changing the seven-note motion.</span></label><code>72–80</code></div>
+          </div>
+
+          <div class="fixes">
+            <article class="fix-card"><h3>The pattern keeps collapsing</h3><p>Return to muted strings and say the finger names aloud. The left hand is not the problem yet.</p></article>
+            <article class="fix-card"><h3>The B string sounds harsh</h3><p>Pluck toward your palm, not away from the guitar. Use less middle-finger force.</p></article>
+            <article class="fix-card"><h3>Chord changes create gaps</h3><p>Move immediately after the D-string note. The silent eighth slot is your built-in transition window.</p></article>
+            <article class="fix-card"><h3>The thumb loses its bass</h3><p>Practice only strings 5–4–5–4, then 6–4–6–4. Add I and M after the pendulum is automatic.</p></article>
+            <article class="fix-card"><h3>Everything is too tense</h3><p>Let the picking wrist float. A tiny motion at the last finger joint is enough.</p></article>
+            <article class="fix-card"><h3>It sounds correct but stiff</h3><p>Make beats 1 and 3 slightly warmer—not louder. Let the other notes fall around the bass.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="references">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-number">08 · Watch</span>
+          <div>
+            <h2>See the hands in motion</h2>
+            <p class="section-intro">The first lesson isolates the beginner pattern. The second shows how that engine expands across the full song structure.</p>
+          </div>
+        </div>
+
+        <div class="video-grid">
+          <article class="video-card">
+            <div class="video-frame"><a class="video-poster" style="--poster: url('https://i.ytimg.com/vi/WKprmyDGs7M/hqdefault.jpg')" href="https://www.youtube.com/watch?v=WKprmyDGs7M&amp;t=173s" target="_blank" rel="noopener noreferrer" aria-label="Watch Lauren Bateman's Landslide fingerpicking lesson at 2 minutes 53 seconds"><span class="video-play" aria-hidden="true">▶</span><span class="watch-label">Watch at 2:53 ↗</span></a></div>
+            <div class="video-copy"><span class="source-label">Start with this · 2:53</span><h3>Lauren Bateman — core eight-note pattern</h3><p>Best for the count, P/I/M assignment, five-string versus six-string bass, and a patient play-along.</p></div>
+          </article>
+          <article class="video-card">
+            <div class="video-frame"><a class="video-poster" style="--poster: url('https://i.ytimg.com/vi/mLHQUDjQ23g/hqdefault.jpg')" href="https://www.youtube.com/watch?v=mLHQUDjQ23g&amp;t=47s" target="_blank" rel="noopener noreferrer" aria-label="Watch GuitarZero2Hero's Landslide lesson at 47 seconds"><span class="video-play" aria-hidden="true">▶</span><span class="watch-label">Watch at 0:47 ↗</span></a></div>
+            <div class="video-copy"><span class="source-label">Then expand · 0:47</span><h3>GuitarZero2Hero — section-by-section structure</h3><p>Best for verse variations, the pre-chorus and chorus map, and hearing how the pattern supports later fills.</p></div>
+          </article>
+        </div>
+
+        <p class="text-source">Cross-check: <a href="https://www.guitarnoise.com/lessons/landslide/" target="_blank" rel="noopener noreferrer">Guitar Noise — Landslide lesson ↗</a>. Its useful takeaway is permission to simplify: preserve the bass pulse and harmonic shape, then let the exact upper notes evolve with your hand and voice.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-row">
+      <p class="source-disclaimer">An original educational guide distilled from the linked teachers' explanations. “Landslide” was written by Stevie Nicks; this page does not reproduce lyrics or an official published transcription.</p>
+      <p>Made for practice by <a href="/rahulio/">Rahulio</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const CHORDS = [
+      { name: 'C', shape: [-1, 3, 2, 0, 1, 0], fingers: [-1, 3, 2, 0, 1, 0], code: 'x32010', tip: 'The home shape. Bass begins on A-string fret 3.' },
+      { name: 'G/B', shape: [-1, 2, 0, 0, 3, -1], fingers: [-1, 2, 0, 0, 4, -1], code: 'x2003x', tip: 'Simplified lesson voicing: the pinky makes B-string fret 3 the bright top note.' },
+      { name: 'Am7', shape: [-1, 0, 2, 0, 1, 0], fingers: [-1, 0, 2, 0, 1, 0], code: 'x02010', tip: 'Lift into it. The open A string becomes the bass.' },
+      { name: 'D/F♯', shape: [2, -1, 0, 2, 3, -1], fingers: [1, -1, 0, 2, 3, -1], code: '2x023x', tip: 'Lesson grip: thumb moves to string 6; keep D open and high e muted.' },
+      { name: 'G', shape: [3, -1, 0, 0, 0, 3], fingers: [2, -1, 0, 0, 0, 3], code: '3x0003', tip: 'The chorus opens up. Bass is low E, fret 3.' },
+      { name: 'D7/F♯', shape: [2, -1, 0, 2, 1, -1], fingers: [2, -1, 0, 3, 1, -1], code: '2x021x', tip: 'Lesson grip with high e muted; a small color change between G and Em.' },
+      { name: 'Em', shape: [0, 2, 2, 0, 0, 0], fingers: [0, 2, 3, 0, 0, 0], code: '022000', tip: 'Let the open strings bloom; avoid squeezing.' }
+    ];
+
+    function chordDiagram(chord) {
+      const xs = [24, 44, 64, 84, 104, 124];
+      const top = 30;
+      let svg = `<svg viewBox="0 0 148 170" role="img" aria-label="${chord.name} chord diagram, ${chord.code}">`;
+      svg += `<text x="74" y="14" text-anchor="middle" fill="#657086" font-family="DM Sans, sans-serif" font-size="8" letter-spacing="1.4">LOW E → HIGH e</text>`;
+      for (let fret = 0; fret <= 4; fret++) {
+        const y = top + fret * 26;
+        svg += `<line x1="24" y1="${y}" x2="124" y2="${y}" stroke="${fret === 0 ? '#182033' : '#cbd1ca'}" stroke-width="${fret === 0 ? 4 : 1}"/>`;
+      }
+      xs.forEach(x => { svg += `<line x1="${x}" y1="${top}" x2="${x}" y2="${top + 104}" stroke="#aeb7b0" stroke-width="1"/>`; });
+      chord.shape.forEach((fret, i) => {
+        const x = xs[i];
+        if (fret === -1) svg += `<text x="${x}" y="25" text-anchor="middle" fill="#9aa39d" font-family="DM Sans" font-size="11">×</text>`;
+        if (fret === 0) svg += `<circle cx="${x}" cy="21" r="4.2" fill="none" stroke="#1d675c" stroke-width="1.6"/>`;
+        if (fret > 0) {
+          const y = top + (fret - .5) * 26;
+          svg += `<circle cx="${x}" cy="${y}" r="8.2" fill="#1d675c"/><text x="${x}" y="${y + 3}" text-anchor="middle" fill="white" font-family="DM Sans" font-size="8">${chord.fingers[i]}</text>`;
+        }
+      });
+      return svg + '</svg>';
+    }
+
+    document.getElementById('chordGrid').innerHTML = CHORDS.map(chord => `
+      <article class="chord-card">
+        <div class="chord-name"><h3>${chord.name}</h3><code>${chord.code}</code></div>
+        <div class="chord-diagram">${chordDiagram(chord)}</div>
+        <p class="chord-tip">${chord.tip}</p>
+      </article>`).join('');
+
+    const TAB_CHORDS = {
+      C:    { frets: { 5: 3, 4: 2, 3: 0, 2: 1 }, bass: 5, code: '5 · 3 · 4 · 2 · 5 · 3 · 4 · —' },
+      'G/B': { frets: { 5: 2, 4: 0, 3: 0, 2: 3 }, bass: 5, code: '5 · 3 · 4 · 2 · 5 · 3 · 4 · —' },
+      Am7:  { frets: { 5: 0, 4: 2, 3: 0, 2: 1 }, bass: 5, code: '5 · 3 · 4 · 2 · 5 · 3 · 4 · —' },
+      G:    { frets: { 6: 3, 4: 0, 3: 0, 2: 0 }, bass: 6, code: '6 · 3 · 4 · 2 · 6 · 3 · 4 · —' },
+      'D/F♯': { frets: { 6: 2, 4: 0, 3: 2, 2: 3 }, bass: 6, code: '6 · 3 · 4 · 2 · 6 · 3 · 4 · —' }
+    };
+    const STRING_NAMES = { 6: 'E', 5: 'A', 4: 'D', 3: 'G', 2: 'B', 1: 'e' };
+    const COUNTS = ['1', '&', '2', '&', '3', '&', '4', '&'];
+
+    function tabTable(name) {
+      const chord = TAB_CHORDS[name];
+      const order = [chord.bass, 3, 4, 2, chord.bass, 3, 4, null];
+      let html = `<article class="tab-card"><div class="tab-card-head"><h4>${name}</h4><code>${chord.code}</code></div><div class="scroll-x"><table class="tab-table"><thead><tr><th></th>`;
+      html += COUNTS.map(count => `<th>${count}</th>`).join('') + '</tr></thead><tbody>';
+      [1,2,3,4,5,6].forEach(string => {
+        html += `<tr><th scope="row">${STRING_NAMES[string]}</th>`;
+        order.forEach((pickedString, index) => {
+          if (pickedString === string) html += `<td class="note">${chord.frets[string]}</td>`;
+          else if (index === 7 && string === 4) html += '<td class="rest">↝</td>';
+          else html += '<td></td>';
+        });
+        html += '</tr>';
+      });
+      return html + '</tbody></table></div></article>';
+    }
+
+    document.getElementById('verseTabs').innerHTML = ['C', 'G/B', 'Am7', 'G/B'].map(tabTable).join('');
+    document.getElementById('sixStringTabs').innerHTML = ['G', 'D/F♯'].map(tabTable).join('');
+
+    const playButton = document.getElementById('playLoop');
+    const playIcon = playButton.querySelector('.play-icon');
+    const playCopy = playButton.querySelector('.play-copy');
+    const tempo = document.getElementById('tempo');
+    const tempoValue = document.getElementById('tempoValue');
+    const modeButtons = Array.from(document.querySelectorAll('[data-mode]'));
+    const pulseCells = Array.from(document.querySelectorAll('.pulse-cell'));
+    const loopStatus = document.getElementById('loopStatus');
+    let loopTimer = null;
+    let currentStep = 0;
+    let timingMode = 'learn';
+    let audioContext = null;
+    let nextTickAt = 0;
+
+    async function ensureAudio() {
+      try {
+        audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === 'suspended') await audioContext.resume();
+        return audioContext.state === 'running';
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function clickSound(accent) {
+      if (!audioContext || audioContext.state !== 'running') return;
+      try {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.frequency.value = accent ? 760 : 480;
+        gain.gain.setValueAtTime(.0001, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(accent ? .07 : .035, audioContext.currentTime + .004);
+        gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + .045);
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + .05);
+      } catch (_) { /* Visual timing still works if audio is blocked. */ }
+    }
+
+    function paintStep(step) {
+      pulseCells.forEach((cell, index) => cell.classList.toggle('active', index === step));
+    }
+
+    function tick() {
+      paintStep(currentStep);
+      if (currentStep !== 7) clickSound(currentStep === 0 || (timingMode === 'learn' && currentStep === 4));
+      currentStep = (currentStep + 1) % 8;
+    }
+
+    function intervalLength() {
+      return 60000 / Number(tempo.value) / (timingMode === 'learn' ? 2 : 4);
+    }
+
+    function runScheduledTick() {
+      if (loopTimer === null) return;
+      tick();
+      nextTickAt += intervalLength();
+      loopTimer = window.setTimeout(runScheduledTick, Math.max(0, nextTickAt - performance.now()));
+    }
+
+    function rescheduleFromCurrentStep() {
+      if (loopTimer === null) return;
+      window.clearTimeout(loopTimer);
+      nextTickAt = performance.now() + intervalLength();
+      loopTimer = window.setTimeout(runScheduledTick, intervalLength());
+      loopStatus.textContent = `Practice loop playing at ${tempo.value} beats per minute.`;
+    }
+
+    function stopLoop() {
+      window.clearTimeout(loopTimer);
+      loopTimer = null;
+      currentStep = 0;
+      paintStep(-1);
+      playButton.setAttribute('aria-pressed', 'false');
+      playIcon.textContent = '▶';
+      playCopy.textContent = 'Start pattern';
+      loopStatus.textContent = 'Practice loop stopped.';
+    }
+
+    function startLoop() {
+      currentStep = 0;
+      nextTickAt = performance.now();
+      loopTimer = window.setTimeout(runScheduledTick, 0);
+      playButton.setAttribute('aria-pressed', 'true');
+      playIcon.textContent = '■';
+      playCopy.textContent = 'Stop pattern';
+      loopStatus.textContent = `Practice loop playing at ${tempo.value} beats per minute.`;
+    }
+
+    playButton.addEventListener('click', async () => {
+      if (loopTimer) {
+        stopLoop();
+        return;
+      }
+      await ensureAudio();
+      startLoop();
+    });
+    tempo.addEventListener('input', () => {
+      tempoValue.textContent = `${tempo.value} BPM`;
+      rescheduleFromCurrentStep();
+    });
+
+    modeButtons.forEach(button => button.addEventListener('click', () => {
+      timingMode = button.dataset.mode;
+      modeButtons.forEach(candidate => {
+        const active = candidate === button;
+        candidate.classList.toggle('active', active);
+        candidate.setAttribute('aria-pressed', String(active));
+      });
+      const labels = timingMode === 'learn'
+        ? [['1','P'],['&','I'],['2','P'],['&','M'],['3','P'],['&','I'],['4','P'],['&','—']]
+        : [['1','P'],['e','I'],['&','P'],['a','M'],['2','P'],['e','I'],['&','P'],['a','—']];
+      pulseCells.forEach((cell, index) => { cell.querySelector('small').textContent = `${labels[index][0]} · ${labels[index][1]}`; });
+      rescheduleFromCurrentStep();
+    }));
+
+    const practiceInputs = Array.from(document.querySelectorAll('[data-practice]'));
+    let savedPractice = {};
+    try { savedPractice = JSON.parse(localStorage.getItem('landslidePractice') || '{}'); } catch (_) {}
+    practiceInputs.forEach(input => {
+      input.checked = Boolean(savedPractice[input.dataset.practice]);
+      input.closest('.ladder-step').classList.toggle('done', input.checked);
+      input.addEventListener('change', () => {
+        savedPractice[input.dataset.practice] = input.checked;
+        input.closest('.ladder-step').classList.toggle('done', input.checked);
+        try { localStorage.setItem('landslidePractice', JSON.stringify(savedPractice)); } catch (_) {}
+      });
+    });
+  </script>
+</body>
+</html>
