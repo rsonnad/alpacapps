@@ -1,12 +1,12 @@
 {
-  "version": "v260719.01 8:21a",
-  "release": 1749,
-  "sha": "dc799e96f7",
-  "fullSha": "dc799e96f7ecea6fc2c23fae75b8b00cb4291a08",
+  "version": "v260720.01 10:42a",
+  "release": 1750,
+  "sha": "bd50b3dfc0",
+  "fullSha": "bd50b3dfc0ebb25c633bc014e96343dfd2d64ec0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jd5f",
-  "pushedAt": "2026-07-19T13:21:02+00:00",
-  "commits": [{"sha":"dc799e96f7","message":"fix(brand): getContrastRatio returns a Number, not a string","author":"Rahul"}]
+  "pushedAt": "2026-07-20T15:42:55+00:00",
+  "commits": [{"sha":"bd50b3dfc0","message":"feat(music): add visual Landslide picking guide","author":"Rahul"}]
 }
