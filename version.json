@@ -1,12 +1,12 @@
 {
-  "version": "v260720.01 10:42a",
-  "release": 1750,
-  "sha": "bd50b3dfc0",
-  "fullSha": "bd50b3dfc0ebb25c633bc014e96343dfd2d64ec0",
+  "version": "v260720.02 2:35p",
+  "release": 1751,
+  "sha": "1ee7c3083a",
+  "fullSha": "1ee7c3083a22359973fe487d6ef1e649f3cae711",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jd5f",
-  "pushedAt": "2026-07-20T15:42:55+00:00",
-  "commits": [{"sha":"bd50b3dfc0","message":"feat(music): add visual Landslide picking guide","author":"Rahul"}]
+  "pushedAt": "2026-07-20T19:35:31+00:00",
+  "commits": [{"sha":"1ee7c3083a","message":"fix(leases): preserve signed executions on reissue","author":"Rahul"}]
 }
