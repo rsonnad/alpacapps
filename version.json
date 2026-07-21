@@ -1,12 +1,12 @@
 {
-  "version": "v260720.04 6:00p",
-  "release": 1753,
-  "sha": "c55a533a73",
-  "fullSha": "c55a533a731b5ea88991e1c428da6737aae126c1",
+  "version": "v260721.01 4:58a",
+  "release": 1754,
+  "sha": "88968883cf",
+  "fullSha": "88968883cf6a27d31d22fb3681a0f78d5f991ed7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jd5f",
-  "pushedAt": "2026-07-20T23:00:38+00:00",
-  "commits": [{"sha":"c55a533a73","message":"fix(music): explain Landslide tab notation","author":"Rahul"}]
+  "pushedAt": "2026-07-21T09:58:54+00:00",
+  "commits": [{"sha":"88968883cf","message":"fix(leases): allow executed archival documents","author":"Rahul"}]
 }
