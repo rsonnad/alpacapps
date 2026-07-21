@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Executed Lease — Alpaca Playhouse</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f4f1ec;
+    color: #2b2b2b;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    background: #3d3630;
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: .01em; }
+  .actions { display: flex; gap: 8px; }
+  button {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 6px;
+    background: #c9a227;
+    color: #2b2b2b;
+    cursor: pointer;
+  }
+  button:hover { background: #d8b23c; }
+  button.secondary { background: rgba(255,255,255,.16); color: #fff; }
+  button.secondary:hover { background: rgba(255,255,255,.26); }
+  #frame {
+    display: block;
+    width: 100%;
+    max-width: 900px;
+    margin: 20px auto;
+    border: 0;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 14px rgba(0,0,0,.12);
+    min-height: 70vh;
+  }
+  #status {
+    max-width: 640px;
+    margin: 60px auto;
+    padding: 0 24px;
+    text-align: center;
+    line-height: 1.6;
+  }
+  #status h2 { font-size: 18px; margin: 0 0 8px; }
+  #status p { margin: 0; color: #5c5c5c; font-size: 14px; }
+  #status a { color: #8a6d1f; }
+  @media print {
+    header, #status { display: none !important; }
+    #frame { margin: 0; max-width: none; box-shadow: none; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Executed Lease Agreement</h1>
+  <div class="actions">
+    <button id="print-btn" type="button" hidden>Print / Save as PDF</button>
+    <button id="raw-btn" class="secondary" type="button" hidden>Download source</button>
+  </div>
+</header>
+
+<div id="status">
+  <h2>Loading your lease…</h2>
+  <p>One moment while we retrieve the executed agreement.</p>
+</div>
+
+<iframe id="frame" title="Executed lease agreement" sandbox="allow-same-origin allow-modals" hidden></iframe>
+
+<script>
+(function () {
+  // Executed leases are archived as immutable HTML in the public
+  // `lease-documents` bucket. Supabase Storage force-serves *all* HTML as
+  // `text/plain` with `x-content-type-options: nosniff` (an anti-XSS measure
+  // on the shared *.supabase.co origin), so opening the storage URL directly
+  // shows raw source rather than the document. This page fetches that source
+  // and renders it here instead.
+  var STORAGE_BASE =
+    'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/lease-documents/';
+
+  // Only ever load an archival lease from our own bucket. `doc` is an object
+  // path, not a URL, and must match the shape process-signature writes —
+  // otherwise this page would be an open proxy that renders attacker-supplied
+  // markup under the alpacaplayhouse.com origin.
+  var SAFE_PATH = /^signed\/[A-Za-z0-9._-]+\.html$/;
+
+  var statusEl = document.getElementById('status');
+  var frame = document.getElementById('frame');
+  var printBtn = document.getElementById('print-btn');
+  var rawBtn = document.getElementById('raw-btn');
+
+  function fail(heading, detail) {
+    statusEl.innerHTML =
+      '<h2></h2><p></p>';
+    statusEl.querySelector('h2').textContent = heading;
+    statusEl.querySelector('p').textContent = detail;
+  }
+
+  var doc = new URLSearchParams(location.search).get('doc') || '';
+
+  if (!doc) {
+    fail('No lease specified',
+      'This link is missing its document reference. Please use the link from your signing confirmation email.');
+    return;
+  }
+  if (!SAFE_PATH.test(doc)) {
+    fail('That link is not valid',
+      'This viewer only opens executed lease documents. Please use the link from your signing confirmation email.');
+    return;
+  }
+
+  var url = STORAGE_BASE + doc;
+
+  fetch(url, { cache: 'no-cache' })
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    })
+    .then(function (html) {
+      // The iframe is sandboxed without `allow-scripts`, so nothing in the
+      // archived document can execute; styles and images still render.
+      frame.srcdoc = html;
+      frame.hidden = false;
+      statusEl.hidden = true;
+      printBtn.hidden = false;
+      rawBtn.hidden = false;
+
+      frame.addEventListener('load', function () {
+        try {
+          var d = frame.contentDocument;
+          if (d) frame.style.height = d.documentElement.scrollHeight + 40 + 'px';
+        } catch (e) { /* height is best-effort; min-height covers it */ }
+      });
+    })
+    .catch(function (e) {
+      fail('We could not load this lease',
+        'The document may have moved. Please reply to your signing confirmation email and we will resend it. (' + e.message + ')');
+    });
+
+  printBtn.addEventListener('click', function () {
+    try {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    } catch (e) {
+      window.print();
+    }
+  });
+
+  rawBtn.addEventListener('click', function () {
+    window.open(url, '_blank', 'noopener');
+  });
+})();
+</script>
+
+</body>
+</html>
