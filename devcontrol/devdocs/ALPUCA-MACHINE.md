@@ -79,6 +79,34 @@ These run continuously and are expected. Don't kill them blindly during cleanup.
 
 If you see something not on this list eating memory, investigate before killing.
 
+### Signed-document PDF archiver (cron, every 10 min)
+
+Alpuca is the PDF renderer for AlpacApps' e-signature system. Supabase edge
+functions are Deno with no browser, so headless Chrome here is what turns each
+executed agreement into a PDF archived in R2.
+
+| Item | Value |
+|---|---|
+| Cron | `*/10 * * * *  /Users/alpuca/scripts/signed-pdf-archiver-cron.sh` |
+| Worker | `~/scripts/signed-pdf-archiver.py` (repo: `scripts/signed-pdf-archiver.py`) |
+| Config | `~/.signed-pdf-archiver.env` (chmod 600 — R2 + Supabase service key) |
+| Log | `~/logs/signed-pdf-archiver.log` (self-trimming at 2 MB) |
+| Queue | `signature_audit_log` rows where `archival_pdf_url IS NULL` |
+| Output | `s3://alpacapps/signed-documents/{type}/{date}-{app_id}-v{n}.pdf` |
+
+Deliberately **best-effort**: signing is never blocked by this job. If Alpuca is
+asleep or offline, the rows stay queued and the next pass picks them up, so no
+executed document is left permanently without a PDF.
+
+**Chrome gotcha:** with a private `--user-data-dir`, Chrome writes the PDF and
+then *never exits* (its updater/crash-handler children hold the process open).
+The worker therefore waits for the **output file** to stabilise and then kills
+Chrome — do not "fix" it back to waiting on process exit, or every render will
+time out and be discarded despite having succeeded.
+
+Also note `flock` does not exist on macOS; the wrapper uses an atomic `mkdir`
+lock with a 1-hour staleness escape hatch.
+
 ## Known Memory Hazard: `moondream-indexer`
 
 **Location:** `~/moondream-indexer/`
