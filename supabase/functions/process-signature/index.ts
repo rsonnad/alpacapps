@@ -271,9 +271,17 @@ Deno.serve(async (req) => {
         signatureImageUrl,
       });
       const objectPath = `signed/${app.id}-${Date.now()}.html`;
+      // Upload the raw string (not a Blob) with an explicit contentType.
+      // supabase-js only honors options.contentType on the non-Blob branch —
+      // when handed a Blob it ignores it, and the object ends up served as
+      // text/plain (with x-content-type-options: nosniff), so browsers render
+      // the HTML source instead of the document. Passing a string keeps the
+      // stored + served Content-Type as text/html so the archival lease opens
+      // as a rendered page.
       const { error: uploadErr } = await supabase.storage
         .from('lease-documents')
-        .upload(objectPath, new Blob([fullSignedHtml], { type: 'text/html; charset=utf-8' }), {
+        .upload(objectPath, fullSignedHtml, {
+          contentType: 'text/html; charset=utf-8',
           cacheControl: '31536000', upsert: false,
         });
       if (uploadErr) throw uploadErr;
