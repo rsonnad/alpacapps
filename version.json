@@ -1,12 +1,12 @@
 {
-  "version": "v260721.01 4:58a",
-  "release": 1754,
-  "sha": "88968883cf",
-  "fullSha": "88968883cf6a27d31d22fb3681a0f78d5f991ed7",
+  "version": "v260721.02 3:15p",
+  "release": 1755,
+  "sha": "e5608a5838",
+  "fullSha": "e5608a58380c377d4edb72fb20811a5e0774b88b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm3jd5f",
-  "pushedAt": "2026-07-21T09:58:54+00:00",
-  "commits": [{"sha":"88968883cf","message":"fix(leases): allow executed archival documents","author":"Rahul"}]
+  "pushedAt": "2026-07-21T20:15:57+00:00",
+  "commits": [{"sha":"e5608a5838","message":"fix(leases): make executed leases actually render (storage forces text/plain) (#124)","author":"Rahul"}]
 }
