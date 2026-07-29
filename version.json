@@ -1,12 +1,12 @@
 {
-  "version": "v260721.03 3:59p",
-  "release": 1756,
-  "sha": "09ea4b2271",
-  "fullSha": "09ea4b22712d76707a7bab007e487799f5831d1a",
-  "actor": "rsonnad",
+  "version": "v260729.01 9:13a",
+  "release": 1757,
+  "sha": "4ea2522d44",
+  "fullSha": "4ea2522d44a08d7b385907112e010f50035f62e2",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm3jd5f",
-  "pushedAt": "2026-07-21T20:59:10+00:00",
-  "commits": [{"sha":"09ea4b2271","message":"feat(leases): archive a PDF of every executed document to R2 (#125)","author":"Rahul"}]
+  "machine": "runnervmvrwv9",
+  "pushedAt": "2026-07-29T14:13:21+00:00",
+  "commits": [{"sha":"4ea2522d44","message":"Remove volunteer question from resident inquiry","author":"Sonia Wendorff"}]
 }
