@@ -1043,16 +1043,6 @@
                 </select>
               </div>
               <div class="form-group full-width">
-                <label for="volunteer_interest">Would you like to contribute your time and skills to support Alpaca operations? <span class="required">*</span></label>
-                <select id="volunteer_interest" name="volunteer_interest" required>
-                  <option value="">Select an option</option>
-                  <option value="yes_actively">Yes, I'd love to actively contribute</option>
-                  <option value="yes_sometimes">Yes, sometimes when I can</option>
-                  <option value="maybe">Maybe, I'd like to learn more</option>
-                  <option value="no">Not at this time</option>
-                </select>
-              </div>
-              <div class="form-group full-width">
                 <label for="pets_inquiry">Do you have any animals? <span class="required">*</span></label>
                 <textarea id="pets_inquiry" name="pets_inquiry" rows="2" placeholder="e.g. 2 cats, 1 medium dog — or 'None'" required></textarea>
               </div>
@@ -1833,7 +1823,7 @@
       if (!phone) { document.getElementById('phone').classList.add('error'); hasError = true; }
 
       // Validate required community fit fields
-      const requiredFields = ['date_of_birth', 'gender', 'coliving_experience', 'life_focus', 'visiting_guide_response', 'desired_timeframe', 'preferred_accommodation', 'volunteer_interest', 'pets_inquiry', 'referral_source'];
+      const requiredFields = ['date_of_birth', 'gender', 'coliving_experience', 'life_focus', 'visiting_guide_response', 'desired_timeframe', 'preferred_accommodation', 'pets_inquiry', 'referral_source'];
       for (const field of requiredFields) {
         if (!getValue(field)) {
           document.getElementById(field).classList.add('error');
@@ -1896,7 +1886,6 @@
           visiting_guide_response: getValue('visiting_guide_response'),
           desired_timeframe: getValue('desired_timeframe'),
           preferred_accommodation: getValue('preferred_accommodation'),
-          volunteer_interest: getValue('volunteer_interest') || null,
           pets: getValue('pets_inquiry'),
           photo_url: photoUrl,
           referral_source: getValue('referral_source'),
@@ -1968,7 +1957,6 @@
                 dob: dobValue || '',
                 accommodation: accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation'),
                 timeframe: getValue('desired_timeframe'),
-                volunteer: getValue('volunteer_interest') || 'Not specified',
                 referral: getValue('referral_source'),
                 coliving_experience: getValue('coliving_experience'),
                 life_focus: getValue('life_focus'),
@@ -2444,7 +2432,6 @@
           document.getElementById('visiting_guide_response').value = 'Yes, I loved the community values section.';
           document.getElementById('desired_timeframe').value = 'Starting March 2030, for 6+ months';
           document.getElementById('preferred_accommodation').value = 'private_room';
-          document.getElementById('volunteer_interest').value = 'yes_sometimes';
           document.getElementById('pets_inquiry').value = 'None';
           document.getElementById('referral_source').value = 'Testing';
           console.log('Test data filled for Step 1');
