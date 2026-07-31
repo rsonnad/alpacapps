@@ -82,7 +82,7 @@ async function classifyWithOpenRouter(person: Record<string, unknown>): Promise<
       },
       signal: AbortSignal.timeout(3500),
       body: JSON.stringify({
-        model: "meta-llama/llama-4-maverick",
+        model: "deepseek/deepseek-v4-flash",
         temperature: 0,
         max_tokens: 80,
         response_format: { type: "json_object" },

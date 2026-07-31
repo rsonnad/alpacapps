@@ -226,7 +226,7 @@ async function classifyWithOpenRouter(
         "X-Title": "AlpacApps Email Classifier",
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-4-maverick",
+        model: "deepseek/deepseek-v4-flash",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.1,
         max_tokens: 200,
