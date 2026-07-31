@@ -1931,7 +1931,6 @@
         // #26: clear any saved draft now that the form is submitted.
         try { localStorage.removeItem('alpaca_apply_draft_v1'); } catch (_e) { /* */ }
 
-        // Send admin notification email
         const accommLabels = {
           'bed_shared_room': 'Bed in a shared room',
           'private_room': 'Private room',
@@ -1940,56 +1939,8 @@
           'tent_camping': 'Tent / Camping',
           'flexible': 'Flexible / Open to anything',
         };
-        try {
-          await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              type: 'community_fit_inquiry',
-              to: ['team@alpacaplayhouse.com'],
-              data: {
-                name: `${firstName} ${lastName}`,
-                email: email,
-                phone: phone,
-                dob: dobValue || '',
-                accommodation: accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation'),
-                timeframe: getValue('desired_timeframe'),
-                referral: getValue('referral_source'),
-                coliving_experience: getValue('coliving_experience'),
-                life_focus: getValue('life_focus'),
-                visiting_guide: getValue('visiting_guide_response'),
-                photo_url: photoUrl || ''
-              }
-            })
-          });
-        } catch (emailError) {
-          console.error('Failed to send admin notification email:', emailError);
-        }
-
-        // Send confirmation email to applicant
-        try {
-          await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              type: 'community_fit_confirmation',
-              to: [email],
-              data: {
-                name: firstName,
-                accommodation: accommLabels[getValue('preferred_accommodation')] || getValue('preferred_accommodation'),
-                timeframe: getValue('desired_timeframe'),
-              }
-            })
-          });
-        } catch (confirmError) {
-          console.error('Failed to send applicant confirmation email:', confirmError);
-        }
+        // The submit-rental-inquiry edge function sends both emails only after
+        // its server-side spam screening and atomic database insert succeed.
 
         // Save for ask box and persist for future visits
         submittedFirstName = firstName;

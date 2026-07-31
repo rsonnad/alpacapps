@@ -15,6 +15,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { withCors, jsonOk, jsonError, checkRateLimit, getClientIp } from '../_shared/function-wrapper.ts';
+import { screenRentalInquiry } from '../_shared/rental-inquiry-screening.ts';
 
 interface Body {
   person?: Record<string, unknown>;
@@ -55,6 +56,16 @@ Deno.serve(withCors(async (req: Request) => {
   const okDay = await checkRateLimit(supabase, 'submit_rental_inquiry_day', ip, 20, 86400);
   if (!okDay) return jsonError('Daily submission limit reached for your network.', 429);
 
+  // Screen before storing the submission or sending any notification. Put this
+  // behind the rate limit so a bot cannot use OpenRouter as an expensive oracle.
+  // The AI check is conservative and fails open; obvious generated tokens are
+  // caught deterministically even if OpenRouter is unavailable.
+  const screening = await screenRentalInquiry(person);
+  if (!screening.allowed) {
+    console.warn('Blocked gibberish rental inquiry', { source: screening.source });
+    return jsonError('Please enter a name and responses that we can understand, then try again.', 422);
+  }
+
   // Optional Turnstile verification — only enforced if the secret is set.
   const turnstileSecret = Deno.env.get('TURNSTILE_SECRET_KEY');
   if (turnstileSecret) {
@@ -92,6 +103,44 @@ Deno.serve(withCors(async (req: Request) => {
   }
 
   const row = Array.isArray(data) ? data[0] : data;
+
+  // Keep notifications on the authoritative path. This ensures a rejected
+  // inquiry never generates an admin email, even when callers bypass the UI.
+  const accommodationLabels: Record<string, string> = {
+    bed_shared_room: 'Bed in a shared room', private_room: 'Private room',
+    private_suite: 'Private suite / studio', rv_van: 'RV / Van spot',
+    tent_camping: 'Tent / Camping', flexible: 'Flexible / Open to anything',
+  };
+  const emailData = {
+    name: `${firstName} ${String((person as any).last_name || '').trim()}`.trim(), email,
+    phone: String((person as any).phone || ''), dob: String((person as any).date_of_birth || ''),
+    accommodation: accommodationLabels[String((person as any).preferred_accommodation || '')] || String((person as any).preferred_accommodation || ''),
+    timeframe: String((person as any).desired_timeframe || ''),
+    volunteer: String((person as any).volunteer_interest || 'Not specified'),
+    referral: String((person as any).referral_source || ''),
+    coliving_experience: String((person as any).coliving_experience || ''),
+    life_focus: String((person as any).life_focus || ''),
+    visiting_guide: String((person as any).visiting_guide_response || ''),
+    photo_url: String((person as any).photo_url || ''),
+  };
+  const sendEmail = (type: string, to: string[], data: Record<string, unknown>) => fetch(
+    `${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${supabaseServiceKey}`, apikey: supabaseServiceKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, to, data }),
+    },
+  );
+  try {
+    const [adminResult, confirmationResult] = await Promise.all([
+      sendEmail('community_fit_inquiry', ['team@alpacaplayhouse.com'], emailData),
+      sendEmail('community_fit_confirmation', [email], { name: firstName, accommodation: emailData.accommodation, timeframe: emailData.timeframe }),
+    ]);
+    if (!adminResult.ok || !confirmationResult.ok) console.error('Inquiry email notification failed', { admin: adminResult.status, confirmation: confirmationResult.status });
+  } catch (error) {
+    // The already-saved application remains successful if email is transiently unavailable.
+    console.error('Inquiry email notification error:', error);
+  }
+
   return jsonOk({
     success: true,
     person_id: row.person_id,
