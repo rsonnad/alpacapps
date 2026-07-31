@@ -1,12 +1,12 @@
 {
-  "version": "v260731.01 6:47a",
-  "release": 1758,
-  "sha": "9cd611aefe",
-  "fullSha": "9cd611aefe03c3ad5d6cbea9626cf396bd6cc7e5",
+  "version": "v260731.02 8:01a",
+  "release": 1759,
+  "sha": "688d99a8f7",
+  "fullSha": "688d99a8f7bb9d8083f2202a3cd9af0801d2f7ce",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmvrwv9",
-  "pushedAt": "2026-07-31T11:47:10+00:00",
-  "commits": [{"sha":"9cd611aefe","message":"feat(rentals): screen gibberish inquiries","author":"Rahul"}]
+  "pushedAt": "2026-07-31T13:01:45+00:00",
+  "commits": [{"sha":"688d99a8f7","message":"chore(ai): use DeepSeek V4 Flash via OpenRouter","author":"Rahul"}]
 }
