@@ -23,6 +23,15 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 - **Source transparency.** Footnotes, disclaimers, and direct source links can sit in the artifact itself, which is important for public-facing explainers that mix a speaker's claims with current-source corrections.
 - **Low operational risk.** These pages do not touch resident, payment, device-control, or admin workflows.
 
+### 2.0.1 Rahulio AI Import Bridges Adapt Existing APIs
+
+**Decision:** Rahulio AI helper endpoints should act as narrow adapters around existing systems instead of changing the source APIs. The song lyrics endpoint exposes clean read-only phrase data, while the add-phrases bridge translates limited-client requests into the existing LangBang Agent API with `atomic:true`.
+
+**Why:**
+- **Stable source of truth.** Capable clients can keep using LangBang's authenticated `/v1/agent/phrases` endpoint directly, so the Worker does not fork content behavior or language-pair rules.
+- **Limited-client compatibility.** Tools that cannot securely manage the LangBang agent token can call a simpler Rahulio route while the Worker injects the secret server-side.
+- **Small blast radius.** The Worker only handles Rahulio song/phrase import needs and can be secured, rate-limited, or removed without changing LangBangML.
+
 ### 2.1 No Framework, No Build Step
 
 **Decision:** Vanilla HTML/CSS/JavaScript. No React, Vue, or Angular. No webpack, vite, or bundler.
@@ -57,6 +66,12 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 - **Version tracking provides rollback context.** Every push is recorded in `release_events` with SHA, actor, and timestamp. `git revert` is always available.
 
 **Tradeoff accepted:** A bad push goes live immediately. Mitigated by: small blast radius (one property), fast revert capability, and error logging that catches runtime issues.
+
+### 2.3.1 Web and Mobile Image Delivery Cap
+
+**Decision:** New generated and uploaded photos are capped at a 1440 px longest edge and JPEG quality 82 before storage and delivery.
+
+**Why:** The product displays these images only in web and mobile interfaces, where larger source files do not create a visible benefit but increase storage, transfer time, and the risk of crossing provider quotas. Original migration archives remain on PortoSams when recovery-quality sources are needed.
 
 ---
 
@@ -565,6 +580,12 @@ Each external service was chosen for specific reasons. This section documents wh
 **Decision:** Rahulio personal pages default to public access when no `page_access_settings` row exists, and permanent indexed pages should use `initPublicPage()` instead of the mutable personal-page privacy shell. Public SEO pointers are audited against the static pages index, sitemap, robots tags, and live access rows before deploy.
 
 **Why:** A public article can be valid static HTML, listed in the sitemap, and still be covered by the client-side access overlay if a live privacy row is accidentally set to private. Public-by-default behavior matches the intended publishing model, while explicit private rows still protect pages that need restricted access.
+
+### 2026-06-11: Rahulio Song Lyrics API Uses a Narrow Cloudflare Worker
+
+**Decision:** Serve machine-readable Rahulio song lyrics from a small Cloudflare Worker route at `/rahulio/api/song`, with hardcoded song data and `json`, `txt`, and `lines` formats. Keep the public song pages on GitHub Pages.
+
+**Why:** The HTML song pages intentionally mix chords and lyrics for humans, which makes AI agents scrape brittle markup. A narrow Worker route gives agents clean phrase-level lyrics without adding a database, altering the static page publishing flow, or proxying the whole site through application code.
 
 ### 2026-05-15: Music Automations Use Music Assistant with Sonos/Home Assistant Fallback
 

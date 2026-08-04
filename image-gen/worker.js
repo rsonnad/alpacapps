@@ -19,6 +19,8 @@ const GEMINI_DELAY_MS = parseInt(process.env.GEMINI_DELAY_MS || '3000');
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-image';
 const STORAGE_BUCKET = 'housephotos';
 const STORAGE_PREFIX = 'ai-gen';
+const WEB_IMAGE_MAX_DIMENSION = 1440;
+const WEB_IMAGE_JPEG_QUALITY = 82;
 
 // Pricing constants (per 1M tokens)
 const INPUT_PRICE_PER_M = 0.30;
@@ -107,15 +109,15 @@ async function generateImage(prompt, sourceBase64 = null, sourceMimeType = null)
 }
 
 // ============================================
-// Compress image (PNG/WebP → JPEG, max 1920px)
+// Compress image (PNG/WebP → JPEG, max 1440px)
 // ============================================
 async function compressImage(base64Data, mimeType) {
   const originalBuffer = Buffer.from(base64Data, 'base64');
   const originalSize = originalBuffer.length;
 
   const compressed = sharp(originalBuffer)
-    .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
-    .jpeg({ quality: 85 });
+    .resize(WEB_IMAGE_MAX_DIMENSION, WEB_IMAGE_MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: WEB_IMAGE_JPEG_QUALITY });
 
   const compressedBuffer = await compressed.toBuffer();
   const metadata = await sharp(compressedBuffer).metadata();

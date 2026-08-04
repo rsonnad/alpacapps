@@ -22,6 +22,13 @@ const STORAGE_URL = PROJECT_ID
   : SUPABASE_URL;
 
 const CONFIG = {
+  // Web/mobile delivery cap for all newly uploaded photos.
+  webImage: {
+    maxDimension: 1440,
+    quality: 0.82,
+    compressAboveBytes: 350 * 1024,
+  },
+
   // Storage limits
   supabaseMaxBytes: 1 * 1024 * 1024 * 1024, // 1GB
   warningThreshold: 0.8, // Warn at 80% usage
@@ -760,22 +767,33 @@ async function uploadInternal(file, options = {}) {
     let fileToUpload = file;
     let finalMimeType = file.type;
 
-    // Only compress if it's a compressible image type and larger than 500KB
+    // Always downscale oversized web/mobile photos, even if they are already
+    // small on disk. Otherwise compress only when the payload is material.
     const compressibleTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (compressibleTypes.includes(file.type) && file.size > 500 * 1024) {
+    let sourceDimensions = null;
+    try {
+      sourceDimensions = await getImageDimensions(file, 10000);
+    } catch (dimensionError) {
+      console.warn('[upload] Could not inspect image dimensions before compression:', dimensionError.message);
+    }
+    const exceedsWebDimension = sourceDimensions && (
+      sourceDimensions.width > CONFIG.webImage.maxDimension ||
+      sourceDimensions.height > CONFIG.webImage.maxDimension
+    );
+    if (compressibleTypes.includes(file.type) && (exceedsWebDimension || file.size > CONFIG.webImage.compressAboveBytes)) {
       try {
         console.log(`[upload] Compressing image: ${file.name} (${formatBytes(file.size)})`);
         const compressedBlob = await compressImage(file, {
-          maxWidth: 1920,
-          maxHeight: 1920,
-          quality: 0.85,
+          maxWidth: CONFIG.webImage.maxDimension,
+          maxHeight: CONFIG.webImage.maxDimension,
+          quality: CONFIG.webImage.quality,
           timeout: 30000,
         });
 
         // Validate compression output
         if (!compressedBlob || compressedBlob.size === 0) {
           console.warn('[upload] Compression produced empty output, using original');
-        } else if (compressedBlob.size >= file.size) {
+        } else if (compressedBlob.size >= file.size && !exceedsWebDimension) {
           console.log('[upload] Compression did not reduce size, using original');
         } else {
           fileToUpload = compressedBlob;
@@ -955,7 +973,7 @@ async function uploadInternal(file, options = {}) {
     let width = null;
     let height = null;
     try {
-      const dimensions = await getImageDimensions(file, 10000);
+      const dimensions = await getImageDimensions(fileToUpload, 10000);
       width = dimensions.width;
       height = dimensions.height;
     } catch (e) {
@@ -1824,15 +1842,15 @@ function getImageDimensions(file, timeout = 10000) {
  * Compress an image file
  * @param {File} file - The image file to compress
  * @param {Object} options - Compression options
- * @param {number} options.maxWidth - Maximum width (default 1920)
- * @param {number} options.maxHeight - Maximum height (default 1920)
+ * @param {number} options.maxWidth - Maximum width (default 1440)
+ * @param {number} options.maxHeight - Maximum height (default 1440)
  * @param {number} options.quality - JPEG quality 0-1 (default 0.8)
  * @returns {Promise<Blob>} - Compressed image as Blob
  */
 async function compressImage(file, options = {}) {
   const {
-    maxWidth = 1920,
-    maxHeight = 1920,
+    maxWidth = 1440,
+    maxHeight = 1440,
     quality = 0.8,
     timeout = 30000, // 30 second timeout
   } = options;
