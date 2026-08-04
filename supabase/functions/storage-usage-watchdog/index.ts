@@ -7,7 +7,6 @@
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const FREE_STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024;
 const ALERT_THRESHOLD = 0.8;
@@ -25,22 +24,45 @@ serve(async (request) => {
     return new Response(JSON.stringify({ ok: false, error: "Required storage-watchdog secrets are missing" }), { status: 500 });
   }
 
-  const supabase = createClient(supabaseUrl, serviceRoleKey);
-  const { data: objects, error } = await supabase
-    .schema("storage")
-    .from("objects")
-    .select("bucket_id, metadata");
-  if (error) {
-    console.error("Unable to inspect storage usage:", error);
-    return new Response(JSON.stringify({ ok: false, error: error.message }), { status: 500 });
-  }
-
   const byBucket: Record<string, number> = {};
   let totalBytes = 0;
-  for (const object of objects || []) {
-    const bytes = Number(object.metadata?.size || 0);
-    totalBytes += bytes;
-    byBucket[object.bucket_id] = (byBucket[object.bucket_id] || 0) + bytes;
+
+  const storageHeaders = { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, "Content-Type": "application/json" };
+  const bucketsResponse = await fetch(`${supabaseUrl}/storage/v1/bucket`, { headers: storageHeaders });
+  if (!bucketsResponse.ok) {
+    return new Response(JSON.stringify({ ok: false, error: `Unable to list buckets: ${bucketsResponse.status}` }), { status: 502 });
+  }
+  const buckets: { id: string }[] = await bucketsResponse.json();
+
+  async function countPrefix(bucketId: string, prefix = ""): Promise<number> {
+    let bytes = 0;
+    for (let offset = 0; ; offset += 1000) {
+      const response = await fetch(`${supabaseUrl}/storage/v1/object/list/${bucketId}`, {
+        method: "POST",
+        headers: storageHeaders,
+        body: JSON.stringify({ prefix, limit: 1000, offset, sortBy: { column: "name", order: "asc" } }),
+      });
+      if (!response.ok) throw new Error(`Unable to list ${bucketId}/${prefix}: ${response.status}`);
+      const entries: { name: string; id: string | null; metadata?: { size?: number } }[] = await response.json();
+      for (const entry of entries) {
+        if (entry.id) {
+          bytes += Number(entry.metadata?.size || 0);
+        } else {
+          bytes += await countPrefix(bucketId, prefix ? `${prefix}/${entry.name}` : entry.name);
+        }
+      }
+      if (entries.length < 1000) return bytes;
+    }
+  }
+
+  try {
+    for (const bucket of buckets) {
+      byBucket[bucket.id] = await countPrefix(bucket.id);
+      totalBytes += byBucket[bucket.id];
+    }
+  } catch (error) {
+    console.error("Unable to inspect storage usage:", error);
+    return new Response(JSON.stringify({ ok: false, error: (error as Error).message }), { status: 502 });
   }
 
   const percentUsed = totalBytes / FREE_STORAGE_LIMIT_BYTES;
