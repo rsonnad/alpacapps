@@ -1,12 +1,12 @@
 {
-  "version": "v260804.01 11:52a",
-  "release": 1760,
-  "sha": "00547a3bfb",
-  "fullSha": "00547a3bfb2b9f3da01aa656517ad304853e1ab5",
+  "version": "v260804.02 11:55a",
+  "release": 1761,
+  "sha": "59302c8616",
+  "fullSha": "59302c861637c0e28ebe398728e2ed8043256695",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmvrwv9",
-  "pushedAt": "2026-08-04T16:52:48+00:00",
-  "commits": [{"sha":"ecb0533c5f","message":"fix(media): cap new web images at 1440px","author":"Rahul"},{"sha":"00547a3bfb","message":"feat(storage): add weekly free-tier watchdog","author":"Rahul"}]
+  "pushedAt": "2026-08-04T16:55:32+00:00",
+  "commits": [{"sha":"59302c8616","message":"fix(storage): query usage through storage API","author":"Rahul"}]
 }
