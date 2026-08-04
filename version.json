@@ -1,12 +1,12 @@
 {
-  "version": "v260731.02 8:01a",
-  "release": 1759,
-  "sha": "688d99a8f7",
-  "fullSha": "688d99a8f7bb9d8083f2202a3cd9af0801d2f7ce",
+  "version": "v260804.01 11:52a",
+  "release": 1760,
+  "sha": "00547a3bfb",
+  "fullSha": "00547a3bfb2b9f3da01aa656517ad304853e1ab5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmvrwv9",
-  "pushedAt": "2026-07-31T13:01:45+00:00",
-  "commits": [{"sha":"688d99a8f7","message":"chore(ai): use DeepSeek V4 Flash via OpenRouter","author":"Rahul"}]
+  "pushedAt": "2026-08-04T16:52:48+00:00",
+  "commits": [{"sha":"ecb0533c5f","message":"fix(media): cap new web images at 1440px","author":"Rahul"},{"sha":"00547a3bfb","message":"feat(storage): add weekly free-tier watchdog","author":"Rahul"}]
 }
