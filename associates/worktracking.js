@@ -587,19 +587,63 @@ async function refreshToday() {
 // =============================================
 // PHOTOS
 // =============================================
+const todayInAustin = getAustinTodayISO;
+
+// The date photos are filed under — defaults to today, but associates can
+// backdate uploads for days the site/app wasn't reachable.
+function getPhotoWorkDate() {
+  const input = document.getElementById('photoWorkDate');
+  const today = todayInAustin();
+  const value = input?.value;
+  if (!value || value > today) return today;
+  return value;
+}
+
+function isBackdatedPhotoDate() {
+  return getPhotoWorkDate() !== todayInAustin();
+}
+
+function initPhotoDatePicker() {
+  const input = document.getElementById('photoWorkDate');
+  if (!input) return;
+  const today = todayInAustin();
+  input.max = today;
+  if (!input.value) input.value = today;
+
+  const syncNote = () => {
+    const backdated = isBackdatedPhotoDate();
+    document.getElementById('photoDateNote').style.display = backdated ? '' : 'none';
+    document.getElementById('btnPhotoDateToday').style.display = backdated ? '' : 'none';
+  };
+
+  input.addEventListener('change', () => {
+    if (input.value > today) input.value = today;
+    syncNote();
+    refreshTodayPhotos();
+  });
+
+  document.getElementById('btnPhotoDateToday').addEventListener('click', () => {
+    input.value = today;
+    syncNote();
+    refreshTodayPhotos();
+  });
+
+  syncNote();
+}
+
 async function refreshTodayPhotos() {
   try {
-    // work_date is written in Austin time (handlePhotoUpload uses
-    // toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })). Read it back
-    // with the SAME Austin date — a UTC date here returns zero rows for any
-    // photo uploaded between 7pm and midnight Austin (after UTC midnight),
-    // which silently wipes the grid even though the upload succeeded.
-    const today = getAustinTodayISO();
-    const photos = await hoursService.getPhotosForDate(profile.id, today);
+    // work_date is written in Austin time, so read it back with an Austin date —
+    // a UTC date here returns zero rows for any photo uploaded between 7pm and
+    // midnight Austin (after UTC midnight), silently wiping the grid.
+    // getPhotoWorkDate() defaults to the Austin today and honors the date picker.
+    const photos = await hoursService.getPhotosForDate(profile.id, getPhotoWorkDate());
     const grid = document.getElementById('todayPhotos');
 
     if (!photos.length) {
-      grid.innerHTML = '';
+      grid.innerHTML = isBackdatedPhotoDate()
+        ? `<p style="color:var(--text-muted);font-size:0.85rem;">No photos for ${getPhotoWorkDate()} yet.</p>`
+        : '';
       return;
     }
 
@@ -772,12 +816,12 @@ async function handlePhotoUpload(file) {
     await hoursService.createWorkPhoto({
       associateId: profile.id,
       mediaId: result.media.id,
-      timeEntryId: activeEntry?.id || null,
+      timeEntryId: isBackdatedPhotoDate() ? null : (activeEntry?.id || null),
       photoType: selectedPhotoType,
-      workDate: new Date().toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })
+      workDate: getPhotoWorkDate()
     });
 
-    showToast('Photo uploaded!', 'success');
+    showToast(isBackdatedPhotoDate() ? `Photo uploaded for ${getPhotoWorkDate()}` : 'Photo uploaded!', 'success');
     await refreshTodayPhotos();
     await refreshAfterPhotoWarning();
   } catch (err) {
@@ -857,12 +901,12 @@ async function handleFileUpload(file) {
     await hoursService.createWorkPhoto({
       associateId: profile.id,
       mediaId: mediaRecord.id,
-      timeEntryId: activeEntry?.id || null,
+      timeEntryId: isBackdatedPhotoDate() ? null : (activeEntry?.id || null),
       photoType: selectedPhotoType,
-      workDate: new Date().toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })
+      workDate: getPhotoWorkDate()
     });
 
-    showToast('File uploaded!', 'success');
+    showToast(isBackdatedPhotoDate() ? `File uploaded for ${getPhotoWorkDate()}` : 'File uploaded!', 'success');
     await refreshTodayPhotos();
   } catch (err) {
     showToast('Failed to upload file: ' + err.message, 'error');
@@ -1426,6 +1470,9 @@ function setupEventListeners() {
   document.getElementById('btnClockoutSkip').addEventListener('click', () => {
     handleClockOut(null);
   });
+
+  // Photo work-date picker (allows retroactive uploads)
+  initPhotoDatePicker();
 
   // Photo type selector
   document.querySelectorAll('[data-photo-type]').forEach(btn => {

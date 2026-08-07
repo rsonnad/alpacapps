@@ -84,6 +84,10 @@
     /* Photo Upload */
     .photo-section { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 0.75rem; }
     .photo-section h3 { margin: 0 0 0.75rem; font-size: 1rem; }
+    .photo-date-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .photo-date-row label { font-size: 0.8rem; color: var(--text-muted); }
+    .photo-date-row input { padding: 0.4rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; }
+    .photo-date-note { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
     .photo-type-selector { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
     .photo-type-selector button {
       flex: 1; padding: 0.4rem; border: 1px solid #d1d5db; border-radius: 6px;
@@ -726,6 +730,12 @@
             <button class="banner-dismiss" onclick="document.getElementById('afterPhotoBanner').style.display='none'">Got it</button>
           </div>
           <h3>Work Photos & Files</h3>
+          <div class="photo-date-row">
+            <label for="photoWorkDate">Work date</label>
+            <input type="date" id="photoWorkDate">
+            <button type="button" class="banner-dismiss" id="btnPhotoDateToday" style="display:none;">Back to today</button>
+            <span class="photo-date-note" id="photoDateNote" style="display:none;">Backdated upload</span>
+          </div>
           <div class="photo-type-selector">
             <button class="active" data-photo-type="before">Before</button>
             <button data-photo-type="progress">Progress</button>
