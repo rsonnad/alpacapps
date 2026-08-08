@@ -1,12 +1,12 @@
 {
-  "version": "v260807.01 10:18a",
-  "release": 1762,
-  "sha": "9bb323358f",
-  "fullSha": "9bb323358f6957780f37b50b456bb696da4f484f",
+  "version": "v260808.01 10:33a",
+  "release": 1763,
+  "sha": "cbc59fd5bd",
+  "fullSha": "cbc59fd5bddba95a7eecc9a085840cdce55da7f7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmvrwv9",
-  "pushedAt": "2026-08-07T15:18:51+00:00",
-  "commits": [{"sha":"9bb323358f","message":"Allow retroactive work photo uploads","author":"Paca"}]
+  "pushedAt": "2026-08-08T15:33:55+00:00",
+  "commits": [{"sha":"cbc59fd5bd","message":"fix(payments): align resident history and reminder flow","author":"Rahul"}]
 }
