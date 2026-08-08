@@ -711,11 +711,8 @@
     padding: 0.4rem 0.5rem;
   }
 
-  /* Hide less important columns on mobile */
-  .col-status,
-  .col-method {
-    display: none;
-  }
+  /* Status and payment method remain visible on mobile: they are needed to
+     verify a recorded payment before staff leave the page. */
 
   .preset-buttons {
     flex-wrap: wrap;

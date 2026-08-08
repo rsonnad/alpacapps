@@ -135,22 +135,62 @@ async function loadPayments(personId) {
   const appIds = (appRes.data || []).map(a => a.id);
   const assignIds = (assignRes.data || []).map(a => a.id);
 
-  if (!appIds.length && !assignIds.length) return [];
-
-  // Build OR filter for payments linked to this person's applications or assignments
+  // Build an OR filter for legacy rental_payment rows. Ledger is also queried
+  // directly by person because staff-recorded rent is written there.
   const filters = [];
   if (appIds.length) filters.push(`rental_application_id.in.(${appIds.join(',')})`);
   if (assignIds.length) filters.push(`assignment_id.in.(${assignIds.join(',')})`);
 
-  const { data, error } = await supabase
-    .from('rental_payments')
-    .select('*')
-    .or(filters.join(','))
-    .order('paid_date', { ascending: false })
-    .order('created_at', { ascending: false });
+  const rentalQuery = filters.length
+    ? supabase.from('rental_payments').select('*').or(filters.join(',')).order('paid_date', { ascending: false }).order('created_at', { ascending: false })
+    : Promise.resolve({ data: [], error: null });
+  const ledgerQuery = supabase
+    .from('ledger')
+    .select('id, amount, transaction_date, created_at, category, payment_method, status, description, period_start, period_end, source_payment_id')
+    .eq('person_id', personId)
+    .in('category', ['rent', 'prorated_rent', 'security_deposit', 'move_in_deposit', 'reservation_deposit', 'application_fee', 'late_fee'])
+    .neq('status', 'voided')
+    .eq('is_test', false)
+    .order('transaction_date', { ascending: false });
 
-  if (error) throw error;
-  return data || [];
+  const [rentalResult, ledgerResult] = await Promise.all([rentalQuery, ledgerQuery]);
+  if (rentalResult.error) throw rentalResult.error;
+  if (ledgerResult.error) throw ledgerResult.error;
+
+  const ledgerRows = (ledgerResult.data || []).map(row => ({
+    ...row,
+    _source: 'ledger',
+    _date: row.transaction_date || row.created_at,
+    _amount: Number(row.amount || 0),
+    _type: row.category,
+    _method: row.payment_method,
+    _status: row.status || 'completed',
+    _period: row.period_start && row.period_end ? `${row.period_start} to ${row.period_end}` : row.period_start || '',
+  }));
+  const ledgerSourceIds = new Set(ledgerRows.map(row => row.source_payment_id).filter(Boolean));
+  const rentalRows = (rentalResult.data || [])
+    .map(row => ({
+      ...row,
+      _source: 'rental_payment',
+      _date: row.paid_date || row.created_at,
+      _amount: Number(row.amount_paid || row.amount_due || 0),
+      _type: row.payment_type,
+      _method: row.payment_method,
+      _status: row.status || 'completed',
+      _period: row.period_start && row.period_end ? `${row.period_start} to ${row.period_end}` : row.period_start || '',
+    }))
+    .filter(row => !ledgerSourceIds.has(row.id))
+    .filter(row => !ledgerRows.some(ledger => {
+      if (Math.abs(ledger._amount - row._amount) >= 0.01) return false;
+      const sameMethod = ledger._method && row._method && ledger._method === row._method;
+      const samePeriod = ledger._period && row._period && ledger._period === row._period;
+      const sameDate = String(ledger._date || '').slice(0, 10) === String(row._date || '').slice(0, 10);
+      // A linked row is canonical. For legacy unlinked rows, only suppress an
+      // exact amount plus matching service period or same-day/method duplicate.
+      return samePeriod || (sameDate && sameMethod);
+    }));
+
+  return [...ledgerRows, ...rentalRows].sort((a, b) => new Date(b._date || 0) - new Date(a._date || 0));
 }
 
 async function loadAssignments(personId) {
@@ -198,7 +238,11 @@ function renderSummary(payments, assignments, vehicles) {
   const el = document.getElementById('bookkeepingSummary');
   if (!el) return;
 
-  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount_paid || 0), 0);
+  const recordedPayments = payments.filter(payment => ['completed', 'partial'].includes(String(payment._status || payment.status || '').toLowerCase()));
+  const totalPaid = recordedPayments.reduce((sum, p) => sum + Number(p._amount ?? p.amount_paid ?? 0), 0);
+  const lastPayment = recordedPayments[0];
+  const activeRate = assignments.find(a => a.status === 'active' && Number(a.monthly_rent || a.rate_amount || 0) > 0)
+    || assignments.find(a => Number(a.monthly_rent || a.rate_amount || 0) > 0);
   const rentedSpaces = new Set();
   for (const assignment of assignments) {
     for (const relation of assignment.assignment_spaces || []) {
@@ -208,20 +252,20 @@ function renderSummary(payments, assignments, vehicles) {
 
   el.innerHTML = `
     <div class="bookkeeping-stat-card">
-      <span class="bookkeeping-stat-label">Total Paid</span>
+      <span class="bookkeeping-stat-label">Recorded Total</span>
       <span class="bookkeeping-stat-value">${formatCurrency(totalPaid)}</span>
     </div>
     <div class="bookkeeping-stat-card">
-      <span class="bookkeeping-stat-label">Payments Recorded</span>
-      <span class="bookkeeping-stat-value">${payments.length}</span>
+      <span class="bookkeeping-stat-label">Last Payment</span>
+      <span class="bookkeeping-stat-value">${lastPayment ? formatCurrency(lastPayment._amount ?? lastPayment.amount_paid) : '—'}</span>
     </div>
     <div class="bookkeeping-stat-card">
       <span class="bookkeeping-stat-label">Spaces Assigned</span>
       <span class="bookkeeping-stat-value">${rentedSpaces.size}</span>
     </div>
     <div class="bookkeeping-stat-card">
-      <span class="bookkeeping-stat-label">Owned Vehicles</span>
-      <span class="bookkeeping-stat-value">${vehicles.length}</span>
+      <span class="bookkeeping-stat-label">Active Rent</span>
+      <span class="bookkeeping-stat-value">${activeRate ? `${formatCurrency(activeRate.monthly_rent || activeRate.rate_amount)}/${escapeHtml(activeRate.rate_term || 'month')}` : '—'}</span>
     </div>
   `;
 }
@@ -240,7 +284,7 @@ function renderPayments(payments) {
         <thead>
           <tr>
             <th>Date</th>
-            <th>Type</th>
+            <th>Type / Period</th>
             <th>Method</th>
             <th>Amount</th>
             <th>Status</th>
@@ -249,11 +293,11 @@ function renderPayments(payments) {
         <tbody>
           ${payments.map(payment => `
             <tr>
-              <td>${formatDate(payment.paid_date || payment.created_at)}</td>
-              <td>${toTitleCase(payment.payment_type)}</td>
-              <td>${toTitleCase(payment.payment_method)}</td>
-              <td>${formatCurrency(payment.amount_paid || payment.amount_due || 0)}</td>
-              <td>${toTitleCase(payment.status || 'completed')}</td>
+              <td>${formatDate(payment._date || payment.paid_date || payment.created_at)}</td>
+              <td>${toTitleCase(payment._type || payment.payment_type)}${payment._period ? `<div class="bookkeeping-item-meta">${escapeHtml(payment._period)}</div>` : ''}</td>
+              <td>${toTitleCase(payment._method || payment.payment_method)}</td>
+              <td>${formatCurrency(payment._amount ?? payment.amount_paid ?? payment.amount_due ?? 0)}</td>
+              <td>${toTitleCase(payment._status || payment.status || 'completed')}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -287,7 +331,7 @@ function renderOwnedAssets(assignments, vehicles) {
           <div class="bookkeeping-item-meta">${escapeHtml([v.year, v.vehicle_make, v.vehicle_model].filter(Boolean).join(' ')) || 'Vehicle'}</div>
         </div>
         <div class="bookkeeping-item-right">
-          <span class="bookkeeping-chip">Driver</span>
+          <span class="bookkeeping-chip">Linked driver</span>
         </div>
       </div>
     `).join('')
@@ -301,7 +345,7 @@ function renderOwnedAssets(assignments, vehicles) {
           <div class="bookkeeping-item-meta">${toTitleCase(space.type)} space</div>
         </div>
         <div class="bookkeeping-item-right">
-          <span class="bookkeeping-chip">${toTitleCase(space.assignmentStatus)}</span>
+          <span class="bookkeeping-chip">Assigned · ${toTitleCase(space.assignmentStatus)}</span>
           <span class="bookkeeping-item-meta">${formatCurrency(space.monthlyRate || 0)}/mo</span>
         </div>
       </div>
@@ -314,7 +358,7 @@ function renderOwnedAssets(assignments, vehicles) {
       ${rentedSpacesHtml}
     </div>
     <div class="bookkeeping-subsection">
-      <h3>Owned Vehicles</h3>
+      <h3>Linked Vehicles</h3>
       ${ownedVehiclesHtml}
     </div>
   `;
@@ -396,7 +440,7 @@ function toTitleCase(value) {
 
 function formatDate(value) {
   if (!value) return 'N/A';
-  const date = new Date(value);
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? `${value}T12:00:00` : value);
   if (Number.isNaN(date.getTime())) return 'N/A';
   return date.toLocaleDateString();
 }

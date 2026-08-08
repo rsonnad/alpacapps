@@ -150,22 +150,24 @@
               <label>Method</label>
               <select id="filterMethod" class="filter-input">
                 <option value="">All Methods</option>
-                <option value="paypal">PayPal</option>
-                <option value="square">Square</option>
-                <option value="stripe">Stripe</option>
-                <option value="venmo">Venmo</option>
-                <option value="zelle">Zelle</option>
-                <option value="bank_ach">Bank/ACH</option>
                 <option value="cash">Cash</option>
                 <option value="check">Check</option>
+                <option value="zelle">Zelle</option>
+                <option value="venmo">Venmo</option>
+                <option value="cashapp">Cash App</option>
+                <option value="bank_ach">Bank/ACH</option>
+                <option value="paypal">PayPal</option>
+                <option value="square">Square</option>
                 <option value="stripe">Stripe</option>
                 <option value="other">Other</option>
               </select>
             </div>
-            <div class="filter-group" id="filterReconciledGroup" style="display:none">
+            <div class="filter-group" id="filterReconciledGroup">
               <label>Reconciled</label>
               <select id="filterReconciled" class="filter-input">
                 <option value="">All</option>
+                <option value="yes">Reconciled</option>
+                <option value="no">Not reconciled</option>
               </select>
             </div>
             <div class="filter-group filter-search">
@@ -312,14 +314,14 @@
             <div class="form-group">
               <label for="txMethod">Payment Method</label>
               <select id="txMethod" required>
-                <option value="paypal">PayPal (Preferred)</option>
-                <option value="square">Square</option>
-                <option value="stripe">Stripe</option>
-                <option value="venmo">Venmo</option>
-                <option value="zelle">Zelle</option>
-                <option value="bank_ach">Bank/ACH</option>
                 <option value="cash">Cash</option>
                 <option value="check">Check</option>
+                <option value="zelle">Zelle</option>
+                <option value="venmo">Venmo</option>
+                <option value="cashapp">Cash App</option>
+                <option value="bank_ach">Bank/ACH</option>
+                <option value="paypal">PayPal</option>
+                <option value="square">Square</option>
                 <option value="stripe">Stripe</option>
                 <option value="other">Other</option>
               </select>

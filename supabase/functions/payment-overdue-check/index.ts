@@ -218,7 +218,16 @@ function buildPaymentMethodCardsHtml(
     check: { bg: '#f5f5f5', border: '#555555' },
   };
 
-  return methods.map(m => {
+  // Keep no-fee/manual options ahead of paid online processors even when the
+  // database display order is stale or has been edited out of sequence.
+  const paidOnlineMethods = new Set(['paypal', 'square', 'stripe']);
+  const orderedMethods = [...methods].sort((a, b) => {
+    const aPaid = paidOnlineMethods.has(a.method_type) ? 1 : 0;
+    const bPaid = paidOnlineMethods.has(b.method_type) ? 1 : 0;
+    return aPaid - bPaid;
+  });
+
+  return orderedMethods.map(m => {
     const style = METHOD_STYLES[m.method_type] || { bg: '#f5f5f5', border: '#888' };
     const id = m.account_identifier || '';
     const instr = (m.instructions || '').split('\n').filter(Boolean);
@@ -428,22 +437,6 @@ Deno.serve(async (req) => {
         rate_amount: effectiveRate,
       });
 
-      // Check if a refund/credit has been issued for this assignment (account settled)
-      const { data: refunds } = await supabase
-        .from('ledger')
-        .select('id')
-        .eq('category', 'refund')
-        .eq('status', 'completed')
-        .eq('is_test', false)
-        .or(`assignment_id.eq.${assignment.id},person_id.eq.${person.id}`)
-        .limit(1);
-
-      const hasRefund = refunds && refunds.length > 0;
-      if (hasRefund) {
-        console.log(`Skipping overdue check for ${person.email}: refund found on assignment ${assignment.id}`);
-        continue;
-      }
-
       // For each due date, check if paid
       for (const due of dueDates) {
         const dueD = new Date(due.dueDate + 'T12:00:00');
@@ -547,14 +540,14 @@ Deno.serve(async (req) => {
       if (daysOverdue < 1) continue;
 
       const feeTypes = [
-        { type: 'event_rental_fee', paid: event.rental_fee_paid, amount: parseFloat(event.rental_fee ?? 295), label: 'Rental Fee' },
-        { type: 'event_cleaning_deposit', paid: event.cleaning_deposit_paid, amount: parseFloat(event.cleaning_deposit ?? 195), label: 'Cleaning Deposit' },
-        { type: 'event_reservation_fee', paid: event.reservation_fee_paid, amount: parseFloat(event.reservation_fee ?? 500), label: 'Reservation Fee' },
+        { type: 'event_rental_fee', paid: event.rental_fee_paid, amount: event.rental_fee == null ? 0 : parseFloat(event.rental_fee), label: 'Rental Fee' },
+        { type: 'event_cleaning_deposit', paid: event.cleaning_deposit_paid, amount: event.cleaning_deposit == null ? 0 : parseFloat(event.cleaning_deposit), label: 'Cleaning Deposit' },
+        { type: 'event_reservation_fee', paid: event.reservation_fee_paid, amount: event.reservation_fee == null ? 0 : parseFloat(event.reservation_fee), label: 'Reservation Fee' },
       ];
 
       for (const fee of feeTypes) {
         if (fee.paid) continue;
-        if (fee.amount <= 0) continue;
+        if (!Number.isFinite(fee.amount) || fee.amount <= 0) continue;
         overdueItems.push({
           sourceType: fee.type,
           sourceId: event.id,
@@ -687,6 +680,7 @@ Deno.serve(async (req) => {
     // ========== E. Send payment reminders ==========
     let remindersSent = 0;
     let errors = 0;
+    let adminDigestSent = false;
     const adminPaymentDigest: OverdueItem[] = [];
     const adminContractDigest: OverdueItem[] = [];
 
@@ -756,7 +750,7 @@ Deno.serve(async (req) => {
         headerBg = '#1c1618';
         headerSubtext = 'Rent Payment Reminder';
         subject = `Rent Payment Due - ${formatCurrency(totalDue)} - ${first.personFirstName} - Alpaca Playhouse`;
-        introText = `This is a friendly reminder that you have <strong>${periodsCount} ${periodsCount === 1 ? 'week' : 'weeks'} of rent</strong> outstanding for the <strong>${spaceName}</strong>.`;
+        introText = `This is a friendly reminder that you have <strong>${periodsCount} ${periodsCount === 1 ? 'rent period' : 'rent periods'}</strong> outstanding for the <strong>${spaceName}</strong>.`;
       } else if (level === 2) {
         headerBg = '#1c1618';
         headerSubtext = 'Rent Payment Follow-Up';
@@ -786,7 +780,10 @@ Deno.serve(async (req) => {
       });
 
       const memoText = `${first.personFirstName} rent`;
-      const methodCardsHtml = buildPaymentMethodCardsHtml(paymentMethods || [], memoText);
+      // The card section is explicitly presented as no-fee/manual options.
+      // Paid processors belong behind the online CTA and must not inherit that label.
+      const freePaymentMethods = (paymentMethods || []).filter(method => !['paypal', 'square', 'stripe'].includes(method.method_type));
+      const methodCardsHtml = buildPaymentMethodCardsHtml(freePaymentMethods, memoText);
 
       const emailHtml = `
         <div style="max-width:600px;margin:0 auto;background:#faf9f6;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
@@ -815,7 +812,7 @@ Deno.serve(async (req) => {
               <span style="font-weight:800;color:#2a1f23;font-size:20px;">${formatCurrency(totalDue)}</span>
             </div>
 
-            ${(paymentMethods || []).length > 0 ? `
+            ${freePaymentMethods.length > 0 ? `
             <p style="color:#2a1f23;font-size:14px;font-weight:600;margin-bottom:12px;text-align:center;">Pay with no fees:</p>
             ${methodCardsHtml}
             ` : ''}
@@ -845,7 +842,7 @@ Deno.serve(async (req) => {
         </div>
       `;
 
-      const payMethodsText = (paymentMethods || []).map(pm => {
+      const payMethodsText = freePaymentMethods.map(pm => {
         let line = `- ${pm.name}`;
         if (pm.account_identifier) line += `: ${pm.account_identifier}`;
         if (pm.instructions) line += ` (${pm.instructions.split('\n')[0]})`;
@@ -1020,6 +1017,18 @@ Alpaca Playhouse`;
     // ========== G. Send admin digest ==========
     const allDigestItems = [...adminPaymentDigest, ...adminContractDigest];
     if (allDigestItems.length > 0) {
+      const { data: priorDigests, error: priorDigestsError } = await supabase
+        .from('payment_reminders')
+        .select('id')
+        .eq('source_type', 'admin_digest')
+        .eq('due_date', todayStr)
+        .eq('recipient_type', 'admin')
+        .eq('status', 'sent')
+        .limit(1);
+      if (priorDigestsError) console.warn('Could not check existing admin digest:', priorDigestsError);
+      if (priorDigests?.length) {
+        console.log(`Admin digest already sent for ${todayStr}; skipping duplicate.`);
+      } else {
       try {
         // Payment section
         const paymentSummaries = new Map<string, { name: string; items: OverdueItem[]; total: number }>();
@@ -1132,6 +1141,34 @@ Alpaca Playhouse`;
         }
         digestText += 'Reminders have been sent.';
 
+        // Claim the daily digest before sending it. The matching partial unique
+        // index makes an overlapping cron invocation lose the claim instead of
+        // sending a duplicate email.
+        const { data: digestClaim, error: digestClaimError } = await supabase
+          .from('payment_reminders')
+          .insert({
+            source_type: 'admin_digest',
+            source_id: null,
+            person_id: null,
+            period_label: `${allDigestItems.length} overdue items`,
+            amount_due: totalOverdue,
+            due_date: todayStr,
+            days_overdue: 0,
+            channel: 'email',
+            recipient: TEAM_EMAIL,
+            recipient_type: 'admin',
+            status: 'pending',
+            escalation_level: 0,
+            metadata: { payment_items: adminPaymentDigest.length, contract_items: adminContractDigest.length },
+          })
+          .select('id')
+          .single();
+
+        if (digestClaimError?.code === '23505') {
+          console.log(`Admin digest already claimed for ${todayStr}; skipping duplicate.`);
+        } else if (digestClaimError || !digestClaim) {
+          throw digestClaimError || new Error('Could not reserve admin digest');
+        } else {
         const adminEmailRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -1150,38 +1187,35 @@ Alpaca Playhouse`;
 
         if (adminEmailRes.ok) {
           const resendData = await adminEmailRes.json();
-          await supabase.from('payment_reminders').insert({
-            source_type: 'admin_digest',
-            source_id: null,
-            person_id: null,
-            period_label: `${allDigestItems.length} overdue items`,
-            amount_due: totalOverdue,
-            due_date: todayStr,
-            days_overdue: 0,
-            channel: 'email',
-            recipient: TEAM_EMAIL,
-            recipient_type: 'admin',
+          const { error: claimUpdateError } = await supabase.from('payment_reminders').update({
             status: 'sent',
-            escalation_level: 0,
             metadata: {
               resend_id: resendData.id,
               payment_items: adminPaymentDigest.length,
               contract_items: adminContractDigest.length,
             },
-          });
+          }).eq('id', digestClaim.id);
+          if (claimUpdateError) throw claimUpdateError;
+          adminDigestSent = true;
           console.log(`Admin digest sent to ${TEAM_EMAIL}`);
         } else {
           const errBody = await adminEmailRes.json();
           console.error('Failed to send admin digest:', errBody);
+          await supabase.from('payment_reminders').update({
+            status: 'failed',
+            error_message: JSON.stringify(errBody),
+          }).eq('id', digestClaim.id);
+        }
         }
       } catch (err) {
         console.error('Error sending admin digest:', err);
+      }
       }
     }
 
     // ========== H. Log API usage ==========
     const totalPersons = new Set([...personPaymentGroups.keys(), ...personContractGroups.keys()]).size;
-    const emailsSent = totalPersons + (allDigestItems.length > 0 ? 1 : 0);
+    const emailsSent = totalPersons + (adminDigestSent ? 1 : 0);
     if (emailsSent > 0) {
       await supabase.from('api_usage_log').insert({
         vendor: 'resend',

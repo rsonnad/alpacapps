@@ -141,6 +141,7 @@ function getFilters() {
   const direction = document.getElementById('filterDirection').value;
   const category = document.getElementById('filterCategory').value;
   const method = document.getElementById('filterMethod').value;
+  const reconciled = document.getElementById('filterReconciled').value;
   const search = document.getElementById('filterSearch').value.trim();
 
   if (dateFrom) filters.dateFrom = dateFrom;
@@ -148,6 +149,7 @@ function getFilters() {
   if (direction) filters.direction = direction;
   if (category) filters.category = category;
   if (method) filters.paymentMethod = method;
+  if (reconciled) filters.isReconciled = reconciled === 'yes';
   if (search) filters.search = search;
 
   const showTest = document.getElementById('filterShowTest')?.checked;
@@ -384,6 +386,7 @@ function renderTransactions() {
           <th style="text-align: right; width:90px">Amount</th>
           <th class="col-method" style="width:70px">Method</th>
           <th class="col-status" style="width:90px">Status</th>
+          <th class="col-reconciled" style="width:92px">Reconciled</th>
           <th style="width:90px">Actions</th>
         </tr>
       </thead>
@@ -404,6 +407,9 @@ function renderTransactions() {
       else if (action === 'void') handleVoid(id);
     });
   });
+  container.querySelectorAll('input[data-action="reconcile"]').forEach(input => {
+    input.addEventListener('change', () => handleReconcile(input.dataset.id, input.checked));
+  });
 }
 
 function renderTransactionRow(tx) {
@@ -413,7 +419,8 @@ function renderTransactionRow(tx) {
   const personNameRaw = tx.person_name || (tx.person ? `${tx.person.first_name} ${tx.person.last_name}` : '');
   const personName = isDemoUser() ? redactString(personNameRaw || '—', 'name') : (personNameRaw || '—');
   const description = tx.description || '';
-  const displayDesc = personName ? `${personName}${description ? ' — ' + description : ''}` : description || '—';
+  const period = tx.period_start ? ` · Period: ${formatDate(tx.period_start)}${tx.period_end ? `–${formatDate(tx.period_end)}` : ''}` : '';
+  const displayDesc = `${personName ? `${personName}${description ? ' — ' + description : ''}` : description || '—'}${period}`;
 
   const canRefund = tx.direction === 'income' && tx.payment_method === 'square' && tx.status === 'completed' && tx.square_payment_id && !isDemoUser();
 
@@ -425,12 +432,13 @@ function renderTransactionRow(tx) {
   return `
     <tr class="${rowClass}">
       <td style="white-space: nowrap;">${formatDate(tx.transaction_date)}</td>
-      <td><span class="direction-badge ${tx.direction}">${dirIcon}</span></td>
+      <td><span class="direction-badge ${tx.direction}" aria-label="${tx.direction === 'income' ? 'Income' : 'Expense'}">${dirIcon}</span></td>
       <td><span class="category-badge">${CATEGORY_LABELS[tx.category] || tx.category}</span>${testBadge}</td>
       <td class="col-description ${isDemoUser() ? 'demo-redacted' : ''}" title="${escapeHtml(displayDesc)}">${escapeHtml(displayDesc)}</td>
       <td style="text-align: right;" class="${amountClass} ${isDemoUser() ? 'demo-redacted' : ''}">${amountDisplay}</td>
       <td class="col-method"><span class="method-badge">${PAYMENT_METHOD_LABELS[tx.payment_method] || tx.payment_method || '—'}</span></td>
       <td class="col-status"><span class="tx-status-badge ${tx.status}">${tx.status}</span></td>
+      <td class="col-reconciled"><label class="reconciled-check"><input type="checkbox" data-action="reconcile" data-id="${tx.id}" ${tx.is_reconciled ? 'checked' : ''} ${tx.status === 'voided' ? 'disabled' : ''}> <span>${tx.is_reconciled ? 'Yes' : 'No'}</span></label></td>
       <td>
         <div class="tx-actions">
           ${canRefund ? `<button class="tx-action-btn refund" data-action="refund" data-id="${tx.id}">Refund</button>` : ''}
@@ -458,6 +466,7 @@ function setupEventListeners() {
   document.getElementById('filterDirection').addEventListener('change', loadData);
   document.getElementById('filterCategory').addEventListener('change', loadData);
   document.getElementById('filterMethod').addEventListener('change', loadData);
+  document.getElementById('filterReconciled').addEventListener('change', loadData);
   document.getElementById('filterShowTest').addEventListener('change', loadData);
 
   let searchTimeout;
@@ -509,6 +518,11 @@ function setupEventListeners() {
         modal.classList.add('hidden');
       }
     });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    document.querySelectorAll('.modal:not(.hidden)').forEach(modal => modal.classList.add('hidden'));
   });
 }
 
@@ -572,6 +586,7 @@ function openTransactionModal() {
   document.getElementById('txNotes').value = '';
   togglePeriodFields();
   document.getElementById('transactionModal').classList.remove('hidden');
+  document.getElementById('txAmount').focus();
 }
 
 function closeTransactionModal() {
@@ -579,6 +594,8 @@ function closeTransactionModal() {
 }
 
 async function saveTransaction() {
+  const saveButton = document.getElementById('saveTransactionBtn');
+  if (saveButton.disabled) return;
   const direction = document.getElementById('txDirection').value;
   const category = document.getElementById('txCategory').value;
   const amount = parseFloat(document.getElementById('txAmount').value);
@@ -599,6 +616,20 @@ async function saveTransaction() {
     showToast('Please select a date', 'error');
     return;
   }
+  if (RENT_CATEGORIES.includes(category) && (!periodStart || !periodEnd)) {
+    showToast('Please set the rent service period so accounting stays accurate', 'error');
+    return;
+  }
+  if (periodStart && periodEnd && periodEnd < periodStart) {
+    showToast('Period end must be on or after period start', 'error');
+    return;
+  }
+
+  const possibleDuplicate = transactions.some(tx =>
+    tx.person_id === personId && tx.category === category && tx.payment_method === paymentMethod &&
+    tx.transaction_date === transactionDate && Math.abs(Number(tx.amount || 0) - amount) < 0.01 && tx.status !== 'voided'
+  );
+  if (possibleDuplicate && !confirm('A matching transaction is already visible for this person, amount, date, category, and method. Record another one?')) return;
 
   // Get person name if selected
   let personName = null;
@@ -608,6 +639,8 @@ async function saveTransaction() {
   }
 
   try {
+    saveButton.disabled = true;
+    saveButton.textContent = 'Saving…';
     await accountingService.createTransaction({
       direction,
       category,
@@ -629,6 +662,9 @@ async function saveTransaction() {
   } catch (err) {
     console.error('Failed to save transaction:', err);
     showToast('Failed to save transaction', 'error');
+  } finally {
+    saveButton.disabled = false;
+    saveButton.textContent = 'Save';
   }
 }
 
@@ -724,15 +760,41 @@ async function handleProcessRefund() {
 // VOID
 // =============================================
 async function handleVoid(id) {
-  if (!confirm('Are you sure you want to void this transaction? This cannot be undone.')) return;
+  const reason = prompt('Why is this transaction being voided? This cannot be undone.');
+  if (reason === null) return;
+  if (!reason.trim()) {
+    showToast('Please enter a void reason for the audit trail', 'error');
+    return;
+  }
 
   try {
-    await accountingService.voidTransaction(id, 'Voided by admin');
+    await accountingService.voidTransaction(id, reason.trim());
     showToast('Transaction voided', 'success');
     await loadData();
   } catch (err) {
     console.error('Void failed:', err);
     showToast('Failed to void transaction', 'error');
+  }
+}
+
+async function handleReconcile(id, shouldReconcile) {
+  try {
+    if (shouldReconcile) {
+      const reference = prompt('Optional bank or QuickBooks reference:', '');
+      if (reference === null) {
+        await loadData();
+        return;
+      }
+      await accountingService.reconcileTransaction(id, reference.trim());
+    } else {
+      await accountingService.unreconcile(id);
+    }
+    showToast(shouldReconcile ? 'Transaction reconciled' : 'Transaction marked unreconciled', 'success');
+    await loadData();
+  } catch (err) {
+    console.error('Reconciliation update failed:', err);
+    showToast('Failed to update reconciliation', 'error');
+    await loadData();
   }
 }
 

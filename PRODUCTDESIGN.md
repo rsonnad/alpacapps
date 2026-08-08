@@ -158,6 +158,18 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 - **Tenant preference.** Most tenants already use Zelle for rent at other properties. Offering it as the primary method matches existing behavior.
 - **Auto-recording.** Zelle payments send confirmation emails to `alpacaplayhouse@gmail.com`. The inbound email webhook automatically detects these and creates ledger entries. This gives the convenience of automatic recording without payment processing fees.
 
+### 4.1.1 Ledger Is the Resident Payment Record
+
+**Decision:** The resident bookkeeping experience presents eligible, non-voided ledger entries together with legacy rental-payment records, preferring a ledger link when both represent the same payment.
+
+**Why:** Staff-recorded rent and associate accounting already use the ledger. Showing only the legacy rental-payment table made a resident's history look empty or incomplete even after staff had correctly recorded a payment. A unified, status-aware view keeps resident, staff, and reminder workflows aligned without inventing a balance from incomplete scheduling data.
+
+### 4.1.2 Refunds Do Not Silence Unrelated Rent Reminders
+
+**Decision:** A completed refund is not a blanket “account settled” signal. The overdue checker continues to evaluate each rent period against its recorded rent coverage, instead of suppressing all reminders for an assignment or person after any refund.
+
+**Why:** Refunds frequently concern deposits, overpayments, or prior periods. Treating any one of them as settlement for every current and future rent period hid genuine unpaid rent from both residents and staff.
+
 **Stripe is there for:** Tenants who prefer automated online payments, or for situations where manual payment isn't practical (deposits from out-of-state applicants, event payments from non-residents).
 
 ### 4.2 Transparent Fee Display

@@ -15,6 +15,7 @@ let recentPayouts = [];
 let stripeBalance = null;
 let payingAssociateId = null;
 let initialized = false;
+let manualMarkInFlight = false;
 
 // =============================================
 // INITIALIZATION
@@ -34,6 +35,7 @@ function setupEventListeners() {
   document.getElementById('payCancel').addEventListener('click', closePayModal);
   document.getElementById('payConfirm').addEventListener('click', confirmPay);
   document.getElementById('btnPayAll').addEventListener('click', payAll);
+  document.getElementById('btnRestoreHidden').addEventListener('click', restoreHiddenEntries);
   // Close modal on backdrop click
   document.getElementById('payModal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closePayModal();
@@ -179,7 +181,7 @@ function renderAssociateCards() {
     }
 
     row.innerHTML = `
-      <div class="pay-row-header">
+      <div class="pay-row-header" ${entries.length ? 'role="button" tabindex="0" aria-expanded="false" aria-label="Show unpaid entries"' : ''}>
         <div class="row-left">
           <h3>${name}</h3>
           <span class="connect-badge ${hasConnect ? 'connected' : 'not-connected'}">
@@ -219,8 +221,8 @@ function renderAssociateCards() {
           <td>$${amt.toFixed(2)}</td>
           <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${desc.replace(/"/g, '&quot;')}">${desc}</td>
           <td class="row-actions">
-            <button class="btn-icon btn-mark-paid-single" data-entry-id="${e.id}" title="Mark as paid (no Stripe)">&#10003;</button>
-            <button class="btn-icon btn-hide-entry" data-entry-id="${e.id}" title="Hide entry">&times;</button>
+            <button class="btn-icon btn-mark-paid-single" data-entry-id="${e.id}" title="Mark as paid (no Stripe)" aria-label="Mark entry as paid without Stripe">&#10003;</button>
+            <button class="btn-icon btn-hide-entry" data-entry-id="${e.id}" title="Hide entry" aria-label="Hide entry">&times;</button>
           </td>
         </tr>`;
       }
@@ -257,12 +259,20 @@ function renderAssociateCards() {
 
   // Wire up row expand/collapse
   grid.querySelectorAll('.pay-row-header').forEach(header => {
-    header.addEventListener('click', (e) => {
+    const toggle = (e) => {
       // Don't toggle if clicking a checkbox
-      if (e.target.tagName === 'INPUT') return;
+      if (e.target.closest('input, button')) return;
       const row = header.closest('.pay-row');
       if (row.querySelector('.pay-row-detail')) {
         row.classList.toggle('expanded');
+        header.setAttribute('aria-expanded', row.classList.contains('expanded') ? 'true' : 'false');
+      }
+    };
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle(e);
       }
     });
   });
@@ -270,6 +280,7 @@ function renderAssociateCards() {
   // Auto-expand rows with unpaid entries
   grid.querySelectorAll('.pay-row.has-unpaid').forEach(row => {
     row.classList.add('expanded');
+    row.querySelector('.pay-row-header')?.setAttribute('aria-expanded', 'true');
   });
 
   // Wire up pay buttons
@@ -522,6 +533,15 @@ async function payAll() {
     return;
   }
 
+  const rateMismatch = connectedAssocs.some(aid => {
+    const currentRate = Number(associates.find(a => a.id === aid)?.hourly_rate || 0);
+    return (unpaidByAssociate[aid] || []).some(entry => Math.abs(Number(entry.hourly_rate || 0) - currentRate) > 0.001);
+  });
+  if (rateMismatch) {
+    showToast('Pay All is paused because one or more entries use a different historical rate. Review and confirm each associate individually.', 'error');
+    return;
+  }
+
   // Calculate total
   let grandTotal = 0;
   const names = [];
@@ -603,24 +623,37 @@ function getSelectedEntryIds(assocId) {
 }
 
 async function markEntriesAsPaid(entryIds) {
-  if (!confirm(`Mark ${entryIds.length} entry/entries as paid (without sending a Stripe payment)?`)) return;
+  if (manualMarkInFlight) return;
+  const method = prompt('Record the payment method (for example: cash, check, Zelle, Venmo, or other). No Stripe transfer will be sent.', 'other');
+  if (method === null) return;
+  const normalizedMethod = method.trim().toLowerCase().replace(/\s+/g, '_');
+  const methodAliases = { cash_app: 'cashapp', bank: 'bank_ach', ach: 'bank_ach' };
+  const paymentMethod = methodAliases[normalizedMethod] || normalizedMethod || 'other';
+  const allowedMethods = new Set(['cash', 'check', 'zelle', 'venmo', 'cashapp', 'bank_ach', 'other']);
+  if (!allowedMethods.has(paymentMethod)) {
+    showToast('Use cash, check, Zelle, Venmo, Cash App, bank/ACH, or other', 'error');
+    return;
+  }
+  if (!confirm(`Mark ${entryIds.length} entry/entries as paid via ${paymentMethod.replace(/_/g, ' ')}? This records an accounting entry and does not send a Stripe payment.`)) return;
 
   try {
-    const { error } = await supabase
-      .from('time_entries')
-      .update({ is_paid: true, updated_at: new Date().toISOString() })
-      .in('id', entryIds);
-
-    if (error) throw error;
+    manualMarkInFlight = true;
+    await hoursService.markPaid(entryIds, {
+      paymentMethod,
+      notes: `Manual payment recorded by staff via ${paymentMethod.replace(/_/g, ' ')}.`,
+    });
     showToast(`${entryIds.length} entry/entries marked as paid`, 'success');
-    await loadAssociatesAndEntries();
+    await loadAll();
   } catch (err) {
     console.error('Mark paid error:', err);
     showToast(`Error: ${err.message}`, 'error');
+  } finally {
+    manualMarkInFlight = false;
   }
 }
 
 async function deleteEntries(entryIds) {
+  if (!confirm(`Hide ${entryIds.length} entry/entries from the unpaid queue? This does not delete them and they can be restored with “Restore Hidden Entries.”`)) return;
   try {
     const { error } = await supabase
       .from('time_entries')
@@ -632,6 +665,33 @@ async function deleteEntries(entryIds) {
     await loadAssociatesAndEntries();
   } catch (err) {
     console.error('Hide error:', err);
+    showToast(`Error: ${err.message}`, 'error');
+  }
+}
+
+async function restoreHiddenEntries() {
+  try {
+    const { data, error } = await supabase
+      .from('time_entries')
+      .select('id, associate:associate_id(app_user:app_user_id(display_name))')
+      .eq('is_hidden', true)
+      .eq('is_paid', false);
+    if (error) throw error;
+    const ids = (data || []).map(entry => entry.id);
+    if (!ids.length) {
+      showToast('No hidden unpaid entries to restore', 'success');
+      return;
+    }
+    const byAssociate = new Map();
+    for (const entry of (data || [])) {
+      const name = entry.associate?.app_user?.display_name || 'Unknown associate';
+      byAssociate.set(name, (byAssociate.get(name) || 0) + 1);
+    }
+    const summary = Array.from(byAssociate, ([name, count]) => `${name}: ${count}`).join('\n');
+    if (!confirm(`Restore ${ids.length} hidden unpaid entry/entries to the queue?\n\n${summary}`)) return;
+    await unhideEntries(ids);
+  } catch (err) {
+    console.error('Restore hidden entries error:', err);
     showToast(`Error: ${err.message}`, 'error');
   }
 }
