@@ -1,12 +1,12 @@
 {
-  "version": "v260808.01 10:33a",
-  "release": 1763,
-  "sha": "cbc59fd5bd",
-  "fullSha": "cbc59fd5bddba95a7eecc9a085840cdce55da7f7",
+  "version": "v260812.01 9:30a",
+  "release": 1764,
+  "sha": "1eaef4aa3e",
+  "fullSha": "1eaef4aa3e1422677acd7e30c1cbe163c68f86ca",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmvrwv9",
-  "pushedAt": "2026-08-08T15:33:55+00:00",
-  "commits": [{"sha":"cbc59fd5bd","message":"fix(payments): align resident history and reminder flow","author":"Rahul"}]
+  "pushedAt": "2026-08-12T14:30:29+00:00",
+  "commits": [{"sha":"1eaef4aa3e","message":"feat: publish AI business accountability article","author":"Rahul"}]
 }
