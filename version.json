@@ -1,12 +1,12 @@
 {
-  "version": "v260812.01 9:30a",
-  "release": 1764,
-  "sha": "1eaef4aa3e",
-  "fullSha": "1eaef4aa3e1422677acd7e30c1cbe163c68f86ca",
+  "version": "v260812.02 10:19a",
+  "release": 1765,
+  "sha": "3e8838429b",
+  "fullSha": "3e8838429b73fb25d6287950d300029e6b0875b7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmvrwv9",
-  "pushedAt": "2026-08-12T14:30:29+00:00",
-  "commits": [{"sha":"1eaef4aa3e","message":"feat: publish AI business accountability article","author":"Rahul"}]
+  "pushedAt": "2026-08-12T15:19:32+00:00",
+  "commits": [{"sha":"3e8838429b","message":"feat(payroll): alert admin + payee when Stripe balance blocks payout","author":"Rahul"}]
 }
