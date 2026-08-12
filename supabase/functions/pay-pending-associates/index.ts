@@ -23,9 +23,16 @@ import { rollupEntries } from '../_shared/payout-breakdown.ts';
 import { SENDER_MAP } from '../_shared/template-engine.ts';
 
 // Admin gets an immediate, technical alert the moment a payroll run hits any
-// problem. Payee-facing "payment delayed" notices are handled (throttled) by
-// the independent payroll-overdue-check watchdog, so contractors aren't spammed.
-const ADMIN_ALERT_EMAIL = 'alpacaplayhouse@gmail.com';
+// problem. Both addresses are on it so a funding stall can't sit unread in one
+// inbox — an underfunded Stripe balance silently skipped Jon Sheppard for two
+// straight weekly runs (2026-08-02, 2026-08-09) before anyone noticed.
+const ADMIN_ALERT_EMAILS = ['alpacaplayhouse@gmail.com', 'rahulioson@gmail.com'];
+
+// A payee waiting on money deserves to know WHY, not just eventually. The
+// payroll-overdue-check watchdog only speaks up after 7 days; this tells them
+// on the first missed run. Throttled so a multi-week stall is not a daily nag.
+const FUNDING_DELAY_SOURCE_TYPE = 'associate_payout_funding_delay';
+const FUNDING_DELAY_THROTTLE_DAYS = 3;
 
 async function sendAdminAlert(resendKey: string | undefined, subject: string, html: string): Promise<void> {
   if (!resendKey) {
@@ -39,7 +46,7 @@ async function sendAdminAlert(resendKey: string | undefined, subject: string, ht
       body: JSON.stringify({
         from: SENDER_MAP.pai.from,
         reply_to: SENDER_MAP.pai.reply_to,
-        to: [ADMIN_ALERT_EMAIL],
+        to: ADMIN_ALERT_EMAILS,
         subject,
         html,
       }),
@@ -47,6 +54,94 @@ async function sendAdminAlert(resendKey: string | undefined, subject: string, ht
     if (!res.ok) console.error('[payroll-alert] admin alert send failed:', await res.text());
   } catch (e) {
     console.error('[payroll-alert] admin alert threw:', (e as Error).message);
+  }
+}
+
+/**
+ * Tell an associate their payout is held up on funding, not on their work.
+ *
+ * Deduped through `payment_reminders` (same table the overdue watchdog uses) so
+ * repeated daily cron runs during one funding stall produce at most one email
+ * every FUNDING_DELAY_THROTTLE_DAYS. Best-effort: a notify failure must never
+ * abort the payroll run, so everything here is caught and logged.
+ */
+async function notifyFundingDelay(
+  supabase: any,
+  resendKey: string | undefined,
+  opts: { personId: string | null; personName: string; firstName: string; email: string | null; owed: number; available: number; entryCount: number; oldestUnpaid: Date | null }
+): Promise<'sent' | 'throttled' | 'skipped' | 'failed'> {
+  if (!opts.email || !resendKey) return 'skipped';
+  try {
+    const since = new Date(Date.now() - FUNDING_DELAY_THROTTLE_DAYS * 86_400_000).toISOString();
+    const { data: recent } = await supabase
+      .from('payment_reminders')
+      .select('id')
+      .eq('source_type', FUNDING_DELAY_SOURCE_TYPE)
+      .eq('recipient', opts.email)
+      .gte('created_at', since)
+      .limit(1);
+    if (recent && recent.length > 0) return 'throttled';
+
+    const html = `<p>Hi ${opts.firstName},</p>
+      <p>Heads up: your scheduled payout of <strong>$${opts.owed.toFixed(2)}</strong>
+      (${opts.entryCount} logged ${opts.entryCount === 1 ? 'entry' : 'entries'}) did not go out on its
+      usual run today.</p>
+      <p><strong>This is not a problem with your hours or your account.</strong> Your time is logged,
+      approved, and owed to you in full. The payout account simply does not have enough funds to
+      cover it right now, and we do not send partial payments.</p>
+      <p>We have been alerted and are topping the account up. Your payout will go out automatically
+      on the next run once funding clears, with nothing needed from you.</p>
+      <p>Sorry for the delay — and thank you for the work.</p>
+      <p style="color:#666;font-size:13px;">— Alpaca Playhouse. Questions? Just reply to this email.</p>`;
+
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: SENDER_MAP.pai.from,
+        reply_to: SENDER_MAP.pai.reply_to,
+        to: [opts.email],
+        cc: ADMIN_ALERT_EMAILS,
+        subject: `Your payout is delayed — funding, not your hours ($${opts.owed.toFixed(2)})`,
+        html,
+      }),
+    });
+    const ok = res.ok;
+    if (!ok) console.error('[payroll-alert] payee funding-delay send failed:', await res.text());
+
+    // Log the attempt either way so a failing send doesn't silently retry every
+    // run. `due_date` and `days_overdue` are NOT NULL on this table — omitting
+    // them makes the insert fail, which would silently defeat the throttle above
+    // and email the payee on every single run.
+    const oldest = opts.oldestUnpaid;
+    const daysOverdue = oldest ? Math.max(0, Math.floor((Date.now() - oldest.getTime()) / 86_400_000)) : 0;
+    const { error: logErr } = await supabase.from('payment_reminders').insert({
+      source_type: FUNDING_DELAY_SOURCE_TYPE,
+      person_id: opts.personId,
+      amount_due: opts.owed,
+      due_date: (oldest || new Date()).toISOString().slice(0, 10),
+      days_overdue: daysOverdue,
+      channel: 'email',
+      recipient: opts.email,
+      recipient_type: 'associate',
+      status: ok ? 'sent' : 'failed',
+      escalation_level: 1,
+      metadata: {
+        available_balance: opts.available,
+        shortfall: Math.round((opts.owed - opts.available) * 100) / 100,
+        entry_count: opts.entryCount,
+        person_name: opts.personName
+      }
+    });
+    if (logErr) {
+      // Loud: without this row the throttle is blind and the payee gets spammed.
+      console.error('[payroll-alert] funding-delay dedupe row FAILED to insert:', logErr.message);
+      return 'failed';
+    }
+    return ok ? 'sent' : 'failed';
+  } catch (e) {
+    console.error('[payroll-alert] notifyFundingDelay threw:', (e as Error).message);
+    return 'failed';
   }
 }
 
@@ -201,17 +296,9 @@ Deno.serve(async (req) => {
 
       if (amountCents <= 0) continue;
 
-      if (amountCents > availableCents) {
-        results.push({
-          associate_id: assoc.id,
-          skipped: 'insufficient_balance',
-          owed: amount,
-          available: availableCents / 100,
-          entry_count: claimableEntries.length
-        });
-        continue;
-      }
-
+      // Resolved BEFORE the balance gate: an underfunded run still needs the
+      // person's name and email so both the admin alert and the payee notice
+      // can say who is waiting and why.
       const { data: appUser } = await supabase
         .from('app_users')
         .select('display_name, first_name, last_name, person_id, email')
@@ -226,6 +313,35 @@ Deno.serve(async (req) => {
       if (personId) {
         const { data: person } = await supabase.from('people').select('email').eq('id', personId).single();
         if (person?.email) recipientEmail = person.email;
+      }
+
+      if (amountCents > availableCents) {
+        // Tell the payee it's a funding problem, not their hours — the admin
+        // digest at the end of this run covers the technical side.
+        const notified = await notifyFundingDelay(supabase, resendKey, {
+          personId,
+          personName,
+          firstName: appUser?.first_name || personName.split(' ')[0],
+          email: recipientEmail,
+          owed: amount,
+          available: availableCents / 100,
+          entryCount: claimableEntries.length,
+          oldestUnpaid: claimableEntries.reduce((min: Date | null, e: any) => {
+            const d = new Date(e.clock_out as string);
+            return !min || d < min ? d : min;
+          }, null as Date | null)
+        });
+        results.push({
+          associate_id: assoc.id,
+          person_name: personName,
+          skipped: 'insufficient_balance',
+          owed: amount,
+          available: availableCents / 100,
+          shortfall: Math.round((amount - availableCents / 100) * 100) / 100,
+          entry_count: claimableEntries.length,
+          payee_notified: notified
+        });
+        continue;
       }
 
       // Resolve task titles for entries that have a task_id but no inline description.
@@ -403,11 +519,36 @@ Deno.serve(async (req) => {
           || '';
         return `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">${who}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;"><strong>${reason}</strong></td><td style="padding:6px 10px;border-bottom:1px solid #eee;color:#666;">${detail}</td></tr>`;
       }).join('');
+      // An underfunded balance is the one failure with a single concrete fix, so
+      // it gets its own banner naming the exact top-up amount instead of being
+      // buried as one row in a generic problem table.
+      const underfunded = failures.filter((f: any) => f.skipped === 'insufficient_balance');
+      const totalOwed = underfunded.reduce((s: number, f: any) => s + (f.owed || 0), 0);
+      const topUpNeeded = Math.max(0, Math.round((totalOwed - availableCents / 100) * 100) / 100);
+      const fundingBanner = underfunded.length === 0 ? '' : `
+        <div style="border:2px solid #c62828;background:#fff5f5;border-radius:8px;padding:14px 16px;margin:16px 0;">
+          <h3 style="margin:0 0 8px;color:#c62828;">&#128176; Stripe balance too low — this is a funding problem</h3>
+          <p style="margin:0 0 8px;">${underfunded.length} associate(s) went unpaid purely because the Stripe balance
+          could not cover them. Payouts are all-or-nothing, so a partly funded balance pays <strong>nobody</strong>.</p>
+          <table style="font-size:14px;margin:0 0 8px;">
+            <tr><td style="padding:2px 12px 2px 0;">Available balance:</td><td><strong>$${(availableCents / 100).toFixed(2)}</strong></td></tr>
+            <tr><td style="padding:2px 12px 2px 0;">Total owed to blocked associates:</td><td><strong>$${totalOwed.toFixed(2)}</strong></td></tr>
+            <tr><td style="padding:2px 12px 2px 0;">Top up at least:</td><td><strong style="color:#c62828;">$${topUpNeeded.toFixed(2)}</strong></td></tr>
+          </table>
+          <p style="margin:0;"><a href="https://dashboard.stripe.com/balance" style="color:#c62828;"><strong>Top up / check auto top-up in Stripe &rarr;</strong></a></p>
+          <p style="margin:8px 0 0;color:#666;font-size:13px;">The affected associates have each been emailed that the delay
+          is funding, not their hours (throttled to once every ${FUNDING_DELAY_THROTTLE_DAYS} days). Once funded, the next
+          run pays them automatically.</p>
+        </div>`;
+      const subject = underfunded.length > 0
+        ? `💰 Payroll BLOCKED — top up Stripe $${topUpNeeded.toFixed(2)} (${underfunded.length} unpaid)`
+        : `⚠️ Payroll problem — ${failures.length} associate(s) unpaid`;
       const html = `<h2 style="color:#c62828;">&#9888;&#65039; Payroll run could not pay ${failures.length} associate(s)</h2>
+        ${fundingBanner}
         <p>pay-pending-associates ran but failed to pay the following. <strong>No money moved</strong> for these associates. Please investigate.</p>
         <table style="border-collapse:collapse;width:100%;font-size:14px;"><thead><tr style="background:#f0f0f0;"><th style="padding:8px 10px;text-align:left;">Associate</th><th style="padding:8px 10px;text-align:left;">Reason</th><th style="padding:8px 10px;text-align:left;">Detail</th></tr></thead><tbody>${rows}</tbody></table>
         <p style="color:#666;font-size:13px;">Stripe balance at start of run: $${(availableCents / 100).toFixed(2)}. Automated alert from pay-pending-associates.</p>`;
-      await sendAdminAlert(resendKey, `⚠️ Payroll problem — ${failures.length} associate(s) unpaid`, html);
+      await sendAdminAlert(resendKey, subject, html);
     }
 
     return new Response(JSON.stringify({ ok: true, available_at_start: availableCents / 100, results }, null, 2),
