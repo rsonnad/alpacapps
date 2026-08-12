@@ -63,3 +63,4 @@ scripts/client_secret_*.json
 # Python bytecode cache
 __pycache__/
 *.pyc
+**/.wrangler/

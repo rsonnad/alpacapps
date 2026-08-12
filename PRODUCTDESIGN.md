@@ -575,6 +575,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 ## Decisions
 
+### 2026-08-12: Separate Documented Warnings from Editorial Analysis
+
+**Decision:** Maintain `youarewarned.com` as two clearly labeled public content types: first-person, evidence-linked warning reports under `/warnings/`, and broader editorial analysis under `/articles/`. Analysis that discusses a warning published by the same site must disclose that relationship, attribute disputed facts to the reporting guest, preserve correction and right-of-reply language, and use canonical metadata plus a sitemap for machine discovery.
+
+**Why:** AI search and booking tools increasingly retrieve and synthesize public web evidence, so a structured report can affect decisions without a reader opening the original page. Separating source allegations from analysis makes that record more useful without presenting a guest account as an independent adjudication. Durable repository source, real crawler files, canonical URLs, and correct 404 responses also prevent temporary deployment folders and soft-404s from undermining credibility or discoverability.
+
 ### 2026-07-02: Infra Setup Uses Claude Code Directly
 
 **Decision:** Remove Conductor from AlpacApps Infra setup guidance. New project setup now treats GitHub Pages, Supabase, and Claude Code as the core path, with optional services configured directly through Claude Code. Clone-facing generated directives use the adopter's GitHub Pages URL by default and explicitly tell operators to replace it with their own custom domain when configured.
