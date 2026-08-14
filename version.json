@@ -1,12 +1,12 @@
 {
-  "version": "v260814.02 7:45a",
-  "release": 1767,
-  "sha": "6409176f32",
-  "fullSha": "6409176f324fa02fceea784c11dc42caa8923c9b",
+  "version": "v260814.03 7:56a",
+  "release": 1768,
+  "sha": "6943c33960",
+  "fullSha": "6943c33960f1f24fb49bd45b858a15da0ac42d6f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmzvulz",
-  "pushedAt": "2026-08-14T12:45:47+00:00",
-  "commits": [{"sha":"6409176f32","message":"chore(rahulio): noindex the corpjoy page (#127)","author":"Rahul"}]
+  "pushedAt": "2026-08-14T12:56:44+00:00",
+  "commits": [{"sha":"6943c33960","message":"fix(rahulio): stop corpjoy hero card clipping on mobile (#128)","author":"Rahul"}]
 }
