@@ -1,12 +1,12 @@
 {
-  "version": "v260814.01 7:43a",
-  "release": 1766,
-  "sha": "922164a191",
-  "fullSha": "922164a191e987043a3856e9378fce743ccc5407",
+  "version": "v260814.02 7:45a",
+  "release": 1767,
+  "sha": "6409176f32",
+  "fullSha": "6409176f324fa02fceea784c11dc42caa8923c9b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmzvulz",
-  "pushedAt": "2026-08-14T12:43:33+00:00",
-  "commits": [{"sha":"922164a191","message":"feat(rahulio): add corpjoy corporate training landing page (#126)","author":"Rahul"}]
+  "pushedAt": "2026-08-14T12:45:47+00:00",
+  "commits": [{"sha":"6409176f32","message":"chore(rahulio): noindex the corpjoy page (#127)","author":"Rahul"}]
 }
