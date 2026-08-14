@@ -1,12 +1,12 @@
 {
-  "version": "v260812.02 10:19a",
-  "release": 1765,
-  "sha": "3e8838429b",
-  "fullSha": "3e8838429b73fb25d6287950d300029e6b0875b7",
+  "version": "v260814.01 7:43a",
+  "release": 1766,
+  "sha": "922164a191",
+  "fullSha": "922164a191e987043a3856e9378fce743ccc5407",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmvrwv9",
-  "pushedAt": "2026-08-12T15:19:32+00:00",
-  "commits": [{"sha":"3e8838429b","message":"feat(payroll): alert admin + payee when Stripe balance blocks payout","author":"Rahul"}]
+  "machine": "runnervmzvulz",
+  "pushedAt": "2026-08-14T12:43:33+00:00",
+  "commits": [{"sha":"922164a191","message":"feat(rahulio): add corpjoy corporate training landing page (#126)","author":"Rahul"}]
 }
