@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joymaker for Business — Corporate Leadership &amp; Facilitation Training</title>
+<meta name="description" content="Science-of-joy leadership training for mid-size and enterprise teams. Teach managers, L&amp;D and culture leaders how to raise energy, psychological safety and participation in any room.">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d1a2b;
+  --ink-2:#132741;
+  --ink-3:#1b3557;
+  --body:#3d4c60;
+  --muted:#6b7a8f;
+  --line:#e3e8ef;
+  --line-soft:#eef2f7;
+  --surface:#ffffff;
+  --canvas:#f6f8fb;
+  --gold:#b8862b;
+  --gold-bright:#d9a43c;
+  --gold-soft:#fdf6e7;
+  --teal:#0f6f63;
+  --teal-soft:#eaf5f3;
+  --radius:14px;
+  --shadow-sm:0 1px 2px rgba(13,26,43,.06), 0 1px 3px rgba(13,26,43,.05);
+  --shadow-md:0 4px 12px rgba(13,26,43,.07), 0 12px 32px rgba(13,26,43,.06);
+  --shadow-lg:0 8px 24px rgba(13,26,43,.09), 0 32px 64px rgba(13,26,43,.10);
+  --maxw:1140px;
+  --navtop:38px; /* rahulio page-header bar height */
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--surface);
+  color:var(--body);
+  line-height:1.65;
+  font-size:16.5px;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 1.5rem}
+.narrow{max-width:780px;margin-left:auto;margin-right:auto}
+
+h1,h2,h3,h4{color:var(--ink);line-height:1.15;letter-spacing:-.02em;font-weight:700}
+.serif{font-family:'Instrument Serif',Georgia,serif;font-weight:400;letter-spacing:-.01em}
+.serif em{font-style:italic}
+
+/* ── Eyebrow / labels ── */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gold);
+}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.6}
+.eyebrow.on-dark{color:var(--gold-bright)}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  font-size:.94rem;font-weight:600;letter-spacing:-.005em;
+  padding:.82rem 1.5rem;border-radius:9px;border:1px solid transparent;
+  text-decoration:none;cursor:pointer;transition:all .18s ease;white-space:nowrap;
+  font-family:inherit;
+}
+.btn-primary{background:var(--ink);color:#fff;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:var(--ink-3);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-gold{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#231803;box-shadow:0 2px 10px rgba(184,134,43,.35)}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(184,134,43,.42)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--ink);background:var(--canvas)}
+.btn-ghost-dark{background:rgba(255,255,255,.04);color:#fff;border-color:rgba(255,255,255,.22)}
+.btn-ghost-dark:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.4)}
+.btn-sm{padding:.6rem 1.1rem;font-size:.85rem}
+
+/* ── Nav ── */
+.nav{
+  position:sticky;top:var(--navtop);z-index:900;
+  background:rgba(255,255,255,.88);backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--line-soft);
+}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:.7rem 1.5rem;display:flex;align-items:center;gap:1.5rem}
+.brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;margin-right:auto}
+.brand-mark{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(140deg,var(--ink-3),var(--ink));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);
+}
+.brand-mark span{color:var(--gold-bright);font-size:1rem;line-height:1;font-family:'Instrument Serif',serif}
+.brand-text{display:flex;flex-direction:column;line-height:1.1}
+.brand-text b{font-size:.95rem;color:var(--ink);letter-spacing:-.02em;font-weight:700}
+.brand-text small{font-size:.63rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.nav-links{display:flex;gap:1.6rem;align-items:center}
+.nav-links a{
+  text-decoration:none;font-size:.88rem;font-weight:500;color:var(--body);
+  transition:color .15s;padding:.2rem 0;
+}
+.nav-links a:hover{color:var(--ink)}
+@media(max-width:900px){.nav-links{display:none}}
+
+/* ── Hero ── */
+.hero{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(1000px 520px at 82% -10%, rgba(217,164,60,.20), transparent 60%),
+    radial-gradient(760px 460px at 6% 108%, rgba(15,111,99,.26), transparent 62%),
+    linear-gradient(165deg,#0d1a2b 0%,#122641 55%,#0e1e33 100%);
+  color:#eaf0f7;
+  padding:5.5rem 0 0;
+}
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(760px 420px at 50% 20%,#000,transparent 78%);
+  -webkit-mask-image:radial-gradient(760px 420px at 50% 20%,#000,transparent 78%);
+}
+.hero-inner{position:relative;z-index:1}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:4rem;align-items:center}
+@media(max-width:940px){.hero-grid{grid-template-columns:1fr;gap:2.75rem}.hero{padding-top:3.75rem}}
+
+.hero h1{
+  color:#fff;font-size:clamp(2.4rem,5.2vw,3.85rem);line-height:1.05;
+  margin:1.15rem 0 1.25rem;letter-spacing:-.035em;
+}
+.hero h1 .accent{
+  font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;
+  color:var(--gold-bright);letter-spacing:-.01em;
+}
+.hero p.lede{font-size:1.1rem;color:#b9c8da;max-width:36em;margin-bottom:1.9rem}
+.hero-cta{display:flex;gap:.85rem;flex-wrap:wrap;align-items:center}
+.hero-note{font-size:.82rem;color:#8fa2b8;margin-top:1.1rem}
+
+.pill{
+  display:inline-flex;align-items:center;gap:.55rem;
+  background:rgba(217,164,60,.12);border:1px solid rgba(217,164,60,.32);
+  color:#f0d9a5;font-size:.72rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  padding:.42rem .95rem;border-radius:100px;
+}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-bright);box-shadow:0 0 0 3px rgba(217,164,60,.25)}
+
+/* hero card */
+.hero-card{
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:18px;padding:1.75rem;
+  backdrop-filter:blur(8px);
+  box-shadow:0 24px 60px rgba(0,0,0,.32);
+}
+.hero-card h4{color:#fff;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:1.15rem;font-weight:700;color:#f0d9a5}
+.hc-row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.72rem 0;border-bottom:1px solid rgba(255,255,255,.09)}
+.hc-row:last-child{border-bottom:none;padding-bottom:0}
+.hc-row span{font-size:.9rem;color:#b9c8da}
+.hc-row b{font-size:1.02rem;color:#fff;font-weight:600;white-space:nowrap}
+
+/* stat strip */
+.stat-strip{
+  position:relative;z-index:1;margin-top:4rem;
+  border-top:1px solid rgba(255,255,255,.11);
+  background:rgba(0,0,0,.18);
+}
+.stat-strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.09);padding:0;max-width:var(--maxw)}
+.stat{background:#0e1d31;padding:1.55rem 1.5rem;text-align:center}
+.stat b{display:block;font-size:1.65rem;color:#fff;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.stat span{font-size:.74rem;color:#8fa2b8;letter-spacing:.09em;text-transform:uppercase;font-weight:600}
+@media(max-width:720px){.stat-strip .wrap{grid-template-columns:repeat(2,1fr)}}
+
+/* ── Logo band ── */
+.logoband{background:var(--canvas);border-bottom:1px solid var(--line-soft);padding:2.1rem 0}
+.logoband p{text-align:center;font-size:.73rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:1.1rem}
+.logos{display:flex;justify-content:center;align-items:center;gap:3rem;flex-wrap:wrap}
+.logos span{
+  font-size:1.08rem;font-weight:700;color:#9aa8ba;letter-spacing:.02em;
+  transition:color .2s;
+}
+.logos span:hover{color:var(--ink-3)}
+
+/* ── Section scaffolding ── */
+section{padding:5.5rem 0}
+section.tight{padding:4.25rem 0}
+.sec-head{max-width:720px;margin-bottom:3rem}
+.sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+.sec-head h2{font-size:clamp(1.85rem,3.6vw,2.6rem);margin:.9rem 0 1rem;letter-spacing:-.03em}
+.sec-head p{font-size:1.06rem;color:var(--muted)}
+.alt{background:var(--canvas)}
+
+/* ── Problem cards ── */
+.cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:900px){.cards-3{grid-template-columns:1fr}}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:1.85rem;transition:all .22s ease;
+}
+.card:hover{border-color:#cfd8e4;box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.card h3{font-size:1.1rem;margin-bottom:.6rem}
+.card p{font-size:.94rem;color:var(--muted)}
+.card-icon{
+  width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:var(--gold-soft);color:var(--gold);margin-bottom:1.15rem;
+}
+.card-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.card-icon.teal{background:var(--teal-soft);color:var(--teal)}
+.card-icon.ink{background:#eef2f8;color:var(--ink-3)}
+
+/* ── Compare ── */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:stretch}
+@media(max-width:860px){.compare{grid-template-columns:1fr}}
+.comp-col{border-radius:var(--radius);padding:2rem;border:1px solid var(--line)}
+.comp-col.old{background:var(--surface)}
+.comp-col.new{background:linear-gradient(165deg,#102340,#0d1a2b);border-color:transparent;color:#c4d2e2;box-shadow:var(--shadow-lg)}
+.comp-col h3{font-size:1.05rem;margin-bottom:1.35rem;display:flex;align-items:center;gap:.6rem}
+.comp-col.new h3{color:#fff}
+.comp-tag{font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;font-weight:700;padding:.25rem .6rem;border-radius:5px;background:var(--line-soft);color:var(--muted)}
+.comp-col.new .comp-tag{background:rgba(217,164,60,.18);color:var(--gold-bright)}
+.comp-list{list-style:none;display:flex;flex-direction:column;gap:.85rem}
+.comp-list li{display:flex;gap:.7rem;font-size:.94rem;line-height:1.55}
+.comp-list li svg{width:17px;height:17px;flex-shrink:0;margin-top:.24rem;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.comp-col.old .comp-list li{color:var(--muted)}
+.comp-col.old svg{stroke:#b6c0cd}
+.comp-col.new svg{stroke:var(--gold-bright)}
+
+/* ── Pillars ── */
+.pillar{
+  display:grid;grid-template-columns:56px minmax(0,1.05fr) minmax(0,.75fr);gap:2.5rem;
+  padding:2.25rem 0;border-top:1px solid var(--line);align-items:start;
+}
+.pillar:last-child{border-bottom:1px solid var(--line)}
+@media(max-width:860px){.pillar{grid-template-columns:56px 1fr;gap:1.5rem}.pillar-chips{grid-column:2}}
+@media(max-width:640px){.pillar{grid-template-columns:1fr;gap:1.1rem}.pillar-chips{grid-column:1}}
+.pillar-num{
+  font-family:'Instrument Serif',serif;font-size:2.1rem;color:var(--gold);line-height:1;
+  border-right:1px solid var(--line);padding-right:1.5rem;
+}
+@media(max-width:640px){.pillar-num{border-right:none;padding-right:0}}
+.pillar h3{font-size:1.28rem;margin-bottom:.5rem}
+.pillar p{font-size:.98rem;color:var(--muted)}
+.pillar-chips small{
+  display:block;font-size:.68rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;margin-bottom:.75rem;
+}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.chip{
+  font-size:.79rem;font-weight:500;color:var(--ink-3);
+  background:var(--canvas);border:1px solid var(--line);
+  padding:.32rem .78rem;border-radius:100px;
+}
+
+/* ── Formats ── */
+.formats{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
+@media(max-width:860px){.formats{grid-template-columns:1fr}}
+.fmt{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:1.9rem;display:flex;flex-direction:column;transition:all .22s ease;position:relative;overflow:hidden;
+}
+.fmt:hover{box-shadow:var(--shadow-md);border-color:#cfd8e4}
+.fmt.feature{grid-column:1 / -1;background:linear-gradient(150deg,#fdfbf5,#fff);border-color:#eddfbe}
+.fmt-top{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.9rem}
+.fmt h3{font-size:1.18rem}
+.fmt .meta{font-size:.74rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);white-space:nowrap;padding-top:.2rem}
+.fmt p{font-size:.94rem;color:var(--muted);margin-bottom:1.25rem}
+.fmt-specs{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-top:auto;padding-top:1.1rem;border-top:1px solid var(--line-soft)}
+.fmt-specs li{display:flex;justify-content:space-between;gap:1rem;font-size:.86rem}
+.fmt-specs li span{color:var(--muted)}
+.fmt-specs li b{color:var(--ink);font-weight:600;text-align:right}
+.fmt-feature-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:2.5rem}
+@media(max-width:760px){.fmt-feature-grid{grid-template-columns:1fr;gap:1.5rem}}
+
+/* ── Process ── */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+@media(max-width:900px){.steps{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.steps{grid-template-columns:1fr}}
+.step{padding:1.75rem 1.5rem 1.75rem 0;position:relative}
+.step:not(:last-child)::after{
+  content:"";position:absolute;right:1rem;top:2.35rem;width:8px;height:8px;
+  border-top:1.5px solid var(--line);border-right:1.5px solid var(--line);transform:rotate(45deg);
+}
+@media(max-width:900px){.step::after{display:none}}
+.step-n{
+  width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;margin-bottom:1rem;
+}
+.step h4{font-size:1rem;margin-bottom:.4rem}
+.step p{font-size:.88rem;color:var(--muted)}
+
+/* ── Outcomes ── */
+.outcomes-grid{display:grid;grid-template-columns:1fr 1fr;gap:3.5rem}
+@media(max-width:860px){.outcomes-grid{grid-template-columns:1fr;gap:2.5rem}}
+.out-list{list-style:none;display:flex;flex-direction:column;gap:1.05rem}
+.out-list li{display:flex;gap:.85rem;font-size:.97rem}
+.out-list li svg{width:19px;height:19px;flex-shrink:0;margin-top:.22rem;stroke:var(--teal);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.measure{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.9rem;box-shadow:var(--shadow-sm)}
+.measure h3{font-size:1.05rem;margin-bottom:1.2rem}
+.measure-row{display:grid;grid-template-columns:70px 1fr;gap:1rem;padding:.85rem 0;border-top:1px solid var(--line-soft)}
+.measure-row:first-of-type{border-top:none;padding-top:0}
+.measure-row b{font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);font-weight:700;padding-top:.15rem}
+.measure-row p{font-size:.9rem;color:var(--muted)}
+
+/* ── Facilitator ── */
+.fac{
+  background:linear-gradient(160deg,#0d1a2b,#152b48 70%,#0f2038);
+  color:#c4d2e2;border-radius:20px;padding:3rem;position:relative;overflow:hidden;
+  box-shadow:var(--shadow-lg);
+}
+.fac::before{
+  content:"";position:absolute;top:-140px;right:-120px;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(217,164,60,.20),transparent 68%);
+}
+.fac-inner{position:relative;display:grid;grid-template-columns:1fr 340px;gap:3rem;align-items:center}
+@media(max-width:900px){.fac{padding:2.25rem}.fac-inner{grid-template-columns:1fr;gap:2rem}}
+.fac h2{color:#fff;font-size:1.9rem;margin:.85rem 0 .9rem}
+.fac p{font-size:1rem;color:#b9c8da;margin-bottom:1rem}
+.fac-creds{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.11);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.11)}
+.fac-cred{background:rgba(255,255,255,.045);padding:1.15rem 1.25rem}
+.fac-cred b{display:block;color:#fff;font-size:1.28rem;font-weight:700;letter-spacing:-.02em}
+.fac-cred span{font-size:.74rem;color:#8fa2b8;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+
+/* ── Testimonials ── */
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:940px){.quotes{grid-template-columns:1fr}}
+.quote{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:1.85rem;display:flex;flex-direction:column;
+}
+.stars{display:flex;gap:2px;margin-bottom:1rem}
+.stars svg{width:15px;height:15px;fill:var(--gold-bright)}
+.quote p{font-size:.96rem;color:var(--ink-2);margin-bottom:1.35rem;flex:1}
+.quote footer{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line-soft);padding-top:.95rem}
+.quote footer b{display:block;color:var(--ink);font-weight:600;font-size:.9rem}
+
+/* ── FAQ ── */
+.faq{max-width:820px;margin:0 auto}
+details{border-bottom:1px solid var(--line)}
+details summary{
+  cursor:pointer;list-style:none;padding:1.25rem 2.5rem 1.25rem 0;position:relative;
+  font-weight:600;color:var(--ink);font-size:1.02rem;transition:color .15s;
+}
+details summary::-webkit-details-marker{display:none}
+details summary:hover{color:var(--gold)}
+details summary::after{
+  content:"";position:absolute;right:.4rem;top:1.6rem;width:9px;height:9px;
+  border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+  transform:rotate(45deg);transition:transform .2s;
+}
+details[open] summary::after{transform:rotate(-135deg);top:1.9rem}
+details .answer{padding:0 2.5rem 1.4rem 0;color:var(--muted);font-size:.96rem}
+details .answer p + p{margin-top:.75rem}
+
+/* ── CTA ── */
+.cta{
+  background:
+    radial-gradient(760px 400px at 12% 0%, rgba(15,111,99,.28), transparent 62%),
+    radial-gradient(700px 420px at 92% 100%, rgba(217,164,60,.20), transparent 60%),
+    linear-gradient(160deg,#0d1a2b,#132741);
+  color:#c4d2e2;
+}
+.cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+@media(max-width:900px){.cta-grid{grid-template-columns:1fr;gap:2.5rem}}
+.cta h2{color:#fff;font-size:clamp(1.9rem,3.6vw,2.5rem);margin:.9rem 0 1rem}
+.cta p{color:#b9c8da;font-size:1.04rem;margin-bottom:1.5rem}
+.cta-points{list-style:none;display:flex;flex-direction:column;gap:.7rem}
+.cta-points li{display:flex;gap:.7rem;font-size:.94rem;color:#b9c8da}
+.cta-points li svg{width:18px;height:18px;flex-shrink:0;margin-top:.2rem;stroke:var(--gold-bright);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+form.enquiry{
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;padding:1.85rem;backdrop-filter:blur(8px);
+}
+form.enquiry h3{color:#fff;font-size:1.1rem;margin-bottom:1.35rem}
+.field{margin-bottom:.95rem}
+.field label{display:block;font-size:.76rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#8fa2b8;margin-bottom:.4rem}
+.field input,.field select,.field textarea{
+  width:100%;font-family:inherit;font-size:.93rem;color:#fff;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);
+  border-radius:8px;padding:.65rem .8rem;transition:border-color .15s,background .15s;
+}
+.field textarea{resize:vertical;min-height:78px}
+.field input::placeholder,.field textarea::placeholder{color:#7b8da3}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--gold-bright);background:rgba(255,255,255,.1);
+}
+.field select option{background:#132741;color:#fff}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+@media(max-width:520px){.field-row{grid-template-columns:1fr}}
+form.enquiry .btn{width:100%;margin-top:.5rem}
+.form-note{font-size:.76rem;color:#8fa2b8;margin-top:.85rem;text-align:center}
+
+/* ── Footer ── */
+footer.site{background:#0a1420;color:#7b8da3;padding:2.75rem 0;font-size:.86rem}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.foot a{color:#9fb0c4;text-decoration:none;transition:color .15s}
+.foot a:hover{color:var(--gold-bright)}
+.foot-links{display:flex;gap:1.5rem;flex-wrap:wrap}
+
+@media print{.nav,.cta,form.enquiry{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark"><span>J</span></span>
+      <span class="brand-text">
+        <b>Joymaker</b>
+        <small>For Business</small>
+      </span>
+    </a>
+    <div class="nav-links">
+      <a href="#why">Why it matters</a>
+      <a href="#capabilities">Curriculum</a>
+      <a href="#formats">Formats</a>
+      <a href="#outcomes">Outcomes</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="btn btn-primary btn-sm" href="#enquire">Request a proposal</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<header class="hero" id="top">
+  <div class="wrap hero-inner">
+    <div class="hero-grid">
+      <div>
+        <span class="pill"><span class="dot"></span> Corporate Training &amp; Offsites</span>
+        <h1>The leadership skill your managers were <span class="accent">never trained on</span>.</h1>
+        <p class="lede">
+          Every organisation trains people to run a process. Almost none train them to run a <em>room</em>.
+          Joymaker for Business teaches managers, facilitators and people leaders how to raise energy,
+          establish psychological safety and get real participation — in meetings, all-hands, workshops and offsites.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-gold" href="#enquire">Request a proposal →</a>
+          <a class="btn btn-ghost-dark" href="#formats">See program formats</a>
+        </div>
+        <p class="hero-note">Delivered on-site, virtually or as a hosted intensive · Cohorts from 12 to 1,000+</p>
+      </div>
+
+      <aside class="hero-card">
+        <h4>Engagement at a glance</h4>
+        <div class="hc-row"><span>Audience</span><b>Managers, L&amp;D, culture leads</b></div>
+        <div class="hc-row"><span>Formats</span><b>Keynote → 2-day intensive</b></div>
+        <div class="hc-row"><span>Group size</span><b>12–1,000+</b></div>
+        <div class="hc-row"><span>Delivery</span><b>On-site · Virtual · Hosted</b></div>
+        <div class="hc-row"><span>Method</span><b>Practice-based, few lectures</b></div>
+        <div class="hc-row"><span>Reinforcement</span><b>30 / 60 / 90-day follow-through</b></div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="wrap">
+      <div class="stat"><b>100k+</b><span>Participants hosted</span></div>
+      <div class="stat"><b>1,000+</b><span>Sessions delivered</span></div>
+      <div class="stat"><b>4.8★</b><span>47+ verified reviews</span></div>
+      <div class="stat"><b>5+</b><span>Countries</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ LOGO BAND ══ -->
+<div class="logoband">
+  <div class="wrap">
+    <p>Sessions and keynotes delivered for teams and events at</p>
+    <div class="logos">
+      <span>Accenture</span>
+      <span>Google</span>
+      <span>Chevron</span>
+      <span>LUSH</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WHY ══ -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow">The capability gap</span>
+      <h2>Your engagement scores are a symptom. The room is the cause.</h2>
+      <p>
+        People are disconnected, distracted and performing. In an AI-shaped workplace, the ability to elevate
+        human energy and emotion becomes one of the few skills that can't be automated — and it's the one
+        almost no leadership curriculum teaches.
+      </p>
+    </div>
+
+    <div class="cards-3">
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/></svg>
+        </div>
+        <h3>Meetings where nobody moves first</h3>
+        <p>
+          The same three extroverts carry every discussion. Everyone else waits out the clock. Participation
+          isn't a personality trait — it's a condition a skilled leader creates in the first ninety seconds.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-icon teal">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+        </div>
+        <h3>Hybrid teams that never quite connect</h3>
+        <p>
+          Distributed work removed the corridor, the coffee queue and the accidental conversation. What's left
+          has to be deliberately designed — and most managers were never shown how.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-icon ink">
+          <svg viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+        </div>
+        <h3>Offsites that fade by Wednesday</h3>
+        <p>
+          A great away-day generates a week of good feeling and no behaviour change. Without repeatable skills
+          and follow-through, the investment evaporates before the next quarter.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ COMPARE ══ -->
+<section class="alt tight">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow">The difference</span>
+      <h2>Conventional leadership training stops where this starts</h2>
+      <p>
+        Traditional programs teach people to manage responsibilities, make decisions and hit goals. They rarely
+        teach how to elevate human energy, emotion and psychological safety.
+      </p>
+    </div>
+
+    <div class="compare">
+      <div class="comp-col old">
+        <h3><span class="comp-tag">Typical L&amp;D</span></h3>
+        <ul class="comp-list">
+          <li><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Frameworks delivered by slide deck, absorbed passively</li>
+          <li><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Personality assessments that name a problem without fixing it</li>
+          <li><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Charisma treated as innate — you either have it or you don't</li>
+          <li><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Measured by completion rate and a smile-sheet</li>
+          <li><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Ends when the session ends</li>
+        </ul>
+      </div>
+      <div class="comp-col new">
+        <h3><span class="comp-tag">Joymaker for Business</span></h3>
+        <ul class="comp-list">
+          <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> A practice ground: reps, real-time coaching, peer feedback</li>
+          <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Grounded in positive psychology and behavioural science</li>
+          <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Presence taught as a repeatable skill — introverts included</li>
+          <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Measured on observable behaviour and participation, pre and post</li>
+          <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Reinforced with manager toolkits and a 90-day cadence</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CAPABILITIES ══ -->
+<section id="capabilities">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Curriculum</span>
+      <h2>Three capabilities, taught in order</h2>
+      <p>
+        Each builds on the one before it: a leader can't set the tone of a room they can't regulate themselves in,
+        and can't hold a group they can't hold a single conversation with.
+      </p>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-num">01</div>
+      <div>
+        <h3>Personal energy &amp; executive presence</h3>
+        <p>
+          The state a leader walks in with sets the ceiling for the room. Participants learn to regulate their own
+          energy, sustain it through a full day, and open with a warmth that makes engagement the obvious choice
+          rather than a risk.
+        </p>
+      </div>
+      <div class="pillar-chips">
+        <small>Modules</small>
+        <div class="chips">
+          <span class="chip">State regulation</span>
+          <span class="chip">Energy &amp; recovery routines</span>
+          <span class="chip">Sustained presence</span>
+          <span class="chip">Attention &amp; digital focus</span>
+          <span class="chip">Going first</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-num">02</div>
+      <div>
+        <h3>Conversations people actually remember</h3>
+        <p>
+          The one-to-one layer: how a manager responds to good news, delivers appreciation that lands, and leads
+          with enough candour that people tell them the truth early. These are the mechanics beneath every
+          retention conversation that goes well.
+        </p>
+      </div>
+      <div class="pillar-chips">
+        <small>Modules</small>
+        <div class="chips">
+          <span class="chip">Active constructive responding</span>
+          <span class="chip">Specific appreciation</span>
+          <span class="chip">Leading with vulnerability</span>
+          <span class="chip">Curiosity &amp; questioning</span>
+          <span class="chip">Storytelling</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-num">03</div>
+      <div>
+        <h3>Facilitating groups, safety and participation</h3>
+        <p>
+          The subtle leadership cues that turn a collection of individuals into a group that talks. Reading a
+          flat room and intervening early. Pairing, prompting and framing so participation stops depending on
+          the same three voices — including at 2pm, after lunch, on the third day of an offsite.
+        </p>
+      </div>
+      <div class="pillar-chips">
+        <small>Modules</small>
+        <div class="chips">
+          <span class="chip">Generating psychological safety</span>
+          <span class="chip">Opening &amp; framing</span>
+          <span class="chip">Reading &amp; shifting group energy</span>
+          <span class="chip">Pairing &amp; prompting frameworks</span>
+          <span class="chip">Stage presence</span>
+          <span class="chip">Designing memorable moments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FORMATS ══ -->
+<section class="alt" id="formats">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow">Engagement formats</span>
+      <h2>Scoped to your headcount and your calendar</h2>
+      <p>Every format draws on the same curriculum. The difference is depth of practice and how much behaviour change you're buying.</p>
+    </div>
+
+    <div class="formats">
+      <div class="fmt">
+        <div class="fmt-top">
+          <h3>Keynote &amp; conference session</h3>
+          <span class="meta">60–90 min</span>
+        </div>
+        <p>
+          An interactive opener for an all-hands, sales kick-off or leadership summit. Not a talk people watch —
+          a session where a thousand people end up in conversation with someone they'd never have met.
+        </p>
+        <ul class="fmt-specs">
+          <li><span>Audience</span><b>Up to 1,000+</b></li>
+          <li><span>Best for</span><b>Kick-offs, summits, all-hands</b></li>
+          <li><span>Outcome</span><b>Shared language, momentum</b></li>
+        </ul>
+      </div>
+
+      <div class="fmt">
+        <div class="fmt-top">
+          <h3>Half-day workshop</h3>
+          <span class="meta">3–4 hours</span>
+        </div>
+        <p>
+          A working session for one function or leadership layer. Participants leave with two or three
+          mechanics they can run in their next team meeting — and they've already practised them on each other.
+        </p>
+        <ul class="fmt-specs">
+          <li><span>Audience</span><b>25–60 participants</b></li>
+          <li><span>Best for</span><b>Team offsites, function days</b></li>
+          <li><span>Outcome</span><b>Immediately usable tools</b></li>
+        </ul>
+      </div>
+
+      <div class="fmt">
+        <div class="fmt-top">
+          <h3>Two-day leadership intensive</h3>
+          <span class="meta">2 days</span>
+        </div>
+        <p>
+          The full three-capability curriculum with enough repetition to change default behaviour. Every
+          participant facilitates, receives coaching, and is observed leading a group more than once.
+        </p>
+        <ul class="fmt-specs">
+          <li><span>Audience</span><b>12–24 leaders</b></li>
+          <li><span>Best for</span><b>Manager &amp; director cohorts</b></li>
+          <li><span>Outcome</span><b>Observable skill, certified</b></li>
+        </ul>
+      </div>
+
+      <div class="fmt">
+        <div class="fmt-top">
+          <h3>Facilitator certification cohort</h3>
+          <span class="meta">6–8 weeks</span>
+        </div>
+        <p>
+          Build internal capability instead of renting it. A cohort of your L&amp;D, culture and people leaders is
+          trained and certified to run the curriculum inside the organisation.
+        </p>
+        <ul class="fmt-specs">
+          <li><span>Audience</span><b>12–20 internal facilitators</b></li>
+          <li><span>Best for</span><b>Scaling across regions</b></li>
+          <li><span>Outcome</span><b>Certified in-house delivery</b></li>
+        </ul>
+      </div>
+
+      <div class="fmt feature">
+        <div class="fmt-feature-grid">
+          <div>
+            <div class="fmt-top">
+              <h3>Offsite design &amp; facilitation</h3>
+              <span class="meta">2–4 days</span>
+            </div>
+            <p style="margin-bottom:1rem">
+              We design and run the whole thing — agenda, energy arc, rituals, evening programming and the
+              follow-through that stops it fading by Wednesday. Phone-light by design, so people are actually in
+              the room they flew to.
+            </p>
+            <p style="margin-bottom:0">
+              Available at your venue, or hosted at a private eight-bedroom property outside Vancouver
+              (90 minutes from YVR) with full catering, recovery facilities and a 20-person capacity.
+            </p>
+          </div>
+          <div>
+            <ul class="fmt-specs" style="margin-top:0;padding-top:0;border-top:none">
+              <li><span>Group size</span><b>Up to 20 hosted, 120 on-site</b></li>
+              <li><span>Includes</span><b>Design, delivery, materials</b></li>
+              <li><span>Catering</span><b>Full board, vegetarian-forward</b></li>
+              <li><span>Follow-through</span><b>90-day manager cadence</b></li>
+              <li><span>Also available</span><b>Open-enrolment seats, $1,200 USD</b></li>
+            </ul>
+            <a class="btn btn-primary" style="width:100%;margin-top:1.25rem" href="#enquire">Discuss an offsite →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROCESS ══ -->
+<section class="tight">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow">How engagements run</span>
+      <h2>Four steps from first call to measured change</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">1</div>
+        <h4>Discovery</h4>
+        <p>A 30-minute call with your L&amp;D or people lead. We look at engagement data, the population, and what “better” would actually look like in six months.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <h4>Design</h4>
+        <p>A written proposal: format, curriculum weighting, agenda, facilitator plan, success measures and cost. Tailored to your context, not a catalogue item.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <h4>Delivery</h4>
+        <p>Highly interactive, few lectures. Every participant practises, gets coached and leads something in front of peers before they leave.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">4</div>
+        <h4>Reinforcement</h4>
+        <p>Manager toolkit, prompts for the first ninety days, and a post-engagement pulse compared against the baseline taken before we started.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ OUTCOMES ══ -->
+<section class="alt" id="outcomes">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Outcomes</span>
+      <h2>What changes, and how you'll know</h2>
+    </div>
+    <div class="outcomes-grid">
+      <div>
+        <ul class="out-list">
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><b>Meetings that people contribute to.</b> Participation stops depending on seniority and extroversion, because the leader is running the room deliberately.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><b>Managers people tell the truth to.</b> Psychological safety built through specific, teachable conversational mechanics — not a poster in the kitchen.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><b>Offsites and all-hands worth the travel budget.</b> An energy arc that's designed rather than hoped for, with follow-through built in.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><b>Stronger onboarding and belonging.</b> New joiners connect faster when the people around them know how to open a conversation and make it land.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><b>Leaders who sustain their own energy.</b> Habits for focus, recovery and digital wellbeing that hold up across a full quarter, not a good week.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="measure">
+        <h3>How we measure it</h3>
+        <div class="measure-row">
+          <b>Before</b>
+          <p>A short baseline pulse on participation, psychological safety and manager connection, plus the relevant items from your existing engagement survey.</p>
+        </div>
+        <div class="measure-row">
+          <b>During</b>
+          <p>Facilitator observation against defined behaviours — who initiates, who is drawn in, how quickly a group moves from silence to contribution.</p>
+        </div>
+        <div class="measure-row">
+          <b>Day 30</b>
+          <p>Self-report plus a manager check: which mechanics are actually in use, in which meetings, and what got in the way.</p>
+        </div>
+        <div class="measure-row">
+          <b>Day 90</b>
+          <p>Repeat pulse against baseline, delivered as a short written read-out for your people team with recommendations for the next cohort.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FACILITATOR ══ -->
+<section>
+  <div class="wrap">
+    <div class="fac">
+      <div class="fac-inner">
+        <div>
+          <span class="eyebrow on-dark">Your facilitator</span>
+          <h2>Jacques — “the Party Scientist”</h2>
+          <p>
+            An award-winning facilitator and educator with a background in pharmacology, Jacques has spent a
+            decade turning the science of joy, energy and connection into something a room full of professionals
+            can practise — not just admire.
+          </p>
+          <p style="margin-bottom:1.75rem">
+            He has led sessions and keynotes for corporate audiences and international events, and built the
+            first certificate program of its kind on the science of joy and human behaviour. The corporate
+            curriculum here is that work, translated for organisations.
+          </p>
+          <a class="btn btn-gold" href="#enquire">Book a discovery call →</a>
+        </div>
+        <div class="fac-creds">
+          <div class="fac-cred"><b>1,000+</b><span>Events led</span></div>
+          <div class="fac-cred"><b>100k+</b><span>Participants</span></div>
+          <div class="fac-cred"><b>50+</b><span>Speaking events</span></div>
+          <div class="fac-cred"><b>BSc</b><span>Pharmacology</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TESTIMONIALS ══ -->
+<section class="alt tight">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow">Verified reviews</span>
+      <h2>What participants report afterwards</h2>
+      <p>Excerpts from verified Google reviews — 4.8★ across 47+ ratings.</p>
+    </div>
+    <div class="quotes">
+      <div class="quote">
+        <div class="stars">
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+        </div>
+        <p>
+          “I came out with a completely new direction. I became much more present, and I led my team better.”
+        </p>
+        <footer><b>Adam</b>Chief Executive, British Columbia</footer>
+      </div>
+
+      <div class="quote">
+        <div class="stars">
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+        </div>
+        <p>
+          “I wanted to get inspired, learn better public speaking, and get over my fear of leading in a bigger
+          way. I left feeling more empowered and ready to spread that energy at my events and day to day.”
+        </p>
+        <footer><b>Program participant</b>Verified Google review</footer>
+      </div>
+
+      <div class="quote">
+        <div class="stars">
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+        </div>
+        <p>
+          “The information was sensible, research-backed, and delivered with humility, encouragement and
+          empathy. One of the best immersive programs I’ve ever done.”
+        </p>
+        <footer><b>Program participant</b>Verified Google review</footer>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FAQ ══ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow">Procurement &amp; logistics</span>
+      <h2>Questions your team will ask</h2>
+    </div>
+
+    <div class="faq">
+      <details open>
+        <summary>Is this a wellbeing perk or actual leadership development?</summary>
+        <div class="answer">
+          <p>
+            It's a leadership program. Wellbeing sessions ask people to feel better; this one teaches a specific,
+            observable capability — how to raise the energy, safety and participation of a group — and then makes
+            participants practise it under coaching until it's repeatable.
+          </p>
+          <p>
+            The distinction matters at budget time: this maps to manager effectiveness and engagement, not to a
+            perks line.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Our leaders are senior. Is this too basic for them?</summary>
+        <div class="answer">
+          <p>
+            No. Senior leaders have usually had extensive training in decisions, strategy and performance
+            management, and almost none in elevating human energy and emotion. That's the gap this fills.
+            Sessions are calibrated to the seniority in the room.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Half our team are introverts. Will they hate it?</summary>
+        <div class="answer">
+          <p>
+            This is the most common concern, and the honest answer is that quiet participants often get the most
+            from it. Nothing here requires being funny, loud or performative. Presence is taught as a set of
+            mechanics — how you open, how you respond, how you frame a prompt — and mechanics are learnable by
+            anyone.
+          </p>
+          <p>Practice happens in pairs and small groups before anything happens in front of the full room.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Can you deliver virtually, and across regions?</summary>
+        <div class="answer">
+          <p>
+            Yes. Keynotes and half-day workshops run virtually with adapted exercises for video. For multi-region
+            rollouts, the facilitator certification cohort is usually the better economics: we train and certify
+            your internal facilitators, and they deliver locally with our materials and ongoing support.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>What do you need from us?</summary>
+        <div class="answer">
+          <p>
+            A named sponsor in L&amp;D or People, a room that can be rearranged (chairs that move matter more than
+            AV), a confirmed participant list two weeks out, and permission to run a five-minute baseline pulse
+            beforehand. For offsites, we'll want a call with whoever owns the agenda.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>How is it priced?</summary>
+        <div class="answer">
+          <p>
+            Engagements are scoped per proposal, based on format, group size, number of facilitators, travel and
+            whether reinforcement is included. You'll get a fixed written price before anything is committed.
+          </p>
+          <p>
+            For individual leaders, open-enrolment seats on the three-day hosted intensive are $1,200 USD per
+            person, all-inclusive of accommodation, meals and materials — a practical way to trial the curriculum
+            with one or two people before committing a cohort.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Is there a guarantee?</summary>
+        <div class="answer">
+          <p>
+            Yes. If the engagement doesn't deliver what the proposal set out, we'll run an equivalent session for
+            your team at no additional fee. Specific terms are written into each statement of work.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>How far ahead do we need to book?</summary>
+        <div class="answer">
+          <p>
+            Keynotes and workshops typically need four to six weeks. Multi-day intensives and offsites need eight
+            to twelve, mostly for venue and participant scheduling. Certification cohorts are scheduled by
+            quarter.
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta" id="enquire">
+  <div class="wrap">
+    <div class="cta-grid">
+      <div>
+        <span class="eyebrow on-dark">Next step</span>
+        <h2>Start with a 30-minute discovery call</h2>
+        <p>
+          No pitch deck. We'll look at your engagement data and your population, tell you honestly whether this
+          is the right intervention, and follow up with a written proposal if it is.
+        </p>
+        <ul class="cta-points">
+          <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Written proposal with fixed pricing within five working days</li>
+          <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Agenda and success measures agreed before anything is signed</li>
+          <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> References available from previous corporate engagements</li>
+        </ul>
+      </div>
+
+      <!-- TODO: point this at the real corporate enquiry inbox / CRM endpoint before launch -->
+      <form class="enquiry" id="enquiryForm">
+        <h3>Request a proposal</h3>
+        <div class="field-row">
+          <div class="field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Jane Okafor" required>
+          </div>
+          <div class="field">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company" placeholder="Acme Group" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">Work email</label>
+          <input type="email" id="email" name="email" placeholder="jane@acme.com" required>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="size">Group size</label>
+            <select id="size" name="size">
+              <option>12–25</option>
+              <option>26–60</option>
+              <option>61–150</option>
+              <option>150–500</option>
+              <option>500+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="format">Format</label>
+            <select id="format" name="format">
+              <option>Keynote / conference session</option>
+              <option>Half-day workshop</option>
+              <option>Two-day leadership intensive</option>
+              <option>Facilitator certification</option>
+              <option>Offsite design &amp; facilitation</option>
+              <option>Not sure yet</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="context">What are you trying to change?</label>
+          <textarea id="context" name="context" placeholder="Engagement scores, a hybrid team that isn't gelling, an offsite in Q3…"></textarea>
+        </div>
+        <button class="btn btn-gold" type="submit">Send enquiry →</button>
+        <p class="form-note">We reply within one business day.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap foot">
+    <div>© <span id="yr">2026</span> Joymaker for Business · Corporate leadership &amp; facilitation training</div>
+    <div class="foot-links">
+      <a href="https://joymaker.camp/" target="_blank" rel="noopener">Open-enrolment programs ↗</a>
+      <a href="#formats">Formats</a>
+      <a href="#enquire">Request a proposal</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Compose an enquiry email until a CRM endpoint is wired up.
+  document.getElementById('enquiryForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var el = e.target.elements;
+    var body = [
+      'Name: ' + el.name.value,
+      'Company: ' + el.company.value,
+      'Work email: ' + el.email.value,
+      'Group size: ' + el.size.value,
+      'Format: ' + el.format.value,
+      '',
+      'What we want to change:',
+      el.context.value
+    ].join('\n');
+    window.location.href = 'mailto:hello@joymaker.camp'
+      + '?subject=' + encodeURIComponent('Corporate training enquiry — ' + el.company.value)
+      + '&body=' + encodeURIComponent(body);
+  });
+</script>
+
+<script src="/rahulio/page-header.js" defer></script>
+</body>
+</html>
