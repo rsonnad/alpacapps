@@ -1,12 +1,12 @@
 {
-  "version": "v260818.01 6:35a",
-  "release": 1769,
-  "sha": "acf144dfe6",
-  "fullSha": "acf144dfe6458a8719eb744d53f3b079254a6ea4",
+  "version": "v260818.02 6:51a",
+  "release": 1770,
+  "sha": "d226d5ffd5",
+  "fullSha": "d226d5ffd56ac9b372783dc39a2150db6f54f795",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmzvulz",
-  "pushedAt": "2026-08-18T11:35:28+00:00",
-  "commits": [{"sha":"acf144dfe6","message":"feat(rahulio): add Mac Studio 512GB hold-vs-sell analysis page","author":"Otto"}]
+  "pushedAt": "2026-08-18T11:51:42+00:00",
+  "commits": [{"sha":"d226d5ffd5","message":"feat(rahulio): add SPCX $100 LEAPS hypothetical to Mac Studio analysis","author":"Otto"}]
 }
