@@ -263,6 +263,31 @@
     li { margin-bottom: 7px; }
     li:last-child { margin-bottom: 0; }
 
+    .assume {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+      gap: 16px 18px;
+      margin: 2px 0 20px;
+    }
+    .assume-k {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .assume-v {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.38rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      line-height: 1.12;
+    }
+    .assume-n { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; line-height: 1.35; }
+
+    .payoff-dot { fill: var(--surface); stroke-width: 2.5; }
+
     footer {
       background: var(--cedar);
       color: rgba(245,230,208,0.78);
@@ -520,31 +545,153 @@
         <span class="tag tag-amber">Sensitivity: 4% – 12%</span>
       </div>
       <div class="chart">
-        <svg viewBox="0 0 700 275" role="img" aria-label="Bar chart: annual return on $16,500 converted to DeepSeek V4-Pro output tokens at 4, 8, and 12 percent, compared against what the machine generates at 24/7 and realistic use. Even the 4 percent case exceeds the machine's 24/7 output.">
-          <line class="axis" x1="215" y1="26" x2="215" y2="245"/>
+        <svg viewBox="0 0 700 330" role="img" aria-label="Bar chart: annual DeepSeek V4-Pro tokens from a 4 to 12 percent return on $16,500, versus the machine at 24/7 and realistic use, plus an off-scale hypothetical of two SPCX $100 LEAPS if the stock is $420 in December 2028.">
+          <defs>
+            <pattern id="hypo-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(35)">
+              <rect width="8" height="8" fill="var(--cedar)"/>
+              <line x1="0" y1="0" x2="0" y2="8" stroke="var(--amber-pale)" stroke-width="3.5"/>
+            </pattern>
+          </defs>
+          <line class="axis" x1="215" y1="26" x2="215" y2="300"/>
 
-          <text class="lbl" x="205" y="52" text-anchor="end">Capital @ 12%</text>
-          <rect x="215" y="36" width="440" height="28" rx="3" fill="var(--sage)"/>
-          <text class="val" x="645" y="55" text-anchor="end" fill="#ffffff">2.28 billion tokens</text>
+          <text class="lbl" x="205" y="52" text-anchor="end">LEAPS @ $420</text>
+          <rect x="215" y="36" width="455" height="28" rx="3" fill="url(#hypo-hatch)"/>
+          <polygon points="455,32 468,50 455,68 442,50" fill="var(--cream)"/>
+          <text class="val" x="662" y="55" text-anchor="end" fill="#f5e6d0">23.7B · off scale</text>
 
-          <text class="lbl" x="205" y="98" text-anchor="end">Capital @ 8%</text>
-          <rect x="215" y="82" width="293" height="28" rx="3" fill="var(--blue)"/>
-          <text class="val" x="498" y="101" text-anchor="end" fill="#ffffff">1.52 billion</text>
+          <text class="lbl" x="205" y="98" text-anchor="end">Capital @ 12%</text>
+          <rect x="215" y="82" width="440" height="28" rx="3" fill="var(--sage)"/>
+          <text class="val" x="645" y="101" text-anchor="end" fill="#ffffff">2.28 billion tokens</text>
 
-          <text class="lbl" x="205" y="144" text-anchor="end">Capital @ 4%</text>
-          <rect x="215" y="128" width="147" height="28" rx="3" fill="#8fa8c4"/>
-          <text class="val" x="374" y="147">759 million</text>
+          <text class="lbl" x="205" y="144" text-anchor="end">Capital @ 8%</text>
+          <rect x="215" y="128" width="293" height="28" rx="3" fill="var(--blue)"/>
+          <text class="val" x="498" y="147" text-anchor="end" fill="#ffffff">1.52 billion</text>
 
-          <text class="lbl" x="205" y="190" text-anchor="end">Machine, 24/7</text>
-          <rect x="215" y="174" width="104" height="28" rx="3" fill="var(--amber)"/>
-          <text class="val" x="331" y="193">536 million</text>
+          <text class="lbl" x="205" y="190" text-anchor="end">Capital @ 4%</text>
+          <rect x="215" y="174" width="147" height="28" rx="3" fill="#8fa8c4"/>
+          <text class="val" x="374" y="193">759 million</text>
 
-          <text class="lbl" x="205" y="234" text-anchor="end">Machine, realistic</text>
-          <rect x="215" y="222" width="9" height="16" rx="2" fill="#c9c2b6"/>
-          <text class="lbl" x="236" y="235">44.7 million</text>
+          <text class="lbl" x="205" y="236" text-anchor="end">Machine, 24/7</text>
+          <rect x="215" y="220" width="104" height="28" rx="3" fill="var(--amber)"/>
+          <text class="val" x="331" y="239">536 million</text>
+
+          <text class="lbl" x="205" y="280" text-anchor="end">Machine, realistic</text>
+          <rect x="215" y="268" width="9" height="16" rx="2" fill="#c9c2b6"/>
+          <text class="lbl" x="236" y="281">44.7 million</text>
         </svg>
       </div>
-      <p class="chart-caption"><strong>The conclusion is robust across the whole range.</strong> Even at a conservative <strong>4%</strong>, the capital buys more DeepSeek V4-Pro output tokens (759M) than the machine can physically generate running flat out around the clock (536M) — and roughly <strong>17×</strong> what it generates at a realistic duty cycle. You do not need an optimistic return assumption for the argument to hold; that is what makes it worth acting on.</p>
+      <p class="chart-caption"><strong>The 4–12% range is the equipment argument</strong> — even at a conservative 4%, the capital buys more DeepSeek V4-Pro output tokens (759M) than the machine can generate running flat out (536M), and roughly <strong>17×</strong> a realistic duty cycle. The top bar is a different claim: two estimated SPCX $100 Jan 2029 calls, annualized as if the stock is <strong>$420 in Dec 2028</strong>. That bar is a restatement of that assumed price, levered — about <strong>10×</strong> the 12% row, which is why it is drawn off this scale. Assumptions in the next chart.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Alternate hypothetical: take the $16k, buy two SPCX $100 LEAPS</h3>
+        <span class="tag tag-rust">Estimated · not a forecast</span>
+      </div>
+      <p style="font-size:0.93rem;color:var(--text-muted);margin-bottom:18px;">Round lot that fits the unlocked cash: <strong>2 contracts</strong> of the January 2029 $100 calls (the listed LEAPS nearest a Dec 2028 horizon). Premium is estimated so the debit is a round $16,000. The $420 figure is an input, not a target this page is arguing for.</p>
+
+      <div class="assume">
+        <div>
+          <div class="assume-k">Spot (est.)</div>
+          <div class="assume-v">~$146</div>
+          <div class="assume-n">SPCX close, Aug 17 2026</div>
+        </div>
+        <div>
+          <div class="assume-k">Strike / expiry</div>
+          <div class="assume-v">$100 · Jan ’29</div>
+          <div class="assume-n">Standard LEAPS; ~28 months</div>
+        </div>
+        <div>
+          <div class="assume-k">Est. debit</div>
+          <div class="assume-v">$16,000</div>
+          <div class="assume-n">~$80/share × 2 contracts</div>
+        </div>
+        <div>
+          <div class="assume-k">Assumed Dec ’28</div>
+          <div class="assume-v">$420</div>
+          <div class="assume-n">Stated assumption, not a forecast</div>
+        </div>
+        <div>
+          <div class="assume-k">Then worth</div>
+          <div class="assume-v">$64,000</div>
+          <div class="assume-n">200 × ($420 − $100)</div>
+        </div>
+        <div>
+          <div class="assume-k">If it hits</div>
+          <div class="assume-v">4.0×</div>
+          <div class="assume-n">$48k profit · ~$0 if ≤ $100</div>
+        </div>
+      </div>
+
+      <div class="chart">
+        <svg viewBox="0 0 700 270" role="img" aria-label="Bar chart of 28-month terminal dollars: LEAPS worth $64,000 if SPCX is $420, about $19,800 if the $16,500 compounds at 8 percent, $9,200 if the stock is unchanged, $1,100 of tokens from the machine at 24/7, and zero if SPCX finishes at or below the $100 strike.">
+          <line class="axis" x1="215" y1="22" x2="215" y2="248"/>
+
+          <text class="lbl" x="205" y="46" text-anchor="end">LEAPS if $420</text>
+          <rect x="215" y="30" width="440" height="26" rx="3" fill="var(--cedar)"/>
+          <text class="val" x="645" y="48" text-anchor="end" fill="#f5e6d0">$64,000</text>
+
+          <text class="lbl" x="205" y="90" text-anchor="end">Capital @ 8%</text>
+          <rect x="215" y="74" width="136" height="26" rx="3" fill="var(--blue)"/>
+          <text class="val" x="361" y="92">$19,800</text>
+
+          <text class="lbl" x="205" y="134" text-anchor="end">LEAPS, unchanged</text>
+          <rect x="215" y="118" width="63" height="26" rx="3" fill="var(--amber)"/>
+          <text class="val" x="288" y="136">$9,200</text>
+
+          <text class="lbl" x="205" y="178" text-anchor="end">Machine, 24/7</text>
+          <rect x="215" y="162" width="8" height="26" rx="2" fill="#c9c2b6"/>
+          <text class="lbl" x="233" y="180">~$1,100 of tokens</text>
+
+          <text class="lbl" x="205" y="222" text-anchor="end">LEAPS if ≤ $100</text>
+          <line x1="215" y1="214" x2="228" y2="214" stroke="var(--rust)" stroke-width="3" stroke-linecap="round"/>
+          <text class="val neg" x="238" y="218" fill="var(--rust)">$0 · wiped out</text>
+        </svg>
+      </div>
+      <p class="chart-caption" style="margin-bottom:22px;"><strong>Same ~28-month window, terminal dollars.</strong> The 8% row is $16,500 compounded (~$19,800). The LEAPS rows are the option’s intrinsic value at expiry, after spending $16,000 today. Unchanged spot (~$146) leaves the calls worth about <strong>$9,200</strong> — a loss. Below the strike the $16,000 is gone. The $64,000 bar is what you get <em>if</em> $420 is the price; it is not evidence that $420 is the price.</p>
+
+      <h3 style="margin-top:6px;">Payoff of those two contracts</h3>
+      <div class="chart">
+        <svg viewBox="0 0 700 280" role="img" aria-label="Payoff line for two SPCX $100 calls: worthless at or below $100, $16,000 at about $180, $64,000 at $420.">
+          <!-- grid -->
+          <line class="axis" x1="70" y1="230" x2="670" y2="230"/>
+          <line class="axis" x1="70" y1="30" x2="70" y2="230"/>
+          <line x1="70" y1="180" x2="670" y2="180" stroke="var(--border-light)"/>
+          <line x1="70" y1="130" x2="670" y2="130" stroke="var(--border-light)"/>
+          <line x1="70" y1="80" x2="670" y2="80" stroke="var(--border-light)"/>
+
+          <!-- y labels: $0, $20k, $40k, $80k mapped 230 → 30 over $0–$80k -->
+          <text class="lbl" x="62" y="234" text-anchor="end">$0</text>
+          <text class="lbl" x="62" y="184" text-anchor="end">$20k</text>
+          <text class="lbl" x="62" y="134" text-anchor="end">$40k</text>
+          <text class="lbl" x="62" y="84" text-anchor="end">$60k</text>
+          <text class="lbl" x="62" y="34" text-anchor="end">$80k</text>
+
+          <!-- cost basis dashed -->
+          <line x1="70" y1="190" x2="670" y2="190" stroke="var(--text-muted)" stroke-width="1.2" stroke-dasharray="5 4"/>
+          <text class="lbl" x="662" y="182" text-anchor="end">$16k debit</text>
+
+          <!-- payoff: S from 0–500, x=70+(S/500)*600, y=230-(value/80000)*200 -->
+          <!-- 0→100: y=230; 100:0; 180:16000 → y=190; 420:64000 → y=70; 500:80000 → y=30 -->
+          <polyline fill="none" stroke="var(--cedar)" stroke-width="2.8" stroke-linejoin="round" points="70,230 190,230 286,190 574,70 670,30"/>
+
+          <!-- markers -->
+          <circle class="payoff-dot" cx="190" cy="230" r="5.5" stroke="var(--rust)"/>
+          <text class="lbl" x="190" y="250" text-anchor="middle">$100 strike</text>
+
+          <circle class="payoff-dot" cx="245" cy="207" r="5.5" stroke="var(--amber)"/>
+          <text class="lbl" x="245" y="198" text-anchor="middle">~$146 spot</text>
+
+          <circle class="payoff-dot" cx="286" cy="190" r="5.5" stroke="var(--blue)"/>
+          <text class="lbl" x="310" y="178">~$180 BE</text>
+
+          <circle class="payoff-dot" cx="574" cy="70" r="6" stroke="var(--cedar)" fill="var(--amber-pale)"/>
+          <text class="val" x="574" y="58" text-anchor="middle">$420 → $64k</text>
+
+          <text class="lbl" x="370" y="268" text-anchor="middle">SPCX share price at Dec 2028 / Jan 2029 expiry</text>
+        </svg>
+      </div>
+      <p class="chart-caption"><strong>How the $80 estimate was rounded.</strong> At ~$146 spot the $100 call is already ~$46 in the money. A back-of-envelope Black–Scholes (≈45% IV, ~2.4 years, 4% rate) lands around <strong>$65–70</strong> per share. This page uses <strong>$80</strong> so two contracts cost a round $16,000 and so the debit is not flattered. Break-even at expiry is strike + premium ≈ <strong>$180</strong>. Listed January 2029 LEAPS are the stand-in for “Dec 28”; there is no guarantee those strikes are offered at this debit.</p>
     </div>
 
     <div class="card">
@@ -605,9 +752,9 @@
     </div>
 
     <div class="callout">
-      <div class="callout-title">On comparing against a specific investment</div>
-      <p>The return figures above are deliberately generic — a plain opportunity-cost band, not a pick. Modelling a particular position (a strike, an expiry, a price target) would make this page look like it answers a question it cannot: what a given security will do. A levered scenario in particular would produce a bar that dwarfs everything here, but the size of that bar would be a restatement of the assumed price, not a finding about the Mac Studio.</p>
-      <p><strong>The two decisions are separable.</strong> The machine loses money at 2h/day <em>and</em> at 24/7 utilization, before any comparator is introduced. What the freed capital should do afterward is a genuinely different question — and one worth putting to someone licensed rather than settling from a spreadsheet.</p>
+      <div class="callout-title">On the LEAPS bar</div>
+      <p>The 4–12% band is still a generic opportunity cost, not a pick. The SPCX row is a <em>labeled hypothetical</em>: two estimated $100 Jan 2029 calls, marked to a <strong>$420 Dec 2028</strong> input. A 4× bar is what that input produces when you lever it; it is not a finding about the Mac Studio, and it is not a forecast of SPCX.</p>
+      <p><strong>The two decisions are still separable.</strong> The machine loses money at 2h/day <em>and</em> at 24/7 utilization, before any comparator is introduced. Whether the unlocked cash should buy LEAPS, sit in cash, or fund the business is a different question — and one worth taking to someone licensed rather than settling from this page.</p>
     </div>
   </section>
 
@@ -663,11 +810,13 @@
       <li><a href="https://deepseek.ai/pricing">DeepSeek</a> — V4-Flash / V4-Pro API pricing</li>
       <li><a href="https://appletreats.substack.com/p/m3-ultra-mac-studio-is-capable-of">Apple Treats</a> — DeepSeek R1 at 16–18 tok/s on this hardware, under 200W</li>
       <li>Claude Opus 5 — $5/M input, $25/M output (Anthropic list pricing)</li>
+      <li><a href="https://finance.yahoo.com/quote/SPCX/">Yahoo Finance · SPCX</a> — ~$146 close on Aug 17, 2026 (spot used for the LEAPS estimate)</li>
     </ul>
 
     <div class="disclaimer">
-      <p style="margin-bottom:10px;"><strong style="color:var(--amber-pale);">Assumptions:</strong> Electricity at $0.20/kWh. Machine draw 200W under load. Realistic duty cycle 2h/day. Sale price $18,000 (estimated — <em>not</em> verified against sold listings). Token values at DeepSeek V4-Pro list pricing, $0.87/M output. The 4–12% band is a generic opportunity-cost range, not a forecast and not tied to any particular instrument.</p>
-      <p>This is an equipment cost/benefit analysis, not investment advice. No security, fund, or position is recommended here, and the return band is an input assumption rather than a projection. What to do with freed capital is a separate decision worth taking to someone licensed.</p>
+      <p style="margin-bottom:10px;"><strong style="color:var(--amber-pale);">Assumptions:</strong> Electricity at $0.20/kWh. Machine draw 200W under load. Realistic duty cycle 2h/day. Sale price $18,000 (estimated — <em>not</em> verified against sold listings). Token values at DeepSeek V4-Pro list pricing, $0.87/M output. The 4–12% band is a generic opportunity-cost range, not a forecast.</p>
+      <p style="margin-bottom:10px;"><strong style="color:var(--amber-pale);">LEAPS hypothetical:</strong> 2× SPCX Jan 2029 $100 calls. Spot ~$146 (Aug 17, 2026 close). Estimated debit $80/share ($16,000 round lot; a ~45% IV back-of-envelope is closer to $65–70). Terminal value at $420 = 200 × $320 = $64,000. Annualized token bar uses $48,000 profit ÷ ~2.33 years ÷ $0.87/M. Wipeout if SPCX ≤ $100 at expiry. January 2029 is the listed LEAPS month nearest “Dec 28.” None of this is a quote.</p>
+      <p>This is an equipment cost/benefit analysis, not investment advice. No security, fund, or position is recommended here. The SPCX scenario is an illustrative payoff under a stated price input, not a projection and not a recommendation to buy those calls. What to do with freed capital is a separate decision worth taking to someone licensed.</p>
     </div>
   </div>
 </footer>
