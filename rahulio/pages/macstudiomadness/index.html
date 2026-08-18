@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mac Studio Madness — The 512GB Question</title>
+  <meta name="description" content="A cost/benefit analysis of holding vs. selling a 512GB M3 Ultra Mac Studio: appreciation from the DRAM shortage, local vs. cloud token economics, and what the freed capital actually buys.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --amber: #d4883a;
+      --amber-glow: #c07a30;
+      --amber-pale: #f5e6d0;
+      --cedar: #5a3e28;
+      --cedar-light: #7a5e48;
+      --cream: #faf9f6;
+      --cream-warm: #f5efe2;
+      --surface: #ffffff;
+      --border: #e8e2d8;
+      --border-light: #f0ebe3;
+      --text-dark: #2a2420;
+      --text-body: #4a4440;
+      --text-muted: #7a7470;
+      --sage: #7a9e7e;
+      --sage-bg: #f0f5f0;
+      --blue: #4a7ab5;
+      --blue-bg: #eef3fa;
+      --rust: #b5563f;
+      --rust-bg: #fbeeea;
+      --radius: 14px;
+      --radius-lg: 20px;
+      --shadow: 0 2px 12px rgba(90,62,40,0.06);
+      --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cream);
+      color: var(--text-body);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 22px; }
+
+    /* ---------- Hero ---------- */
+    header.hero {
+      background: linear-gradient(160deg, var(--cream-warm) 0%, var(--cream) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 64px 0 52px;
+    }
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--amber-glow);
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(2.4rem, 6vw, 3.6rem);
+      font-weight: 600;
+      line-height: 1.08;
+      color: var(--text-dark);
+      letter-spacing: -0.015em;
+      margin-bottom: 18px;
+    }
+    .standfirst {
+      font-size: 1.12rem;
+      color: var(--text-body);
+      max-width: 62ch;
+    }
+    .standfirst strong { color: var(--text-dark); font-weight: 600; }
+
+    /* ---------- Verdict band ---------- */
+    .verdict {
+      background: var(--cedar);
+      color: var(--cream-warm);
+      padding: 34px 0;
+    }
+    .verdict-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 26px;
+    }
+    .vstat-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: rgba(245,230,208,0.62);
+      margin-bottom: 7px;
+    }
+    .vstat-value {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.15rem;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--amber-pale);
+      margin-bottom: 5px;
+    }
+    .vstat-note { font-size: 0.83rem; color: rgba(245,230,208,0.72); line-height: 1.45; }
+
+    /* ---------- Sections ---------- */
+    section { padding: 52px 0; border-bottom: 1px solid var(--border-light); }
+    section:last-of-type { border-bottom: none; }
+
+    h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(1.7rem, 3.4vw, 2.25rem);
+      font-weight: 600;
+      color: var(--text-dark);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      max-width: 64ch;
+    }
+    h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+    }
+    p { margin-bottom: 15px; max-width: 68ch; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-dark); font-weight: 600; }
+
+    /* ---------- Cards ---------- */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .card:last-child { margin-bottom: 0; }
+
+    .card-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding-bottom: 13px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .card-head h3 { margin-bottom: 0; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.67rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+    .tag-sage { background: var(--sage-bg); color: #4d7a52; }
+    .tag-rust { background: var(--rust-bg); color: var(--rust); }
+    .tag-blue { background: var(--blue-bg); color: var(--blue); }
+    .tag-amber { background: var(--amber-pale); color: var(--amber-glow); }
+
+    /* ---------- Charts ---------- */
+    .chart { margin: 4px 0 0; }
+    .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .chart-caption {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 14px;
+      padding-top: 13px;
+      border-top: 1px solid var(--border-light);
+      max-width: none;
+    }
+    text { font-family: 'DM Sans', sans-serif; }
+    .lbl { font-size: 12px; fill: var(--text-muted); }
+    .val { font-size: 13px; font-weight: 600; fill: var(--text-dark); }
+    .valbig { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; fill: var(--text-dark); }
+    .axis { stroke: var(--border); stroke-width: 1; }
+
+    /* ---------- Tables ---------- */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 460px; }
+    th {
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 0 12px 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+    .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; }
+    .pos { color: #4d7a52; font-weight: 600; }
+    .neg { color: var(--rust); font-weight: 600; }
+    tr.total td { border-top: 2px solid var(--border); border-bottom: none; padding-top: 13px; font-weight: 600; color: var(--text-dark); }
+
+    /* ---------- Callouts ---------- */
+    .callout {
+      border-left: 3px solid var(--amber);
+      background: var(--cream-warm);
+      padding: 18px 22px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 22px 0;
+    }
+    .callout.warn { border-left-color: var(--rust); background: var(--rust-bg); }
+    .callout.good { border-left-color: var(--sage); background: var(--sage-bg); }
+    .callout-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--amber-glow);
+      margin-bottom: 8px;
+    }
+    .callout.warn .callout-title { color: var(--rust); }
+    .callout.good .callout-title { color: #4d7a52; }
+    .callout p { font-size: 0.95rem; margin-bottom: 10px; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    /* ---------- Scenario split ---------- */
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 700px) { .split { grid-template-columns: 1fr; } }
+
+    .bignum {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.6rem;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--text-dark);
+      margin: 6px 0 4px;
+    }
+    .bignum.neg { color: var(--rust); }
+    .bignum.pos { color: #4d7a52; }
+    .bignum-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    ul { margin: 0 0 15px 0; padding-left: 20px; max-width: 68ch; }
+    li { margin-bottom: 7px; }
+    li:last-child { margin-bottom: 0; }
+
+    footer {
+      background: var(--cedar);
+      color: rgba(245,230,208,0.78);
+      padding: 40px 0;
+      font-size: 0.88rem;
+    }
+    footer h3 { color: var(--amber-pale); font-size: 0.95rem; margin-bottom: 12px; }
+    footer a { color: var(--amber-pale); }
+    footer ul { padding-left: 18px; max-width: none; }
+    footer li { margin-bottom: 5px; }
+    .disclaimer {
+      margin-top: 26px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(245,230,208,0.16);
+      font-size: 0.82rem;
+      color: rgba(245,230,208,0.6);
+      max-width: 70ch;
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Asset Analysis · August 2026</div>
+    <h1>Mac Studio Madness</h1>
+    <p class="standfirst">You own a 512&nbsp;GB M3 Ultra Mac Studio. Apple stopped selling the configuration in March, and the DRAM shortage has pushed its market value <strong>well above what you paid</strong>. Meanwhile it produces almost no value as a compute asset. Here is the arithmetic on holding it versus selling it.</p>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="wrap">
+    <div class="verdict-grid">
+      <div>
+        <div class="vstat-label">Est. market value</div>
+        <div class="vstat-value">~$18,000</div>
+        <div class="vstat-note">Up from $9,499 new. Asks run $25.5K–$37K; sold data unavailable.</div>
+      </div>
+      <div>
+        <div class="vstat-label">Replacement cost</div>
+        <div class="vstat-value">$1,499</div>
+        <div class="vstat-note">Mac mini M4, 32&nbsp;GB / 1&nbsp;TB — ample for actual workloads.</div>
+      </div>
+      <div>
+        <div class="vstat-label">Cash unlocked</div>
+        <div class="vstat-value">~$16,500</div>
+        <div class="vstat-note">Throws off $660–$1,980/yr across a 4–12% band.</div>
+      </div>
+      <div>
+        <div class="vstat-label">Value it generates now</div>
+        <div class="vstat-value">~$39/yr</div>
+        <div class="vstat-note">At realistic use, in tokens you'd otherwise buy.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ 1. APPRECIATION ============ -->
+  <section>
+    <h2>The appreciation is real — and temporary</h2>
+    <p class="section-sub">A supply shock, not a durable trend. Three things happened in six months.</p>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Estimated value of a 512&nbsp;GB M3 Ultra Mac Studio</h3>
+        <span class="tag tag-amber">Supply shock</span>
+      </div>
+      <div class="chart">
+        <svg viewBox="0 0 700 260" role="img" aria-label="Bar chart: machine value rose from $9,499 new to roughly $18,000 today, with an upper ask range near $25,700.">
+          <line class="axis" x1="60" y1="210" x2="680" y2="210"/>
+
+          <!-- Oct 2025 new -->
+          <rect x="85" y="149" width="92" height="61" rx="4" fill="#c9c2b6"/>
+          <text class="val" x="131" y="140" text-anchor="middle">$9,499</text>
+          <text class="lbl" x="131" y="230" text-anchor="middle">Original price</text>
+          <text class="lbl" x="131" y="246" text-anchor="middle">(config new)</text>
+
+          <!-- Feb 2026 -->
+          <rect x="225" y="159" width="92" height="51" rx="4" fill="#b8b0a3"/>
+          <text class="val" x="271" y="150" text-anchor="middle">~$8,000</text>
+          <text class="lbl" x="271" y="230" text-anchor="middle">Feb 2026</text>
+          <text class="lbl" x="271" y="246" text-anchor="middle">(6 months ago, used)</text>
+
+          <!-- Aug 2026 central -->
+          <rect x="365" y="94" width="92" height="116" rx="4" fill="var(--amber)"/>
+          <text class="valbig" x="411" y="84" text-anchor="middle">~$18,000</text>
+          <text class="lbl" x="411" y="230" text-anchor="middle">Aug 2026</text>
+          <text class="lbl" x="411" y="246" text-anchor="middle">(realistic sale)</text>
+
+          <!-- Aug 2026 ask -->
+          <rect x="505" y="45" width="92" height="165" rx="4" fill="var(--amber-pale)" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text class="val" x="551" y="36" text-anchor="middle">$25,700</text>
+          <text class="lbl" x="551" y="230" text-anchor="middle">Aug 2026</text>
+          <text class="lbl" x="551" y="246" text-anchor="middle">(eBay <tspan font-style="italic">ask</tspan>, unverified)</text>
+        </svg>
+      </div>
+      <p class="chart-caption"><strong>Read the dashed bar with suspicion.</strong> Listings at $25,500–$37,000 are asking prices on a thin market, and eBay asks for scarce hardware are frequently fantasy. Sold-listing data could not be found — that is the number that matters. Check eBay's completed/sold filter and r/hardwareswap before anchoring on anything here.</p>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <h3>What happened</h3>
+        <ul>
+          <li><strong>March 2026</strong> — Apple silently pulls the 512&nbsp;GB option; raises the 256&nbsp;GB upgrade by $400.</li>
+          <li><strong>May 2026</strong> — 128&nbsp;GB and 256&nbsp;GB pulled too.</li>
+          <li><strong>Today</strong> — max orderable config is <strong>96&nbsp;GB</strong>.</li>
+        </ul>
+        <p>You cannot buy 512&nbsp;GB of unified memory in a Mac at any price. That is the entire basis of the premium.</p>
+      </div>
+      <div class="card">
+        <h3>Why it won't last</h3>
+        <p>The premium is a DRAM supply constraint, not a property of the silicon. When supply normalizes and an M5 Ultra ships, this becomes a two-generation-old machine whose only distinction was a memory tier the new one also offers.</p>
+        <p><strong>The window to sell into scarcity is now, not in two years.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. TOKEN ECONOMICS ============ -->
+  <section>
+    <h2>What the machine actually produces</h2>
+    <p class="section-sub">The best case for keeping it is running a frontier open model locally. Here is what that's worth against simply buying the same tokens.</p>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Cost per million output tokens</h3>
+        <span class="tag tag-blue">Log scale</span>
+      </div>
+      <div class="chart">
+        <svg viewBox="0 0 700 250" role="img" aria-label="Bar chart comparing output token prices: DeepSeek V4-Flash $0.66, V4-Pro $0.87, and Claude Opus 5 $25.00 per million tokens.">
+          <line class="axis" x1="200" y1="30" x2="200" y2="215"/>
+
+          <!-- Flash -->
+          <text class="lbl" x="190" y="60" text-anchor="end">DeepSeek V4-Flash</text>
+          <rect x="200" y="44" width="120" height="26" rx="3" fill="var(--sage)"/>
+          <text class="val" x="332" y="62">$0.66 <tspan class="lbl">/M out</tspan></text>
+
+          <!-- Pro -->
+          <text class="lbl" x="190" y="110" text-anchor="end">DeepSeek V4-Pro</text>
+          <rect x="200" y="94" width="150" height="26" rx="3" fill="var(--blue)"/>
+          <text class="val" x="362" y="112">$0.87 <tspan class="lbl">/M out</tspan></text>
+
+          <!-- Local -->
+          <text class="lbl" x="190" y="160" text-anchor="end">R1 671B, local</text>
+          <rect x="200" y="144" width="150" height="26" rx="3" fill="var(--amber)"/>
+          <text class="val" x="362" y="162">≈ same quality tier <tspan class="lbl">· 17 tok/s ceiling</tspan></text>
+
+          <!-- Opus -->
+          <text class="lbl" x="190" y="210" text-anchor="end">Claude Opus 5</text>
+          <rect x="200" y="194" width="440" height="26" rx="3" fill="var(--cedar)"/>
+          <text class="val" x="652" y="212" text-anchor="end" fill="#f5e6d0">$25.00 /M out</text>
+        </svg>
+      </div>
+      <p class="chart-caption">The local machine competes with the <em>cheap</em> row, not the expensive one. It runs DeepSeek-class models — so the honest benchmark is DeepSeek's own cloud price, which is under a dollar per million output tokens. It does not produce Opus-quality output, so the $25 row isn't a substitution it can make.</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">The core problem</div>
+      <p>A machine that generates <strong>17 tokens per second</strong> is producing something that costs <strong>$0.87 per million</strong> to buy. Running flat out for a full day yields about 1.47M tokens — roughly <strong>$1.28</strong> of substitutable value, against about <strong>$0.96</strong> of electricity.</p>
+    </div>
+  </section>
+
+  <!-- ============ 3. TWO SCENARIOS ============ -->
+  <section>
+    <h2>Two scenarios</h2>
+    <p class="section-sub">Both assume the machine keeps working perfectly. Neither is close to break-even once the capital is priced.</p>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head">
+          <h3>1 · Barely used</h3>
+          <span class="tag tag-rust">Status quo</span>
+        </div>
+        <p style="font-size:0.92rem;color:var(--text-muted);margin-bottom:16px;">~2 hours/day of actual generation — the realistic duty cycle for a personal machine.</p>
+        <div class="table-scroll">
+          <table>
+            <tr><td>Tokens produced/yr</td><td class="num mono">44.7M</td></tr>
+            <tr><td>Value at $0.87/M</td><td class="num mono pos">+$39</td></tr>
+            <tr><td>Electricity</td><td class="num mono neg">−$29</td></tr>
+            <tr><td>Capital cost (8% of $16.5K)</td><td class="num mono neg">−$1,320</td></tr>
+            <tr class="total"><td>Net per year</td><td class="num mono neg">−$1,310</td></tr>
+          </table>
+        </div>
+        <div class="bignum-label" style="margin-top:20px;">True annual cost</div>
+        <div class="bignum neg">−$1,310</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>2 · Rented out</h3>
+          <span class="tag tag-rust">Hypothetical</span>
+        </div>
+        <p style="font-size:0.92rem;color:var(--text-muted);margin-bottom:16px;">100% utilization, 24/7, every token sold at cloud rates. The theoretical ceiling.</p>
+        <div class="table-scroll">
+          <table>
+            <tr><td>Tokens produced/yr</td><td class="num mono">536M</td></tr>
+            <tr><td>Value at $0.87/M</td><td class="num mono pos">+$467</td></tr>
+            <tr><td>Electricity</td><td class="num mono neg">−$350</td></tr>
+            <tr><td>Capital cost (8% of $16.5K)</td><td class="num mono neg">−$1,320</td></tr>
+            <tr class="total"><td>Net per year</td><td class="num mono neg">−$1,203</td></tr>
+          </table>
+        </div>
+        <div class="bignum-label" style="margin-top:20px;">True annual cost</div>
+        <div class="bignum neg">−$1,203</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">And scenario 2 cannot actually be run</div>
+      <p>There is no marketplace for Apple Silicon compute. Vast.ai, RunPod, Akash, and TensorDock are CUDA-only — their entire tooling stack targets NVIDIA, so there is no demand side to list into. The Mac-in-the-cloud providers (MacStadium, SKORPPIO) own their own hardware and rent it for Xcode/CI; they are not marketplaces you can join.</p>
+      <p><strong>Running the machine at full tilt around the clock — an outcome you have no mechanism to achieve — would still lose about $1,200 a year.</strong></p>
+    </div>
+  </section>
+
+  <!-- ============ 4. THE SWAP ============ -->
+  <section>
+    <h2>The swap</h2>
+    <p class="section-sub">Sell the Studio, keep Alpuca, buy nothing. Here's where the money lands.</p>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Cash unlocked</h3>
+        <span class="tag tag-sage">One-time</span>
+      </div>
+      <div class="chart">
+        <svg viewBox="0 0 700 200" role="img" aria-label="Waterfall: $18,000 sale proceeds minus $1,499 replacement equals about $16,500 freed capital.">
+          <line class="axis" x1="40" y1="150" x2="680" y2="150"/>
+
+          <rect x="70" y="42" width="140" height="108" rx="4" fill="var(--sage)"/>
+          <text class="valbig" x="140" y="32" text-anchor="middle">+$18,000</text>
+          <text class="lbl" x="140" y="170" text-anchor="middle">Sale proceeds</text>
+          <text class="lbl" x="140" y="186" text-anchor="middle">(est. — verify sold data)</text>
+
+          <text x="250" y="105" text-anchor="middle" font-size="26" fill="var(--text-muted)">−</text>
+
+          <rect x="290" y="141" width="140" height="9" rx="3" fill="var(--rust)"/>
+          <text class="val" x="360" y="131" text-anchor="middle">$1,499</text>
+          <text class="lbl" x="360" y="170" text-anchor="middle">Mac mini M4</text>
+          <text class="lbl" x="360" y="186" text-anchor="middle">32 GB / 1 TB</text>
+
+          <text x="470" y="105" text-anchor="middle" font-size="26" fill="var(--text-muted)">=</text>
+
+          <rect x="510" y="51" width="140" height="99" rx="4" fill="var(--amber)"/>
+          <text class="valbig" x="580" y="41" text-anchor="middle">$16,501</text>
+          <text class="lbl" x="580" y="170" text-anchor="middle">Freed capital</text>
+        </svg>
+      </div>
+      <p class="chart-caption"><strong>The replacement line may be unnecessary.</strong> Alpuca — the M4 Mac mini with 24&nbsp;GB — already sits on the desk running the full Ollama stack. A 32&nbsp;GB mini is a marginal upgrade over hardware you own. If you skip it, the freed capital is the full <strong>$18,000</strong>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>What the freed capital buys, annually</h3>
+        <span class="tag tag-amber">Sensitivity: 4% – 12%</span>
+      </div>
+      <div class="chart">
+        <svg viewBox="0 0 700 275" role="img" aria-label="Bar chart: annual return on $16,500 converted to DeepSeek V4-Pro output tokens at 4, 8, and 12 percent, compared against what the machine generates at 24/7 and realistic use. Even the 4 percent case exceeds the machine's 24/7 output.">
+          <line class="axis" x1="215" y1="26" x2="215" y2="245"/>
+
+          <text class="lbl" x="205" y="52" text-anchor="end">Capital @ 12%</text>
+          <rect x="215" y="36" width="440" height="28" rx="3" fill="var(--sage)"/>
+          <text class="val" x="645" y="55" text-anchor="end" fill="#ffffff">2.28 billion tokens</text>
+
+          <text class="lbl" x="205" y="98" text-anchor="end">Capital @ 8%</text>
+          <rect x="215" y="82" width="293" height="28" rx="3" fill="var(--blue)"/>
+          <text class="val" x="498" y="101" text-anchor="end" fill="#ffffff">1.52 billion</text>
+
+          <text class="lbl" x="205" y="144" text-anchor="end">Capital @ 4%</text>
+          <rect x="215" y="128" width="147" height="28" rx="3" fill="#8fa8c4"/>
+          <text class="val" x="374" y="147">759 million</text>
+
+          <text class="lbl" x="205" y="190" text-anchor="end">Machine, 24/7</text>
+          <rect x="215" y="174" width="104" height="28" rx="3" fill="var(--amber)"/>
+          <text class="val" x="331" y="193">536 million</text>
+
+          <text class="lbl" x="205" y="234" text-anchor="end">Machine, realistic</text>
+          <rect x="215" y="222" width="9" height="16" rx="2" fill="#c9c2b6"/>
+          <text class="lbl" x="236" y="235">44.7 million</text>
+        </svg>
+      </div>
+      <p class="chart-caption"><strong>The conclusion is robust across the whole range.</strong> Even at a conservative <strong>4%</strong>, the capital buys more DeepSeek V4-Pro output tokens (759M) than the machine can physically generate running flat out around the clock (536M) — and roughly <strong>17×</strong> what it generates at a realistic duty cycle. You do not need an optimistic return assumption for the argument to hold; that is what makes it worth acting on.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>How the recommendation shifts with the actual sale price</h3>
+        <span class="tag tag-blue">The one input worth verifying</span>
+      </div>
+      <p style="font-size:0.93rem;color:var(--text-muted);margin-bottom:18px;">The $18,000 figure is an estimate off asking prices. Here is the same analysis run at a pessimistic and an optimistic clearing price, holding everything else constant at 8%.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Sale price</th>
+              <th class="num">Freed capital</th>
+              <th class="num">@ 8% / yr</th>
+              <th class="num">Tokens/yr</th>
+              <th class="num">vs. machine 24/7</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>$12,000</strong> <span class="lbl" style="color:var(--text-muted);font-size:0.84rem;">pessimistic</span></td>
+              <td class="num mono">$10,501</td>
+              <td class="num mono">$840</td>
+              <td class="num mono">966M</td>
+              <td class="num mono pos">1.8×</td>
+            </tr>
+            <tr>
+              <td><strong>$18,000</strong> <span class="lbl" style="color:var(--text-muted);font-size:0.84rem;">estimate used</span></td>
+              <td class="num mono">$16,501</td>
+              <td class="num mono">$1,320</td>
+              <td class="num mono">1.52B</td>
+              <td class="num mono pos">2.8×</td>
+            </tr>
+            <tr>
+              <td><strong>$25,000</strong> <span class="lbl" style="color:var(--text-muted);font-size:0.84rem;">optimistic</span></td>
+              <td class="num mono">$23,501</td>
+              <td class="num mono">$1,880</td>
+              <td class="num mono">2.16B</td>
+              <td class="num mono pos">4.0×</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="chart-caption"><strong>The recommendation survives all three.</strong> Even if the machine clears at only $12,000 — well below the lowest current ask — the freed capital still buys nearly twice the tokens the machine can generate running flat out. The sale price changes how good the trade is, not whether it is good.</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">The one combination where holding wins</div>
+      <p>Stack every pessimistic assumption at once — a <strong>$12,000</strong> sale, a <strong>4%</strong> return, and genuine <strong>24/7</strong> utilization — and the capital yields $420/yr, or 483M tokens, just under the machine's 536M ceiling. That is the only corner of the analysis where keeping it comes out ahead.</p>
+      <p>It also requires renting the machine out around the clock, which <strong>no existing marketplace lets you do</strong>. Absent that, the scenario collapses back to ~44.7M tokens a year and the argument is not close.</p>
+    </div>
+
+    <div class="callout good">
+      <div class="callout-title">Put another way</div>
+      <p>At 8%, $1,320/year is <strong>$110/month</strong> — enough to fully fund a $100/month Claude Max subscription, in perpetuity, without touching the principal. That subscription gives you frontier-model quality the local machine cannot produce at any speed.</p>
+      <p>Or, in frontier tokens: <strong>52.8M Claude Opus 5 output tokens per year</strong> — about 4.4M a month.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">On comparing against a specific investment</div>
+      <p>The return figures above are deliberately generic — a plain opportunity-cost band, not a pick. Modelling a particular position (a strike, an expiry, a price target) would make this page look like it answers a question it cannot: what a given security will do. A levered scenario in particular would produce a bar that dwarfs everything here, but the size of that bar would be a restatement of the assumed price, not a finding about the Mac Studio.</p>
+      <p><strong>The two decisions are separable.</strong> The machine loses money at 2h/day <em>and</em> at 24/7 utilization, before any comparator is introduced. What the freed capital should do afterward is a genuinely different question — and one worth putting to someone licensed rather than settling from a spreadsheet.</p>
+    </div>
+  </section>
+
+  <!-- ============ 5. HONEST CASE AGAINST ============ -->
+  <section>
+    <h2>The honest case for holding</h2>
+    <p class="section-sub">Three arguments that cut the other way. They are real; they are just probably not worth $16,500.</p>
+
+    <div class="card">
+      <h3>1 · You may not be able to buy it back</h3>
+      <p>If 512&nbsp;GB of unified memory becomes something you genuinely need in 12–18 months, the option may not exist. DRAM supply is the binding constraint and nobody knows when it eases. That is real option value — weigh it against the cash sitting idle in a startup that likely has better uses for it.</p>
+    </div>
+
+    <div class="card">
+      <h3>2 · The dollar value was never the point</h3>
+      <p>Privacy on sensitive data, working offline, no rate limits, unlimited experimentation without metering anxiety. None of these appear in the tables above and all of them are legitimate reasons to own local compute. The question is whether they need <em>512&nbsp;GB</em> — and for AlpacApps, they don't.</p>
+    </div>
+
+    <div class="card">
+      <h3>3 · Carrying cost may be negative right now</h3>
+      <p>While the shortage persists, the machine may be appreciating faster than it depreciates — meaning it currently earns more sitting on the desk than it produces in tokens. That is an argument for <em>timing</em>, not for holding indefinitely. It also cuts the other way: appreciation is exactly why selling now beats selling later.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">What 512 GB is actually for</div>
+      <p>Nothing AlpacApps does needs it. Bulk vision over <span class="mono">work_photos</span>, permit OCR, the CAD render pipeline — all 30B-class workloads, several of which already run on Alpuca's 24&nbsp;GB. The only thing 512&nbsp;GB unlocks is frontier-scale open models like R1 671B, and those lose to cloud Claude on both quality and economics.</p>
+      <p>You'd be holding an $18,000 asset to run models you've already concluded you'd rather run in the cloud.</p>
+    </div>
+  </section>
+
+  <!-- ============ 6. RECOMMENDATION ============ -->
+  <section>
+    <h2>Recommendation</h2>
+    <div class="card">
+      <ol style="padding-left:20px;max-width:68ch;">
+        <li style="margin-bottom:12px;"><strong>Verify the real number first.</strong> Check eBay <em>sold</em> listings and r/hardwareswap. Every figure on this page rests on an $18,000 estimate derived from asking prices, and asks on thin markets are unreliable. Per the sensitivity table above, the recommendation holds anywhere from $12K to $25K — so this is worth an hour of checking, not a week of it.</li>
+        <li style="margin-bottom:12px;"><strong>Sell into the shortage.</strong> Scarcity pricing is when you get paid. Waiting for an M5 Ultra to ship means selling a two-generation-old machine into a normalized memory market.</li>
+        <li style="margin-bottom:12px;"><strong>Buy no replacement.</strong> Alpuca already handles every local workload the business actually runs. The $1,499 mini is a marginal upgrade over hardware on the desk.</li>
+        <li><strong>Keep the split you already documented.</strong> <span class="mono">LOCAL-AI-SETUP.md</span> concluded local models are for privacy, offline work, and bulk classification — and cloud Claude for anything correctness-sensitive. Selling the Studio doesn't change that split. It funds it.</li>
+      </ol>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <h3>Sources &amp; assumptions</h3>
+    <ul>
+      <li><a href="https://www.tomshardware.com/tech-industry/apple-pulls-512-mac-studio-upgrade-option">Tom's Hardware</a> — Apple pulls the 512&nbsp;GB option, raises 256&nbsp;GB by $400</li>
+      <li><a href="https://www.cultofmac.com/news/apple-quietly-kills-512gb-m3-ultra-mac-studio-option">Cult of Mac</a> — 512&nbsp;GB config discontinued, March 2026</li>
+      <li><a href="https://www.ebay.com/shop/mac-studio-m3-ultra-512-gb-ram?_nkw=mac+studio+m3+ultra+512+gb+ram">eBay</a> — current listings ($25,500–$37,000, <em>asking</em>)</li>
+      <li><a href="https://deepseek.ai/pricing">DeepSeek</a> — V4-Flash / V4-Pro API pricing</li>
+      <li><a href="https://appletreats.substack.com/p/m3-ultra-mac-studio-is-capable-of">Apple Treats</a> — DeepSeek R1 at 16–18 tok/s on this hardware, under 200W</li>
+      <li>Claude Opus 5 — $5/M input, $25/M output (Anthropic list pricing)</li>
+    </ul>
+
+    <div class="disclaimer">
+      <p style="margin-bottom:10px;"><strong style="color:var(--amber-pale);">Assumptions:</strong> Electricity at $0.20/kWh. Machine draw 200W under load. Realistic duty cycle 2h/day. Sale price $18,000 (estimated — <em>not</em> verified against sold listings). Token values at DeepSeek V4-Pro list pricing, $0.87/M output. The 4–12% band is a generic opportunity-cost range, not a forecast and not tied to any particular instrument.</p>
+      <p>This is an equipment cost/benefit analysis, not investment advice. No security, fund, or position is recommended here, and the return band is an input assumption rather than a projection. What to do with freed capital is a separate decision worth taking to someone licensed.</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
