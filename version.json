@@ -1,12 +1,12 @@
 {
-  "version": "v260820.05 3:21p",
-  "release": 1775,
-  "sha": "a789672376",
-  "fullSha": "a789672376c8cb24027979bceecf8df573d0d71f",
+  "version": "v260820.06 3:34p",
+  "release": 1776,
+  "sha": "b0ea68478c",
+  "fullSha": "b0ea68478cc581220860af2f7a3460bf2f87329c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-20T20:21:41+00:00",
-  "commits": [{"sha":"a789672376","message":"feat(infra): one-click \"Copy to Google Docs\" for the credential tracker","author":"Otto"}]
+  "pushedAt": "2026-08-20T20:34:48+00:00",
+  "commits": [{"sha":"b0ea68478c","message":"feat(infra): pre-name the Google Docs copy via title parameter","author":"Otto"}]
 }
