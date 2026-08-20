@@ -673,6 +673,82 @@
       .aap-header, .aap-mobile-nav { display: none; }
       .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     }
+
+    /* --- Assistant choice (Claude vs Codex) --- */
+    .choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.25rem 0 0.5rem;
+      align-items: stretch;
+    }
+    .choice-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem 1.35rem 1.25rem;
+      min-width: 0;
+    }
+    .choice-card--claude { border-color: var(--claude-border); background: var(--claude-bg); }
+    .choice-card--codex { border-color: #10a37f; background: #eefaf6; }
+    .choice-card .pick {
+      position: absolute;
+      top: -0.72rem;
+      left: 1.25rem;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .choice-card--claude .pick { border-color: var(--claude-border); color: #5a4a7a; }
+    .choice-card--codex .pick { border-color: #10a37f; color: #0b7a5e; }
+    .choice-head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .choice-head h3 { margin: 0; font-size: 1.08rem; font-weight: 700; }
+    .choice-card p { font-size: 0.9rem; }
+    .choice-card ul { font-size: 0.87rem; margin: 0 0 0.9rem 0; padding-left: 1.25rem; list-style: disc; }
+    .choice-card li::marker { color: currentColor; }
+    .choice-btn {
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      min-height: 42px;
+      padding: 0.62rem 1.1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #fff;
+    }
+    .choice-btn--claude { background: var(--claude-border); }
+    .choice-btn--claude:hover { background: #665684; }
+    .choice-btn--codex { background: #10a37f; }
+    .choice-btn--codex:hover { background: #0b7a5e; }
+    .choice-or {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 0.35rem 0 0;
+    }
+    @media (max-width: 720px) {
+      .choice-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -713,10 +789,13 @@
       Optional account setup homework
       <span class="step-time">15&ndash;30 min</span>
     </h2>
-    <p>If you want the setup session to go faster, create the core accounts first: GitHub, Cloudflare, Supabase, Resend, and Google Cloud for auth. The wizard can still walk you through this later.</p>
-    <p style="margin: 0;">
-      <a href="/infra/accountsetup/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
-        Account setup checklist &rarr;
+    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers the simple, click-only work: installing Claude Desktop or ChatGPT Desktop, then letting it help you create the five accounts AlpacApps needs (Supabase, GitHub, Cloudflare, Google Cloud, Resend). No terminal, no code.</p>
+    <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 0.6rem;">
+      <a href="/infra/prestart/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
+        Before you start &rarr;
+      </a>
+      <a href="/infra/accountsetup/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
+        Detailed account checklist
       </a>
     </p>
   </div>
@@ -741,17 +820,47 @@
     <h2>
       <span class="step-num">1</span>
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Install Claude Desktop
+      Install Claude Desktop <em>or</em> ChatGPT Desktop
       <span class="step-time">2 min</span>
     </h2>
-    <p><strong>Claude Desktop</strong> is your AI assistant. You'll start in <strong>Claude Chat</strong> to walk through setup, then switch to <strong>Claude Code</strong> (built into the same app) once your project is cloned locally.</p>
-    <p>
-      <a href="https://claude.ai/download" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Download Claude Desktop
-      </a>
-    </p>
-    <p style="font-size: 0.85rem; color: var(--text-muted);">Free to start &mdash; Pro ($20/mo) or Max ($100/mo) recommended. Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank">claude.ai</a> if you don't have an account.</p>
+    <p>AlpacApps works with either assistant. Pick <strong>one</strong> &mdash; you&rsquo;ll start in its plain <strong>chat</strong> mode to walk through setup, then switch to its coding mode (<strong>Claude Code</strong> or <strong>Codex</strong>) once your project is cloned locally.</p>
+
+    <div class="choice-grid">
+      <div class="choice-card choice-card--claude">
+        <span class="pick">Option A &middot; Recommended</span>
+        <div class="choice-head">
+          <img src="https://cdn.simpleicons.org/anthropic/7c6a9a" alt="" width="24" height="24">
+          <h3>Claude Desktop</h3>
+        </div>
+        <p>Chat and Claude Code live in the same window. The setup instructions were written and tested against it.</p>
+        <ul>
+          <li>Reads screenshots you paste in</li>
+          <li>Uses <code>CLAUDE.md</code> project directives</li>
+          <li>Free to start; Pro $20/mo or Max $100/mo recommended</li>
+        </ul>
+        <a class="choice-btn choice-btn--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.6rem 0 0;">No account? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
+      </div>
+
+      <div class="choice-card choice-card--codex">
+        <span class="pick">Option B</span>
+        <div class="choice-head">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>ChatGPT Desktop (Codex)</h3>
+        </div>
+        <p>ChatGPT handles the guided chat; Codex &mdash; in the app&rsquo;s sidebar or the Codex CLI &mdash; does the build.</p>
+        <ul>
+          <li>Reads screenshots you paste in</li>
+          <li>Uses <code>AGENTS.md</code> project directives</li>
+          <li>Codex requires a paid plan &mdash; Plus $20/mo or Pro $200/mo</li>
+        </ul>
+        <a class="choice-btn choice-btn--codex" href="https://chatgpt.com/download" target="_blank" rel="noopener">Download ChatGPT Desktop &rarr;</a>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.6rem 0 0;">Codex CLI: <code>npm i -g @openai/codex</code> &mdash; <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">docs</a>.</p>
+      </div>
+    </div>
+    <p class="choice-or">Either one works &mdash; pick one, not both</p>
+
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">Never installed either one? The <a href="/infra/prestart/">Before you start</a> page walks through installing it and creating your accounts with its help.</p>
   </div>
 
   <!-- STEP 2 -->

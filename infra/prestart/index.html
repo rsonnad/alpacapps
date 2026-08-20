@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlpacApps Infra — Before You Start</title>
+  <meta name="description" content="Install Claude Desktop or ChatGPT Desktop with Codex, then let it help you create your Supabase, GitHub, Cloudflare, Google Cloud, and Resend accounts before AlpacApps setup begins.">
+  <meta property="og:title" content="AlpacApps Infra — Before You Start">
+  <meta property="og:description" content="Pick your AI desktop app, then let it walk you through creating the five accounts AlpacApps needs.">
+  <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:url" content="https://alpacaplayhouse.com/infra/prestart/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AlpacApps">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AlpacApps Infra — Before You Start">
+  <meta name="twitter:description" content="Pick your AI desktop app, then let it walk you through creating the five accounts AlpacApps needs.">
+  <meta name="twitter:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
+  <meta name="twitter:image:alt" content="AlpacApps Infra — before you start">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --success: #6b8e5a;
+      --success-light: #eef5eb;
+      --warning-bg: #fceee9;
+      --warning-border: #c75b3a;
+      --info-bg: #edf4fb;
+      --info-border: #5c7da3;
+      --claude-bg: #f3effc;
+      --claude-border: #7c6a9a;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-warm);
+      line-height: 1.7;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); transition: color 0.2s; overflow-wrap: anywhere; }
+    a:hover { color: #a08050; }
+    p { margin-bottom: 0.85rem; }
+    ul, ol { padding-left: 1.45rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.38rem; }
+    li::marker { color: var(--accent); font-weight: 700; }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--accent-light);
+      color: #6b5230;
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.86em;
+      overflow-wrap: anywhere;
+    }
+
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: calc(80px + 1rem) 1.5rem 0;
+    }
+    .hero-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(26,26,26,0.08), 0 1px 3px rgba(26,26,26,0.06);
+      overflow: hidden;
+      position: relative;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), rgba(201,168,124,0.3));
+      border-radius: 16px 16px 0 0;
+    }
+    .hero-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 16px 16px 0 0;
+    }
+    .hero-text {
+      padding: 2rem 2.5rem 2.5rem;
+    }
+    .eyebrow {
+      display: inline-block;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.55rem;
+    }
+    h1 {
+      font-size: 2.35rem;
+      font-weight: 400;
+      line-height: 1.18;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    h1 span { color: var(--accent); }
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin-bottom: 1.25rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 0.45rem 1.25rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(201,168,124,0.2);
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      min-width: 0;
+    }
+    .section {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      min-width: 0;
+    }
+    .section h2 {
+      font-size: 1.45rem;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+    .section h3 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin: 1.5rem 0 0.55rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.055em;
+    }
+    .section h3:first-of-type { margin-top: 1rem; }
+    .muted { color: var(--text-muted); }
+    .small { font-size: 0.86rem; }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-top: 1.1rem;
+    }
+    .quick-card {
+      background: var(--bg-warm);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      min-height: 112px;
+      min-width: 0;
+    }
+    .quick-card strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.92rem;
+    }
+    .quick-card span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .callout {
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      margin: 1rem 0;
+      border: 1px solid var(--border);
+      background: var(--bg-warm);
+      min-width: 0;
+    }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout--secure {
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+    }
+    .callout--info {
+      background: var(--info-bg);
+      border-color: var(--info-border);
+    }
+    .callout--done {
+      background: var(--success-light);
+      border-color: var(--success);
+    }
+
+    .service {
+      border-top: 1px solid var(--border);
+      padding-top: 1.35rem;
+      margin-top: 1.35rem;
+      min-width: 0;
+    }
+    .service:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .service-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.45rem;
+    }
+    .service-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .service-title h2 { margin: 0; }
+    .service-title .tag {
+      margin-left: auto;
+      white-space: nowrap;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-radius: 999px;
+      padding: 0.22rem 0.65rem;
+      color: var(--success);
+      background: var(--success-light);
+      border: 1px solid rgba(107,142,90,0.18);
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 0.9rem;
+      min-width: 0;
+    }
+    .mini-panel {
+      background: var(--bg-warm);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      min-width: 0;
+    }
+    .mini-panel h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    .mini-panel ul { margin-bottom: 0; }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      min-height: 42px;
+      padding: 0.62rem 1.1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      border: 1px solid transparent;
+    }
+    .button--primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .button--primary:hover { color: #fff; background: #a08050; }
+    .button--secondary {
+      color: var(--text);
+      background: var(--bg);
+      border-color: var(--border);
+    }
+    .button--secondary:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .prompt-block {
+      position: relative;
+      background: var(--claude-bg);
+      border: 2px solid var(--claude-border);
+      border-radius: 8px;
+      padding: 1.35rem;
+      margin: 1rem 0;
+      font-size: 0.83rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: #5a4a7a;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(124,106,154,0.15);
+      color: #5a4a7a;
+      border: none;
+      border-radius: 6px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(124,106,154,0.25); }
+
+    .footer-links {
+      text-align: center;
+      padding: 2rem 0;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .footer-links a { margin: 0 1rem; }
+
+    @media (max-width: 720px) {
+      .hero { padding-top: calc(72px + 1rem); }
+      .hero-text { padding: 1.5rem 1.75rem 1.75rem; text-align: center; }
+      h1 { font-size: 1.85rem; }
+      .section { padding: 1.5rem; }
+      .quick-grid, .split { grid-template-columns: 1fr; }
+      .service-title { align-items: flex-start; }
+      .service-title .tag { margin-left: 0; }
+      .service-title { flex-wrap: wrap; }
+      .footer-links a { display: block; margin: 0.35rem 0; }
+    }
+
+    @media print {
+      body { background: white; }
+      .aap-header, .aap-mobile-nav { display: none; }
+      .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+
+    /* --- Assistant choice (Claude vs Codex) --- */
+    .choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.25rem 0 0.5rem;
+      align-items: stretch;
+    }
+    .choice-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-warm);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem 1.35rem 1.25rem;
+      min-width: 0;
+    }
+    .choice-card--claude { border-color: var(--claude-border); background: var(--claude-bg); }
+    .choice-card--codex { border-color: #10a37f; background: #eefaf6; }
+    .choice-card .pick {
+      position: absolute;
+      top: -0.72rem;
+      left: 1.25rem;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .choice-card--claude .pick { border-color: var(--claude-border); color: #5a4a7a; }
+    .choice-card--codex .pick { border-color: #10a37f; color: #0b7a5e; }
+    .choice-head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .choice-head h3 {
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .choice-card p { font-size: 0.9rem; }
+    .choice-card ul { margin: 0 0 0.9rem 0; padding-left: 1.25rem; font-size: 0.87rem; list-style: disc; }
+    .choice-card .button { margin-top: auto; }
+    .button--claude { background: var(--claude-border); color: #fff; }
+    .button--claude:hover { background: #665684; color: #fff; }
+    .button--codex { background: #10a37f; color: #fff; }
+    .button--codex:hover { background: #0b7a5e; color: #fff; }
+    .choice-or {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    .steps-list { counter-reset: prestep; list-style: none; padding-left: 0; }
+    .steps-list > li {
+      position: relative;
+      padding-left: 2.4rem;
+      margin-bottom: 0.75rem;
+    }
+    .steps-list > li::before {
+      counter-increment: prestep;
+      content: counter(prestep);
+      position: absolute;
+      left: 0;
+      top: 0.15rem;
+      width: 1.65rem;
+      height: 1.65rem;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Tailwind preflight strips list markers site-wide — restore them here,
+       since this page is read as ordered, followable steps. */
+    .section ul { list-style: disc; }
+    .section ol { list-style: decimal; }
+    .choice-card ul { list-style: disc; }
+    .section ol.steps-list, .section ol.steps-list > li { list-style: none; }
+
+    @media (max-width: 720px) {
+      .choice-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<span data-site-version style="display:none;">v260818.01 6:35a</span>
+<div id="siteHeader"></div>
+
+<!-- ⚠️ HERO BANNER — Intentionally matches the Infra banner card pattern. -->
+<div class="hero">
+  <div class="hero-card">
+    <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="AlpacApps — AI-powered platform with alpacas" class="hero-image" width="1509" height="475">
+    <div class="hero-text">
+      <span class="eyebrow">Before you start</span>
+      <h1>Install your <span>AI desktop app</span>, then sign up for five services</h1>
+      <p>Everything here is simple, click-only work you can finish before the real setup begins. Install <strong>Claude Desktop</strong> or <strong>ChatGPT Desktop</strong> first, then let it sit beside you and answer questions while you create the five accounts AlpacApps needs. No terminal, no code.</p>
+      <span class="badge">20&ndash;40 minutes &middot; no coding</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <section class="section">
+    <h2>What you&rsquo;ll do on this page</h2>
+    <ol class="steps-list">
+      <li><strong>Pick and install one AI desktop app</strong> &mdash; Claude Desktop or ChatGPT Desktop (Codex). This is your helper for everything else.</li>
+      <li><strong>Set up a password manager</strong> so every password and key has one safe home.</li>
+      <li><strong>Create five free accounts</strong> &mdash; Supabase, GitHub, Cloudflare, Google Cloud, and Resend &mdash; with your AI app answering questions as you go.</li>
+      <li><strong>Move on to setup</strong> at <a href="/infra/">alpacaplayhouse.com/infra</a>, where your assistant builds and deploys the project.</li>
+      <li class="muted"><strong>Optional:</strong> add <a href="#alt-coding-model">a cheaper coding model</a> &mdash; the only step here that needs a credit card.</li>
+    </ol>
+    <div class="callout callout--info">
+      <p><strong>Nothing here is irreversible.</strong> You are only creating accounts. You do not need to create projects, API keys, tokens, or domains yet &mdash; the setup wizard does that later, once it knows your app name and domain.</p>
+    </div>
+  </section>
+
+  <!-- STOP 1: pick your assistant -->
+  <section class="section" id="pick-your-assistant">
+    <h2>Step 1 &mdash; Install Claude Desktop <em>or</em> ChatGPT Desktop</h2>
+    <p>AlpacApps works with either one. Pick <strong>one</strong> and install it now &mdash; you will use it for the rest of this page and for the whole setup afterward.</p>
+
+    <div class="choice-grid">
+      <!-- Claude -->
+      <div class="choice-card choice-card--claude">
+        <span class="pick">Option A &middot; Recommended</span>
+        <div class="choice-head">
+          <img src="https://cdn.simpleicons.org/anthropic/7c6a9a" alt="" width="24" height="24">
+          <h3>Claude Desktop</h3>
+        </div>
+        <p>Anthropic&rsquo;s desktop app. <strong>Chat</strong> walks you through account signups; <strong>Claude Code</strong> &mdash; built into the same app &mdash; does the build later.</p>
+        <ul>
+          <li>One app for both chat and coding</li>
+          <li>Reads screenshots you paste in</li>
+          <li>Free to start; Pro $20/mo or Max $100/mo recommended</li>
+        </ul>
+        <a class="button button--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
+        <p class="small muted" style="margin: 0.6rem 0 0;">No account yet? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
+      </div>
+
+      <!-- Codex -->
+      <div class="choice-card choice-card--codex">
+        <span class="pick">Option B</span>
+        <div class="choice-head">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>ChatGPT Desktop (Codex)</h3>
+        </div>
+        <p>OpenAI&rsquo;s desktop app. <strong>ChatGPT</strong> walks you through account signups; <strong>Codex</strong> does the build later, either in the app&rsquo;s Codex sidebar or the Codex CLI.</p>
+        <ul>
+          <li>Familiar if you already use ChatGPT</li>
+          <li>Reads screenshots you paste in</li>
+          <li>Codex needs a paid plan &mdash; Plus $20/mo or Pro $200/mo</li>
+        </ul>
+        <a class="button button--codex" href="https://chatgpt.com/download" target="_blank" rel="noopener">Download ChatGPT Desktop &rarr;</a>
+        <p class="small muted" style="margin: 0.6rem 0 0;">Codex CLI (optional, later): <code>npm i -g @openai/codex</code> &mdash; see <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">developers.openai.com/codex</a>.</p>
+      </div>
+    </div>
+    <p class="choice-or">Either one works &mdash; pick one, not both</p>
+
+    <div class="callout">
+      <p><strong>Which should I pick?</strong> If you have no strong preference, choose <strong>Claude Desktop</strong> &mdash; the AlpacApps setup instructions were written and tested against it, and Chat and Code live in the same window. Choose <strong>ChatGPT Desktop</strong> if you already pay for ChatGPT and would rather not add a second subscription. The repo ships both <code>CLAUDE.md</code> and <code>AGENTS.md</code>, so either assistant reads the same project directives.</p>
+    </div>
+  </section>
+
+  <!-- STOP 2: let it help you -->
+  <section class="section">
+    <h2>Step 2 &mdash; Open it and paste this prompt</h2>
+    <p>Start a normal <strong>chat</strong> conversation (not Claude Code, not Codex) and paste the prompt below. Your assistant will then walk you through each signup in order, tell you exactly what to click, and read any screenshot you paste when you get stuck.</p>
+    <div class="prompt-block" id="prestart-prompt"><button class="copy-btn" onclick="copyById('prestart-prompt')">Copy</button>I'm getting ready to set up an AlpacApps project. Before the real setup starts, help me create accounts for these five services, one at a time, in this order: Supabase, GitHub, Cloudflare, Google Cloud, and Resend.
+
+For each one: give me the exact signup URL, tell me what to click, tell me what to write down afterward, and wait for me to say "done" before moving to the next one. I may paste screenshots — tell me if I'm on the right page.
+
+Do NOT have me create API keys, tokens, projects, or domains yet. Account creation only. Reference: https://alpacaplayhouse.com/infra/prestart</div>
+    <div class="callout callout--info">
+      <p><strong>Stay in chat for now.</strong> If your assistant starts asking you to pick a folder, clone a repo, or run terminal commands, you have wandered into Claude Code or Codex. Go back to the plain chat tab &mdash; the coding tools come later, on the <a href="/infra/">setup page</a>.</p>
+    </div>
+  </section>
+
+  <!-- STOP 3: password manager -->
+  <section class="section">
+    <h2>Step 3 &mdash; Set up one safe place for passwords</h2>
+    <p>You are about to create five accounts. Decide where the passwords live <em>before</em> you make them, not after.</p>
+    <div class="split">
+      <div class="mini-panel">
+        <h3>Best option: password manager</h3>
+        <ol>
+          <li>Use your existing password manager if you have one.</li>
+          <li>If not, install <a href="https://bitwarden.com/download/" target="_blank" rel="noopener">Bitwarden</a> (free) and create an account.</li>
+          <li>Install the browser extension so it generates and saves strong passwords during each signup.</li>
+          <li>Create a folder called <strong>AlpacApps Setup</strong>.</li>
+          <li>Save one login item per service as you go.</li>
+        </ol>
+      </div>
+      <div class="mini-panel">
+        <h3>Okay option: a private doc</h3>
+        <ol>
+          <li>Create a doc named <strong>AlpacApps Account Setup</strong>.</li>
+          <li>Set sharing to <strong>Restricted</strong> &mdash; never link-access or public.</li>
+          <li>Track usernames, service URLs, and status only.</li>
+          <li>For any secret, write &ldquo;stored in password manager&rdquo; instead of the value.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="callout callout--secure">
+      <p><strong>Never paste secrets into public places.</strong> No passwords, API keys, OAuth client secrets, recovery codes, or database passwords in a public doc, GitHub issue, Slack channel, screenshot, or a file committed to your repo.</p>
+    </div>
+    <p class="small muted">Want a ready-made tracker to fill in? The <a href="/infra/accountsetup/">account setup checklist</a> has a copyable credential template.</p>
+  </section>
+
+  <!-- STOP 4: the five accounts -->
+  <section class="section">
+    <h2>Step 4 &mdash; Create the five accounts</h2>
+    <p>Work top to bottom. Each one is free to start, and each takes a few minutes. Ask your assistant whenever a screen does not look like the description.</p>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/supabase/3ECF8E" alt="" width="22" height="22"></span>
+        <h2>1. Supabase</h2>
+        <span class="tag">Free tier</span>
+      </div>
+      <p>Your database, user logins, file storage, and edge functions &mdash; the backend of your app.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Do this</h3>
+          <ol>
+            <li>Go to <a href="https://supabase.com/dashboard/sign-up" target="_blank" rel="noopener">supabase.com/dashboard/sign-up</a>.</li>
+            <li>Sign up (signing in with GitHub is fine if you make GitHub first).</li>
+            <li>Create a free organization if prompted.</li>
+            <li>Stop there &mdash; do <em>not</em> create a project yet.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Write down</h3>
+          <ul>
+            <li>Login email</li>
+            <li>Organization name</li>
+            <li>Password manager item name</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>Why wait on the project:</strong> the wizard names it, picks the region, and sets the auth URLs to match your app. If you do create one anyway, save the database password immediately &mdash; Supabase never shows it again.</p>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/github/181717" alt="" width="22" height="22"></span>
+        <h2>2. GitHub</h2>
+        <span class="tag">Free</span>
+      </div>
+      <p>Where your code lives, and where your assistant commits and pushes every change.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Do this</h3>
+          <ol>
+            <li>Go to <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>.</li>
+            <li>Pick a username you are happy to see in URLs.</li>
+            <li>Verify your email address.</li>
+            <li>Turn on two-factor authentication and save the recovery codes.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Write down</h3>
+          <ul>
+            <li>Username</li>
+            <li>Login email</li>
+            <li>Where the 2FA recovery codes are saved</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>No access token needed.</strong> Setup signs you in through the GitHub CLI browser flow, so skip Personal Access Tokens entirely.</p>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/cloudflare/F38020" alt="" width="22" height="22"></span>
+        <h2>3. Cloudflare</h2>
+        <span class="tag">Free core</span>
+      </div>
+      <p>DNS for your domain, Cloudflare Pages hosting, D1 session logging, and R2 file storage.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Do this</h3>
+          <ol>
+            <li>Go to <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">dash.cloudflare.com/sign-up</a>.</li>
+            <li>Create the account and verify your email.</li>
+            <li>Already own a domain? You can add it now, or let the wizard walk you through it later.</li>
+            <li>Don&rsquo;t own one? Skip it &mdash; a free <code>github.io</code> address works to start.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Write down</h3>
+          <ul>
+            <li>Cloudflare email</li>
+            <li>Account name</li>
+            <li>Domain name, if you have one</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>Optional head start:</strong> open <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">Profile &rarr; API Tokens</a>, find <strong>Global API Key</strong>, click <strong>View</strong>, and save it in your password manager. Setup uses it once to mint a narrower project-scoped token.</p>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/googlecloud/4285F4" alt="" width="22" height="22"></span>
+        <h2>4. Google Cloud</h2>
+        <span class="tag">Free</span>
+      </div>
+      <p>Supplies the OAuth client behind &ldquo;Sign in with Google&rdquo; in your app.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Do this</h3>
+          <ol>
+            <li>Decide which Google account should own your app&rsquo;s login settings.</li>
+            <li>Sign in at <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a> and accept the terms.</li>
+            <li>Optional: create a project at <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">projectcreate</a> and name it after your app.</li>
+            <li>Stop before creating OAuth credentials.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Write down</h3>
+          <ul>
+            <li>Google account email</li>
+            <li>Project name and Project ID, if created</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>OAuth comes later on purpose.</strong> The redirect URI has to be <code>https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback</code>, and that project ref does not exist yet.</p>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/resend/000000" alt="" width="22" height="22"></span>
+        <h2>5. Resend</h2>
+        <span class="tag">Free tier</span>
+      </div>
+      <p>Sends your app&rsquo;s email &mdash; welcome messages, confirmations, notifications.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Do this</h3>
+          <ol>
+            <li>Go to <a href="https://resend.com/signup" target="_blank" rel="noopener">resend.com/signup</a>.</li>
+            <li>Create the account and verify your email.</li>
+            <li>Skip domain verification for now &mdash; it needs Cloudflare DNS records the wizard will add.</li>
+            <li>Skip the API key too; setup creates and validates it in place.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Write down</h3>
+          <ul>
+            <li>Resend login email</li>
+            <li>Which domain you plan to send from, if known</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPTIONAL: cheaper coding model -->
+  <section class="section" id="alt-coding-model">
+    <h2>Optional &mdash; a cheaper coding model (DeepSeek v4 Flash via OpenRouter)</h2>
+    <p><strong>Skip this unless you already know you want it.</strong> Everything above is free or free-tier. This section is the one place that asks for a credit card, and nothing in AlpacApps requires it.</p>
+
+    <p>Once you are building a lot, most of the tokens go to grunt work &mdash; renaming things, filling in boilerplate, applying the same edit across twelve files. That work does not need a frontier model. The pattern here is <strong>orchestrator plus worker</strong>:</p>
+    <div class="split">
+      <div class="mini-panel">
+        <h3>Orchestrator &mdash; Claude Sonnet (Luna)</h3>
+        <ul>
+          <li>Reads the codebase and decides what to change</li>
+          <li>Writes the plan and the precise instructions</li>
+          <li>Reviews what came back and fixes what is wrong</li>
+          <li>Stays on your Claude subscription</li>
+        </ul>
+      </div>
+      <div class="mini-panel">
+        <h3>Worker &mdash; DeepSeek v4 Flash</h3>
+        <ul>
+          <li>Executes the mechanical edits it was handed</li>
+          <li>Runs through OpenRouter, billed per token</li>
+          <li>Dramatically cheaper per token than a frontier model</li>
+          <li>Never decides architecture on its own</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout callout--info">
+      <p><strong>The split matters.</strong> Judgment stays with the orchestrator; only well-specified work goes to the cheap model. If you hand DeepSeek open-ended design decisions, you will spend the savings back on cleanup.</p>
+    </div>
+
+    <div class="service" style="border-top: 1px solid var(--border); margin-top: 1.5rem;">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/openrouter/6467F2" alt="" width="22" height="22"></span>
+        <h2>OpenRouter</h2>
+        <span class="tag" style="color: var(--warning-border); background: var(--warning-bg); border-color: var(--warning-border);">Credit card</span>
+      </div>
+      <p>OpenRouter is one API key that reaches many models, DeepSeek included. It runs on prepaid credits, so you add a payment method and buy a balance up front rather than getting a monthly bill.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Do this</h3>
+          <ol>
+            <li>Sign up at <a href="https://openrouter.ai" target="_blank" rel="noopener">openrouter.ai</a> and verify your email.</li>
+            <li>Open <a href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener">Settings &rarr; Credits</a> and add a card.</li>
+            <li>Buy a small starting balance &mdash; <strong>$5 to $10 is plenty</strong> to see whether you like the workflow.</li>
+            <li>Create a key at <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">Settings &rarr; Keys</a> and <strong>set a credit limit on the key itself</strong>, so a runaway loop cannot drain the balance.</li>
+            <li>Save the key in your password manager the moment it appears &mdash; OpenRouter shows it once.</li>
+            <li>Find the current DeepSeek entry on <a href="https://openrouter.ai/models?q=deepseek" target="_blank" rel="noopener">openrouter.ai/models</a> and copy its exact model slug.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Write down</h3>
+          <ul>
+            <li>OpenRouter login email</li>
+            <li>API key &mdash; password manager only, never in the repo</li>
+            <li>The exact DeepSeek model slug you chose</li>
+            <li>The per-key credit limit you set</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout callout--secure">
+        <p><strong>This one actually charges you.</strong> Turn off auto-recharge until you know your usage, keep a per-key credit limit on, and check <a href="https://openrouter.ai/activity" target="_blank" rel="noopener">Activity</a> after your first heavy session. The key goes in <code>.env</code> as <code>OPENROUTER_API_KEY</code> &mdash; and <code>.env</code> is never committed.</p>
+      </div>
+      <div class="callout">
+        <p><strong>Confirm the model before you rely on it.</strong> DeepSeek ships fast and slugs change. Pull the current name off the models page rather than trusting a slug written down here, and tell your assistant which one you picked.</p>
+      </div>
+    </div>
+
+    <div class="callout callout--done">
+      <p><strong>What to tell your assistant later:</strong> &ldquo;I have an OpenRouter account with credits and a key saved. Set up DeepSeek as the worker model for mechanical edits, with Sonnet orchestrating.&rdquo;</p>
+    </div>
+  </section>
+
+  <!-- Done -->
+  <section class="section">
+    <h2>You&rsquo;re ready</h2>
+    <p>You are done with pre-start when you can sign in to all five services and you know where the saved credentials live.</p>
+    <div class="callout callout--done">
+      <p><strong>What to tell your assistant next:</strong> &ldquo;I installed Claude Desktop (or ChatGPT Desktop) and created my Supabase, GitHub, Cloudflare, Google Cloud, and Resend accounts. Credentials are in my password manager. Start the AlpacApps Infra setup.&rdquo;</p>
+    </div>
+    <div class="cta-row">
+      <a class="button button--primary" href="/infra/">Start AlpacApps Infra setup &rarr;</a>
+      <a class="button button--secondary" href="/infra/accountsetup/">Detailed account checklist</a>
+      <a class="button button--secondary" href="/infra/setup-guide.html">Step-by-step guide</a>
+    </div>
+  </section>
+
+  <div class="footer-links">
+    <a href="/infra/">Infra home</a>
+    <a href="/infra/accountsetup/">Account setup checklist</a>
+    <a href="/docs/alpacappsinfra.html">Full manual setup guide</a>
+    <a href="/infra/updates.html">Sync new features</a>
+    <a href="https://github.com/rsonnad/alpacapps-infra">Template repo</a>
+  </div>
+</main>
+
+<script>
+function copyById(id) {
+  var el = document.getElementById(id);
+  var text = el.textContent.replace(/^\s*Copy\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = el.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
+
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module" src="/shared/version-info.js"></script>
+<script type="module">
+  import { initPublicPage } from '/shared/public-shell.js';
+  initPublicPage({ transparent: false, light: false });
+</script>
+
+</body>
+</html>
