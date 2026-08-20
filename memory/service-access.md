@@ -241,6 +241,7 @@ lookups can select the empty duplicate and fail.
 - `~/bin/rvault-backup-status.sh` — daily backup status to rahulioson@gmail.com
 - `~/bin/lights-healthcheck.sh`
 - `~/bin/oracle-montreal-provision.sh`
+- `/Users/alpuca/scripts/mbp-deal-watch.py` — 8:00am Eastern digest + 6:00pm Eastern change-only email of 16" M5 Pro/Max MacBook Pro deals (Grok search via `grok-delegate ask`)
 - Oracle Phoenix `/home/ubuntu/.alpuca-health/alpuca_health_check.py` — daily
   Alpuca machine-health email and `alpuca_health_history` update. The Phoenix
   crontab runs at `5 5,6 * * *` UTC with a `TZ=America/Chicago date +\%H`
@@ -307,3 +308,21 @@ above the catchall rule and the catchall (`alpu.ca/*`) at the lowest priority.
 Verified 2026-06-10 while adding `alpu.ca/mfknotes`: the catchall at priority 3
 swallowed `kidsaudio` and `mfknotes`; changing order to specific links at higher
 numbers and catchall at priority 1 fixed both.
+
+## Rahul M2 Airtop SSH (MacBook Air M2)
+
+Tailscale node name `rahul-m4-airtop` is STALE — the machine was renamed to
+"Rahul M2 Airtop" and the rename propagated to Bonjour/AirPlay but not Tailscale.
+Hardware is genuinely a MacBook Air M2 (Mac14,15, 15-inch, 8 GB).
+
+Username is `rahulio` — not `rahul`, `alpaca`, or `otter`.
+
+```bash
+ssh -i ~/.ssh/alpuca_ed25519 -o IdentitiesOnly=yes rahulio@100.114.248.79
+```
+
+Verified 2026-08-18. Remote Login was already enabled; the only missing piece was
+`~/.ssh/authorized_keys` on the Air. Six username guesses failed before `rahulio`
+— ask for `whoami` rather than guessing.
+
+Local LAN: 192.168.1.21 (this MacBook Pro M5 is 192.168.1.19, same /24).
