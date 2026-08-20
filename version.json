@@ -1,12 +1,12 @@
 {
-  "version": "v260820.07 3:40p",
-  "release": 1777,
-  "sha": "9a809328af",
-  "fullSha": "9a809328afb86ecc14dd13eb466f762e931c4c0b",
+  "version": "v260820.09 4:00p",
+  "release": 1779,
+  "sha": "3a7bce6cc2",
+  "fullSha": "3a7bce6cc2d138549399321a6de3e27c55891179",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-20T20:40:12+00:00",
-  "commits": [{"sha":"9a809328af","message":"feat(infra): add template link and File > Make a copy instructions","author":"Otto"}]
+  "pushedAt": "2026-08-20T21:00:00+00:00",
+  "commits": [{"sha":"3a7bce6cc2","message":"feat(infra): private-doc step now opens the shared template","author":"Otto"}]
 }
