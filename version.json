@@ -1,12 +1,12 @@
 {
-  "version": "v260820.06 3:34p",
-  "release": 1776,
-  "sha": "b0ea68478c",
-  "fullSha": "b0ea68478cc581220860af2f7a3460bf2f87329c",
+  "version": "v260820.07 3:40p",
+  "release": 1777,
+  "sha": "9a809328af",
+  "fullSha": "9a809328afb86ecc14dd13eb466f762e931c4c0b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-20T20:34:48+00:00",
-  "commits": [{"sha":"b0ea68478c","message":"feat(infra): pre-name the Google Docs copy via title parameter","author":"Otto"}]
+  "pushedAt": "2026-08-20T20:40:12+00:00",
+  "commits": [{"sha":"9a809328af","message":"feat(infra): add template link and File > Make a copy instructions","author":"Otto"}]
 }
