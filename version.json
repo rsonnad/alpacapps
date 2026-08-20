@@ -1,12 +1,12 @@
 {
-  "version": "v260820.01 10:43a",
-  "release": 1771,
-  "sha": "7ce0244d2a",
-  "fullSha": "7ce0244d2a9d4f610d059c76b6b9a6f26c8a0e3a",
+  "version": "v260820.02 11:12a",
+  "release": 1772,
+  "sha": "9aef45cfa9",
+  "fullSha": "9aef45cfa9c87d08cdaec90e97be5f7ad4656407",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-20T15:43:54+00:00",
-  "commits": [{"sha":"7ce0244d2a","message":"feat(infra): add /infra/prestart page and Claude-vs-Codex choice","author":"Otto"}]
+  "pushedAt": "2026-08-20T16:12:44+00:00",
+  "commits": [{"sha":"9aef45cfa9","message":"feat(infra): worker-model setup, project Gmail step, Luna correction","author":"Otto"}]
 }
