@@ -374,6 +374,11 @@
       color: #fff;
     }
     .block-actions .copy-btn--primary:hover { background: #665684; }
+    /* Tailwind preflight strips list markers site-wide — restore them here,
+       since this page is read as ordered, followable steps. */
+    .section ul { list-style: disc; }
+    .section ol { list-style: decimal; }
+
     @media (max-width: 720px) {
       .block-actions { position: static; display: flex; margin-bottom: 0.75rem; }
     }
@@ -552,8 +557,21 @@ Project Gmail (the login behind everything):
 - Worker model slug:
 - Notes:</div>
     <div class="callout callout--info">
-      <p style="margin-bottom: 0.5rem;"><strong>Copy to Google Docs</strong> lands you straight on Google&rsquo;s &ldquo;Make a copy&rdquo; screen &mdash; one click there and an editable, correctly-named copy is in your Drive. You never open a read-only doc and you never touch the File menu. Google requires that one confirmation before writing to your Drive; no link can skip it. The copy is <strong>private to you</strong>, so nobody else sees what you type into it.</p>
-      <p style="margin-bottom: 0;"><strong>Download file</strong> saves <code>AlpacApps-AI-System-Notes.md</code> straight from your browser. Nothing is uploaded anywhere.</p>
+      <p><strong>Copy to Google Docs</strong> takes you straight to Google&rsquo;s &ldquo;Make a copy&rdquo; screen. Click the button there and an editable, correctly-named copy appears in your Drive. Google always asks for that one confirmation before writing to your Drive &mdash; no link can skip it &mdash; but you never sit in a read-only document wondering why you cannot type.</p>
+      <p style="margin-bottom: 0;">The copy is <strong>yours and private</strong>. You are not editing the shared template, and nobody else can see what you put in it.</p>
+    </div>
+
+    <h3>If you end up looking at the template instead</h3>
+    <p class="small muted">Open the template directly: <a href="https://docs.google.com/document/d/1ULE9jJFJxNvU2taImxg1PddrPVIYThcp0QPO2E-BBiI/edit" target="_blank" rel="noopener">AlpacApps AI System Notes template</a>. It is <strong>view-only</strong> &mdash; typing in it will not work, and that is expected. To get your own editable version:</p>
+    <ol>
+      <li>Open the <strong>File</strong> menu, top-left, just under the document&rsquo;s name.</li>
+      <li>Choose <strong>Make a copy</strong> &mdash; the <strong>third item</strong>, directly below <em>New</em> and <em>Open</em>.</li>
+      <li>Name it, pick a folder, and confirm. The copy opens ready to edit.</li>
+    </ol>
+    <p class="small muted">Same result as the button above &mdash; the button just skips straight to that last screen.</p>
+
+    <div class="callout">
+      <p style="margin-bottom: 0;"><strong>Not a Google Docs person?</strong> <strong>Download file</strong> saves <code>AlpacApps-AI-System-Notes.md</code> straight from your browser in a single click &mdash; no account, no confirmation, nothing uploaded anywhere.</p>
     </div>
   </section>
 
