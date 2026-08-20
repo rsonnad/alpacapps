@@ -746,8 +746,78 @@
       color: var(--text-muted);
       margin: 0.35rem 0 0;
     }
+
+    /* --- Worker-model section (DeepSeek via OpenRouter) --- */
+    .ds-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+    .ds-panel {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+      min-width: 0;
+    }
+    .ds-panel h4 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 0 0 0.6rem;
+    }
+    .ds-panel ul { margin: 0 0 0 1.15rem; padding: 0; list-style: disc; font-size: 0.88rem; }
+    .ds-panel li { margin-bottom: 0.3rem; }
+    .ds-panel--orch { border-left: 3px solid var(--claude-border); }
+    .ds-panel--work { border-left: 3px solid #10a37f; }
+    .ds-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      margin: 1rem 0;
+    }
+    .ds-table th, .ds-table td {
+      text-align: left;
+      padding: 0.5rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .ds-table th {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .ds-table td:first-child { font-weight: 600; }
+    .ds-table tr:last-child td { border-bottom: none; }
+    .ds-scroll { overflow-x: auto; max-width: 100%; }
+    .ds-note {
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+      background: var(--bg-warm);
+    }
+    .ds-note p:last-child { margin-bottom: 0; }
+    .ds-note--warn { background: var(--warning-bg); border-color: var(--warning-border); }
+    .ds-note--ok { background: var(--success-light); border-color: var(--success); }
+    .ds-substep {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin: 1.75rem 0 0.4rem;
+    }
+    .ds-substep:first-of-type { margin-top: 1.25rem; }
+
     @media (max-width: 720px) {
       .choice-grid { grid-template-columns: 1fr; }
+      .ds-panels { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -957,6 +1027,133 @@
       <li><strong>Global API Key</strong> &mdash; go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">Profile &rarr; API Tokens</a>, find &ldquo;Global API Key&rdquo;, click &ldquo;View&rdquo;</li>
     </ol>
     <p style="font-size: 0.88rem; color: var(--text-muted);">That&rsquo;s it. Claude uses this key once to create a scoped project token with only the permissions your project needs &mdash; then uses that for all ongoing operations.</p>
+  </div>
+
+  <!-- STEP 5: optional worker model -->
+  <div class="setup-step" id="worker-model" style="border-color: #10a37f; border-width: 2px;">
+    <h2>
+      <span class="step-num" style="background: #10a37f;">5</span>
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M4 17l6-6-6-6M12 19h8" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Optional &mdash; add a cheap worker model
+      <span class="step-time">10 min</span>
+    </h2>
+    <p><strong>Skip this until you are building a lot.</strong> Everything above runs on free tiers plus the AI subscription you already pay for. This step is the only one that puts a credit card on file, and nothing in AlpacApps needs it.</p>
+
+    <p>Most tokens in a busy project go to grunt work &mdash; renaming a symbol across twelve files, filling in boilerplate, applying an edit you have already fully described. That work does not need a frontier model. So you split the job:</p>
+
+    <div class="ds-panels">
+      <div class="ds-panel ds-panel--orch">
+        <h4>Orchestrator &mdash; the app from Step 1</h4>
+        <ul>
+          <li><strong>Claude Sonnet</strong> in Claude Code, or</li>
+          <li><strong>GPT&#8209;5.6 Luna</strong> in ChatGPT Desktop / Codex</li>
+          <li>Reads the repo, decides what changes</li>
+          <li>Writes the spec and reviews the result</li>
+          <li>Billed to your existing subscription</li>
+        </ul>
+      </div>
+      <div class="ds-panel ds-panel--work">
+        <h4>Worker &mdash; DeepSeek v4 Flash</h4>
+        <ul>
+          <li>Runs through OpenRouter, billed per token</li>
+          <li>Executes edits that are already specified</li>
+          <li>1M token context, so whole files fit</li>
+          <li>Decides nothing on its own</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ds-scroll">
+      <table class="ds-table">
+        <thead><tr><th>Model</th><th>Input / M tokens</th><th>Output / M tokens</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td>DeepSeek v4 Flash</td><td>$0.084</td><td>$0.168</td><td>Worker</td></tr>
+          <tr><td>GPT-5.6 Luna</td><td>$0.20</td><td>$1.20</td><td>Orchestrator</td></tr>
+          <tr><td>Claude Sonnet 5</td><td>$2.00</td><td>$10.00</td><td>Orchestrator</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -0.5rem;">OpenRouter list prices, checked August 2026. Output tokens are what a coding session actually burns, and that is where the ~60&times; gap against Sonnet lives. Confirm current numbers at <a href="https://openrouter.ai/models?q=deepseek" target="_blank" rel="noopener">openrouter.ai/models</a>.</p>
+
+    <div class="ds-note ds-note--warn">
+      <p><strong>Before you start:</strong> you need an OpenRouter account with a payment method and a small credit balance. That is covered on the <a href="/infra/prestart/#alt-coding-model">Before you start</a> page &mdash; do that part first, then come back here to wire it up.</p>
+    </div>
+
+    <p class="ds-substep">1 &middot; Store the key</p>
+    <p>Put the key in <code>.env</code> at the repo root, and confirm it can never be committed:</p>
+    <div class="prompt-block" id="ds-env"><button class="copy-btn" onclick="copyById('ds-env')">Copy</button>echo 'OPENROUTER_API_KEY=sk-or-your-key-here' &gt;&gt; .env
+grep -q '^\.env$' .gitignore || echo '.env' &gt;&gt; .gitignore
+git check-ignore -v .env   # must print a .gitignore line, or stop and fix it</div>
+
+    <p class="ds-substep">2 &middot; Install the worker script</p>
+    <p>This is the bridge: it takes a task spec, sends it to DeepSeek through OpenRouter, and prints the reply. Both Claude Code and Codex can call it with a plain shell command.</p>
+    <div class="prompt-block" id="ds-install"><button class="copy-btn" onclick="copyById('ds-install')">Copy</button>mkdir -p scripts
+curl -fsSL https://alpacaplayhouse.com/scripts/deepseek.sh -o scripts/deepseek.sh
+chmod +x scripts/deepseek.sh</div>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">Usage: <code>scripts/deepseek.sh task.md src/a.js src/b.js</code> &mdash; first argument is the spec, any files after it are attached as context. It reads <code>OPENROUTER_API_KEY</code> from <code>.env</code>, prints the reply on stdout and token usage on stderr. Override the model with <code>DEEPSEEK_MODEL</code>.</p>
+
+    <p class="ds-substep">3 &middot; Teach your orchestrator when to use it</p>
+    <p>The script does nothing on its own &mdash; your assistant has to know it exists and when delegating is worth it. Paste this into <code>CLAUDE.md</code> (Claude Code) or <code>AGENTS.md</code> (Codex). If you use both apps, paste it into both.</p>
+    <div class="prompt-block" id="ds-rule"><button class="copy-btn" onclick="copyById('ds-rule')">Copy</button>## Worker Model Delegation
+
+A cheap worker model is available at `scripts/deepseek.sh` (DeepSeek v4 Flash
+via OpenRouter). You are the orchestrator. Delegate mechanical work to it;
+keep every judgment call yourself.
+
+**Delegate when ALL of these are true:**
+- You can state the change completely, with no design decisions left open
+- The work is repetitive or bulk: same edit across many files, boilerplate,
+  test scaffolding, format conversion, a mechanical rename
+- A wrong answer would be obvious to you on sight
+
+**Never delegate:**
+- Architecture, schema design, or anything touching auth, RLS, or payments
+- Debugging, root-cause analysis, or "figure out why this breaks"
+- Anything where you would have to trust the result without checking it
+
+**How to delegate:**
+1. Write the full spec to a temp file — the change, the constraints, and
+   whether you want complete files back or a unified diff
+2. Run: `scripts/deepseek.sh /tmp/task.md path/to/file1 path/to/file2`
+3. Read every line that comes back. It is a proposal, not a commit
+4. Apply it yourself with your normal edit tools, then run the tests
+5. If the reply is wrong twice, stop delegating that task and do it yourself
+
+Tell me when you delegate and what it cost, so I can see whether it is
+actually paying for itself.</div>
+
+    <div class="ds-note">
+      <p><strong>Why a script and not a subagent:</strong> Claude Code subagents only run Anthropic models, so there is no setting that points one at DeepSeek. A shell script is the seam that works from either app, and it keeps the worker in a box &mdash; it sees only the spec and the files you hand it, and it never writes to your repo.</p>
+    </div>
+
+    <p class="ds-substep">4 &middot; Codex only &mdash; run DeepSeek as the agent itself</p>
+    <p>If you chose ChatGPT Desktop / Codex, there is a second option: point Codex at OpenRouter directly and let DeepSeek drive a whole session. Add this to <code>~/.codex/config.toml</code>:</p>
+    <div class="prompt-block" id="ds-codex"><button class="copy-btn" onclick="copyById('ds-codex')">Copy</button>[model_providers.openrouter]
+name = "OpenRouter"
+base_url = "https://openrouter.ai/api/v1"
+env_key = "OPENROUTER_API_KEY"
+wire_api = "responses"</div>
+    <p>Then start a session on the worker model when you want one, leaving your normal Luna sessions untouched:</p>
+    <div class="prompt-block" id="ds-codex-run"><button class="copy-btn" onclick="copyById('ds-codex-run')">Copy</button>codex -c model_provider=openrouter -c model=deepseek/deepseek-v4-flash</div>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">Two things to expect: <code>wire_api</code> must be <code>"responses"</code> &mdash; current Codex has dropped <code>"chat"</code> &mdash; and Codex will warn that it has no metadata for the model and fall back to defaults. Both are normal. If your config sets <code>service_tier</code>, Codex drops it for non-OpenAI models and says so.</p>
+    <div class="ds-note">
+      <p><strong>This mode has no supervisor.</strong> A full DeepSeek session edits your repo directly with nothing reviewing it. Use it on a scratch branch for bulk mechanical work, not on <code>main</code>, and read the diff before you merge. For everyday work the script in step 3 is the safer shape.</p>
+    </div>
+
+    <p class="ds-substep">5 &middot; Keep the bill boring</p>
+    <ul style="margin-bottom: 1rem;">
+      <li>Set a <strong>per-key credit limit</strong> in OpenRouter so a runaway loop cannot drain the balance</li>
+      <li>Leave <strong>auto-recharge off</strong> until you have watched a few real sessions</li>
+      <li>Check <a href="https://openrouter.ai/activity" target="_blank" rel="noopener">openrouter.ai/activity</a> after your first heavy day</li>
+      <li>Only <code>.env</code> holds the key &mdash; never a committed file, never a screenshot</li>
+    </ul>
+    <div class="ds-note ds-note--warn">
+      <p><strong>Do not confuse this with swapping your main model.</strong> Pointing Claude Code at a third-party endpoint by overriding <code>ANTHROPIC_BASE_URL</code> replaces your orchestrator instead of giving it a worker &mdash; you lose the judgment that makes the split worth doing, and you are running your whole session through a proxy. That is a different thing, and it is not what this step sets up.</p>
+    </div>
+
+    <div class="ds-note ds-note--ok">
+      <p><strong>What to tell your assistant:</strong> &ldquo;OpenRouter is funded, the key is in <code>.env</code>, and <code>scripts/deepseek.sh</code> is installed. Read the Worker Model Delegation rule and use it when a task qualifies.&rdquo;</p>
+    </div>
   </div>
 
   <!-- What you'll have -->
