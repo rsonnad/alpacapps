@@ -1,12 +1,12 @@
 {
-  "version": "v260818.02 6:51a",
-  "release": 1770,
-  "sha": "d226d5ffd5",
-  "fullSha": "d226d5ffd56ac9b372783dc39a2150db6f54f795",
+  "version": "v260820.01 10:43a",
+  "release": 1771,
+  "sha": "7ce0244d2a",
+  "fullSha": "7ce0244d2a9d4f610d059c76b6b9a6f26c8a0e3a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmzvulz",
-  "pushedAt": "2026-08-18T11:51:42+00:00",
-  "commits": [{"sha":"d226d5ffd5","message":"feat(rahulio): add SPCX $100 LEAPS hypothetical to Mac Studio analysis","author":"Otto"}]
+  "machine": "runnervm76f27",
+  "pushedAt": "2026-08-20T15:43:54+00:00",
+  "commits": [{"sha":"7ce0244d2a","message":"feat(infra): add /infra/prestart page and Claude-vs-Codex choice","author":"Otto"}]
 }
