@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlpacApps Infra — Before You Start</title>
-  <meta name="description" content="Install Claude Desktop or ChatGPT Desktop with Codex, then let it help you create your Supabase, GitHub, Cloudflare, Google Cloud, and Resend accounts before AlpacApps setup begins.">
+  <meta name="description" content="Install Claude Desktop or ChatGPT Desktop with Codex, then let it help you create your GitHub, Supabase, Cloudflare, Google Cloud, and Resend accounts before AlpacApps setup begins.">
   <meta property="og:title" content="AlpacApps Infra — Before You Start">
   <meta property="og:description" content="Pick your AI desktop app, then let it walk you through creating the five accounts AlpacApps needs.">
   <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
@@ -501,7 +501,7 @@
       <li><strong>Create one dedicated Gmail account</strong> for the project, used as the login for every service below.</li>
       <li><strong>Pick and install one AI desktop app</strong> &mdash; Claude Desktop or ChatGPT Desktop (Codex). This is your helper for everything else.</li>
       <li><strong>Set up a password manager</strong> so every password and key has one safe home.</li>
-      <li><strong>Create five free accounts</strong> &mdash; Supabase, GitHub, Cloudflare, Google Cloud, and Resend &mdash; with your AI app answering questions as you go.</li>
+      <li><strong>Create five free accounts</strong> &mdash; GitHub first, then Supabase, Cloudflare, Google Cloud, and Resend &mdash; with your AI app answering questions as you go.</li>
       <li><strong>Move on to setup</strong> at <a href="/infra/">alpacaplayhouse.com/infra</a>, where your assistant builds and deploys the project.</li>
       <li class="muted"><strong>Optional:</strong> add <a href="#alt-coding-model">a cheaper coding model</a> &mdash; the only step here that needs a credit card.</li>
     </ol>
@@ -538,7 +538,7 @@
     </div>
 
     <div class="callout callout--info">
-      <p><strong>Use this address for everything that follows</strong> &mdash; Supabase, GitHub, Cloudflare, Google Cloud, Resend, and OpenRouter if you get that far. It also becomes the Google account behind &ldquo;Sign in with Google&rdquo; in your app, so Step 4&rsquo;s Google Cloud work happens under this same login.</p>
+      <p><strong>Use this address for everything that follows</strong> &mdash; GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter if you get that far. It also becomes the Google account behind &ldquo;Sign in with Google&rdquo; in your app, so Step 4&rsquo;s Google Cloud work happens under this same login.</p>
     </div>
 
     <div class="callout">
@@ -601,9 +601,11 @@
   <section class="section">
     <h2>Step 2 &mdash; Open it and paste this prompt</h2>
     <p>Start a normal <strong>chat</strong> conversation (not Claude Code, not Codex) and paste the prompt below. Your assistant will then walk you through each signup in order, tell you exactly what to click, and read any screenshot you paste when you get stuck.</p>
-    <div class="prompt-block" id="prestart-prompt"><button class="copy-btn" onclick="copyById('prestart-prompt')">Copy</button>I'm getting ready to set up an AlpacApps project. Before the real setup starts, help me create accounts for these five services, one at a time, in this order: Supabase, GitHub, Cloudflare, Google Cloud, and Resend.
+    <div class="prompt-block" id="prestart-prompt"><button class="copy-btn" onclick="copyById('prestart-prompt')">Copy</button>I'm getting ready to set up an AlpacApps project. Before the real setup starts, help me create accounts for these five services, one at a time, in this order: GitHub, Supabase, Cloudflare, Google Cloud, and Resend.
 
-Use the same dedicated project Gmail address for every one of them.
+GitHub goes first because Supabase, Cloudflare, and Resend all support "Continue with GitHub" — use that for each of them instead of creating separate passwords. Google Cloud uses my project Gmail instead.
+
+Everything traces back to one dedicated project Gmail: GitHub and Google Cloud are registered to it directly, and the GitHub-SSO services inherit it from there.
 
 For each one: give me the exact signup URL, tell me what to click, tell me what to write down afterward, and wait for me to say "done" before moving to the next one. I may paste screenshots — tell me if I'm on the right page.
 
@@ -647,51 +649,21 @@ Do NOT have me create API keys, tokens, projects, or domains yet. Account creati
   <!-- STOP 4: the five accounts -->
   <section class="section">
     <h2>Step 4 &mdash; Create the five accounts</h2>
-    <p>Work top to bottom. Each one is free to start, and each takes a few minutes. Ask your assistant whenever a screen does not look like the description.</p>
-
-    <div class="service">
-      <div class="service-title">
-        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/supabase/3ECF8E" alt="" width="22" height="22"></span>
-        <h2>1. Supabase</h2>
-        <span class="tag">Free tier</span>
-      </div>
-      <p>Your database, user logins, file storage, and edge functions &mdash; the backend of your app.</p>
-      <div class="split">
-        <div class="mini-panel">
-          <h3>Do this</h3>
-          <ol>
-            <li>Go to <a href="https://supabase.com/dashboard/sign-up" target="_blank" rel="noopener">supabase.com/dashboard/sign-up</a>.</li>
-            <li>Sign up (signing in with GitHub is fine if you make GitHub first).</li>
-            <li>Create a free organization if prompted.</li>
-            <li>Stop there &mdash; do <em>not</em> create a project yet.</li>
-          </ol>
-        </div>
-        <div class="mini-panel">
-          <h3>Write down</h3>
-          <ul>
-            <li>Login email</li>
-            <li>Organization name</li>
-            <li>Password manager item name</li>
-          </ul>
-        </div>
-      </div>
-      <div class="callout">
-        <p><strong>Why wait on the project:</strong> the wizard names it, picks the region, and sets the auth URLs to match your app. If you do create one anyway, save the database password immediately &mdash; Supabase never shows it again.</p>
-      </div>
-    </div>
+    <p><strong>Work top to bottom &mdash; the order matters.</strong> GitHub comes first because <strong>Supabase, Cloudflare, and Resend all offer &ldquo;Continue with GitHub&rdquo;</strong>. Make it first and three of the next four signups become one click instead of another password to create, store, and eventually lose. Google Cloud is the exception &mdash; it uses the project Gmail from Step 0. Each account is free to start. Ask your assistant whenever a screen does not look like the description.</p>
 
     <div class="service">
       <div class="service-title">
         <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/github/181717" alt="" width="22" height="22"></span>
-        <h2>2. GitHub</h2>
+        <h2>1. GitHub</h2>
         <span class="tag">Free</span>
       </div>
-      <p>Where your code lives, and where your assistant commits and pushes every change.</p>
+      <p>Where your code lives, and where your assistant commits and pushes every change. <strong>Create this one first</strong> &mdash; Supabase and most of the services below let you sign in with GitHub, so having it already means fewer separate passwords to manage.</p>
       <div class="split">
         <div class="mini-panel">
           <h3>Do this</h3>
           <ol>
             <li>Go to <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>.</li>
+            <li>Sign up with the <strong>project Gmail from Step 0</strong>.</li>
             <li>Pick a username you are happy to see in URLs.</li>
             <li>Verify your email address.</li>
             <li>Turn on two-factor authentication and save the recovery codes.</li>
@@ -709,6 +681,44 @@ Do NOT have me create API keys, tokens, projects, or domains yet. Account creati
       <div class="callout">
         <p><strong>No access token needed.</strong> Setup signs you in through the GitHub CLI browser flow, so skip Personal Access Tokens entirely.</p>
       </div>
+      <div class="callout callout--secure">
+        <p><strong>Guard this one hardest.</strong> Once other services sign in through GitHub, whoever holds this account holds them too. 2FA on, recovery codes saved somewhere you will actually find them.</p>
+      </div>
+    </div>
+
+    <div class="service">
+      <div class="service-title">
+        <span class="service-icon" aria-hidden="true"><img src="https://cdn.simpleicons.org/supabase/3ECF8E" alt="" width="22" height="22"></span>
+        <h2>2. Supabase</h2>
+        <span class="tag">Free tier</span>
+      </div>
+      <p>Your database, user logins, file storage, and edge functions &mdash; the backend of your app.</p>
+      <div class="split">
+        <div class="mini-panel">
+          <h3>Do this</h3>
+          <ol>
+            <li>Go to <a href="https://supabase.com/dashboard/sign-up" target="_blank" rel="noopener">supabase.com/dashboard/sign-up</a>.</li>
+            <li>Choose <strong>Continue with GitHub</strong> and use the account you just made.</li>
+            <li>Authorize Supabase when GitHub asks.</li>
+            <li>Create a free organization if prompted.</li>
+            <li>Stop there &mdash; do <em>not</em> create a project yet.</li>
+          </ol>
+        </div>
+        <div class="mini-panel">
+          <h3>Write down</h3>
+          <ul>
+            <li>That you signed in via GitHub</li>
+            <li>Organization name</li>
+            <li>Password manager item name</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        <p><strong>Why wait on the project:</strong> the wizard names it, picks the region, and sets the auth URLs to match your app. If you do create one anyway, save the database password immediately &mdash; Supabase never shows it again.</p>
+      </div>
+      <div class="callout callout--info">
+        <p><strong>Note what you signed in with.</strong> If you use &ldquo;Continue with GitHub&rdquo; there is no Supabase password to save &mdash; the GitHub account <em>is</em> the login. Write that down, so future you does not sit there trying to reset a password that never existed.</p>
+      </div>
     </div>
 
     <div class="service">
@@ -723,7 +733,8 @@ Do NOT have me create API keys, tokens, projects, or domains yet. Account creati
           <h3>Do this</h3>
           <ol>
             <li>Go to <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">dash.cloudflare.com/sign-up</a>.</li>
-            <li>Create the account and verify your email.</li>
+            <li>Choose <strong>Continue with GitHub</strong>, or sign up with the project Gmail if you prefer a separate password.</li>
+            <li>Verify your email if asked.</li>
             <li>Already own a domain? You can add it now, or let the wizard walk you through it later.</li>
             <li>Don&rsquo;t own one? Skip it &mdash; a free <code>github.io</code> address works to start.</li>
           </ol>
@@ -784,7 +795,8 @@ Do NOT have me create API keys, tokens, projects, or domains yet. Account creati
           <h3>Do this</h3>
           <ol>
             <li>Go to <a href="https://resend.com/signup" target="_blank" rel="noopener">resend.com/signup</a>.</li>
-            <li>Create the account and verify your email.</li>
+            <li>Choose <strong>Log in with GitHub</strong> &mdash; same account as before.</li>
+            <li>Verify your email if asked.</li>
             <li>Skip domain verification for now &mdash; it needs Cloudflare DNS records the wizard will add.</li>
             <li>Skip the API key too; setup creates and validates it in place.</li>
           </ol>
@@ -878,7 +890,7 @@ Do NOT have me create API keys, tokens, projects, or domains yet. Account creati
     <h2>You&rsquo;re ready</h2>
     <p>You are done with pre-start when all five services are registered to your project Gmail, you can sign in to each one, and you know where the saved credentials live.</p>
     <div class="callout callout--done">
-      <p><strong>What to tell your assistant next:</strong> &ldquo;I installed Claude Desktop (or ChatGPT Desktop), created a dedicated project Gmail, and used it to create my Supabase, GitHub, Cloudflare, Google Cloud, and Resend accounts. Credentials are in my password manager. Start the AlpacApps Infra setup.&rdquo;</p>
+      <p><strong>What to tell your assistant next:</strong> &ldquo;I installed Claude Desktop (or ChatGPT Desktop), created a dedicated project Gmail, and used it to create my GitHub, Supabase, Cloudflare, Google Cloud, and Resend accounts. Credentials are in my password manager. Start the AlpacApps Infra setup.&rdquo;</p>
     </div>
     <div class="cta-row">
       <a class="button button--primary" href="/infra/">Start AlpacApps Infra setup &rarr;</a>
