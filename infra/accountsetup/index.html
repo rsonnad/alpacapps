@@ -345,6 +345,23 @@
       transition: background 0.2s;
     }
     .copy-btn:hover { background: rgba(124,106,154,0.25); }
+    .block-actions {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      display: flex;
+      gap: 0.4rem;
+      z-index: 1;
+    }
+    .block-actions .copy-btn { position: static; }
+    .block-actions .copy-btn--primary {
+      background: var(--claude-border);
+      color: #fff;
+    }
+    .block-actions .copy-btn--primary:hover { background: #665684; }
+    @media (max-width: 720px) {
+      .block-actions { position: static; display: flex; margin-bottom: 0.75rem; }
+    }
 
     .footer-links {
       text-align: center;
@@ -439,55 +456,87 @@
       <p><strong>Do not save secrets in public places.</strong> Never put passwords, API keys, OAuth client secrets, recovery codes, or database passwords in a public Google Doc, GitHub issue, Slack channel, screenshot, or checked-in repo file.</p>
     </div>
 
-    <h3>Copyable credential tracker</h3>
-    <p class="small muted">Use this in a private doc or as notes inside your password manager. Put actual secret values only in the password manager fields.</p>
-    <div class="prompt-block" id="tracker-template"><button class="copy-btn" onclick="copyById('tracker-template')">Copy</button>AlpacApps Account Setup
+    <h3>Credential tracker</h3>
+    <p class="small muted">One click saves this as a file you can drop straight into a private doc or your password manager&rsquo;s notes. Put actual secret values only in password manager fields &mdash; the file is a map of where things live, not a place to store them.</p>
+    <div class="prompt-block" id="tracker-template"><div class="block-actions"><button class="copy-btn copy-btn--primary" onclick="downloadBlock('tracker-template','AlpacApps-AI-System-Notes.md',this)">Download file</button><button class="copy-btn" onclick="copyById('tracker-template')">Copy</button></div>AlpacApps AI System Notes
 
 Project name:
 Domain, if any:
-Primary setup email:
+Project Gmail (the login behind everything):
 
-GitHub
-- Login URL: https://github.com
-- Username:
-- Email:
+--------------------------------------------------
+0. PROJECT GMAIL
+--------------------------------------------------
+- Signup URL: https://accounts.google.com/signup
+- Address:
 - Password: stored in password manager
 - 2FA recovery codes: stored in password manager
+- Recovery phone / backup email set: yes / no
 - Notes:
 
-Cloudflare
-- Login URL: https://dash.cloudflare.com
-- Email:
-- Account name:
-- Account ID, if known:
-- Global API Key: stored in password manager
-- Domain/zone, if any:
-- Notes:
+--------------------------------------------------
+1. GITHUB  (create this first)
+--------------------------------------------------
+- Login URL: https://github.com
+- Username:
+- Registered to project Gmail: yes / no
+- Password: stored in password manager
+- 2FA recovery codes: stored in password manager
+- Notes: Supabase, Cloudflare and Resend can all sign in through this account
 
-Supabase
+--------------------------------------------------
+2. SUPABASE
+--------------------------------------------------
 - Login URL: https://supabase.com/dashboard
-- Email:
+- Signed in with: GitHub / email
 - Organization:
 - Project ref, if already created:
 - Database password: stored in password manager
 - Anon/service keys, if already created: stored in password manager
 - Notes:
 
-Resend
-- Login URL: https://resend.com
-- Email:
-- Domain, if verified:
-- API key: stored in password manager
+--------------------------------------------------
+3. CLOUDFLARE
+--------------------------------------------------
+- Login URL: https://dash.cloudflare.com
+- Signed in with: GitHub / email
+- Account name:
+- Account ID, if known:
+- Global API Key: stored in password manager
+- Domain/zone, if any:
 - Notes:
 
-Google Cloud / OAuth
+--------------------------------------------------
+4. GOOGLE CLOUD / OAUTH
+--------------------------------------------------
 - Login URL: https://console.cloud.google.com
-- Google account:
+- Google account: (the project Gmail)
 - Project name:
 - Project ID:
 - OAuth Client ID:
 - OAuth Client Secret: stored in password manager
+- Notes: redirect URI is https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback
+
+--------------------------------------------------
+5. RESEND
+--------------------------------------------------
+- Login URL: https://resend.com
+- Signed in with: GitHub / email
+- Domain, if verified:
+- API key: stored in password manager
+- From-address plan:
+- Notes:
+
+--------------------------------------------------
+6. OPENROUTER  (optional, costs money)
+--------------------------------------------------
+- Login URL: https://openrouter.ai
+- Signed in with:
+- API key: stored in password manager
+- Per-key credit limit set:
+- Worker model slug:
 - Notes:</div>
+    <p class="small muted">Saves as <code>AlpacApps-AI-System-Notes.md</code>. Nothing is uploaded anywhere &mdash; the file is generated in your browser.</p>
   </section>
 
   <section class="section">
@@ -668,14 +717,43 @@ Google Cloud / OAuth
 </main>
 
 <script>
+// Read a block's text without picking up its own button labels.
+function blockText(id) {
+  var el = document.getElementById(id);
+  var clone = el.cloneNode(true);
+  var buttons = clone.querySelectorAll('.block-actions, button');
+  for (var i = 0; i < buttons.length; i++) {
+    if (buttons[i].parentNode) buttons[i].parentNode.removeChild(buttons[i]);
+  }
+  return clone.textContent.replace(/^\s*Copy\s*/, '').trim();
+}
+
+function flash(btn, message) {
+  if (!btn) return;
+  var original = btn.textContent;
+  btn.textContent = message;
+  setTimeout(function() { btn.textContent = original; }, 2000);
+}
+
 function copyById(id) {
   var el = document.getElementById(id);
-  var text = el.textContent.replace(/^\s*Copy\s*/, '').trim();
-  navigator.clipboard.writeText(text).then(function() {
-    var btn = el.querySelector('.copy-btn');
-    btn.textContent = 'Copied!';
-    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  var btn = el.querySelector('.copy-btn:not(.copy-btn--primary)') || el.querySelector('.copy-btn');
+  navigator.clipboard.writeText(blockText(id)).then(function() {
+    flash(btn, 'Copied!');
   });
+}
+
+function downloadBlock(id, filename, btn) {
+  var blob = new Blob([blockText(id) + '\n'], { type: 'text/markdown;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  flash(btn, 'Saved!');
 }
 </script>
 
