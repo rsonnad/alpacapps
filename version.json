@@ -1,12 +1,12 @@
 {
-  "version": "v260820.03 11:21a",
-  "release": 1773,
-  "sha": "a94b2590c3",
-  "fullSha": "a94b2590c3eb5aa4d14b8ac9efd3428f89bc8fff",
+  "version": "v260820.04 2:58p",
+  "release": 1774,
+  "sha": "73fed70793",
+  "fullSha": "73fed707932848a94f6070b2e506fe6c40c33f53",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-20T16:21:41+00:00",
-  "commits": [{"sha":"a94b2590c3","message":"fix(infra): create GitHub before Supabase on the prestart page","author":"Otto"}]
+  "pushedAt": "2026-08-20T19:58:26+00:00",
+  "commits": [{"sha":"73fed70793","message":"feat(infra): one-click file download for the credential tracker","author":"Otto"}]
 }
