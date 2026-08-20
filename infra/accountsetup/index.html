@@ -350,9 +350,24 @@
       top: 0.75rem;
       right: 0.75rem;
       display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
       gap: 0.4rem;
       z-index: 1;
+      max-width: calc(100% - 1.5rem);
     }
+    .block-actions .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .block-actions .copy-btn--doc {
+      background: #1a73e8;
+      color: #fff;
+    }
+    .block-actions .copy-btn--doc:hover { background: #1557b0; color: #fff; }
     .block-actions .copy-btn { position: static; }
     .block-actions .copy-btn--primary {
       background: var(--claude-border);
@@ -457,8 +472,8 @@
     </div>
 
     <h3>Credential tracker</h3>
-    <p class="small muted">One click saves this as a file you can drop straight into a private doc or your password manager&rsquo;s notes. Put actual secret values only in password manager fields &mdash; the file is a map of where things live, not a place to store them.</p>
-    <div class="prompt-block" id="tracker-template"><div class="block-actions"><button class="copy-btn copy-btn--primary" onclick="downloadBlock('tracker-template','AlpacApps-AI-System-Notes.md',this)">Download file</button><button class="copy-btn" onclick="copyById('tracker-template')">Copy</button></div>AlpacApps AI System Notes
+    <p class="small muted">Three ways to take this with you: <strong>Copy to Google Docs</strong> drops a private copy straight into your Drive, <strong>Download file</strong> saves it as markdown, or <strong>Copy</strong> puts it on your clipboard. Whichever you pick, this is a map of where things live &mdash; put the actual secret values only in your password manager.</p>
+    <div class="prompt-block" id="tracker-template"><div class="block-actions"><a class="copy-btn copy-btn--doc" href="https://docs.google.com/document/d/1ULE9jJFJxNvU2taImxg1PddrPVIYThcp0QPO2E-BBiI/copy" target="_blank" rel="noopener">Copy to Google Docs</a><button class="copy-btn copy-btn--primary" onclick="downloadBlock('tracker-template','AlpacApps-AI-System-Notes.md',this)">Download file</button><button class="copy-btn" onclick="copyById('tracker-template')">Copy</button></div>AlpacApps AI System Notes
 
 Project name:
 Domain, if any:
@@ -536,7 +551,10 @@ Project Gmail (the login behind everything):
 - Per-key credit limit set:
 - Worker model slug:
 - Notes:</div>
-    <p class="small muted">Saves as <code>AlpacApps-AI-System-Notes.md</code>. Nothing is uploaded anywhere &mdash; the file is generated in your browser.</p>
+    <div class="callout callout--info">
+      <p style="margin-bottom: 0.5rem;"><strong>Copy to Google Docs</strong> opens Google&rsquo;s own &ldquo;Make a copy&rdquo; screen. You need to be signed in to Google, and the copy that lands in your Drive is <strong>private to you</strong> &mdash; you are not editing the shared template, and nobody else can see what you type into it.</p>
+      <p style="margin-bottom: 0;"><strong>Download file</strong> saves <code>AlpacApps-AI-System-Notes.md</code> straight from your browser. Nothing is uploaded anywhere.</p>
+    </div>
   </section>
 
   <section class="section">
