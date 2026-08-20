@@ -1,12 +1,12 @@
 {
-  "version": "v260820.09 4:00p",
-  "release": 1779,
-  "sha": "3a7bce6cc2",
-  "fullSha": "3a7bce6cc2d138549399321a6de3e27c55891179",
+  "version": "v260820.10 5:35p",
+  "release": 1780,
+  "sha": "acdc79c785",
+  "fullSha": "acdc79c78598b81d46770bb35b921b36d9115b0d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-20T21:00:00+00:00",
-  "commits": [{"sha":"3a7bce6cc2","message":"feat(infra): private-doc step now opens the shared template","author":"Otto"}]
+  "pushedAt": "2026-08-20T22:35:51+00:00",
+  "commits": [{"sha":"acdc79c785","message":"Add a twice-daily MacBook Pro deal watcher on Alpuca.","author":"Otto"}]
 }
