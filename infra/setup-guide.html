@@ -239,7 +239,7 @@
     <div class="validate">Ask the user to confirm the install finished by running <code>git --version</code>. They should see a version number (e.g., <code>git version 2.39.5</code>).</div>
 
     <h3>Install all prerequisites (Mac &mdash; one command)</h3>
-    <p>After Xcode CLI Tools are confirmed, run the prerequisite installer. This installs or upgrades: git, GitHub CLI, Node.js, Supabase CLI, Wrangler, psql, TypeScript.</p>
+    <p>After Xcode CLI Tools are confirmed, run the prerequisite installer. This installs or upgrades: git, GitHub CLI, Node.js, Supabase CLI, Wrangler, psql, Bitwarden CLI, TypeScript.</p>
     <pre><code>bash &lt;(curl -fsSL https://alpacaplayhouse.com/scripts/install-prereqs.sh)</code></pre>
     <p>If the user already has Homebrew and prefers granular control, they can also use <code>brew bundle</code> from the project's Brewfile after cloning.</p>
     <div class="validate">Ask the user to confirm the script completed successfully. It prints a summary of all installed tools and versions at the end.</div>
@@ -252,6 +252,7 @@
       <li><strong>GitHub CLI:</strong> <code>winget install --id GitHub.cli</code> (Windows) or see <a href="https://github.com/cli/cli/blob/trunk/docs/install_linux.md">Linux install docs</a></li>
       <li><strong>Supabase CLI:</strong> <code>npm install -g supabase</code> (installed by wizard if missing)</li>
       <li><strong>Wrangler:</strong> <code>npm install -g wrangler</code> (installed by wizard if missing)</li>
+      <li><strong>Bitwarden CLI:</strong> <code>npm install -g @bitwarden/cli</code> &mdash; the standard secrets vault; sign in once with <code>bw login</code></li>
     </ul>
     <div class="validate">Ask the user to confirm they can run <code>git --version && node --version</code> successfully.</div>
 

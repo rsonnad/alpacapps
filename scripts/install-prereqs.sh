@@ -9,7 +9,7 @@
 #
 # What this installs/updates:
 #   git, gh (GitHub CLI), node (+ npm/npx), supabase CLI, wrangler, libpq (psql),
-#   typescript-language-server, typescript
+#   bitwarden-cli (bw), typescript-language-server, typescript
 #
 # What this does NOT install (requires manual setup):
 #   - Xcode Command Line Tools (run: xcode-select --install)
@@ -111,6 +111,7 @@ brew_ensure "git" "git"
 brew_ensure "gh" "gh"
 brew_ensure "node" "node"
 brew_ensure "libpq" "libpq"
+brew_ensure "bitwarden-cli" "bw"
 
 # Supabase CLI (from their tap)
 brew_tap_ensure "supabase/tap" "supabase" "supabase"
@@ -153,11 +154,16 @@ echo "    npm             $(npm --version 2>/dev/null)"
 echo "    supabase        $(supabase --version 2>/dev/null | awk '{print $2}' || echo '?')"
 echo "    wrangler        $(wrangler --version 2>/dev/null | awk '{print $2}' || echo '?')"
 echo "    psql            $($PSQL_PATH --version 2>/dev/null | awk '{print $3}' || echo 'not on PATH')"
+echo "    bw              $(bw --version 2>/dev/null || echo '?')"
 echo "    tsc             $(tsc --version 2>/dev/null || echo '?')"
 echo ""
 echo "  Not covered (manual setup required):"
 echo "    Claude Desktop  https://claude.ai/download"
 echo "    Claude account  https://claude.ai (Pro \$20/mo recommended)"
+echo ""
+echo "  Bitwarden (secrets vault):"
+echo "    bw login                     # once, with your Bitwarden account"
+echo "    export BW_SESSION=\$(bw unlock --raw)"
 echo ""
 echo "  Next step:"
 echo "    git clone https://github.com/rsonnad/alpacapps-infra.git my-project"

@@ -12,6 +12,7 @@ brew "git"                          # Version control
 brew "gh"                           # GitHub CLI — repo management, Pages, auth
 brew "node"                         # JavaScript runtime (includes npm/npx)
 brew "libpq"                        # PostgreSQL client (psql) for DB validation
+brew "bitwarden-cli"                # Bitwarden CLI (bw) — secrets vault for API keys and tokens
 
 # Infrastructure CLIs
 brew "supabase/tap/supabase"        # Supabase CLI — database, auth, edge functions

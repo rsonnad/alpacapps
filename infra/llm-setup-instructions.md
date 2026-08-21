@@ -33,6 +33,9 @@ The user opens **Claude Code or Codex Code mode immediately** and selects a new,
    - Git
    - GitHub CLI (`gh`)
    - Node.js (for Claude Code)
+   - Bitwarden CLI (`bw`) — the standard secrets vault; `bw login` once, then
+     `export BW_SESSION=$(bw unlock --raw)` per shell. Store every API key and
+     token there, in a folder named after the user's own project.
 
 3. **Create and clone the GitHub repository automatically** — Use authenticated `gh` from the empty folder to generate a repository from `https://github.com/rsonnad/alpacapps-infra`, clone it locally, and open/use that clone as the project folder. Do not make the user manually copy a clone command unless `gh` automation is unavailable.
 

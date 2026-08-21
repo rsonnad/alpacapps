@@ -439,7 +439,7 @@
       <div class="quick-card"><strong>Supabase</strong><span>Postgres database, auth, storage, and edge functions.</span></div>
       <div class="quick-card"><strong>Resend</strong><span>Transactional email and optional inbound email webhooks.</span></div>
       <div class="quick-card"><strong>Google Cloud</strong><span>OAuth app for Google Sign-In through Supabase Auth.</span></div>
-      <div class="quick-card"><strong>Credential manager</strong><span>Existing CLI-capable manager or Bitwarden for passwords, recovery codes, and API keys.</span></div>
+      <div class="quick-card"><strong>Bitwarden</strong><span>The default credential manager &mdash; passwords, recovery codes, and API keys. An existing CLI-capable manager may substitute.</span></div>
       <div class="quick-card"><strong>OpenRouter</strong><span>Delegated coding and review with Ox Alpha and DeepSeek v4 Flash.</span></div>
     </div>
     <div class="callout callout--info">
@@ -449,7 +449,7 @@
 
   <section class="section">
     <h2>Save credentials safely first</h2>
-    <p>Use a password manager as the source of truth. A private Google Doc is useful as a checklist, but it should not become the long-term home for passwords, API keys, OAuth secrets, or recovery codes.</p>
+    <p><strong>Bitwarden is the standard vault for this project</strong> and the source of truth for secrets &mdash; setup installs its command-line tool (<code>bw</code>) alongside git, Node, and the Supabase CLI, so your assistant can read keys from the vault instead of asking you to paste them into chat. A private Google Doc is useful as a checklist, but it should not become the long-term home for passwords, API keys, OAuth secrets, or recovery codes.</p>
 
     <div class="split">
       <div class="mini-panel">
@@ -457,12 +457,13 @@
         <ol>
           <li>Tell the coding agent which password manager you currently use, if any.</li>
           <li>It should verify its supported CLI, interactive sign-in, scoped credential reads, and a non-sensitive test read, then tell you whether it can support this workflow.</li>
-          <li>If it passes, keep using it. If not, install <a href="https://bitwarden.com/download/" target="_blank" rel="noopener">Bitwarden</a> and create a free account.</li>
+          <li>If it passes, keep using it. If not, go to <a href="https://bitwarden.com" target="_blank" rel="noopener">bitwarden.com</a>, create a free account, and install the apps from <a href="https://bitwarden.com/download/" target="_blank" rel="noopener">bitwarden.com/download</a>.</li>
           <li><strong>Do not use Apple Passwords/iCloud Keychain as the automation source.</strong> It is not programmatically friendly for Claude Code/Codex.</li>
           <li>Install the browser extension so it can generate and save strong passwords during signup.</li>
-          <li>Create a folder named <strong>AlpacApps Setup</strong>.</li>
+          <li>Create a folder named after <strong>your own project</strong> and keep everything for this build in it.</li>
           <li>Add one login item per service: GitHub, Cloudflare, Supabase, Resend, Google Cloud, and OpenRouter.</li>
         </ol>
+        <p class="small muted">Another password manager for the account logins is fine, but the CLI the setup installs is Bitwarden&rsquo;s.</p>
       </div>
       <div class="mini-panel">
         <h3>Private tracker only</h3>

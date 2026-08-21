@@ -883,7 +883,7 @@
       <li><strong>Mac:</strong> Install <a href="https://shottr.cc" target="_blank" rel="noopener">Shottr</a>. Turn on Launch at Login and Copy to Clipboard after saving; choose a known screenshot folder and assign a global fullscreen or area shortcut.</li>
       <li><strong>Windows:</strong> Install <a href="https://getsharex.com/" target="_blank" rel="noopener">ShareX</a>. Set a fullscreen or region shortcut, a known screenshot folder, and Copy to Clipboard.</li>
     </ul>
-    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0;"><strong>Test it:</strong> take one screenshot and paste it into your Code-mode conversation. The agent installs Git, GitHub CLI, Node.js, and the remaining command-line tools immediately afterward.</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0;"><strong>Test it:</strong> take one screenshot and paste it into your Code-mode conversation. The agent installs Git, GitHub CLI, Node.js, Bitwarden CLI, and the remaining command-line tools immediately afterward.</p>
   </div>
 
   <!-- STEP 1 -->
@@ -1328,6 +1328,27 @@ wire_api = "responses"</div>
             <li><strong>Plans:</strong> Free tier (daily limits), Pro ($20/mo, recommended), Max ($100/mo for heavy building), Max+ ($200/mo for intensive development).</li>
           </ul>
           <p><a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Go to Claude Code &rarr;</a></p>
+        </details>
+      </div>
+
+      <div class="svc-row">
+        <label class="calc-svc calc-svc--core calc-svc--locked">
+          <input type="checkbox" checked disabled data-svc="bitwarden">
+          <span class="calc-svc__check">&check;</span>
+          <span class="svc-icon"><img src="https://cdn.simpleicons.org/bitwarden/175DDC" alt="Bitwarden"></span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Bitwarden</span><span class="calc-svc__desc">Secrets vault &mdash; every API key, token &amp; password</span></span>
+          <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
+        </label>
+        <details class="svc-expand"><summary>Learn more</summary>
+          <p>The one place every credential lives. Nothing above works without API keys, and none of those keys belong in your repo, in a Google Doc, or pasted into a chat window &mdash; they go in Bitwarden, and Claude reads them from there.</p>
+          <ul>
+            <li><strong>What it holds:</strong> Service logins, API keys, OAuth client secrets, database passwords, SSH credentials, and 2FA recovery codes.</li>
+            <li><strong>How Claude uses it:</strong> The prerequisite installer adds the Bitwarden CLI (<code>bw</code>). After one <code>bw login</code>, setup pulls each key out of your vault at the moment it needs it &mdash; no secret ever gets written into a file in the repo.</li>
+            <li><strong>How to organize it:</strong> One folder named after your project, holding everything for this build and nothing else.</li>
+            <li><strong>Cost:</strong> Free forever for one person, with unlimited items and devices. Paid tiers only matter if you want to share a vault with other people.</li>
+            <li><strong>Already use 1Password or another manager?</strong> Fine for your account logins &mdash; but the CLI the setup installs is Bitwarden&rsquo;s, so a free account is still the smoothest path.</li>
+          </ul>
+          <p><a href="https://bitwarden.com/download/" target="_blank">Go to Bitwarden &rarr;</a></p>
         </details>
       </div>
 
@@ -2017,6 +2038,7 @@ function recalcCost() {
     'supabase':    { basic: 0, complicated: 0, hyper: 300 },
     'cloudflare':  { basic: 0, complicated: 0, hyper: 0 },
     'claude':      { basic: 0, complicated: 320, hyper: 2400 },
+    'bitwarden':   { basic: 0, complicated: 0, hyper: 0 },
     'google-auth': { basic: 0, complicated: 0, hyper: 0 },
     'resend':      { basic: 0, complicated: 0, hyper: 0 },
     'telnyx':      { basic: 0, complicated: 60, hyper: 180 },
@@ -2037,7 +2059,7 @@ function recalcCost() {
   };
 
   var svcLabels = {
-    'github': 'Cloudflare Pages', 'supabase': 'Supabase', 'cloudflare': 'Cloudflare', 'claude': 'Claude Code',
+    'github': 'Cloudflare Pages', 'supabase': 'Supabase', 'cloudflare': 'Cloudflare', 'claude': 'Claude Code', 'bitwarden': 'Bitwarden (secrets vault)',
     'google-auth': 'Google Sign-In', 'resend': 'Resend (email)', 'telnyx': 'Telnyx (SMS)',
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
