@@ -46,7 +46,7 @@ Then add to `~/.claude/settings.json`:
 ```json
 {
   "hooks": {
-    "SessionEnd": [
+    "Stop": [
       {
         "type": "command",
         "command": "bash ~/.claude/hooks/save-session.sh"
@@ -55,6 +55,8 @@ Then add to `~/.claude/settings.json`:
   }
 }
 ```
+
+Use the `Stop` event, not `SessionEnd` — `SessionEnd` does not fire for worktree/subagent sessions.
 
 ### 6. Verify
 
