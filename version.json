@@ -1,12 +1,12 @@
 {
-  "version": "v260820.10 5:35p",
-  "release": 1780,
-  "sha": "acdc79c785",
-  "fullSha": "acdc79c78598b81d46770bb35b921b36d9115b0d",
+  "version": "v260822.01 9:07a",
+  "release": 1781,
+  "sha": "f0ce028f5b",
+  "fullSha": "f0ce028f5b7f301fd26734773e96231bc08eed60",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-20T22:35:51+00:00",
-  "commits": [{"sha":"acdc79c785","message":"Add a twice-daily MacBook Pro deal watcher on Alpuca.","author":"Otto"}]
+  "pushedAt": "2026-08-22T14:07:38+00:00",
+  "commits": [{"sha":"f0ce028f5b","message":"docs: record full project code review findings","author":"Otto"}]
 }
