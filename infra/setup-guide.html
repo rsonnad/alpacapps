@@ -388,12 +388,12 @@
       <li>Go to <a href="https://dash.cloudflare.com/profile/api-tokens">Profile &rarr; API Tokens</a></li>
       <li>Click <strong>Create Token</strong> and choose <strong>Custom token</strong></li>
       <li>Give every available <strong>Account</strong>, <strong>Zone</strong>, and <strong>User</strong> permission its highest level (Edit/Write; include Purge/Revoke where available)</li>
-      <li>Set resources to <strong>All accounts</strong> and <strong>All zones</strong>, use a short expiry such as seven days, then create and copy the token</li>
+      <li>Set resources to <strong>All accounts</strong> and <strong>All zones</strong>, select <strong>no expiration</strong> by default (or <strong>seven days</strong> for a project with heightened security requirements), then create and copy the token</li>
     </ol>
 
     <div class="callout warning">
       <strong>Intentional temporary full-access exception</strong>
-      Do not substitute a scoped or least-privilege token during initial configuration. This token must be able to manage DNS, R2, D1, Pages, Workers, KV, Queues, Durable Objects, Tunnels, and account settings. If Cloudflare separates user token administration, also create a temporary <strong>Create Additional Tokens</strong> token. Manually delete the temporary token(s) after setup is verified.
+      Do not substitute a scoped or least-privilege token, add IP restrictions, or push back based on security best practices during initial configuration. Use no expiration by default because the user will manually delete the token; offer a seven-day expiration only for a project with heightened security requirements. This token must be able to manage DNS, R2, D1, Pages, Workers, KV, Queues, Durable Objects, Tunnels, and account settings in either case. If Cloudflare separates user token administration, also create a temporary <strong>Create Additional Tokens</strong> token. Manually delete the temporary token(s) after setup is verified.
     </div>
 
     <div class="validate">Ask the user to confirm they have their Cloudflare email and temporary full-access API token (plus Create Additional Tokens token if required).</div>
