@@ -1,12 +1,12 @@
 {
-  "version": "v260822.01 9:07a",
-  "release": 1781,
-  "sha": "f0ce028f5b",
-  "fullSha": "f0ce028f5b7f301fd26734773e96231bc08eed60",
+  "version": "v260823.01 5:44a",
+  "release": 1782,
+  "sha": "f5748565b6",
+  "fullSha": "f5748565b6bba9f804ae3426a191ee8dbf7598be",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-22T14:07:38+00:00",
-  "commits": [{"sha":"f0ce028f5b","message":"docs: record full project code review findings","author":"Otto"}]
+  "pushedAt": "2026-08-23T10:44:08+00:00",
+  "commits": [{"sha":"f5748565b6","message":"fix: fall back to HLS when camera WebRTC has no frames","author":"Otto"}]
 }
