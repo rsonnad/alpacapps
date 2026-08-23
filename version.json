@@ -1,12 +1,12 @@
 {
-  "version": "v260823.03 6:42a",
-  "release": 1784,
-  "sha": "5462612821",
-  "fullSha": "5462612821274942474e8de091bca16e076de2b9",
+  "version": "v260823.04 6:51a",
+  "release": 1785,
+  "sha": "d7bc4ee3f3",
+  "fullSha": "d7bc4ee3f3db01825af7523c74c32e20578e04f4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-23T11:42:48+00:00",
-  "commits": [{"sha":"5462612821","message":"docs(infra): surface code-first setup details","author":"Otto"}]
+  "pushedAt": "2026-08-23T11:51:20+00:00",
+  "commits": [{"sha":"d7bc4ee3f3","message":"docs(infra): clarify cloudflare token expiry choice","author":"Otto"}]
 }
