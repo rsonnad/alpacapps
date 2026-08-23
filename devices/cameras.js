@@ -476,6 +476,7 @@ function renderCameras() {
 const activeStreams = {};  // track active RTCPeerConnection or Hls instances
 const activeHls = {};      // legacy alias for HLS-only cleanup paths
 const retryCount = {};     // retry counter per camera
+const streamAttempts = {}; // guards against late results from replaced streams
 const MAX_RETRIES = 8;     // ~40s of retrying (5s intervals)
 
 /**
@@ -495,6 +496,10 @@ async function startWebRTC(video, streamName, proxyBase) {
     if (video.srcObject !== event.streams[0]) {
       video.srcObject = event.streams[0];
     }
+    // A successful SDP exchange does not guarantee that media can traverse the
+    // network (notably through some Safari/relay combinations). Start playback
+    // immediately so the caller can wait for actual decoded video below.
+    video.play().catch(() => {});
   };
 
   const offer = await pc.createOffer();
@@ -515,12 +520,48 @@ async function startWebRTC(video, streamName, proxyBase) {
 }
 
 /**
+ * Wait for WebRTC to produce decoded video before treating it as connected.
+ * go2rtc can return a valid SDP answer while no media reaches the browser;
+ * without this guard those streams remain black and never fall back to HLS.
+ */
+function waitForWebRTCVideo(video, timeoutMs = 8000) {
+  if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    let timer;
+    const cleanup = () => {
+      clearTimeout(timer);
+      video.removeEventListener('loadeddata', onVideoReady);
+      video.removeEventListener('playing', onVideoReady);
+      video.removeEventListener('error', onVideoError);
+    };
+    const onVideoReady = () => {
+      if (video.videoWidth > 0) {
+        cleanup();
+        resolve();
+      }
+    };
+    const onVideoError = () => {
+      cleanup();
+      reject(new Error('WebRTC video failed to load'));
+    };
+    timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('WebRTC connected but produced no video'));
+    }, timeoutMs);
+    video.addEventListener('loadeddata', onVideoReady);
+    video.addEventListener('playing', onVideoReady);
+    video.addEventListener('error', onVideoError, { once: true });
+  });
+}
+
+/**
  * Start an HLS stream (fallback when WebRTC fails).
  */
 function startHLS(video, hlsUrl, hlsKey, camIndex, quality, videoElementId, overlay, dot) {
-  if (typeof Hls === 'undefined') return null;
-
-  if (Hls.isSupported()) {
+  if (typeof Hls !== 'undefined' && Hls.isSupported()) {
     const hls = new Hls({
       enableWorker: true,
       lowLatencyMode: false,
@@ -578,7 +619,9 @@ function startHLS(video, hlsUrl, hlsKey, camIndex, quality, videoElementId, over
     return hls;
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     // Native HLS (Safari/iOS)
+    video.removeAttribute('src');
     video.src = hlsUrl;
+    video.load();
     video.addEventListener('loadedmetadata', () => {
       retryCount[hlsKey] = 0;
       if (overlay) overlay.classList.add('hidden');
@@ -636,6 +679,8 @@ function startStream(camIndex, quality, videoElementId) {
 
   // Determine tracking key (grid uses camIndex, lightbox uses 'lb')
   const streamKey = videoElementId ? 'lb' : camIndex;
+  const attempt = (streamAttempts[streamKey] || 0) + 1;
+  streamAttempts[streamKey] = attempt;
 
   // Clean up previous instance
   cleanupStream(streamKey);
@@ -654,8 +699,15 @@ function startStream(camIndex, quality, videoElementId) {
   if (dot) dot.className = 'status-dot status-connecting';
 
   // Try WebRTC first, fall back to HLS
+  let webRtcPc;
   startWebRTC(video, stream.stream_name, stream.proxy_base_url)
-    .then((pc) => {
+    .then(async (pc) => {
+      webRtcPc = pc;
+      activeStreams[streamKey] = pc;
+      await waitForWebRTCVideo(video);
+      // A quality change or lightbox close may have replaced this connection
+      // while the decoded-frame check was pending.
+      if (streamAttempts[streamKey] !== attempt || activeStreams[streamKey] !== pc) return;
       activeStreams[streamKey] = pc;
       retryCount[streamKey] = 0;
       if (overlay) overlay.classList.add('hidden');
@@ -684,9 +736,12 @@ function startStream(camIndex, quality, videoElementId) {
       };
     })
     .catch((err) => {
+      // A newer quality/lightbox request owns this video element now.
+      if (streamAttempts[streamKey] !== attempt) return;
       console.warn(`[Camera ${camIndex}] WebRTC failed, falling back to HLS:`, err.message);
 
       // Reset video.srcObject from WebRTC attempt
+      if (activeStreams[streamKey] === webRtcPc) cleanupStream(streamKey);
       video.srcObject = null;
 
       const hlsUrl = `${stream.proxy_base_url}/api/stream.m3u8?src=${stream.stream_name}&mp4`;
