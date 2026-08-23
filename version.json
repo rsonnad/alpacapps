@@ -1,12 +1,12 @@
 {
-  "version": "v260823.02 6:41a",
-  "release": 1783,
-  "sha": "47a4a2a16c",
-  "fullSha": "47a4a2a16c8219585f2763aefcd21b5c0c9edb2b",
+  "version": "v260823.03 6:42a",
+  "release": 1784,
+  "sha": "5462612821",
+  "fullSha": "5462612821274942474e8de091bca16e076de2b9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-23T11:41:02+00:00",
-  "commits": [{"sha":"47a4a2a16c","message":"feat(infra): streamline code-first setup","author":"Otto"}]
+  "pushedAt": "2026-08-23T11:42:48+00:00",
+  "commits": [{"sha":"5462612821","message":"docs(infra): surface code-first setup details","author":"Otto"}]
 }
