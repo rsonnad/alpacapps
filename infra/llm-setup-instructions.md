@@ -53,12 +53,14 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 
 ## Service Options
 
-### Core (always included, free)
+### Core (always included)
 | Service | Purpose |
 |---------|---------|
 | GitHub Pages | Static site hosting, CI/CD via push to main |
 | Supabase | PostgreSQL, auth, file storage, edge functions |
 | Claude Code | AI developer — writes, tests, deploys code |
+| Bitwarden | Recommended credential source of truth for passwords, recovery codes, and API credentials |
+| OpenRouter | Delegated coding and review using Ox Alpha and DeepSeek v4 Flash (small prepaid balance) |
 
 ### Optional services
 | Service | Purpose | Cost |
@@ -84,13 +86,20 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 
 ### Google Sign-In setup requirements
 When the user selects Google Sign-In:
-1. They need a Google account that will own the app's Google Cloud project.
-2. In Google Cloud, they create or select a project, configure the OAuth consent screen, and add test users while the app is in Testing mode.
-3. They create an OAuth client with application type `Web application`.
-4. Authorized JavaScript origins should include the deployed GitHub Pages origin, e.g. `https://USERNAME.github.io`, and the custom domain origin if they configured one, e.g. `https://YOUR_DOMAIN`.
-5. Authorized redirect URI must be `https://PROJECT_REF.supabase.co/auth/v1/callback`.
-6. In Supabase, enable `Authentication -> Providers -> Google`, paste the Client ID and Client Secret, and set URL Configuration's Site URL to the user's GitHub Pages URL or their custom domain.
-7. For broad launch, the OAuth consent screen must be Published. In Testing mode, only listed test users can sign in.
+1. They need a Google account that will own the app's Google Cloud project. First, create or select that project and configure a programmatic OAuth-configuration principal: grant it the **OAuth Config Editor (Beta)** role, create its access credential, and store it in the approved credential manager. This is the first Google Cloud configuration action.
+2. The agent uses that credential to programmatically manage the OAuth client, authorized JavaScript origins, and redirect URIs; do not defer this credential until after manual OAuth setup.
+3. In Google Cloud, configure the OAuth consent screen and add test users while the app is in Testing mode.
+4. Create an OAuth client with application type `Web application`.
+5. Authorized JavaScript origins should include the deployed GitHub Pages origin, e.g. `https://USERNAME.github.io`, and the custom domain origin if they configured one, e.g. `https://YOUR_DOMAIN`.
+6. Authorized redirect URI must be `https://PROJECT_REF.supabase.co/auth/v1/callback`.
+7. In Supabase, enable `Authentication -> Providers -> Google`, paste the Client ID and Client Secret, and set URL Configuration's Site URL to the user's GitHub Pages URL or their custom domain.
+8. For broad launch, the OAuth consent screen must be Published. In Testing mode, only listed test users can sign in.
+
+### Core OpenRouter setup
+During initial setup, configure OpenRouter after the account exists: create an `OPENROUTER_API_KEY` with a per-key credit limit, store it in the approved credential manager and local `.env` only, and never commit it. Look up the current OpenRouter slugs and input/output prices for **Ox Alpha** and **DeepSeek v4 Flash**. Make the lower-cost model the default delegated coding and code-review model and the other the fallback. The main coding agent delegates eligible work, reviews outputs, runs validation, and retains architecture, security, auth, payment, and release decisions.
+
+### Core credential manager
+First ask the user whether they already use a password manager and which one. Use **Bitwarden** by default, but the user may substitute another manager only after the agent verifies it has a supported, scriptable CLI that can authenticate interactively and perform scoped, safe credential reads from Claude Code or Codex. Explain whether the existing manager passes the checks. Do not use Apple Passwords/iCloud Keychain as the automation source: it is not programmatically friendly for this workflow. If the proposed manager fails CLI installation, authentication, scoped-read, or safe test-read checks, use Bitwarden. Keep actual secrets in the chosen manager; checked-in docs contain only references and non-secret configuration.
 
 ## Project Profiles
 

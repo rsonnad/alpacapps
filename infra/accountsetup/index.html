@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlpacApps Infra — Account Setup Homework</title>
-  <meta name="description" content="Optional pre-setup checklist for creating GitHub, Cloudflare, Supabase, Resend, and Google Cloud accounts before starting AlpacApps Infra.">
+  <meta name="description" content="Core setup checklist for credentials, GitHub, Cloudflare, Supabase, Resend, Google Cloud, and OpenRouter before starting AlpacApps Infra.">
   <meta property="og:title" content="AlpacApps Infra — Account Setup Homework">
   <meta property="og:description" content="Create the core accounts and save credentials safely before starting the AlpacApps setup wizard.">
   <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
@@ -438,7 +438,8 @@
       <div class="quick-card"><strong>Supabase</strong><span>Postgres database, auth, storage, and edge functions.</span></div>
       <div class="quick-card"><strong>Resend</strong><span>Transactional email and optional inbound email webhooks.</span></div>
       <div class="quick-card"><strong>Google Cloud</strong><span>OAuth app for Google Sign-In through Supabase Auth.</span></div>
-      <div class="quick-card"><strong>Password Manager</strong><span>One secure place for passwords, recovery codes, and API keys.</span></div>
+      <div class="quick-card"><strong>Credential manager</strong><span>Existing CLI-capable manager or Bitwarden for passwords, recovery codes, and API keys.</span></div>
+      <div class="quick-card"><strong>OpenRouter</strong><span>Delegated coding and review with Ox Alpha and DeepSeek v4 Flash.</span></div>
     </div>
     <div class="callout callout--info">
       <p><strong>Keep setup flexible:</strong> You do not need to create every project, token, or API key today. Account creation is enough. The wizard will create project-specific resources when it knows your app name, domain, and Supabase project ref.</p>
@@ -451,17 +452,19 @@
 
     <div class="split">
       <div class="mini-panel">
-        <h3>Best option: password manager</h3>
+        <h3>Evaluate your existing manager first</h3>
         <ol>
-          <li>Use your existing password manager if you already have one.</li>
-          <li>If you do not, install <a href="https://bitwarden.com/download/" target="_blank" rel="noopener">Bitwarden</a> and create a free account.</li>
+          <li>Tell the coding agent which password manager you currently use, if any.</li>
+          <li>It should verify its supported CLI, interactive sign-in, scoped credential reads, and a non-sensitive test read, then tell you whether it can support this workflow.</li>
+          <li>If it passes, keep using it. If not, install <a href="https://bitwarden.com/download/" target="_blank" rel="noopener">Bitwarden</a> and create a free account.</li>
+          <li><strong>Do not use Apple Passwords/iCloud Keychain as the automation source.</strong> It is not programmatically friendly for Claude Code/Codex.</li>
           <li>Install the browser extension so it can generate and save strong passwords during signup.</li>
           <li>Create a folder named <strong>AlpacApps Setup</strong>.</li>
-          <li>Add one login item per service: GitHub, Cloudflare, Supabase, Resend, and Google Cloud.</li>
+          <li>Add one login item per service: GitHub, Cloudflare, Supabase, Resend, Google Cloud, and OpenRouter.</li>
         </ol>
       </div>
       <div class="mini-panel">
-        <h3>Okay option: private Google Doc</h3>
+        <h3>Private tracker only</h3>
         <ol>
           <li>Create a Google Doc named <strong>AlpacApps Account Setup</strong>.</li>
           <li>Set sharing to <strong>Restricted</strong>, not public or link-access.</li>
@@ -533,6 +536,7 @@ Project Gmail (the login behind everything):
 - Google account: (the project Gmail)
 - Project name:
 - Project ID:
+- First configuration: OAuth Config Editor (Beta) automation principal and access credential, stored in password manager
 - OAuth Client ID:
 - OAuth Client Secret: stored in password manager
 - Notes: redirect URI is https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback
@@ -548,13 +552,14 @@ Project Gmail (the login behind everything):
 - Notes:
 
 --------------------------------------------------
-6. OPENROUTER  (optional, costs money)
+6. OPENROUTER  (core, small prepaid balance)
 --------------------------------------------------
 - Login URL: https://openrouter.ai
 - Signed in with:
 - API key: stored in password manager
 - Per-key credit limit set:
-- Worker model slug:
+- Ox Alpha + DeepSeek v4 Flash slugs and current prices:
+- Lower-cost default model:
 - Notes:</div>
     <div class="callout callout--info">
       <p><strong>Copy to Google Docs</strong> takes you straight to Google&rsquo;s &ldquo;Make a copy&rdquo; screen. Click the button there and an editable, correctly-named copy appears in your Drive. Google always asks for that one confirmation before writing to your Drive &mdash; no link can skip it &mdash; but you never sit in a read-only document wondering why you cannot type.</p>
@@ -704,15 +709,15 @@ Project Gmail (the login behind everything):
         <h2>Google Cloud for auth</h2>
         <span class="tag">Free</span>
       </div>
-      <p>Google Cloud supplies the OAuth client used by Supabase Auth for "Sign in with Google." Create or choose the Google account that should own login for this app now; finish the OAuth client after Supabase exists so the callback URL and site URL are correct.</p>
+      <p>Google Cloud supplies the OAuth client used by Supabase Auth for "Sign in with Google." Create or choose the Google account that should own login for this app now. The first configuration action is the programmatic OAuth credential; finish the OAuth client after Supabase exists so the callback URL and site URL are correct.</p>
       <div class="split">
         <div class="mini-panel">
           <h3>Create it</h3>
           <ol>
             <li>Use the Google account you want to own the app&rsquo;s login configuration.</li>
-            <li>Open <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>.</li>
-            <li>Accept terms if this is your first Google Cloud login.</li>
-            <li>Optional: create a project at <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com/projectcreate</a> and name it after your app.</li>
+            <li>Open <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>, accept terms if needed, and create or select the project.</li>
+            <li><strong>First configuration action:</strong> create the OAuth-configuration automation principal, grant it <strong>OAuth Config Editor (Beta)</strong>, create its access credential, and save it in the approved password manager.</li>
+            <li>Give the coding agent that credential so it can programmatically manage the OAuth client, authorized JavaScript origins, and redirect URIs before manual OAuth configuration.</li>
           </ol>
         </div>
         <div class="mini-panel">
@@ -721,7 +726,8 @@ Project Gmail (the login behind everything):
             <li>Google account email</li>
             <li>Google Cloud project name</li>
             <li>Project ID, if created</li>
-            <li>OAuth Client ID and Client Secret, once created and saved in Supabase or a password manager</li>
+            <li>OAuth configuration automation credential item name</li>
+            <li>OAuth Client ID and Client Secret, once created and saved in Supabase or the approved password manager</li>
           </ul>
         </div>
       </div>

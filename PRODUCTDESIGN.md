@@ -593,6 +593,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 **Why:** Starting in Code mode removes the unnecessary manual clone handoff and lets the agent automate setup from the beginning. A core-only default keeps general projects small and prevents irrelevant hardware integrations from polluting their codebase. Initial infrastructure configuration needs broad Cloudflare control to avoid repeated dashboard permissions work; explicit manual revocation makes that exception visible and bounded.
 
+### 2026-08-23: OpenRouter and Bitwarden Are Core Initial Setup
+
+**Decision:** Bitwarden is the recommended core credential manager, but an existing manager may replace it only after the agent verifies a supported, scriptable CLI with interactive authentication and scoped credential reads; Apple Passwords/iCloud Keychain is excluded as the automation source. OpenRouter is a core initial setup item: it configures both Ox Alpha and DeepSeek v4 Flash for delegated coding and code review, compares their current prices, uses the lower-cost model by default, and keeps the other as fallback. The main agent continues to review all delegated output and owns architecture, security, auth, payment, and release decisions. The first Google Cloud configuration action creates the OAuth Config Editor (Beta) automation credential so the agent can programmatically configure the OAuth client, origins, and redirect URIs.
+
+**Why:** A credential source of truth prevents setup secrets from scattering without forcing a migration away from a capable existing manager. The worker-model route keeps coding and review spend responsive to live prices. Creating Google OAuth automation access first prevents later manual-console drift in callback and origin settings.
+
 ### 2026-07-02: Google Sign-In Setup Must Split Google and Supabase Tasks
 
 **Decision:** Google Sign-In setup instructions must call out the account owner, Google Cloud project, OAuth consent screen, Testing vs Published state, Web application OAuth client, Supabase callback URL, authorized JavaScript origins, Supabase Google provider, and Supabase Site URL.

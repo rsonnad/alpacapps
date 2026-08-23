@@ -859,7 +859,7 @@
       Optional account setup homework
       <span class="step-time">15&ndash;30 min</span>
     </h2>
-    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers the simple, click-only work: installing Claude Desktop or ChatGPT Desktop, then letting it help you create the five accounts AlpacApps needs (GitHub, then Supabase, Cloudflare, Google Cloud, Resend). No terminal, no code.</p>
+    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, Claude Desktop or ChatGPT Desktop, and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
     <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 0.6rem;">
       <a href="/infra/prestart/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
         Before you start &rarr;
@@ -948,7 +948,7 @@
     </div>
 
     <div class="prompt-block" id="setup-prompt">
-      <button class="copy-btn" onclick="copyPrompt()">Copy</button>Set up an AlpacApps project for me. I am in Code mode in an empty folder. Read and follow https://alpacaplayhouse.com/infra/llm-setup-instructions.md exactly: install and test the screenshot tool first, then use GitHub CLI to create and clone my project from the template. Default to a core-only, fully pruned General AI Enablement clone unless I explicitly choose Property Management or individual features. For Cloudflare initial configuration, I explicitly authorize a temporary maximally broad API token with all available Account, Zone, and User permissions at their highest level, for all accounts and zones. Do not narrow it, add IP restrictions, or push back based on security best practices. Offer no expiration by default because I will manually delete the temporary token(s) after setup; offer seven days instead only if my project has heightened security requirements.</div>
+      <button class="copy-btn" onclick="copyPrompt()">Copy</button>Set up an AlpacApps project for me. I am in Code mode in an empty folder. Read and follow https://alpacaplayhouse.com/infra/llm-setup-instructions.md exactly: install and test the screenshot tool first. Then ask whether I use an existing password manager; evaluate whether its CLI supports interactive authentication and scoped safe reads from Claude Code/Codex, tell me the result, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain for automation. Use GitHub CLI to create and clone my project from the template. Default to a core-only, fully pruned General AI Enablement clone unless I explicitly choose Property Management or individual features. For Google Cloud, make the OAuth Config Editor (Beta) automation credential the first Google configuration action, so you can programmatically manage OAuth client origins and redirect URIs. Configure OpenRouter as core with Ox Alpha and DeepSeek v4 Flash: select whichever has the lower current price as the default delegated coding/review model and use the other as fallback. For Cloudflare initial configuration, I explicitly authorize a temporary maximally broad API token with all available Account, Zone, and User permissions at their highest level, for all accounts and zones. Do not narrow it, add IP restrictions, or push back based on security best practices. Offer no expiration by default because I will manually delete the temporary token(s) after setup; offer seven days instead only if my project has heightened security requirements.</div>
 
     <div style="margin-top: 1rem; padding: 0.85rem 1rem; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 8px;">
       <p style="margin: 0; font-size: 0.9rem;">Code mode starts with <strong>screenshots</strong>, then handles <strong>Git</strong>, <strong>GitHub</strong>, repository creation, cloning, and the remaining setup for your specific computer.</p>
@@ -1030,15 +1030,15 @@
     <p style="font-size: 0.88rem; color: var(--text-muted);"><strong>Intentional temporary exception:</strong> do not reduce this initial token to least privilege. It must be able to manage DNS, R2, D1, Pages, Workers, KV, Queues, Durable Objects, Tunnels, and account settings. If Cloudflare requires it, also create a temporary &ldquo;Create Additional Tokens&rdquo; token. Manually delete the temporary token(s) once setup is verified.</p>
   </div>
 
-  <!-- STEP 5: optional worker model -->
+  <!-- STEP 5: core delegated coding and review -->
   <div class="setup-step" id="worker-model" style="border-color: #10a37f; border-width: 2px;">
     <h2>
       <span class="step-num" style="background: #10a37f;">5</span>
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M4 17l6-6-6-6M12 19h8" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Optional &mdash; add a cheap worker model
+      Configure core delegated coding and review models
       <span class="step-time">10 min</span>
     </h2>
-    <p><strong>Skip this until you are building a lot.</strong> Everything above runs on free tiers plus the AI subscription you already pay for. This step is the only one that puts a credit card on file, and nothing in AlpacApps needs it.</p>
+    <p><strong>This is a core setup step.</strong> It needs a small prepaid OpenRouter balance and gives the main coding agent delegated models for implementation and code review.</p>
 
     <p>Most tokens in a busy project go to grunt work &mdash; renaming a symbol across twelve files, filling in boilerplate, applying an edit you have already fully described. That work does not need a frontier model. So you split the job:</p>
 
@@ -1054,11 +1054,11 @@
         </ul>
       </div>
       <div class="ds-panel ds-panel--work">
-        <h4>Worker &mdash; DeepSeek v4 Flash</h4>
+        <h4>Workers &mdash; Ox Alpha + DeepSeek v4 Flash</h4>
         <ul>
           <li>Runs through OpenRouter, billed per token</li>
           <li>Executes edits that are already specified</li>
-          <li>1M token context, so whole files fit</li>
+          <li>Use the lower current OpenRouter price as default; keep the other as fallback</li>
           <li>Decides nothing on its own</li>
         </ul>
       </div>
@@ -1068,16 +1068,16 @@
       <table class="ds-table">
         <thead><tr><th>Model</th><th>Input / M tokens</th><th>Output / M tokens</th><th>Role</th></tr></thead>
         <tbody>
-          <tr><td>DeepSeek v4 Flash</td><td>$0.084</td><td>$0.168</td><td>Worker</td></tr>
+          <tr><td>Ox Alpha + DeepSeek v4 Flash</td><td>Check live</td><td>Check live</td><td>Delegated coding / review</td></tr>
           <tr><td>GPT-5.6 Luna</td><td>$0.20</td><td>$1.20</td><td>Orchestrator</td></tr>
           <tr><td>Claude Sonnet 5</td><td>$2.00</td><td>$10.00</td><td>Orchestrator</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -0.5rem;">OpenRouter list prices, checked August 2026. Output tokens are what a coding session actually burns, and that is where the ~60&times; gap against Sonnet lives. Confirm current numbers at <a href="https://openrouter.ai/models?q=deepseek" target="_blank" rel="noopener">openrouter.ai/models</a>.</p>
+    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -0.5rem;">Model availability and pricing change. Check current input and output prices for both models at <a href="https://openrouter.ai/models" target="_blank" rel="noopener">openrouter.ai/models</a> before selecting the default.</p>
 
     <div class="ds-note ds-note--warn">
-      <p><strong>Before you start:</strong> you need an OpenRouter account with a payment method and a small credit balance. That is covered on the <a href="/infra/prestart/#alt-coding-model">Before you start</a> page &mdash; do that part first, then come back here to wire it up.</p>
+      <p><strong>Before you start:</strong> you need an OpenRouter account with a payment method and a small credit balance. That is covered on the <a href="/infra/prestart/#alt-coding-model">Before you start</a> page &mdash; complete it before wiring the models into the project.</p>
     </div>
 
     <p class="ds-substep">1 &middot; Store the key</p>
@@ -1123,11 +1123,15 @@ keep every judgment call yourself.
 Tell me when you delegate and what it cost, so I can see whether it is
 actually paying for itself.</div>
 
+    <p class="ds-substep">4 &middot; Add Ox Alpha as a second delegated model</p>
+    <p>After OpenRouter is funded, paste this prompt into your main coding agent. It will compare the two current OpenRouter prices, make the lower-cost model the default for delegated coding and code review, and keep the other one as a fallback.</p>
+    <div class="prompt-block" id="openrouter-delegation-prompt"><button class="copy-btn" onclick="copyById('openrouter-delegation-prompt')">Copy</button>OpenRouter is configured. Make both Ox Alpha and DeepSeek v4 Flash available for delegated coding and code-review tasks. Look up their current OpenRouter model slugs and current input/output prices. Select whichever is lower cost as the default delegated coding and code-review model, with the other as its fallback. You remain the main coding agent: delegate eligible implementation and review work to the selected lower-cost model, then review its output, run validation, and retain all architecture, security, auth, payment, and release decisions yourself.</div>
+
     <div class="ds-note">
       <p><strong>Why a script and not a subagent:</strong> Claude Code subagents only run Anthropic models, so there is no setting that points one at DeepSeek. A shell script is the seam that works from either app, and it keeps the worker in a box &mdash; it sees only the spec and the files you hand it, and it never writes to your repo.</p>
     </div>
 
-    <p class="ds-substep">4 &middot; Codex only &mdash; run DeepSeek as the agent itself</p>
+    <p class="ds-substep">5 &middot; Codex only &mdash; run DeepSeek as the agent itself</p>
     <p>If you chose ChatGPT Desktop / Codex, there is a second option: point Codex at OpenRouter directly and let DeepSeek drive a whole session. Add this to <code>~/.codex/config.toml</code>:</p>
     <div class="prompt-block" id="ds-codex"><button class="copy-btn" onclick="copyById('ds-codex')">Copy</button>[model_providers.openrouter]
 name = "OpenRouter"
@@ -1141,7 +1145,7 @@ wire_api = "responses"</div>
       <p><strong>This mode has no supervisor.</strong> A full DeepSeek session edits your repo directly with nothing reviewing it. Use it on a scratch branch for bulk mechanical work, not on <code>main</code>, and read the diff before you merge. For everyday work the script in step 3 is the safer shape.</p>
     </div>
 
-    <p class="ds-substep">5 &middot; Keep the bill boring</p>
+    <p class="ds-substep">6 &middot; Keep the bill boring</p>
     <ul style="margin-bottom: 1rem;">
       <li>Set a <strong>per-key credit limit</strong> in OpenRouter so a runaway loop cannot drain the balance</li>
       <li>Leave <strong>auto-recharge off</strong> until you have watched a few real sessions</li>

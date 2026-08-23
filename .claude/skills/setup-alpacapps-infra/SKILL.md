@@ -76,8 +76,14 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 - Website + Admin Dashboard (GitHub Pages) — Free
 - Database + Storage + Auth (Supabase) — Free
 - Cloudflare (domain management + D1 session logging) — Free
+- Bitwarden credential manager — Free; recommended default for passwords, recovery codes, and API credentials
+- OpenRouter delegated coding + review (Ox Alpha + DeepSeek v4 Flash) — small prepaid balance
 - Tailwind CSS v4 (utility-class styling) — Free
 - AI Developer (Claude Code) — you're already here
+
+### Step 1a: Credential Manager (Core)
+
+Before collecting any service credential, ask: **"Are you already using a password manager? If so, which one?"** Evaluate the user's existing manager first. It may replace Bitwarden only if you verify, in the actual environment, that its supported CLI is installed, can authenticate interactively, supports scoped secret reads, and can perform a safe non-sensitive test read from Claude Code or Codex. Explain the result clearly: retain the existing manager if it passes every check; otherwise install and use Bitwarden. **Do not use Apple Passwords/iCloud Keychain as the automation source** because it is not programmatically friendly for this workflow. Never commit actual secret values; store only credential references in gitignored `docs/CREDENTIALS.md`.
 
 **Communication:**
 - [ ] Email notifications (Resend) — Free, 3,000/month
@@ -349,12 +355,17 @@ Store temporary tokens only in `docs/CREDENTIALS.md`, which must be gitignored.
 See `references/core-services.md` → "Google Sign-In" for detailed steps.
 
 **Summary:**
-1. User creates Google Cloud project + OAuth credentials
-2. Add redirect URI: `https://{REF}.supabase.co/auth/v1/callback`
-3. Enable Google provider in Supabase dashboard
-4. You create `shared/auth.js` with Google OAuth, add login/logout UI
+1. First create/select the Google Cloud project, then create the programmatic OAuth-configuration principal, grant it **OAuth Config Editor (Beta)**, create its access credential, and store it in the approved credential manager.
+2. Use this credential to programmatically manage the OAuth client, authorized JavaScript origins, and redirect URIs before manual consent-screen/client configuration.
+3. Configure consent screen and OAuth credentials; add redirect URI: `https://{REF}.supabase.co/auth/v1/callback`
+4. Enable Google provider in Supabase dashboard
+5. You create `shared/auth.js` with Google OAuth, add login/logout UI
 
 **Note:** If user also selected Gemini, mention they can use the same Google Cloud project.
+
+### Step 4a: OpenRouter Delegated Coding and Review (Core)
+
+Configure OpenRouter during the initial setup, not as an optional add-on. Create an API key with a per-key credit limit, store it in the approved credential manager and the local gitignored `.env`, and never commit it. Look up current OpenRouter slugs and input/output pricing for **Ox Alpha** and **DeepSeek v4 Flash**. Configure both for delegated coding and code review; select the lower-cost one as the default and the other as fallback. The main coding agent must delegate only eligible work, review all outputs, run validation, and retain architecture, security, auth, payment, and release decisions.
 
 ### Steps 5–10: Optional Services
 
