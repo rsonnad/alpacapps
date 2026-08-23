@@ -1,12 +1,12 @@
 {
-  "version": "v260823.04 6:51a",
-  "release": 1785,
-  "sha": "d7bc4ee3f3",
-  "fullSha": "d7bc4ee3f3db01825af7523c74c32e20578e04f4",
+  "version": "v260823.05 6:52a",
+  "release": 1786,
+  "sha": "e84e9bb570",
+  "fullSha": "e84e9bb5702e1d43a4c89b65884e70f335f154a8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-23T11:51:20+00:00",
-  "commits": [{"sha":"d7bc4ee3f3","message":"docs(infra): clarify cloudflare token expiry choice","author":"Otto"}]
+  "pushedAt": "2026-08-23T11:52:38+00:00",
+  "commits": [{"sha":"e84e9bb570","message":"docs(infra): align prestart sequence with code-first setup","author":"Otto"}]
 }
