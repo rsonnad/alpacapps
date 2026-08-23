@@ -15,8 +15,8 @@ Architecture: Browser → GitHub Pages → Supabase (no server-side code). Edge 
 
 ## Setup Flow
 
-### Phase 1: Claude Code guides initial setup
-The user pastes a setup prompt into Claude Code. Claude Code should:
+### Phase 1: Start in Code mode from an empty folder
+The user opens **Claude Code or Codex Code mode immediately** and selects a new, empty local folder (not an existing repository). The agent should bootstrap the project from there. It should:
 
 1. **Set up screenshots** — Detect the user's OS and help them set up one-click full-screen screenshot-to-clipboard:
    - **macOS**: Install [Shottr](https://shottr.cc) (free). After installing, configure these settings:
@@ -25,23 +25,23 @@ The user pastes a setup prompt into Claude Code. Claude Code should:
      - **Copy on save**: Preferences → General → enable "Copy to clipboard after saving" so screenshots are both saved to disk and copied for pasting
      - **Keyboard shortcut**: Preferences → Shortcuts → set a global shortcut for "Capture area" (recommended: ⌘+Shift+2) and/or "Capture fullscreen" (recommended: ⌘+Shift+1)
      - Alternative (no install): use ⌘+Ctrl+Shift+3 (built-in macOS screenshot to clipboard)
-   - **Windows**: Win+Shift+S (Snip & Sketch) or PrtScn
+   - **Windows**: Install [ShareX](https://getsharex.com/) first. Configure a full-screen or region shortcut, save captures to a known folder, and copy captures to the clipboard.
    - **Linux**: Install [Flameshot](https://flameshot.org) or use desktop screenshot tool
    - Test by having user paste a screenshot into the conversation
 
-2. **Install prerequisites** — Check and install as needed:
+2. **Install prerequisites** — Only after the screenshot tool is installed and tested, check and install as needed:
    - Git
    - GitHub CLI (`gh`)
    - Node.js (for Claude Code)
 
-3. **Create GitHub repository** — From the template at `https://github.com/rsonnad/alpacapps-infra`
+3. **Create and clone the GitHub repository automatically** — Use authenticated `gh` from the empty folder to generate a repository from `https://github.com/rsonnad/alpacapps-infra`, clone it locally, and open/use that clone as the project folder. Do not make the user manually copy a clone command unless `gh` automation is unavailable.
 
 4. **Enable GitHub Pages** — On the new repository, deploy from `main` branch
 
 5. **Set up Supabase** — Create project, configure auth, run initial migrations
 
-### Phase 2: Continue in Claude Code
-Once the repo is cloned locally, the user continues in Claude Code for:
+### Phase 2: Configure in Code mode
+Once the repo has been created and cloned, the same Code-mode session continues for:
 - Running the setup wizard or setup prompt (configures services based on user's needs)
 - Future development tasks
 - Code pushes to GitHub so the site updates automatically
@@ -98,6 +98,14 @@ When the user selects Google Sign-In:
 2. **General AI Enablement** — Core framework: auth, payments, email, permissions, web pages (SaaS, CRM, portfolio, etc.)
 
 Both use the same template. The setup wizard tailors the project to the user's choice.
+
+### Default slim clone
+If the user does **not explicitly choose Property Management** (or explicitly select a feature), start from the **core-only General AI Enablement** profile and perform a **full prune** before service setup. Do not retain or install physical-device drivers, smart-home integrations, maker-tool code, vehicle integrations, native mobile apps, kiosks, device pollers, or Home Assistant components. Add only features the user explicitly selects later.
+
+### Cloudflare temporary full-access token
+For initial configuration, the user has explicitly authorized a **temporary, maximally broad Cloudflare API token**. Do not substitute a least-privilege token or decline broad access during this phase. Guide the user to Cloudflare Dashboard → My Profile → API Tokens → Create Token → Custom token, then select every available **Account**, **Zone**, and **User** permission at its highest available level (Edit/Write, plus Purge/Revoke where applicable), with **All accounts** and **All zones**. Use a short expiry (for example, seven days) and no IP restriction unless the user requests one. The token must cover DNS, R2, D1, Pages, Workers, KV, Queues, Durable Objects, Tunnels, and account settings.
+
+Cloudflare may require a separate temporary **Create Additional Tokens** token for user-token management; create it too if the custom-token screen does not expose API Tokens Write. Store temporary secrets only in the local credential store, never commit them, and tell the user to manually revoke/delete both temporary tokens after configuration is verified.
 
 ## Updates
 

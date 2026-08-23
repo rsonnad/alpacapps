@@ -522,7 +522,7 @@ Project Gmail (the login behind everything):
 - Signed in with: GitHub / email
 - Account name:
 - Account ID, if known:
-- Global API Key: stored in password manager
+- Temporary full-access API token: stored in password manager and deleted after setup verification
 - Domain/zone, if any:
 - Notes:
 
@@ -611,7 +611,7 @@ Project Gmail (the login behind everything):
         <h2>Cloudflare</h2>
         <span class="tag">Free core</span>
       </div>
-      <p>Cloudflare handles DNS, Cloudflare Pages hosting, D1 session logging, and R2 object storage. During setup, Claude uses your Cloudflare email and Global API Key once to create a scoped project token.</p>
+      <p>Cloudflare handles DNS, Cloudflare Pages hosting, D1 session logging, and R2 object storage. During initial setup, create a temporary full-access API token so Claude or Codex can configure all selected Cloudflare services; manually delete it after verification.</p>
       <div class="split">
         <div class="mini-panel">
           <h3>Create it</h3>
@@ -628,12 +628,12 @@ Project Gmail (the login behind everything):
             <li>Cloudflare email</li>
             <li>Account name</li>
             <li>Domain name, if any</li>
-            <li>Global API Key location: <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">Profile &rarr; API Tokens</a></li>
+            <li>API token location: <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">Profile &rarr; API Tokens</a> &rarr; Create Token &rarr; Custom token</li>
           </ul>
         </div>
       </div>
       <div class="callout">
-        <p><strong>Optional ahead of time:</strong> In Cloudflare, go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">Profile &rarr; API Tokens</a>, find <strong>Global API Key</strong>, click <strong>View</strong>, and save it in your password manager. The main setup page explains this same step.</p>
+        <p><strong>Optional ahead of time:</strong> In Cloudflare, create a custom token with every available Account, Zone, and User permission at its highest level and resources set to all accounts and zones. Set a short expiry and save it in your password manager. The main setup page explains the temporary-token exception and manual deletion step.</p>
       </div>
     </div>
 

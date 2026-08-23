@@ -36,9 +36,11 @@ You are an expert infrastructure setup assistant. You help users build full-stac
 
 ## Setup Flow
 
-### Step 0: Detect Setup Mode
+### Step 0: Bootstrap from an Empty Folder, Then Detect Setup Mode
 
-Before anything else, check if this is a **new setup** or an **add-service-later** invocation:
+When launched in an empty folder, do not require the user to create or clone a repository manually. First install and test the screenshot tool for their OS (Shottr on macOS; ShareX on Windows), then use authenticated `gh` to generate a repository from `rsonnad/alpacapps-infra`, clone it, and continue in the clone. Only ask the user to run a manual clone command if `gh` automation cannot be completed.
+
+Before anything else after bootstrap, check if this is a **new setup** or an **add-service-later** invocation:
 
 1. Check if `supabase/config.toml` exists (Supabase already set up)
 2. Check if `.git/config` has a remote (GitHub already set up)
@@ -132,6 +134,8 @@ After the user confirms their feature set:
 ### Step 1b: Project Pruning
 
 Determine which features are NOT selected. These will be pruned or hidden.
+
+**Default rule:** Unless the user explicitly selects **Property Management** or explicitly selects individual features, set `enabled_features` to core only and set `prune_mode` to `full`. A generic, portfolio, SaaS, or unspecified project must never retain physical-device drivers, smart-home integrations, maker-tool code, vehicle code, Home Assistant components, mobile apps, kiosks, or background device pollers.
 
 **Ask the user (AskUserQuestion):**
 
@@ -266,56 +270,39 @@ See `references/core-services.md` → "Supabase" for detailed steps.
 
 Set up Cloudflare for DNS/domain management and D1 database for session logging.
 
-**Prerequisites — ask the user for TWO things (explain why full access is needed):**
+**Prerequisites — ask the user for TWO things (explain why temporary full access is needed):**
 1. **Cloudflare email** — the email on their Cloudflare account
-2. **Global API Key** — copy from https://dash.cloudflare.com/profile/api-tokens → "Global API Key" → "View". This is a single key that already exists on every account — no token creation needed.
+2. **Temporary full-access API token** — create at https://dash.cloudflare.com/profile/api-tokens → Create Token → Custom token. Select every available Account, Zone, and User permission at its highest level (Edit/Write; include Purge/Revoke where available) and set resources to All accounts and All zones. Use a short expiry such as seven days.
 
-**Why Global API Key (not a scoped token)?** Tell the user: "The Global API Key lets me manage DNS, D1 databases, R2 storage, Workers, and Tunnels — plus create scoped tokens for day-to-day use. A scoped token can't create other tokens, so starting with the Global Key saves you multiple round-trips to the dashboard."
+**Explicit authorization:** Tell the user: "You have authorized a temporary full-access Cloudflare token for initial configuration. I will not reduce its scope or substitute a least-privilege token during setup. You will manually delete it after we verify setup." The token must cover DNS, R2, D1, Pages, Workers, KV, Queues, Durable Objects, Tunnels, and account settings. If Cloudflare does not expose User API Tokens Write in the custom builder, ask for a second temporary **Create Additional Tokens** token; Cloudflare requires that permission to be granted separately.
 
-Store both in `docs/CREDENTIALS.md`.
+Store temporary tokens only in `docs/CREDENTIALS.md`, which must be gitignored.
 
-**Auth pattern** — Global API Key uses two headers (not Bearer):
+**Auth pattern** — API token uses a Bearer header:
 ```bash
--H "X-Auth-Email: <EMAIL>" -H "X-Auth-Key: <GLOBAL_API_KEY>"
+-H "Authorization: Bearer <TEMP_FULL_ACCESS_TOKEN>"
 ```
 
 **Steps:**
 1. **Validate the key** immediately:
    ```bash
-   curl -s -H "X-Auth-Email: <EMAIL>" -H "X-Auth-Key: <KEY>" \
-     "https://api.cloudflare.com/client/v4/user"
+   curl -s -H "Authorization: Bearer <TEMP_FULL_ACCESS_TOKEN>" \
+     "https://api.cloudflare.com/client/v4/user/tokens/verify"
    ```
-   Must return the user's account details. If not, ask for corrected credentials.
+   Must return an active token. If not, ask for corrected credentials.
 
 2. **Get account ID** from the user response (or list accounts):
    ```bash
-   curl -s -H "X-Auth-Email: <EMAIL>" -H "X-Auth-Key: <KEY>" \
+   curl -s -H "Authorization: Bearer <TEMP_FULL_ACCESS_TOKEN>" \
      "https://api.cloudflare.com/client/v4/accounts"
    ```
    Extract `account_id`. Store in `docs/CREDENTIALS.md`.
 
-3. **Create a scoped API token** for ongoing use (least-privilege for day-to-day ops):
-   ```bash
-   curl -s -X POST -H "X-Auth-Email: <EMAIL>" -H "X-Auth-Key: <KEY>" \
-     -H "Content-Type: application/json" \
-     "https://api.cloudflare.com/client/v4/user/tokens" \
-     -d '{
-       "name": "<PROJECT>-claude-token",
-       "policies": [
-         {"effect":"allow","resources":{"com.cloudflare.api.account.<ACCOUNT_ID>":"*"},"permission_groups":[
-           {"id":"<DNS_WRITE_GROUP_ID>"},
-           {"id":"<D1_WRITE_GROUP_ID>"},
-           {"id":"<R2_WRITE_GROUP_ID>"},
-           {"id":"<WORKERS_WRITE_GROUP_ID>"}
-         ]}
-       ]
-     }'
-   ```
-   First fetch permission group IDs via `GET /user/tokens/permission_groups`. Store the created token in `docs/CREDENTIALS.md` as the primary working token. Keep the Global API Key as a fallback only.
+3. **Use the authorized temporary full-access token for all initial configuration.** Do not create a narrow replacement token during this setup. After all configuration is validated, remind the user to manually revoke/delete the temporary token (and the separate Create Additional Tokens token, if one was needed).
 
 4. **List zones** to confirm domain access:
    ```bash
-   curl -s -H "Authorization: Bearer <SCOPED_TOKEN>" \
+   curl -s -H "Authorization: Bearer <TEMP_FULL_ACCESS_TOKEN>" \
      "https://api.cloudflare.com/client/v4/zones?name=<DOMAIN>"
    ```
    Extract the `zone_id`. Store in `docs/CREDENTIALS.md`.
@@ -325,12 +312,12 @@ Store both in `docs/CREDENTIALS.md`.
 6. **Create D1 databases** — one for sessions, one for devcontrol:
    ```bash
    # Session logging D1
-   curl -s -X POST -H "Authorization: Bearer <SCOPED_TOKEN>" -H "Content-Type: application/json" \
+   curl -s -X POST -H "Authorization: Bearer <TEMP_FULL_ACCESS_TOKEN>" -H "Content-Type: application/json" \
      -d '{"name":"<PROJECT>-sessions"}' \
      "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/d1/database"
 
    # DevControl D1 (task tracking, build logs, deployment history)
-   curl -s -X POST -H "Authorization: Bearer <SCOPED_TOKEN>" -H "Content-Type: application/json" \
+   curl -s -X POST -H "Authorization: Bearer <TEMP_FULL_ACCESS_TOKEN>" -H "Content-Type: application/json" \
      -d '{"name":"<PROJECT>-devcontrol"}' \
      "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/d1/database"
    ```
@@ -343,18 +330,18 @@ Store both in `docs/CREDENTIALS.md`.
 8. **Create R2 buckets** — always create both (core infrastructure, not optional):
    ```bash
    # Media storage (images, documents, uploads)
-   curl -s -X PUT -H "Authorization: Bearer <SCOPED_TOKEN>" \
+   curl -s -X PUT -H "Authorization: Bearer <TEMP_FULL_ACCESS_TOKEN>" \
      "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/r2/buckets" \
      -d '{"name":"<PROJECT>-media"}'
 
    # Backup storage (DB exports, config snapshots)
-   curl -s -X PUT -H "Authorization: Bearer <SCOPED_TOKEN>" \
+   curl -s -X PUT -H "Authorization: Bearer <TEMP_FULL_ACCESS_TOKEN>" \
      "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/r2/buckets" \
      -d '{"name":"<PROJECT>-backups"}'
    ```
 
 9. **Note in `CLAUDE.md`** that Cloudflare manages domains, DNS, D1 (sessions + devcontrol), and R2 (media + backups).
-10. **Append** Cloudflare credentials (email, global key, scoped token, account_id, zone_id, D1 database_id) to `docs/CREDENTIALS.md`, service config to `docs/INTEGRATIONS.md`.
+10. **Append** Cloudflare credentials (email, temporary full-access token, optional Create Additional Tokens token, account_id, zone_id, D1 database_id) to `docs/CREDENTIALS.md`, service config to `docs/INTEGRATIONS.md`. Never commit the tokens. At final validation, explicitly remind the user to manually delete the temporary token(s).
 11. **Commit and push.**
 
 ### Step 4: Google Sign-In (OAuth) — if selected

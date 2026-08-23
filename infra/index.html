@@ -937,21 +937,20 @@
   <div class="setup-step">
     <h2>
       <span class="step-num">2</span>
-      Copy &amp; paste this prompt into Claude Chat
+      Open Code mode and paste this setup prompt
       <span class="step-time">30 sec</span>
     </h2>
-    <p>Open <strong>Claude Desktop</strong> and start a new <strong>Chat</strong> conversation &mdash; <strong>not</strong> Claude Code. The <strong>Chat</strong> tab is in the top-left of the Claude Desktop app, as shown below. Paste this prompt &mdash; Claude Chat will guide you through everything step by step, including installing tools, creating accounts, and cloning the repo.</p>
+    <p>Open <strong>Claude Code</strong> or <strong>Codex</strong> immediately. Start in a new, <strong>empty folder</strong> &mdash; do not select a repository yet. Paste this prompt and let the agent set up screenshots first, then create and clone your project automatically.</p>
 
     <div style="margin: 0.75rem 0 1rem; padding: 0.85rem 1rem; background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 8px;">
-      <p style="margin: 0 0 0.6rem; font-size: 0.9rem;"><strong>How to tell you&rsquo;re in the right place:</strong> Claude <strong>Chat</strong> shows the <strong>Chat</strong> tab in the top-left sidebar (pictured below). If Claude asks you to pick a folder, point to a repo, or run shell commands, you&rsquo;re in Claude <strong>Code</strong> &mdash; switch back to the <strong>Chat</strong> tab.</p>
-      <img src="claude-chat-tab.png" alt="Claude Desktop sidebar showing the Chat tab in the top-left" style="display: block; max-width: 240px; width: 100%; border: 1px solid var(--border); border-radius: 6px; background: #fff;">
+      <p style="margin: 0; font-size: 0.9rem;"><strong>Start in Code mode:</strong> choose <strong>Code</strong> in Claude or a Codex task, then select or create an empty folder. The agent will authenticate GitHub if needed, generate the repository from the template, clone it, and continue in that clone.</p>
     </div>
 
     <div class="prompt-block" id="setup-prompt">
-      <button class="copy-btn" onclick="copyPrompt()">Copy</button>Set up an AlpacApps project for me. Read the instructions at https://alpacaplayhouse.com/infra/llm-setup-instructions.md and walk me through it step by step.</div>
+      <button class="copy-btn" onclick="copyPrompt()">Copy</button>Set up an AlpacApps project for me. I am in Code mode in an empty folder. Read and follow https://alpacaplayhouse.com/infra/llm-setup-instructions.md exactly: install and test the screenshot tool first, then use GitHub CLI to create and clone my project from the template. Default to a core-only, fully pruned General AI Enablement clone unless I explicitly choose Property Management or individual features. For Cloudflare initial configuration, I explicitly authorize a temporary maximally broad API token with all available Account, Zone, and User permissions at their highest level, for all accounts and zones; do not narrow it. I will manually delete the temporary token(s) after setup.</div>
 
     <div style="margin-top: 1rem; padding: 0.85rem 1rem; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 8px;">
-      <p style="margin: 0; font-size: 0.9rem;">Claude Chat will guide you through <strong>screenshots</strong>, <strong>Git</strong>, <strong>GitHub</strong>, and everything else based on your specific computer. Once the repo is cloned, Claude will tell you to switch to the <strong>Code</strong> tab for the rest of the setup.</p>
+      <p style="margin: 0; font-size: 0.9rem;">Code mode starts with <strong>screenshots</strong>, then handles <strong>Git</strong>, <strong>GitHub</strong>, repository creation, cloning, and the remaining setup for your specific computer.</p>
     </div>
   </div>
 
@@ -997,8 +996,8 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div>
-          <strong>Claude Code</strong>
-          <span class="guided-item-desc">Your AI developer that writes and deploys code</span>
+          <strong>Code mode</strong>
+          <span class="guided-item-desc">Creates, clones, writes, and deploys your project</span>
         </div>
       </div>
       <div class="guided-item" style="border-color: #f48120; background: #fff8f0;">
@@ -1018,15 +1017,16 @@
     <h2>
       <span class="step-num">4</span>
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#f48120" stroke-width="2" stroke-linejoin="round"/><path d="M2 17l10 5 10-5" stroke="#f48120" stroke-width="2" stroke-linejoin="round"/><path d="M2 12l10 5 10-5" stroke="#f48120" stroke-width="2" stroke-linejoin="round"/></svg>
-      Get your Cloudflare key
+      Create a temporary full-access Cloudflare token
       <span class="step-time">2 min</span>
     </h2>
-    <p>Cloudflare manages your domain&rsquo;s DNS and provides a D1 database for session logging. You only need two things:</p>
+    <p>Cloudflare manages DNS, R2, D1, Pages, Workers, and related infrastructure. For initial setup, create a temporary API token broad enough for the agent to configure every selected service.</p>
     <ol style="margin: 1rem 0;">
-      <li><strong>Your Cloudflare email</strong> &mdash; the one on your account</li>
-      <li><strong>Global API Key</strong> &mdash; go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">Profile &rarr; API Tokens</a>, find &ldquo;Global API Key&rdquo;, click &ldquo;View&rdquo;</li>
+      <li>Go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">Profile &rarr; API Tokens</a> &rarr; <strong>Create Token</strong> &rarr; <strong>Custom token</strong>.</li>
+      <li>Give every available <strong>Account</strong>, <strong>Zone</strong>, and <strong>User</strong> permission its highest access level (Edit/Write; include Purge/Revoke where available), then set resources to <strong>All accounts</strong> and <strong>All zones</strong>.</li>
+      <li>Use a short expiry (such as seven days), copy the token, and keep it in your password manager or local agent credential store.</li>
     </ol>
-    <p style="font-size: 0.88rem; color: var(--text-muted);">That&rsquo;s it. Claude uses this key once to create a scoped project token with only the permissions your project needs &mdash; then uses that for all ongoing operations.</p>
+    <p style="font-size: 0.88rem; color: var(--text-muted);"><strong>Intentional temporary exception:</strong> do not reduce this initial token to least privilege. It must be able to manage DNS, R2, D1, Pages, Workers, KV, Queues, Durable Objects, Tunnels, and account settings. If Cloudflare requires it, also create a temporary &ldquo;Create Additional Tokens&rdquo; token. Manually delete the temporary token(s) once setup is verified.</p>
   </div>
 
   <!-- STEP 5: optional worker model -->
@@ -1295,12 +1295,12 @@ wire_api = "responses"</div>
           <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
-          <p>Cloudflare manages your domain&rsquo;s DNS and provides a D1 serverless database for session logging. Claude sets everything up using your Global API Key.</p>
+          <p>Cloudflare manages your domain&rsquo;s DNS and provides a D1 serverless database for session logging. Claude or Codex sets everything up using the temporary full-access API token.</p>
           <ul>
             <li><strong>DNS management:</strong> Authoritative DNS for your domain. Claude configures records for Cloudflare Pages, custom domains, and any other services.</li>
             <li><strong>D1 database:</strong> Serverless SQLite for logging Claude Code sessions &mdash; tracks what was built, when, and by which agent.</li>
             <li><strong>R2 storage:</strong> If you need object storage (images, files), Claude creates an R2 bucket using the same Cloudflare token.</li>
-            <li><strong>Setup:</strong> Just provide your Cloudflare email and Global API Key. Claude creates a scoped project token automatically.</li>
+            <li><strong>Setup:</strong> Create a temporary full-access API token for all accounts and zones. The agent uses it for the initial configuration; you manually delete it after verification.</li>
           </ul>
           <p><a href="https://dash.cloudflare.com" target="_blank">Go to Cloudflare &rarr;</a></p>
         </details>

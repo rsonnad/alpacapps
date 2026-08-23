@@ -587,6 +587,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 **Why:** Conductor made the first-run path feel like another required platform choice and created stale setup instructions. Hardcoded `alpacaplayhouse.com` references in clone-facing directives caused adopters to inherit the source project's domain instead of using their own deployed URL.
 
+### 2026-08-23: Infra Bootstrap Is Code-First and Slim by Default
+
+**Decision:** New AlpacApps Infra adopters start Claude Code or Codex in an empty folder. Screenshot capture is configured and tested before any GitHub activity; the agent then creates and clones the template repository with GitHub CLI. Unless a user explicitly chooses Property Management or individual features, the clone is core-only and fully pruned of physical-device, smart-home, maker, vehicle, mobile, kiosk, Home Assistant, and device-poller code. Initial Cloudflare configuration uses a user-authorized, temporary maximally broad API token; users manually delete it after verification.
+
+**Why:** Starting in Code mode removes the unnecessary manual clone handoff and lets the agent automate setup from the beginning. A core-only default keeps general projects small and prevents irrelevant hardware integrations from polluting their codebase. Initial infrastructure configuration needs broad Cloudflare control to avoid repeated dashboard permissions work; short expiry and explicit manual revocation make that exception visible and bounded.
+
 ### 2026-07-02: Google Sign-In Setup Must Split Google and Supabase Tasks
 
 **Decision:** Google Sign-In setup instructions must call out the account owner, Google Cloud project, OAuth consent screen, Testing vs Published state, Web application OAuth client, Supabase callback URL, authorized JavaScript origins, Supabase Google provider, and Supabase Site URL.

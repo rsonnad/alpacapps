@@ -1443,7 +1443,7 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
     <pre data-lang="bash" style="position: relative;"><code id="clone-commands">git clone https://github.com/USERNAME/my-salon-app.git
 cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 0.3rem 0.7rem; font-size: 0.75rem; cursor: pointer; font-weight: 600;">Copy</button></pre>
 
-    <p>This downloads your project files into a folder on your computer. You'll point Claude Code at this folder in the next step.</p>
+    <p>This downloads your project files into a folder on your computer. If you start in Claude Code or Codex from an empty folder, the agent can create the repository from this template and clone it for you automatically with GitHub CLI instead.</p>
 
     <div class="callout warning" style="font-size: 0.85rem;">
       <strong>Windows: Git not installed?</strong>
@@ -1528,7 +1528,7 @@ cd my-salon-app</code><button onclick="copyCloneCommands()" style="position: abs
       You can also install Claude Code as a standalone CLI: <code>npm install -g @anthropic-ai/claude-code</code>. Same features, same skills.
     </div>
 
-    <p style="font-size: 0.9rem; color: var(--text-muted);">That&rsquo;s it for now &mdash; once your repo is cloned, open it in Claude Code and paste the setup instructions from the next steps.</p>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">Start Code mode as early as possible in an empty folder. It can install the screenshot tool first, create the GitHub repository from the template, clone it, and continue setup in that clone.</p>
   </div>
   </details>
 
@@ -1894,7 +1894,7 @@ https://YOUR_DOMAIN/</code></pre>
   <details class="section" id="cloudflare-r2-setup">
       <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11. Cloudflare R2 (Object Storage) <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
-    <p>S3-compatible object storage with 10 GB free and zero egress fees. The setup wizard creates <strong>two R2 buckets</strong> automatically using your Cloudflare Global API Key:</p>
+    <p>S3-compatible object storage with 10 GB free and zero egress fees. The setup wizard creates <strong>two R2 buckets</strong> automatically using your temporary full-access Cloudflare API token:</p>
     <ul>
       <li><code>&lt;project&gt;-media</code> &mdash; Images, documents, uploads</li>
       <li><code>&lt;project&gt;-backups</code> &mdash; Database exports, config snapshots</li>
@@ -1935,7 +1935,7 @@ https://YOUR_DOMAIN/</code></pre>
   <details class="section" id="cloudflare-d1-setup">
       <summary><h2><img src="https://cdn.simpleicons.org/cloudflare" alt="Cloudflare" class="service-icon">11b. Cloudflare D1 &mdash; Sessions + DevControl <span class="cost-badge cost-free">Free</span></h2></summary>
     <div class="section-body">
-    <p>The setup wizard creates <strong>two D1 databases</strong> automatically using your Cloudflare Global API Key:</p>
+    <p>The setup wizard creates <strong>two D1 databases</strong> automatically using your temporary full-access Cloudflare API token:</p>
     <ul>
       <li><code>&lt;project&gt;-sessions</code> &mdash; Claude session transcripts with search/filtering (browsable in DevControl Sessions tab)</li>
       <li><code>&lt;project&gt;-devcontrol</code> &mdash; Task tracking, build logs, deployment history</li>
@@ -2198,7 +2198,7 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote</code></pre>
     <h3>Profile-aware context</h3>
     <p>The wizard generates different context files based on your profile:</p>
     <ul>
-      <li><strong>General AI Enablement:</strong> CLAUDE.md with 4 doc references and 3 code guards (~20 lines). Only core docs are generated. A <code>.claudeignore</code> file excludes property-management code from Claude&rsquo;s search scope, saving thousands of tokens per conversation.</li>
+      <li><strong>General AI Enablement:</strong> Core-only, fully pruned clone by default. No property-management modules, physical-device drivers, smart-home integrations, maker tools, vehicles, mobile apps, kiosks, Home Assistant, or device pollers are retained unless explicitly selected. Its directives contain only the docs generated for those selected features.</li>
       <li><strong>Property Management:</strong> CLAUDE.md with all 7 doc references and full code guards (~35 lines). All docs are generated including KEY-FILES, INTEGRATIONS, and CHANGELOG.</li>
     </ul>
     <p>See <code>docs/CLAUDE-TEMPLATE.md</code> for the exact templates and <code>feature-manifest.json</code> for the file-to-feature mapping that drives pruning.</p>

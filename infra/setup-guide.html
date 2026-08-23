@@ -192,7 +192,7 @@
     <strong>Instructions for Claude Chat</strong>
     <p><strong>One step at a time:</strong> Present ONE sub-step, wait for the user to confirm they've done it, then move to the next sub-step. Do NOT give multiple instructions in one message. For example, don't say "install Git, create a GitHub account, and install the GitHub CLI" &mdash; instead say "First, let's check if Git is installed. Open your terminal and run <code>git --version</code>. What do you see?" Then wait.</p>
     <p><strong>Checkpoint rule:</strong> Do not move to Step N+1 until every item in Step N is explicitly confirmed by the user. If the user says they've already completed something, still confirm it — ask them to verify (run a command, paste a screenshot, or state the result). "I already did that" requires a quick proof before proceeding.</p>
-    <p><strong>Chat vs Code:</strong> Steps 1&ndash;3 happen here in <strong>Claude Chat</strong>. The user cannot switch to Claude Code until after Step 3, because Claude Code needs a local project folder to open &mdash; and that folder doesn't exist until they clone the repo. Do NOT mention Claude Code or tell the user to switch to it until the clone in Step 3 is confirmed.</p>
+    <p><strong>Start in Code:</strong> Have the user switch to <strong>Claude Code or Codex Code mode immediately</strong> and select a new, empty folder. The agent creates the GitHub repository from the template and clones it automatically; do not make the user manually clone first unless GitHub CLI automation is unavailable.</p>
     <p><strong>Screenshot verification:</strong> At each step that requires the user to interact with a website or application (GitHub, Supabase, Google Cloud, Cloudflare, etc.), ask them to paste a screenshot so you can verify they're on the right page and guide them to the correct buttons and fields.</p>
     <p><strong>Adapting to the user:</strong> Adapt commands and instructions to their OS (Mac, Windows, Linux). If they've already completed a full step (e.g., "I already have a Supabase project"), confirm the key details you'll need (project ref, password, etc.) and move on — but still follow step order.</p>
   </div>
@@ -215,6 +215,13 @@
 
     <h3>Operating system</h3>
     <p>Ask what OS they're using. This affects install commands throughout.</p>
+
+    <h3>Screenshot tool &mdash; first activity on Mac and Windows</h3>
+    <p>Before GitHub, Git, or any account setup, install and test a screenshot tool. Ask the user to paste one test screenshot into the Code-mode conversation.</p>
+    <ul>
+      <li><strong>Mac:</strong> Install <a href="https://shottr.cc">Shottr</a>. Enable Launch at Login, choose a screenshot folder, enable Copy to Clipboard after saving, and set a global fullscreen or area shortcut.</li>
+      <li><strong>Windows:</strong> Install <a href="https://getsharex.com/">ShareX</a>. Configure a fullscreen or region shortcut, a known screenshot folder, and copy-to-clipboard.</li>
+    </ul>
 
     <h3>Xcode Command Line Tools (Mac only)</h3>
     <p>On Mac, always install Xcode Command Line Tools first &mdash; this provides Git, compilers, and other developer essentials that Claude Code needs.</p>
@@ -262,12 +269,12 @@
     </ol>
     <div class="validate">Ask the user to confirm they have a GitHub account and <code>gh auth status</code> shows "Logged in".</div>
 
-    <h3>Claude Desktop</h3>
-    <p>Claude Desktop is the AI app that includes Claude Code &mdash; the AI developer that handles all terminal work, database setup, and code generation.</p>
+    <h3>Claude Desktop or Codex</h3>
+    <p>Use Claude Code or Codex Code mode as the AI developer that handles terminal work, database setup, and code generation.</p>
     <ol>
       <li>If you don't have a Claude account, sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank">claude.ai</a> (Pro $20/mo recommended &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank">free week here</a>)</li>
       <li>Download <strong>Claude Desktop</strong> from <a href="https://claude.ai/download" target="_blank">claude.ai/download</a></li>
-      <li>Install and open the app, then sign in with your Claude account</li>
+      <li>Install and open the app, then sign in with your Claude account (or use ChatGPT Desktop/Codex)</li>
     </ol>
   </div>
 
@@ -301,20 +308,17 @@
 
     <div class="validate">Ask for a screenshot of the Pages settings page showing "main" branch selected. After 1&ndash;2 minutes, ask them to visit their site URL to confirm it loads.</div>
 
-    <h3>Clone the repository locally</h3>
-    <p>Back in their terminal:</p>
-    <pre><code>git clone https://github.com/USERNAME/REPO-NAME.git
-cd REPO-NAME</code></pre>
-    <p>Replace USERNAME and REPO-NAME with their actual values. If they set up <code>gh</code>, they can also use <code>gh repo clone USERNAME/REPO-NAME</code>.</p>
+    <h3>Have Code mode clone it automatically</h3>
+    <p>Return to the Code-mode session that began in the empty folder. It should use authenticated GitHub CLI to create the repository from the template and clone it locally; the user should not need to construct a clone command.</p>
 
-    <div class="validate">Ask them to confirm they see the project files by running <code>ls</code> (Mac/Linux) or <code>dir</code> (Windows) in the project folder.</div>
+    <div class="validate">Ask the agent to confirm it created and opened the clone, then confirm the project files are present with <code>ls</code> (Mac/Linux) or <code>dir</code> (Windows).</div>
 
-    <h3>Switch to Claude Code</h3>
-    <p>Now that the repo is cloned locally, switch to <strong>Claude Code</strong> for the rest of the setup:</p>
+    <h3>Continue in Code mode</h3>
+    <p>Keep using the same Claude Code or Codex session for the rest of setup:</p>
     <ol>
       <li>Open <strong>Claude Desktop</strong></li>
       <li>Click the <strong>Code</strong> tab (or start a new Claude Code session)</li>
-      <li>Open your project folder &mdash; navigate to the directory you just cloned</li>
+      <li>Open the project folder the agent just cloned, if it did not switch automatically</li>
       <li><strong>Switch to Opus 4.6</strong> &mdash; Claude Code defaults to Sonnet, but you want the most capable model. Click the model selector (bottom of the chat) and choose <strong>Claude Opus 4.6</strong> (or the latest available model)</li>
       <li><strong>Enable "Bypass permissions"</strong> &mdash; This lets Claude Code run terminal commands without asking you to approve each one. Open Claude Code settings (click the gear icon or press <code>Cmd + ,</code> on Mac / <code>Ctrl + ,</code> on Windows), find <strong>"Bypass permissions"</strong> (or "Yolo mode"), and turn it <strong>on</strong>.</li>
     </ol>
@@ -326,7 +330,7 @@ cd REPO-NAME</code></pre>
     </div>
     <p>From this point on, Claude Code handles everything: terminal commands, database setup, edge functions, and code generation. You can paste the remaining instructions directly into Claude Code.</p>
 
-    <div class="validate">Ask the user to confirm they have Claude Code open in their project folder with bypass permissions enabled and Opus 4.6 selected. They should see the project files and be ready to run commands.</div>
+    <div class="validate">Ask the user to confirm they have Code mode open in their project folder with the requested permissions enabled. They should see the project files and be ready to run commands.</div>
   </div>
 
   <!-- Step 4 -->
@@ -376,28 +380,29 @@ cd REPO-NAME</code></pre>
   <div class="guide-step">
     <h2><span class="step-num">5</span> Set up Cloudflare</h2>
 
-    <p>Cloudflare manages your domain&rsquo;s DNS and provides a D1 database for session logging. You only need to provide two things &mdash; Claude handles the rest.</p>
+    <p>Cloudflare manages DNS, R2, D1, Pages, Workers, and related infrastructure. For initial setup, the user explicitly authorizes a temporary, maximally broad API token so the agent can configure everything without narrowing its permissions.</p>
 
-    <h3>Get your Cloudflare Global API Key</h3>
+    <h3>Create a temporary full-access Cloudflare API token</h3>
     <ol>
       <li>Sign up or log in at <a href="https://dash.cloudflare.com">dash.cloudflare.com</a></li>
       <li>Go to <a href="https://dash.cloudflare.com/profile/api-tokens">Profile &rarr; API Tokens</a></li>
-      <li>Find <strong>"Global API Key"</strong> and click <strong>"View"</strong></li>
-      <li>Copy the key &mdash; this is all Claude needs to manage DNS, D1, R2, and Workers for you</li>
+      <li>Click <strong>Create Token</strong> and choose <strong>Custom token</strong></li>
+      <li>Give every available <strong>Account</strong>, <strong>Zone</strong>, and <strong>User</strong> permission its highest level (Edit/Write; include Purge/Revoke where available)</li>
+      <li>Set resources to <strong>All accounts</strong> and <strong>All zones</strong>, use a short expiry such as seven days, then create and copy the token</li>
     </ol>
 
     <div class="callout warning">
-      <strong>Why the Global API Key?</strong>
-      It already exists on every Cloudflare account &mdash; no token creation wizard needed. Claude will use it once to create a scoped project token with only the permissions your project needs, then use that scoped token for all ongoing operations.
+      <strong>Intentional temporary full-access exception</strong>
+      Do not substitute a scoped or least-privilege token during initial configuration. This token must be able to manage DNS, R2, D1, Pages, Workers, KV, Queues, Durable Objects, Tunnels, and account settings. If Cloudflare separates user token administration, also create a temporary <strong>Create Additional Tokens</strong> token. Manually delete the temporary token(s) after setup is verified.
     </div>
 
-    <div class="validate">Ask the user to confirm they have their Cloudflare email and Global API Key. You'll need both for the setup wizard.</div>
+    <div class="validate">Ask the user to confirm they have their Cloudflare email and temporary full-access API token (plus Create Additional Tokens token if required).</div>
 
     <h3>What you'll need for the next step</h3>
     <p>Record these values &mdash; you'll paste them into Claude Code in the next step:</p>
     <ul>
       <li><strong>Cloudflare email:</strong> the email on your Cloudflare account</li>
-      <li><strong>Cloudflare Global API Key:</strong> from the step above</li>
+      <li><strong>Cloudflare temporary full-access API token:</strong> from the step above</li>
       <li><strong>Domain name:</strong> if you have one you want to use (optional &mdash; you can add one later)</li>
     </ul>
   </div>
@@ -420,10 +425,11 @@ cd REPO-NAME</code></pre>
 My Supabase project ref is: [REF]
 My database password is: [PASSWORD]
 My Cloudflare email is: [EMAIL]
-My Cloudflare Global API Key is: [CF_KEY]
+My Cloudflare temporary full-access API token is: [CF_TOKEN]
 
 Follow the setup wizard in .claude/skills/setup-alpacapps-infra/SKILL.md to configure everything.
 Handle all terminal work — CLI installs, database setup, edge functions, git pushes.
+For the initial Cloudflare configuration, use my temporary full-access token as authorized. Do not narrow or replace it with a least-privilege token; I will delete temporary Cloudflare token(s) manually once setup is verified.
 Ask me when you need credentials for optional services (API keys, etc.).</code></pre>
 
     <p>Replace the bracketed values with:</p>
@@ -433,7 +439,7 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
       <li><code>[REF]</code> &mdash; Supabase project ref from Step 4</li>
       <li><code>[PASSWORD]</code> &mdash; database password from Step 4</li>
       <li><code>[EMAIL]</code> &mdash; Cloudflare account email from Step 5</li>
-      <li><code>[CF_KEY]</code> &mdash; Global API Key from Step 5</li>
+      <li><code>[CF_TOKEN]</code> &mdash; temporary full-access API token from Step 5</li>
     </ul>
 
     <h3>What the wizard does</h3>
@@ -444,7 +450,7 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
       <li>Create database tables with Row Level Security</li>
       <li>Set up storage buckets</li>
       <li>Deploy edge functions</li>
-      <li>Validate your Cloudflare key and create a scoped project token</li>
+      <li>Validate the temporary full-access Cloudflare token and configure the selected Cloudflare services</li>
       <li>Set up DNS and D1 session logging database</li>
       <li>Configure each optional service you selected (asking you for API keys as needed)</li>
       <li>Generate your CLAUDE.md and documentation files</li>
@@ -579,15 +585,15 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     </ul>
 
     <h3>Cloudflare R2 (Storage)</h3>
-    <p>Uses the Cloudflare Global API Key you provided in Step 5 &mdash; no additional credentials needed.</p>
+    <p>Uses the temporary full-access Cloudflare API token you provided in Step 5 &mdash; no additional credentials needed.</p>
     <ul>
       <li>The setup wizard creates <strong>two R2 buckets</strong> automatically: <code>&lt;project&gt;-media</code> (images, uploads) and <code>&lt;project&gt;-backups</code> (DB exports, config snapshots)</li>
       <li>Free 10 GB storage with zero egress fees</li>
-      <li>If you skipped Cloudflare in Step 5, sign up at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a> and provide your Global API Key</li>
+      <li>If you skipped Cloudflare in Step 5, sign up at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a> and create the temporary full-access API token described there</li>
     </ul>
 
     <h3>Cloudflare D1 (DevControl)</h3>
-    <p>The setup wizard creates <strong>two D1 databases</strong> using the Global API Key from Step 5:</p>
+    <p>The setup wizard creates <strong>two D1 databases</strong> using the temporary full-access API token from Step 5:</p>
     <ul>
       <li><code>&lt;project&gt;-sessions</code> &mdash; Claude session logging and search</li>
       <li><code>&lt;project&gt;-devcontrol</code> &mdash; Task tracking, build logs, deployment history</li>
