@@ -1,12 +1,12 @@
 {
-  "version": "v260823.07 7:36a",
-  "release": 1788,
-  "sha": "68a9d7fc02",
-  "fullSha": "68a9d7fc025a7d39bd548b8dae5bf92259a98d10",
+  "version": "v260823.08 7:39a",
+  "release": 1789,
+  "sha": "90e0d9dc59",
+  "fullSha": "90e0d9dc5928d61d75303e5272e627a3755a7d30",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-23T12:36:52+00:00",
-  "commits": [{"sha":"68a9d7fc02","message":"Prefer programmatic Google OAuth configuration","author":"Otto"}]
+  "pushedAt": "2026-08-23T12:39:31+00:00",
+  "commits": [{"sha":"90e0d9dc59","message":"Add core domain and intranet setup","author":"Otto"}]
 }
