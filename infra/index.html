@@ -870,19 +870,20 @@
     </p>
   </div>
 
-  <!-- STEP 0: Prerequisites -->
+  <!-- STEP 0: Screenshot setup -->
   <div class="setup-step" style="border-left: 3px solid var(--success);">
     <h2>
       <span class="step-num" style="background: var(--success);">0</span>
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" stroke="#6b8e5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Install prerequisites
-      <span class="step-time">5 min</span>
+      Set up screenshots first
+      <span class="step-time">3 min</span>
     </h2>
-    <p>On <strong>Mac</strong>, open <strong>Terminal</strong> (press <kbd>⌘</kbd> + <kbd>Space</kbd>, type "Terminal", hit Enter) and paste this command to install everything Claude needs (git, GitHub CLI, Node.js, Supabase CLI, Wrangler, psql, TypeScript):</p>
-    <div class="prompt-block" id="prereq-prompt"><button class="copy-btn" onclick="copyById('prereq-prompt')">Copy</button>bash &lt;(curl -fsSL https://alpacaplayhouse.com/scripts/install-prereqs.sh)</div>
-    <p style="font-size: 0.85rem; color: var(--text-muted);">Or if you already cloned the repo: <code>bash scripts/install-prereqs.sh</code> &mdash; or <code>brew bundle</code> (uses the Brewfile).</p>
-    <p style="font-size: 0.85rem; color: var(--text-muted);"><strong>Not on Mac?</strong> Install <a href="https://git-scm.com/downloads">Git</a>, <a href="https://nodejs.org">Node.js</a>, and <a href="https://cli.github.com">GitHub CLI</a> manually. The setup wizard handles the rest.</p>
-    <p style="font-size: 0.85rem; color: var(--text-muted);"><strong>Note:</strong> Xcode Command Line Tools must be installed first (<code>xcode-select --install</code>). The script checks for this.</p>
+    <p>Do this <strong>before GitHub or any other setup</strong>. You will use screenshots to show the coding agent where you are when a website needs a click or confirmation.</p>
+    <ul>
+      <li><strong>Mac:</strong> Install <a href="https://shottr.cc" target="_blank" rel="noopener">Shottr</a>. Turn on Launch at Login and Copy to Clipboard after saving; choose a known screenshot folder and assign a global fullscreen or area shortcut.</li>
+      <li><strong>Windows:</strong> Install <a href="https://getsharex.com/" target="_blank" rel="noopener">ShareX</a>. Set a fullscreen or region shortcut, a known screenshot folder, and Copy to Clipboard.</li>
+    </ul>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0;"><strong>Test it:</strong> take one screenshot and paste it into your Code-mode conversation. The agent installs Git, GitHub CLI, Node.js, and the remaining command-line tools immediately afterward.</p>
   </div>
 
   <!-- STEP 1 -->
@@ -893,7 +894,7 @@
       Install Claude Desktop <em>or</em> ChatGPT Desktop
       <span class="step-time">2 min</span>
     </h2>
-    <p>AlpacApps works with either assistant. Pick <strong>one</strong> &mdash; you&rsquo;ll start in its plain <strong>chat</strong> mode to walk through setup, then switch to its coding mode (<strong>Claude Code</strong> or <strong>Codex</strong>) once your project is cloned locally.</p>
+    <p>AlpacApps works with either assistant. Pick <strong>one</strong>, then enter its coding mode (<strong>Claude Code</strong> or <strong>Codex</strong>) right away. Start it in a new, empty folder; the agent creates and clones the project for you.</p>
 
     <div class="choice-grid">
       <div class="choice-card choice-card--claude">
@@ -902,7 +903,7 @@
           <img src="https://cdn.simpleicons.org/anthropic/7c6a9a" alt="" width="24" height="24">
           <h3>Claude Desktop</h3>
         </div>
-        <p>Chat and Claude Code live in the same window. The setup instructions were written and tested against it.</p>
+        <p>Claude Code works from an empty folder and handles the setup, clone, and future development.</p>
         <ul>
           <li>Reads screenshots you paste in</li>
           <li>Uses <code>CLAUDE.md</code> project directives</li>
@@ -918,7 +919,7 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <h3>ChatGPT Desktop (Codex)</h3>
         </div>
-        <p>ChatGPT handles the guided chat; Codex &mdash; in the app&rsquo;s sidebar or the Codex CLI &mdash; does the build.</p>
+        <p>Codex &mdash; in the app&rsquo;s sidebar or the Codex CLI &mdash; handles setup, cloning, and the build.</p>
         <ul>
           <li>Reads screenshots you paste in</li>
           <li>Uses <code>AGENTS.md</code> project directives</li>
@@ -958,10 +959,10 @@
   <div class="setup-step">
     <h2>
       <span class="step-num">3</span>
-      Claude guides you through setup
+      Your coding agent guides setup
       <span class="step-time">20&ndash;30 min</span>
     </h2>
-    <p>Follow along as Claude walks you through each step. Paste screenshots when asked &mdash; Claude will verify you&rsquo;re on the right page and tell you exactly what to click.</p>
+    <p>Follow along as Claude Code or Codex walks you through each step. Paste screenshots when asked &mdash; the agent verifies you&rsquo;re on the right page and tells you exactly what to click.</p>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.25rem 0;">
       <div class="guided-item">
@@ -1184,11 +1185,11 @@ wire_api = "responses"</div>
     </div>
     <div class="profile-card highlighted">
       <h3>General AI Enablement</h3>
-      <p>Core framework &mdash; auth, payments, email, permissions, web pages. Build a SaaS, personal tool, booking system, CRM, portfolio, or side project.</p>
+      <p>Core-only, fully pruned framework for a SaaS, personal tool, booking system, CRM, portfolio, or side project. No device drivers, smart-home code, mobile apps, kiosks, Home Assistant, or pollers unless you explicitly add them.</p>
     </div>
   </div>
 
-  <p style="font-size: 0.88rem; color: var(--text-muted); text-align: center; margin: -1.5rem 0 2rem 0;">Both use the same template. The setup wizard tailors the project to your choice &mdash; removing unused code and generating focused documentation.</p>
+  <p style="font-size: 0.88rem; color: var(--text-muted); text-align: center; margin: -1.5rem 0 2rem 0;">Both use the same template. Unless you explicitly choose Property Management or individual features, setup starts General AI Enablement as a core-only full prune; features can be added later.</p>
 
   <!-- Architecture diagram -->
   <div class="section-header">What can you build with this?</div>
