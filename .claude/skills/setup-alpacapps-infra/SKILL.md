@@ -356,8 +356,8 @@ See `references/core-services.md` → "Google Sign-In" for detailed steps.
 
 **Summary:**
 1. First create/select the Google Cloud project, then create the programmatic OAuth-configuration principal, grant it **OAuth Config Editor (Beta)**, create its access credential, and store it in the approved credential manager.
-2. Use this credential to programmatically manage the OAuth client, authorized JavaScript origins, and redirect URIs before manual consent-screen/client configuration.
-3. Configure consent screen and OAuth credentials; add redirect URI: `https://{REF}.supabase.co/auth/v1/callback`
+2. Use this credential as the default path for every API-supported OAuth configuration, including the OAuth client, authorized JavaScript origins, and redirect URIs. Do not guide manual console configuration after it exists except to bootstrap the credential or when the API does not support the required setting.
+3. Configure the consent screen and OAuth credentials programmatically where supported; add redirect URI: `https://{REF}.supabase.co/auth/v1/callback`
 4. Enable Google provider in Supabase dashboard
 5. You create `shared/auth.js` with Google OAuth, add login/logout UI
 

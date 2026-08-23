@@ -87,9 +87,9 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 ### Google Sign-In setup requirements
 When the user selects Google Sign-In:
 1. They need a Google account that will own the app's Google Cloud project. First, create or select that project and configure a programmatic OAuth-configuration principal: grant it the **OAuth Config Editor (Beta)** role, create its access credential, and store it in the approved credential manager. This is the first Google Cloud configuration action.
-2. The agent uses that credential to programmatically manage the OAuth client, authorized JavaScript origins, and redirect URIs; do not defer this credential until after manual OAuth setup.
-3. In Google Cloud, configure the OAuth consent screen and add test users while the app is in Testing mode.
-4. Create an OAuth client with application type `Web application`.
+2. The agent uses that credential as the default path for every API-supported OAuth configuration, including the OAuth client, authorized JavaScript origins, and redirect URIs. Do not guide the user through manual console configuration after the credential exists, except to bootstrap it or when the API does not support the required setting.
+3. Configure the OAuth consent screen and test users programmatically where the API supports it; otherwise guide the smallest necessary console action while the app is in Testing mode.
+4. Create or update the `Web application` OAuth client programmatically.
 5. Authorized JavaScript origins should include the deployed GitHub Pages origin, e.g. `https://USERNAME.github.io`, and the custom domain origin if they configured one, e.g. `https://YOUR_DOMAIN`.
 6. Authorized redirect URI must be `https://PROJECT_REF.supabase.co/auth/v1/callback`.
 7. In Supabase, enable `Authentication -> Providers -> Google`, paste the Client ID and Client Secret, and set URL Configuration's Site URL to the user's GitHub Pages URL or their custom domain.

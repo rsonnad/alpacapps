@@ -717,7 +717,7 @@ Project Gmail (the login behind everything):
             <li>Use the Google account you want to own the app&rsquo;s login configuration.</li>
             <li>Open <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>, accept terms if needed, and create or select the project.</li>
             <li><strong>First configuration action:</strong> create the OAuth-configuration automation principal, grant it <strong>OAuth Config Editor (Beta)</strong>, create its access credential, and save it in the approved password manager.</li>
-            <li>Give the coding agent that credential so it can programmatically manage the OAuth client, authorized JavaScript origins, and redirect URIs before manual OAuth configuration.</li>
+            <li>Give the coding agent that credential so it uses programmatic configuration by default for the OAuth client, authorized JavaScript origins, and redirect URIs. Use the console only for credential bootstrap or settings the API does not support.</li>
           </ol>
         </div>
         <div class="mini-panel">

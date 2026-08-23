@@ -530,7 +530,7 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
     <ul>
       <li>Google Cloud Console: <a href="https://console.cloud.google.com/">console.cloud.google.com</a></li>
       <li>Use the Google account that should own the app login configuration, then create or select a Google Cloud project for the app</li>
-      <li><strong>First Google configuration action:</strong> create the programmatic OAuth-configuration principal, grant it <strong>OAuth Config Editor (Beta)</strong>, create its access credential, and store it in the approved credential manager. The agent uses it to manage OAuth clients, authorized JavaScript origins, and redirect URIs before manual configuration.</li>
+      <li><strong>First Google configuration action:</strong> create the programmatic OAuth-configuration principal, grant it <strong>OAuth Config Editor (Beta)</strong>, create its access credential, and store it in the approved credential manager. The agent then uses programmatic OAuth configuration by default for every API-supported setting, including OAuth clients, authorized JavaScript origins, and redirect URIs; console steps are only for credential bootstrap or settings the API does not support.</li>
       <li>Set up the OAuth consent screen: choose External for public apps, fill in app name/support email/developer email, and add test users while the app is in Testing mode</li>
       <li>Create an OAuth 2.0 Client ID with application type <strong>Web application</strong></li>
       <li>Add authorized JavaScript origins for the deployed site: <code>https://USERNAME.github.io</code> and, if configured, <code>https://YOUR_DOMAIN</code></li>

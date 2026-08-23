@@ -619,7 +619,7 @@ GitHub goes first because Supabase, Cloudflare, and Resend all support "Continue
 
 Everything traces back to one dedicated project Gmail: GitHub and Google Cloud are registered to it directly, and the GitHub-SSO services inherit it from there.
 
-For Google Cloud, make creating the programmatic OAuth-configuration credential the first Google Cloud configuration activity: create/select the project, grant the automation principal the OAuth Config Editor (Beta) role, create its access credential, and store it in the approved credential manager. It must let the agent programmatically manage the OAuth client, authorized JavaScript origins, and redirect URIs. Do this before consent-screen or OAuth-client configuration.
+For Google Cloud, make creating the programmatic OAuth-configuration credential the first Google Cloud configuration activity: create/select the project, grant the automation principal the OAuth Config Editor (Beta) role, create its access credential, and store it in the approved credential manager. Once it is ready, configure every API-supported OAuth setting programmatically, including the OAuth client, authorized JavaScript origins, and redirect URIs. Do not guide me through manual console configuration except to bootstrap the credential or for a setting the API does not support.
 
 For OpenRouter, create and fund an API key with a per-key credit limit; set up Ox Alpha and DeepSeek v4 Flash for delegated coding and code review. Use whichever has the lower current OpenRouter input/output cost as the default, and the other as fallback.
 
