@@ -61,6 +61,8 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 | Claude Code | AI developer — writes, tests, deploys code |
 | Bitwarden | Recommended credential source of truth for passwords, recovery codes, and API credentials |
 | OpenRouter | Delegated coding and review using Ox Alpha and DeepSeek v4 Flash (small prepaid balance) |
+| Google Sign-In | Working user authentication through Supabase Auth |
+| Custom domain | Registered domain, Cloudflare DNS, HTTPS, and canonical app URL (annual registration cost) |
 
 ### Optional services
 | Service | Purpose | Cost |
@@ -85,7 +87,7 @@ For the full detailed setup procedure with checkpoints and validation steps, rea
 | Home Server | Local Mac for HAOS, cameras, media, 30+ devices | ~$150 one-time |
 
 ### Google Sign-In setup requirements
-When the user selects Google Sign-In:
+Google Sign-In is a core setup requirement and is complete only after a real sign-in succeeds:
 1. They need a Google account that will own the app's Google Cloud project. First, create or select that project and configure a programmatic OAuth-configuration principal: grant it the **OAuth Config Editor (Beta)** role, create its access credential, and store it in the approved credential manager. This is the first Google Cloud configuration action.
 2. The agent uses that credential as the default path for every API-supported OAuth configuration, including the OAuth client, authorized JavaScript origins, and redirect URIs. Do not guide the user through manual console configuration after the credential exists, except to bootstrap it or when the API does not support the required setting.
 3. Configure the OAuth consent screen and test users programmatically where the API supports it; otherwise guide the smallest necessary console action while the app is in Testing mode.
@@ -94,6 +96,10 @@ When the user selects Google Sign-In:
 6. Authorized redirect URI must be `https://PROJECT_REF.supabase.co/auth/v1/callback`.
 7. In Supabase, enable `Authentication -> Providers -> Google`, paste the Client ID and Client Secret, and set URL Configuration's Site URL to the user's GitHub Pages URL or their custom domain.
 8. For broad launch, the OAuth consent screen must be Published. In Testing mode, only listed test users can sign in.
+9. Test a real Google sign-in from the registered custom domain: confirm the callback returns to the app, a Supabase session is created, and authenticated content is reachable. Fix configuration until this passes.
+
+### Core domain registration and configuration
+During initial setup, ask the user whether they prefer a typically lower-cost `.org`/`.us` domain or a `.com`, check current availability and price, and register the chosen domain through Cloudflare Registrar when possible. If a purchase or registrar confirmation requires the account holder, guide that one approval and resume immediately. Add the domain to Cloudflare and configure Cloudflare Pages, DNS records, and HTTPS for both `https://DOMAIN` (public placeholder) and `https://in.DOMAIN` (authenticated intranet). Use `https://in.DOMAIN` as the Supabase Site URL/redirect allow-list and Google OAuth authorized JavaScript origin. Validate DNS, HTTPS, the public site, and the real Google sign-in flow on the intranet before marking setup complete.
 
 ### Core OpenRouter setup
 During initial setup, configure OpenRouter after the account exists: create an `OPENROUTER_API_KEY` with a per-key credit limit, store it in the approved credential manager and local `.env` only, and never commit it. Look up the current OpenRouter slugs and input/output prices for **Ox Alpha** and **DeepSeek v4 Flash**. Make the lower-cost model the default delegated coding and code-review model and the other the fallback. The main coding agent delegates eligible work, reviews outputs, runs validation, and retains architecture, security, auth, payment, and release decisions.

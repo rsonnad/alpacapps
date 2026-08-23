@@ -78,6 +78,7 @@ After the user picks a persona (or Custom), show the **feature grid** grouped by
 - Cloudflare (domain management + D1 session logging) — Free
 - Bitwarden credential manager — Free; recommended default for passwords, recovery codes, and API credentials
 - OpenRouter delegated coding + review (Ox Alpha + DeepSeek v4 Flash) — small prepaid balance
+- Custom domain registration + Cloudflare DNS/HTTPS — annual registration cost
 - Tailwind CSS v4 (utility-class styling) — Free
 - AI Developer (Claude Code) — you're already here
 
@@ -276,6 +277,8 @@ See `references/core-services.md` → "Supabase" for detailed steps.
 
 Set up Cloudflare for DNS/domain management and D1 database for session logging.
 
+Register and configure a custom domain as part of core setup: ask whether the user prefers a typically lower-cost `.org`/`.us` or a `.com`, check live availability and price, register through Cloudflare Registrar when possible, and guide the user only for payment/purchase confirmation. Configure the zone, Cloudflare Pages, DNS, and HTTPS for `https://DOMAIN` as the public placeholder and `https://in.DOMAIN` as the authenticated intranet. Validate both before continuing. Use `https://in.DOMAIN` in Supabase and Google OAuth configuration.
+
 **Prerequisites — ask the user for TWO things (explain why temporary full access is needed):**
 1. **Cloudflare email** — the email on their Cloudflare account
 2. **Temporary full-access API token** — create at https://dash.cloudflare.com/profile/api-tokens → Create Token → Custom token. Select every available Account, Zone, and User permission at its highest level (Edit/Write; include Purge/Revoke where available) and set resources to All accounts and All zones. Offer no expiration by default; if the project has heightened security requirements, offer a seven-day expiration instead. Do not add IP restrictions.
@@ -359,7 +362,7 @@ See `references/core-services.md` → "Google Sign-In" for detailed steps.
 2. Use this credential as the default path for every API-supported OAuth configuration, including the OAuth client, authorized JavaScript origins, and redirect URIs. Do not guide manual console configuration after it exists except to bootstrap the credential or when the API does not support the required setting.
 3. Configure the consent screen and OAuth credentials programmatically where supported; add redirect URI: `https://{REF}.supabase.co/auth/v1/callback`
 4. Enable Google provider in Supabase dashboard
-5. You create `shared/auth.js` with Google OAuth, add login/logout UI
+5. You create `shared/auth.js` with Google OAuth, add login/logout UI, then test a real sign-in on `https://in.DOMAIN` and fix the callback, Supabase session, and authenticated intranet route flow until it passes.
 
 **Note:** If user also selected Gemini, mention they can use the same Google Cloud project.
 

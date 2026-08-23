@@ -599,6 +599,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 **Why:** A credential source of truth prevents setup secrets from scattering without forcing a migration away from a capable existing manager. The worker-model route keeps coding and review spend responsive to live prices. Creating Google OAuth automation access first prevents later manual-console drift in callback and origin settings.
 
+### 2026-08-23: Domain and Working Google Auth Are Core Completion Criteria
+
+**Decision:** Initial setup must help the user select and register a typically lower-cost `.org`/`.us` domain or a `.com`, then configure it through Cloudflare as public `https://DOMAIN` plus Google-authenticated intranet `https://in.DOMAIN`, including DNS, Cloudflare Pages, and HTTPS. Google Sign-In is complete only when the coding agent has configured the OAuth client and Supabase provider against `https://in.DOMAIN` and validated a real login, callback, session, and authenticated route.
+
+**Why:** A free hosting URL is not a complete public deployment. Treating the canonical domain and an actual authentication round trip as required prevents a project from being handed over with mismatched OAuth origins, callback URLs, or a sign-in button that has never been tested.
+
 ### 2026-07-02: Google Sign-In Setup Must Split Google and Supabase Tasks
 
 **Decision:** Google Sign-In setup instructions must call out the account owner, Google Cloud project, OAuth consent screen, Testing vs Published state, Web application OAuth client, Supabase callback URL, authorized JavaScript origins, Supabase Google provider, and Supabase Site URL.
