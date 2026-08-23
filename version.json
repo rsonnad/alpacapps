@@ -1,12 +1,12 @@
 {
-  "version": "v260823.06 6:58a",
-  "release": 1787,
-  "sha": "37c867e4ca",
-  "fullSha": "37c867e4ca8d2b38c802b0a0244cd960a15a65dd",
+  "version": "v260823.07 7:36a",
+  "release": 1788,
+  "sha": "68a9d7fc02",
+  "fullSha": "68a9d7fc025a7d39bd548b8dae5bf92259a98d10",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-23T11:58:47+00:00",
-  "commits": [{"sha":"37c867e4ca","message":"Update infra core setup credentials and OpenRouter","author":"Otto"}]
+  "pushedAt": "2026-08-23T12:36:52+00:00",
+  "commits": [{"sha":"68a9d7fc02","message":"Prefer programmatic Google OAuth configuration","author":"Otto"}]
 }
