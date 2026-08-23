@@ -1,12 +1,12 @@
 {
-  "version": "v260823.08 7:39a",
-  "release": 1789,
-  "sha": "90e0d9dc59",
-  "fullSha": "90e0d9dc5928d61d75303e5272e627a3755a7d30",
+  "version": "v260823.09 8:34a",
+  "release": 1790,
+  "sha": "82613a1de2",
+  "fullSha": "82613a1de2ba753ae67243d0f40a0051509bb29c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-23T12:39:31+00:00",
-  "commits": [{"sha":"90e0d9dc59","message":"Add core domain and intranet setup","author":"Otto"}]
+  "pushedAt": "2026-08-23T13:34:00+00:00",
+  "commits": [{"sha":"82613a1de2","message":"fix: harden full project security and payment flows","author":"Otto"}]
 }
