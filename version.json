@@ -1,12 +1,12 @@
 {
-  "version": "v260823.01 5:44a",
-  "release": 1782,
-  "sha": "f5748565b6",
-  "fullSha": "f5748565b6bba9f804ae3426a191ee8dbf7598be",
+  "version": "v260823.02 6:41a",
+  "release": 1783,
+  "sha": "47a4a2a16c",
+  "fullSha": "47a4a2a16c8219585f2763aefcd21b5c0c9edb2b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-23T10:44:08+00:00",
-  "commits": [{"sha":"f5748565b6","message":"fix: fall back to HLS when camera WebRTC has no frames","author":"Otto"}]
+  "pushedAt": "2026-08-23T11:41:02+00:00",
+  "commits": [{"sha":"47a4a2a16c","message":"feat(infra): streamline code-first setup","author":"Otto"}]
 }
