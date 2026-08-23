@@ -108,16 +108,15 @@ export async function checkRateLimit(
       p_max_attempts: maxAttempts,
       p_window_seconds: windowSeconds,
     });
-    return data !== false;
+    return data === true;
   } catch (_e) {
-    // Fail open if the helper is unavailable — better than blocking real users.
-    return true;
+    // Abuse-sensitive endpoints fail closed when the limiter is unavailable.
+    return false;
   }
 }
 
 export function getClientIp(req: Request): string {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || req.headers.get('cf-connecting-ip')
+  return req.headers.get('cf-connecting-ip')
     || req.headers.get('x-real-ip')
     || 'unknown';
 }

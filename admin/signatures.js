@@ -143,13 +143,23 @@ function viewDocument(index) {
     `<div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid #eee; font-size:0.85rem; color:#666;">
       <strong>${esc(row.signer_name)}</strong> &middot; ${esc(row.signer_email)} &middot; ${new Date(row.signed_at).toLocaleString()}
       ${row.document_hash ? `<br>Hash: <code style="font-size:0.75rem;">${esc(row.document_hash)}</code>` : ''}
-    </div>` + row.document_html;
+    </div><iframe title="Signed document" sandbox="" style="width:100%;min-height:60vh;border:0" srcdoc="${escAttr(row.document_html)}"></iframe>`;
   openModal();
 }
 
 function viewSignature(url) {
-  document.getElementById('docModalContent').innerHTML =
-    `<div style="text-align:center;"><img src="${url}" style="max-width:100%; border:1px solid #eee; border-radius:8px;"></div>`;
+  const content = document.getElementById('docModalContent');
+  content.replaceChildren();
+  const safeUrl = typeof url === 'string' && /^https:\/\//i.test(url) ? url : '';
+  if (!safeUrl) return;
+  const wrapper = document.createElement('div');
+  wrapper.style.textAlign = 'center';
+  const image = document.createElement('img');
+  image.src = safeUrl;
+  image.alt = 'Signature';
+  image.style.cssText = 'max-width:100%;border:1px solid #eee;border-radius:8px;';
+  wrapper.appendChild(image);
+  content.appendChild(wrapper);
   openModal();
 }
 
@@ -177,4 +187,8 @@ function esc(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
+}
+
+function escAttr(s) {
+  return esc(s).replace(/'/g, '&#39;');
 }

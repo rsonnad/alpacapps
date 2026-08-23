@@ -116,7 +116,7 @@ alpuca ha <endpoint> '<json>' # Raw Home Assistant service call
 | **Start Script** | `sudo ~/homeassistant-vm/start-ha.sh` |
 | **Auto-start** | LaunchDaemon at `/Library/LaunchDaemons/com.alpacapps.homeassistant-vm.plist` |
 | **Migrated from** | Rahul M4 Airtop (2026-03-25) |
-| **API Token (long-lived)** | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxN2FlNmMyNTdhYWY0NGMxODBjZmMxOWU3ZDBiZWExMiIsImlhdCI6MTc3NDE1NTUzNSwiZXhwIjoyMDg5NTE1NTM1fQ.MdIZq95i9pJBKuKxn_aeyrK1O55JbMhsgtnM7GcTkXQ` |
+| **API Token (long-lived)** | stored in Bitwarden / Supabase secrets |
 | **Token Name** | `claude-automation` |
 
 ### API Usage
@@ -306,7 +306,7 @@ Needs HACS integration: `Tesla Custom Integration` — requires Tesla auth token
 
 **UniFi Protect integration** needs an API key from the UDM console (192.168.1.1). Create a local-only user with viewer permissions, then generate an API key.
 
-**UDM Credentials:** `alpacaauto` / `StillForest160!auto`
+**UDM Credentials:** stored in Bitwarden; do not place credentials in documentation.
 
 ### 4.9 OREIN/AiDot Matter Bulbs
 
@@ -394,7 +394,7 @@ Rooms to create in HAOS (matching physical property):
 |---------|-------|
 | IP | 192.168.1.1 |
 | Web UI | https://192.168.1.1/ |
-| Credentials | `alpacaauto` / `StillForest160!auto` |
+| Credentials | stored in Bitwarden |
 | Firmware | 5.0.12 |
 | Network App | 10.1.85 |
 

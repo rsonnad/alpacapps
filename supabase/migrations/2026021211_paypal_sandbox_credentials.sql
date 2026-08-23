@@ -1,8 +1,8 @@
--- Save PayPal sandbox credentials and enable test mode for initial testing
+-- Sandbox credentials are environment secrets and must never be committed.
+-- Configure them through the admin secret-management workflow instead.
 UPDATE paypal_config SET
-  sandbox_client_id = 'ATueJgaBjw4rJoOfvB1hbDGQ58ECST5osyiftO-B81pYqI_reX-gxh3zgr4XYUgPUQLNSv2T0tOpdrwq',
-  sandbox_client_secret = 'ECtdQ0HnyHOVekI-598MwHDQJeiKBTAmosKaqWlCTji2R9xQuzsrvcKpheYfvg7umtHxuIA53IAz-qJh',
-  test_mode = true,
-  is_active = true,
+  sandbox_client_id = NULL,
+  sandbox_client_secret = NULL,
+  test_mode = false,
   updated_at = now()
 WHERE id = 1;

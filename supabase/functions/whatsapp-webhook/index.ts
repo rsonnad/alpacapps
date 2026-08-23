@@ -111,26 +111,24 @@ serve(async (req) => {
   try {
     const rawBody = await req.text();
 
-    // Verify signature if app_secret is configured
+    // Verify signature; missing configuration or headers must fail closed.
     const signature = req.headers.get("x-hub-signature-256") || "";
-    if (signature) {
-      const { data: config } = await supabase
-        .from("whatsapp_config")
-        .select("app_secret")
-        .single();
-
-      if (config?.app_secret) {
-        const isValid = await verifySignature(rawBody, signature, config.app_secret);
-        if (!isValid) {
-          console.error("Invalid webhook signature - rejecting");
-          return new Response(JSON.stringify({ error: "Invalid signature" }), {
-            status: 403,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-        console.log("Webhook signature verified");
-      }
+    const { data: config } = await supabase
+      .from("whatsapp_config")
+      .select("app_secret")
+      .single();
+    if (!config?.app_secret || !signature) {
+      return new Response(JSON.stringify({ error: "Webhook verification is not configured" }), { status: 503, headers: { "Content-Type": "application/json" } });
     }
+    const isValid = await verifySignature(rawBody, signature, config.app_secret);
+    if (!isValid) {
+      console.error("Invalid webhook signature - rejecting");
+      return new Response(JSON.stringify({ error: "Invalid signature" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    console.log("Webhook signature verified");
 
     const webhook = JSON.parse(rawBody);
 

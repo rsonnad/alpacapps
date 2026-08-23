@@ -50,9 +50,21 @@ function log(level, msg, data = {}) {
 // Download source image for editing
 // ============================================
 async function downloadImage(url) {
+  const parsed = new URL(String(url));
+  if (parsed.protocol !== 'https:') throw new Error('Source image must use HTTPS');
+  const host = parsed.hostname.toLowerCase();
+  const blockedHost = host === 'localhost' || host === 'ip6-localhost' || host.endsWith('.local')
+    || host === 'metadata.google.internal' || host === '169.254.169.254'
+    || /^(10|127)\./.test(host) || /^192\.168\./.test(host)
+    || /^172\.(1[6-9]|2\d|3[01])\./.test(host)
+    || host === '::1' || host.startsWith('fc') || host.startsWith('fd');
+  if (blockedHost) throw new Error('Source image host is not allowed');
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Failed to download image: ${response.status}`);
+  const declaredLength = Number(response.headers.get('content-length') || 0);
+  if (declaredLength > 25 * 1024 * 1024) throw new Error('Source image is too large');
   const buffer = Buffer.from(await response.arrayBuffer());
+  if (buffer.length > 25 * 1024 * 1024) throw new Error('Source image is too large');
   const mimeType = response.headers.get('content-type') || (url.endsWith('.png') ? 'image/png' : 'image/jpeg');
   return { base64: buffer.toString('base64'), mimeType };
 }
@@ -217,17 +229,8 @@ async function processJob(job) {
     id: job.id,
     type: job.job_type,
     prompt: job.prompt.substring(0, 80) + '...',
-    attempt: job.attempt_count + 1,
+    attempt: job.attempt_count,
   });
-
-  // Mark as processing
-  await supabase.from('image_gen_jobs')
-    .update({
-      status: 'processing',
-      started_at: new Date().toISOString(),
-      attempt_count: job.attempt_count + 1,
-    })
-    .eq('id', job.id);
 
   try {
     // 1. If source_media_id is set, download the source image for editing.
@@ -340,11 +343,11 @@ async function processJob(job) {
     log('error', 'Job failed', {
       id: job.id,
       error: err.message,
-      attempt: job.attempt_count + 1,
+      attempt: job.attempt_count,
       maxAttempts: job.max_attempts,
     });
 
-    const newStatus = (job.attempt_count + 1 >= job.max_attempts) ? 'failed' : 'pending';
+    const newStatus = (job.attempt_count >= job.max_attempts) ? 'failed' : 'pending';
 
     await supabase.from('image_gen_jobs')
       .update({
@@ -360,17 +363,18 @@ async function processJob(job) {
 // Send email with generated image
 // ============================================
 async function sendImageEmail(imageUrl, metadata, textResponse) {
-  const toEmail = metadata.email_to;
-  const recipientName = metadata.email_recipient_name || '';
-  const emailSubject = metadata.email_subject || 'Your AI-Generated Image from Alpaca Playhouse';
-  const emailMessage = metadata.email_message || '';
+  const toEmail = String(metadata.email_to || '').trim();
+  const recipientName = String(metadata.email_recipient_name || '');
+  const emailSubject = String(metadata.email_subject || 'Your AI-Generated Image from Alpaca Playhouse').slice(0, 200);
+  const emailMessage = String(metadata.email_message || '').slice(0, 5000);
+  const safe = (value) => String(value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 
   const imageHtml = `
-    ${emailMessage ? `<p style="font-size:16px;color:#333;margin-bottom:16px;">${emailMessage.replace(/\n/g, '<br>')}</p>` : ''}
+    ${emailMessage ? `<p style="font-size:16px;color:#333;margin-bottom:16px;">${safe(emailMessage).replace(/\n/g, '<br>')}</p>` : ''}
     <div style="text-align:center;margin:20px 0;">
       <img src="${imageUrl}" alt="AI-Generated Image" style="max-width:100%;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15);" />
     </div>
-    ${textResponse ? `<p style="font-size:14px;color:#666;font-style:italic;text-align:center;margin-top:8px;">${textResponse}</p>` : ''}
+    ${textResponse ? `<p style="font-size:14px;color:#666;font-style:italic;text-align:center;margin-top:8px;">${safe(textResponse)}</p>` : ''}
     <p style="font-size:12px;color:#999;margin-top:24px;">This image was created by PAI (Prompt Alpaca Intelligence) using AI image generation.</p>
   `;
 
@@ -422,9 +426,26 @@ async function pollForJobs() {
 
     if (!jobs?.length) return;
 
+    const { data: claimed, error: claimError } = await supabase
+      .from('image_gen_jobs')
+      .update({
+        status: 'processing',
+        started_at: new Date().toISOString(),
+        attempt_count: (jobs[0].attempt_count || 0) + 1,
+      })
+      .eq('id', jobs[0].id)
+      .eq('status', 'pending')
+      .select()
+      .maybeSingle();
+    if (claimError) {
+      log('error', 'Job claim failed', { error: claimError.message });
+      return;
+    }
+    if (!claimed) return;
+
     isProcessing = true;
     try {
-      await processJob(jobs[0]);
+      await processJob(claimed);
       // Rate-limit delay between consecutive jobs
       await new Promise(r => setTimeout(r, GEMINI_DELAY_MS));
     } finally {

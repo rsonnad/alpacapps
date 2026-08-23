@@ -11,6 +11,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface RefundRequest {
   square_payment_id: string;  // Square's payment ID (from Square API)
   amount_cents: number;       // Amount in cents to refund
@@ -37,16 +38,39 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const auth = await requireFunctionRoles(req, supabase, ['admin', 'oracle', 'staff']);
+    if (auth.response) return auth.response;
+
     const body: RefundRequest = await req.json();
     const { square_payment_id, amount_cents, reason, ledger_id, payment_record_id } = body;
 
     console.log('Processing Square refund:', { square_payment_id, amount_cents, reason });
 
-    if (!square_payment_id || !amount_cents) {
+    if (!square_payment_id || !Number.isInteger(amount_cents) || amount_cents <= 0) {
       return new Response(
         JSON.stringify({ success: false, error: 'square_payment_id and amount_cents are required' }),
         { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
+    }
+
+    if (payment_record_id) {
+      const { data: paymentRecord, error: paymentRecordError } = await supabase
+        .from('square_payments')
+        .select('square_payment_id, refund_id, refund_amount, status')
+        .eq('id', payment_record_id)
+        .maybeSingle();
+      if (paymentRecordError || !paymentRecord || paymentRecord.square_payment_id !== square_payment_id) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Square payment record does not match the requested payment' }),
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+        );
+      }
+      if (paymentRecord.refund_id) {
+        return new Response(
+          JSON.stringify({ success: true, refundId: paymentRecord.refund_id, amount: paymentRecord.refund_amount, status: 'COMPLETED', idempotent: true }),
+          { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Get Square configuration
@@ -69,7 +93,8 @@ Deno.serve(async (req) => {
     const apiBase = isTestMode ? 'https://connect.squareupsandbox.com' : 'https://connect.squareup.com';
 
     // Create idempotency key
-    const idempotencyKey = `refund-${payment_record_id || square_payment_id}-${Date.now()}`;
+    const idempotencyKey = req.headers.get('Idempotency-Key')?.trim()
+      || `refund-${payment_record_id || square_payment_id}-${amount_cents}`;
 
     // Call Square Refunds API
     const refundPayload = {
@@ -160,12 +185,21 @@ Deno.serve(async (req) => {
       }
     }
 
-    const { error: ledgerError } = await supabase
+    const { data: existingLedger } = await supabase
       .from('ledger')
-      .insert(ledgerEntry);
+      .select('id')
+      .eq('square_refund_id', refund.id)
+      .maybeSingle();
+    const { error: ledgerError } = existingLedger
+      ? { error: null }
+      : await supabase.from('ledger').insert(ledgerEntry);
 
     if (ledgerError) {
-      console.error('Failed to insert ledger entry (refund still processed):', ledgerError);
+      console.error('Failed to insert ledger entry after Square refund:', ledgerError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Square refund completed but local accounting is pending retry', refundId: refund.id }),
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
     }
 
     return new Response(

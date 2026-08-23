@@ -2,10 +2,18 @@
 
 Date: 2026-08-22
 
-Status: Findings only — no implementation fixes made
+Status: Findings plus implementation ledger — the requested fixes were applied in the current workstream; deployment/configuration caveats are recorded below.
 
 Scope: 1,503 tracked files, excluding `/mistiq/`
 Working tree note: `supabase/functions/resend-inbound-webhook/index.ts` was already modified before this review; `.agents/`, `.codex/`, and `AGENTS.md` were untracked and excluded from the external source bundle.
+
+## Implementation ledger — 2026-08-23
+
+The remediation pass addressed the review ledger across these groups: function-level authorization and ownership checks; payment amount/recipient validation; Stripe, Square, and PayPal signature/idempotency handling; event-table RLS; password-vault and detail-record scoping; time-entry field whitelisting; stored-XSS escaping; session-loss cleanup; secret removal from runtime-facing files; atomic queue claims; webhook fail-closed behavior; Tesla OAuth server-side secret handling; mobile HA-token removal; route and mobile-copy corrections; and installer/runtime hardening. The durable webhook claim table and atomic rate-limit function are in `supabase/migrations/202608230001_webhook_idempotency.sql`.
+
+Validation completed: JavaScript syntax, shell syntax, route synchronization, `git diff --check`, and focused Deno checks for the new shared auth/idempotency helpers plus the changed functions that do not depend on generated Supabase schema types. The full Deno pass still reports the repository’s existing `never`-typed Supabase-client diagnostics because generated database types are not present in this checkout.
+
+Remaining operational items are intentionally not guessed: rotate any credentials that may already exist in generated test artifacts/history; configure newly fail-closed provider secrets (`VAPI_WEBHOOK_SECRET`, `RESEND_WEBHOOK_SECRET`, Tesla Fleet credentials, and `LG_API_KEY`) through the approved secret channel; and add lockfiles/replace legacy Claude CLI workers where the deployment environment requires that separate operational migration. The final production deployment must apply the SQL migration and redeploy the changed Supabase functions; a missing Bitwarden management session prevented that external step during this pass.
 
 ## Review method
 

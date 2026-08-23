@@ -13,6 +13,7 @@ echo "=== PAI Feature Builder Installation ==="
 # 1. Create directory
 echo "[1/7] Creating ${INSTALL_DIR}..."
 mkdir -p "${INSTALL_DIR}"
+chown bugfixer:bugfixer "${INSTALL_DIR}"
 
 # 2. Copy worker files
 echo "[2/7] Copying worker files..."

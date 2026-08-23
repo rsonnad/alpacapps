@@ -12,6 +12,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { buildBreakdownByEntryIds } from "../_shared/payout-breakdown.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface PayoutRequest {
   associate_id: string;
   amount: number;
@@ -53,7 +54,8 @@ async function createStripeTransfer(
   amountCents: number,
   destinationAccountId: string,
   description: string,
-  metadata: Record<string, string>
+  metadata: Record<string, string>,
+  idempotencyKey: string,
 ): Promise<{ id: string }> {
   const body = formEncode({
     amount: amountCents,
@@ -67,6 +69,7 @@ async function createStripeTransfer(
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${secretKey}`,
+      'Idempotency-Key': idempotencyKey,
       'Content-Type': 'application/x-www-form-urlencoded'
     },
     body
@@ -91,14 +94,18 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const auth = await requireFunctionRoles(req, supabase, ["admin", "oracle", "staff"]);
+    if (auth.response) return auth.response;
+
     const body: PayoutRequest = await req.json();
-    const { associate_id, amount, time_entry_ids, notes } = body;
+    const { associate_id, time_entry_ids, notes } = body;
+    let amount = Number.NaN;
 
     console.log('Processing Stripe payout:', { associate_id, amount, entryCount: time_entry_ids?.length ?? 0 });
 
-    if (!associate_id || !amount || amount <= 0) {
+    if (!associate_id || !Array.isArray(time_entry_ids) || time_entry_ids.length === 0) {
       return new Response(
-        JSON.stringify({ success: false, error: 'associate_id and positive amount are required' }),
+        JSON.stringify({ success: false, error: 'associate_id and time_entry_ids are required' }),
         { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
@@ -159,6 +166,28 @@ Deno.serve(async (req) => {
       );
     }
 
+    const uniqueEntryIds = [...new Set(time_entry_ids)].filter((id): id is string => typeof id === 'string' && id.length > 0);
+    const { data: entries } = await supabase
+      .from('time_entries')
+      .select('id, associate_id, clock_in, clock_out, is_paid')
+      .in('id', uniqueEntryIds)
+      .eq('associate_id', associate_id);
+    if (!entries || entries.length !== uniqueEntryIds.length || entries.some((entry: any) => entry.is_paid || !entry.clock_out)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Time entries are missing, unpaid status is invalid, or belong to another associate' }),
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+    const hourlyRate = parseFloat(associate.hourly_rate as any) || 0;
+    const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, hourlyRate);
+    amount = breakdown.totalAmount;
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'No payable amount could be derived from the selected time entries' }),
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
     const connectAccountId = associate.stripe_connect_account_id;
     if (!connectAccountId) {
       return new Response(
@@ -192,7 +221,7 @@ Deno.serve(async (req) => {
           payment_handle: connectAccountId,
           external_payout_id: `TEST-tr_${Date.now()}`,
           status: 'completed',
-          time_entry_ids: time_entry_ids || [],
+          time_entry_ids: uniqueEntryIds,
           notes: `[TEST MODE] ${notes || ''}`.trim(),
           is_test: true
         })
@@ -247,12 +276,14 @@ Deno.serve(async (req) => {
       );
     }
 
+    const idempotencyKey = req.headers.get('Idempotency-Key')?.trim() || `payout-${[...uniqueEntryIds].sort().join('-')}`;
     const transfer = await createStripeTransfer(
       secretKey,
       amountCents,
       connectAccountId,
       description,
-      { payout_associate_id: associate_id }
+      { payout_associate_id: associate_id },
+      idempotencyKey
     );
 
     console.log('Stripe transfer created:', transfer.id);
@@ -268,7 +299,7 @@ Deno.serve(async (req) => {
         payment_handle: connectAccountId,
         external_payout_id: transfer.id,
         status: 'processing',
-        time_entry_ids: time_entry_ids || [],
+        time_entry_ids: uniqueEntryIds,
         notes: notes || null,
         is_test: false
       })
@@ -333,7 +364,7 @@ Deno.serve(async (req) => {
         const expectedDeposit = addBusinessDays(new Date(), 2);
         const expectedDepositDate = expectedDeposit.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: tz });
         const rate = parseFloat(associate.hourly_rate as any) || 0;
-        const breakdown = await buildBreakdownByEntryIds(supabase, time_entry_ids || [], rate);
+        const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, rate);
         await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: 'POST',
           headers: {

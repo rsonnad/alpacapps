@@ -13,6 +13,7 @@ import { parsePaymentString } from './payment-parser.ts';
 import { matchTenant } from './tenant-matcher.ts';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface PaymentRequest {
   name?: string;
   payment_string: string;
@@ -31,11 +32,14 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const auth = await requireFunctionRoles(req, supabase, ['admin', 'oracle', 'staff']);
+    if (auth.response) return auth.response;
+
     // Parse request body
     const body: PaymentRequest = await req.json();
     const { name, payment_string, source = 'openclaw', force_gemini = false } = body;
 
-    console.log('Received payment request:', { name, payment_string, source });
+    console.log('Received payment request:', { name, source });
 
     if (!payment_string) {
       return new Response(
@@ -233,6 +237,10 @@ Deno.serve(async (req) => {
             .update({ status: 'ledger_failed', error_message: `Payment ${payment.id} recorded but ledger failed: ${ledgerError.message}` })
             .eq('id', logEntry.id);
         }
+        return new Response(
+          JSON.stringify({ success: false, error: 'Payment was recorded but accounting is pending reconciliation', payment_id: payment.id }),
+          { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+        );
       }
 
       // Update log with payment ID

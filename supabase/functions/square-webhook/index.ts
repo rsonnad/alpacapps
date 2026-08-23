@@ -22,6 +22,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
+import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "../_shared/webhook-idempotency.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
 const PAYMENTS_EMAIL = 'payments@alpacaplayhouse.com';
 
@@ -111,7 +113,7 @@ async function verifySquareWebhook(
 
   // Square expects base64 comparison
   const expectedBase64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
-  return expectedBase64 === signatureHeader;
+  return timingSafeEqual(expectedBase64, signatureHeader);
 }
 
 function formatCurrency(amountCents: number): string {
@@ -222,10 +224,12 @@ Deno.serve(async (req) => {
   const rawBody = await req.text();
   const signatureHeader = req.headers.get('x-square-hmacsha256-signature');
 
+  let supabase: ReturnType<typeof createClient> | null = null;
+  let eventId: string | null = null;
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Load Square config for webhook signature key
     const { data: config, error: configError } = await supabase
@@ -261,11 +265,26 @@ Deno.serve(async (req) => {
       }
       console.log('Square webhook signature verified');
     } else {
-      console.warn('No webhook_signature_key configured — skipping signature verification');
+      console.error('No webhook_signature_key configured');
+      return new Response(
+        JSON.stringify({ error: 'Webhook not configured' }),
+        { status: 503, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Parse the event
     const event = JSON.parse(rawBody) as SquareWebhookEvent;
+    eventId = event.event_id;
+    if (!eventId || !event.type || !event.data?.object) {
+      return new Response(JSON.stringify({ error: 'Invalid webhook event' }), { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+    const claim = await claimWebhookEvent(supabase, 'square', eventId);
+    if (claim === 'duplicate') {
+      return new Response(JSON.stringify({ received: true, duplicate: true }), { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+    if (claim === 'in_progress') {
+      return new Response(JSON.stringify({ received: false, retry: true }), { status: 503, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
     console.log('Square webhook event:', event.type, event.event_id);
 
     // Log webhook receipt to api_usage_log
@@ -554,6 +573,7 @@ Deno.serve(async (req) => {
         console.log('Unhandled Square webhook event type:', event.type);
     }
 
+    await completeWebhookEvent(supabase, 'square', eventId);
     return new Response(
       JSON.stringify({ received: true, type: event.type }),
       { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
@@ -561,14 +581,14 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Square webhook error:', error);
-    // Return 200 to prevent Square from retrying
+    if (supabase && eventId) await failWebhookEvent(supabase, 'square', eventId, error);
     return new Response(
       JSON.stringify({
         received: true,
         error: error instanceof Error ? error.message : 'Unknown error'
       }),
       {
-        status: 200,
+        status: 500,
         headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' }
       }
     );

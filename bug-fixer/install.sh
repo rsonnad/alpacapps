@@ -75,7 +75,11 @@ echo "Installing worker dependencies..."
 cp /Users/rahulio/Documents/CodingProjects/genalpaca-admin/bug-fixer/worker.js "$WORKER_DIR/" 2>/dev/null || true
 cp /Users/rahulio/Documents/CodingProjects/genalpaca-admin/bug-fixer/package.json "$WORKER_DIR/" 2>/dev/null || true
 
-# If files aren't local, they should already be in $WORKER_DIR
+# Copy the checked-in worker and manifest from this installer directory.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cp "$SCRIPT_DIR/bug_scout.js" "$WORKER_DIR/bug_scout.js"
+cp "$SCRIPT_DIR/package.json" "$WORKER_DIR/package.json"
+chown -R bugfixer:bugfixer "$WORKER_DIR"
 cd "$WORKER_DIR"
 npm install
 
@@ -88,7 +92,8 @@ if [ ! -f "$ENV_FILE" ]; then
 # Bug Fixer Worker Configuration
 # Fill in these values:
 
-ANTHROPIC_API_KEY=your-anthropic-api-key
+OPENROUTER_API_KEY=configure-out-of-band
+OPENROUTER_MODEL=stealth/ox-alpha
 SUPABASE_URL=https://aphrrfprbixmhissnjfn.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 BOT_USER_PASSWORD=your-bot-user-password
@@ -115,7 +120,7 @@ User=bugfixer
 Environment=HOME=/home/bugfixer
 WorkingDirectory=/opt/bug-fixer
 EnvironmentFile=/opt/bug-fixer/.env
-ExecStart=/usr/bin/node /opt/bug-fixer/worker.js
+ExecStart=/usr/bin/node /opt/bug-fixer/bug_scout.js
 Restart=always
 RestartSec=10
 StandardOutput=journal

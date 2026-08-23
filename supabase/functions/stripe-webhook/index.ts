@@ -22,6 +22,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
+import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "../_shared/webhook-idempotency.ts";
 
 const PAYMENTS_EMAIL = 'payments@alpacaplayhouse.com';
 
@@ -31,23 +33,25 @@ interface StripeEvent {
   data: { object: Record<string, unknown> };
 }
 
-function parseStripeSignature(header: string | null): { t: string; v1: string } | null {
+function parseStripeSignature(header: string | null): { t: string; v1: string[] } | null {
   if (!header) return null;
   const parts = header.split(',');
   let t = '';
-  let v1 = '';
+  const v1: string[] = [];
   for (const part of parts) {
     const [key, val] = part.split('=');
     if (key?.trim() === 't') t = val?.trim() ?? '';
-    if (key?.trim() === 'v1') v1 = val?.trim() ?? '';
+    if (key?.trim() === 'v1' && val?.trim()) v1.push(val.trim());
   }
-  return t && v1 ? { t, v1 } : null;
+  return t && v1.length ? { t, v1 } : null;
 }
 
 async function verifyStripeWebhook(rawBody: string, signature: string | null, secret: string): Promise<boolean> {
   const parsed = parseStripeSignature(signature);
   if (!parsed) return false;
   const { t, v1 } = parsed;
+  const timestamp = Number(t);
+  if (!Number.isFinite(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > 300) return false;
   const signedPayload = `${t}.${rawBody}`;
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -65,7 +69,10 @@ async function verifyStripeWebhook(rawBody: string, signature: string | null, se
   const expectedHex = Array.from(new Uint8Array(sig))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
-  return expectedHex === v1;
+  for (const candidate of v1) {
+    if (await timingSafeEqual(expectedHex, candidate)) return true;
+  }
+  return false;
 }
 
 /**
@@ -503,10 +510,12 @@ Deno.serve(async (req) => {
   const rawBody = await req.text();
   const signature = req.headers.get('Stripe-Signature');
 
+  let supabase: ReturnType<typeof createClient> | null = null;
+  let eventId: string | null = null;
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: config, error: configError } = await supabase
       .from('stripe_config')
@@ -524,8 +533,9 @@ Deno.serve(async (req) => {
     const webhookSecret = config.test_mode ? config.sandbox_webhook_secret : config.webhook_secret;
     const activeSecretKey = (config.test_mode ? config.sandbox_secret_key : config.secret_key) || '';
     if (!webhookSecret) {
-      console.warn('No webhook secret configured');
-      return new Response(JSON.stringify({ received: true }), {
+      console.error('No Stripe webhook secret configured');
+      return new Response(JSON.stringify({ error: 'Webhook not configured' }), {
+        status: 503,
         headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' }
       });
     }
@@ -540,6 +550,17 @@ Deno.serve(async (req) => {
     }
 
     const event = JSON.parse(rawBody) as StripeEvent;
+    eventId = event.id;
+    if (!eventId || !event.type || !event.data?.object) {
+      return new Response(JSON.stringify({ error: 'Invalid webhook event' }), { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+    const claim = await claimWebhookEvent(supabase, 'stripe', eventId);
+    if (claim === 'duplicate') {
+      return new Response(JSON.stringify({ received: true, duplicate: true }), { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+    if (claim === 'in_progress') {
+      return new Response(JSON.stringify({ received: false, retry: true }), { status: 503, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
     console.log('Stripe webhook:', event.type, event.id);
 
     switch (event.type) {
@@ -678,6 +699,32 @@ Deno.serve(async (req) => {
 
         if (rows?.length) {
           for (const row of rows) {
+            // A completed ledger link is the local idempotency guard for older
+            // payments created before provider_webhook_events existed. Finish
+            // a fee that may have failed after the income link was written.
+            if (row.ledger_id) {
+              if (row.fee_amount > 0) {
+                const feeDescription = `Stripe processing fee (${row.payment_type.replace(/_/g, ' ')}) for payment ${row.id}`;
+                let feeQuery = supabase.from('ledger').select('id')
+                  .eq('direction', 'expense').eq('category', 'processing_fee')
+                  .eq('payment_method', 'stripe').eq('amount', row.fee_amount)
+                  .eq('description', feeDescription).limit(1);
+                feeQuery = row.person_id ? feeQuery.eq('person_id', row.person_id) : feeQuery.is('person_id', null);
+                const { data: existingFee, error: feeLookupError } = await feeQuery.maybeSingle();
+                if (feeLookupError) throw feeLookupError;
+                if (!existingFee) {
+                  const { error: feeError } = await supabase.from('ledger').insert({
+                    direction: 'expense', category: 'processing_fee', amount: row.fee_amount,
+                    payment_method: 'stripe', transaction_date: new Date().toISOString().split('T')[0],
+                    person_id: row.person_id || null, person_name: row.person_name || null,
+                    status: 'completed', description: feeDescription,
+                    recorded_by: 'system:stripe-webhook', is_test: false,
+                  });
+                  if (feeError) throw feeError;
+                }
+              }
+              continue;
+            }
             const category = PAYMENT_TYPE_TO_CATEGORY[row.payment_type] || 'other';
             // Use original_amount (before fee) for the income entry; fall back to amount
             const incomeAmount = row.original_amount && row.original_amount > 0
@@ -704,34 +751,48 @@ Deno.serve(async (req) => {
               .select('id')
               .single();
 
-            // Record processing fee as expense if present
-            if (feeAmount > 0) {
-              await supabase.from('ledger').insert({
-                direction: 'expense',
-                category: 'processing_fee',
-                amount: feeAmount,
-                payment_method: 'stripe',
-                transaction_date: today,
-                person_id: row.person_id || null,
-                person_name: row.person_name || null,
-                status: 'completed',
-                description: `Stripe processing fee (${row.payment_type.replace(/_/g, ' ')})`,
-                recorded_by: 'system:stripe-webhook',
-                is_test: false
-              });
+            if (ledgerErr || !ledgerEntry) {
+              throw ledgerErr || new Error('Stripe ledger entry was not created');
             }
 
-            if (!ledgerErr && ledgerEntry) {
-              await supabase.from('stripe_payments').update({
+            // Link the payment immediately after the income row is created.
+            // If the fee insert or email fails and Stripe retries the event,
+            // this prevents the income row from being duplicated.
+            const { error: linkError } = await supabase.from('stripe_payments').update({
                 status: 'completed',
                 ledger_id: ledgerEntry.id,
                 updated_at: new Date().toISOString()
               }).eq('id', row.id);
-            } else {
-              await supabase.from('stripe_payments').update({
-                status: 'completed',
-                updated_at: new Date().toISOString()
-              }).eq('id', row.id);
+            if (linkError) throw linkError;
+
+            // Record processing fee as expense if present. The description is
+            // stable for this payment type, so retries can safely find a fee
+            // that was written before a transient failure.
+            if (feeAmount > 0) {
+              const feeDescription = `Stripe processing fee (${row.payment_type.replace(/_/g, ' ')}) for payment ${row.id}`;
+              let feeQuery = supabase.from('ledger').select('id')
+                .eq('direction', 'expense').eq('category', 'processing_fee')
+                .eq('payment_method', 'stripe').eq('amount', feeAmount)
+                .eq('description', feeDescription).limit(1);
+              feeQuery = row.person_id ? feeQuery.eq('person_id', row.person_id) : feeQuery.is('person_id', null);
+              const { data: existingFee, error: feeLookupError } = await feeQuery.maybeSingle();
+              if (feeLookupError) throw feeLookupError;
+              if (!existingFee) {
+                const { error: feeError } = await supabase.from('ledger').insert({
+                  direction: 'expense',
+                  category: 'processing_fee',
+                  amount: feeAmount,
+                  payment_method: 'stripe',
+                  transaction_date: today,
+                  person_id: row.person_id || null,
+                  person_name: row.person_name || null,
+                  status: 'completed',
+                  description: feeDescription,
+                  recorded_by: 'system:stripe-webhook',
+                  is_test: false
+                });
+                if (feeError) throw feeError;
+              }
             }
 
             // Send confirmation email with statement summary
@@ -827,19 +888,21 @@ Deno.serve(async (req) => {
         console.log('Unhandled Stripe event type:', event.type);
     }
 
+    await completeWebhookEvent(supabase, 'stripe', eventId);
     return new Response(
       JSON.stringify({ received: true, type: event.type }),
       { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Stripe webhook error:', error);
+    if (supabase && eventId) await failWebhookEvent(supabase, 'stripe', eventId, error);
     return new Response(
       JSON.stringify({
         received: true,
         error: error instanceof Error ? error.message : 'Unknown error'
       }),
       {
-        status: 200,
+        status: 500,
         headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' }
       }
     );

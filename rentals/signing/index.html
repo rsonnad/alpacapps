@@ -715,14 +715,15 @@ async function submitSignature() {
       // Get signature image as base64 PNG
       const signatureImage = signaturePad.toDataURL('image/png');
 
-      // Compute SHA-256 hash of the document HTML the signer saw
-      const fullDocumentText = document.getElementById('leaseDocument').innerHTML
-        + (documentData.waiver_html || '');
+      // Hash/archive the server-rendered canonical HTML returned for this
+      // token. The DOM is intentionally not used here because the viewer
+      // hides placeholder signature lines for presentation.
+      const fullDocumentText = documentData.document_html + (documentData.waiver_html || '');
       const documentHash = await sha256(fullDocumentText);
 
       // Include the full document HTML for archival/reconstruction
-      const fullDocumentHtml = document.getElementById('leaseDocument').innerHTML
-        + (documentData.waiver_html ? '\n<!-- WAIVER -->\n' + document.getElementById('waiverDocument').innerHTML : '');
+      const fullDocumentHtml = documentData.document_html
+        + (documentData.waiver_html ? '\n<!-- WAIVER -->\n' + documentData.waiver_html : '');
 
       const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/process-signature`, {
         method: 'POST',

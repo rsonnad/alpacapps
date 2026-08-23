@@ -36,6 +36,7 @@ import {
   resolveAssignee,
   applyPagination,
   logApiUsage,
+  safeIlikeText,
 } from "../_shared/api-helpers.ts";
 
 // ─── Main handler ───────────────────────────────────────────────────
@@ -117,8 +118,8 @@ serve(async (req) => {
 
     return result;
   } catch (err) {
-    console.error("API error:", err.message, err.stack);
-    return error(err.message || "Internal server error", 500);
+    console.error("API error:", err instanceof Error ? err.message : err);
+    return error(err instanceof Error ? err.message : "Internal server error", 500);
   }
 });
 
@@ -372,7 +373,8 @@ async function handleAssignments(supabase: any, req: ApiRequest, auth: any, perm
         .select("*, person:person_id(id, first_name, last_name), assignment_spaces(space_id, space:space_id(id, name))", { count: "exact" });
 
       // Row scoping: residents only see their own assignments
-      if (perm.rowScoped && auth.userLevel < 2 && auth.appUser?.person_id) {
+      if (perm.rowScoped && auth.userLevel < 2) {
+        if (!auth.appUser?.person_id) return error("Assignment not found", 404);
         query = query.eq("person_id", auth.appUser.person_id);
       } else if (perm.rowScoped && auth.userLevel < 2) {
         return success([], 0);
@@ -1114,7 +1116,22 @@ async function handleTimeEntries(supabase: any, req: ApiRequest, auth: any, perm
     }
 
     case "create": {
-      const payload = { ...req.data };
+      const incoming = { ...(req.data || {}) };
+      const payload: Record<string, any> = {};
+      if (auth.userLevel < 2) {
+        const { data: profile } = await supabase.from("associate_profiles").select("id").eq("app_user_id", auth.appUser?.id).maybeSingle();
+        if (!profile) return error("Associate profile not found", 403);
+        for (const key of ["clock_in", "clock_out", "description", "task_id", "is_manual", "manual_reason", "lat", "lng"]) {
+          if (key in incoming) payload[key] = incoming[key];
+        }
+        payload.associate_id = profile.id;
+      } else {
+        Object.assign(payload, incoming);
+        delete payload.associate_id;
+        delete payload.is_paid;
+        delete payload.payout_id;
+        delete payload.amount;
+      }
       // Compute duration if both clock_in and clock_out provided
       if (payload.clock_in && payload.clock_out) {
         payload.duration_minutes = Math.round(
@@ -1146,7 +1163,19 @@ async function handleTimeEntries(supabase: any, req: ApiRequest, auth: any, perm
         }
       }
 
-      const payload = { ...req.data };
+      const incoming = { ...(req.data || {}) };
+      const payload: Record<string, any> = {};
+      if (auth.userLevel < 2) {
+        for (const key of ["clock_in", "clock_out", "description", "task_id", "is_manual", "manual_reason", "lat", "lng"]) {
+          if (key in incoming) payload[key] = incoming[key];
+        }
+      } else {
+        Object.assign(payload, incoming);
+        delete payload.associate_id;
+        delete payload.is_paid;
+        delete payload.payout_id;
+        delete payload.amount;
+      }
       // Recompute duration if times changed
       if (payload.clock_out || payload.clock_in) {
         const { data: current } = await supabase.from("time_entries").select("clock_in, clock_out").eq("id", req.id).single();
@@ -1195,7 +1224,8 @@ async function handleEvents(supabase: any, req: ApiRequest, auth: any, perm: any
 
       if (req.filters?.status) query = query.eq("status", req.filters.status);
       if (req.filters?.search) {
-        query = query.or(`event_name.ilike.%${req.filters.search}%,host_name.ilike.%${req.filters.search}%`);
+        const search = safeIlikeText(req.filters.search);
+        query = query.or(`event_name.ilike.%${search}%,host_name.ilike.%${search}%`);
       }
 
       query = applyPagination(query, req);
@@ -1207,11 +1237,15 @@ async function handleEvents(supabase: any, req: ApiRequest, auth: any, perm: any
 
     case "get": {
       if (!req.id) return error("id is required", 400);
-      const { data, error: err } = await supabase
+      let query = supabase
         .from("event_hosting_requests")
         .select("*, event_request_spaces(space_id, space:space_id(id, name))")
-        .eq("id", req.id)
-        .single();
+        .eq("id", req.id);
+      if (perm.rowScoped && auth.userLevel < 2) {
+        if (!auth.appUser?.email) return error("Event not found", 404);
+        query = query.eq("contact_email", auth.appUser.email);
+      }
+      const { data, error: err } = await query.single();
       if (err) return error("Event not found", 404);
       return success(data);
     }
@@ -1570,7 +1604,8 @@ async function handlePasswordVault(supabase: any, req: ApiRequest, auth: any, _p
 
       if (req.filters?.category) query = query.eq("category", req.filters.category);
       if (req.filters?.search) {
-        query = query.or(`service.ilike.%${req.filters.search}%,notes.ilike.%${req.filters.search}%`);
+        const search = safeIlikeText(req.filters.search);
+        query = query.or(`service.ilike.%${search}%,notes.ilike.%${search}%`);
       }
 
       query = applyPagination(query, req, "service", "asc");
@@ -1582,11 +1617,25 @@ async function handlePasswordVault(supabase: any, req: ApiRequest, auth: any, _p
 
     case "get": {
       if (!req.id) return error("id is required", 400);
-      const { data, error: err } = await supabase
+      let query = supabase
         .from("password_vault")
         .select("*")
         .eq("id", req.id)
-        .single();
+        .eq("is_active", true);
+      if (auth.userLevel >= 3) {
+        // Admin/oracle may read all active entries.
+      } else if (auth.userLevel >= 2) {
+        query = query.in("category", ["house", "platform", "service"]);
+      } else {
+        query = query.eq("category", "house");
+        if (!auth.appUser?.person_id) query = query.is("space_id", null);
+        else {
+          const { data: userAssignments } = await supabase.from("assignments").select("assignment_spaces(space_id)").eq("person_id", auth.appUser.person_id).in("status", ["active", "pending_contract", "contract_sent"]);
+          const spaceIds = (userAssignments || []).flatMap((a: any) => (a.assignment_spaces || []).map((as: any) => as.space_id));
+          query = spaceIds.length ? query.or(`space_id.in.(${spaceIds.join(",")}),space_id.is.null`) : query.is("space_id", null);
+        }
+      }
+      const { data, error: err } = await query;
       if (err) return error("Vault entry not found", 404);
       return success(data);
     }

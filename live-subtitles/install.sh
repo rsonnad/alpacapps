@@ -25,7 +25,7 @@ After=network.target
 Type=simple
 User=alpuca
 WorkingDirectory=$SERVICE_DIR
-ExecStart=/usr/bin/node server.js --mock
+ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production

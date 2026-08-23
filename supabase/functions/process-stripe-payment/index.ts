@@ -45,6 +45,7 @@ async function createPaymentIntent(
   metadata: Record<string, string>,
   buyerEmail?: string,
   paymentMethod: 'bank' | 'card' = 'bank',
+  idempotencyKey?: string,
 ): Promise<{ id: string; client_secret: string }> {
   const body: Record<string, string | number | boolean> = {
     amount: amountCents,
@@ -61,6 +62,7 @@ async function createPaymentIntent(
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${secretKey}`,
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
       'Content-Type': 'application/x-www-form-urlencoded'
     },
     body: formEncode(body)
@@ -100,13 +102,13 @@ Deno.serve(async (req) => {
       payment_method
     } = body;
 
-    if (!amount || amount < 50) {
+    if (!Number.isInteger(amount) || amount < 50 || amount > 10_000_000) {
       return new Response(
         JSON.stringify({ success: false, error: 'amount (cents, min 50) is required' }),
         { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
-    if (!payment_type || !reference_type || !reference_id) {
+    if (!payment_type || !['rental_application', 'assignment', 'event_request', 'direct_payment'].includes(reference_type) || !reference_id) {
       return new Response(
         JSON.stringify({ success: false, error: 'payment_type, reference_type, and reference_id are required' }),
         { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
@@ -143,10 +145,43 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (original_amount !== undefined && (!Number.isInteger(original_amount) || original_amount <= 0)) {
+      return new Response(JSON.stringify({ success: false, error: 'original_amount must be a positive integer in cents' }), { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+    if (fee_amount !== undefined && (!Number.isInteger(fee_amount) || fee_amount < 0)) {
+      return new Response(JSON.stringify({ success: false, error: 'fee_amount must be a non-negative integer in cents' }), { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+    if (original_amount !== undefined && fee_amount !== undefined && original_amount + fee_amount !== amount) {
+      return new Response(JSON.stringify({ success: false, error: 'amount must equal original_amount plus fee_amount' }), { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+
+    // Resolve accounting identity from the reference record. Caller-provided
+    // person fields are accepted only as consistency checks, never as authority.
+    let canonicalPersonId: string | null = null;
+    if (reference_type === 'assignment') {
+      const { data: assignment } = await supabase.from('assignments').select('person_id').eq('id', reference_id).maybeSingle();
+      if (!assignment) return new Response(JSON.stringify({ success: false, error: 'Assignment not found' }), { status: 404, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+      canonicalPersonId = assignment.person_id;
+    } else if (reference_type === 'rental_application') {
+      const { data: application } = await supabase.from('rental_applications').select('person_id').eq('id', reference_id).maybeSingle();
+      if (!application) return new Response(JSON.stringify({ success: false, error: 'Rental application not found' }), { status: 404, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+      canonicalPersonId = application.person_id;
+    } else if (reference_type === 'event_request') {
+      const { data: eventRequest } = await supabase.from('event_hosting_requests').select('person_id').eq('id', reference_id).maybeSingle();
+      if (!eventRequest) return new Response(JSON.stringify({ success: false, error: 'Event request not found' }), { status: 404, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+      canonicalPersonId = eventRequest.person_id;
+    }
+    if (person_id && canonicalPersonId && person_id !== canonicalPersonId) {
+      return new Response(JSON.stringify({ success: false, error: 'Payment identity does not match the referenced record' }), { status: 403, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+    const { data: canonicalPerson } = canonicalPersonId
+      ? await supabase.from('people').select('id, first_name, last_name, email').eq('id', canonicalPersonId).maybeSingle()
+      : { data: null };
+    const canonicalName = canonicalPerson ? `${canonicalPerson.first_name || ''} ${canonicalPerson.last_name || ''}`.trim() : null;
     const amountDollars = amount / 100;
-    const originalDollars = original_amount ? original_amount / 100 : amountDollars;
-    const feeDollars = fee_amount ? fee_amount / 100 : 0;
-    const desc = description || `${payment_type.replace(/_/g, ' ')} — ${reference_id}`;
+    const originalDollars = (original_amount ?? amount) / 100;
+    const feeDollars = (fee_amount ?? 0) / 100;
+    const desc = (description || `${payment_type.replace(/_/g, ' ')} — ${reference_id}`).slice(0, 500);
 
     const { data: paymentRecord, error: insertError } = await supabase
       .from('stripe_payments')
@@ -158,8 +193,8 @@ Deno.serve(async (req) => {
         original_amount: originalDollars,
         fee_amount: feeDollars,
         status: 'pending',
-        person_id: person_id || null,
-        person_name: person_name || null,
+        person_id: canonicalPersonId,
+        person_name: canonicalName,
         is_test: stripeConfig.test_mode
       })
       .select()
@@ -172,6 +207,9 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
       );
     }
+    if (reference_type === 'direct_payment' && person_id) {
+      return new Response(JSON.stringify({ success: false, error: 'Direct payments cannot assign accounting identity' }), { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
 
     const pi = await createPaymentIntent(
       secretKey,
@@ -183,11 +221,12 @@ Deno.serve(async (req) => {
         reference_type,
         reference_id,
         payment_method: payment_method || 'bank',
-        ...(person_id ? { person_id } : {}),
-        ...(person_name ? { person_name: person_name.slice(0, 100) } : {})
+        ...(canonicalPersonId ? { person_id: canonicalPersonId } : {}),
+        ...(canonicalName ? { person_name: canonicalName.slice(0, 100) } : {})
       },
       buyer_email,
       payment_method === 'card' ? 'card' : 'bank',
+      req.headers.get('Idempotency-Key')?.trim(),
     );
 
     await supabase

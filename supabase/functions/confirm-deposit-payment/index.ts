@@ -87,6 +87,19 @@ Deno.serve(async (req) => {
       return htmlPage("Error", "<h2>Application Not Found</h2><p>The linked rental application could not be found.</p>");
     }
 
+    // Atomically claim the confirmation before any payment, ledger, or
+    // application updates. A second click now stops before side effects.
+    const { data: claimed } = await supabase
+      .from("deposit_payment_confirmations")
+      .update({ status: "processing", resolved_by: "admin_email_link" })
+      .eq("id", conf.id)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
+    if (!claimed) {
+      return htmlPage("Already Processing", "<h2>Already Processing</h2><p>This confirmation is already being processed. Please refresh shortly.</p>");
+    }
+
     // Deduplicate: check if this confirmation number was already recorded
     if (conf.confirmation_number) {
       const { data: existing } = await supabase

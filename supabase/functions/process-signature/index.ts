@@ -40,6 +40,19 @@ Deno.serve(async (req) => {
     if (!token || !signature_image || !document_hash) {
       return jsonError('Missing required fields', 400);
     }
+    if (typeof document_hash !== 'string' || !/^[a-f0-9]{64}$/i.test(document_hash)) {
+      return jsonError('document_hash must be a SHA-256 hex digest', 400);
+    }
+    if (typeof document_html !== 'string' || document_html.length === 0 || document_html.length > 2_000_000) {
+      return jsonError('Archival document is missing or too large', 400);
+    }
+    if (typeof signature_image !== 'string' || !/^data:image\/(png|jpeg|jpg);base64,[A-Za-z0-9+/=]+$/i.test(signature_image)) {
+      return jsonError('Invalid signature image', 400);
+    }
+    const suppliedHash = await sha256Hex(document_html);
+    if (suppliedHash.toLowerCase() !== document_hash.toLowerCase()) {
+      return jsonError('The signed document hash does not match the archived document', 400);
+    }
 
     // Get client IP and user-agent for audit trail
     const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -112,6 +125,23 @@ Deno.serve(async (req) => {
 
     if (!app) {
       return jsonError('Invalid signing token', 404);
+    }
+
+    // Re-render the agreement through the canonical server endpoint and
+    // reject client-submitted HTML that is not byte-for-byte what the token
+    // currently resolves to. The client still supplies the hash as an audit
+    // value, but it is no longer allowed to choose the signed document.
+    const canonicalResponse = await fetch(`${supabaseUrl}/functions/v1/get-signing-document`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseServiceKey}` },
+      body: JSON.stringify({ token }),
+    });
+    if (!canonicalResponse.ok) return jsonError('Could not re-validate the signing document', 409);
+    const canonicalData = await canonicalResponse.json();
+    const canonicalHtml = String(canonicalData.document_html || '')
+      + (canonicalData.waiver_html ? '\n<!-- WAIVER -->\n' + canonicalData.waiver_html : '');
+    if (document_html !== canonicalHtml) {
+      return jsonError('The signing document changed; please reload the latest signing link', 409);
     }
 
     // Validate token
@@ -255,10 +285,6 @@ Deno.serve(async (req) => {
     // the landlord's pre-signature, the tenant's drawn signature,
     // and the audit metadata, so opening the URL later shows the
     // executed agreement exactly as it was at signing time.
-    if (!document_html?.trim()) {
-      return jsonError('Cannot complete signing without an archival copy of the agreement.', 422);
-    }
-
     let signedDocUrl: string | null = null;
     try {
       const fullSignedHtml = buildArchivalLeaseHtml({
@@ -547,6 +573,11 @@ function jsonError(message: string, status: number): Response {
     status,
     headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' },
   });
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 async function sendSignedEmail(apiKey: string, opts: any) {

@@ -299,18 +299,18 @@ export BW_SESSION=$(~/bin/bw-unlock)
 | **HAOS API tokens** | "Home Assistant — IoT Hub" | Stored as Supabase secrets (write-only) |
 | **Alpuca SSH** | "Alpuca — Primary Home Server" | Key auth: `ssh paca@192.168.1.200` |
 | **Almaca SSH** | "Alpaca Mac — Local Machine" | Key auth: `ssh alpaca@192.168.1.74` |
-| **UDM Pro SSH (root)** | inline | `sshpass -p 'StillForest160%auto' ssh root@192.168.1.1` |
-| **UDM Pro API** | "UniFi Dream Machine Pro" | `alpacaauto` / `StillForest160!auto` (READ-ONLY) |
+| **UDM Pro SSH (root)** | inline | credentials stored in Bitwarden |
+| **UDM Pro API** | "UniFi Dream Machine Pro" | credentials stored in Bitwarden (READ-ONLY) |
 | **Govee API key** | Supabase secret `GOVEE_API_KEY` | Set via `supabase secrets set` |
 | **Sonos proxy** | Supabase secret `SONOS_PROXY_SECRET` | Used by edge functions |
-| **Supabase Mgmt API** | "Supabase — AlpacApps Project" → `Management API Token` | `sbp_3e69...` |
+| **Supabase Mgmt API** | "Supabase — AlpacApps Project" → `Management API Token` | stored in Bitwarden |
 
 ### Supabase Secrets (edge function env vars)
 
 These are write-only from the Management API (cannot read back plaintext). Update with:
 
 ```bash
-SUPABASE_ACCESS_TOKEN=sbp_3e69... npx supabase secrets set HA_TOKEN=eyJhb... --project-ref aphrrfprbixmhissnjfn
+SUPABASE_ACCESS_TOKEN=<from Bitwarden> npx supabase secrets set HA_TOKEN=<from Bitwarden> --project-ref aphrrfprbixmhissnjfn
 ```
 
 **Home automation secrets stored:** `HA_BASE_URL`, `HA_TOKEN`, `WIZ_PROXY_URL`, `WIZ_PROXY_TOKEN`, `GOVEE_API_KEY`, `SONOS_PROXY_URL`, `SONOS_PROXY_SECRET`
@@ -328,7 +328,7 @@ ssh alpaca@192.168.1.74
 sshpass -p "$(bw get password 'Hostinger VPS — OpenClaw Server')" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224
 
 # UDM Pro (root, for firewall/iptables)
-sshpass -p 'StillForest160%auto' ssh -o StrictHostKeyChecking=no root@192.168.1.1
+ssh root@192.168.1.1  # retrieve credentials from Bitwarden; do not inline them
 ```
 
 ---

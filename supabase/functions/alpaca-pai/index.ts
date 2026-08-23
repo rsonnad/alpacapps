@@ -3362,7 +3362,7 @@ function buildVapiToolsList(scope: UserScope): any[] {
 // Voice: Handle assistant-request from Vapi
 // =============================================
 
-async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Response> {
+async function handleVapiAssistantRequest(req: Request, body: any, supabase: any): Promise<Response> {
   const callerPhone = body.message?.call?.customer?.number || body.call?.customer?.number || null;
   console.log("Vapi assistant-request from:", callerPhone);
 
@@ -3391,7 +3391,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
       .single();
     if (!fallback) return jsonResponse(req, { error: "No voice assistant configured" }, 503);
     const fallbackPaiConfig = await loadPaiConfig(supabase);
-    return buildVapiResponse(fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(findTool("search_spaces")), vapiToolWrapper(findTool("lookup_document"))], fallbackPaiConfig);
+    return buildVapiResponse(req, fallback, null, null, null, null, config.test_mode, [vapiToolWrapper(findTool("search_spaces")), vapiToolWrapper(findTool("lookup_document"))], fallbackPaiConfig);
   }
 
   // Identify caller, build scope, and load PAI config in parallel
@@ -3493,7 +3493,7 @@ async function handleVapiAssistantRequest(body: any, supabase: any): Promise<Res
   });
 }
 
-function buildVapiResponse(assistant: any, callerName: string | null, callerGreeting: string | null, callerType: string | null, scope: UserScope | null, testMode: boolean, tools: any[], paiConfig: PaiConfig): Response {
+function buildVapiResponse(req: Request, assistant: any, callerName: string | null, callerGreeting: string | null, callerType: string | null, scope: UserScope | null, testMode: boolean, tools: any[], paiConfig: PaiConfig): Response {
   let firstMessage = assistant.first_message;
   if (callerName && callerGreeting) {
     firstMessage = `Hey ${callerName.split(" ")[0]}! ${callerGreeting}`;
@@ -3558,7 +3558,7 @@ function buildVapiResponse(assistant: any, callerName: string | null, callerGree
 // Voice: Handle tool-calls from Vapi
 // =============================================
 
-async function handleVapiToolCalls(body: any, supabase: any): Promise<Response> {
+async function handleVapiToolCalls(req: Request, body: any, supabase: any): Promise<Response> {
   const callerPhone = body.message?.call?.customer?.number || body.call?.customer?.number || null;
   const toolCallList = body.message?.toolCallList || body.toolCallList || [];
   console.log("Vapi tool-calls from:", callerPhone, "tools:", toolCallList.length);
@@ -4063,9 +4063,9 @@ serve(async (req) => {
     const vapiMessageType = body.message?.type || body.type;
 
     if (vapiMessageType === "assistant-request") {
-      return await handleVapiAssistantRequest(body, supabase);
+      return await handleVapiAssistantRequest(req, body, supabase);
     } else if (vapiMessageType === "tool-calls") {
-      return await handleVapiToolCalls(body, supabase);
+      return await handleVapiToolCalls(req, body, supabase);
     } else if (typeof body.message === "string") {
       // Chat mode — has message string + optional conversationHistory
       return await handleChatRequest(req, body, supabase);

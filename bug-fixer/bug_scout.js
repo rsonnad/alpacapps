@@ -503,13 +503,7 @@ async function processBugReport(report) {
   let screenshotPath = null;
 
   try {
-    // 1. Mark as processing
-    await supabase
-      .from('bug_reports')
-      .update({ status: 'processing' })
-      .eq('id', report.id);
-
-    // 1b. Send confirmation email
+    // 1. Send confirmation email
     await sendEmail('bug_report_received', report);
 
     // 2. Pull latest code
@@ -656,9 +650,17 @@ async function pollForReports() {
     }
 
     if (reports && reports.length > 0) {
+      const { data: claimed, error: claimError } = await supabase
+        .from('bug_reports')
+        .update({ status: 'processing' })
+        .eq('id', reports[0].id)
+        .eq('status', 'pending')
+        .select()
+        .maybeSingle();
+      if (claimError || !claimed) return;
       isProcessing = true;
       try {
-        await processBugReport(reports[0]);
+        await processBugReport(claimed);
       } finally {
         isProcessing = false;
       }

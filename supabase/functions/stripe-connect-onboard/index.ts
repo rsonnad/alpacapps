@@ -14,6 +14,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface OnboardRequest {
   action: 'create_account' | 'create_account_link';
   associate_id: string;
@@ -53,23 +54,8 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify caller is authenticated
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Missing authorization header' }),
-        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-      );
-    }
+    const auth = await requireFunctionRoles(req, supabase, ['admin', 'oracle', 'staff', 'associate']);
+    if (auth.response) return auth.response;
 
     const body: OnboardRequest = await req.json();
     const { action, associate_id } = body;
@@ -128,6 +114,11 @@ Deno.serve(async (req) => {
         JSON.stringify({ success: false, error: 'Associate not found' }),
         { status: 404, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
+    }
+
+    const isStaff = auth.caller?.isServiceRole || ['admin', 'oracle', 'staff'].includes(auth.caller?.appUser?.role || '');
+    if (!isStaff && auth.caller?.appUser?.id !== associate.app_user_id) {
+      return new Response(JSON.stringify({ success: false, error: 'You may only manage your own Connect account' }), { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
     }
 
     const associateEmail = associate.app_user?.email || null;

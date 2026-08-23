@@ -413,9 +413,10 @@ export async function initAssociatePage({ activeTab, onReady }) {
       }
       transitionBootState('unauthorized');
       renderAccessDenied(state, activeTab);
-    } else if (!state.isAuthenticated && !pageContentShown) {
+    } else if (!state.isAuthenticated) {
+      appContentEl?.replaceChildren();
       transitionBootState('redirecting');
-      window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+      window.location.replace('/login/?redirect=' + encodeURIComponent(window.location.pathname));
     }
   }
 

@@ -9,6 +9,11 @@ import { supabase } from '../supabase.js';
 const PTZ_PROXY_BASE = 'https://cam.alpacaplayhouse.com/ptz';
 const CAMERA_PROXY_BASE = 'https://cam.alpacaplayhouse.com/camera';
 
+async function cameraAuthHeaders() {
+  const { data: { session } = {} } = await supabase.auth.getSession();
+  return session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {};
+}
+
 /**
  * Load cameras from camera_streams table, grouped by camera_name.
  * @returns {Promise<Array<{name, location, protectUrl, protectCameraId, streams}>>}
@@ -81,7 +86,7 @@ export async function sendPtzCommand(protectCameraId, direction, slot) {
 
   const resp = await fetch(`${PTZ_PROXY_BASE}/${protectCameraId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await cameraAuthHeaders()) },
     body: JSON.stringify(payload),
   });
 
@@ -99,7 +104,7 @@ export async function sendPtzCommand(protectCameraId, direction, slot) {
 export async function fetchCameraSettings(protectCameraId) {
   if (!protectCameraId) return null;
   try {
-    const resp = await fetch(`${CAMERA_PROXY_BASE}/${protectCameraId}/settings`);
+    const resp = await fetch(`${CAMERA_PROXY_BASE}/${protectCameraId}/settings`, { headers: await cameraAuthHeaders() });
     if (!resp.ok) return null;
     return await resp.json();
   } catch {
@@ -117,7 +122,7 @@ export async function updateCameraSettings(protectCameraId, settings) {
   if (!protectCameraId) return false;
   const resp = await fetch(`${CAMERA_PROXY_BASE}/${protectCameraId}/settings`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await cameraAuthHeaders()) },
     body: JSON.stringify(settings),
   });
   return resp.ok;
@@ -130,7 +135,7 @@ export async function updateCameraSettings(protectCameraId, settings) {
  */
 export async function takeSnapshot(protectCameraId) {
   if (!protectCameraId) throw new Error('No camera ID');
-  const resp = await fetch(`${CAMERA_PROXY_BASE}/${protectCameraId}/snapshot`);
+  const resp = await fetch(`${CAMERA_PROXY_BASE}/${protectCameraId}/snapshot`, { headers: await cameraAuthHeaders() });
   if (!resp.ok) throw new Error('Snapshot failed');
   const blob = await resp.blob();
   return URL.createObjectURL(blob);

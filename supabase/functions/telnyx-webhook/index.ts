@@ -84,10 +84,8 @@ serve(async (req) => {
     const signature = req.headers.get("telnyx-signature-ed25519") || "";
     const timestamp = req.headers.get("telnyx-timestamp") || "";
 
-    // Verify Telnyx Ed25519 signature.
-    // Behavior: if telnyx_config.public_key is set, signature is REQUIRED and must
-    // verify (fail-closed). If no public_key is configured (initial setup), we log
-    // and accept — operator must populate telnyx_config to enable verification.
+    // Verify Telnyx Ed25519 signature. Missing configuration is an outage, not
+    // permission to process an unauthenticated inbound mutation.
     {
       const { data: config } = await supabase
         .from("telnyx_config")
@@ -112,7 +110,8 @@ serve(async (req) => {
         }
         console.log("Webhook signature verified");
       } else {
-        console.warn("telnyx_config.public_key not set — accepting webhook without signature verification");
+        console.error("telnyx_config.public_key not set — rejecting webhook");
+        return new Response(JSON.stringify({ error: "Webhook verification is not configured" }), { status: 503, headers: { "Content-Type": "application/json" } });
       }
     }
 

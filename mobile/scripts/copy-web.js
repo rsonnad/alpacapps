@@ -30,7 +30,6 @@ const DIRS_TO_COPY = [
   'overnight',
   'welcome',
   'sundays',
-  'mistiq',
   'styles',
   'assets/branding',
   'mobile/app',  // New mobile-first SPA
@@ -147,6 +146,11 @@ function findHtmlFiles(dir) {
 // ──────────────────────────────────────────────
 
 console.log('🏗️  Copying web assets to mobile/www/...\n');
+
+if (DIRS_TO_COPY.includes('mistiq')) throw new Error('Refusing to copy excluded /mistiq/ content');
+if (!fs.existsSync(path.join(ROOT, 'mobile', 'app', 'index.html'))) {
+  throw new Error('Required mobile/app/index.html is missing; refusing to build a partial mobile bundle');
+}
 
 // Clean www/ directory
 if (fs.existsSync(WWW)) {

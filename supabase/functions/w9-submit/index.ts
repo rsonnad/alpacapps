@@ -141,6 +141,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Claim the one-time token before doing any expensive or sensitive work.
+    // The conditional update closes the race where two submissions both pass
+    // the initial is_used=false read.
+    const { data: claimedToken, error: claimError } = await supabase
+      .from('upload_tokens')
+      .update({ is_used: true, used_at: new Date().toISOString() })
+      .eq('id', tokenRecord.id)
+      .eq('is_used', false)
+      .select('id')
+      .maybeSingle();
+    if (claimError || !claimedToken) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid or already-used token' }),
+        { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
     // ── Encrypt TIN ─────────────────────────────────────────────
     const { encrypted, iv } = await encryptTIN(tinDigits, encryptionKey);
     const tinLastFour = tinDigits.slice(-4);
@@ -202,12 +219,6 @@ Deno.serve(async (req) => {
         .update({ status: 'superseded', superseded_by: w9.id, updated_at: new Date().toISOString() })
         .eq('id', existingW9.id);
     }
-
-    // ── Mark token as used ──────────────────────────────────────
-    await supabase
-      .from('upload_tokens')
-      .update({ is_used: true, used_at: new Date().toISOString() })
-      .eq('id', tokenRecord.id);
 
     // ── Update associate profile ────────────────────────────────
     await supabase

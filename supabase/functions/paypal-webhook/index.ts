@@ -31,6 +31,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
+import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "../_shared/webhook-idempotency.ts";
 
 interface PayPalWebhookEvent {
   id: string;
@@ -43,19 +44,47 @@ interface PayPalWebhookEvent {
 /**
  * Verify PayPal webhook signature.
  * In production, verify the transmission signature against PayPal's cert.
- * For now, we check the webhook-id header matches our stored webhook_id.
  */
 async function verifyWebhook(
   req: Request,
-  config: { webhook_id: string; sandbox_webhook_id: string; test_mode: boolean }
+  rawBody: string,
+  config: { webhook_id: string; sandbox_webhook_id: string; test_mode: boolean; client_id: string; client_secret: string; sandbox_client_id: string; sandbox_client_secret: string }
 ): Promise<boolean> {
-  const webhookId = req.headers.get('paypal-transmission-id');
-  if (!webhookId) {
-    console.warn('Missing PayPal transmission ID header');
-    // Still process — PayPal doesn't always include all headers in sandbox
-    return true;
-  }
-  return true;
+  const transmissionId = req.headers.get('paypal-transmission-id');
+  const transmissionTime = req.headers.get('paypal-transmission-time');
+  const certUrl = req.headers.get('paypal-cert-url');
+  const authAlgo = req.headers.get('paypal-auth-algo');
+  const transmissionSig = req.headers.get('paypal-transmission-sig');
+  const webhookId = config.test_mode ? config.sandbox_webhook_id : config.webhook_id;
+  if (!transmissionId || !transmissionTime || !certUrl || !authAlgo || !transmissionSig || !webhookId) return false;
+
+  const clientId = config.test_mode ? config.sandbox_client_id : config.client_id;
+  const clientSecret = config.test_mode ? config.sandbox_client_secret : config.client_secret;
+  if (!clientId || !clientSecret) return false;
+  const baseUrl = config.test_mode ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
+  const tokenResponse = await fetch(`${baseUrl}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: { Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=client_credentials',
+  });
+  if (!tokenResponse.ok) return false;
+  const tokenData = await tokenResponse.json();
+  const verifyResponse = await fetch(`${baseUrl}/v1/notifications/verify-webhook-signature`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tokenData.access_token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      auth_algo: authAlgo,
+      cert_url: certUrl,
+      transmission_id: transmissionId,
+      transmission_sig: transmissionSig,
+      transmission_time: transmissionTime,
+      webhook_id: webhookId,
+      webhook_event: JSON.parse(rawBody),
+    }),
+  });
+  if (!verifyResponse.ok) return false;
+  const result = await verifyResponse.json();
+  return result.verification_status === 'SUCCESS';
 }
 
 Deno.serve(async (req) => {
@@ -64,13 +93,17 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeadersOpen });
   }
 
+  let supabase: ReturnType<typeof createClient> | null = null;
+  let eventId: string | null = null;
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const rawBody = await req.text();
     const event: PayPalWebhookEvent = JSON.parse(rawBody);
+    eventId = event.id;
+    if (!eventId || !event.event_type || !event.resource) return new Response('Invalid webhook event', { status: 400, headers: corsHeadersOpen });
 
     console.log('PayPal webhook received:', {
       event_type: event.event_type,
@@ -81,40 +114,43 @@ Deno.serve(async (req) => {
     // Load config for verification
     const { data: config } = await supabase
       .from('paypal_config')
-      .select('webhook_id, sandbox_webhook_id, test_mode')
+      .select('webhook_id, sandbox_webhook_id, test_mode, client_id, client_secret, sandbox_client_id, sandbox_client_secret')
       .single();
 
-    if (config) {
-      const isValid = await verifyWebhook(req, config);
-      if (!isValid) {
-        console.error('Webhook verification failed');
-        return new Response('Unauthorized', { status: 401 });
-      }
+    if (!config) {
+      return new Response(JSON.stringify({ error: 'PayPal webhook not configured' }), { status: 503, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
     }
+    const isValid = await verifyWebhook(req, rawBody, config);
+    if (!isValid) {
+      console.error('PayPal webhook verification failed');
+      return new Response('Unauthorized', { status: 401, headers: corsHeadersOpen });
+    }
+
+    const claim = await claimWebhookEvent(supabase, 'paypal', eventId);
+    if (claim === 'duplicate') return jsonResponse({ received: true, duplicate: true });
+    if (claim === 'in_progress') return jsonResponse({ received: false, retry: true }, 503);
 
     // Route based on event type
+    let response: Response;
     if (event.event_type.startsWith('PAYMENT.PAYOUTS-ITEM.')) {
-      return await handlePayoutEvent(supabase, event);
+      response = await handlePayoutEvent(supabase, event);
+    } else if (event.event_type.startsWith('PAYMENT.CAPTURE.') || event.event_type === 'CHECKOUT.ORDER.COMPLETED') {
+      response = await handlePaymentCaptureEvent(supabase, event);
+    } else {
+      console.log(`Unhandled PayPal event type: ${event.event_type}`);
+      await notifyUnknownEvent(event);
+      response = jsonResponse({ received: true, event_type: event.event_type });
     }
-
-    if (event.event_type.startsWith('PAYMENT.CAPTURE.') || event.event_type === 'CHECKOUT.ORDER.COMPLETED') {
-      return await handlePaymentCaptureEvent(supabase, event);
-    }
-
-    // Unknown event — email admin so we know about it
-    console.log(`Unhandled PayPal event type: ${event.event_type}`);
-    await notifyUnknownEvent(event);
-    return new Response(
-      JSON.stringify({ received: true, event_type: event.event_type }),
-      { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
-    );
+    if (response.status >= 400) throw new Error(`PayPal event handler returned ${response.status}`);
+    await completeWebhookEvent(supabase, 'paypal', eventId);
+    return response;
 
   } catch (error) {
     console.error('PayPal webhook error:', error);
-    // Always return 200 to prevent PayPal from retrying
+    if (supabase && eventId) await failWebhookEvent(supabase, 'paypal', eventId, error);
     return new Response(
       JSON.stringify({ received: true, error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 200, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
   }
 });
@@ -434,7 +470,12 @@ async function handlePaymentCaptureEvent(supabase: ReturnType<typeof createClien
       .single();
 
     if (originalLedger) {
-      await supabase.from('ledger').insert({
+      const { data: existingRefund } = await supabase
+        .from('ledger')
+        .select('id')
+        .eq('paypal_transaction_id', `refund-${captureId}`)
+        .maybeSingle();
+      if (!existingRefund) await supabase.from('ledger').insert({
         direction: 'expense',
         category: 'refund',
         amount: refundAmount,

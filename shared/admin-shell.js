@@ -610,12 +610,12 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       }
       transitionBootState('unauthorized');
       renderAccessDenied(state, activeTab);
-    } else if (!state.isAuthenticated && !pageContentShown) {
-      // Only redirect to login if we haven't already shown page content.
-      // Prevents disruptive redirects when Supabase session expires while
-      // cached auth was keeping the page functional.
+    } else if (!state.isAuthenticated) {
+      // Never leave private DOM or polling controls visible after sign-out or
+      // session expiry, even when cached auth had already rendered the page.
+      appContentEl?.replaceChildren();
       transitionBootState('redirecting');
-      window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+      window.location.replace('/login/?redirect=' + encodeURIComponent(window.location.pathname));
     }
   }
 

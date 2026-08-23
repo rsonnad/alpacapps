@@ -13,6 +13,7 @@ echo "=== Instruction Runner Installation ==="
 # 1. Create directory
 echo "[1/6] Creating ${INSTALL_DIR}..."
 mkdir -p "${INSTALL_DIR}"
+chown bugfixer:bugfixer "${INSTALL_DIR}"
 
 # 2. Copy worker files
 echo "[2/6] Copying worker files..."

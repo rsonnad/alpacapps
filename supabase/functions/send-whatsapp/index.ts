@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 // Message types (same as SMS)
 type MessageType =
   | "payment_reminder"
@@ -261,9 +262,23 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    const auth = await requireFunctionRoles(req, supabase, ["admin", "oracle", "staff", "associate", "resident"]);
+    if (auth.response) return auth.response;
     // Parse request
     const body: WhatsAppRequest = await req.json();
     const { type, to, data, person_id } = body;
+
+    const caller = auth.caller;
+    if (caller && !caller.isServiceRole && ['resident', 'associate'].includes(caller.appUser?.role || '')) {
+      if (!person_id || person_id !== caller.appUser?.person_id) {
+        return new Response(JSON.stringify({ error: 'You may only message your own phone' }), { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
+      }
+      const { data: ownPerson } = await supabase.from('people').select('phone').eq('id', person_id).maybeSingle();
+      const digits = (value: string) => String(value || '').replace(/\D/g, '').slice(-10);
+      if (!ownPerson?.phone || digits(ownPerson.phone) !== digits(to)) {
+        return new Response(JSON.stringify({ error: 'Recipient does not match your profile' }), { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
+      }
+    }
 
     if (!type || !to || !data) {
       return new Response(
@@ -439,7 +454,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error:", error.message, error.stack);
+    console.error("Error:", error instanceof Error ? error.message : error, error instanceof Error ? error.stack : undefined);
     return new Response(JSON.stringify({ error: "Internal error processing whatsapp request" }), {
       status: 500,
       headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },

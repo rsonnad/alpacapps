@@ -1,5 +1,6 @@
 import Foundation
 import AuthenticationServices
+import Observation
 
 @Observable
 final class AuthService {

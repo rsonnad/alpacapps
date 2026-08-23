@@ -31,7 +31,7 @@ export async function loadVehicles() {
 export async function loadAccounts() {
   const { data, error } = await supabase
     .from('tesla_accounts')
-    .select('id, owner_name, tesla_email, is_active, last_error, refresh_token, updated_at, app_user_id')
+    .select('id, owner_name, tesla_email, is_active, last_error, needs_reauth, token_expires_at, updated_at, app_user_id')
     .order('id', { ascending: true });
 
   if (error) {

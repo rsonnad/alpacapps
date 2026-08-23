@@ -9,6 +9,7 @@
 
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 interface StaffMember {
   role: string;
@@ -41,7 +42,29 @@ Deno.serve(async (req) => {
     }
 
     const payload: NotifyPayload = await req.json();
-    console.log('Event staff notify received:', JSON.stringify(payload));
+    if (!payload.event_request_id || !Array.isArray(payload.staff) || payload.staff.length > 20) {
+      return new Response(JSON.stringify({ error: 'Invalid event staff payload' }), { status: 400, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    }
+    const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const { data: event, error: eventError } = await supabase
+      .from('event_hosting_requests')
+      .select('event_name, event_date, event_start_time, event_end_time, person:person_id(first_name, last_name, email)')
+      .eq('id', payload.event_request_id)
+      .maybeSingle();
+    if (eventError || !event) return new Response(JSON.stringify({ error: 'Event request not found' }), { status: 404, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+    const host = Array.isArray(event.person) ? event.person[0] : event.person;
+    const hostName = `${host?.first_name || ''} ${host?.last_name || ''}`.trim();
+    const canonical = {
+      ...payload,
+      host_name: hostName || 'Event host',
+      host_email: host?.email || '',
+      event_name: event.event_name || 'Event',
+      event_date: event.event_date || '',
+      event_time: [event.event_start_time, event.event_end_time].filter(Boolean).join(' - '),
+      event_location: 'Alpaca Playhouse',
+      staff: payload.staff.filter((member) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(member.email || ''))),
+    } satisfies NotifyPayload;
+    console.log('Event staff notify received:', { event_request_id: canonical.event_request_id, staffCount: canonical.staff.length });
 
     const {
       event_request_id,
@@ -52,7 +75,8 @@ Deno.serve(async (req) => {
       event_time,
       event_location,
       staff,
-    } = payload;
+    } = canonical;
+    const esc = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[ch] || ch);
 
     const ADMIN_EMAIL = 'alpacaplayhouse@gmail.com';
     const results: string[] = [];
@@ -60,11 +84,11 @@ Deno.serve(async (req) => {
     // 1. Send admin notification
     const staffTableRows = staff
       .map(s => `<tr>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">${s.role}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${s.name}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${s.email || 'N/A'}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${s.arrival || 'N/A'}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${s.required}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">${esc(s.role)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${esc(s.name)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${esc(s.email || 'N/A')}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${esc(s.arrival || 'N/A')}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${esc(s.required)}</td>
       </tr>`)
       .join('\n');
 
@@ -85,12 +109,12 @@ Deno.serve(async (req) => {
         subject: `Staff Submitted for ${event_name} by ${host_name}`,
         html: `
           <h2>Event Staff Submitted</h2>
-          <p><strong>${host_name}</strong> (${host_email}) has submitted their staff assignments for the event.</p>
+          <p><strong>${esc(host_name)}</strong> (${esc(host_email)}) has submitted their staff assignments for the event.</p>
           <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0;">
-            <strong>Event:</strong> ${event_name}<br>
-            <strong>Date:</strong> ${event_date}<br>
-            <strong>Time:</strong> ${event_time}<br>
-            <strong>Location:</strong> ${event_location}
+            <strong>Event:</strong> ${esc(event_name)}<br>
+            <strong>Date:</strong> ${esc(event_date)}<br>
+            <strong>Time:</strong> ${esc(event_time)}<br>
+            <strong>Location:</strong> ${esc(event_location)}
           </div>
           <h3>Staff Assignments</h3>
           <table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ddd;">
@@ -149,30 +173,30 @@ Deno.serve(async (req) => {
   </div>
 
   <div style="padding: 24px; background: #f9f9f9;">
-    <p>Hi ${firstName},</p>
-    <p>You've been signed up by <strong>${host_name}</strong> to help staff an event at Alpaca Playhouse. Here are the details:</p>
+    <p>Hi ${esc(firstName)},</p>
+    <p>You've been signed up by <strong>${esc(host_name)}</strong> to help staff an event at Alpaca Playhouse. Here are the details:</p>
 
     <div style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 16px 0;">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
           <td style="padding: 8px 0; color: #666; width: 120px;">Event</td>
-          <td style="padding: 8px 0; font-weight: bold;">${event_name}</td>
+          <td style="padding: 8px 0; font-weight: bold;">${esc(event_name)}</td>
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #666;">Date</td>
-          <td style="padding: 8px 0; font-weight: bold;">${event_date}</td>
+          <td style="padding: 8px 0; font-weight: bold;">${esc(event_date)}</td>
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #666;">Your Role</td>
-          <td style="padding: 8px 0; font-weight: bold; color: #4a6cf7;">${member.role}</td>
+          <td style="padding: 8px 0; font-weight: bold; color: #4a6cf7;">${esc(member.role)}</td>
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #666;">Your Hours</td>
-          <td style="padding: 8px 0; font-weight: bold;">${member.required}</td>
+          <td style="padding: 8px 0; font-weight: bold;">${esc(member.required)}</td>
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #666;">Location</td>
-          <td style="padding: 8px 0; font-weight: bold;">${event_location}</td>
+          <td style="padding: 8px 0; font-weight: bold;">${esc(event_location)}</td>
         </tr>
       </table>
     </div>
@@ -233,7 +257,7 @@ Alpaca Playhouse`,
   } catch (error) {
     console.error('Event staff notify error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }),
       { status: 500, headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } }
     );
   }

@@ -245,7 +245,7 @@ serve(async (req) => {
     const { data: appUser } = await createClient(supabaseUrl, supabaseServiceKey)
       .from('app_users')
       .select('id, role')
-      .eq('supabase_auth_id', user.id)
+      .eq('auth_user_id', user.id)
       .single();
 
     if (!appUser || !['admin', 'oracle'].includes(appUser.role)) {

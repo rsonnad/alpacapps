@@ -648,23 +648,16 @@ async function processFeatureRequest(request) {
   await notifyDiscord(`🔨 **Feature Builder: processing** — "${request.description.substring(0, 150)}" (from ${request.requester_name})`);
 
   try {
-    // 1. Mark as processing
-    await updateProgress(request.id, {
-      status: 'processing',
-      progress_message: 'Pulling latest code...',
-      processing_started_at: new Date().toISOString(),
-    });
-
-    // 2. Pull latest code
+    // 1. Pull latest code
     await gitPull();
 
-    // 3. Mark as building
+    // 2. Mark as building
     await updateProgress(request.id, {
       status: 'building',
       progress_message: 'Claude Code is building your feature...',
     });
 
-    // 4. Run Claude Code
+    // 3. Run Claude Code
     const buildResult = await runClaudeCode(request);
     log('info', 'Claude Code finished', { summary: buildResult.summary.substring(0, 200) });
 
@@ -912,9 +905,17 @@ async function pollForRequests() {
     }
 
     if (requests && requests.length > 0) {
+      const { data: claimed, error: claimError } = await supabase
+        .from('feature_requests')
+        .update({ status: 'processing', progress_message: 'Pulling latest code...', processing_started_at: new Date().toISOString() })
+        .eq('id', requests[0].id)
+        .eq('status', 'pending')
+        .select()
+        .maybeSingle();
+      if (claimError || !claimed) return;
       isProcessing = true;
       try {
-        await processFeatureRequest(requests[0]);
+        await processFeatureRequest(claimed);
       } finally {
         isProcessing = false;
       }

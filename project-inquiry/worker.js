@@ -403,16 +403,6 @@ async function processJob(job) {
     image_url: job.image_url?.substring(0, 80),
   });
 
-  // Mark as processing
-  await supabase
-    .from('project_inquiries')
-    .update({
-      status: 'processing',
-      started_at: new Date().toISOString(),
-      attempt_count: (job.attempt_count || 0) + 1,
-    })
-    .eq('id', job.id);
-
   try {
     // Download image as base64 for Gemini
     log('info', 'Downloading image...');
@@ -470,8 +460,16 @@ async function pollForJobs() {
 
     if (!jobs || jobs.length === 0) return;
 
+    const { data: claimed, error: claimError } = await supabase
+      .from('project_inquiries')
+      .update({ status: 'processing', started_at: new Date().toISOString(), attempt_count: (jobs[0].attempt_count || 0) + 1 })
+      .eq('id', jobs[0].id)
+      .eq('status', 'pending')
+      .select()
+      .maybeSingle();
+    if (claimError || !claimed) return;
     isProcessing = true;
-    await processJob(jobs[0]);
+    await processJob(claimed);
   } catch (err) {
     log('error', 'Poll loop error', { error: err.message });
   } finally {

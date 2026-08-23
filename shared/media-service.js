@@ -1530,7 +1530,7 @@ async function getForSpace(spaceId) {
       display_order,
       is_primary,
       media:media_id (
-        id, url, caption, title, media_type, category,
+        id, url, caption, title, media_type, category, is_archived,
         media_tag_assignments ( tag:tag_id ( id, name, color, tag_group ) )
       )
     `)
@@ -1543,7 +1543,7 @@ async function getForSpace(spaceId) {
   }
 
   // Flatten the response
-  return (data || []).map(item => ({
+  return (data || []).filter(item => item.media && !item.media.is_archived).map(item => ({
     ...item.media,
     display_order: item.display_order,
     is_primary: item.is_primary,

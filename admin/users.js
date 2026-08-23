@@ -231,10 +231,10 @@ function renderTypeahead() {
   dropdown.innerHTML = typeaheadFiltered.map((p, i) => `
     <div class="typeahead-item ${i === typeaheadIndex ? 'active' : ''}" data-index="${i}">
       <span>
-        <span class="ta-name">${p.first_name} ${p.last_name}</span>
-        <span class="ta-type">${p.type}</span>
+        <span class="ta-name">${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</span>
+        <span class="ta-type">${escapeHtml(p.type)}</span>
       </span>
-      <span class="ta-email">${p.email}</span>
+      <span class="ta-email">${escapeHtml(p.email)}</span>
     </div>
   `).join('');
 
@@ -244,6 +244,14 @@ function renderTypeahead() {
       selectTypeaheadItem(typeaheadFiltered[parseInt(item.dataset.index)]);
     });
   });
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function jsArg(value) {
+  return escapeHtml(JSON.stringify(String(value ?? '')));
 }
 
 function selectTypeaheadItem(person) {
@@ -963,8 +971,8 @@ function renderInvitations() {
 
           // For prospects: show label or email; hide placeholder emails
           const displayEmail = isProspect
-            ? (token?.label || (inv.email.includes('@noemail.local') ? '—' : inv.email))
-            : (isDemoUser() ? `<span class="demo-redacted">${redactString(inv.email, 'email')}</span>` : inv.email);
+            ? escapeHtml(token?.label || (inv.email.includes('@noemail.local') ? '—' : inv.email))
+            : (isDemoUser() ? `<span class="demo-redacted">${escapeHtml(redactString(inv.email, 'email'))}</span>` : escapeHtml(inv.email));
 
           // For prospects: show link status instead of email status
           let statusHtml;
@@ -992,7 +1000,7 @@ function renderInvitations() {
           return `
             <tr class="${effectiveExpired ? 'expired-row' : ''}">
               <td>${displayEmail}</td>
-              <td><span class="role-badge ${inv.role}">${inv.role}</span></td>
+              <td><span class="role-badge ${escapeHtml(inv.role)}">${escapeHtml(inv.role)}</span></td>
               <td>${statusHtml}</td>
               <td>
                 <span class="${effectiveExpired ? 'expired-text' : ''}">${formatDateAustin(expiresAt, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
@@ -1000,16 +1008,16 @@ function renderInvitations() {
               </td>
               <td class="actions-cell">
                 ${isProspect && token ? `
-                  ${!tokenRevoked && !tokenExpired ? `<button class="btn-secondary btn-small" onclick="copyProspectLink('${token.token}', '${(token.label || 'Prospect').replace(/'/g, "\\'")}', '${inv.email.includes('@noemail.local') ? '' : inv.email.replace(/'/g, "\\'")}')" title="Copy invitation text">Copy</button>` : ''}
-                  ${!tokenRevoked ? `<button class="btn-danger btn-small" onclick="revokeProspectToken('${token.id}', '${inv.id}')">Revoke</button>` : ''}
+                  ${!tokenRevoked && !tokenExpired ? `<button class="btn-secondary btn-small" onclick="copyProspectLink(${jsArg(token.token)}, ${jsArg(token.label || 'Prospect')}, ${jsArg(inv.email.includes('@noemail.local') ? '' : inv.email)})" title="Copy invitation text">Copy</button>` : ''}
+                  ${!tokenRevoked ? `<button class="btn-danger btn-small" onclick="revokeProspectToken(${jsArg(token.id)}, ${jsArg(inv.id)})">Revoke</button>` : ''}
                 ` : `
-                  <button class="btn-secondary btn-small" onclick="resendInvitation('${inv.id}')" title="Resend invitation email">
+                  <button class="btn-secondary btn-small" onclick="resendInvitation(${jsArg(inv.id)})" title="Resend invitation email">
                     ${isExpired ? 'Resend & Extend' : 'Resend'}
                   </button>
-                  <button class="btn-text" onclick="showInvitationModal('${inv.email}', '${inv.role}')" title="Copy invite text">
+                  <button class="btn-text" onclick="showInvitationModal(${jsArg(inv.email)}, ${jsArg(inv.role)})" title="Copy invite text">
                     Copy
                   </button>
-                  <button class="btn-danger btn-small" onclick="revokeInvitation('${inv.id}')">Revoke</button>
+                  <button class="btn-danger btn-small" onclick="revokeInvitation(${jsArg(inv.id)})">Revoke</button>
                 `}
               </td>
             </tr>
@@ -1080,16 +1088,16 @@ function renderUsers() {
           return `
             <tr>
               <td>
-                <span class="${isDemoUser() ? 'demo-redacted' : ''}">${displayName}</span>
+                <span class="${isDemoUser() ? 'demo-redacted' : ''}">${escapeHtml(displayName)}</span>
                 ${isCurrentUser ? '<span class="you-tag">You</span>' : ''}
               </td>
-              <td>${isDemoUser() ? `<span class="demo-redacted">${redactString(u.email, 'email')}</span>` : u.email}${u.contact_email && u.contact_email !== u.email ? `<br><span style="font-size:0.75rem;color:var(--text-muted)">contact: ${isDemoUser() ? `<span class="demo-redacted">${redactString(u.contact_email, 'email')}</span>` : u.contact_email}</span>` : ''}</td>
+              <td>${isDemoUser() ? `<span class="demo-redacted">${escapeHtml(redactString(u.email, 'email'))}</span>` : escapeHtml(u.email)}${u.contact_email && u.contact_email !== u.email ? `<br><span style="font-size:0.75rem;color:var(--text-muted)">contact: ${isDemoUser() ? `<span class="demo-redacted">${escapeHtml(redactString(u.contact_email, 'email'))}</span>` : escapeHtml(u.contact_email)}</span>` : ''}</td>
               <td>
                 <select
                   class="role-select"
-                  data-user-id="${u.id}"
+                  data-user-id="${escapeHtml(u.id)}"
                   ${isCurrentUser || isDemoUser() ? 'disabled' : ''}
-                  onchange="updateUserRole('${u.id}', this.value)"
+                  onchange="updateUserRole(${jsArg(u.id)}, this.value)"
                 >
                   <option value="prospect" ${u.role === 'prospect' ? 'selected' : ''}>Prospect</option>
                   <option value="public" ${u.role === 'public' ? 'selected' : ''}>Public</option>
@@ -1103,27 +1111,27 @@ function renderUsers() {
               </td>
               <td>
                 <button class="residency-toggle ${isHere ? 'is-here' : ''} ${isOverride ? 'manual' : ''}"
-                  onclick="toggleCurrentResident('${u.id}')"
-                  title="${overrideTitle}">
+                  onclick="toggleCurrentResident(${jsArg(u.id)})"
+                  title="${escapeHtml(overrideTitle)}">
                   ${isHere ? '&#127968;' : '&mdash;'}${isOverride ? ' &#128274;' : ''}
                 </button>
               </td>
               <td class="person-cell">
                 ${u.person_id
-                  ? `<span class="person-link ${isDemoUser() ? 'demo-redacted' : ''}" title="Click to unlink">${personName}</span>
-                     ${isDemoUser() ? '' : `<button class="btn-unlink" onclick="unlinkPerson('${u.id}')" title="Unlink person">&times;</button>`}`
-                  : (isDemoUser() ? '—' : `<button class="btn-text btn-small" onclick="showLinkPersonModal('${u.id}', '${u.email}')">Link</button>`)
+                  ? `<span class="person-link ${isDemoUser() ? 'demo-redacted' : ''}" title="Click to unlink">${escapeHtml(personName)}</span>
+                     ${isDemoUser() ? '' : `<button class="btn-unlink" onclick="unlinkPerson(${jsArg(u.id)})" title="Unlink person">&times;</button>`}`
+                  : (isDemoUser() ? '—' : `<button class="btn-text btn-small" onclick="showLinkPersonModal(${jsArg(u.id)}, ${jsArg(u.email)})">Link</button>`)
                 }
               </td>
               <td>${u.last_login_at ? formatDateAustin(u.last_login_at, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}</td>
               <td>
                 ${hasPermission('manage_permissions') && !isCurrentUser
-                  ? `<button class="btn-secondary btn-small" onclick="showPermissionsModal('${u.id}')" style="margin-right:0.25rem;">Permissions</button>`
+                  ? `<button class="btn-secondary btn-small" onclick="showPermissionsModal(${jsArg(u.id)})" style="margin-right:0.25rem;">Permissions</button>`
                   : ''
                 }
                 ${isCurrentUser
                   ? ''
-                  : `<button class="btn-danger btn-small" onclick="removeUser('${u.id}')" title="Remove user">&times;</button>`
+                  : `<button class="btn-danger btn-small" onclick="removeUser(${jsArg(u.id)})" title="Remove user">&times;</button>`
                 }
               </td>
             </tr>

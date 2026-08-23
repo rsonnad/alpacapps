@@ -422,7 +422,7 @@
       </details>
 
       <!-- Next Phase: Building Permit -->
-      <a href="building-permit.html" style="display:flex; align-items:center; gap:0.75rem; padding:1rem 1.25rem; background:#fff; border:2px solid #0d9488; border-radius:var(--radius); text-decoration:none; margin-top:1.25rem; transition:background 0.15s;" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='#fff'">
+      <a href="/jackie/pages/permittingplan/building-permit.html" style="display:flex; align-items:center; gap:0.75rem; padding:1rem 1.25rem; background:#fff; border:2px solid #0d9488; border-radius:var(--radius); text-decoration:none; margin-top:1.25rem; transition:background 0.15s;" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='#fff'">
         <div style="width:40px; height:40px; background:#0d9488; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </div>
@@ -484,7 +484,7 @@
         <div class="permit-stat"><div class="label">In Progress</div><div class="value" style="color:#b45309">${inProg}</div></div>
         <div class="permit-stat"><div class="label">Blocked</div><div class="value blocked">${blocked}</div></div>
         <!-- ⚠️ KEEP: Est. Cost must link to cost-estimate-breakdown.html — do NOT remove this link -->
-        <div class="permit-stat"><div class="label">Est. Cost</div><div class="value"><a href="cost-estimate-breakdown.html" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></div></div>`;
+        <div class="permit-stat"><div class="label">Est. Cost</div><div class="value"><a href="/jackie/pages/permittingplan/cost-estimate-breakdown.html" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></div></div>`;
     }
 
     function renderReadinessBar() {
@@ -686,7 +686,7 @@
           }).join('');
       // A6: add direct links to local development description files
       if (taskCode === 'A6') {
-        html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
+        html += `<a href="/jackie/pages/permittingplan/development-description.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📄 View HTML</a>`;
         html += `<a href="development-description.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📥 Download PDF</a>`;
       }
       // A2 & A3: link to Bastrop County GIS Viewer
@@ -711,7 +711,7 @@
         html += `<a href="predev-meeting-email.html" target="_blank" onclick="event.stopPropagation()" style="font-weight:600;color:#0d9488">📧 Draft Email</a>`;
         html += `<a href="${STORAGE_URL}/county-forms/Pre-Development Meeting Guide.pdf" target="_blank" onclick="event.stopPropagation()" style="font-weight:600">📋 Pre-Dev Meeting Guide</a>`;
         html += `<a href="${STORAGE_URL}/permitting-activity/french-drain/French Drain County Development Permit.pdf" target="_blank" onclick="event.stopPropagation()">Prior Permit (French Drain)</a>`;
-        html += `<a href="development-description.html" target="_blank" onclick="event.stopPropagation()">📄 Dev Description</a>`;
+        html += `<a href="/jackie/pages/permittingplan/development-description.html" target="_blank" onclick="event.stopPropagation()">📄 Dev Description</a>`;
         html += `<a href="siteplan.html" target="_blank" onclick="event.stopPropagation()">🗺️ Site Plan</a>`;
       }
       // A5: Attend pre-dev meeting — guide + lodging reqs + priority list
@@ -866,7 +866,7 @@
       const est = tasks.reduce((s, t) => s + (parseFloat(t.cost_estimate) || 0), 0);
       const act = tasks.reduce((s, t) => s + (parseFloat(t.actual_cost) || 0), 0);
       el.innerHTML = `<div class="cost-summary">
-        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value"><a href="cost-estimate-breakdown.html" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></span></div>
+        <div class="cost-item"><span class="cost-label">Estimated Total:</span><span class="cost-value"><a href="/jackie/pages/permittingplan/cost-estimate-breakdown.html" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer">$${est.toLocaleString()}</a></span></div>
         <!-- ⚠️ KEEP: Estimated Total must link to cost-estimate-breakdown.html -->
         <div class="cost-item"><span class="cost-label">Actual Spent:</span><span class="cost-value">$${act.toLocaleString()}</span></div>
       </div>`;

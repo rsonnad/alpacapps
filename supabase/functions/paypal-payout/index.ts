@@ -13,6 +13,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { buildBreakdownByEntryIds } from "../_shared/payout-breakdown.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface PayoutRequest {
   associate_id: string;
   amount: number;           // Amount in dollars (e.g., 150.00)
@@ -127,15 +128,19 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const auth = await requireFunctionRoles(req, supabase, ["admin", "oracle", "staff"]);
+    if (auth.response) return auth.response;
+
     // Parse request body
     const body: PayoutRequest = await req.json();
-    const { associate_id, amount, time_entry_ids, notes, payment_handle } = body;
+    const { associate_id, time_entry_ids, notes } = body;
+    let amount = Number.NaN;
 
     console.log('Processing PayPal payout:', { associate_id, amount, entryCount: time_entry_ids ? time_entry_ids.length : 0 });
 
-    if (!associate_id || !amount || amount <= 0) {
+    if (!associate_id || !Array.isArray(time_entry_ids) || time_entry_ids.length === 0) {
       return new Response(
-        JSON.stringify({ success: false, error: 'associate_id and positive amount are required' }),
+        JSON.stringify({ success: false, error: 'associate_id and time_entry_ids are required' }),
         { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
@@ -182,8 +187,31 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Determine PayPal email
-    const paypalEmail = payment_handle || associate.payment_handle;
+    // The payee and amount are server-derived. Never accept a recipient or amount
+    // override from the request body for a money-moving operation.
+    const uniqueEntryIds = [...new Set(time_entry_ids)].filter((id): id is string => typeof id === 'string' && id.length > 0);
+    const { data: entries } = await supabase
+      .from('time_entries')
+      .select('id, associate_id, clock_in, clock_out, is_paid')
+      .in('id', uniqueEntryIds)
+      .eq('associate_id', associate_id);
+    if (!entries || entries.length !== uniqueEntryIds.length || entries.some((entry: any) => entry.is_paid || !entry.clock_out)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Time entries are missing, unpaid status is invalid, or belong to another associate' }),
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+    const hourlyRate = parseFloat(associate.hourly_rate as any) || 0;
+    const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, hourlyRate);
+    amount = breakdown.totalAmount;
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'No payable amount could be derived from the selected time entries' }),
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const paypalEmail = associate.payment_handle;
     if (!paypalEmail) {
       return new Response(
         JSON.stringify({ success: false, error: 'No PayPal email configured for this associate. Update their payment info first.' }),
@@ -197,7 +225,8 @@ Deno.serve(async (req) => {
     const personId = associate.app_user?.person_id || null;
 
     // Generate unique batch ID
-    const senderBatchId = `APC-${Date.now()}-${associate_id.slice(0, 8)}`;
+    const requestedIdempotencyKey = req.headers.get('Idempotency-Key')?.trim();
+    const senderBatchId = requestedIdempotencyKey || `APC-${[...uniqueEntryIds].sort().join('-').slice(0, 80)}`;
 
     // Test mode: log but don't call PayPal
     if (config.test_mode) {
@@ -219,7 +248,7 @@ Deno.serve(async (req) => {
           payment_handle: paypalEmail,
           external_payout_id: `TEST-${senderBatchId}`,
           status: 'completed',
-          time_entry_ids: time_entry_ids || [],
+          time_entry_ids: uniqueEntryIds,
           notes: `[TEST MODE] ${notes || ''}`.trim(),
           is_test: true,
         })
@@ -290,7 +319,7 @@ Deno.serve(async (req) => {
         external_payout_id: result.batch_id,
         external_item_id: result.payout_item_id,
         status: 'processing',
-        time_entry_ids: time_entry_ids || [],
+        time_entry_ids: uniqueEntryIds,
         notes: notes || null,
         is_test: false,
       })
@@ -348,7 +377,7 @@ Deno.serve(async (req) => {
         // PayPal payouts settle within ~30 minutes — same-day ETA
         const expectedDepositDate = `Today (${today})`;
         const rate = parseFloat(associate.hourly_rate as any) || 0;
-        const breakdown = await buildBreakdownByEntryIds(supabase, time_entry_ids || [], rate);
+        const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, rate);
         await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: 'POST',
           headers: {

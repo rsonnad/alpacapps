@@ -39,6 +39,10 @@ function log(level, msg, data = {}) {
 // Conversation History (in-memory, per user)
 // ============================================
 const conversations = new Map();
+const requestWindows = new Map();
+const activeRequests = new Set();
+const REQUEST_WINDOW_MS = 5 * 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 10;
 
 function getHistory(userId) {
   const entry = conversations.get(userId);
@@ -144,8 +148,25 @@ async function handleMessage(message) {
     content = content.replace(/<@!?\d+>/g, '').trim();
   }
   if (!content) return;
+  if (content.length > 4000) {
+    await message.reply({ content: 'Please keep requests under 4,000 characters.', allowedMentions: { repliedUser: false } });
+    return;
+  }
 
   const userId = message.author.id;
+  const now = Date.now();
+  const recent = (requestWindows.get(userId) || []).filter((timestamp) => now - timestamp < REQUEST_WINDOW_MS);
+  if (recent.length >= MAX_REQUESTS_PER_WINDOW) {
+    await message.reply({ content: 'You have reached the PAI rate limit. Please try again in a few minutes.', allowedMentions: { repliedUser: false } });
+    return;
+  }
+  if (activeRequests.has(userId)) {
+    await message.reply({ content: 'I am still working on your previous request. Please wait for that response first.', allowedMentions: { repliedUser: false } });
+    return;
+  }
+  recent.push(now);
+  requestWindows.set(userId, recent);
+  activeRequests.add(userId);
   const userName = message.member?.displayName || message.author.displayName || message.author.username;
 
   log('info', `Message from ${userName}`, {
@@ -189,6 +210,7 @@ async function handleMessage(message) {
     } catch (_) {}
   } finally {
     clearInterval(typingInterval);
+    activeRequests.delete(userId);
   }
 }
 

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 const STRIPE_API_BASE = "https://api.stripe.com/v1";
 
 interface PaymentLinkRequest {
@@ -34,34 +35,14 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verify user
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check role (admin/staff only)
-    const { data: appUser } = await supabase
-      .from("app_users")
-      .select("role")
-      .eq("supabase_auth_id", user.id)
-      .single();
-
-    if (!appUser || !["admin", "staff"].includes(appUser.role)) {
-      return new Response(
-        JSON.stringify({ error: "Admin or staff role required" }),
-        { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
-      );
-    }
+    const auth = await requireFunctionRoles(req, supabase, ["admin", "oracle", "staff"]);
+    if (auth.response) return auth.response;
+    const appUser = auth.caller?.appUser;
 
     const body: PaymentLinkRequest = await req.json();
     const { amount, description, person_id, person_name, person_email, category, assignment_id, metadata } = body;
 
-    if (!amount || !description) {
+    if (!Number.isFinite(amount) || amount < 0.50 || amount > 100_000 || !description || description.length > 500) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: amount, description" }),
         { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
@@ -71,11 +52,13 @@ serve(async (req) => {
     // Get Stripe secret key from DB
     const { data: stripeConfig } = await supabase
       .from("stripe_config")
-      .select("secret_key, is_active, test_mode")
+      .select("secret_key, sandbox_secret_key, is_active, test_mode")
       .eq("id", 1)
       .single();
 
-    if (!stripeConfig?.secret_key || !stripeConfig.is_active) {
+    const activeConfig = stripeConfig;
+    const activeStripeKey = activeConfig?.test_mode ? activeConfig?.sandbox_secret_key : activeConfig?.secret_key;
+    if (!activeConfig || !activeStripeKey || !activeConfig.is_active) {
       return new Response(
         JSON.stringify({ error: "Stripe is not configured or inactive" }),
         { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
@@ -127,7 +110,7 @@ serve(async (req) => {
     const stripeResponse = await fetch(`${STRIPE_API_BASE}/payment_links`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${stripeConfig.secret_key}`,
+        "Authorization": `Bearer ${activeStripeKey}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: params.toString(),
@@ -158,7 +141,7 @@ serve(async (req) => {
         person_name,
         url: stripeResult.url,
       },
-      app_user_id: appUser ? user.id : null,
+          app_user_id: auth.caller?.authUserId || null,
     }).then(() => {});
 
     console.log("Payment link created:", { id: stripeResult.id, url: stripeResult.url, amount });
@@ -175,9 +158,9 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error:", error instanceof Error ? error.message : error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Internal error" }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }

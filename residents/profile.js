@@ -1316,34 +1316,10 @@ async function startTeslaOAuth() {
     // Save form draft to localStorage
     saveVehicleDraft();
 
-    // Create a tesla_accounts row for this user
-    const { data: account, error } = await supabase
-      .from('tesla_accounts')
-      .insert({
-        owner_name: currentUser.display_name || currentUser.email,
-        tesla_email: currentUser.email,
-        app_user_id: currentUser.id,
-        fleet_client_id: '3f53a292-07b8-443f-b86d-e4aedc37ac10',
-        fleet_client_secret: 'ta-secret.TUwH2N+%JPP5!9^3',
-        fleet_api_base: 'https://fleet-api.prd.na.vn.cloud.tesla.com',
-      })
-      .select('id')
-      .single();
-
+    const { data, error } = await supabase.functions.invoke('tesla-oauth-start', { body: {} });
     if (error) throw error;
-
-    // Build Tesla OAuth URL — callback page gets a fresh session from localStorage
-    const state = `profile:${account.id}`;
-    const params = new URLSearchParams({
-      response_type: 'code',
-      client_id: '3f53a292-07b8-443f-b86d-e4aedc37ac10',
-      redirect_uri: 'https://alpacaplayhouse.com/auth/tesla/callback',
-      scope: 'openid offline_access vehicle_device_data vehicle_location vehicle_cmds vehicle_charging_cmds',
-      state,
-      audience: 'https://fleet-api.prd.na.vn.cloud.tesla.com',
-    });
-
-    window.location.href = `https://auth.tesla.com/oauth2/v3/authorize?${params.toString()}`;
+    if (!data?.url) throw new Error('Tesla authorization URL was not returned');
+    window.location.href = data.url;
   } catch (err) {
     console.error('Tesla OAuth start failed:', err);
     showToast('Failed to start Tesla connection: ' + err.message, 'error');
@@ -1403,7 +1379,7 @@ async function loadResidentsList() {
   if (driverSearchCache) return driverSearchCache;
   const { data } = await supabase
     .from('app_users')
-    .select('id, display_name, email, role')
+    .select('id, person_id, display_name, email, role')
     .in('role', ['resident', 'staff', 'admin', 'oracle', 'associate'])
     .neq('id', currentUser.id)
     .order('display_name');
@@ -1427,7 +1403,7 @@ async function showAddDriverDropdown(vehicleId) {
   const vehicle = userVehicles.find(v => v.id === vehicleId);
   const existingDriverIds = new Set((vehicle?.drivers || []).map(d => d.person?.id).filter(Boolean));
 
-  const available = residents.filter(r => !existingDriverIds.has(r.id));
+  const available = residents.filter(r => r.person_id && !existingDriverIds.has(r.person_id));
 
   if (!available.length) {
     dropdown.innerHTML = '<div style="padding:0.5rem;color:var(--text-muted);font-size:0.8rem">No residents available to add</div>';
@@ -1438,7 +1414,7 @@ async function showAddDriverDropdown(vehicleId) {
     <input type="text" class="vehicle-driver-search" placeholder="Search residents..." style="width:100%;margin-bottom:0.25rem">
     <div class="vehicle-driver-results">
       ${available.map(r => `
-        <button class="vehicle-driver-result" data-user-id="${r.id}" data-vehicle-id="${vehicleId}">
+        <button class="vehicle-driver-result" data-user-id="${r.person_id}" data-vehicle-id="${vehicleId}">
           ${escapeAttr(r.display_name || r.email)}
           <span style="color:var(--text-muted);font-size:0.75rem;margin-left:0.25rem">${r.role}</span>
         </button>
@@ -1459,6 +1435,7 @@ async function showAddDriverDropdown(vehicleId) {
 }
 
 async function addDriver(vehicleId, userId) {
+  if (!userId) throw new Error('Selected resident has no linked person profile');
   try {
     const { error } = await supabase
       .from('vehicle_drivers')

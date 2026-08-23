@@ -996,12 +996,12 @@ async function loadInboundSms() {
       const senderName = isDemoUser() ? redactString(rawSender, 'name') : rawSender;
       const time = new Date(msg.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
       return `
-        <div data-action="open-sms" data-person-id="${msg.person_id || ''}" data-from-number="${msg.from_number}">
+        <div data-action="open-sms" data-person-id="${escapeHtml(msg.person_id || '')}" data-from-number="${escapeHtml(msg.from_number || '')}">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <strong style="font-size: 0.85rem;${isDemoUser() ? ' font-family: ui-monospace, monospace; font-weight: 700;' : ''}">${senderName}</strong>
+            <strong style="font-size: 0.85rem;${isDemoUser() ? ' font-family: ui-monospace, monospace; font-weight: 700;' : ''}">${escapeHtml(senderName)}</strong>
             <span class="text-muted" style="font-size: 0.75rem;">${time}</span>
           </div>
-          <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${msg.body}</p>
+          <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(msg.body)}</p>
         </div>
       `;
     }).join('');
@@ -1096,7 +1096,7 @@ async function loadSmsConversation(personId) {
     return `
       <div style="margin-bottom: 0.5rem; text-align: ${isOutbound ? 'right' : 'left'};">
         <div style="display: inline-block; max-width: 80%; padding: 0.5rem 0.75rem; border-radius: 12px; font-size: 0.85rem; background: ${isOutbound ? '#dcf8c6' : '#f0f0f0'}; text-align: left;">
-          ${msg.body}
+          ${escapeHtml(msg.body)}
         </div>
         <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">${time}${statusBadge}</div>
       </div>
@@ -1834,4 +1834,3 @@ function escapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-

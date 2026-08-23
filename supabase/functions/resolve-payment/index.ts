@@ -11,6 +11,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface ResolveRequest {
   pending_id: string;
   person_id?: string;
@@ -42,6 +43,9 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const auth = await requireFunctionRoles(req, supabase, ['admin', 'oracle', 'staff']);
+    if (auth.response) return auth.response;
+
     // Parse request body
     const body: ResolveRequest = await req.json();
     const {
@@ -50,10 +54,11 @@ Deno.serve(async (req) => {
       assignment_id,
       action,
       save_mapping = true,
-      resolved_by = 'admin'
+      resolved_by: _resolvedBy = 'admin'
     } = body;
+    const resolved_by = auth.caller?.appUser?.display_name || 'staff';
 
-    console.log('Resolve payment request:', body);
+    console.log('Resolve payment request:', { pending_id, action, save_mapping });
 
     if (!pending_id) {
       return new Response(
@@ -94,21 +99,43 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (action === 'match' && (!person_id || !assignment_id)) {
+      return new Response(JSON.stringify({ success: false, error: 'person_id and assignment_id are required for match action' }), { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
+    }
+
+    // Claim the pending row before creating any payment or ledger records.
+    // A second click/concurrent worker now receives a conflict instead of
+    // duplicating the financial side effects.
+    const claimedAt = new Date().toISOString();
+    const { data: claimed, error: claimError } = await supabase
+      .from('pending_payments')
+      .update({ resolved_at: claimedAt, resolved_by, resolution: 'processing' })
+      .eq('id', pending_id)
+      .is('resolved_at', null)
+      .select('id')
+      .maybeSingle();
+    if (claimError || !claimed) {
+      return new Response(JSON.stringify({ success: false, error: 'Pending payment is already being resolved' }), { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
+    }
+
     // Handle match action
     if (action === 'match') {
-      if (!person_id || !assignment_id) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'person_id and assignment_id are required for match action'
-          }),
-          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-        );
-      }
-
       // Record the payment
       const paymentDate =
         pending.parsed_date || new Date().toISOString().split('T')[0];
+
+      const { data: assignment } = await supabase
+        .from('assignments')
+        .select('id, person_id')
+        .eq('id', assignment_id)
+        .maybeSingle();
+      if (!assignment || assignment.person_id !== person_id) {
+        await supabase.from('pending_payments').update({ resolved_at: null, resolved_by: null, resolution: null }).eq('id', pending_id).eq('resolution', 'processing');
+        return new Response(
+          JSON.stringify({ success: false, error: 'Assignment does not belong to the selected person' }),
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+        );
+      }
 
       // Map parsed method to valid payment_method_type enum values
       const methodMap: Record<string, string> = {

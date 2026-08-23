@@ -74,7 +74,7 @@ All workers are stateless poll loops. Safe to run on both servers briefly.
 # 1. rsync all worker directories from DO → Hostinger (from local machine)
 for dir in bug-fixer tesla-poller image-gen lg-poller feature-builder pai-discord spirit-whisper portsie-cli project-inquiry sonos-scheduler; do
   ssh -i ~/.ssh/do_bugfixer root@159.89.157.120 "tar czf - /opt/$dir" | \
-    sshpass -p 'C1awHoster(((' ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224 "tar xzf - -C /"
+    ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@93.188.164.224 "tar xzf - -C /" # retrieve password from Bitwarden
 done
 
 # 2. Copy systemd unit files

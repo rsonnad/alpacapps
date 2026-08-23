@@ -194,6 +194,14 @@ export function checkPermission(
   return { allowed: userLevel >= perm.minLevel, permission: perm };
 }
 
+/** Keep user text out of PostgREST's operator grammar when used in .or(). */
+export function safeIlikeText(value: unknown): string {
+  return String(value ?? "")
+    .replace(/[%,()]/g, "")
+    .replace(/\./g, "")
+    .slice(0, 120);
+}
+
 // ─── Smart lookup helpers ───────────────────────────────────────────
 
 /**
@@ -217,11 +225,12 @@ export async function fuzzyPersonLookup(
   if (exact) return exact;
 
   // Try first_name || ' ' || last_name ilike
-  const { data: fullMatch } = await supabase
-    .from("people")
-    .select("id, first_name, last_name, email, phone")
-    .or(`first_name.ilike.%${normalized}%,last_name.ilike.%${normalized}%`)
-    .limit(5);
+  const safeName = safeIlikeText(normalized);
+  const [{ data: firstMatches }, { data: lastMatches }] = await Promise.all([
+    supabase.from("people").select("id, first_name, last_name, email, phone").ilike("first_name", `%${safeName}%`).limit(5),
+    supabase.from("people").select("id, first_name, last_name, email, phone").ilike("last_name", `%${safeName}%`).limit(5),
+  ]);
+  const fullMatch = [...(firstMatches || []), ...(lastMatches || [])].filter((person, index, list) => list.findIndex((p) => p.id === person.id) === index);
 
   if (fullMatch?.length === 1) return fullMatch[0];
   if (fullMatch?.length) {

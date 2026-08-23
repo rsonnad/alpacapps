@@ -92,6 +92,21 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Claim the one-time upload token atomically before accepting the file.
+    const { data: claimedToken, error: claimError } = await supabase
+      .from('upload_tokens')
+      .update({ is_used: true, used_at: new Date().toISOString() })
+      .eq('id', tokenRecord.id)
+      .eq('is_used', false)
+      .select('id')
+      .maybeSingle();
+    if (claimError || !claimedToken) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or already-used upload token' }),
+        { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Determine context: rental applicant (person_id) vs associate (app_user_id)
     const isAssociateContext = !tokenRecord.person_id && !!tokenRecord.app_user_id;
     const person = isAssociateContext

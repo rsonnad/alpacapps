@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
 function jsonResponse(data: any, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -54,7 +55,14 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const body = await req.json();
+    const webhookSecret = Deno.env.get("VAPI_WEBHOOK_SECRET");
+    const suppliedSecret = req.headers.get("x-vapi-secret") || req.headers.get("x-vapi-signature");
+    if (!webhookSecret || !suppliedSecret || !(await timingSafeEqual(suppliedSecret, webhookSecret))) {
+      return jsonResponse({ error: "Invalid webhook authentication" }, 401);
+    }
+    const rawBody = await req.text();
+    if (rawBody.length > 2_000_000) return jsonResponse({ error: "Payload too large" }, 413);
+    const body = JSON.parse(rawBody);
     const messageType = body.message?.type || body.type;
 
     console.log("Vapi webhook received:", messageType);
