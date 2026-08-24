@@ -747,6 +747,129 @@
       margin: 0.35rem 0 0;
     }
 
+    /* --- Intro rolldown: why you'd want this --- */
+    .why {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+    .why > h2 {
+      font-size: 1.45rem;
+      font-weight: 400;
+      line-height: 1.3;
+      margin-bottom: 1.1rem;
+    }
+    .why-item {
+      border-top: 1px solid var(--border);
+      min-width: 0;
+    }
+    .why-item:last-of-type { border-bottom: 1px solid var(--border); }
+    .why-item > summary {
+      display: flex;
+      align-items: baseline;
+      gap: 0.7rem;
+      cursor: pointer;
+      padding: 0.85rem 0.25rem;
+      list-style: none;
+      user-select: none;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+    .why-item > summary::-webkit-details-marker { display: none; }
+    .why-item > summary::after {
+      content: '+';
+      margin-left: auto;
+      padding-left: 0.75rem;
+      color: var(--accent);
+      font-size: 1.15rem;
+      font-weight: 400;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .why-item[open] > summary::after { content: '\2013'; }
+    .why-item > summary:hover { color: var(--accent); }
+    .why-num {
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+      min-width: 1.6rem;
+    }
+    .why-body {
+      padding: 0 0.25rem 1.15rem 2.3rem;
+      font-size: 0.94rem;
+      color: var(--text-muted);
+      min-width: 0;
+    }
+    .why-body p { margin-bottom: 0.7rem; }
+    .why-body p:last-child { margin-bottom: 0; }
+    .why-body strong { color: var(--text); }
+    .why-body ul { margin: 0 0 0.7rem 0; padding-left: 1.2rem; }
+    .why-table-wrap { overflow-x: auto; margin: 0 0 0.85rem; }
+    .why-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 460px;
+      font-size: 0.86rem;
+    }
+    .why-table th, .why-table td {
+      text-align: left;
+      padding: 0.5rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .why-table th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--text-muted);
+    }
+    .why-table td:first-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+    .why-table tr:last-child td { border-bottom: none; }
+    .why-table--self td { background: var(--accent-light); }
+    .why-tool {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.7rem;
+      background: var(--bg-warm);
+      min-width: 0;
+    }
+    .why-tool--self { background: var(--accent-light); border-color: var(--accent); }
+    .why-tool__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.45rem;
+    }
+    .why-tool__name { font-weight: 700; font-size: 0.98rem; color: var(--text); }
+    .why-tool__price {
+      margin-left: auto;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .why-tool p { margin: 0 0 0.35rem; font-size: 0.9rem; }
+    .why-tool p:last-child { margin-bottom: 0; }
+    .why-tool p strong { color: var(--text); }
+    .why-body li { margin-bottom: 0.3rem; }
+    .why-cta {
+      margin-top: 1.35rem;
+      padding-top: 1.15rem;
+      border-top: 1px dashed var(--border);
+      font-size: 0.94rem;
+    }
+    .why-cta p:last-child { margin-bottom: 0; }
+
     /* --- Worker-model section (DeepSeek via OpenRouter) --- */
     .ds-panels {
       display: grid;
@@ -834,7 +957,7 @@
     <div class="hero-text">
       <h1><span>AlpacApps</span> Infra</h1>
       <p><strong>Set up a full-stack freely hosted AI-powered platform in 30 – 90 minutes for most.</strong> Claude walks you through every step &mdash; adapting to your computer, your accounts, and what you want to build. Just install Claude and paste one prompt.</p>
-      <span class="badge">$20 &ndash; $200 / month</span>
+      <span class="badge">$8 &ndash; $200 / month</span>
     </div>
   </div>
 </div>
@@ -852,6 +975,179 @@
       This HTML page is the human-friendly overview. Follow the above for the actual procedure.
     -->
   </div>
+
+  <section class="why">
+    <h2>What is this, what can it do, and why do you want it?</h2>
+    <details class="why-item">
+      <summary><span class="why-num">01</span>So what <em>is</em> it, in plain English?</summary>
+      <div class="why-body">
+        <p>It is a starter kit that gives an AI assistant a real place to work.</p>
+        <p>On its own, a chatbot can only talk. It cannot save anything, cannot put a page on the internet, cannot remember what you did last Tuesday, and cannot touch anything on your computer. Every conversation starts from nothing.</p>
+        <p>This setup hands it the missing pieces: <strong>a database</strong> to remember things, <strong>a website</strong> anyone can visit, <strong>an email sender</strong>, <strong>file storage</strong>, <strong>a login system</strong>, and <strong>a copy of everything on your own machine</strong>. All of it wired together and all of it yours.</p>
+        <p>You do not assemble any of that. You paste one prompt, answer questions in plain language, and the assistant builds it while you watch. Most people are done in 30&ndash;90 minutes.</p>
+      </div>
+    </details>
+
+    <details class="why-item">
+      <summary><span class="why-num">02</span>It works on your computer, not just in a chat window</summary>
+      <div class="why-body">
+        <p>This is the part that surprises people. The assistant is not stuck behind a text box &mdash; it runs <em>on your machine</em>, with your permission, and can act on what it finds there.</p>
+        <ul>
+          <li>Sort out a folder of a thousand unnamed files, and tell you what was in them</li>
+          <li>Read a stack of PDFs, pull out the numbers, and hand you a spreadsheet</li>
+          <li>Watch something on a schedule &mdash; a price, a listing, an inbox &mdash; and email you only when it actually changes</li>
+          <li>Take a screenshot, look at it, and tell you what is wrong</li>
+          <li>Rename, convert, back up, and clean up, in bulk</li>
+        </ul>
+        <p>You approve what it does. It is not running loose &mdash; it asks, you say yes, and it stops when you tell it to.</p>
+      </div>
+    </details>
+
+    <details class="why-item">
+      <summary><span class="why-num">03</span>It builds real, working things &mdash; not drafts of things</summary>
+      <div class="why-body">
+        <p>The output is a live URL, not a suggestion you still have to implement.</p>
+        <ul>
+          <li><strong>Websites and apps</strong> &mdash; a booking page, a shop, a portfolio, a members area, a tool only your team uses</li>
+          <li><strong>Interactive tutorials</strong> &mdash; describe something you are trying to learn and get back a page that teaches it, with working examples you can poke at</li>
+          <li><strong>Small tools that fit exactly you</strong> &mdash; the tracker, calculator, or dashboard nobody sells because you are the only customer</li>
+          <li><strong>Phone apps</strong> &mdash; the same project builds for iPhone and Android when you want it to</li>
+        </ul>
+        <p>Ask for a change and it is live in minutes. That loop &mdash; say it, see it, adjust it &mdash; is the thing that makes people keep going.</p>
+      </div>
+    </details>
+
+    <details class="why-item">
+      <summary><span class="why-num">04</span>It plugs into the services you already use</summary>
+      <div class="why-body">
+        <p>Almost anything with an API can be wired in, and the assistant does the wiring.</p>
+        <ul>
+          <li><strong>Money</strong> &mdash; take payments, send payouts, reconcile what came in</li>
+          <li><strong>Messages</strong> &mdash; email and text that your project sends on its own</li>
+          <li><strong>Documents</strong> &mdash; contracts out for signature, signed copies filed automatically</li>
+          <li><strong>Chat</strong> &mdash; a bot in Discord or Telegram that is genuinely useful, not a toy</li>
+          <li><strong>Your house</strong> &mdash; lights, cameras, sensors, vehicles, even a laser cutter, if that is your life</li>
+        </ul>
+        <p>Each one is a conversation, not a project. You say what you want connected; it handles the keys, the plumbing, and the testing.</p>
+      </div>
+    </details>
+
+    <details class="why-item">
+      <summary><span class="why-num">05</span>One system for work <em>and</em> the rest of your life</summary>
+      <div class="why-body">
+        <p>Most tools force a choice: a work tool, or a personal one. This is neither, because it is not built around a use case &mdash; it is a general workshop.</p>
+        <p>The same setup runs a client invoicing system on Monday and a family photo archive on Saturday. A landlord uses it for leases and maintenance. A teacher uses it for lesson materials and grading. A musician uses it for a tour page and a sample library. Nobody had to pick a plan or find a different product.</p>
+        <p>And because everything lives in one place, the parts start helping each other. The thing you built for work knows about the thing you built for yourself, when you want it to.</p>
+      </div>
+    </details>
+
+    <details class="why-item">
+      <summary><span class="why-num">06</span>What it costs: $8 a month, $9 if you want it cheaper still</summary>
+      <div class="why-body">
+        <p>The infrastructure is genuinely free at the scale most people run at. Hosting, database, file storage, email, and login all sit inside free tiers far larger than a personal project will ever touch. Not a trial &mdash; the normal free plan for each service.</p>
+        <p>So the only thing you actually pay for is the thinking:</p>
+        <div class="why-table-wrap">
+          <table class="why-table">
+            <thead><tr><th>What</th><th>Cost</th><th>Needed?</th></tr></thead>
+            <tbody>
+              <tr><td><a href="https://openai.com/chatgpt/pricing" target="_blank" rel="noopener">ChatGPT Go</a></td><td>$8/mo</td><td>Yes &mdash; this is the whole thing. Flat price, no meter.</td></tr>
+              <tr><td><a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> credit</td><td>~$1/mo</td><td>No. A cost-saver you add later, if ever.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>If you are new, start here and stop reading.</strong> ChatGPT Go at $8 is the gentlest on-ramp: familiar interface, no per-message anxiety, and it includes Codex, which is the part that does the actual building. One setting worth getting right on day one:</p>
+        <ul>
+          <li><strong>Default model: GPT&#8209;5.6 Luna, effort set to <em>high</em>.</strong> Luna is the economical tier of the 5.6 family, and running it at high effort buys noticeably better reasoning for the same token price. Best value setting in the lineup, and a sane default for everything you will do here.</li>
+        </ul>
+        <p><strong>OpenRouter is optional &mdash; skip it until it earns its place.</strong> It is not part of getting started and nothing breaks without it. Its only job is to make heavy months cheaper: you point the boring, repetitive work at a very cheap model instead of spending your ChatGPT allowance on it.</p>
+        <p>The moment to bother is when you start bumping into limits, or notice you are burning good tokens on drudgery &mdash; bulk edits, first drafts, file wrangling. Then add about a dollar of credit and wire in <a href="https://openrouter.ai/deepseek/deepseek-v4-flash" target="_blank" rel="noopener">DeepSeek v4 Flash</a>, which runs around <strong>$0.05 per million input tokens</strong>. A dollar covers more routine work than most people get through in a month. The <a href="#worker-model">worker model step</a> below walks through it whenever you are ready &mdash; day one or month six, it does not matter.</p>
+        <p><strong>Going up instead</strong> is the other direction and most people never need it. Claude or ChatGPT Plus at $20 is smarter on genuinely hard problems; $100&ndash;$200 plans exist for people building heavily all day. Start at $8 and move only if you hit a wall.</p>
+        <p class="small muted" style="font-size:0.8rem;">A custom domain, if you want one, is about $10 a year. Prices checked August 2026.</p>
+      </div>
+    </details>
+
+    <details class="why-item">
+      <summary><span class="why-num">07</span>Aren&rsquo;t there easier tools than this? (Yes &mdash; here they are)</summary>
+      <div class="why-body">
+        <p>Several, and some are excellent. If one of them fits what you want, use it and skip all of this. If one of them is the better fit, that is the right call.</p>
+        <p>Here is who each one is really for.</p>
+
+        <div class="why-tool">
+          <div class="why-tool__head"><span class="why-tool__name"><a href="https://lovable.dev" target="_blank" rel="noopener">Lovable</a></span><span class="why-tool__price">Free to try &middot; $25/mo</span></div>
+          <p><strong>Pick this if</strong> you have never built anything and want the easiest possible start. You type a sentence describing an app, and a working version appears while you watch. No setup, nothing to install.</p>
+          <p><strong>The catch:</strong> the free version only lets you make about five changes a day, which a real project eats through quickly. Your app lives on their site, and you pay every month for as long as you want it to stay up.</p>
+        </div>
+
+        <div class="why-tool">
+          <div class="why-tool__head"><span class="why-tool__name"><a href="https://bolt.new" target="_blank" rel="noopener">Bolt</a></span><span class="why-tool__price">Free to try &middot; $25/mo</span></div>
+          <p><strong>Pick this if</strong> you want a website or web app quickly and do not care how it works underneath. It is fast, and it puts the result online for you straight away.</p>
+          <p><strong>The catch:</strong> websites only &mdash; it cannot help with anything else on your computer. The free monthly allowance disappears fast once you are actually building something.</p>
+        </div>
+
+        <div class="why-tool">
+          <div class="why-tool__head"><span class="why-tool__name"><a href="https://replit.com" target="_blank" rel="noopener">Replit</a></span><span class="why-tool__price">Free to try &middot; $25/mo</span></div>
+          <p><strong>Pick this if</strong> you are curious about how things work and want to look under the hood. It is a full workshop in your browser: the AI builds, and you can read and change everything it wrote.</p>
+          <p><strong>The catch:</strong> more knobs and panels than the others, which is either interesting or intimidating depending on the day. Still their computer, not yours.</p>
+        </div>
+
+        <div class="why-tool">
+          <div class="why-tool__head"><span class="why-tool__name"><a href="https://v0.app" target="_blank" rel="noopener">v0</a></span><span class="why-tool__price">Free to try &middot; $30/person/mo</span></div>
+          <p><strong>Pick this if</strong> looks matter most. It makes the best-looking results of the bunch, and you can click on things and adjust the design by hand instead of describing every tweak.</p>
+          <p><strong>The catch:</strong> it concentrates on the part people see, so anything behind the scenes is more of a struggle. It is also the priciest, and the price is per person.</p>
+        </div>
+
+        <div class="why-tool why-tool--self">
+          <div class="why-tool__head"><span class="why-tool__name">This</span><span class="why-tool__price">$8/mo, everything else free</span></div>
+          <p><strong>Pick this if</strong> you want it to reach your own computer &mdash; your files, your folders, jobs running while you sleep &mdash; and you want to own what you build outright. It also stays cheap no matter how much you use it, and it can add new abilities to itself when you ask.</p>
+          <p><strong>The catch:</strong> about an hour of setting up accounts before anything happens, and a stretch of trial and error after that. Nobody to call when it breaks; you and the assistant work it out.</p>
+        </div>
+
+        <p class="small muted" style="font-size:0.8rem;">Prices checked August 2026 &mdash; worth confirming, they change often.</p>
+        <p><strong>The short version:</strong> those four are a single tab and no setup, and they are the right answer for one app you want today. This one takes longer to start, then keeps going further &mdash; onto your own machine, into your own life, at a price that barely moves.</p>
+      </div>
+    </details>
+
+    <details class="why-item">
+      <summary><span class="why-num">08</span>The hard parts, honestly &mdash; and the good parts</summary>
+      <div class="why-body">
+        <p>Anyone telling you this is effortless is selling something. It is free and optional, so here is the real shape of it.</p>
+        <p><strong>The hard parts</strong></p>
+        <ul>
+          <li><strong>The first hour is admin, not creation.</strong> Accounts, keys, permissions. It is dull, and it is before any of the good part.</li>
+          <li><strong>Things break in unfamiliar ways.</strong> A key pasted into the wrong field, a service that needs a second attempt, something that worked yesterday and needs a nudge today. The assistant diagnoses and fixes it, but you are the one who notices.</li>
+          <li><strong>It is confidently wrong sometimes.</strong> It will state something false in the same tone it states something true. Learning to smell that is a real skill and it takes weeks, not minutes.</li>
+          <li><strong>Nobody is on call.</strong> No support desk. When it is stuck, you and the assistant work it out.</li>
+          <li><strong>Too much freedom is its own problem.</strong> With no product boundaries, it is easy to build four half-things instead of one finished one.</li>
+        </ul>
+        <p><strong>The good parts</strong></p>
+        <ul>
+          <li><strong>The first time it works is genuinely startling.</strong> You describe a thing that has never existed, and a few minutes later it is at a URL you can send to someone.</li>
+          <li><strong>The gap between annoyance and fix collapses.</strong> Something bugs you on a Tuesday; it is fixed on Tuesday. That loop changes what you bother to want.</li>
+          <li><strong>It fits <em>you</em>, precisely.</strong> Not a product built for the average of a million people &mdash; the tool shaped around your actual situation, which nobody would ever sell.</li>
+          <li><strong>It compounds.</strong> Every piece makes the next one easier. Month six looks nothing like week one, and you built the difference.</li>
+          <li><strong>The stuck moments teach the most.</strong> Fixing it yourself, with help, is where the understanding actually lands. That is the part that transfers everywhere else.</li>
+        </ul>
+        <p>If the hard parts read as dealbreakers, one of the tools above is a better use of your afternoon &mdash; genuinely. If they read as a fair price, you will probably like this a lot.</p>
+      </div>
+    </details>
+
+    <details class="why-item">
+      <summary><span class="why-num">09</span>Why it makes you unusually good at AI, quickly</summary>
+      <div class="why-body">
+        <p>Here is the uncomfortable truth about how most people use AI: they type into a box and read what comes back. That is it. It is genuinely useful, and it is also a rounding error next to what these systems can do.</p>
+        <p>The gap is not intelligence or credentials. It is whether you have ever given an AI real work &mdash; access to files, permission to act, a job that ends in something existing that did not exist before. Almost nobody has, because setting that up has been the hard part. That is the entire barrier this removes.</p>
+        <p>Do it once and you cross a line most AI users never cross. Not because you learned to code, but because you now know, from experience, what to hand off and what to keep, where these systems are brilliant and where they confidently get it wrong, and how to check their work. You cannot get that from reading about it.</p>
+        <p><strong>How rare is that, really?</strong> One percent of eight billion people is eighty million &mdash; a crowd, not a club. Nobody keeps a real leaderboard, so treat this as an argument rather than a measurement. But the number of people who have actually run an AI agent with permission to touch their own systems is small, and the number who do it routinely is smaller. Building one working thing puts you in it.</p>
+        <p>The skill compounds too. Everything you learn here transfers to whatever tool comes next, because the lesson is not a product &mdash; it is how to work <em>with</em> a capable machine instead of just talking to one.</p>
+      </div>
+    </details>
+
+    <div class="why-cta">
+      <p><strong>Who this is actually for:</strong> people who want to own the thing they build, are curious enough to enjoy a puzzle, and are fine with an hour of admin before the good part. Not because it is hard &mdash; because it is <em>fiddly</em>, and that is a different tolerance.</p>
+      <p style="margin-top:0.7rem;"><strong>Who should skip it:</strong> if you want one app by this afternoon, <a href="https://lovable.dev" target="_blank" rel="noopener">Lovable</a> or <a href="https://bolt.new" target="_blank" rel="noopener">Bolt</a> will get you there faster and you will be happier.</p>
+      <p style="margin-top:0.7rem;">Still interested? Start with the <a href="/infra/prestart/">before-you-start homework</a> &mdash; it gets the accounts out of the way first, at your own pace, and costs nothing to abandon halfway.</p>
+    </div>
+  </section>
 
   <div class="setup-step" style="border-color: var(--accent); border-width: 2px;">
     <h2>
