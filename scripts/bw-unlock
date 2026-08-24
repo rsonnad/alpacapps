@@ -11,9 +11,8 @@
 #
 # First run walks you through storing the password. After that it is silent.
 #
-# Keystore used:
-#   macOS  — Keychain (service "bitwarden-cli", account = your Bitwarden email)
-#   Linux  — libsecret via secret-tool (same service/account naming)
+# Keystore: macOS Keychain (service "bitwarden-cli", account = your Bitwarden
+# email). macOS only — on Windows use scripts/bw-unlock.ps1.
 #
 # SECURITY: the master password is recoverable by anything running as your user
 # on this machine. That is the trade for unattended agent access. Do not do this
@@ -25,6 +24,11 @@ SERVICE="bitwarden-cli"
 EMAIL_FILE="${HOME}/.config/bw-unlock/email"
 
 err() { echo "bw-unlock: $*" >&2; }
+
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  err "macOS only. On Windows use scripts/bw-unlock.ps1"
+  exit 1
+fi
 
 command -v bw >/dev/null 2>&1 || {
   err "Bitwarden CLI not found. Install it: brew install bitwarden-cli (or npm i -g @bitwarden/cli)"
@@ -58,15 +62,7 @@ fi
 
 # --- read the master password from the OS keystore ---
 read_password() {
-  case "$(uname -s)" in
-    Darwin)
-      security find-generic-password -a "$BW_EMAIL" -s "$SERVICE" -w 2>/dev/null || true ;;
-    Linux)
-      command -v secret-tool >/dev/null 2>&1 &&
-        secret-tool lookup service "$SERVICE" account "$BW_EMAIL" 2>/dev/null || true ;;
-    *)
-      err "Unsupported OS. On Windows use scripts/bw-unlock.ps1"; exit 1 ;;
-  esac
+  security find-generic-password -a "$BW_EMAIL" -s "$SERVICE" -w 2>/dev/null || true
 }
 
 store_password() {
@@ -84,12 +80,7 @@ store_password() {
     exit 1
   fi
 
-  case "$(uname -s)" in
-    Darwin)
-      security add-generic-password -a "$BW_EMAIL" -s "$SERVICE" -w "$pw" -U ;;
-    Linux)
-      printf '%s' "$pw" | secret-tool store --label="Bitwarden CLI" service "$SERVICE" account "$BW_EMAIL" ;;
-  esac
+  security add-generic-password -a "$BW_EMAIL" -s "$SERVICE" -w "$pw" -U
   mkdir -p "$(dirname "$EMAIL_FILE")" && printf '%s' "$BW_EMAIL" > "$EMAIL_FILE"
   err "Stored. Future unlocks are silent."
 }
@@ -104,7 +95,7 @@ fi
 SESSION="$(BW_PASSWORD="$PW" bw unlock --passwordenv BW_PASSWORD --raw 2>/dev/null || true)"
 if [[ -z "$SESSION" ]]; then
   err "Unlock failed. If you changed your master password, re-store it:"
-  err "  security delete-generic-password -a \"$BW_EMAIL\" -s \"$SERVICE\"   # macOS"
+  err "  security delete-generic-password -a \"$BW_EMAIL\" -s \"$SERVICE\""
   err "  then run this script again."
   exit 1
 fi

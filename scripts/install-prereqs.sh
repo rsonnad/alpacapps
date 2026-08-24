@@ -34,7 +34,7 @@ echo ""
 # --- Check OS ---
 OS="$(uname -s)"
 if [[ "$OS" != "Darwin" ]]; then
-  fail "This script is for macOS only. For Linux, install: git, gh, node, supabase CLI, wrangler, libpq."
+  fail "macOS only. On Windows use scripts/install-prereqs.ps1."
   exit 1
 fi
 
