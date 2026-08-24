@@ -16,6 +16,15 @@
 #
 # SECURITY: anything running as your user on this machine can still decrypt it.
 # That is the trade for unattended agent access. Do not do this on a shared box.
+#
+# STATUS: parse-checked and logic-tested under pwsh 7.6 on macOS. Read-StoredPassword
+# is verified for the missing-file, round-trip, and corrupt-blob cases. NOT yet run
+# on real Windows: DPAPI encryption and the icacls lock-down are Windows-only paths
+# and remain unproven. If it misbehaves, fall back to unlocking by hand:
+#   $env:BW_SESSION = bw unlock --raw
+#
+# Note: use PtrToStringBSTR, not PtrToStringAuto — Auto resolves to ANSI off-Windows
+# and truncates the recovered password to its first character.
 
 [CmdletBinding()]
 param()
@@ -44,7 +53,7 @@ function Read-StoredPassword {
     try {
         $secure = Get-Content $StoreFile | ConvertTo-SecureString
         $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-        try   { return [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) }
+        try   { return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
         finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
     } catch { return $null }
 }
@@ -58,8 +67,8 @@ function Store-Password {
     $b1 = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($s1)
     $b2 = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($s2)
     try {
-        $p1 = [Runtime.InteropServices.Marshal]::PtrToStringAuto($b1)
-        $p2 = [Runtime.InteropServices.Marshal]::PtrToStringAuto($b2)
+        $p1 = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($b1)
+        $p2 = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($b2)
     } finally {
         [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($b1)
         [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($b2)

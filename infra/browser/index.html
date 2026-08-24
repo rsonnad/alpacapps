@@ -1371,6 +1371,7 @@ export BW_SESSION=$(scripts/bw-unlock)</div>
         <div class="prompt-block" id="bw-win"><button class="copy-btn" onclick="copyById('bw-win')">Copy</button>bw login
 $env:BW_SESSION = &amp; .\scripts\bw-unlock.ps1</div>
         <p style="font-size:0.82rem;color:var(--text-muted);margin:0.5rem 0 0;">Add the second line to your PowerShell profile (<code>$PROFILE</code>) to make it durable.</p>
+        <p style="font-size:0.82rem;color:var(--warning-border);margin:0.5rem 0 0;"><strong>Not yet run on Windows.</strong> The script parses cleanly and its store/read logic is tested, but the DPAPI encryption and the <code>icacls</code> lock-down are Windows-only and unproven. If it fails, unlock by hand with <code>$env:BW_SESSION = bw unlock --raw</code> and tell us what broke.</p>
       </div>
     </div>
 
