@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AlpacApps Infra — Set Up Your AI-Powered Platform</title>
-  <meta name="description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Claude walks you through every step.">
-  <meta property="og:title" content="AlpacApps Infra — Set Up Your AI-Powered Platform">
-  <meta property="og:description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Claude walks you through every step.">
+  <title>AlpacApps Infra — Browser-Control Setup (Experimental)</title>
+  <meta name="description" content="Experimental: let the AI drive the dashboards it cannot reach by API. Untested — may or may not work.">
+  <meta property="og:title" content="AlpacApps Infra — Browser-Control Setup (Experimental)">
+  <meta property="og:description" content="Experimental: let the AI drive the dashboards it cannot reach by API. Untested — may or may not work.">
   <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/jpeg">
-  <meta property="og:url" content="https://alpacaplayhouse.com/infra/">
+  <meta property="og:url" content="https://alpacaplayhouse.com/infra/browser/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AlpacApps">
   <meta property="og:locale" content="en_US">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AlpacApps Infra — Set Up Your AI-Powered Platform">
-  <meta name="twitter:description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Claude walks you through every step.">
+  <meta name="twitter:title" content="AlpacApps Infra — Browser-Control Setup (Experimental)">
+  <meta name="twitter:description" content="Experimental: let the AI drive the dashboards it cannot reach by API. Untested — may or may not work.">
   <meta name="twitter:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
   <meta name="twitter:image:alt" content="AlpacApps Infra — AI-powered platform setup wizard">
   <!-- LLM INSTRUCTION: This page is the SETUP guide for new projects.
@@ -946,7 +946,7 @@
 </head>
 <body>
 
-<span data-site-version style="display:none;">v260824.05 10:30a</span>
+<span data-site-version style="display:none;">v260824.04 10:26a</span>
 <div id="siteHeader"></div>
 
 <!-- ⚠️ HERO BANNER — Intentionally designed as full-width banner card.
@@ -955,10 +955,18 @@
   <div class="hero-card">
     <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="AlpacApps — AI-powered platform with alpacas" class="hero-image" width="1509" height="475">
     <div class="hero-text">
-      <h1><span>AlpacApps</span> Infra</h1>
-      <p><strong>Set up a full-stack freely hosted AI-powered platform in about two hours for most.</strong> Claude walks you through every step &mdash; adapting to your computer, your accounts, and what you want to build. Just install Claude and paste one prompt.</p>
-      <span class="badge">$8 &ndash; $200 / month</span>
+      <h1><span>AlpacApps</span> Infra <span style="font-size:0.5em;color:var(--warning-border);">&mdash; browser control</span></h1>
+      <p><strong>Same setup, but the AI drives the dashboards it cannot reach through an API.</strong> Everything that has a working API still runs as a normal command &mdash; the browser is used only for the handful of screens, chiefly Google&rsquo;s OAuth consent screen, that no API can configure.</p>
+      <span class="badge" style="background:var(--warning-bg);color:var(--warning-border);border-color:var(--warning-border);">Experimental &mdash; not tested</span>
     </div>
+  </div>
+</div>
+
+<div class="container" style="padding-bottom:0;">
+  <div style="border:2px solid var(--warning-border); background:var(--warning-bg); border-radius:12px; padding:1.25rem 1.5rem; margin-bottom:1.25rem;">
+    <p style="margin:0 0 0.5rem; font-weight:700; font-size:1.05rem;">&#9888;&#65039; Experimental &mdash; this may or may not work. Not tested.</p>
+    <p style="margin:0 0 0.5rem; font-size:0.92rem;">Nobody has run this page end to end. It is written from what the tools claim they can do, not from a completed setup. Expect it to stall somewhere, and expect to finish that part by hand.</p>
+    <p style="margin:0; font-size:0.92rem;"><strong>If you want the path that is known to work, use the <a href="/infra/">normal setup</a>.</strong> Come back here if the Google Cloud console defeats you &mdash; that is the step this exists for.</p>
   </div>
 </div>
 
@@ -1168,26 +1176,37 @@
     </p>
   </div>
 
-  <div style="border:1px dashed var(--warning-border); background:var(--bg); border-radius:12px; padding:1.1rem 1.35rem; margin-bottom:1.25rem;">
-    <p style="margin:0 0 0.4rem; font-weight:700; font-size:0.98rem;">Dreading the Google Cloud console?</p>
-    <p style="margin:0 0 0.6rem; font-size:0.9rem; color:var(--text-muted);">There is an <strong>experimental</strong> version of this setup where the AI drives your browser through the dashboard screens that have no API &mdash; the Google OAuth consent screen above all. It is untested and may not work, but if the console is the part that puts you off, it is worth a look.</p>
-    <a href="/infra/browser/" style="font-size:0.9rem; font-weight:600;">Try the browser-control setup (experimental) &rarr;</a>
-  </div>
-
   <!-- STEP 0: Screenshot setup -->
   <div class="setup-step" style="border-left: 3px solid var(--success);">
     <h2>
       <span class="step-num" style="background: var(--success);">0</span>
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" stroke="#6b8e5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Set up screenshots first
-      <span class="step-time">3 min</span>
+      Give the AI control of your browser
+      <span class="step-time">5 min</span>
     </h2>
-    <p>Do this <strong>before GitHub or any other setup</strong>. You will use screenshots to show the coding agent where you are when a website needs a click or confirmation.</p>
+    <p>This is the one thing this page adds. Everything else is the same setup as normal &mdash; but before you start, the AI needs to be able to see and click inside a browser where <strong>you</strong> are already signed in.</p>
+
+    <div class="ds-note ds-note--warn">
+      <p style="margin:0 0 0.5rem;"><strong>You sign in. Never the AI.</strong> Log into Google, Cloudflare and Supabase yourself, in your own browser, with your own password and 2FA. Then hand over the already-signed-in tab. Do not type a password into a chat window, and do not ask the AI to create accounts for you.</p>
+      <p style="margin:0;">Keep watching the screen. You still approve anything that spends money, accepts terms, or publishes something.</p>
+    </div>
+
+    <h3 style="font-size:0.95rem;font-weight:700;margin:1.25rem 0 0.5rem;">If you are using Claude</h3>
     <ul>
-      <li><strong>Mac:</strong> Install <a href="https://shottr.cc" target="_blank" rel="noopener">Shottr</a>. Turn on Launch at Login and Copy to Clipboard after saving; choose a known screenshot folder and assign a global fullscreen or area shortcut.</li>
-      <li><strong>Windows:</strong> Install <a href="https://getsharex.com/" target="_blank" rel="noopener">ShareX</a>. Set a fullscreen or region shortcut, a known screenshot folder, and Copy to Clipboard.</li>
+      <li>Install <a href="https://claude.ai/chrome" target="_blank" rel="noopener">Claude for Chrome</a>. It is in beta and needs a <strong>paid Claude plan</strong> &mdash; Pro at $20/mo is the cheapest that qualifies.</li>
+      <li>It works in <strong>Google Chrome only</strong>. Not Safari, Arc, Firefox or Edge.</li>
+      <li>Grant it permission per site as it asks. Start it on the tab you have already signed into.</li>
     </ul>
-    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0;"><strong>Test it:</strong> take one screenshot and paste it into your Code-mode conversation. The agent installs Git, GitHub CLI, Node.js, Bitwarden CLI, and the remaining command-line tools immediately afterward.</p>
+
+    <h3 style="font-size:0.95rem;font-weight:700;margin:1.25rem 0 0.5rem;">If you are using ChatGPT</h3>
+    <ul>
+      <li>Browser control lives inside <strong>ChatGPT and Codex</strong> directly. <a href="https://help.openai.com/en/articles/20001371-evolving-atlas-into-chatgpt-for-browser-based-agentic-work" target="_blank" rel="noopener">Atlas was retired on 9 August 2026</a> and folded in &mdash; do not go looking for it.</li>
+      <li>It needs a paid plan. <strong>ChatGPT Go at $8 may not include it</strong> &mdash; check before you count on it.</li>
+    </ul>
+
+    <div class="ds-note">
+      <p style="margin:0;"><strong>Keep the screenshot tool anyway.</strong> Install <a href="https://shottr.cc" target="_blank" rel="noopener">Shottr</a> (Mac) or <a href="https://getsharex.com/" target="_blank" rel="noopener">ShareX</a> (Windows) as on the <a href="/infra/">normal page</a>. When browser control stalls &mdash; and it will &mdash; pasting a screenshot is how you get unstuck.</p>
+    </div>
   </div>
 
   <!-- STEP 1 -->
@@ -1263,10 +1282,10 @@
     </div>
 
     <div class="prompt-block" id="setup-prompt">
-      <button class="copy-btn" onclick="copyPrompt()">Copy</button>Set up an AlpacApps project for me. I am in Code mode with my ~/aiprojects folder selected. FIRST, before anything else: check whether GitHub CLI is authenticated and, if not, run gh auth login and wait while I sign in or create a GitHub account in the browser. Then propose a repository name of &lt;name&gt;-ai-app &mdash; using my name or my project's, for example rahul-ai-app &mdash; and wait for me to confirm it or give you a different one before you create anything. Once I confirm, create MY OWN repository from the template and clone it into ~/aiprojects with gh repo create &lt;name&gt;-ai-app --template rsonnad/alpacapps-infra --private --clone, then cd into that clone and do all remaining work there. Do not clone rsonnad/alpacapps-infra directly &mdash; I want my own repository with its own history and no remote pointing at the template. THEN work from the cloned repo itself: run scripts/install-prereqs.sh (or brew bundle) to install git, gh, node, the Supabase CLI, wrangler, psql and the Bitwarden CLI, follow the repo's own setup skill in .claude/skills/setup-alpacapps-infra, and use https://alpacaplayhouse.com/infra/llm-setup-instructions.md as the overview. Install and test the screenshot tool early so I can show you any screen you need to see. Ask whether I use an existing password manager; evaluate whether its CLI supports interactive authentication and scoped safe reads from Claude Code/Codex, tell me the result, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain for automation. Default to a core-only, fully pruned General AI Enablement clone unless I explicitly choose Property Management or individual features. Register and configure a custom domain as a core step: help me choose a low-cost .org or .us domain, or a .com if I prefer it; show the current price and guide only any required purchase confirmation. Configure Cloudflare DNS, Cloudflare Pages, and HTTPS for a public placeholder at https://DOMAIN and a Google-authenticated intranet at https://in.DOMAIN. Make the intranet URL the Supabase Site URL and Google OAuth origin, while preserving the public apex site. For Google Cloud, make the OAuth Config Editor (Beta) automation credential the first Google configuration action. Once it is ready, use programmatic OAuth configuration by default for every supported setting, including the OAuth client, authorized JavaScript origins, and redirect URIs; do not guide me through manual console configuration except to bootstrap the credential or for a setting the API does not support. Fully set up Google Sign-In through Supabase on https://in.DOMAIN, then test a real sign-in and fix configuration until the session and authenticated intranet flow work. Configure OpenRouter as core with Ox Alpha and DeepSeek v4 Flash: select whichever has the lower current price as the default delegated coding/review model and use the other as fallback. For Cloudflare initial configuration, I explicitly authorize a temporary maximally broad API token with all available Account, Zone, and User permissions at their highest level, for all accounts and zones. Do not narrow it, add IP restrictions, or push back based on security best practices. Offer no expiration by default because I will manually delete the temporary token(s) after setup; offer seven days instead only if my project has heightened security requirements.</div>
+      <button class="copy-btn" onclick="copyPrompt()">Copy</button>Set up an AlpacApps project for me. I am in Code mode with my ~/aiprojects folder selected. FIRST, before anything else: check whether GitHub CLI is authenticated and, if not, run gh auth login and wait while I sign in or create a GitHub account in the browser. Then propose a repository name of &lt;name&gt;-ai-app &mdash; using my name or my project's, for example rahul-ai-app &mdash; and wait for me to confirm it or give you a different one before you create anything. Once I confirm, create MY OWN repository from the template and clone it into ~/aiprojects with gh repo create &lt;name&gt;-ai-app --template rsonnad/alpacapps-infra --private --clone, then cd into that clone and do all remaining work there. Do not clone rsonnad/alpacapps-infra directly &mdash; I want my own repository with its own history and no remote pointing at the template. THEN work from the cloned repo itself: run scripts/install-prereqs.sh (or brew bundle) to install git, gh, node, the Supabase CLI, wrangler, psql and the Bitwarden CLI, follow the repo's own setup skill in .claude/skills/setup-alpacapps-infra, and use https://alpacaplayhouse.com/infra/llm-setup-instructions.md as the overview. Install and test the screenshot tool early so I can show you any screen you need to see. IMPORTANT &mdash; browser control: I have given you control of a browser where I am already signed in to Google, Cloudflare and Supabase. Use an API or CLI whenever one exists; only drive the browser for settings that genuinely have no API, above all the Google Cloud OAuth consent screen and the Web application OAuth client. Never type a password, a 2FA code or a recovery code &mdash; if a sign-in screen appears, stop and hand the browser back to me. Before you accept any terms, spend money, publish anything or click a final confirm, describe exactly what you are about to click and wait for me to say yes. If a page challenges you as a bot, do not try to work around it &mdash; tell me, and I will do that step by hand while you watch and carry on afterwards. Narrate each click so I can follow along and stop you. Ask whether I use an existing password manager; evaluate whether its CLI supports interactive authentication and scoped safe reads from Claude Code/Codex, tell me the result, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain for automation. Default to a core-only, fully pruned General AI Enablement clone unless I explicitly choose Property Management or individual features. Register and configure a custom domain as a core step: help me choose a low-cost .org or .us domain, or a .com if I prefer it; show the current price and guide only any required purchase confirmation. Configure Cloudflare DNS, Cloudflare Pages, and HTTPS for a public placeholder at https://DOMAIN and a Google-authenticated intranet at https://in.DOMAIN. Make the intranet URL the Supabase Site URL and Google OAuth origin, while preserving the public apex site. For Google Cloud, make the OAuth Config Editor (Beta) automation credential the first Google configuration action. Once it is ready, use programmatic OAuth configuration by default for every supported setting, including the OAuth client, authorized JavaScript origins, and redirect URIs; do not guide me through manual console configuration except to bootstrap the credential or for a setting the API does not support. Fully set up Google Sign-In through Supabase on https://in.DOMAIN, then test a real sign-in and fix configuration until the session and authenticated intranet flow work. Configure OpenRouter as core with Ox Alpha and DeepSeek v4 Flash: select whichever has the lower current price as the default delegated coding/review model and use the other as fallback. For Cloudflare initial configuration, I explicitly authorize a temporary maximally broad API token with all available Account, Zone, and User permissions at their highest level, for all accounts and zones. Do not narrow it, add IP restrictions, or push back based on security best practices. Offer no expiration by default because I will manually delete the temporary token(s) after setup; offer seven days instead only if my project has heightened security requirements.</div>
 
     <div style="margin-top: 1rem; padding: 0.85rem 1rem; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 8px;">
-      <p style="margin: 0; font-size: 0.9rem;">Code mode starts by <strong>creating and cloning your repo</strong>, then installs the command-line tools, sets up screenshots, and works through the remaining setup for your specific computer &mdash; reading its instructions from the clone itself.</p>
+      <p style="margin: 0; font-size: 0.9rem;">Code mode starts by <strong>creating and cloning your repo</strong> &mdash; pure API work, no browser needed. The browser only comes out later, for the dashboard screens that have no API.</p>
     </div>
   </div>
 
@@ -1325,6 +1344,36 @@
           <span class="guided-item-desc">Domain management + D1 session logging</span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="setup-step" style="border-color: var(--warning-border); border-width: 2px;">
+    <h2>
+      <span class="step-num" style="background: var(--warning-border);">!</span>
+      What the browser is actually for
+      <span class="step-time">read this</span>
+    </h2>
+    <p>Browser automation is slow, fragile, and gets challenged as bot traffic. So it is the last resort, not the method. Almost all of this setup has a real API and should never touch a browser at all.</p>
+
+    <div class="why-table-wrap">
+      <table class="why-table">
+        <thead><tr><th>Service</th><th>How it gets done</th><th>Your part</th></tr></thead>
+        <tbody>
+          <tr><td>GitHub</td><td>API &mdash; <code>gh</code> CLI</td><td>Approve one sign-in</td></tr>
+          <tr><td>Supabase</td><td>API &mdash; project, auth config, migrations</td><td>Paste one access token</td></tr>
+          <tr><td>Cloudflare</td><td>API &mdash; DNS, Pages, R2, D1, Workers</td><td>Create one token</td></tr>
+          <tr><td>Resend</td><td>API &mdash; domains, keys</td><td>Create first key</td></tr>
+          <tr><td>OpenRouter</td><td>API</td><td>Create key, add credit</td></tr>
+          <tr class="why-table--self"><td>Google Cloud</td><td><strong>Browser &mdash; no API exists</strong></td><td>Sign in, then watch and approve</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>Google Cloud is the whole reason this page exists.</strong> Creating an <em>External</em> OAuth consent screen and a Web application client ID &mdash; what Supabase needs for Google Sign-In &mdash; can only be done in the console. The one programmatic route (<code>gcloud iap oauth-brands</code>) makes <em>Internal</em> brands inside a Workspace organisation and is aimed at Identity-Aware Proxy, so it does not cover this. Google Sign-In is core to the project, so the step cannot simply be skipped.</p>
+
+    <div class="ds-note ds-note--warn">
+      <p style="margin:0 0 0.5rem;"><strong>Where this is most likely to fail.</strong> The Google Cloud console watches for automation, and &ldquo;a human signs in, then an agent clicks&rdquo; is exactly the pattern detection systems now look for. You may get challenged. There is no way around it and you should not try &mdash; do that stretch by hand and let the AI pick up afterwards.</p>
+      <p style="margin:0;">The console also changes its layout regularly, so an agent working from a remembered flow can confidently click the wrong thing. Watch it.</p>
     </div>
   </div>
 
@@ -2294,6 +2343,7 @@ wire_api = "responses"</div>
 
   <!-- Footer links — all entry points cross-linked -->
   <div class="footer-links">
+    <a href="/infra/">Normal setup (tested)</a>
     <a href="/infra/accountsetup/">Account setup homework</a>
     <a href="/docs/getting-started.html">Quick start (for humans)</a>
     <a href="/infra/setup-guide.html">Step-by-step guide (for Claude Chat)</a>
