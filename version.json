@@ -1,12 +1,12 @@
 {
-  "version": "v260824.04 10:26a",
-  "release": 1794,
-  "sha": "ca94fc4430",
-  "fullSha": "ca94fc4430211075b935153bf5d60102cfcd53e5",
+  "version": "v260824.05 10:30a",
+  "release": 1795,
+  "sha": "80cdd4d5d7",
+  "fullSha": "80cdd4d5d7bb03abc7ac0187b85769c865236f1c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-24T15:26:11+00:00",
-  "commits": [{"sha":"ca94fc4430","message":"fix(infra): make \"create folder, open Code, clone\" an explicit step","author":"Rahul"}]
+  "pushedAt": "2026-08-24T15:30:06+00:00",
+  "commits": [{"sha":"80cdd4d5d7","message":"fix(infra): aiprojects container folder and <name>-ai-app repo naming","author":"Rahul"}]
 }
