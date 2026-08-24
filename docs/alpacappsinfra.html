@@ -1298,15 +1298,6 @@ Optional: Background Workers (cloud VM) &mdash;&rsaquo;    Cloudflare R2 (media 
         <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
       </label>
       <label class="calc-svc">
-        <input type="checkbox" data-svc="crosspaste" onchange="recalcCost()">
-        <span class="calc-svc__check">&check;</span>
-        <span class="calc-svc__info">
-          <span class="calc-svc__name">CrossPaste</span>
-          <span class="calc-svc__desc">Open-source, E2E-encrypted clipboard sync across Mac, Windows, Linux, iOS &amp; Android</span>
-        </span>
-        <span class="cost-badge cost-free" style="margin-left:auto;">Free</span>
-      </label>
-      <label class="calc-svc">
         <input type="checkbox" data-svc="workers" onchange="recalcCost()">
         <span class="calc-svc__check">&check;</span>
         <span class="calc-svc__info">
@@ -2587,7 +2578,6 @@ function recalcCost() {
     'signwell':    { basic: 0, complicated: 0, hyper: 0 },
     'gemini':      { basic: 0, complicated: 120, hyper: 600 },
     'cloudflare-r2': { basic: 0, complicated: 0, hyper: 0 },
-    'crosspaste':  { basic: 0, complicated: 0, hyper: 0 },
     'workers':     { basic: 0, complicated: 144, hyper: 384 },
     'domain':      { basic: 10, complicated: 10, hyper: 10 },
     'iphone':      { basic: 99, complicated: 99, hyper: 99 },
@@ -2607,7 +2597,6 @@ function recalcCost() {
     'stripe':      'Stripe (payments)',
     'signwell':    'SignWell (e-sign)',
     'cloudflare-r2': 'Cloudflare R2 (storage)',
-    'crosspaste':  'CrossPaste (clipboard sync)',
     'workers':     'Background Workers (cloud VM)',
     'domain':      'Custom domain',
     'iphone':      'iPhone App (Apple Developer)',
