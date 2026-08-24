@@ -1,12 +1,12 @@
 {
-  "version": "v260824.06 10:35a",
-  "release": 1796,
-  "sha": "acdf0e1023",
-  "fullSha": "acdf0e1023a176c16464d40b7478f581789ec9df",
+  "version": "v260824.07 10:41a",
+  "release": 1797,
+  "sha": "24dc3e5f5c",
+  "fullSha": "24dc3e5f5c59e78c5ba90d940e54d09b74f77ed6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-24T15:35:39+00:00",
-  "commits": [{"sha":"acdf0e1023","message":"feat(infra): experimental browser-control setup variant","author":"Rahul"}]
+  "pushedAt": "2026-08-24T15:41:30+00:00",
+  "commits": [{"sha":"24dc3e5f5c","message":"feat(infra): durable Bitwarden unlock for coding agents, both platforms","author":"Rahul"}]
 }
