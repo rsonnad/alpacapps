@@ -1,12 +1,12 @@
 {
-  "version": "v260823.09 8:34a",
-  "release": 1790,
-  "sha": "82613a1de2",
-  "fullSha": "82613a1de2ba753ae67243d0f40a0051509bb29c",
+  "version": "v260824.01 8:27a",
+  "release": 1791,
+  "sha": "825c23894c",
+  "fullSha": "825c23894c46f6c99a10eb4901c5cc74383605cc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-23T13:34:00+00:00",
-  "commits": [{"sha":"82613a1de2","message":"fix: harden full project security and payment flows","author":"Otto"}]
+  "pushedAt": "2026-08-24T13:27:41+00:00",
+  "commits": [{"sha":"0288832f32","message":"feat(infra): make Bitwarden part of the standard install","author":"Rahul"},{"sha":"8b99f480e5","message":"fix(cloudflare): document Stop hook, not SessionEnd, for claude-sessions install","author":"Rahul"},{"sha":"825c23894c","message":"fix(infra): show bitwarden.com explicitly wherever we send people there","author":"Rahul"}]
 }
