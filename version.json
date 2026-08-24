@@ -1,12 +1,12 @@
 {
-  "version": "v260824.05 10:30a",
-  "release": 1795,
-  "sha": "80cdd4d5d7",
-  "fullSha": "80cdd4d5d7bb03abc7ac0187b85769c865236f1c",
+  "version": "v260824.06 10:35a",
+  "release": 1796,
+  "sha": "acdf0e1023",
+  "fullSha": "acdf0e1023a176c16464d40b7478f581789ec9df",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-24T15:30:06+00:00",
-  "commits": [{"sha":"80cdd4d5d7","message":"fix(infra): aiprojects container folder and <name>-ai-app repo naming","author":"Rahul"}]
+  "pushedAt": "2026-08-24T15:35:39+00:00",
+  "commits": [{"sha":"acdf0e1023","message":"feat(infra): experimental browser-control setup variant","author":"Rahul"}]
 }
