@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# bw-unlock — print a Bitwarden session key, unlocking non-interactively.
+#
+# Purpose: coding agents (Claude Code, Codex) need to read secrets from the
+# vault without a human typing the master password every time. This stores the
+# master password in the OS keystore once, then unlocks from there.
+#
+# Usage:
+#   export BW_SESSION=$(scripts/bw-unlock)      # per shell
+#   bw list items --session "$BW_SESSION"
+#
+# First run walks you through storing the password. After that it is silent.
+#
+# Keystore used:
+#   macOS  — Keychain (service "bitwarden-cli", account = your Bitwarden email)
+#   Linux  — libsecret via secret-tool (same service/account naming)
+#
+# SECURITY: the master password is recoverable by anything running as your user
+# on this machine. That is the trade for unattended agent access. Do not do this
+# on a shared or multi-user box, and never commit the password anywhere.
+
+set -euo pipefail
+
+SERVICE="bitwarden-cli"
+EMAIL_FILE="${HOME}/.config/bw-unlock/email"
+
+err() { echo "bw-unlock: $*" >&2; }
+
+command -v bw >/dev/null 2>&1 || {
+  err "Bitwarden CLI not found. Install it: brew install bitwarden-cli (or npm i -g @bitwarden/cli)"
+  exit 1
+}
+
+# --- resolve the account email ---
+BW_EMAIL="${BW_EMAIL:-}"
+if [[ -z "$BW_EMAIL" && -r "$EMAIL_FILE" ]]; then
+  BW_EMAIL="$(cat "$EMAIL_FILE")"
+fi
+if [[ -z "$BW_EMAIL" ]]; then
+  BW_EMAIL="$(bw status 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin).get("userEmail") or "")' 2>/dev/null || echo "")"
+fi
+if [[ -z "$BW_EMAIL" ]]; then
+  err "No Bitwarden email known. Run 'bw login' first, or set BW_EMAIL."
+  exit 1
+fi
+
+# --- already unlocked? reuse it ---
+if [[ -n "${BW_SESSION:-}" ]] && bw status --session "$BW_SESSION" 2>/dev/null | grep -q '"status":"unlocked"'; then
+  printf '%s' "$BW_SESSION"
+  exit 0
+fi
+
+# --- must be logged in before we can unlock ---
+if bw status 2>/dev/null | grep -q '"status":"unauthenticated"'; then
+  err "Not logged in. Run: bw login"
+  exit 1
+fi
+
+# --- read the master password from the OS keystore ---
+read_password() {
+  case "$(uname -s)" in
+    Darwin)
+      security find-generic-password -a "$BW_EMAIL" -s "$SERVICE" -w 2>/dev/null || true ;;
+    Linux)
+      command -v secret-tool >/dev/null 2>&1 &&
+        secret-tool lookup service "$SERVICE" account "$BW_EMAIL" 2>/dev/null || true ;;
+    *)
+      err "Unsupported OS. On Windows use scripts/bw-unlock.ps1"; exit 1 ;;
+  esac
+}
+
+store_password() {
+  echo "" >&2
+  err "No stored master password for $BW_EMAIL — storing one now (this is a one-time step)."
+  local pw pw2
+  read -r -s -p "Bitwarden master password: " pw; echo "" >&2
+  read -r -s -p "Confirm: " pw2; echo "" >&2
+  [[ "$pw" == "$pw2" ]] || { err "Passwords did not match."; exit 1; }
+  [[ -n "$pw" ]] || { err "Empty password."; exit 1; }
+
+  # verify before storing, so we never persist a wrong password
+  if ! BW_PASSWORD="$pw" bw unlock --passwordenv BW_PASSWORD --raw >/dev/null 2>&1; then
+    err "Bitwarden rejected that password. Nothing was stored."
+    exit 1
+  fi
+
+  case "$(uname -s)" in
+    Darwin)
+      security add-generic-password -a "$BW_EMAIL" -s "$SERVICE" -w "$pw" -U ;;
+    Linux)
+      printf '%s' "$pw" | secret-tool store --label="Bitwarden CLI" service "$SERVICE" account "$BW_EMAIL" ;;
+  esac
+  mkdir -p "$(dirname "$EMAIL_FILE")" && printf '%s' "$BW_EMAIL" > "$EMAIL_FILE"
+  err "Stored. Future unlocks are silent."
+}
+
+PW="$(read_password)"
+if [[ -z "$PW" ]]; then
+  store_password
+  PW="$(read_password)"
+  [[ -n "$PW" ]] || { err "Could not read back the stored password."; exit 1; }
+fi
+
+SESSION="$(BW_PASSWORD="$PW" bw unlock --passwordenv BW_PASSWORD --raw 2>/dev/null || true)"
+if [[ -z "$SESSION" ]]; then
+  err "Unlock failed. If you changed your master password, re-store it:"
+  err "  security delete-generic-password -a \"$BW_EMAIL\" -s \"$SERVICE\"   # macOS"
+  err "  then run this script again."
+  exit 1
+fi
+
+printf '%s' "$SESSION"
