@@ -1,12 +1,12 @@
 {
-  "version": "v260824.08 10:45a",
-  "release": 1798,
-  "sha": "f4c11ac605",
-  "fullSha": "f4c11ac605d9fb4a9b7614bb213f7eaf30b73684",
+  "version": "v260824.10 11:04a",
+  "release": 1800,
+  "sha": "8fba5e974b",
+  "fullSha": "8fba5e974b2bf0b0320b5dd4b1262a2191a6a43b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm76f27",
-  "pushedAt": "2026-08-24T15:45:19+00:00",
-  "commits": [{"sha":"f4c11ac605","message":"fix(scripts): correct BSTR marshalling in bw-unlock.ps1, label test status","author":"Rahul"}]
+  "pushedAt": "2026-08-24T16:04:45+00:00",
+  "commits": [{"sha":"8fba5e974b","message":"feat(infra): real ShareX setup on Windows; remove CrossPaste","author":"Rahul"}]
 }
