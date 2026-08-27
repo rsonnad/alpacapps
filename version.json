@@ -1,12 +1,12 @@
 {
-  "version": "v260824.10 11:04a",
-  "release": 1800,
-  "sha": "8fba5e974b",
-  "fullSha": "8fba5e974b2bf0b0320b5dd4b1262a2191a6a43b",
+  "version": "v260827.01 11:56a",
+  "release": 1801,
+  "sha": "de4f7a211f",
+  "fullSha": "de4f7a211f3176bfac25b387881c4798e96a7b06",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm76f27",
-  "pushedAt": "2026-08-24T16:04:45+00:00",
-  "commits": [{"sha":"8fba5e974b","message":"feat(infra): real ShareX setup on Windows; remove CrossPaste","author":"Rahul"}]
+  "machine": "runnervmgx7h7",
+  "pushedAt": "2026-08-27T16:56:15+00:00",
+  "commits": [{"sha":"de4f7a211f","message":"docs(memory): correct stale Almaca Tailscale IP and note SSH auth gap","author":"Paca"}]
 }
