@@ -74,6 +74,20 @@ MGMT_TOKEN="$MGMT_TOKEN" ./scripts/telnyx-debug-env.sh deliveries
 
 Use when checking the legacy ALMACA MacBook Pro 16, including mounted local volumes such as `SW-SDCAM`.
 
+> **⚠ Stale IP — corrected 2026-08-27.** The `100.115.27.43` address below is the
+> `almaca-macbookpro16` Tailscale node, which has been **offline since ~2026-05-24**.
+> The live node is **`almaca-2` = `100.77.207.31`** (LAN `192.168.1.74`). Confirm the
+> current node before trusting any address here:
+>
+> ```bash
+> tailscale status | grep -i almaca
+> ```
+>
+> **Key auth from Alpuca does not work** — `alpaca@` on both the LAN and Tailscale
+> addresses returns `Permission denied (publickey,password,keyboard-interactive)`, and
+> Tailscale SSH is not enabled for this node. Almaca currently needs an interactive
+> password or a pushed public key; there is no unattended recipe yet.
+
 ### Tailscale SSH
 
 ```bash
