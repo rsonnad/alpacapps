@@ -1261,6 +1261,39 @@ async function handleRequestPayment() {
       correctedTotal += (mins / 60) * currentRate;
     }
 
+    // Fetch work photos for the unpaid period
+    const completedEntries = unpaidSummary.entries.filter(e => e.clock_out);
+    const sortedEntries = [...completedEntries].sort((a, b) => a.clock_in.localeCompare(b.clock_in));
+    const earliestDate = sortedEntries.length > 0
+      ? sortedEntries[0].clock_in.slice(0, 10)
+      : null;
+    const latestDate = sortedEntries.length > 0
+      ? sortedEntries[sortedEntries.length - 1].clock_out.slice(0, 10)
+      : null;
+
+    let workPhotos = [];
+    if (earliestDate && latestDate) {
+      try {
+        workPhotos = await hoursService.getWorkPhotos(profile.id, {
+          dateFrom: earliestDate,
+          dateTo: latestDate
+        });
+      } catch (photoErr) {
+        console.warn('Failed to fetch work photos for payment request:', photoErr);
+      }
+    }
+
+    // Group entries by date for the line-item breakdown
+    const entriesByDate = {};
+    for (const e of sortedEntries) {
+      const dateKey = new Date(e.clock_in).toLocaleDateString('en-US', {
+        timeZone: AUSTIN_TIMEZONE,
+        weekday: 'short', month: 'short', day: 'numeric'
+      });
+      if (!entriesByDate[dateKey]) entriesByDate[dateKey] = [];
+      entriesByDate[dateKey].push(e);
+    }
+
     // Send email to admin
     const { sendEmail } = await import('../shared/email-service.js');
     const adminEmail = 'team@alpacaplayhouse.com';
@@ -1268,17 +1301,75 @@ async function handleRequestPayment() {
     const hasRateMismatch = mismatchedEntries.length > 0;
     const subject = `Payment Request from ${name}` + (hasRateMismatch ? ' (Rate Update Needed)' : '');
 
-    // Build a simple HTML body for the email
+    // Styles
+    const cellStyle = 'padding:8px 12px;border:1px solid #e5e7eb;';
+    const headerCellStyle = cellStyle + 'font-weight:600;background:#f9fafb;';
+    const thStyle = cellStyle + 'font-weight:600;background:#f3f4f6;text-align:left;';
+
+    // Build detailed HTML body
     let body = `<p><strong>${escapeHtml(name)}</strong> is requesting payment for their logged hours.</p>`;
+
+    // --- Summary table ---
     body += `<table style="border-collapse:collapse;width:100%;margin:12px 0;">`;
-    body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;">Unpaid Hours</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${HoursService.formatHoursDecimal(unpaidSummary.totalMinutes)}h</td></tr>`;
-    body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;">Current Rate</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${HoursService.formatCurrency(currentRate)}/hr</td></tr>`;
-    body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;">Recorded Total</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${HoursService.formatCurrency(unpaidSummary.totalAmount)}</td></tr>`;
+    body += `<tr><td style="${headerCellStyle}">Period</td><td style="${cellStyle}">${earliestDate && latestDate ? `${new Date(earliestDate + 'T12:00:00').toLocaleDateString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric' })} – ${new Date(latestDate + 'T12:00:00').toLocaleDateString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric', year: 'numeric' })}` : 'N/A'}</td></tr>`;
+    body += `<tr><td style="${headerCellStyle}">Work Sessions</td><td style="${cellStyle}">${completedEntries.length} sessions across ${Object.keys(entriesByDate).length} days</td></tr>`;
+    body += `<tr><td style="${headerCellStyle}">Unpaid Hours</td><td style="${cellStyle}">${HoursService.formatHoursDecimal(unpaidSummary.totalMinutes)}h</td></tr>`;
+    body += `<tr><td style="${headerCellStyle}">Current Rate</td><td style="${cellStyle}">${HoursService.formatCurrency(currentRate)}/hr</td></tr>`;
+    body += `<tr><td style="${headerCellStyle}">Recorded Total</td><td style="${cellStyle}font-weight:700;">${HoursService.formatCurrency(unpaidSummary.totalAmount)}</td></tr>`;
     if (hasRateMismatch) {
-      body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;color:#dc2626;">Corrected Total (at current rate)</td><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:700;color:#dc2626;">${HoursService.formatCurrency(correctedTotal)}</td></tr>`;
-      body += `<tr><td style="padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;color:#92400e;">Entries Needing Rate Update</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${mismatchedEntries.length} entries</td></tr>`;
+      body += `<tr><td style="${headerCellStyle}color:#dc2626;">Corrected Total (at current rate)</td><td style="${cellStyle}font-weight:700;color:#dc2626;">${HoursService.formatCurrency(correctedTotal)}</td></tr>`;
+      body += `<tr><td style="${headerCellStyle}color:#92400e;">Entries Needing Rate Update</td><td style="${cellStyle}">${mismatchedEntries.length} entries</td></tr>`;
+    }
+    body += `<tr><td style="${headerCellStyle}">Photos Submitted</td><td style="${cellStyle}">${workPhotos.length} photo${workPhotos.length !== 1 ? 's' : ''}</td></tr>`;
+    body += `</table>`;
+
+    // --- Line-item breakdown by date ---
+    body += `<h3 style="margin:20px 0 8px;font-size:15px;">Work Log Detail</h3>`;
+    body += `<table style="border-collapse:collapse;width:100%;margin:0 0 12px;">`;
+    body += `<tr><th style="${thStyle}">Date</th><th style="${thStyle}">Time</th><th style="${thStyle}">Hours</th><th style="${thStyle}">Description</th></tr>`;
+
+    for (const [dateLabel, dayEntries] of Object.entries(entriesByDate)) {
+      for (let i = 0; i < dayEntries.length; i++) {
+        const e = dayEntries[i];
+        const clockInTime = new Date(e.clock_in).toLocaleTimeString('en-US', {
+          timeZone: AUSTIN_TIMEZONE, hour: 'numeric', minute: '2-digit'
+        });
+        const clockOutTime = new Date(e.clock_out).toLocaleTimeString('en-US', {
+          timeZone: AUSTIN_TIMEZONE, hour: 'numeric', minute: '2-digit'
+        });
+        const hrs = HoursService.formatHoursDecimal(parseFloat(e.duration_minutes) || 0);
+        const desc = e.description ? escapeHtml(e.description) : '<span style="color:#9ca3af;">—</span>';
+        body += `<tr><td style="${cellStyle}font-weight:600;">${dateLabel}</td><td style="${cellStyle}">${clockInTime} – ${clockOutTime}</td><td style="${cellStyle}text-align:right;">${hrs}h</td><td style="${cellStyle}">${desc}</td></tr>`;
+      }
     }
     body += `</table>`;
+
+    // --- Photo thumbnails ---
+    if (workPhotos.length > 0) {
+      body += `<h3 style="margin:20px 0 8px;font-size:15px;">Work Photos (${workPhotos.length})</h3>`;
+      body += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">`;
+      for (const photo of workPhotos.slice(0, 12)) {
+        const url = photo.media?.url || '';
+        const caption = photo.caption || photo.media?.caption || '';
+        const typeLabel = PHOTO_TYPE_LABELS[photo.photo_type] || '';
+        const photoDate = photo.work_date
+          ? new Date(photo.work_date + 'T12:00:00').toLocaleDateString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric' })
+          : '';
+        if (url) {
+          body += `<div style="text-align:center;font-size:11px;color:#6b7280;">`;
+          body += `<img src="${escapeHtml(url)}" alt="${escapeHtml(caption)}" style="width:120px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;" />`;
+          body += `<br/>${typeLabel}${photoDate ? ' · ' + photoDate : ''}`;
+          if (caption) body += `<br/>${escapeHtml(caption)}`;
+          body += `</div>`;
+        }
+      }
+      if (workPhotos.length > 12) {
+        body += `<div style="align-self:center;color:#6b7280;font-size:12px;">+${workPhotos.length - 12} more</div>`;
+      }
+      body += `</div>`;
+    }
+
+    // --- Action link ---
     if (hasRateMismatch) {
       body += `<p style="color:#92400e;"><strong>Action needed:</strong> Some entries were recorded at the wrong rate. Go to <a href="https://alpacaplayhouse.com/staff/worktracking.html">Admin Hours</a>, filter by ${escapeHtml(name)}, select all unpaid entries, and click "Recalc" to update them to the current rate. Then "Mark Selected as Paid" to process payment.</p>`;
     } else {
