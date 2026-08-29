@@ -1980,6 +1980,19 @@ function parseZellePayment(bodyText: string): ZellePayment | null {
     };
   }
 
+  // US Bank receiver format (notification that payment arrived in our US Bank account):
+  // "A new payment of $495.00 from John Churchill was deposited in your account."
+  const usbankReceiverPattern = /[Aa] new payment of \$([\d,]+\.\d{2}) from (.+?) was deposited in your account/im;
+  const usbankReceiverMatch = normalized.match(usbankReceiverPattern);
+  if (usbankReceiverMatch) {
+    return {
+      amount: parseFloat(usbankReceiverMatch[1].replace(/,/g, "")),
+      senderName: usbankReceiverMatch[2].trim(),
+      confirmationNumber: null,
+      bank: "usbank",
+    };
+  }
+
   return null;
 }
 
