@@ -103,6 +103,11 @@ Before connecting to ANY external service (SSH, API, R2, Supabase, etc.):
 
 - Run `/plugin install typescript-lsp@claude-plugins-official` once (LSP env var is set via `.claude/settings.json`)
 
+## First-Time Setup
+
+1. `npm install -g typescript-language-server typescript`
+2. Run `/plugin install typescript-lsp@claude-plugins-official` in Claude Code (LSP env var is set via `.claude/settings.json`)
+
 ## Quick Refs
 
 - **Tech:** Vanilla HTML/JS + Tailwind v4 | Supabase | GitHub Pages | Native mobile (Kotlin + Swift)
