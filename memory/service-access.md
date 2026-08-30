@@ -255,7 +255,7 @@ lookups can select the empty duplicate and fail.
 - `~/bin/rvault-backup-status.sh` — daily backup status to rahulioson@gmail.com
 - `~/bin/lights-healthcheck.sh`
 - `~/bin/oracle-montreal-provision.sh`
-- `/Users/alpuca/scripts/mbp-deal-watch.py` — 8:00am Eastern digest + 6:00pm Eastern change-only email of 16" M5 Pro/Max MacBook Pro deals (Grok search via `grok-delegate ask`)
+- `/Users/alpuca/scripts/garmin-watch-deal-watch.py` — 8:00am Eastern digest + 6:00pm Eastern change-only email of used/refurbished Garmin Forerunner 145/245 deals (Grok search via `grok-delegate ask`); replaced the MacBook Pro deal watcher 2026-08-28
 - Oracle Phoenix `/home/ubuntu/.alpuca-health/alpuca_health_check.py` — daily
   Alpuca machine-health email and `alpuca_health_history` update. The Phoenix
   crontab runs at `5 5,6 * * *` UTC with a `TZ=America/Chicago date +\%H`
@@ -322,6 +322,61 @@ above the catchall rule and the catchall (`alpu.ca/*`) at the lowest priority.
 Verified 2026-06-10 while adding `alpu.ca/mfknotes`: the catchall at priority 3
 swallowed `kidsaudio` and `mfknotes`; changing order to specific links at higher
 numbers and catchall at priority 1 fixed both.
+
+## UDM Pro (UniFi Dream Machine Pro) — 192.168.1.1
+
+### Run UDM commands FROM ALPUCA, not from a laptop
+
+`sshpass` and the `bw-read` helper exist on **Alpuca only**. On the MacBook Pro M5 neither is
+installed and `bw-unlock` cannot prompt in a non-interactive shell, so any recipe in
+SONOSAUTOMATION.md that starts with `sshpass -p "$(bw-read ...)"` **fails on the laptop and
+works on Alpuca**. Verified 2026-08-30 (`zsh: command not found: bw-read`).
+
+Two credential paths on Alpuca, both fine:
+
+```bash
+# (a) Bitwarden helper — interactive shells
+sshpass -p "$(bw-read 'UniFi Dream Machine Pro — Network Gateway' 'SSH Password')" \
+  ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@192.168.1.1 'COMMAND'
+
+# (b) Env file — what cron uses (UDM_SSH_PASS, UDM_WEB_PASS, SUPA_TOKEN)
+source ~/.unifi-snapshot.env
+sshpass -p "$UDM_SSH_PASS" ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@192.168.1.1 'COMMAND'
+```
+
+`-o PubkeyAuthentication=no` is mandatory — without it pubkey fails silently and the password
+is never offered.
+
+### Driving the UDM from a laptop (two hops)
+
+```bash
+ssh -F /dev/null -i ~/.ssh/alpuca_ed25519 -o IdentitiesOnly=yes -o IdentityAgent=none \
+  -o PreferredAuthentications=publickey -o StrictHostKeyChecking=accept-new \
+  alpuca@192.168.1.200 'source ~/.unifi-snapshot.env; sshpass -p "$UDM_SSH_PASS" ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@192.168.1.1 "COMMAND"'
+```
+
+Note the laptop key is `~/.ssh/alpuca_ed25519` (there is no `~/.ssh/id_ed25519`). Tailscale
+(`100.74.59.97`) was unreachable on 2026-08-30 while LAN `192.168.1.200` worked — try LAN first
+at home.
+
+### Controller REST (no SSH needed, from Alpuca)
+
+CSRF lives in the **`x-csrf-token` response header** on login, not in the cookie jar. Nested
+quoting through two SSH hops breaks easily — pull raw JSON back and parse it locally rather than
+embedding Python in the remote command.
+
+```bash
+source ~/.unifi-snapshot.env
+curl -sk -c /tmp/uc.txt -D /tmp/uh.txt -X POST 'https://192.168.1.1/api/auth/login' \
+  -H 'Content-Type: application/json' \
+  -d "{\"username\":\"alpacaauto\",\"password\":\"$UDM_WEB_PASS\",\"remember\":true}" >/dev/null
+CSRF=$(grep -i '^x-csrf-token:' /tmp/uh.txt | tr -d '\r' | awk '{print $2}')
+curl -sk -b /tmp/uc.txt 'https://192.168.1.1/proxy/network/api/s/default/rest/user'
+```
+
+Endpoints: `rest/networkconf`, `rest/wlanconf`, `rest/user` (DHCP reservations),
+`stat/device` (APs/switches), `stat/sta` (live clients incl. retry counters).
+`alpacaauto` is Super Admin — PUT works with the CSRF header.
 
 ## Rahul M2 Airtop SSH (MacBook Air M2)
 

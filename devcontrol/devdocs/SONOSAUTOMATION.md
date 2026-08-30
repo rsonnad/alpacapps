@@ -161,10 +161,22 @@ echo 0 > /sys/devices/virtual/net/br0/bridge/multicast_snooping
 | UDP | 32768-65535 | Audio streaming |
 | UDP | 5353 | mDNS |
 
-### DHCP Reservations (DONE — 2026-04-13)
+### DHCP Reservations (⚠️ TABLE BELOW IS STALE — see 2026-08-30 audit)
 
-All 14 Sonos speakers now have static DHCP reservations in the 192.168.1.170-183 range.
-Speakers will pick up new IPs on next DHCP renewal or after power cycle.
+> **The `.170–.183` plan below was never adopted.** Reservations exist and work, but they are
+> pinned to each speaker's pre-existing IP. Verified 2026-08-30 against `rest/user`. Query live
+> state instead of trusting this table:
+>
+> ```bash
+> curl -sk -b /tmp/uc.txt 'https://localhost/proxy/network/api/s/default/rest/user' \
+>   | python3 -c "import sys,json;[print(u['mac'],u.get('fixed_ip')) for u in json.load(sys.stdin)['data'] if u.get('use_fixedip') and u['mac'].startswith(('00:0e:58','b8:e9:37'))]"
+> ```
+>
+> Live as of 2026-08-30: .7 Skyloft, .25 SkyBalcony, .29 DJ, .33 Outhouse, .47 garage outdoors,
+> .97 Backyard, .148 MasterBlaster, .156 Living, .178 Dining, .191 Pequeno, .193 Front Outside.
+> Missing: Garage Bridge (.220, online), saunaHiFi, SwimSpa (both powered off).
+
+Historical plan (not in effect):
 
 | Speaker | Reserved IP | MAC |
 |---------|------------|-----|
@@ -653,6 +665,201 @@ SELECT jsonb_pretty(config) FROM public.network_config_snapshots WHERE is_stable
 ```
 
 **Operational note:** if a UDM password or the Supabase Dashboard Access Token rotates in Bitwarden, regenerate `~/.unifi-snapshot.env` on Alpuca or cron fails silently. Refresh recipe in `memory/service-access.md` §0.
+
+## 2026-08-30 — Multi-zone dropout audit (3–5 grouped zones)
+
+### Reported symptom
+
+Dropouts when 3–5 zones play the same music concurrently.
+
+### 🚨 PRIMARY ROOT CAUSE — kernel snooping ON, querier OFF, boot script never ran
+
+`multicast_snooping=1` + `multicast_querier=0` on the UDM's `br0` bridge — **the exact fatal
+combination documented in §Kernel vs Controller IGMP Snooping**. IGMP group memberships expire
+after ~260 s with no querier to refresh them, the bridge stops forwarding multicast to Sonos,
+and audio dies. Dropping faster with more grouped zones is the signature symptom.
+
+**Why the 2026-04-13 "DONE" fix didn't hold:** `/data/on_boot.d/10-multicast-snooping-off.sh`
+exists and is `-rwxr-xr-x`, but **`udm-boot.service` does not exist on this UDM**
+(`systemctl status udm-boot` → "Unit could not be found"). That systemd unit — from the
+`udm-utilities` boot-script package — is what actually executes `/data/on_boot.d/*`. Without it
+the directory is inert. **The script has never run on any boot since it was created.**
+
+The 2026-04-13 and 2026-05-06 entries recorded this as persisted; that was wrong. Placing the
+file was verified, installing the runner was not.
+
+UDM uptime at audit: 10 h 30 m (rebooted ~01:01 on 2026-08-30, matching `/data` mtime). So the
+system has been in the fatal state all day.
+
+**Lesson (again, harder):** verifying a persistence *artifact* exists is not verifying the
+*mechanism* runs. Always confirm with `systemctl status udm-boot` and by reading back the
+kernel value after an actual reboot.
+
+### Controller/WLAN audit — NO DRIFT ✓
+
+Pulled live via UDM API (from Alpuca, `~/.unifi-snapshot.env` creds). Every documented-critical setting matches the working baseline: `igmp_snooping=false`, `mdns=true`, `mcastenhance=false`, `bss_transition=false`, `fast_roaming=false`, `dtim_ng=1/dtim_na=3`, `wpa2` only, `pmf=disabled`, `min-rate 6 Mbps`, `l2_isolation/proxy_arp/uapsd off`, `group_rekey=0`. Nightly snapshot cron confirmed running (last: 2026-08-30 04:00).
+
+AP 2.4 GHz plan still matches the 2026-05-06 fix: 4 APs ch1, 4 APs ch6, **0 on ch11** (SonosNet home ch = 11 confirmed on every speaker, `/status/proc/ath_rincon/status`).
+
+### Actual bottleneck — channel-1 airtime congestion
+
+10 wireless Sonos online (SwimSpa + saunaHiFi powered off). **8 of 10 sit on ch1**, where the APs also carry the heaviest general load (Skyloft 27 clients, Living Room U6 22, Garage Mahal 13). Grouped playback multiplies unicast streams over this one channel → retry-rate blowups:
+
+| IP | Speaker | ch | RSSI | Retry % |
+|----|---------|----|------|---------|
+| .178 | Dining | 1 | -48 | **34.6%** |
+| .25 | SkyBalcony | 6 | -57 | **18.0%** |
+| .47 | garage outdoors | 1 | -41 | **16.6%** |
+| .97 | Backyard | 1 | -61 | **14.4%** |
+| .220 | Garage Bridge | 1 | -55 | **10.0%** |
+| .191 | Pequeno | 1 | -58 | 6.9% |
+| .33 | Outhouse | 6 | -16 | 5.5% |
+| .29 | DJ | 1 | -31 | 4.7% |
+| .193 | Front Outside | 1 | -52 | 4.1% |
+| .7 | Skyloft | 1 | -43 | 3.5% |
+
+>5% retry = audible cutouts; 7 of 10 exceed it. Dining at -48 dBm with 34.6% retry = pure congestion, not signal. Dining/garage outdoors/Pequeno/Backyard/DJ are all sticky on Garage Mahal (78:8a:20).
+
+### Other findings
+
+- **DHCP reservations ARE active and correct** — but at the speakers' real addresses, not the
+  `.170–.183` block the 2026-04-13 table claims. 11 of 14 Sonos MACs carry `use_fixedip` in
+  `rest/user`, and every one matches the live IP. The **table below was superseded**; the
+  network is fine, the doc was stale. (An earlier draft of this entry wrongly said the
+  reservations "never took effect" — corrected after querying `rest/user` directly.)
+  **Gap:** `00:0e:58:21:e8:e0` (Garage Bridge, .220) is online with **no** reservation.
+  saunaHiFi and SwimSpa also lack one but are powered off.
+- Kernel multicast state: see the PRIMARY ROOT CAUSE section above — found at `snooping=1`,
+  `querier=0`, boot runner missing.
+- Wired: Living Sound (port 4) + MasterBlaster (port 5) on UDM internal switch — unchanged; their presence keeps SonosNet mesh alive in the background (all wireless speakers still hold ch11 mesh state while running INFRA on WiFi).
+
+### Recommendations (in order of leverage)
+
+0. **FIX THE KERNEL STATE + INSTALL A REAL BOOT RUNNER** (do this first — everything else is
+   secondary until multicast forwarding is sane). Run from Alpuca:
+
+   ```bash
+   source ~/.unifi-snapshot.env
+   sshpass -p "$UDM_SSH_PASS" ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@192.168.1.1 '
+     echo 0 > /sys/devices/virtual/net/br0/bridge/multicast_snooping
+     echo 0 > /sys/devices/virtual/net/br0/bridge/multicast_querier
+     cat > /etc/systemd/system/udm-boot.service <<EOF
+   [Unit]
+   Description=Run /data/on_boot.d scripts at boot
+   After=network-online.target
+   Wants=network-online.target
+   [Service]
+   Type=oneshot
+   ExecStart=/bin/sh -c "for f in /data/on_boot.d/*.sh; do [ -x \$f ] && \$f; done"
+   RemainAfterExit=true
+   [Install]
+   WantedBy=multi-user.target
+   EOF
+     systemctl daemon-reload && systemctl enable --now udm-boot.service
+     systemctl is-enabled udm-boot.service
+     cat /sys/devices/virtual/net/br0/bridge/multicast_snooping'
+   ```
+
+   Note: `/etc/systemd/system` is wiped by UniFi OS **firmware upgrades** (not by plain
+   reboots). Re-run this block after every firmware update, and verify with
+   `systemctl status udm-boot`.
+
+1. **Add the one missing DHCP reservation** — Garage Bridge `00:0e:58:21:e8:e0` → `192.168.1.220`
+   (its current address, so nothing moves and no conflict is possible):
+
+   ```bash
+   source ~/.unifi-snapshot.env
+   curl -sk -c /tmp/uc.txt -X POST 'https://192.168.1.1/api/auth/login' -H 'Content-Type: application/json' \
+     -d "{\"username\":\"alpacaauto\",\"password\":\"$UDM_WEB_PASS\",\"remember\":true}" -D /tmp/uh.txt >/dev/null
+   CSRF=$(grep -i '^x-csrf-token:' /tmp/uh.txt | tr -d '\r' | awk '{print $2}')
+   UID_=$(curl -sk -b /tmp/uc.txt 'https://192.168.1.1/proxy/network/api/s/default/rest/user' \
+     | python3 -c "import sys,json;print([u['_id'] for u in json.load(sys.stdin)['data'] if u['mac']=='00:0e:58:21:e8:e0'][0])")
+   curl -sk -b /tmp/uc.txt -X PUT "https://192.168.1.1/proxy/network/api/s/default/rest/user/$UID_" \
+     -H 'Content-Type: application/json' -H "X-CSRF-Token: $CSRF" \
+     -d '{"use_fixedip":true,"fixed_ip":"192.168.1.220","name":"Sonos Garage Bridge"}'
+   ```
+
+2. **⏸ HOLD the ch1 rebalance until the telemetry has a few days of data.** The 2.4 GHz client
+   split is genuinely lopsided — **ch1 carries ~67 clients across 4 APs, ch6 only ~33** — and
+   moving Garage Mahal (13 clients, 5 of them Sonos) ch1→ch6 would even it out without touching
+   ch11. But: (a) it merely *relocates* the Sonos crowd rather than shrinking it — 7 speakers
+   would end up on ch6 and 3 on ch1; (b) doing it in the same window as the multicast fix makes
+   it impossible to attribute any improvement to either change. `sonos_health_samples` now
+   records retry % per speaker per channel every 15 min. Let it run, then decide from the
+   `largest_group_size` vs `avg_worst_retry` query in `sonos-health-schema.sql`. If retry rates
+   stay flat as group size climbs, congestion was never the binding constraint and this change
+   is unnecessary.
+
+3. **Consider all-SonosNet** (still open, user action): ch11 has no UniFi APs on it. Removing
+   WiFi credentials from the Sonos system would move every speaker onto that dedicated channel.
+   Reversible. Worth trying only if dropouts persist after the multicast fix.
+
+4. Physical: power on/check SwimSpa + saunaHiFi (both offline, both un-reserved).
+
+**Observation logged 2026-08-30 11:50:** Garage Bridge (.220) accumulated **~2.3 M PHY errors in
+~30 min** on SonosNet ch11 despite no UniFi AP sharing that channel — so the interference is
+external (neighbouring networks or garage RF environment), not self-inflicted. The new telemetry
+samples this every 15 min; if it stays in the millions, that speaker needs physical remediation,
+not config.
+
+## Telemetry — two layers (config nightly, symptoms every 15 min)
+
+The 2026-08-30 incident exposed the gap: the nightly config snapshot is blind to anything below
+the controller API, so a kernel-level regression ran for 10 hours unnoticed. Symptom sampling
+now covers that.
+
+| Layer | Script | Table | Cadence | Catches |
+|---|---|---|---|---|
+| Config history | `unifi-snapshot-cron.sh` → `unifi-snapshot.py` | `network_config_snapshots` | nightly 04:00 | controller/WLAN drift, bisectable to a date |
+| Symptom telemetry | `sonos-health-cron.sh` → `sonos-health.py` | `sonos_health_samples` | every 15 min | **kernel multicast state**, **udm-boot.service missing**, retry rates, PHY errors, group size |
+
+### What `sonos-health.py` checks
+
+**Kernel tripwire (the 2026-08-30 blind spot):** `br0` `multicast_snooping` / `multicast_querier`
+must both be 0, **and `udm-boot.service` must be `enabled`**. That last check is the important
+new one — it is what silently failed from April to August, letting the boot script exist without
+ever running. Any of these failing is a `CRITICAL` violation and pages immediately.
+
+**Controller rules:** all the Sonos-critical settings (IGMP snooping off, mDNS on, mcast
+enhancement off, BSS transition off, fast roaming off, L2 isolation off, WPA2/PMF-disabled,
+min-rate ≤ 6 Mbps) plus rule #8 — no UniFi 2.4 GHz AP on SonosNet's channel 11.
+
+**RF + playback:** per-speaker retry %, RSSI, channel, associated AP (joined from the UDM client
+table), SonosNet PHY-error rate scraped from each speaker's `:1400` endpoint, and zone/group
+counts from the Sonos HTTP API. Speakers are matched to UDM clients by decoding the MAC out of
+the Sonos UUID (`RINCON_000E5821E8E0…` → `00:0e:58:21:e8:e0`) — no subnet scan needed.
+
+Retry thresholds are deliberately above the doc's "5% = audible" line, since ~5% is the current
+steady state and alerting there would be pure noise: any single speaker ≥ 25%, or ≥ 3 speakers
+≥ 15%. Tune the constants at the top of the script.
+
+### Alerting
+
+Resend → `rahulioson@gmail.com`, using the existing `~/.config/resend/key`. Debounced via
+`~/.sonos-health-state.json`: fires on entering a bad state, re-fires at most every 6 h while
+still bad, and sends one recovery notice when rules pass again.
+
+### Install
+
+```bash
+# 1. Create the table (once) — paste scripts/sonos-health-schema.sql into the Supabase SQL editor
+# 2. Deploy to Alpuca (TCC: cron cannot execute from ~/Documents — see service-access.md §0)
+cp scripts/sonos-health.py scripts/sonos-health-cron.sh /Users/alpuca/scripts/
+chmod +x /Users/alpuca/scripts/sonos-health-cron.sh
+# 3. Verify by hand before scheduling
+/Users/alpuca/scripts/sonos-health-cron.sh --dry-run
+# 4. Schedule
+( crontab -l; echo '*/15 * * * * PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin /Users/alpuca/scripts/sonos-health-cron.sh >> /Users/alpuca/logs/sonos-health.log 2>&1' ) | crontab -
+```
+
+Credentials come from the same `~/.unifi-snapshot.env` the nightly snapshot uses — nothing new
+to rotate.
+
+### Useful queries
+
+See the commented block at the bottom of `scripts/sonos-health-schema.sql`. The two that matter
+most: *"what did the kernel look like right after the last reboot"* (proves persistence works)
+and *"does retry rate worsen as group size grows"* (settles the ch1 rebalance question).
 
 ## References
 
