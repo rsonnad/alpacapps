@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MacBook Pro deal watcher — Grok searches the stores, this script emails the result.
+Garmin Forerunner 145/245 deal watcher — Grok searches the stores, this script emails the result.
 
 Runs on Alpuca. Morning (8:00am Eastern / 7:00am Central) always emails a digest.
 Evening (6:00pm Eastern / 5:00pm Central) emails only when listings or prices changed.
@@ -8,7 +8,7 @@ Evening (6:00pm Eastern / 5:00pm Central) emails only when listings or prices ch
 Grok does the live search via grok-delegate ask (web-aware). This process:
   1. calls grok-delegate
   2. parses EMAIL_BODY + JSON
-  3. diffs against ~/.mbp-deal-watch/state.json so the same deal is not re-hyped
+  3. diffs against ~/.garmin-watch-deal-watch/state.json so the same deal is not re-hyped
   4. sends mail through Resend (macOS mail/postfix will not reach Gmail)
 """
 
@@ -31,7 +31,7 @@ from zoneinfo import ZoneInfo
 
 EASTERN = ZoneInfo("America/New_York")
 HOME = Path(os.path.expanduser("~"))
-STATE_DIR = Path(os.environ.get("MBP_WATCH_DIR", str(HOME / ".mbp-deal-watch")))
+STATE_DIR = Path(os.environ.get("GARMIN_WATCH_DIR", str(HOME / ".garmin-watch-deal-watch")))
 STATE_FILE = STATE_DIR / "state.json"
 LAST_GROK_FILE = STATE_DIR / "last-grok.md"
 RESEND_KEY_FILE = Path(
@@ -54,13 +54,13 @@ def _find_grok_delegate() -> str:
 GROK_DELEGATE = _find_grok_delegate()
 PROMPT_FILE = Path(
     os.environ.get(
-        "MBP_WATCH_PROMPT",
-        str(Path(__file__).resolve().parent / "mbp-deal-watch-prompt.md"),
+        "GARMIN_WATCH_PROMPT",
+        str(Path(__file__).resolve().parent / "garmin-watch-deal-watch-prompt.md"),
     )
 )
-TO_EMAIL = os.environ.get("MBP_WATCH_TO", "rahulioson@gmail.com")
-FROM_EMAIL = os.environ.get("MBP_WATCH_FROM", "notifications@alpacaplayhouse.com")
-GROK_TIMEOUT_SEC = int(os.environ.get("MBP_WATCH_GROK_TIMEOUT", "1320"))  # 22 min
+TO_EMAIL = os.environ.get("GARMIN_WATCH_TO", "rahulioson@gmail.com")
+FROM_EMAIL = os.environ.get("GARMIN_WATCH_FROM", "notifications@alpacaplayhouse.com")
+GROK_TIMEOUT_SEC = int(os.environ.get("GARMIN_WATCH_GROK_TIMEOUT", "1320"))  # 22 min
 RESEND_URL = "https://api.resend.com/emails"
 
 TIER_ORDER = {"excellent": 0, "good": 1, "acceptable": 2, "over_budget": 3}
@@ -303,8 +303,8 @@ def subject_line(mode: str, listings: list[dict[str, Any]], changes: dict[str, l
         if n_gone:
             bits.append(f"{n_gone} gone")
         summary = ", ".join(bits) or "changes"
-        return f"MacBook Pro deals — {summary} ({stamp})"
-    return f"MacBook Pro deals — morning digest, {n} match{'es' if n != 1 else ''}{best_bit} ({stamp})"
+        return f"Garmin Forerunner deals — {summary} ({stamp})"
+    return f"Garmin Forerunner deals — morning digest, {n} match{'es' if n != 1 else ''}{best_bit} ({stamp})"
 
 
 def build_email(
@@ -353,14 +353,15 @@ def build_email(
     text += (
         "\n—\n"
         "Watcher: Alpuca cron · search by grok-delegate ask\n"
-        "Targets: 16\" M5 Pro/Max · ≥48GB · ≥1TB · new/open-box/refurb/excellent\n"
-        "Excellent <$2900 · Good $2900–$3100 · Acceptable ≤$3150 (Amazon Asurion is free)\n"
+        "Targets: Forerunner 145 / 145 Music / 245 / 245 Music · used or refurbished only\n"
+        "145: excellent <$70 · good $70–100 · acceptable $100–120\n"
+        "245: excellent <$110 · good $110–150 · acceptable $150–180\n"
     )
 
     rows = []
     for item in listings:
         total = item.get("_total", _total_of(item))
-        spec = f"{item.get('chip') or '?'} / {item.get('ram_gb') or '?'}GB / {item.get('storage_gb') or '?'}GB"
+        spec = f"{item.get('model') or '?'} · {item.get('color') or '?'}"
         url = html.escape(str(item.get("url") or ""))
         title = html.escape(str(item.get("title") or "(no title)"))
         rows.append(
@@ -375,7 +376,7 @@ def build_email(
         )
     table = (
         "<table border='1' cellpadding='6' cellspacing='0'>"
-        "<tr><th>Tier</th><th>Price</th><th>Source</th><th>Spec</th><th>Condition</th><th>Listing</th></tr>"
+        "<tr><th>Tier</th><th>Price</th><th>Source</th><th>Model</th><th>Condition</th><th>Listing</th></tr>"
         + "".join(rows)
         + "</table>"
         if rows
@@ -408,7 +409,7 @@ def send_email(subject: str, text: str, html_body: str) -> str:
     req = urllib.request.Request(RESEND_URL, data=body, method="POST")
     req.add_header("Authorization", f"Bearer {key}")
     req.add_header("Content-Type", "application/json")
-    req.add_header("User-Agent", "AlpacApps-MBP-Deal-Watch/1")
+    req.add_header("User-Agent", "AlpacApps-Garmin-Deal-Watch/1")
     try:
         with urllib.request.urlopen(req, timeout=45) as resp:
             raw = resp.read().decode()
@@ -420,11 +421,11 @@ def send_email(subject: str, text: str, html_body: str) -> str:
 
 
 def send_failure(mode: str, err: str) -> None:
-    subject = f"MacBook Pro watcher FAILED ({mode})"
+    subject = f"Garmin Forerunner watcher FAILED ({mode})"
     text = (
-        f"The {mode} MacBook Pro deal watch run failed.\n\n"
+        f"The {mode} Garmin Forerunner deal watch run failed.\n\n"
         f"{err}\n\n"
-        "Log: /Users/alpuca/logs/mbp-deal-watch.log\n"
+        "Log: /Users/alpuca/logs/garmin-watch-deal-watch.log\n"
     )
     html_body = f"<pre>{html.escape(text)}</pre>"
     try:
@@ -434,13 +435,13 @@ def send_failure(mode: str, err: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="MacBook Pro deal watcher")
+    parser = argparse.ArgumentParser(description="Garmin Forerunner deal watcher")
     parser.add_argument("mode", choices=["morning", "evening"], nargs="?", default="morning")
     parser.add_argument("--dry-run", action="store_true", help="search and print, do not email")
     parser.add_argument(
         "--reuse-last",
         action="store_true",
-        help="skip Grok and reuse ~/.mbp-deal-watch/last-grok.md",
+        help="skip Grok and reuse ~/.garmin-watch-deal-watch/last-grok.md",
     )
     args = parser.parse_args()
     mode = args.mode

@@ -107,12 +107,16 @@ time out and be discarded despite having succeeded.
 Also note `flock` does not exist on macOS; the wrapper uses an atomic `mkdir`
 lock with a 1-hour staleness escape hatch.
 
-### MacBook Pro deal watcher (cron, 8:00am + 6:00pm Eastern)
+### Garmin Forerunner deal watcher (cron, 8:00am + 6:00pm Eastern)
 
-Grok searches Apple Refurb / Amazon / Best Buy / eBay / B&H for a 16-inch M5
-Pro or M5 Max with ≥48GB RAM and ≥1TB SSD, then emails `rahulioson@gmail.com`
-via Resend. Morning always sends a digest; evening sends only when listings
-or prices changed. Seen listings live in `~/.mbp-deal-watch/state.json`.
+Grok searches eBay / Back Market / GPS Nation / Best Buy / Facebook
+Marketplace / Craigslist for a used or refurbished Garmin Forerunner 145 or
+245 (incl. Music variants), then emails `rahulioson@gmail.com` via Resend.
+Morning always sends a digest; evening sends only when listings or prices
+changed. Seen listings live in `~/.garmin-watch-deal-watch/state.json`.
+
+Replaced the MacBook Pro deal watcher 2026-08-28 (same pipeline, new
+product/prompt/price tiers).
 
 Search is delegated to `grok-delegate ask` (Phoenix SuperGrok, web-aware). Do
 not `grok login` on Alpuca — that would rotate the shared Phoenix token.
@@ -120,26 +124,27 @@ not `grok login` on Alpuca — that would rotate the shared Phoenix token.
 | Item | Value |
 |---|---|
 | Cron | `0 7 * * *` and `0 17 * * *` Central (= 8:00am / 6:00pm Eastern) |
-| Wrapper | `~/scripts/mbp-deal-watch.sh` (repo: `scripts/mbp-deal-watch.sh`) |
-| Worker | `~/scripts/mbp-deal-watch.py` |
-| Prompt | `~/scripts/mbp-deal-watch-prompt.md` |
+| Wrapper | `~/scripts/garmin-watch-deal-watch.sh` (repo: `scripts/garmin-watch-deal-watch.sh`) |
+| Worker | `~/scripts/garmin-watch-deal-watch.py` |
+| Prompt | `~/scripts/garmin-watch-deal-watch-prompt.md` |
 | Grok rail | `/Users/alpuca/sponic/infra/bin/grok-delegate` (outside Documents, cron-safe) |
-| Log | `~/logs/mbp-deal-watch.log` (self-trimming at 2 MB) |
-| State | `~/.mbp-deal-watch/state.json` |
+| Log | `~/logs/garmin-watch-deal-watch.log` (self-trimming at 2 MB) |
+| State | `~/.garmin-watch-deal-watch/state.json` |
 | Mail | Resend → `rahulioson@gmail.com` from `notifications@alpacaplayhouse.com` |
 
-Targets: excellent &lt; $2,900 · good $2,900–$3,100 · acceptable ≤ $3,150
-(Amazon is slightly preferred because Asurion is free).
+Targets: Forerunner 145 — excellent &lt;$70 · good $70–100 · acceptable
+$100–120. Forerunner 245 — excellent &lt;$110 · good $110–150 · acceptable
+$150–180. Used or refurbished only, new/sealed listings are rejected.
 
 Re-deploy after changing the repo copy:
 
 ```bash
-scp scripts/mbp-deal-watch.py scripts/mbp-deal-watch.sh scripts/mbp-deal-watch-prompt.md \
+scp scripts/garmin-watch-deal-watch.py scripts/garmin-watch-deal-watch.sh scripts/garmin-watch-deal-watch-prompt.md \
   alpuca:/Users/alpuca/scripts/
-ssh alpuca 'chmod +x /Users/alpuca/scripts/mbp-deal-watch.sh'
+ssh alpuca 'chmod +x /Users/alpuca/scripts/garmin-watch-deal-watch.sh'
 ```
 
-Manual test: `ssh alpuca '/Users/alpuca/scripts/mbp-deal-watch.sh morning'`
+Manual test: `ssh alpuca '/Users/alpuca/scripts/garmin-watch-deal-watch.sh morning'`
 (takes 5–20 min; Grok is doing live web search).
 
 ## Known Memory Hazard: `moondream-indexer`
