@@ -190,7 +190,41 @@ function htmlToPlainText(html: string): string {
 }
 
 /**
+ * Extract the bare address from a From header like `Name <a@b.com>`.
+ *
+ * Anchored to the END of the header: the real addr-spec is always last, while a
+ * hostile display name may contain its own angle brackets (`"<admin@bank.com>"
+ * <evil@spam.com>`). Matching the first pair would let a spammer forge the
+ * sender shown in the forwarded subject.
+ */
+function parseFromAddress(from: string): string {
+  const match = from.match(/<([^<>]*)>\s*$/);
+  const candidate = (match ? match[1] : from).trim();
+  // If it doesn't look like an address, show the raw header rather than a lie.
+  return candidate.includes("@") ? candidate : from.trim();
+}
+
+/** Collapse newlines and cap length so a crafted subject can't distort the forward. */
+function sanitizeSubjectPart(s: string): string {
+  const flat = s.replace(/[\r\n]+/g, " ").trim();
+  return flat.length > 200 ? `${flat.slice(0, 200)}…` : flat;
+}
+
+/** Escape untrusted text before embedding it in forwarded HTML. */
+function escapeHtmlText(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/**
  * Forward an email via Resend send API.
+ *
+ * Resend cannot forward under the original sender's From (SPF/DMARC would fail),
+ * so every forward goes out as PAI. That makes inbound spam look PAI-authored in
+ * the inbox, so the real sender is stamped into both the subject and the body.
  */
 async function forwardEmail(
   apiKey: string,
@@ -201,6 +235,14 @@ async function forwardEmail(
   text: string
 ): Promise<boolean> {
   try {
+    const senderAddress = sanitizeSubjectPart(parseFromAddress(originalFrom));
+    const forwardSubject = `[Fwd: ${senderAddress}] ${sanitizeSubjectPart(subject) || "(no subject)"}`;
+    const banner =
+      `<div style="margin:0 0 12px;padding:8px 12px;border-left:3px solid #999;background:#f5f5f5;` +
+      `color:#555;font-size:13px;font-family:system-ui,sans-serif;">` +
+      `Forwarded from <strong>${escapeHtmlText(originalFrom)}</strong></div>`;
+    const bodyHtml = html || `<pre>${escapeHtmlText(text)}</pre>`;
+
     const res = await fetch(`${RESEND_API_URL}/emails`, {
       method: "POST",
       headers: {
@@ -211,9 +253,9 @@ async function forwardEmail(
         from: SENDER_MAP.pai.from,
         to: [to],
         reply_to: SENDER_MAP.pai.reply_to,
-        subject: subject,
-        html: html || `<pre>${text}</pre>`,
-        text: text || "(HTML-only email)",
+        subject: forwardSubject,
+        html: banner + bodyHtml,
+        text: `Forwarded from: ${originalFrom}\n\n${text || "(HTML-only email)"}`,
       }),
     });
 
@@ -4746,6 +4788,9 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    if (!resendApiKey || !webhookSecret) {
+      return new Response(JSON.stringify({ error: "Webhook verification is not configured" }), { status: 503, headers: { "Content-Type": "application/json" } });
+    }
     const rawBody = await req.text();
 
     // Verify webhook signature
@@ -4753,19 +4798,18 @@ serve(async (req) => {
     const svixTimestamp = req.headers.get("svix-timestamp") || "";
     const svixSignature = req.headers.get("svix-signature") || "";
 
-    if (svixId && svixTimestamp && svixSignature) {
-      const isValid = await verifyWebhookSignature(rawBody, svixId, svixTimestamp, svixSignature, webhookSecret);
-      if (!isValid) {
-        console.error("Invalid webhook signature — rejecting");
-        return new Response(JSON.stringify({ error: "Invalid signature" }), {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-      console.log("Webhook signature verified");
-    } else {
-      console.warn("Missing SVIX headers — skipping signature check");
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      return new Response(JSON.stringify({ error: "Missing webhook signature" }), { status: 403, headers: { "Content-Type": "application/json" } });
     }
+    const isValid = await verifyWebhookSignature(rawBody, svixId, svixTimestamp, svixSignature, webhookSecret);
+    if (!isValid) {
+      console.error("Invalid webhook signature — rejecting");
+      return new Response(JSON.stringify({ error: "Invalid signature" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    console.log("Webhook signature verified");
 
     const webhook = JSON.parse(rawBody);
 
