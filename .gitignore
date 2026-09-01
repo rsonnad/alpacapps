@@ -64,3 +64,6 @@ scripts/client_secret_*.json
 __pycache__/
 *.pyc
 **/.wrangler/
+
+# Codex CLI machine-local config — holds plaintext API tokens on some machines
+.codex/
