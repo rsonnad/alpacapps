@@ -1,12 +1,12 @@
 {
-  "version": "v260901.07 1:16p",
-  "release": 1808,
-  "sha": "820798b8d8",
-  "fullSha": "820798b8d87ea84ec6f1b2bd0e7afc9334adc68b",
+  "version": "v260901.08 1:19p",
+  "release": 1809,
+  "sha": "70b6b60041",
+  "fullSha": "70b6b600413fdc7c7583933b60bb180a0f08655a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T18:16:02+00:00",
-  "commits": [{"sha":"2344967e68","message":"Fix Sonos multi-zone dropouts: kernel multicast + health telemetry","author":"Otto"},{"sha":"b760ce62c4","message":"Harden inbound email forwarding against spoofed headers","author":"Otto"},{"sha":"820798b8d8","message":"Rename MacBook Pro deal watcher to Garmin, add agent tooling config","author":"Otto"}]
+  "pushedAt": "2026-09-01T18:19:09+00:00",
+  "commits": [{"sha":"70b6b60041","message":"Untrack .codex/ — machine-local config holds plaintext API tokens","author":"Otto"}]
 }
