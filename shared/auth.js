@@ -351,14 +351,23 @@ async function handleAuthChange(session) {
           .eq('email', userEmail)
           .eq('status', 'pending')
           .order('invited_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
+          .limit(5),
         AUTH_TIMEOUT_MS,
         'Invitation check timed out'
       );
-      invitation = result.data;
+      const pending = result.data || [];
       invError = result.error;
-      authLog.info('Invitation check result', { found: !!invitation, error: invError?.message });
+      // An invitation carries a role grant (up to admin), so an expired one must not
+      // keep granting it. Take the newest pending invitation still inside its expiry
+      // window; a null expires_at means "never expires".
+      const nowMs = Date.now();
+      invitation = pending.find(i => !i.expires_at || new Date(i.expires_at).getTime() > nowMs) || null;
+      authLog.info('Invitation check result', {
+        found: !!invitation,
+        pendingRows: pending.length,
+        allExpired: pending.length > 0 && !invitation,
+        error: invError?.message,
+      });
     } catch (timeoutError) {
       authLog.warn('Invitation check timed out', timeoutError.message);
       invError = timeoutError;
@@ -430,23 +439,37 @@ async function handleAuthChange(session) {
         currentUser.displayName = session.user.user_metadata?.full_name || session.user.email;
       }
     } else {
-      // No invitation found — auto-create as public user
-      authLog.info('No invitation found — auto-creating as public user', { email: userEmail });
+      // No usable invitation — fall back to a public account.
+      authLog.info('No usable invitation — auto-creating as public user', { email: userEmail });
       const displayName = session.user.user_metadata?.full_name || userEmail.split('@')[0];
+
+      // Link the person record on this path too. Without person_id the account is a
+      // dead end: get_my_space_codes() and every other person-scoped query return
+      // nothing, and there is no way to tell whose account it is. Linking it means
+      // repairing a mis-roled resident is a one-field role change in admin/users.
+      let publicPersonId = null;
+      try {
+        const { data: existingPerson } = await supabase
+          .from('people').select('id').eq('email', userEmail).maybeSingle();
+        if (existingPerson) publicPersonId = existingPerson.id;
+      } catch (e) { /* non-critical */ }
 
       let newPublicUser = null;
       let publicCreateError = null;
       try {
+        const publicInsertData = {
+          auth_user_id: session.user.id,
+          email: userEmail,
+          display_name: displayName,
+          ...splitDisplayName(displayName),
+          role: 'public',
+        };
+        if (publicPersonId) publicInsertData.person_id = publicPersonId;
+
         const result = await withTimeout(
           supabase
             .from('app_users')
-            .insert({
-              auth_user_id: session.user.id,
-              email: userEmail,
-              display_name: displayName,
-              ...splitDisplayName(displayName),
-              role: 'public',
-            })
+            .insert(publicInsertData)
             .select()
             .single(),
           AUTH_TIMEOUT_MS,

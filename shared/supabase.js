@@ -20,6 +20,34 @@ function waitForSupabase(maxAttempts = 50) {
   });
 }
 
+/**
+ * If the vendor bundle never loads, this module throws during evaluation and
+ * every module that imports it (auth, resident-shell, the page script) is
+ * skipped silently — the page sits on its loading spinner forever with no
+ * message and no redirect. Replace the spinner with something a resident can
+ * act on, so a missing <script src=".../supabase-js-*.min.js"> tag surfaces
+ * immediately instead of looking like a hang.
+ */
+function reportSupabaseLoadFailure() {
+  console.error(
+    '[supabase] Vendor bundle not found on window.supabase — the page is missing ' +
+    '<script src="/vendor/supabase-js-2.39.3.min.js"></script> before its module script, ' +
+    'or that file failed to load.'
+  );
+  if (typeof document === 'undefined') return;
+  const overlay = document.getElementById('loadingOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('hidden');
+  overlay.style.display = 'flex';
+  overlay.innerHTML =
+    '<div style="max-width:26rem;padding:1.5rem;text-align:center;font:400 0.95rem/1.55 system-ui,sans-serif;color:#4a423f;">' +
+    "<p style=\"margin:0 0 0.75rem;font-weight:600;\">This page didn't finish loading.</p>" +
+    '<p style="margin:0 0 0.75rem;">Please reload. If it keeps happening, text Jon at ' +
+    '<a href="sms:+12396665815">(239) 666-5815</a>.</p>' +
+    '<p style="margin:0;"><a href="/login/">Go to sign in</a></p>' +
+    '</div>';
+}
+
 // Initialize Supabase client with auth configuration
 let supabase;
 
@@ -37,7 +65,12 @@ if (window.supabase?.createClient) {
   });
 } else {
   // Wait for it to load
-  await waitForSupabase();
+  try {
+    await waitForSupabase();
+  } catch (err) {
+    reportSupabaseLoadFailure();
+    throw err;
+  }
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       autoRefreshToken: true,
