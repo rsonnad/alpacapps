@@ -857,6 +857,12 @@ this comparison).
 To disable: remove `--remediate` from the crontab line on Alpuca. It never touches anything but
 the two sysfs values and the unit file.
 
+**First real use — 2026-09-01 18:15 CDT:** the first `--remediate` tick found `udm-boot.service`
+missing (it had never been installed — see the 2026-08-30 root cause), wrote and enabled it, and
+recorded the sample as found (`udm_boot_service='missing'`, `detail.remediation.post.udm_boot='enabled'`).
+Router verified afterwards: `enabled`, snooping `0`, querier `0`. A remediation event bypasses
+the 6 h alert debounce so it is emailed immediately.
+
 ### Proving persistence: do a controlled reboot
 
 "Persistence UNPROVEN" stays in the weekly report until the UDM actually reboots, and waiting

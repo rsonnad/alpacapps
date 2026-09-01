@@ -503,8 +503,15 @@ def maybe_alert(r: dict, zone_count, grouped) -> bool:
         except Exception:
             pass
 
+    remediated_now = any(v.startswith("REMEDIATED") for v in r["violations"])
+
     should = False
-    if is_bad and not was_bad:
+    if remediated_now:
+        # The router just self-healed — that is worth knowing immediately, even
+        # if the debounce would otherwise hold because retry-rate warnings
+        # already had us in a "bad" state.
+        should = True
+    elif is_bad and not was_bad:
         should = True
     elif is_bad and (hours_since is None or hours_since >= REALERT_HOURS):
         should = True
