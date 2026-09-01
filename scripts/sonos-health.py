@@ -200,7 +200,7 @@ def probe_speaker(ip: str):
 
 # ------------------------------------------------------------------ analysis
 
-def evaluate(state: dict, zones_by_mac: dict, probe: bool) -> dict:
+def evaluate(state: dict, zones_by_mac: dict, probe: bool, phy_window_ok: bool = False) -> dict:
     kernel = state["kernel"]
     violations = []
 
@@ -323,10 +323,12 @@ def evaluate(state: dict, zones_by_mac: dict, probe: bool) -> dict:
         names = ", ".join(f"{s.get('room') or s['ip']} {s['retry_pct']}%" for s in over_warn)
         violations.append(f"{len(over_warn)} speakers above {RETRY_WARN_PCT}% retry: {names}")
 
-    # SonosNet interference. Note this is per-interval, not absolute — a long gap
-    # between runs inflates it, so only the steady-state cron cadence is meaningful.
+    # SonosNet interference. The counter resets on read, so the value is errors
+    # accumulated since the LAST read — not an absolute. A first run, or a run
+    # after the cron has been down, covers hours or days and would trip any
+    # threshold. Only judge it when the preceding sample was one cron tick ago.
     phy_bad = [s for s in speakers if (s.get("phy_errors") or 0) >= PHY_ERR_CRIT]
-    if phy_bad:
+    if phy_bad and phy_window_ok:
         names = ", ".join(f"{s.get('room') or s['ip']} {s['phy_errors']:,}" for s in phy_bad)
         violations.append(
             f"SonosNet PHY errors above {PHY_ERR_CRIT:,} this interval: {names} "
@@ -418,9 +420,12 @@ def send_email(subject: str, text: str) -> bool:
     body = json.dumps({
         "from": ALERT_FROM, "to": [ALERT_TO], "subject": subject, "text": text,
     }).encode("utf-8")
+    # User-Agent is mandatory: Cloudflare fronts both Resend and the Supabase
+    # Management API and answers urllib's default agent with 403 / error 1010.
     req = urllib.request.Request("https://api.resend.com/emails", data=body, method="POST",
                                  headers={"Authorization": f"Bearer {key}",
-                                          "Content-Type": "application/json"})
+                                          "Content-Type": "application/json",
+                                          "User-Agent": "alpacapps-sonos-health/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=20) as resp:
             return "id" in json.loads(resp.read())
@@ -453,7 +458,7 @@ def maybe_alert(r: dict, zone_count, grouped) -> bool:
         should = True
 
     if not should:
-        save_state({"bad": is_bad, "last_alert": last_alert})
+        save_state({**prev, "bad": is_bad, "last_alert": last_alert})
         return False
 
     if is_bad:
@@ -482,7 +487,7 @@ def maybe_alert(r: dict, zone_count, grouped) -> bool:
                f"Worst retry rate: {r['max_retry_pct']}% ({r['worst_speaker']})"
 
     sent = send_email(subject, text)
-    save_state({"bad": is_bad, "last_alert": now.isoformat() if sent else last_alert})
+    save_state({**prev, "bad": is_bad, "last_alert": now.isoformat() if sent else last_alert})
     return sent
 
 
@@ -508,7 +513,19 @@ def main():
     if zerr:
         print(f"  WARN: {zerr}")
 
-    r = evaluate(state, zones_by_mac, probe=not args.no_probe)
+    # PHY error counts are only comparable to the threshold when the previous
+    # read was roughly one cron tick ago (see evaluate()).
+    now = datetime.datetime.now(datetime.timezone.utc)
+    last_sample = load_state().get("last_sample")
+    mins = None
+    if last_sample:
+        try:
+            mins = (now - datetime.datetime.fromisoformat(last_sample)).total_seconds() / 60
+        except Exception:
+            pass
+    phy_window_ok = mins is not None and 5 <= mins <= 45
+
+    r = evaluate(state, zones_by_mac, probe=not args.no_probe, phy_window_ok=phy_window_ok)
 
     status = "OK" if not r["violations"] else f"{len(r['violations'])} VIOLATION(S)"
     print(f"→ Sonos health: {status}")
@@ -519,6 +536,10 @@ def main():
           f"{r['speakers_over_retry_threshold']} above {RETRY_WARN_PCT}%")
     for v in r["violations"]:
         print(f"  ✗ {v}")
+
+    if not phy_window_ok:
+        gap = f"{mins:.0f} min" if mins is not None else "no prior sample"
+        print(f"  (PHY-error threshold not evaluated — interval {gap}, needs 5-45 min)")
 
     if args.dry_run:
         print("\n(dry run — nothing written)")
@@ -534,14 +555,21 @@ def main():
     detail = {
         "speakers": r["speakers"],
         "ap_channels": r["ap_channels"],
+        "interval_minutes": round(mins, 1) if mins is not None else None,
+        "phy_threshold_evaluated": phy_window_ok,
         "thresholds": {
             "retry_crit_pct": RETRY_CRIT_PCT,
             "retry_warn_pct": RETRY_WARN_PCT,
             "retry_warn_count": RETRY_WARN_COUNT,
+            "phy_err_crit": PHY_ERR_CRIT,
         },
     }
     sid = insert_sample(token, r, zone_count, grouped, largest, detail, alerted)
     print(f"  ✓ sample id={sid}")
+
+    st = load_state()
+    st["last_sample"] = now.isoformat()
+    save_state(st)
 
 
 if __name__ == "__main__":
