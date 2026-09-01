@@ -2962,6 +2962,43 @@ async function holdForApproval(
 }
 // ===== END EMAIL APPROVAL SYSTEM =====
 
+/**
+ * Record an outbound send in email_log.
+ *
+ * Approval-gated sends were already logged (from holdForApproval), but the
+ * direct path logged only to api_usage_log — so every auto-send type
+ * (requires_approval = false) left no audit trail, and failures left none
+ * either. Non-fatal by design: logging must never break an actual send.
+ */
+async function logEmailSend(entry: {
+  resendId?: string | null;
+  emailType: string;
+  fromAddress: string;
+  toAddresses: string[];
+  subject: string;
+  status: "sent" | "failed";
+  errorMessage?: string | null;
+}): Promise<void> {
+  try {
+    const sb = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    await sb.from("email_log").insert({
+      resend_id: entry.resendId ?? null,
+      email_type: entry.emailType,
+      from_address: entry.fromAddress,
+      to_addresses: entry.toAddresses,
+      subject: entry.subject,
+      status: entry.status,
+      error_message: entry.errorMessage ?? null,
+      source: "direct_send",
+    });
+  } catch (logErr) {
+    console.warn("Failed to write email_log (non-fatal):", logErr);
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -3088,6 +3125,14 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error("Resend API error:", result);
+      await logEmailSend({
+        emailType: type,
+        fromAddress: from || sender.from,
+        toAddresses: toArray,
+        subject: customSubject || rendered.subject,
+        status: "failed",
+        errorMessage: `Resend ${response.status}: ${JSON.stringify(result)}`,
+      });
       return new Response(
         JSON.stringify({ error: "Failed to send email", details: result }),
         { status: response.status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
@@ -3095,6 +3140,15 @@ serve(async (req) => {
     }
 
     console.log("Email sent successfully:", { type, to, id: result.id });
+
+    await logEmailSend({
+      resendId: result.id,
+      emailType: type,
+      fromAddress: from || sender.from,
+      toAddresses: toArray,
+      subject: customSubject || rendered.subject,
+      status: "sent",
+    });
 
     // Log to api_usage_log (fire-and-forget, don't block response)
     try {
