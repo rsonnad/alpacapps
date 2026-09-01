@@ -1,12 +1,12 @@
 {
-  "version": "v260901.02 10:31a",
-  "release": 1803,
-  "sha": "80ecd441a1",
-  "fullSha": "80ecd441a1ec6e987226cd588198ac92b251af34",
+  "version": "v260901.03 10:34a",
+  "release": 1804,
+  "sha": "5bc9409506",
+  "fullSha": "5bc9409506a2854ea89819f4d98a1cc28cb13942",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T15:31:11+00:00",
-  "commits": [{"sha":"80ecd441a1","message":"Fix resident access-codes page: login bootstrap, page hang, broken RPC","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-09-01T15:34:50+00:00",
+  "commits": [{"sha":"5bc9409506","message":"docs(product): record the assignment-grants-login decision","author":"Sonia Wendorff"}]
 }
