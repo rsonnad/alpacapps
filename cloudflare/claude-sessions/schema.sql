@@ -13,4 +13,10 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_sessions_project ON sessions(project);
-CREATE INDEX IF NOT EXISTS idx_sessions_ended ON sessions(ended_at);
+
+-- Expression indexes matching the list query's ORDER BY / WHERE on
+-- COALESCE(started_at, ended_at); without them every listing full-scans.
+CREATE INDEX IF NOT EXISTS idx_sessions_sort
+  ON sessions(COALESCE(started_at, ended_at) DESC);
+CREATE INDEX IF NOT EXISTS idx_sessions_project_sort
+  ON sessions(project, COALESCE(started_at, ended_at) DESC);

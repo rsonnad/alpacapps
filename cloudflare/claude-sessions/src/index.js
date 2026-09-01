@@ -4,6 +4,35 @@
 
 const AUTH_TOKEN = 'alpaca-sessions-2026';
 
+// /stats and /projects are unavoidable full-table aggregates — no index helps —
+// and the dashboards call them on every render. Sessions are written once when a
+// Claude session ends, so a few minutes of staleness is invisible.
+//
+// Two layers, because caches.default is a no-op on workers.dev domains: the
+// Cache-Control header lets the browser skip the request entirely, and the
+// module-scope memo below catches everyone else while the isolate is warm.
+const AGG_CACHE_TTL = 300; // seconds
+const aggCache = new Map();
+
+function aggCached(key) {
+  const hit = aggCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.at > AGG_CACHE_TTL * 1000) {
+    aggCache.delete(key);
+    return null;
+  }
+  return hit.data;
+}
+
+function aggStore(key, data) {
+  aggCache.set(key, { at: Date.now(), data });
+  return data;
+}
+
+function aggJson(data) {
+  return json(data, 200, { 'Cache-Control': `public, max-age=${AGG_CACHE_TTL}` });
+}
+
 export default {
   async fetch(request, env) {
     // CORS preflight
@@ -45,6 +74,7 @@ export default {
         body.cache_creation_tokens || null
       ).run();
 
+      aggCache.clear(); // new session invalidates /stats and /projects
       return json({ ok: true, id });
     }
 
@@ -89,11 +119,13 @@ export default {
       params.push(limit, offset);
       countQuery += where;
 
+      // COUNT(*) scans every matching row, so only pay for it on the first page;
+      // "load more" pages reuse the total the client already has.
       const [result, countResult] = await Promise.all([
         env.DB.prepare(query).bind(...params).all(),
-        env.DB.prepare(countQuery).bind(...countParams).all()
+        offset === 0 ? env.DB.prepare(countQuery).bind(...countParams).all() : null
       ]);
-      const total = countResult.results[0]?.total || 0;
+      const total = countResult ? (countResult.results[0]?.total || 0) : null;
       return json({ sessions: result.results, count: result.results.length, total, limit, offset });
     }
 
@@ -164,6 +196,10 @@ export default {
     if (request.method === 'GET' && url.pathname === '/stats') {
       const project = url.searchParams.get('project');
       const useFilter = project && project !== 'all';
+      const cacheKey = `stats:${useFilter ? project : 'all'}`;
+      const hit = aggCached(cacheKey);
+      if (hit) return aggJson(hit);
+
       const where = useFilter ? 'WHERE project = ?' : '';
       const stmt = env.DB.prepare(`
         SELECT
@@ -180,11 +216,14 @@ export default {
         FROM sessions ${where}
       `);
       const result = await (useFilter ? stmt.bind(project) : stmt).first();
-      return json(result);
+      return aggJson(aggStore(cacheKey, result));
     }
 
     // GET /projects — list distinct projects with session counts
     if (request.method === 'GET' && url.pathname === '/projects') {
+      const hit = aggCached('projects');
+      if (hit) return aggJson(hit);
+
       const result = await env.DB.prepare(`
         SELECT
           project,
@@ -197,17 +236,17 @@ export default {
         GROUP BY project
         ORDER BY last_seen DESC
       `).all();
-      return json({ projects: result.results });
+      return aggJson(aggStore('projects', { projects: result.results }));
     }
 
     return json({ error: 'not found' }, 404);
   }
 };
 
-function json(data, status = 200) {
+function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders() }
+    headers: { 'Content-Type': 'application/json', ...corsHeaders(), ...extraHeaders }
   });
 }
 

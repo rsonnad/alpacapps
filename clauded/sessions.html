@@ -472,7 +472,8 @@
 
       try {
         const data = await api(buildQuery());
-        totalSessions = data.total || 0;
+        // Paged responses omit `total` (skips a COUNT(*) scan) — keep the first page's.
+        if (data.total != null) totalSessions = data.total;
         sessions = append ? sessions.concat(data.sessions) : data.sessions;
         currentOffset = sessions.length;
         renderSessions();
