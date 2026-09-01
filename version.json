@@ -1,12 +1,12 @@
 {
-  "version": "v260901.11 6:03p",
-  "release": 1812,
-  "sha": "dcd17402f5",
-  "fullSha": "dcd17402f5cbf6736530c720bd14b4949b68558d",
+  "version": "v260901.12 6:12p",
+  "release": 1813,
+  "sha": "68a0de9b9b",
+  "fullSha": "68a0de9b9b9fe863004b26c2249d6b7fa97c92ea",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T23:03:34+00:00",
-  "commits": [{"sha":"dcd17402f5","message":"Sonos collector: self-heal kernel state, record firmware","author":"Otto"}]
+  "pushedAt": "2026-09-01T23:12:44+00:00",
+  "commits": [{"sha":"68a0de9b9b","message":"Cut D1 rows_read: index the hot sorts, cache the aggregates","author":"Otto"}]
 }
