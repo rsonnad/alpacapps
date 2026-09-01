@@ -1,12 +1,12 @@
 {
-  "version": "v260901.01 10:06a",
-  "release": 1802,
-  "sha": "9b9961d1e4",
-  "fullSha": "9b9961d1e42aacba1bae28c6945b26eeacc829c9",
+  "version": "v260901.02 10:31a",
+  "release": 1803,
+  "sha": "80ecd441a1",
+  "fullSha": "80ecd441a1ec6e987226cd588198ac92b251af34",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T15:06:49+00:00",
-  "commits": [{"sha":"dc3759896b","message":"Fix wrong column name approved_move_in_date -> approved_move_in","author":"Sonia Wendorff"},{"sha":"9b9961d1e4","message":"Trigger onboarding email on 'ready' phase instead of a daily sweep","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-09-01T15:31:11+00:00",
+  "commits": [{"sha":"80ecd441a1","message":"Fix resident access-codes page: login bootstrap, page hang, broken RPC","author":"Sonia Wendorff"}]
 }
