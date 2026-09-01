@@ -1,12 +1,12 @@
 {
-  "version": "v260901.10 1:28p",
-  "release": 1811,
-  "sha": "79eac249d7",
-  "fullSha": "79eac249d79c20863ddeb9edcaec0f5c9bac544f",
+  "version": "v260901.11 6:03p",
+  "release": 1812,
+  "sha": "dcd17402f5",
+  "fullSha": "dcd17402f5cbf6736530c720bd14b4949b68558d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T18:28:43+00:00",
-  "commits": [{"sha":"79eac249d7","message":"Add weekly Sonos review, emailed Mondays","author":"Otto"}]
+  "pushedAt": "2026-09-01T23:03:34+00:00",
+  "commits": [{"sha":"dcd17402f5","message":"Sonos collector: self-heal kernel state, record firmware","author":"Otto"}]
 }
