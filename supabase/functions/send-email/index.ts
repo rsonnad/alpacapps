@@ -556,7 +556,9 @@ the Alpaca Playhouse property AI agent`
     case "move_in_confirmed": {
       const isMonthly = data.is_monthly !== false;
       const isPaid = Number(data.monthly_rate) > 0;
-      const miRateDisplay = !isPaid ? 'Complimentary' : (isMonthly ? `$${Number(data.monthly_rate).toLocaleString()}/mo` : `$${Number(data.monthly_rate).toLocaleString()}`);
+      // rate_display lets prepaid bookings (e.g. Airbnb) state who was already
+      // paid, instead of falling through to the misleading "Complimentary".
+      const miRateDisplay = data.rate_display || (!isPaid ? 'Complimentary' : (isMonthly ? `$${Number(data.monthly_rate).toLocaleString()}/mo` : `$${Number(data.monthly_rate).toLocaleString()}`));
       const checkInDisplay = data.check_in_time === 'flexible' ? 'Flexible (no set time)' : (data.check_in_time || null);
       const checkOutDisplay = data.check_out_time === 'flexible' ? 'Flexible (no set time)' : (data.check_out_time || null);
       const showRentDue = isPaid && isMonthly;
