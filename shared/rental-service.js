@@ -632,6 +632,17 @@ async function updateAgreementStatus(applicationId, status, documentUrl = null) 
     .single();
 
   if (error) throw error;
+
+  // Contract gate just closed — schedule onboarding if the deposit is done too.
+  // Non-fatal: the signature is recorded either way.
+  if (status === AGREEMENT_STATUS.SIGNED) {
+    try {
+      await scheduleOnboardingEmail(applicationId);
+    } catch (e) {
+      console.error('Failed to schedule onboarding email:', e);
+    }
+  }
+
   return data;
 }
 
@@ -976,6 +987,68 @@ async function updateOverallDepositStatus(applicationId) {
     .eq('id', applicationId);
 }
 
+// =============================================
+// ONBOARDING EMAIL SCHEDULING
+// =============================================
+
+/** Aim to land the onboarding email 24h before move-in. */
+const ONBOARDING_LEAD_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Has the application reached the 'ready' pipeline phase?
+ *
+ * Ready means both gates are closed: payment (deposit) and contract (lease).
+ * Either can be waived per-application via require_deposit / require_lease —
+ * the same rules confirmMoveIn enforces.
+ */
+function isReadyForOnboarding(app) {
+  if (!app) return false;
+  const depositDone = app.require_deposit === false ||
+    app.deposit_status === DEPOSIT_STATUS.CONFIRMED;
+  const leaseDone = app.require_lease === false ||
+    app.agreement_status === AGREEMENT_STATUS.SIGNED;
+  return depositDone && leaseDone;
+}
+
+/**
+ * Schedule the onboarding email when an application enters the 'ready' phase.
+ *
+ * Called from both gate-closing paths (deposit confirmed, agreement signed) so
+ * it fires on whichever completes last, regardless of order. Targets 24h before
+ * move-in; if the application only becomes ready inside that window — or move-in
+ * has already passed — it goes out on the next sweep instead, so a late-stage
+ * approval still gets its email rather than silently missing the window.
+ *
+ * Idempotent: never reschedules an email already sent, and never moves a send
+ * time that is already pending.
+ */
+async function scheduleOnboardingEmail(applicationId) {
+  const app = await getApplication(applicationId);
+  if (!isReadyForOnboarding(app)) return null;
+  if (app.onboarding_email_sent_at || app.onboarding_email_send_at) return null;
+
+  const moveInDate = app.approved_move_in || app.desired_move_in;
+  if (!moveInDate) return null;
+
+  const moveInAt = parseAustinDate(moveInDate);
+  if (!moveInAt) return null;
+
+  const sendAt = new Date(Math.max(moveInAt.getTime() - ONBOARDING_LEAD_MS, Date.now()));
+
+  const { data, error } = await supabase
+    .from('rental_applications')
+    .update({
+      onboarding_email_send_at: sendAt.toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', applicationId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 /**
  * Confirm deposit (funds cleared, ready for move-in)
  * Validates that at least one deposit ledger entry exists before confirming.
@@ -1009,36 +1082,28 @@ async function confirmDeposit(applicationId) {
     throw new Error('Cannot confirm deposit: no deposit payment found in ledger. Record the deposit payment first.');
   }
 
-  // Schedule onboarding email for 9am CT on move-in day
-  const fullApp = await getApplication(applicationId);
-  const moveInDate = fullApp?.approved_move_in || fullApp?.desired_move_in;
-  let onboardingSendAt = null;
-  if (moveInDate) {
-    const sendDate = new Date(moveInDate + 'T14:00:00.000Z'); // 9am CDT = 14:00 UTC
-    if (sendDate > new Date()) {
-      onboardingSendAt = sendDate.toISOString();
-    } else {
-      // Move-in is today or past — send within the hour
-      onboardingSendAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-    }
-  }
-
-  const updatePayload = {
-    deposit_status: DEPOSIT_STATUS.CONFIRMED,
-    deposit_confirmed_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    ...activityStamp(),
-  };
-  if (onboardingSendAt) updatePayload.onboarding_email_send_at = onboardingSendAt;
-
   const { data, error } = await supabase
     .from('rental_applications')
-    .update(updatePayload)
+    .update({
+      deposit_status: DEPOSIT_STATUS.CONFIRMED,
+      deposit_confirmed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ...activityStamp(),
+    })
     .eq('id', applicationId)
     .select()
     .single();
 
   if (error) throw error;
+
+  // Payment gate just closed — schedule onboarding if the contract is done too.
+  // Non-fatal: the deposit is confirmed either way.
+  try {
+    await scheduleOnboardingEmail(applicationId);
+  } catch (e) {
+    console.error('Failed to schedule onboarding email:', e);
+  }
+
   return data;
 }
 
@@ -1699,6 +1764,8 @@ export const rentalService = {
   recordMoveInDeposit,
   recordSecurityDeposit,
   confirmDeposit,
+  scheduleOnboardingEmail,
+  isReadyForOnboarding,
 
   // Proration
   calculateProration,

@@ -1,7 +1,16 @@
 /**
  * Send Onboarding Email — Edge Function
  *
- * Triggered by pg_cron daily at 9:00 AM Central (14:00 UTC).
+ * Hourly delivery sweep. This function does NOT decide who gets an email —
+ * scheduling is trigger-based: scheduleOnboardingEmail() in
+ * shared/rental-service.js and process-signature stamp
+ * onboarding_email_send_at when an application enters the 'ready' phase
+ * (payment + contract both done), targeting 24h before move-in.
+ *
+ * Runs hourly rather than daily so an application that becomes ready inside
+ * that 24h window still goes out promptly instead of waiting for a fixed
+ * daily slot that may already have passed.
+ *
  * Finds rental applications where onboarding_email_send_at <= now()
  * and onboarding_email_sent_at IS NULL, then sends the move_in_confirmed
  * email for each and marks them sent.

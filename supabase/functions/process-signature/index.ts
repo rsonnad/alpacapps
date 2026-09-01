@@ -414,6 +414,15 @@ Deno.serve(async (req) => {
         return jsonError('This signing link was replaced before completion. Please use the most recent link.', 409);
       }
 
+      // Contract gate just closed — schedule the onboarding email if the
+      // payment gate is closed too. Non-fatal: the signature is recorded
+      // regardless of whether scheduling succeeds.
+      try {
+        await scheduleOnboardingEmail(supabase, app.id);
+      } catch (e) {
+        console.error('Failed to schedule onboarding email:', e);
+      }
+
       // Record waiver signature if applicable
       if (rentalApp?.waiver_template_id) {
         try {
@@ -771,4 +780,60 @@ async function sendVehicleEmail(supabase: any, apiKey: string, person: any) {
   } catch (e) {
     console.error('Error sending vehicle email:', e);
   }
+}
+
+/**
+ * Schedule the onboarding email once an application enters the 'ready' phase.
+ *
+ * Ready means both gates are closed: payment (deposit) and contract (lease).
+ * Either can be waived per-application via require_deposit / require_lease.
+ * This mirrors isReadyForOnboarding() in shared/rental-service.js — keep the
+ * two in sync. Called from whichever gate closes last, so order doesn't matter.
+ *
+ * Targets 24h before move-in. If the application only becomes ready inside that
+ * window — or move-in has already passed — it is queued for the next sweep so a
+ * late signature still gets its email instead of silently missing the window.
+ *
+ * Idempotent: never reschedules an email already sent, and never moves a send
+ * time that is already pending.
+ */
+async function scheduleOnboardingEmail(supabase: any, applicationId: string) {
+  const { data: app } = await supabase
+    .from("rental_applications")
+    .select(`
+      approved_move_in,
+      desired_move_in,
+      deposit_status,
+      require_deposit,
+      require_lease,
+      agreement_status,
+      onboarding_email_send_at,
+      onboarding_email_sent_at
+    `)
+    .eq("id", applicationId)
+    .single();
+
+  if (!app) return;
+
+  const depositDone = app.require_deposit === false || app.deposit_status === "confirmed";
+  const leaseDone = app.require_lease === false || app.agreement_status === "signed";
+  if (!depositDone || !leaseDone) return;
+
+  if (app.onboarding_email_sent_at || app.onboarding_email_send_at) return;
+
+  const moveInDate = app.approved_move_in || app.desired_move_in;
+  if (!moveInDate) return;
+
+  // move_in is a DATE. Anchor to Austin midnight; the 1h CST/CDT drift is
+  // immaterial against a 24h lead time.
+  const moveInAt = new Date(`${moveInDate}T00:00:00-06:00`).getTime();
+  const sendAt = new Date(Math.max(moveInAt - 24 * 60 * 60 * 1000, Date.now()));
+
+  await supabase
+    .from("rental_applications")
+    .update({
+      onboarding_email_send_at: sendAt.toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", applicationId);
 }
