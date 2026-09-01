@@ -1,12 +1,12 @@
 {
-  "version": "v260901.03 10:34a",
-  "release": 1804,
-  "sha": "5bc9409506",
-  "fullSha": "5bc9409506a2854ea89819f4d98a1cc28cb13942",
+  "version": "v260901.04 10:49a",
+  "release": 1805,
+  "sha": "4c42bf40ea",
+  "fullSha": "4c42bf40ea2f2048e9dc1e22ae4284fa7c84a364",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T15:34:50+00:00",
-  "commits": [{"sha":"5bc9409506","message":"docs(product): record the assignment-grants-login decision","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-09-01T15:49:18+00:00",
+  "commits": [{"sha":"4c42bf40ea","message":"Fix privilege escalation in app_users RLS","author":"Sonia Wendorff"}]
 }
