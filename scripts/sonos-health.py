@@ -84,6 +84,7 @@ echo "snooping=$(cat /sys/devices/virtual/net/br0/bridge/multicast_snooping 2>/d
 echo "querier=$(cat /sys/devices/virtual/net/br0/bridge/multicast_querier 2>/dev/null)"
 echo "udm_boot=$(systemctl is-enabled udm-boot.service 2>&1 | head -1)"
 echo "uptime=$(cut -d' ' -f1 /proc/uptime 2>/dev/null)"
+echo "firmware=$(ubnt-device-info firmware 2>/dev/null || cat /etc/unifi-os/version 2>/dev/null)"
 curl -sk -c /tmp/sh.txt -X POST 'https://localhost/api/auth/login' \
   -H 'Content-Type: application/json' \
   -d "{\\"username\\":\\"alpacaauto\\",\\"password\\":\\"$WP\\",\\"remember\\":true}" > /dev/null
@@ -135,6 +136,58 @@ def pull_udm(ssh_pass: str, web_pass: str) -> dict:
         "devices": data(devices_raw),
         "sta": data(sta_raw),
     }
+
+
+# Applied by --remediate when the kernel tripwire fails. The two echo lines are
+# the documented working baseline (SONOSAUTOMATION.md §Kernel vs Controller);
+# the unit file is the runner /data/on_boot.d/ has needed since April 2026 and
+# that UniFi OS firmware upgrades wipe from /etc/systemd/system.
+REMEDIATE_SCRIPT = """
+echo 0 > /sys/devices/virtual/net/br0/bridge/multicast_snooping
+echo 0 > /sys/devices/virtual/net/br0/bridge/multicast_querier
+if ! systemctl is-enabled udm-boot.service >/dev/null 2>&1; then
+  cat > /etc/systemd/system/udm-boot.service <<'EOF'
+[Unit]
+Description=Run /data/on_boot.d scripts at boot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "for f in /data/on_boot.d/*.sh; do [ -x $f ] && $f; done"
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable udm-boot.service >/dev/null 2>&1
+  echo "reinstalled_unit=yes"
+fi
+echo "snooping=$(cat /sys/devices/virtual/net/br0/bridge/multicast_snooping)"
+echo "querier=$(cat /sys/devices/virtual/net/br0/bridge/multicast_querier)"
+echo "udm_boot=$(systemctl is-enabled udm-boot.service 2>&1 | head -1)"
+"""
+
+
+def remediate(ssh_pass: str) -> dict:
+    """Force the kernel baseline and (re)install udm-boot.service. Returns post-state."""
+    cmd = [
+        "sshpass", "-p", ssh_pass,
+        "ssh", "-o", "StrictHostKeyChecking=no", "-o", "PubkeyAuthentication=no",
+        "-o", "ConnectTimeout=10", f"root@{UDM_HOST}", "bash -s",
+    ]
+    proc = subprocess.run(cmd, input=REMEDIATE_SCRIPT, capture_output=True, text=True, timeout=60)
+    post = {"ok": proc.returncode == 0, "reinstalled_unit": False}
+    for line in proc.stdout.splitlines():
+        k, _, v = line.partition("=")
+        if k == "reinstalled_unit":
+            post["reinstalled_unit"] = (v == "yes")
+        elif k in ("snooping", "querier", "udm_boot"):
+            post[k] = v.strip()
+    if proc.returncode != 0:
+        post["error"] = proc.stderr[:300]
+    return post
 
 
 def http_json(url: str, timeout: int = 8):
@@ -340,6 +393,7 @@ def evaluate(state: dict, zones_by_mac: dict, probe: bool, phy_window_ok: bool =
         "kernel_multicast_snooping": int(snooping) if (snooping or "").isdigit() else None,
         "kernel_multicast_querier": int(querier) if (querier or "").isdigit() else None,
         "udm_boot_service": udm_boot,
+        "udm_firmware": kernel.get("firmware") or None,
         "udm_uptime_seconds": int(float(uptime)) if uptime else None,
         "violations": violations,
         "speakers": speakers,
@@ -498,6 +552,10 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="print only; no DB write, no alert")
     ap.add_argument("--no-alert", action="store_true", help="write to Supabase but never email")
     ap.add_argument("--no-probe", action="store_true", help="skip per-speaker SonosNet probe")
+    ap.add_argument("--remediate", action="store_true",
+                    help="if the kernel tripwire fails, apply the documented fix and reinstall "
+                         "udm-boot.service, then alert; the sample still records the state as "
+                         "FOUND so reboot-survival history stays honest")
     args = ap.parse_args()
 
     ssh_pass = os.environ.get("UDM_SSH_PASS")
@@ -509,6 +567,21 @@ def main():
         sys.exit("Missing SUPA_TOKEN (or pass --dry-run)")
 
     state = pull_udm(ssh_pass, web_pass)
+
+    # Self-heal. The sample below still records what was FOUND, so the weekly
+    # reboot-survival check sees the failure; only the live router is corrected.
+    remediation = None
+    k = state["kernel"]
+    boot_bad = k.get("udm_boot", "") != "enabled"
+    if args.remediate and not args.dry_run and (
+            k.get("snooping") != "0" or k.get("querier") != "0" or boot_bad):
+        found = {"snooping": k.get("snooping"), "querier": k.get("querier"),
+                 "udm_boot": "missing" if boot_bad else "enabled"}
+        remediation = {"found": found, "post": remediate(ssh_pass)}
+        post = remediation["post"]
+        print(f"  ⚠ REMEDIATED: found {found} → now snooping={post.get('snooping')} "
+              f"querier={post.get('querier')} udm-boot={post.get('udm_boot')}")
+
     zones_by_mac, zone_count, grouped, largest, zerr = pull_zones()
     if zerr:
         print(f"  WARN: {zerr}")
@@ -526,11 +599,21 @@ def main():
     phy_window_ok = mins is not None and 5 <= mins <= 45
 
     r = evaluate(state, zones_by_mac, probe=not args.no_probe, phy_window_ok=phy_window_ok)
+    if remediation:
+        post = remediation["post"]
+        r["violations"].append(
+            "REMEDIATED automatically: kernel/boot state was wrong (see CRITICAL lines) and has "
+            f"been reset — now snooping={post.get('snooping')} querier={post.get('querier')} "
+            f"udm-boot={post.get('udm_boot')}"
+            + (" (udm-boot.service was reinstalled — check for a firmware upgrade)"
+               if post.get("reinstalled_unit") else "")
+        )
 
     status = "OK" if not r["violations"] else f"{len(r['violations'])} VIOLATION(S)"
     print(f"→ Sonos health: {status}")
     print(f"  kernel snooping={r['kernel_multicast_snooping']} "
-          f"querier={r['kernel_multicast_querier']} udm-boot={r['udm_boot_service']}")
+          f"querier={r['kernel_multicast_querier']} udm-boot={r['udm_boot_service']} "
+          f"fw={r.get('udm_firmware')}")
     print(f"  zones={zone_count} grouped={grouped} largest_group={largest}")
     print(f"  worst retry: {r['max_retry_pct']}% ({r['worst_speaker']}), "
           f"{r['speakers_over_retry_threshold']} above {RETRY_WARN_PCT}%")
@@ -557,6 +640,8 @@ def main():
         "ap_channels": r["ap_channels"],
         "interval_minutes": round(mins, 1) if mins is not None else None,
         "phy_threshold_evaluated": phy_window_ok,
+        "udm_firmware": r.get("udm_firmware"),
+        "remediation": remediation,
         "thresholds": {
             "retry_crit_pct": RETRY_CRIT_PCT,
             "retry_warn_pct": RETRY_WARN_PCT,

@@ -102,7 +102,9 @@ def build_report(token: str, days: int) -> tuple[str, bool]:
     reboots = sql(token, f"""
         select sampled_at, udm_uptime_seconds,
                kernel_multicast_snooping snoop, kernel_multicast_querier quer,
-               udm_boot_service
+               udm_boot_service,
+               detail->>'udm_firmware' fw,
+               jsonb_typeof(detail->'remediation') = 'object' remediated
         from public.sonos_health_samples
         where sampled_at > now() - interval '{days} days'
           and udm_uptime_seconds < 3600
@@ -126,14 +128,38 @@ def build_report(token: str, days: int) -> tuple[str, bool]:
         L.append(f"  {len(reboots)} post-reboot sample(s) captured:")
         for r in reboots[:6]:
             ok = "OK" if (num(r["snoop"], -1) == 0 and num(r["quer"], -1) == 0) else "BROKEN"
-            L.append(f"   {r['sampled_at']}  uptime {r['udm_uptime_seconds']}s  "
-                     f"snoop={r['snoop']} quer={r['quer']}  udm-boot={r['udm_boot_service']}  [{ok}]")
+            fixed = "  → AUTO-FIXED by collector" if r.get("remediated") else ""
+            L.append(f"   {r['sampled_at']}  uptime {r['udm_uptime_seconds']}s  fw {r.get('fw') or '?'}  "
+                     f"snoop={r['snoop']} quer={r['quer']}  udm-boot={r['udm_boot_service']}  [{ok}]{fixed}")
         broke = [r for r in reboots if num(r["snoop"], -1) != 0 or num(r["quer"], -1) != 0]
         if broke:
             L.append("  ✗ Kernel came up WRONG after a reboot — persistence is not working.")
             problem = True
         else:
             L.append("  ✓ Kernel survived reboot with snooping/querier at 0 — persistence CONFIRMED.")
+
+    # -- Self-healing activity + firmware. A reinstalled udm-boot unit almost
+    #    always means a firmware upgrade wiped /etc/systemd/system.
+    L.append(section("Auto-remediations & firmware"))
+    rem = sql(token, f"""
+        select count(*) filter (where jsonb_typeof(detail->'remediation') = 'object') fixes,
+               count(*) filter (where (detail->'remediation'->'post'->>'reinstalled_unit')::boolean) reinstalls,
+               array_agg(distinct detail->>'udm_firmware')
+                 filter (where detail->>'udm_firmware' is not null) firmwares
+        from public.sonos_health_samples
+        where sampled_at > now() - interval '{days} days'
+    """)[0]
+    fixes, reinstalls = num(rem["fixes"]), num(rem["reinstalls"])
+    fws = rem["firmwares"] or []
+    if isinstance(fws, str):  # API may return a pg array literal like {5.1.31}
+        fws = [x for x in fws.strip("{}").split(",") if x]
+    L.append(f"  kernel auto-fixes: {fixes}   udm-boot.service reinstalls: {reinstalls}")
+    L.append(f"  firmware seen: {', '.join(fws) if fws else 'n/a'}")
+    if fixes:
+        L.append("  ⚠ the collector had to correct the kernel this week — find out what reset it")
+        problem = True
+    if len(fws) > 1:
+        L.append("  ⚠ firmware changed this window — /etc/systemd/system was likely wiped")
 
     # -- The channel-1 question.
     L.append(section("Does grouping drive retry rate? (channel-1 decision)"))

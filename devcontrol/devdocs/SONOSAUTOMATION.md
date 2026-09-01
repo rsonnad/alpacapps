@@ -838,6 +838,33 @@ Retry thresholds are deliberately above the doc's "5% = audible" line, since ~5%
 steady state and alerting there would be pure noise: any single speaker ≥ 25%, or ≥ 3 speakers
 ≥ 15%. Tune the constants at the top of the script.
 
+### Self-healing (`--remediate`, enabled in the Alpuca cron since 2026-09-01)
+
+Detection alone still meant a human had to read email and SSH in — a 1 am reboot would drop
+audio until someone woke up. With `--remediate`, when the kernel tripwire fails the collector
+applies the documented baseline itself (`echo 0 >` both bridge sysfs files) and, if
+`udm-boot.service` is absent, rewrites the unit and enables it — then alerts. Outage window
+shrinks from "until noticed" to ≤ 15 min, and firmware upgrades (which wipe
+`/etc/systemd/system`) no longer regress silently.
+
+Forensics stay honest: the sample records the state **as found** (`kernel_multicast_snooping=1`
+etc.), with the post-fix state under `detail.remediation`. So the weekly reboot-survival check
+still sees the failure — it just also sees that it was auto-corrected. The alert email carries a
+`REMEDIATED automatically:` line; if it also says *"udm-boot.service was reinstalled"*, a firmware
+upgrade almost certainly happened (`detail.udm_firmware` is recorded every sample for exactly
+this comparison).
+
+To disable: remove `--remediate` from the crontab line on Alpuca. It never touches anything but
+the two sysfs values and the unit file.
+
+### Proving persistence: do a controlled reboot
+
+"Persistence UNPROVEN" stays in the weekly report until the UDM actually reboots, and waiting
+weeks for a natural one is a poor test. Once `udm-boot.service` is enabled, reboot the UDM
+deliberately at a quiet hour (`reboot` over SSH, ~3 min of WAN outage). The 15-min sampler will
+catch the post-boot state and the next Monday report flips to **CONFIRMED** — or tells you
+exactly what came up wrong.
+
 ### Alerting
 
 Resend → `rahulioson@gmail.com`, using the existing `~/.config/resend/key`. Debounced via
