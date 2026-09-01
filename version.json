@@ -1,12 +1,12 @@
 {
-  "version": "v260901.04 10:49a",
-  "release": 1805,
-  "sha": "4c42bf40ea",
-  "fullSha": "4c42bf40ea2f2048e9dc1e22ae4284fa7c84a364",
+  "version": "v260901.05 10:56a",
+  "release": 1806,
+  "sha": "012d788cf5",
+  "fullSha": "012d788cf5c614133e721eaad670bbe74083ea21",
   "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T15:49:18+00:00",
-  "commits": [{"sha":"4c42bf40ea","message":"Fix privilege escalation in app_users RLS","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-09-01T15:56:17+00:00",
+  "commits": [{"sha":"012d788cf5","message":"move_in_confirmed: allow rate_display for prepaid bookings","author":"Sonia Wendorff"}]
 }
