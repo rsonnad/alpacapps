@@ -1011,7 +1011,7 @@ async function confirmDeposit(applicationId) {
 
   // Schedule onboarding email for 9am CT on move-in day
   const fullApp = await getApplication(applicationId);
-  const moveInDate = fullApp?.approved_move_in_date || fullApp?.desired_move_in;
+  const moveInDate = fullApp?.approved_move_in || fullApp?.desired_move_in;
   let onboardingSendAt = null;
   if (moveInDate) {
     const sendDate = new Date(moveInDate + 'T14:00:00.000Z'); // 9am CDT = 14:00 UTC

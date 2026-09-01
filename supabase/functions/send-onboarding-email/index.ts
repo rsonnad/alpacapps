@@ -25,7 +25,7 @@ serve(async (_req) => {
       .from("rental_applications")
       .select(`
         id,
-        approved_move_in_date,
+        approved_move_in,
         approved_lease_end,
         approved_rate,
         check_in_time,
@@ -54,7 +54,7 @@ serve(async (_req) => {
       const name = `${person.first_name || ""} ${person.last_name || ""}`.trim();
 
       // Calculate if monthly
-      const moveIn = app.approved_move_in_date ? new Date(app.approved_move_in_date) : null;
+      const moveIn = app.approved_move_in ? new Date(app.approved_move_in) : null;
       const leaseEnd = app.approved_lease_end ? new Date(app.approved_lease_end) : null;
       const stayDays = (moveIn && leaseEnd)
         ? Math.round((leaseEnd.getTime() - moveIn.getTime()) / (1000 * 60 * 60 * 24))
@@ -84,7 +84,7 @@ serve(async (_req) => {
               email: person.email,
               space_name: space?.name || "your space",
               space_id: space?.id || null,
-              move_in_date: formatDate(app.approved_move_in_date),
+              move_in_date: formatDate(app.approved_move_in),
               lease_end_date: app.approved_lease_end ? formatDate(app.approved_lease_end) : null,
               monthly_rate: app.approved_rate,
               rent_due_day: "1st",
