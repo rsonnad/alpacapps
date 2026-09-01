@@ -1,12 +1,12 @@
 {
-  "version": "v260901.06 12:02p",
-  "release": 1807,
-  "sha": "2570182a42",
-  "fullSha": "2570182a425f2351ec19168b3f9b8e759fd41616",
-  "actor": "wensonia",
+  "version": "v260901.07 1:16p",
+  "release": 1808,
+  "sha": "820798b8d8",
+  "fullSha": "820798b8d87ea84ec6f1b2bd0e7afc9334adc68b",
+  "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T17:02:46+00:00",
-  "commits": [{"sha":"2570182a42","message":"send-email: log every outbound send, not just approval-gated ones","author":"Sonia Wendorff"}]
+  "pushedAt": "2026-09-01T18:16:02+00:00",
+  "commits": [{"sha":"2344967e68","message":"Fix Sonos multi-zone dropouts: kernel multicast + health telemetry","author":"Otto"},{"sha":"b760ce62c4","message":"Harden inbound email forwarding against spoofed headers","author":"Otto"},{"sha":"820798b8d8","message":"Rename MacBook Pro deal watcher to Garmin, add agent tooling config","author":"Otto"}]
 }
