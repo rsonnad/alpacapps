@@ -808,10 +808,15 @@ The 2026-08-30 incident exposed the gap: the nightly config snapshot is blind to
 the controller API, so a kernel-level regression ran for 10 hours unnoticed. Symptom sampling
 now covers that.
 
-| Layer | Script | Table | Cadence | Catches |
+| Layer | Script | Output | Cadence | Catches |
 |---|---|---|---|---|
 | Config history | `unifi-snapshot-cron.sh` → `unifi-snapshot.py` | `network_config_snapshots` | nightly 04:00 | controller/WLAN drift, bisectable to a date |
 | Symptom telemetry | `sonos-health-cron.sh` → `sonos-health.py` | `sonos_health_samples` | every 15 min | **kernel multicast state**, **udm-boot.service missing**, retry rates, PHY errors, group size |
+| Weekly review | `sonos-weekly-report.sh` → `sonos-weekly-report.py` | email via Resend | Mondays 08:00 | reboot-survival verdict, retry-vs-group-size trend, per-speaker ranking |
+
+**All three run as local cron on Alpuca — not as cloud routines.** A scheduled cloud
+agent cannot reach the UDM, Alpuca, or the LAN, and has no access to `~/.unifi-snapshot.env`,
+so it cannot collect or query any of this. Anything scheduled for Sonos work belongs on Alpuca.
 
 ### What `sonos-health.py` checks
 
@@ -860,6 +865,33 @@ to rotate.
 See the commented block at the bottom of `scripts/sonos-health-schema.sql`. The two that matter
 most: *"what did the kernel look like right after the last reboot"* (proves persistence works)
 and *"does retry rate worsen as group size grows"* (settles the ch1 rebalance question).
+
+### Weekly review (`sonos-weekly-report.py`)
+
+Emails a Monday digest that answers what a single sample cannot:
+
+1. **Reboot survival.** Finds samples with `udm_uptime_seconds < 3600` and reports the kernel
+   state captured right after boot. A reboot is the only genuine test of `udm-boot.service`,
+   and there may be weeks between them — so until one happens the report says persistence is
+   **UNPROVEN** rather than implying it works.
+2. **The ch1 verdict.** Compares average worst-retry at group size 1 against the largest group
+   seen. ≥8 pct-pt says rebalance; ≤3 says congestion is not the binding constraint and the
+   channels should be left alone. Needs grouped playback during the week to have any signal —
+   if nothing is ever grouped it says so instead of guessing.
+3. Per-speaker retry ranking, SonosNet PHY averages over valid intervals only, and every rule
+   violation seen that week with counts.
+
+Run it on demand from Alpuca:
+
+```bash
+/Users/alpuca/scripts/sonos-weekly-report.sh --print       # stdout, no email
+/Users/alpuca/scripts/sonos-weekly-report.sh --days 14     # wider window, emails
+```
+
+**Gotcha:** the Supabase SQL API returns `numeric`/`bigint` as JSON **strings**. Comparing them
+raises `TypeError` — coerce with the `num()` helper before any arithmetic. Both this script and
+`sonos-health.py` also must send an explicit `User-Agent`; Cloudflare fronts Resend and the
+Supabase Management API and answers urllib's default agent with `403` / error `1010`.
 
 ## References
 
