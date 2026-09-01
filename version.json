@@ -1,12 +1,12 @@
 {
-  "version": "v260827.01 11:56a",
-  "release": 1801,
-  "sha": "de4f7a211f",
-  "fullSha": "de4f7a211f3176bfac25b387881c4798e96a7b06",
-  "actor": "rsonnad",
+  "version": "v260901.01 10:06a",
+  "release": 1802,
+  "sha": "9b9961d1e4",
+  "fullSha": "9b9961d1e42aacba1bae28c6945b26eeacc829c9",
+  "actor": "wensonia",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-08-27T16:56:15+00:00",
-  "commits": [{"sha":"de4f7a211f","message":"docs(memory): correct stale Almaca Tailscale IP and note SSH auth gap","author":"Paca"}]
+  "pushedAt": "2026-09-01T15:06:49+00:00",
+  "commits": [{"sha":"dc3759896b","message":"Fix wrong column name approved_move_in_date -> approved_move_in","author":"Sonia Wendorff"},{"sha":"9b9961d1e4","message":"Trigger onboarding email on 'ready' phase instead of a daily sweep","author":"Sonia Wendorff"}]
 }
