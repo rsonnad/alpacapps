@@ -253,7 +253,8 @@ def probe_speaker(ip: str):
 
 # ------------------------------------------------------------------ analysis
 
-def evaluate(state: dict, zones_by_mac: dict, probe: bool, phy_window_ok: bool = False) -> dict:
+def evaluate(state: dict, zones_by_mac: dict, probe: bool, phy_window_ok: bool = False,
+             prev_counters: dict | None = None) -> dict:
     kernel = state["kernel"]
     violations = []
 
@@ -344,12 +345,35 @@ def evaluate(state: dict, zones_by_mac: dict, probe: bool, phy_window_ok: bool =
         if s.get("is_wired"):
             rec["sw_port"] = s.get("sw_port")
         else:
+            # tx_retries / tx_packets are CUMULATIVE since the client associated,
+            # so their ratio is a lifetime average — it barely moves and stays
+            # poisoned by old conditions long after a fix. Verified 2026-09-02:
+            # Dining read 25.4% lifetime but only 9.1% over a live 45s window.
+            # The threshold metric must therefore be the DELTA against the previous
+            # sample; lifetime is kept only as context.
             tx_r, tx_p = s.get("tx_retries", 0) or 0, s.get("tx_packets", 0) or 0
-            total = tx_r + tx_p
+            life_total = tx_r + tx_p
+            lifetime = round(100.0 * tx_r / life_total, 1) if life_total else None
+
+            interval = None
+            prev = (prev_counters or {}).get(mac)
+            if prev:
+                d_r, d_p = tx_r - prev.get("tx_retries", 0), tx_p - prev.get("tx_packets", 0)
+                # Negative deltas mean the client re-associated and reset its counters.
+                if d_r >= 0 and d_p >= 0 and (d_r + d_p) > 0:
+                    interval = round(100.0 * d_r / (d_r + d_p), 1)
+
             rec.update({
                 "channel": s.get("channel"),
                 "rssi": s.get("signal"),
-                "retry_pct": round(100.0 * tx_r / total, 1) if total else None,
+                # retry_pct is the metric everything downstream judges on: the
+                # interval rate when we have a prior sample, else lifetime.
+                "retry_pct": interval if interval is not None else lifetime,
+                "retry_pct_interval": interval,
+                "retry_pct_lifetime": lifetime,
+                "retry_basis": "interval" if interval is not None else "lifetime",
+                "tx_retries": tx_r,
+                "tx_packets": tx_p,
                 "tx_rate_mbps": (s.get("tx_rate") or 0) // 1000,
                 "ap": ap_names.get(s.get("ap_mac"), s.get("ap_mac")),
             })
@@ -605,7 +629,10 @@ def main():
             pass
     phy_window_ok = mins is not None and 5 <= mins <= 45
 
-    r = evaluate(state, zones_by_mac, probe=not args.no_probe, phy_window_ok=phy_window_ok)
+    # Retry deltas need the previous run's raw counters (see evaluate()).
+    prev_counters = load_state().get("counters") or {}
+    r = evaluate(state, zones_by_mac, probe=not args.no_probe, phy_window_ok=phy_window_ok,
+                 prev_counters=prev_counters)
     if remediation:
         post = remediation["post"]
         r["violations"].append(
@@ -661,6 +688,8 @@ def main():
 
     st = load_state()
     st["last_sample"] = now.isoformat()
+    st["counters"] = {sp["mac"]: {"tx_retries": sp["tx_retries"], "tx_packets": sp["tx_packets"]}
+                      for sp in r["speakers"] if sp.get("tx_packets") is not None}
     save_state(st)
 
 

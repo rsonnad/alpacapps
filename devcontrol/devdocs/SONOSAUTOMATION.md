@@ -802,6 +802,75 @@ external (neighbouring networks or garage RF environment), not self-inflicted. T
 samples this every 15 min; if it stays in the millions, that speaker needs physical remediation,
 not config.
 
+## 2026-09-02 — Multi-zone test PASSES; retry-rate metric was wrong
+
+### Active 3→5 zone test: zero dropouts
+
+`scripts/sonos-multizone-test.py` grouped zones on purpose and watched for the real symptom.
+45 min, 90 samples, coordinator = Living Sound (wired SonosNet root, so the wired→wireless
+multicast path that was failing is exercised). Playlist "Ambient Music" at volume 8.
+Pequeno and MasterBlaster hard-excluded.
+
+| Phase | Zones | Rooms | Dropout events | Playback position |
+|---|---|---|---|---|
+| 1 | 3 | Living, Dining, Skyloft | **0** | advanced 0→822 s |
+| 2 | 4 | + Backyard | **0** | 0→824 s |
+| 3 | 5 | + SkyBalcony | **0** | 0→821 s |
+
+No member left a group, playback never stopped, position never froze. **Grouping 5 zones is
+now reliable** — the original complaint is resolved by the multicast fix.
+
+This is stronger evidence than retry rates because it measures the symptom directly: the test
+samples the coordinator's `elapsedTime` every 30 s, so "reports PLAYING but position frozen"
+(what the household actually hears as a dropout) is caught explicitly.
+
+### ⚠️ The retry-rate metric was measuring the wrong thing
+
+The test's retry figure sat at 25.4–25.5% across all 90 samples — impossibly stable. Cause:
+**`tx_retries` / `tx_packets` from `stat/sta` are CUMULATIVE since the client associated.**
+Their ratio is a lifetime average. It barely moves, and stays poisoned by old conditions long
+after a fix — it would have kept alerting on the broken-multicast era for weeks.
+
+Verified by sampling the same counters 45 s apart:
+
+| Speaker | Lifetime % | True interval % |
+|---|---|---|
+| Dining Sound | 25.4 | **9.1** |
+| garage outdoors | 17.5 | 10.4 |
+| SkyBalcony | 22.0 | 17.8 |
+
+**Every retry number in the 2026-08-30 audit above is a lifetime average and overstates the
+problem.** "Dining at 34.6%", "7 of 10 speakers above the audible threshold" — all inflated by
+months of pre-fix history.
+
+**Fixed:** `sonos-health.py` now keeps raw counters in `~/.sonos-health-state.json` between runs
+and computes retry from the **delta**. `retry_pct` is the interval rate (what thresholds judge),
+with `retry_pct_lifetime` and `retry_basis` kept for context; lifetime is used only on a first
+run with no prior sample. Negative deltas (client re-associated, counters reset) are discarded.
+
+### The picture inverts once measured correctly
+
+First corrected sample — overall status **OK, zero violations**:
+
+| Speaker | Interval % | Lifetime % | Read |
+|---|---|---|---|
+| Garage Bridge | **24.7** | 12.1 | genuinely worst *now* — was hidden by a flattering lifetime |
+| SkyBalcony | **23.2** | 22.0 | consistently high, real |
+| Backyard | 13.6 | 15.8 | fine |
+| Dining Sound | **6.1** | 25.4 | **the "worst speaker" is fine** — 4× better than reported |
+| garage outdoors | 8.4 | 17.5 | fine |
+| Skyloft | 2.6 | 3.9 | excellent |
+
+The two speakers flagged all along (Dining, garage outdoors) are healthy. The genuine current
+concerns are **Garage Bridge** and **SkyBalcony** — neither of which the old metric surfaced.
+
+### Consequence for the channel-1 rebalance: don't
+
+Actual retry rates are far lower than believed, and 5 grouped zones played flawlessly. The
+rebalance is **not justified** on current evidence. Leave AP channels alone; let a week of
+corrected data accumulate before revisiting. (The test's own "-0.1 pct-pt across group sizes"
+line was computed from the broken lifetime metric and proves nothing either way.)
+
 ## Telemetry — two layers (config nightly, symptoms every 15 min)
 
 The 2026-08-30 incident exposed the gap: the nightly config snapshot is blind to anything below
@@ -813,6 +882,7 @@ now covers that.
 | Config history | `unifi-snapshot-cron.sh` → `unifi-snapshot.py` | `network_config_snapshots` | nightly 04:00 | controller/WLAN drift, bisectable to a date |
 | Symptom telemetry | `sonos-health-cron.sh` → `sonos-health.py` | `sonos_health_samples` | every 15 min | **kernel multicast state**, **udm-boot.service missing**, retry rates, PHY errors, group size |
 | Weekly review | `sonos-weekly-report.sh` → `sonos-weekly-report.py` | email via Resend | Mondays 08:00 | reboot-survival verdict, retry-vs-group-size trend, per-speaker ranking |
+| Active test | `sonos-multizone-test.py` | log + JSON + email | on demand | **real dropouts** (frozen playback position, members leaving a group) under deliberate 3→5 zone load |
 
 **All three run as local cron on Alpuca — not as cloud routines.** A scheduled cloud
 agent cannot reach the UDM, Alpuca, or the LAN, and has no access to `~/.unifi-snapshot.env`,
@@ -837,6 +907,13 @@ the Sonos UUID (`RINCON_000E5821E8E0…` → `00:0e:58:21:e8:e0`) — no subnet 
 Retry thresholds are deliberately above the doc's "5% = audible" line, since ~5% is the current
 steady state and alerting there would be pure noise: any single speaker ≥ 25%, or ≥ 3 speakers
 ≥ 15%. Tune the constants at the top of the script.
+
+**Retry is an INTERVAL rate, not a lifetime average** — see the 2026-09-02 section. The UDM's
+`tx_retries`/`tx_packets` are cumulative since association, so the collector stores raw counters
+in `~/.sonos-health-state.json` and judges on the delta between runs. Deleting that state file
+costs one sample (the next run falls back to lifetime, then recovers). Any analysis reading
+`detail->speakers` should use `retry_pct` (interval) and treat `retry_pct_lifetime` as context
+only.
 
 ### Self-healing (`--remediate`, enabled in the Alpuca cron since 2026-09-01)
 
@@ -926,6 +1003,31 @@ Run it on demand from Alpuca:
 /Users/alpuca/scripts/sonos-weekly-report.sh --print       # stdout, no email
 /Users/alpuca/scripts/sonos-weekly-report.sh --days 14     # wider window, emails
 ```
+
+### Active multi-zone testing (`sonos-multizone-test.py`)
+
+Waiting for someone to happen to group zones is a poor way to get data. This creates the load
+deliberately in escalating phases (3→4→5 zones) and detects the real symptom.
+
+```bash
+# on Alpuca — always dry-run first, it prints the plan and touches nothing
+python3 /Users/alpuca/scripts/sonos-multizone-test.py --dry-run
+nohup python3 /Users/alpuca/scripts/sonos-multizone-test.py > ~/logs/sonos-multizone-test.log 2>&1 &
+python3 /Users/alpuca/scripts/sonos-multizone-test.py --phase-minutes 5   # quick smoke test
+```
+
+- **`EXCLUDE = {"Pequeno", "MasterBlaster"}`** — main listening zones, never touched. The script
+  refuses to start if the phase plan names an excluded room.
+- Original volumes and grouping are captured up front and restored on exit, **including on
+  Ctrl-C or crash** (SIGINT/SIGTERM handlers).
+- Volume 8. Volume has no effect on network load — same stream bitrate either way — so a low
+  setting costs nothing analytically.
+- Phases are 15 min so each spans one `*/15` collector tick, producing `sonos_health_samples`
+  rows at `largest_group_size` 3, 4 and 5 — the variation the weekly report's channel verdict
+  needs.
+- Repeat is switched on: a finite playlist ending mid-test would look exactly like a dropout.
+- No "handpan" exists in favorites or playlists (checked 2026-09-02); `PLAYLIST` defaults to
+  "Ambient Music".
 
 **Gotcha:** the Supabase SQL API returns `numeric`/`bigint` as JSON **strings**. Comparing them
 raises `TypeError` — coerce with the `num()` helper before any arithmetic. Both this script and
