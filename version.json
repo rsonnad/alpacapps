@@ -1,12 +1,12 @@
 {
-  "version": "v260901.13 6:24p",
-  "release": 1814,
-  "sha": "489f060141",
-  "fullSha": "489f06014128bb1dc6d0d2113359773d90dbc225",
+  "version": "v260902.01 12:37p",
+  "release": 1815,
+  "sha": "f2afbf9cbf",
+  "fullSha": "f2afbf9cbf60b01c82172dde97a7b5f08564a476",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-01T23:24:59+00:00",
-  "commits": [{"sha":"489f060141","message":"Sonos collector: email remediation events immediately","author":"Otto"}]
+  "machine": "runnervmejwal",
+  "pushedAt": "2026-09-02T17:37:30+00:00",
+  "commits": [{"sha":"f2afbf9cbf","message":"Add self-disarming one-shot UDM reboot to prove Sonos fix persistence","author":"Otto"}]
 }
