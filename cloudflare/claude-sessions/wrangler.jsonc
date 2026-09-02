@@ -1,5 +1,8 @@
 {
   "name": "claude-sessions",
+  // Same account as testel/download-worker — it owns the alpacapps.workers.dev
+  // subdomain this worker is served from. Pinned so deploys can't drift accounts.
+  "account_id": "9cd3a280a54ce2a5b382602f0247b577",
   "main": "src/index.js",
   "compatibility_date": "2024-12-01",
   "d1_databases": [
