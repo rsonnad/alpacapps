@@ -1,12 +1,12 @@
 {
-  "version": "v260902.04 2:22p",
-  "release": 1818,
-  "sha": "d4c02692e3",
-  "fullSha": "d4c02692e382ef9dadb665f368670b728f6793ba",
+  "version": "v260902.05 2:56p",
+  "release": 1820,
+  "sha": "687114d452",
+  "fullSha": "687114d452f7749ab60905173db668b15aa4bfbc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-02T19:22:45+00:00",
-  "commits": [{"sha":"d4c02692e3","message":"Sonos: measure retry as an interval rate, add active multi-zone test","author":"Otto"}]
+  "machine": "runnervmejwal",
+  "pushedAt": "2026-09-02T19:56:20+00:00",
+  "commits": [{"sha":"687114d452","message":"Document the three Cloudflare accounts and the Sponic D1 fork","author":"Otto"}]
 }
