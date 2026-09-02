@@ -1,12 +1,12 @@
 {
-  "version": "v260902.05 2:56p",
-  "release": 1820,
-  "sha": "687114d452",
-  "fullSha": "687114d452f7749ab60905173db668b15aa4bfbc",
+  "version": "v260902.06 3:06p",
+  "release": 1821,
+  "sha": "fe25be2086",
+  "fullSha": "fe25be20863523fbbf5cd0478a8a1a2db8fab414",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmejwal",
-  "pushedAt": "2026-09-02T19:56:20+00:00",
-  "commits": [{"sha":"687114d452","message":"Document the three Cloudflare accounts and the Sponic D1 fork","author":"Otto"}]
+  "pushedAt": "2026-09-02T20:06:00+00:00",
+  "commits": [{"sha":"fe25be2086","message":"docs: restore local bw-read credential helper","author":"Otto"}]
 }
