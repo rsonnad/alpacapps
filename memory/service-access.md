@@ -303,12 +303,10 @@ npx wrangler whoami                   # ALWAYS confirm the account ID first
 npx wrangler d1 list
 ```
 
-### Known-stale docs (fix when convenient)
+### Bitwarden helper
 
-`bw-read` is documented below as coming from
-`~/Documents/CodingProjects/portsie/scripts/bw-profile.sh` — **that path does not
-exist** as of 2026-09-02, and no `bw-read` is defined in any shell rc. Every
-Bitwarden recipe in this file is therefore currently unrunnable as written.
+Use `~/bin/bw-read "<item name>" "<field name>"` directly. It reads an exported
+`BW_SESSION`, or the chmod-600 `~/.bw-session` created by the standard unlock flow.
 
 ## alpu.ca Cloudflare Short Links
 
@@ -321,18 +319,12 @@ in Rahul's separate Cloudflare account, not the main Wingsiebird account.
 - **Token field:** `"Cloudflare-D1"`
 - **Zone ID:** `5258bd9d21828c4a66c318a5d085fa0c`
 
-If `bw-read` is not defined in a noninteractive shell, source the shared profile
-first:
-
-```bash
-source ~/Documents/CodingProjects/portsie/scripts/bw-profile.sh >/dev/null
-```
+Use `~/bin/bw-read` directly in noninteractive shells.
 
 ### List Current Page Rules
 
 ```bash
-source ~/Documents/CodingProjects/portsie/scripts/bw-profile.sh >/dev/null
-TOKEN=$(bw-read "Cloudflare — Rah Hul Account (alpu.ca)" "Cloudflare-D1")
+TOKEN=$(~/bin/bw-read "Cloudflare — Rah Hul Account (alpu.ca)" "Cloudflare-D1")
 ZONE=5258bd9d21828c4a66c318a5d085fa0c
 curl -sS "https://api.cloudflare.com/client/v4/zones/$ZONE/pagerules?status=active&per_page=100" \
   -H "Authorization: Bearer $TOKEN" \
@@ -343,8 +335,7 @@ curl -sS "https://api.cloudflare.com/client/v4/zones/$ZONE/pagerules?status=acti
 ### Add a Short Link
 
 ```bash
-source ~/Documents/CodingProjects/portsie/scripts/bw-profile.sh >/dev/null
-TOKEN=$(bw-read "Cloudflare — Rah Hul Account (alpu.ca)" "Cloudflare-D1")
+TOKEN=$(~/bin/bw-read "Cloudflare — Rah Hul Account (alpu.ca)" "Cloudflare-D1")
 ZONE=5258bd9d21828c4a66c318a5d085fa0c
 curl -sS -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/pagerules" \
   -H "Authorization: Bearer $TOKEN" \
@@ -369,10 +360,9 @@ numbers and catchall at priority 1 fixed both.
 
 ### Run UDM commands FROM ALPUCA, not from a laptop
 
-`sshpass` and the `bw-read` helper exist on **Alpuca only**. On the MacBook Pro M5 neither is
-installed and `bw-unlock` cannot prompt in a non-interactive shell, so any recipe in
-SONOSAUTOMATION.md that starts with `sshpass -p "$(bw-read ...)"` **fails on the laptop and
-works on Alpuca**. Verified 2026-08-30 (`zsh: command not found: bw-read`).
+`sshpass` exists on **Alpuca only**. On the MacBook Pro M5, use `~/bin/bw-read` directly;
+the helper reads the saved Bitwarden session in a non-interactive shell. Any recipe that
+also requires `sshpass` still runs on Alpuca only.
 
 Two credential paths on Alpuca, both fine:
 
