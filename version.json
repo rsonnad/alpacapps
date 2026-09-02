@@ -1,12 +1,12 @@
 {
-  "version": "v260902.01 12:37p",
-  "release": 1815,
-  "sha": "f2afbf9cbf",
-  "fullSha": "f2afbf9cbf60b01c82172dde97a7b5f08564a476",
+  "version": "v260902.02 12:42p",
+  "release": 1816,
+  "sha": "4a6f3b0d32",
+  "fullSha": "4a6f3b0d32d34afffd922a53599ce2f963cd3e3c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmejwal",
-  "pushedAt": "2026-09-02T17:37:30+00:00",
-  "commits": [{"sha":"f2afbf9cbf","message":"Add self-disarming one-shot UDM reboot to prove Sonos fix persistence","author":"Otto"}]
+  "pushedAt": "2026-09-02T17:42:01+00:00",
+  "commits": [{"sha":"4a6f3b0d32","message":"claude-sessions: pin account_id so deploys can't drift","author":"Otto"}]
 }
