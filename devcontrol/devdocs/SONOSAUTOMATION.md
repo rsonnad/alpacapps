@@ -871,6 +871,12 @@ deliberately at a quiet hour (`reboot` over SSH, ~3 min of WAN outage). The 15-m
 catch the post-boot state and the next Monday report flips to **CONFIRMED** — or tells you
 exactly what came up wrong.
 
+`scripts/udm-controlled-reboot.sh` does this as a self-disarming one-shot: it deletes its own
+crontab line first (a date-specific cron entry would otherwise repeat yearly), logs the
+pre-reboot state, issues `reboot`, and emails a heads-up via Resend. Armed for **2026-09-03
+03:00 CDT** on Alpuca; log at `/Users/alpuca/logs/udm-reboot.log`. To cancel before it fires:
+`crontab -l | grep -v udm-controlled-reboot | crontab -`.
+
 ### Alerting
 
 Resend → `rahulioson@gmail.com`, using the existing `~/.config/resend/key`. Debounced via
