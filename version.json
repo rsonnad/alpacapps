@@ -1,12 +1,12 @@
 {
-  "version": "v260902.07 4:21p",
-  "release": 1822,
-  "sha": "61e1e1b430",
-  "fullSha": "61e1e1b430aa60acb030735eaaae8a6a0b81df91",
+  "version": "v260902.08 6:51p",
+  "release": 1823,
+  "sha": "158f3a30c6",
+  "fullSha": "158f3a30c6ea8318dfc7c32ba5fecfec34aff8db",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-02T21:21:00+00:00",
-  "commits": [{"sha":"61e1e1b430","message":"fix(photos): replace generic icon placeholders with real Google Photos thumbnails","author":"Otto"}]
+  "machine": "runnervmejwal",
+  "pushedAt": "2026-09-02T23:51:57+00:00",
+  "commits": [{"sha":"158f3a30c6","message":"fix(photos): repair dead YouTube video IDs and swap bad Garage Mahal thumbnail","author":"Otto"}]
 }
