@@ -1,12 +1,12 @@
 {
-  "version": "v260902.02 12:42p",
-  "release": 1816,
-  "sha": "4a6f3b0d32",
-  "fullSha": "4a6f3b0d32d34afffd922a53599ce2f963cd3e3c",
+  "version": "v260902.03 2:21p",
+  "release": 1817,
+  "sha": "5563f96d27",
+  "fullSha": "5563f96d27c56d107884057e2723566d47071988",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmejwal",
-  "pushedAt": "2026-09-02T17:42:01+00:00",
-  "commits": [{"sha":"4a6f3b0d32","message":"claude-sessions: pin account_id so deploys can't drift","author":"Otto"}]
+  "machine": "runnervmgx7h7",
+  "pushedAt": "2026-09-02T19:21:00+00:00",
+  "commits": [{"sha":"5563f96d27","message":"pay-pending-associates: skip inactive associates","author":"Otto"}]
 }
