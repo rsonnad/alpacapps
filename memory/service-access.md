@@ -268,6 +268,48 @@ lookups can select the empty duplicate and fail.
   fail to deliver to Gmail (residential IP block + unauthenticated SMTP).
   Verified broken 2026-05-25: `mailq` reports "mail system is down".
 
+## Cloudflare Accounts — THREE of them, do not mix up
+
+Verified 2026-09-02. Confusing them cost an afternoon; check the account ID
+before running any wrangler or API command.
+
+| Account | ID | workers.dev | Login |
+|---|---|---|---|
+| **AlpacApps** (main) | `9cd3a280a54ce2a5b382602f0247b577` | `alpacapps` | wingsiebird@gmail.com |
+| **Sponic Garden** | `394b5de665bbfdea54cdd57be9094762` | `sponicgarden` | accounts@sponicgardens.com |
+| Rahul / alpu.ca | see section below | — | separate |
+
+**AlpacApps** holds: `claude-sessions` D1 `98d0e680-8abe-4ce3-a941-70cb391adbf8`,
+`alpacapps-tesla-telemetry` (testel), download-worker + R2, wiz-watchdog, and the
+`alpacaplayhouse.com` zone. An existing token `claude-sessions-d1-migration`
+(Account.D1 + Account.Workers Scripts) covers the D1 work — its value can't be
+re-read, so **Roll** it in the dashboard to get a fresh one.
+
+**Sponic Garden** is NOT the AlpacApps account. It holds the `sponic-*` workers
+and a **forked copy** of the claude-sessions stack: worker `claude-sessions` plus
+D1 `37ba42be-b8cf-4e33-bb9e-268aca325978` (132 MB, ~3.7k rows), whose schema has
+diverged from this repo (extra `user`/`machine` indexes). The 2026-09-01 D1
+rows_read quota alert was against **this** copy, not AlpacApps'. Its caller lives
+in the sponic repo, not here.
+
+Do not assume a shared `workers.dev` subdomain implies a shared account — that
+inference is what sent us wrong. Verify with `npx wrangler whoami`.
+
+### Recipe
+
+```bash
+export CLOUDFLARE_API_TOKEN=<token>   # or read from a chmod-600 file, never echo it
+npx wrangler whoami                   # ALWAYS confirm the account ID first
+npx wrangler d1 list
+```
+
+### Known-stale docs (fix when convenient)
+
+`bw-read` is documented below as coming from
+`~/Documents/CodingProjects/portsie/scripts/bw-profile.sh` — **that path does not
+exist** as of 2026-09-02, and no `bw-read` is defined in any shell rc. Every
+Bitwarden recipe in this file is therefore currently unrunnable as written.
+
 ## alpu.ca Cloudflare Short Links
 
 Use when adding or debugging `https://alpu.ca/...` short links. The zone lives
