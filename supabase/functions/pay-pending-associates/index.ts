@@ -217,6 +217,7 @@ Deno.serve(async (req) => {
       .from('associate_profiles')
       .select('id, app_user_id, hourly_rate, daily_extra, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency, payout_day_of_week')
       .eq('payment_method', 'stripe')
+      .eq('is_active', true)
       .not('stripe_connect_account_id', 'is', null)
       .eq('identity_verification_status', 'verified');
 
