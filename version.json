@@ -1,12 +1,12 @@
 {
-  "version": "v260902.10 7:10p",
-  "release": 1825,
-  "sha": "27524bb8f4",
-  "fullSha": "27524bb8f4f5bf1b21e4905837fdea9303e3ea96",
+  "version": "v260902.11 8:02p",
+  "release": 1826,
+  "sha": "9fc1b85a83",
+  "fullSha": "9fc1b85a83756b09fe2eb712e1a428df368d2808",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmejwal",
-  "pushedAt": "2026-09-03T00:10:15+00:00",
-  "commits": [{"sha":"27524bb8f4","message":"Sonos: fix false-success email, restore contract, lifetime-driven alerts","author":"Otto"}]
+  "machine": "runnervmgx7h7",
+  "pushedAt": "2026-09-03T01:02:34+00:00",
+  "commits": [{"sha":"9fc1b85a83","message":"feat(infra): offer a free coding-agent path alongside Claude/ChatGPT","author":"Otto"}]
 }
