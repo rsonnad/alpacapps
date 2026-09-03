@@ -67,6 +67,20 @@ PHY_ERR_CRIT = 5_000_000
 
 REALERT_HOURS = 6
 
+# Alert severity. Kernel/boot faults are rare, actionable and page immediately.
+# Retry and PHY readings are noisy by nature — interval retry legitimately
+# crosses a threshold and falls back within one tick — so paging on every
+# transition produced ~8 emails on 2026-09-02 for wobble that needed no action.
+# Advisory findings must persist ADVISORY_STREAK consecutive samples before they
+# page at all, then stay quiet for ADVISORY_REALERT_HOURS.
+CRITICAL_MARKERS = ("CRITICAL", "REMEDIATED", "controller data unavailable")
+ADVISORY_STREAK = 4            # 4 x 15 min = sustained for an hour
+ADVISORY_REALERT_HOURS = 24
+
+# The multi-zone test deliberately saturates the network; its retry readings are
+# the point of the test, not a fault. It drops this marker while running.
+TEST_MARKER = os.path.expanduser("~/.sonos-test-running")
+
 STATE_FILE = os.path.expanduser("~/.sonos-health-state.json")
 RESEND_KEY_FILE = os.path.expanduser("~/.config/resend/key")
 ALERT_FROM = "notifications@alpacaplayhouse.com"
@@ -543,45 +557,81 @@ def send_email(subject: str, text: str) -> bool:
         return False
 
 
+def is_critical(v: str) -> bool:
+    return any(m in v for m in CRITICAL_MARKERS)
+
+
 def maybe_alert(r: dict, zone_count, grouped) -> bool:
-    """Alert on entering a bad state, on recovery, or every REALERT_HOURS while bad."""
+    """Page immediately on kernel/boot faults; sit on noisy advisory findings.
+
+    Advisory findings (retry, PHY, config drift) only page after ADVISORY_STREAK
+    consecutive samples, because interval retry genuinely oscillates across a
+    threshold tick to tick. Recovery mail is sent only for critical states — a
+    retry wobble clearing is not news.
+    """
     now = datetime.datetime.now(datetime.timezone.utc)
     prev = load_state()
-    was_bad = prev.get("bad", False)
-    is_bad = bool(r["violations"])
 
-    last_alert = prev.get("last_alert")
-    hours_since = None
-    if last_alert:
+    violations = r["violations"]
+    crit = [v for v in violations if is_critical(v)]
+    advisory = [v for v in violations if not is_critical(v)]
+
+    testing = os.path.exists(TEST_MARKER)
+    if testing:
+        advisory = []   # deliberate load — not a fault
+
+    was_crit = prev.get("crit_bad", False)
+    streak = prev.get("adv_streak", 0) + 1 if advisory else 0
+
+    def hours_since(key):
+        ts = prev.get(key)
+        if not ts:
+            return None
         try:
-            hours_since = (now - datetime.datetime.fromisoformat(last_alert)).total_seconds() / 3600
+            return (now - datetime.datetime.fromisoformat(ts)).total_seconds() / 3600
         except Exception:
-            pass
+            return None
 
-    remediated_now = any(v.startswith("REMEDIATED") for v in r["violations"])
+    h_crit, h_adv = hours_since("last_alert"), hours_since("last_adv_alert")
+    remediated_now = any("REMEDIATED" in v for v in violations)
 
-    should = False
+    kind = None
     if remediated_now:
-        # The router just self-healed — that is worth knowing immediately, even
-        # if the debounce would otherwise hold because retry-rate warnings
-        # already had us in a "bad" state.
-        should = True
-    elif is_bad and not was_bad:
-        should = True
-    elif is_bad and (hours_since is None or hours_since >= REALERT_HOURS):
-        should = True
-    elif was_bad and not is_bad:
-        should = True
+        kind = "crit"                       # self-heal is always worth knowing now
+    elif crit and (not was_crit or h_crit is None or h_crit >= REALERT_HOURS):
+        kind = "crit"
+    elif was_crit and not crit:
+        kind = "recovery"
+    elif advisory and streak >= ADVISORY_STREAK and (
+            h_adv is None or h_adv >= ADVISORY_REALERT_HOURS):
+        kind = "advisory"
 
-    if not should:
-        save_state({**prev, "bad": is_bad, "last_alert": last_alert})
+    new_state = {**prev, "crit_bad": bool(crit), "adv_streak": streak,
+                 "bad": bool(violations)}
+    if kind is None:
+        save_state(new_state)
         return False
 
-    if is_bad:
-        crit = [v for v in r["violations"] if v.startswith("CRITICAL")]
-        subject = ("🔴 Sonos: %d critical issue(s)" % len(crit)) if crit else "⚠️ Sonos health degraded"
+    if kind == "recovery":
+        subject = "✅ Sonos health recovered"
+        text = ("Critical Sonos findings have cleared.\n\n"
+                f"multicast_snooping={r['kernel_multicast_snooping']}, "
+                f"multicast_querier={r['kernel_multicast_querier']}, "
+                f"udm-boot={r['udm_boot_service']}\n"
+                f"Worst retry rate: {r['max_retry_pct']}% ({r['worst_speaker']})")
+    else:
+        shown = violations if kind == "crit" else advisory
+        if kind == "crit":
+            subject = (f"🔴 Sonos: {len(crit)} critical issue(s)" if crit
+                       else "🔴 Sonos: kernel/boot state changed")
+        else:
+            subject = (f"⚠️ Sonos degraded {ADVISORY_STREAK * 15}+ min "
+                       f"({len(advisory)} finding(s))")
         lines = ["Sonos health check found problems.", ""]
-        for v in r["violations"]:
+        if kind == "advisory":
+            lines = [f"Sustained for {streak} consecutive samples "
+                     f"(~{streak * 15} min). Advisory — no kernel fault.", ""]
+        for v in shown:
             lines.append(f"  • {v}")
         lines += ["", "Kernel state:",
                   f"  multicast_snooping = {r['kernel_multicast_snooping']} (want 0)",
@@ -594,16 +644,14 @@ def maybe_alert(r: dict, zone_count, grouped) -> bool:
                          f"{sp.get('rssi')} dBm  retry {sp.get('retry_pct')}%  via {sp.get('ap')}")
         lines += ["", "Fix recipes: devcontrol/devdocs/SONOSAUTOMATION.md"]
         text = "\n".join(lines)
-    else:
-        subject = "✅ Sonos health recovered"
-        text = "All Sonos health rules pass again.\n\n" \
-               f"multicast_snooping={r['kernel_multicast_snooping']}, " \
-               f"multicast_querier={r['kernel_multicast_querier']}, " \
-               f"udm-boot={r['udm_boot_service']}\n" \
-               f"Worst retry rate: {r['max_retry_pct']}% ({r['worst_speaker']})"
 
     sent = send_email(subject, text)
-    save_state({**prev, "bad": is_bad, "last_alert": now.isoformat() if sent else last_alert})
+    if sent:
+        if kind == "advisory":
+            new_state["last_adv_alert"] = now.isoformat()
+        else:
+            new_state["last_alert"] = now.isoformat()
+    save_state(new_state)
     return sent
 
 

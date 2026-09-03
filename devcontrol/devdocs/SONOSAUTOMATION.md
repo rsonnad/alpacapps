@@ -954,7 +954,29 @@ pre-reboot state, issues `reboot`, and emails a heads-up via Resend. Armed for *
 03:00 CDT** on Alpuca; log at `/Users/alpuca/logs/udm-reboot.log`. To cancel before it fires:
 `crontab -l | grep -v udm-controlled-reboot | crontab -`.
 
-### Alerting
+### Alerting — two severities (reworked 2026-09-03)
+
+Paging on every state change produced **8 emails on 2026-09-02** for retry wobble
+that needed no action. Making retry an interval rate (correctly) also made it volatile:
+it legitimately crosses a threshold and falls back within one tick, and the log shows
+exactly that — bad 23:15–01:00, OK 01:15–01:45, bad again at 02:00, an email each way.
+
+| Severity | What | Behaviour |
+|---|---|---|
+| **Critical** | kernel `multicast_snooping`/`querier`, `udm-boot.service`, any REMEDIATED, controller data unavailable | pages immediately, re-pages every 6 h while unresolved, sends one recovery mail when it clears |
+| **Advisory** | retry thresholds, PHY errors, AP-on-ch11, config drift | must persist **4 consecutive samples (~1 h)** before paging, then silent for 24 h. No recovery mail — a wobble clearing is not news. |
+
+Classification is substring-based on `CRITICAL_MARKERS`; tune `ADVISORY_STREAK` /
+`ADVISORY_REALERT_HOURS` at the top of the script.
+
+**Test suppression:** `sonos-multizone-test.py` writes `~/.sonos-test-running` while it
+runs and removes it on any exit path. Advisory findings are dropped entirely while that
+marker exists — the load is the point of the test, not a fault. **Critical findings still
+page during a test.** If a test is killed with `kill -9` the marker can be orphaned,
+silencing advisories until removed: `rm -f ~/.sonos-test-running`.
+
+State lives in `~/.sonos-health-state.json` (`crit_bad`, `adv_streak`, `last_alert`,
+`last_adv_alert`). Deleting the file resets the state machine and costs one warm-up tick.
 
 Resend → `rahulioson@gmail.com`, using the existing `~/.config/resend/key`. Debounced via
 `~/.sonos-health-state.json`: fires on entering a bad state, re-fires at most every 6 h while
@@ -1008,6 +1030,18 @@ Run it on demand from Alpuca:
 
 Waiting for someone to happen to group zones is a poor way to get data. This creates the load
 deliberately in escalating phases (3→4→5 zones) and detects the real symptom.
+
+Configurations vary the coordinator and speaker mix, not just the count — each runs
+sizes 3/4/5/6 (`SIZES`), so a phase is the coordinator plus `additions[:N-1]`:
+
+| Config | Coordinator | Isolates |
+|---|---|---|
+| `A-wired-root` | Living Sound (wired) | the wired→wireless multicast path that was failing |
+| `B-wireless-root` | Skyloft (wifi) | no wired speaker at all — does the SonosNet root matter? |
+| `C-rf-worst` | Living Sound | stress: the genuinely bad speakers, four sharing the Garage Mahal AP |
+
+`--config <name>` runs a subset. Schedule a one-off with `sonos-multizone-oneshot.sh`,
+which removes its own crontab line before running (see `udm-controlled-reboot.sh` for why).
 
 ```bash
 # on Alpuca — always dry-run first, it prints the plan and touches nothing

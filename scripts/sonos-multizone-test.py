@@ -102,6 +102,11 @@ PLAYLIST = "Ambient Music"
 SAMPLE_SECONDS = 30
 STALL_STRIKES = 2  # consecutive frozen-position samples before calling it a dropout
 
+# While this exists, sonos-health.py suppresses ADVISORY alerts (retry/PHY):
+# the load this test creates is the point of the test, not a fault. Critical
+# kernel/boot findings still page normally.
+TEST_MARKER = os.path.expanduser("~/.sonos-test-running")
+
 RESEND_KEY_FILE = os.path.expanduser("~/.config/resend/key")
 ALERT_FROM = "notifications@alpacaplayhouse.com"
 ALERT_TO = "rahulioson@gmail.com"
@@ -534,12 +539,26 @@ def main():
     touched = all_rooms
     log(f"captured original state for {len(original)} rooms")
 
+    try:
+        with open(TEST_MARKER, "w") as f:
+            f.write(datetime.datetime.now().astimezone().isoformat())
+        log(f"advisory-alert suppression on ({TEST_MARKER})")
+    except Exception as e:
+        log(f"WARN: could not write {TEST_MARKER}: {e}")
+
     restored = {"done": False}
 
     def cleanup(*_):
         if not restored["done"]:
             restored["done"] = True
             restore_state(original, touched)
+            try:
+                os.unlink(TEST_MARKER)
+                log("advisory-alert suppression off")
+            except FileNotFoundError:
+                pass
+            except Exception as e:
+                log(f"WARN: could not remove {TEST_MARKER}: {e}")
 
     signal.signal(signal.SIGINT, lambda *a: (cleanup(), sys.exit(130)))
     signal.signal(signal.SIGTERM, lambda *a: (cleanup(), sys.exit(143)))
