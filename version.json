@@ -1,12 +1,12 @@
 {
-  "version": "v260902.21 11:06p",
-  "release": 1836,
-  "sha": "3f7f2aa24a",
-  "fullSha": "3f7f2aa24a90ae355382eab98b8998ac11463d5e",
+  "version": "v260903.01 2:12a",
+  "release": 1837,
+  "sha": "6aaf82a6b9",
+  "fullSha": "6aaf82a6b95e320e0dad85a6cd88b31822e770f9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-03T04:06:05+00:00",
-  "commits": [{"sha":"3f7f2aa24a","message":"feat(infra): add Zed Zygote testimonial messages page","author":"Otto"}]
+  "machine": "runnervmejwal",
+  "pushedAt": "2026-09-03T07:12:06+00:00",
+  "commits": [{"sha":"6aaf82a6b9","message":"Sonos alerting: split severity, sit on noisy advisory findings","author":"Otto"}]
 }
