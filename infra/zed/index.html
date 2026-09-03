@@ -583,7 +583,7 @@
       <li><strong>Install Zed</strong> &mdash; free download for macOS, Windows, or Linux.</li>
       <li><strong>Sign in and start the Pro free trial</strong> &mdash; two weeks, $20 of model credit.</li>
       <li><strong>Set the agent&rsquo;s model to Claude Sonnet 5</strong> &mdash; the one setting worth getting right.</li>
-      <li><strong>Optional:</strong> add your own <strong>OpenRouter</strong> key so you can keep going cheaply when the trial credit runs out.</li>
+      <li><strong>Optional:</strong> add your own <strong>OpenRouter</strong> key and switch to <strong>GLM 5.3 Flash</strong> so you can keep going cheaply when the trial credit runs out.</li>
     </ol>
     <div class="callout callout--info">
       <p><strong>Why this route exists.</strong> The rest of the AlpacApps instructions assume Claude Code or Codex on a paid plan. Zed is the way to do the same work without a subscription: the editor is free forever, and the agent runs on trial credit first and your own API key after. It is slower and more hands-on, but nothing here is locked behind a monthly bill.</p>
@@ -662,7 +662,7 @@
   <!-- STEP 4 -->
   <section class="section" id="openrouter">
     <h2>Step 4 <span class="small muted">(optional)</span> &mdash; Bring your own OpenRouter key</h2>
-    <p>Skip this until you need it. Come back when the trial credit runs out, or when you want a very cheap model for the repetitive work. <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> is one account that reaches hundreds of models, billed per token with no subscription &mdash; often cents a day on a cheap model.</p>
+    <p>Skip this until you need it. Come back when the trial credit runs out, or when you want a very cheap model for the repetitive work. <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> is one account that reaches hundreds of models, billed per token with no subscription &mdash; often cents a day on a cheap model. The one to start with is <strong>GLM 5.3 Flash</strong>; details in step&nbsp;d below.</p>
 
     <h3>a. Create the key</h3>
     <p>Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>, create a key, and add a few dollars of credit to the account. Store the key in your credential manager the moment you have it.</p>
@@ -693,6 +693,15 @@
 
     <h3>d. Pick an OpenRouter model</h3>
     <p>Go back to the Agent Panel, click the model name at the bottom right, and choose one of the OpenRouter models now in the list. That work is billed to your OpenRouter credit instead of to Zed.</p>
+
+    <div class="callout callout--done">
+      <p><strong>Start with GLM 5.3 Flash</strong> &mdash; slug <code>z-ai/glm-5.3-flash</code>. It is built for exactly this kind of work: efficient coding and long-running agent tasks, with a 1M-token context window so it can hold a real codebase in view. At <strong>$0.15 per million input tokens and $0.50 per million output</strong>, a few dollars of credit covers far more building than most people get through in a month.</p>
+      <p style="margin-top:0.6rem;">It is not as sharp as Claude Sonnet 5 on genuinely hard problems. That is the trade you are making to pay nothing monthly &mdash; and it is a good trade for the bulk of setup work, which is mechanical.</p>
+    </div>
+
+    <div class="callout callout--secure">
+      <p><strong>This recommendation was checked on 2 September 2026.</strong> Models move faster than documentation does. <strong>If you are reading this after October 2026, assume something newer, better, or cheaper exists</strong> &mdash; open <a href="https://openrouter.ai/models" target="_blank" rel="noopener">openrouter.ai/models</a>, sort by price, and look at what is near the top before you commit to any model named on this page. The instructions here do not depend on which model you pick.</p>
+    </div>
   </section>
 
   <!-- NOTES -->
