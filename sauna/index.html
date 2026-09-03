@@ -196,19 +196,6 @@
             <p>With Caroline — how long can you last?</p>
           </div>
         </button>
-
-        <button type="button" class="video-card" data-video="ZMUow5aqCY0" data-title="Playhouse Walkthrough">
-          <div class="video-card__thumb">
-            <img src="https://img.youtube.com/vi/ZMUow5aqCY0/hqdefault.jpg" alt="Playhouse Walkthrough" loading="lazy">
-            <span class="video-card__play" aria-hidden="true">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-            </span>
-          </div>
-          <div class="video-card__info">
-            <h3>Playhouse Walkthrough</h3>
-            <p>The full property tour, Sparadise included</p>
-          </div>
-        </button>
       </div>
     </section>
 
@@ -262,34 +249,34 @@
       <div class="callout callout--accent">
         <strong>How to play music:</strong> use Spotify Connect or the Sonos S1 app while on the
         <em>Black Rock City</em> WiFi network, and select the <strong>Sauna</strong> room in Sonos. You can also AirPlay
-        to the WiiM Pro receiver. The rack lives in the cabinet behind the sauna; levels can be adjusted in real time
-        from inside the sauna with the Behringer Flow 8 mobile app.
+        to the WiiM Pro receiver. The rack lives in the cabinet behind the sauna; volume and presets are adjusted on
+        the miniDSP Flex 8.
       </div>
 
       <h3>Signal Flow</h3>
       <p>
-        A single source feeds a <strong>Behringer Flow 8</strong> digital mixer, which handles mixing and volume, and a
-        <strong>miniDSP Flex 8</strong>, which handles the digital signal processing. From there the signal fans out to
-        four independent paths — stereo mains, a dedicated subwoofer, and two chains of tactile transducers.
+        A single source feeds a <strong>miniDSP Flex 8</strong> digital signal processor, which handles volume, routing,
+        and all the DSP. From there the signal fans out to four independent paths — stereo mains, a dedicated
+        subwoofer, and two chains of tactile transducers.
       </p>
 
       <div class="flow-diagram">
-        <div class="flow-source">Sonos Connect / WiiM Pro <span class="flow-arrow">→</span> <strong>Behringer Flow 8</strong> <span class="flow-arrow">→</span> <strong>miniDSP Flex 8</strong></div>
+        <div class="flow-source">Sonos Connect / WiiM Pro <span class="flow-arrow">→</span> <strong>miniDSP Flex 8</strong></div>
         <div class="flow-paths">
           <div class="flow-path">
-            <div class="flow-path__out">MAIN OUT (L/R)</div>
+            <div class="flow-path__out">OUT 1–2 (L/R mains)</div>
             <div class="flow-path__chain">Yamaha RX-V871 → Polk Atrium 8 (×2)</div>
-            <div class="flow-path__meta">1/4" TRS → RCA · Full-range stereo</div>
+            <div class="flow-path__meta">Full-range stereo</div>
           </div>
           <div class="flow-path">
-            <div class="flow-path__out">MONITOR 1</div>
+            <div class="flow-path__out">OUT 3 (sub)</div>
             <div class="flow-path__chain">LAB Gruppen E8:2 → JBL C29AV-1 subwoofer</div>
-            <div class="flow-path__meta">1/4" TRS → XLR (balanced) · Low frequency</div>
+            <div class="flow-path__meta">Low frequency</div>
           </div>
           <div class="flow-path">
-            <div class="flow-path__out">MONITOR 2</div>
+            <div class="flow-path__out">OUT 4 (tactile)</div>
             <div class="flow-path__chain">Buttkicker BKA-300-4 → Aurasound shakers (×2)</div>
-            <div class="flow-path__meta">1/4" TRS → RCA · Tactile bass</div>
+            <div class="flow-path__meta">Tactile bass</div>
           </div>
           <div class="flow-path">
             <div class="flow-path__out">↳ daisy-chained</div>
@@ -307,15 +294,14 @@
 
       <h3>Equipment</h3>
 
-      <h4>Mixing &amp; Source</h4>
+      <h4>Source &amp; DSP</h4>
       <div class="table-scroll">
         <table class="spec-table">
           <thead><tr><th>Device</th><th>Role</th></tr></thead>
           <tbody>
             <tr><td>Sonos Connect Gen 2</td><td>Signal input source (discontinued model)</td></tr>
             <tr><td>WiiM Pro</td><td>AirPlay 2 receiver / input source</td></tr>
-            <tr><td>Behringer Flow 8 Mixer</td><td>Main mixer &amp; DSP — 4 outputs (L/R + 2 monitors)</td></tr>
-            <tr><td>miniDSP Flex 8</td><td>8-channel DSP — crossovers, EQ, time alignment, Dirac room correction</td></tr>
+            <tr><td>miniDSP Flex 8</td><td>Main DSP &amp; volume — 8 output channels: crossovers, EQ, time alignment, Dirac room correction</td></tr>
             <tr><td>Dirac UMIK-1 Microphone</td><td>Room measurement &amp; calibration</td></tr>
           </tbody>
         </table>
@@ -355,9 +341,6 @@
         <table class="spec-table">
           <thead><tr><th>Path</th><th>Filters</th><th>Level</th></tr></thead>
           <tbody>
-            <tr><td>Flow 8 → Main Out (Yamaha)</td><td>High-pass 80 Hz, EQ flat</td><td>75% (−7.5 dB)</td></tr>
-            <tr><td>Flow 8 → Monitor 1 (sub)</td><td>Low-pass 100 Hz, high-pass 20 Hz</td><td>100% (0 dB)</td></tr>
-            <tr><td>Flow 8 → Monitor 2 (tactile)</td><td>Low-pass 100 Hz, high-pass 25 Hz</td><td>85% (−3 dB)</td></tr>
             <tr><td>Yamaha RX-V871</td><td>Pure Direct, speakers "Small", crossover 80 Hz, EQ bypassed</td><td>Start at −20 dB</td></tr>
             <tr><td>LAB Gruppen E8:2</td><td>HPF 25 Hz / LPF 100 Hz, −24 dB/oct, mono in, 4 Ω</td><td>Start at 50%</td></tr>
             <tr><td>BKA-300-4 (Auras)</td><td>Low cut 25 Hz / high cut 80 Hz, −12 dB/oct, Line Out on</td><td>Start at 40%</td></tr>
@@ -380,7 +363,7 @@
 
       <h3>Living With Electronics in a Sauna</h3>
       <div class="callout callout--warn">
-        <strong>Heat and moisture are the enemy.</strong> Every amp, the mixer, and the Yamaha receiver live outside the
+        <strong>Heat and moisture are the enemy.</strong> Every amp, the Flex 8, and the Yamaha receiver live outside the
         sauna in a ventilated, lower-temperature equipment area. Only speaker wire runs inside the hot room. Heat kills
         electronics and trips thermal protection mid-session.
       </div>
@@ -393,11 +376,11 @@
 
       <h3 id="flex8">The miniDSP Flex 8</h3>
       <p>
-        The <strong>miniDSP Flex 8</strong> sits between the Flow 8 and the amplifiers, and it's installed and running.
-        It's the piece that lets one device own all the crossovers, EQ, time alignment, and Dirac room correction. The
-        Flow 8 stays on in front of it as the mixer and volume control. With the Flex 8 in charge, each amp gets set to
-        full-range with only its gain adjusted — no double or triple filtering, and consistent phase response across
-        every output. Outputs 6–8 are spare, left for future expansion.
+        The <strong>miniDSP Flex 8</strong> sits between the source and the amplifiers, and it's installed and running
+        as the front-end: input selection, volume, and all the crossovers, EQ, time alignment, and Dirac room
+        correction in one box. With the Flex 8 in charge, each amp gets set to full-range with only its gain adjusted —
+        no double or triple filtering, and consistent phase response across every output. Outputs 5–8 are spare, left
+        for future expansion.
       </p>
 
       <div class="callout callout--accent">
