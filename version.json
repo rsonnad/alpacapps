@@ -1,12 +1,12 @@
 {
-  "version": "v260903.02 2:13p",
-  "release": 1838,
-  "sha": "89efb91b50",
-  "fullSha": "89efb91b506dc47c2ab49601263cdaef7336cd11",
+  "version": "v260903.03 3:41p",
+  "release": 1839,
+  "sha": "3717ed118d",
+  "fullSha": "3717ed118d70f99c3062fd50523d724d98aa1509",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmejwal",
-  "pushedAt": "2026-09-03T19:13:26+00:00",
-  "commits": [{"sha":"e2a005c819","message":"sauna: remove Playhouse Walkthrough video card","author":"Otto"},{"sha":"89efb91b50","message":"sauna audio: miniDSP Flex 8 is the front-end DSP, drop Flow 8 references","author":"Otto"}]
+  "pushedAt": "2026-09-03T20:41:53+00:00",
+  "commits": [{"sha":"3717ed118d","message":"Fix one-shot scripts hanging on crontab; downgrade controller-unavailable","author":"Otto"}]
 }
