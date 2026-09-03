@@ -391,6 +391,28 @@ Note the laptop key is `~/.ssh/alpuca_ed25519` (there is no `~/.ssh/id_ed25519`)
 (`100.74.59.97`) was unreachable on 2026-08-30 while LAN `192.168.1.200` worked — try LAN first
 at home.
 
+### Controller REST — works DIRECTLY from the laptop (no Alpuca hop)
+
+Verified 2026-09-02 from the MacBook Pro M5: the REST API needs no `sshpass`, so the
+"run it from Alpuca" rule above applies to SSH only. Read-only calls need no CSRF token.
+
+`bw-read` CANNOT fetch `login.password` on this item (the item's own notes say so) — pull it
+with the `bw list items` JSON pattern instead:
+
+```python
+items = json.loads(subprocess.run(["/Users/otter/bin/agent-access","bw","list","items"],
+                                  capture_output=True, text=True).stdout)
+it = next(i for i in items if i["name"].startswith("UniFi Dream Machine Pro"))
+user, pw = it["login"]["username"], it["login"]["password"]
+```
+
+Then POST `/api/auth/login` and GET `/proxy/network/api/s/default/stat/device` with a
+`CookieJar`. Requires an open access window (`bwaccesser` / `agent-access status`).
+
+AP WiFi generation lives in `radio_table[]`: `is_11ax: true` = WiFi 6, `is_11ac` only =
+WiFi 5. Device-level `support_wifi6e` flags 6 GHz. Do NOT infer generation from the model
+code — `U7PG2` is the AC Pro (WiFi 5), the "7" is a board rev, not WiFi 7.
+
 ### Controller REST (no SSH needed, from Alpuca)
 
 CSRF lives in the **`x-csrf-token` response header** on login, not in the cookie jar. Nested
@@ -409,6 +431,76 @@ curl -sk -b /tmp/uc.txt 'https://192.168.1.1/proxy/network/api/s/default/rest/us
 Endpoints: `rest/networkconf`, `rest/wlanconf`, `rest/user` (DHCP reservations),
 `stat/device` (APs/switches), `stat/sta` (live clients incl. retry counters).
 `alpacaauto` is Super Admin — PUT works with the CSRF header.
+
+## rclone Google Drive remotes on Alpuca (Drive -> rvault20/RVbackup transfers)
+
+Alpuca already has rclone configured with three remotes in
+`/Users/alpuca/.config/rclone/rclone.conf`: `[gdrive]`, `[gphotos]`, and
+`[tesloop]`.
+
+> **⚠ 2026-09-02 correction.** `[gdrive]` is **rahulioson@gmail.com**, NOT
+> alpacaplayhouse@gmail.com — confirmed wrong by the user after a mistaken
+> inference from folder names alone ("Alpaca Playhouse Large Files" etc. are
+> just business folders stored in Rahul's personal 5TB Drive, not proof of
+> account ownership). `[gphotos]` is presumably the same account's Photos.
+> The disabled LaunchAgent `com.alpuca.rclone-rahulioson.plist.disabled` also
+> points at `[gdrive]` — consistent with it being rahulioson's remote, output
+> to `googledrivesync-rahulioson`.
+>
+> **Do NOT infer a Drive/Photos remote's owning account from folder names.**
+> Verify via the OAuth consent screen itself (the account chosen during
+> `rclone authorize`/`rclone config` login) before trusting a remote's identity
+> for anything account-specific.
+>
+> **alpacaplayhouse@gmail.com has no rclone remote configured yet** as of
+> 2026-09-02. It's a genuine 15 GB **free-tier** account, 15.13/15 GB used,
+> "ran out of storage" per the Drive UI storage banner — this is the account
+> that actually needs the Drive-to-rvault20 migration. Needs fresh headless
+> `rclone authorize "drive"` OAuth (see the SSH-tunnel recipe used 2026-09-02:
+> `ssh -L 53682:localhost:53682 ... 'rclone authorize "drive" --auth-no-open-browser'`,
+> open the printed URL in a browser logged into alpacaplayhouse@gmail.com).
+>
+> A stray mistaken pull of ~12 GiB of rahulioson's Drive landed in
+> `/Volumes/rvault20/googledrivesync-gdrive/` before this was caught — redundant
+> with the pre-existing `googledrivesync-rahulioson/`, needs cleanup decision.
+
+**Gotcha (hit 2026-09-02):** the config file was owned `root:staff` mode 600,
+unreadable by `alpuca` — every plain `rclone` command failed with
+`CRITICAL: Failed to load config file ... permission denied`. Fix:
+```bash
+sudo -n chown alpuca:staff /Users/alpuca/.config/rclone/rclone.conf
+sudo -n chmod 600 /Users/alpuca/.config/rclone/rclone.conf
+```
+(passwordless sudo is enabled for `alpuca`, see `ALPUCA-MACHINE.md`). If it's
+locked again, `sudo -n rclone ...` works as a read-only workaround but breaks
+any cron/nohup job running as `alpuca` (no root there).
+
+**Established convention:** prior Drive pulls landed in
+`/Volumes/rvault20/googledrivesync-<accountname>/` (see `googledrivesync-tesloop`,
+`googledrivesync-rahulioson`, both already also mirrored onto `/Volumes/RVbackup/`).
+Follow the same naming for new pulls. The referenced `sync-gdrive-to-rvault.sh`
+in the `tesloop` weekly cron job (`7 3 * * 0 ... tesloop`) is **missing on disk**
+— that cron entry has been silently failing (check
+`/Users/alpuca/logs/gdrive-sync.log` for the "No such file or directory" spam)
+and needs a real fix/investigation separately.
+
+`[gdrive]` has no `export_formats` set, so native Google Docs/Sheets/Slides are
+skipped by a bare `rclone copy` — pass `--drive-export-formats docx,xlsx,pptx,svg`
+on the command line per-run rather than writing it into the shared remote config
+(other jobs use the same `[gdrive]` stanza).
+
+Reach Alpuca for these transfers via:
+```bash
+ssh -F /dev/null -i ~/.ssh/alpuca_ed25519 -o IdentitiesOnly=yes -o IdentityAgent=none \
+  -o PreferredAuthentications=publickey -o StrictHostKeyChecking=accept-new paca@100.74.59.97
+```
+(`paca` is a login alias for the `alpuca` user, uid 501 — confirmed via `whoami`/`id`.)
+
+The `rvault20 -> RVbackup` full-volume mirror script (`rvault-rsync.sh`) is stale
+(references the old `/Volumes/RVaultBack1` name, pre-rename to `RVbackup`) and
+isn't in the current crontab — don't invoke it as-is. For adding one new folder,
+scope a plain `rsync -avh --stats` to just that subfolder instead of mirroring
+the whole 9TB+ volume.
 
 ## Rahul M2 Airtop SSH (MacBook Air M2)
 
