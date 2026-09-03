@@ -1,12 +1,12 @@
 {
-  "version": "v260902.13 8:39p",
-  "release": 1828,
-  "sha": "7a290fad7d",
-  "fullSha": "7a290fad7d71ba8219fe05927f935edc18345688",
+  "version": "v260902.14 8:43p",
+  "release": 1829,
+  "sha": "f115f37ef4",
+  "fullSha": "f115f37ef4018fab69e56835231791a70d97751d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-03T01:39:56+00:00",
-  "commits": [{"sha":"7a290fad7d","message":"feat(infra): add Zed setup screenshots","author":"Otto"}]
+  "pushedAt": "2026-09-03T01:43:03+00:00",
+  "commits": [{"sha":"f115f37ef4","message":"feat(infra): recommend GLM 5.3 Flash, and date the model recommendations","author":"Otto"}]
 }
