@@ -52,12 +52,46 @@ EXCLUDE = {"Pequeno", "MasterBlaster"}
 # The additions are chosen to mix channels and known-good/known-bad speakers:
 #   Dining     ch1, worst retry (~26%)     Skyloft     ch1, best retry (~3.5%)
 #   Backyard   ch1, mid (~15%)             SkyBalcony  ch6, high (~20%)
-COORDINATOR = "Living Sound"
-PHASES = [
-    ["Dining Sound", "Skyloft Sound"],                                          # 3 zones
-    ["Dining Sound", "Skyloft Sound", "Backyard Sound"],                        # 4 zones
-    ["Dining Sound", "Skyloft Sound", "Backyard Sound", "SkyBalcony Sound"],    # 5 zones
+# Each config runs every size in SIZES. A phase of size N is the coordinator
+# plus additions[:N-1], so group membership grows incrementally within a config
+# and the only variable between configs is WHICH speakers and WHICH coordinator.
+SIZES = [3, 4, 5, 6]
+
+CONFIGS = [
+    {
+        "name": "A-wired-root",
+        "why": "Living Sound is the wired SonosNet root, so this exercises the "
+               "wired->wireless multicast path that was actually failing. Baseline; "
+               "extends the 2026-09-02 run from 5 zones to 6.",
+        "coordinator": "Living Sound",
+        "additions": ["Dining Sound", "Skyloft Sound", "Backyard Sound",
+                      "SkyBalcony Sound", "Front Outside Sound"],
+    },
+    {
+        "name": "B-wireless-root",
+        "why": "All-wireless coordinator (Skyloft: best retry, on the Skyloft AP). No "
+               "wired speaker in the group at all, so the stream never crosses the "
+               "wired->wireless boundary. Isolates whether the wired root matters.",
+        "coordinator": "Skyloft Sound",
+        "additions": ["Dining Sound", "DJ", "Front Outside Sound",
+                      "Outhouse", "Backyard Sound"],
+    },
+    {
+        "name": "C-rf-worst",
+        "why": "Deliberate stress case: the speakers with genuinely bad current interval "
+               "retry (garage outdoors, SkyBalcony) plus the distant outdoor ones, and "
+               "four members sharing the Garage Mahal AP. If grouping breaks anywhere, here.",
+        "coordinator": "Living Sound",
+        "additions": ["garage outdoors", "SkyBalcony Sound", "Backyard Sound",
+                      "Outhouse", "Garage Bridge - no sound"],
+    },
 ]
+
+
+def phases_for(cfg):
+    """[(size, [members]) ...] — members exclude the coordinator."""
+    return [(n, cfg["additions"][:n - 1]) for n in SIZES
+            if n - 1 <= len(cfg["additions"])]
 
 TEST_VOLUME = 8
 # No "handpan" anywhere in favorites or playlists (checked 2026-09-02), so this
@@ -118,15 +152,28 @@ def restore_state(original: dict, touched: set):
             sonos(f"{room}/pause")
         except Exception:
             pass
+    # Everything we touched leaves first, so no test grouping survives.
+    for room in sorted(touched):
+        try:
+            sonos(f"{room}/leave")
+        except Exception as e:
+            log(f"  WARN: {room} leave failed: {e}")
+    time.sleep(3)
+    # Then rooms that were originally group MEMBERS rejoin their old coordinator.
+    # Previously only standalone rooms were handled, so a room found already
+    # grouped was silently left standalone — the docstring's "grouping restored"
+    # claim was false. Harmless on 2026-09-02 (all 12 zones were standalone) but
+    # wrong the first time anyone leaves a group running.
     for room in sorted(touched):
         was = original.get(room, {})
-        # If the room was its own coordinator originally, it was ungrouped.
-        if was.get("coordinator") == room and len(was.get("group_members", [])) == 1:
+        coord = was.get("coordinator")
+        if coord and coord != room and coord not in (None, ""):
             try:
-                sonos(f"{room}/leave")
+                sonos(f"{room}/join/{coord}")
+                time.sleep(0.5)
             except Exception as e:
-                log(f"  WARN: {room} leave failed: {e}")
-    time.sleep(3)
+                log(f"  WARN: {room} rejoin to {coord} failed: {e}")
+    time.sleep(2)
     for room in sorted(touched):
         vol = (original.get(room) or {}).get("volume")
         if vol is not None:
@@ -142,7 +189,11 @@ def restore_state(original: dict, touched: set):
 class UDM:
     """Controller session for per-speaker retry rates. Reachable from Alpuca."""
 
-    SONOS_OUIS = ("00:0e:58", "b8:e9:37")
+    # Must match sonos-health.py's SONOS_OUIS or the two disagree about which
+    # clients are Sonos. Today every speaker here is 00:0e:58 / b8:e9:37, but a
+    # newer unit would be invisible to the test while the collector saw it.
+    SONOS_OUIS = ("00:0e:58", "b8:e9:37", "5c:aa:fd", "94:9f:3e",
+                  "48:a6:b8", "34:7e:5c", "54:2a:1b")
 
     def __init__(self, password):
         self.password = password
@@ -172,8 +223,14 @@ class UDM:
         op.open(req, timeout=15).read()
         self.opener = op
 
-    def retries(self):
-        """{room_mac: retry_pct} for wireless Sonos clients."""
+    def counters(self):
+        """{mac: (tx_retries, tx_packets)} for wireless Sonos clients.
+
+        RAW counters, not a ratio. These are cumulative since association, so
+        their ratio is a lifetime average that barely moves and stays poisoned by
+        pre-fix history (verified 2026-09-02: Dining read 25.4% lifetime vs 9.1%
+        actual). run_phase differences consecutive samples to get a real rate.
+        """
         if not self.ok:
             return {}
         try:
@@ -188,37 +245,58 @@ class UDM:
             mac = (s.get("mac") or "").lower()
             if not mac.startswith(self.SONOS_OUIS) or s.get("is_wired"):
                 continue
-            tx_r, tx_p = s.get("tx_retries", 0) or 0, s.get("tx_packets", 0) or 0
-            tot = tx_r + tx_p
-            if tot:
-                out[mac] = round(100.0 * tx_r / tot, 1)
+            out[mac] = (s.get("tx_retries", 0) or 0, s.get("tx_packets", 0) or 0)
         return out
 
 
 # ------------------------------------------------------------------- the test
 
-def run_phase(phase_num: int, members: list, minutes: int, udm) -> dict:
-    """Group, play, and watch. Returns per-phase findings."""
-    group = [COORDINATOR] + members
-    log(f"--- Phase {phase_num}: {len(group)} zones -> {', '.join(group)}")
+def ungroup(rooms):
+    """Break every room out to standalone. Needed between configs, which have
+    different coordinators — otherwise the previous group persists."""
+    for room in rooms:
+        try:
+            sonos(f"{room}/leave")
+        except Exception:
+            pass
+        time.sleep(0.4)
 
+
+def run_phase(cfg_name: str, coordinator: str, members: list, minutes: int, udm) -> dict:
+    """Group, play, and watch. Returns per-phase findings."""
+    group = [coordinator] + members
+    log(f"--- [{cfg_name}] {len(group)} zones -> {', '.join(group)}")
+
+    setup_errors = []
     for room in members:
-        sonos(f"{room}/join/{COORDINATOR}")
+        try:
+            sonos(f"{room}/join/{coordinator}")
+        except Exception as e:
+            setup_errors.append(f"{room} join failed: {e}")
         time.sleep(1)
     for room in group:
-        sonos(f"{room}/volume/{TEST_VOLUME}")
+        try:
+            sonos(f"{room}/volume/{TEST_VOLUME}")
+        except Exception as e:
+            setup_errors.append(f"{room} volume failed: {e}")
+    for msg in setup_errors:
+        log(f"  WARN: {msg}")
     time.sleep(2)
 
     try:
-        sonos(f"{COORDINATOR}/playlist/{PLAYLIST}")
+        sonos(f"{coordinator}/playlist/{PLAYLIST}")
         time.sleep(2)
-        sonos(f"{COORDINATOR}/repeat/on")
+        sonos(f"{coordinator}/repeat/on")
     except Exception as e:
         log(f"  WARN: playlist {PLAYLIST!r} failed ({e}) — trying plain play")
-        sonos(f"{COORDINATOR}/play")
+        sonos(f"{coordinator}/play")
     time.sleep(6)
 
-    events, samples = [], []
+    events = [{"at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+               "kind": "api_error", "detail": m} for m in setup_errors]
+    samples = []
+    prev_counters = udm.counters()   # baseline so sample 1 already has a delta
+    prev_pstate, prev_missing = "PLAYING", set()
     last_elapsed, stall_strikes = None, 0
     deadline = time.time() + minutes * 60
 
@@ -232,18 +310,34 @@ def run_phase(phase_num: int, members: list, minutes: int, udm) -> dict:
             continue
 
         # Find our group by coordinator name.
-        z = next((z for z in zones if z["coordinator"]["roomName"] == COORDINATOR), None)
+        z = next((z for z in zones if z["coordinator"]["roomName"] == coordinator), None)
         if z is None:
             events.append({"at": t, "kind": "group_vanished",
-                           "detail": f"{COORDINATOR} is no longer a coordinator"})
+                           "detail": f"{coordinator} is no longer a coordinator"})
             time.sleep(SAMPLE_SECONDS)
             continue
 
         present = {m["roomName"] for m in z.get("members", [])}
+
+        # EXCLUDE is a runtime invariant, not just a plan-time check. If someone
+        # groups Pequeno/MasterBlaster onto our coordinator mid-test they would
+        # play the test playlist and never be volume-restored (they are not in
+        # `touched`). Eject immediately and record it.
+        intruders = present & EXCLUDE
+        for room in sorted(intruders):
+            try:
+                sonos(f"{room}/leave")
+                events.append({"at": t, "kind": "excluded_room_ejected",
+                               "detail": f"{room} was grouped into the test; removed"})
+                log(f"  WARN: ejected excluded room {room}")
+            except Exception as e:
+                log(f"  WARN: could not eject {room}: {e}")
+        present -= intruders
         missing = set(group) - present
-        if missing:
+        if missing and missing != prev_missing:
             events.append({"at": t, "kind": "member_dropped",
                            "detail": f"left the group: {sorted(missing)}"})
+        prev_missing = missing
 
         st = z["coordinator"].get("state") or {}
         pstate = st.get("playbackState")
@@ -260,12 +354,27 @@ def run_phase(phase_num: int, members: list, minutes: int, udm) -> dict:
                     stall_strikes = 0
             else:
                 stall_strikes = 0
-        else:
+        elif pstate != prev_pstate:
+            # Edge-triggered: without this a single 5-minute stall appended an
+            # event every 30s and reported as 10 separate dropouts, inflating
+            # the count the email subject keys off.
             events.append({"at": t, "kind": "playback_stopped",
                            "detail": f"playbackState={pstate}"})
+        prev_pstate = pstate
         last_elapsed = elapsed
 
-        retries = udm.retries()
+        # Interval retry: difference this sample's counters against the last.
+        # The first sample of a phase has no baseline, so it reports None.
+        counters = udm.counters()
+        retries = {}
+        for mac, (r2, p2) in counters.items():
+            if mac not in prev_counters:
+                continue
+            r1, p1 = prev_counters[mac]
+            d_r, d_p = r2 - r1, p2 - p1
+            if d_r >= 0 and d_p >= 0 and (d_r + d_p) > 0:
+                retries[mac] = round(100.0 * d_r / (d_r + d_p), 1)
+        prev_counters = counters
         worst = max(retries.values(), default=None)
         samples.append({"at": t, "members_present": len(present),
                         "playback": pstate, "elapsed": elapsed,
@@ -279,7 +388,7 @@ def run_phase(phase_num: int, members: list, minutes: int, udm) -> dict:
 
     worsts = [s["worst_retry_pct"] for s in samples if s["worst_retry_pct"] is not None]
     result = {
-        "phase": phase_num,
+        "config": cfg_name,
         "zone_count": len(group),
         "rooms": group,
         "samples": len(samples),
@@ -290,7 +399,7 @@ def run_phase(phase_num: int, members: list, minutes: int, udm) -> dict:
         "max_worst_retry": max(worsts) if worsts else None,
         "detail_samples": samples,
     }
-    log(f"  Phase {phase_num} done: {result['dropouts']} dropout event(s), "
+    log(f"  [{cfg_name}] {len(group)} zones done: {result['dropouts']} dropout event(s), "
         f"avg worst retry {result['avg_worst_retry']}%, peak {result['max_worst_retry']}%")
     return result
 
@@ -313,35 +422,66 @@ def send_email(subject, text):
         return False
 
 
-def summarize(results, started):
-    L = ["Sonos multi-zone dropout test", "=" * 40,
-         f"started {started:%Y-%m-%d %H:%M %Z}", ""]
-    L.append("Phase results:")
+def summarize(results, started, failure=None, expected_phases=None):
+    L = ["Sonos multi-zone dropout test", "=" * 46,
+         f"started {started:%Y-%m-%d %H:%M %Z}",
+         "retry = INTERVAL rate (delta between samples), not lifetime average", ""]
+    if failure or (expected_phases and len(results) < expected_phases):
+        L += ["*** RESULT IS INCOMPLETE — DO NOT READ AS A PASS ***",
+              f"ran {len(results)} of {expected_phases} phases",
+              f"failure: {failure}" if failure else "phases missing without an exception",
+              ""]
+
+    by_cfg = {}
     for r in results:
-        L.append(f"  {r['zone_count']} zones: {r['dropouts']} dropout event(s), "
-                 f"avg worst retry {r['avg_worst_retry']}%, peak {r['max_worst_retry']}% "
-                 f"({r['samples']} samples)")
-        L.append(f"    rooms: {', '.join(r['rooms'])}")
-    L.append("")
+        by_cfg.setdefault(r["config"], []).append(r)
+
+    for name, rows in by_cfg.items():
+        cfg = next((c for c in CONFIGS if c["name"] == name), {})
+        L.append(f"{name} — coordinator {rows[0]['rooms'][0]}")
+        if cfg.get("why"):
+            L.append(f"  rationale: {cfg['why']}")
+        for r in rows:
+            L.append(f"    {r['zone_count']} zones: {r['dropouts']} dropout(s), "
+                     f"avg worst retry {r['avg_worst_retry']}%, peak {r['max_worst_retry']}% "
+                     f"({r['samples']} samples)")
+            L.append(f"      + {', '.join(r['rooms'][1:])}")
+        L.append("")
 
     total = sum(r["dropouts"] for r in results)
-    if total == 0:
-        L.append("VERDICT: no dropouts at any group size. The multicast fix appears to")
-        L.append("have resolved the reported problem — grouping 3-5 zones held cleanly.")
+    if not results:
+        L.append("VERDICT: none — no phase completed. Nothing was measured.")
+    elif total == 0:
+        L.append(f"VERDICT: zero dropouts across {len(results)} phases / "
+                 f"{len(by_cfg)} configurations, sizes {min(SIZES)}-{max(SIZES)}.")
+        L.append("Multi-zone playback is reliable regardless of coordinator or speaker mix.")
     else:
-        L.append(f"VERDICT: {total} dropout event(s) observed. Detail:")
+        L.append(f"VERDICT: {total} dropout event(s). Detail:")
         for r in results:
             for e in r["events"]:
-                L.append(f"  [{r['zone_count']}z] {e['at'][11:19]} {e['kind']}: {e['detail']}")
+                L.append(f"  [{r['config']} {r['zone_count']}z] {e['at'][11:19]} "
+                         f"{e['kind']}: {e['detail']}")
+    L.append("")
 
-    valid = [r for r in results if r["avg_worst_retry"] is not None]
-    if len(valid) >= 2:
-        first, last = valid[0], valid[-1]
-        delta = last["avg_worst_retry"] - first["avg_worst_retry"]
-        L += ["", f"Retry trend {first['zone_count']}->{last['zone_count']} zones: {delta:+.1f} pct-pt.",
-              ("  Grouping drives RF load — the ch1 rebalance is justified." if delta >= 8 else
-               "  Retry barely moves with group size — congestion is not the constraint." if delta <= 3
-               else "  Inconclusive; let the weekly report accumulate more.")]
+    # Does group size drive retry? Compare within each config, then overall.
+    L.append("Retry vs group size (does grouping load the RF?):")
+    deltas = []
+    for name, rows in by_cfg.items():
+        v = [r for r in rows if r["avg_worst_retry"] is not None]
+        if len(v) >= 2:
+            d = v[-1]["avg_worst_retry"] - v[0]["avg_worst_retry"]
+            deltas.append(d)
+            L.append(f"  {name}: {v[0]['zone_count']}z {v[0]['avg_worst_retry']}% -> "
+                     f"{v[-1]['zone_count']}z {v[-1]['avg_worst_retry']}%  ({d:+.1f} pct-pt)")
+    if deltas:
+        mean = sum(deltas) / len(deltas)
+        L.append(f"  mean across configs: {mean:+.1f} pct-pt")
+        L.append("  -> grouping clearly loads the RF; the ch1 rebalance is justified."
+                 if mean >= 8 else
+                 "  -> retry barely tracks group size; congestion is not the constraint, "
+                 "leave AP channels alone." if mean <= 3 else
+                 "  -> inconclusive; let the weekly report accumulate more.")
+
     L += ["", "Docs: devcontrol/devdocs/SONOSAUTOMATION.md"]
     return "\n".join(L)
 
@@ -353,9 +493,19 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--no-email", action="store_true")
     ap.add_argument("--out", default=os.path.expanduser("~/logs/sonos-multizone-test.json"))
+    ap.add_argument("--config", action="append",
+                    help="run only these config names (repeatable); default all")
     args = ap.parse_args()
 
-    all_rooms = {r for p in PHASES for r in p} | {COORDINATOR}
+    configs = CONFIGS
+    if args.config:
+        want = set(args.config)
+        configs = [c for c in CONFIGS if c["name"] in want]
+        if not configs:
+            sys.exit(f"no config matched {sorted(want)}; have "
+                     f"{[c['name'] for c in CONFIGS]}")
+
+    all_rooms = {r for c in configs for r in [c["coordinator"], *c["additions"]]}
     bad = all_rooms & EXCLUDE
     if bad:
         sys.exit(f"REFUSING: phase plan includes excluded rooms {bad}")
@@ -365,13 +515,19 @@ def main():
     if missing:
         log(f"WARN: rooms not currently visible: {sorted(missing)}")
 
+    total_phases = sum(len(phases_for(c)) for c in configs)
     if args.dry_run:
-        log(f"PLAN — coordinator {COORDINATOR}, volume {TEST_VOLUME}, "
-            f"{args.phase_minutes} min/phase, playlist {PLAYLIST!r}")
-        for i, p in enumerate(PHASES, 1):
-            log(f"  Phase {i}: {len([COORDINATOR] + p)} zones -> {', '.join([COORDINATOR] + p)}")
+        log(f"PLAN — volume {TEST_VOLUME}, {args.phase_minutes} min/phase, "
+            f"playlist {PLAYLIST!r}")
+        for c in configs:
+            log(f"  {c['name']} — coordinator {c['coordinator']}")
+            log(f"     {c['why']}")
+            for n, members in phases_for(c):
+                log(f"     {n} zones -> {', '.join([c['coordinator']] + members)}")
         log(f"excluded (never touched): {sorted(EXCLUDE)}")
-        log(f"total runtime ~{args.phase_minutes * len(PHASES)} min")
+        log(f"{total_phases} phases, total runtime "
+            f"~{args.phase_minutes * total_phases} min "
+            f"({args.phase_minutes * total_phases / 60:.1f} h)")
         return
 
     original = snapshot_state()
@@ -391,15 +547,25 @@ def main():
     udm = UDM(os.environ.get("UDM_WEB_PASS", ""))
     started = datetime.datetime.now().astimezone()
     results = []
+    failure = None
     try:
-        for i, members in enumerate(PHASES, 1):
-            results.append(run_phase(i, members, args.phase_minutes, udm))
+        for ci, c in enumerate(configs, 1):
+            # Different configs use different coordinators, so tear the previous
+            # group down first or the old grouping persists into the new phase.
+            if ci > 1:
+                log(f"ungrouping before {c['name']}")
+                ungroup(sorted(all_rooms))
+                time.sleep(3)
+            for n, members in phases_for(c):
+                results.append(run_phase(c["name"], c["coordinator"], members,
+                                         args.phase_minutes, udm))
     except Exception as e:
-        log(f"ERROR during test: {e}")
+        failure = f"{type(e).__name__}: {e}"
+        log(f"ERROR during test: {failure}")
     finally:
         cleanup()
 
-    report = summarize(results, started)
+    report = summarize(results, started, failure, total_phases)
     print("\n" + report)
     try:
         os.makedirs(os.path.dirname(args.out), exist_ok=True)
@@ -411,9 +577,20 @@ def main():
 
     if not args.no_email:
         total = sum(r["dropouts"] for r in results)
-        subj = ("✅ Sonos multi-zone test: no dropouts" if total == 0
-                else f"⚠️ Sonos multi-zone test: {total} dropout event(s)")
+        # A crash, or phases that never ran, must NEVER read as a green result:
+        # results=[] makes total==0, which would otherwise email "no dropouts"
+        # from the very script whose job is to report the truth.
+        if failure or len(results) < total_phases:
+            subj = (f"🛑 Sonos multi-zone test INCOMPLETE "
+                    f"({len(results)}/{total_phases} phases)")
+        elif total:
+            subj = f"⚠️ Sonos multi-zone test: {total} dropout event(s)"
+        else:
+            subj = "✅ Sonos multi-zone test: no dropouts"
         log("emailed" if send_email(subj, report) else "email failed")
+
+    if failure or len(results) < total_phases:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

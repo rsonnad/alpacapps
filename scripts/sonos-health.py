@@ -205,7 +205,7 @@ def uuid_to_mac(uuid: str):
 
 
 def pull_zones():
-    """Returns (speakers_by_mac, zone_count, grouped_zone_count, largest_group)."""
+    """Returns (speakers_by_mac, zone_count, grouped_count, largest_group, error)."""
     try:
         zones = http_json(f"{SONOS_API}/zones")
     except Exception as e:
@@ -286,14 +286,24 @@ def evaluate(state: dict, zones_by_mac: dict, probe: bool, phy_window_ok: bool =
         )
 
     # --- Controller rules
+    # A failed UDM login returns no data. Without this guard the Default-LAN
+    # checks below fire spurious "drift" violations ({}.get(...) is not False)
+    # while the Black Rock City checks silently skip on `if brc:` — an auth
+    # outage would masquerade as config drift, in opposite directions.
+    controller_ok = bool(state["networks"]) and bool(state["wlans"])
+    if not controller_ok:
+        violations.append(
+            "controller data unavailable (UDM login or API call failed) — "
+            "config rules NOT evaluated this sample")
+
     default_lan = next((n for n in state["networks"] if n.get("name") == "Default"), {})
-    if default_lan.get("igmp_snooping") is not False:
+    if controller_ok and default_lan.get("igmp_snooping") is not False:
         violations.append("controller igmp_snooping on Default LAN must be false")
-    if default_lan.get("mdns_enabled") is not True:
+    if controller_ok and default_lan.get("mdns_enabled") is not True:
         violations.append("mDNS on Default LAN must be true")
 
     brc = next((w for w in state["wlans"] if w.get("name") == "Black Rock City"), {})
-    if brc:
+    if controller_ok and brc:
         checks = [
             ("mcastenhance_enabled", False, "multicast enhancement must be off"),
             ("bss_transition", False, "BSS transition must be off"),
@@ -387,9 +397,16 @@ def evaluate(state: dict, zones_by_mac: dict, probe: bool, phy_window_ok: bool =
                 for (ip, sp), res in zip(targets, pool.map(lambda t: probe_speaker(t[0]), targets)):
                     sp.update(res)
 
-    wireless = [s for s in speakers if not s["wired"] and s.get("retry_pct") is not None]
-    over_warn = [s for s in wireless if s["retry_pct"] >= RETRY_WARN_PCT]
-    worst = max(wireless, key=lambda s: s["retry_pct"], default=None)
+    # Only INTERVAL readings may drive alerts. A lifetime ratio is an average
+    # since association and stays poisoned by pre-fix history, so on a first run
+    # or after state loss it would fire CRIT on months-old conditions. Observed
+    # 2026-09-02: the first run after deploy raised a 25.4% CRIT on Dining whose
+    # true interval rate was 6.1%. One warm-up tick reports no retry findings.
+    judged = [s for s in speakers if not s["wired"]
+              and s.get("retry_basis") == "interval" and s.get("retry_pct") is not None]
+    warming_up = bool([s for s in speakers if not s["wired"]]) and not judged
+    over_warn = [s for s in judged if s["retry_pct"] >= RETRY_WARN_PCT]
+    worst = max(judged, key=lambda s: s["retry_pct"], default=None)
 
     if worst and worst["retry_pct"] >= RETRY_CRIT_PCT:
         violations.append(
@@ -422,6 +439,7 @@ def evaluate(state: dict, zones_by_mac: dict, probe: bool, phy_window_ok: bool =
         "violations": violations,
         "speakers": speakers,
         "ap_channels": ap_channels,
+        "retry_warming_up": warming_up,
         "speakers_over_retry_threshold": len(over_warn),
         "max_retry_pct": worst["retry_pct"] if worst else None,
         "worst_speaker": (worst.get("room") or worst.get("ip")) if worst else None,
@@ -442,6 +460,19 @@ def supa_sql(token: str, sql: str):
             return json.loads(resp.read())
     except urllib.error.HTTPError as e:
         sys.exit(f"Supabase error {e.code}: {e.read()[:600].decode(errors='replace')}")
+
+
+def _whoami() -> str:
+    """getpass.getuser() raises in a bare cron env with no USER/LOGNAME."""
+    try:
+        user = getpass.getuser()
+    except Exception:
+        user = os.environ.get("USER") or "cron"
+    try:
+        host = socket.gethostname().split(".")[0]
+    except Exception:
+        host = "unknown"
+    return f"{user}@{host}"
 
 
 def insert_sample(token: str, r: dict, zone_count, grouped, largest, detail, alerted) -> str:
@@ -466,7 +497,7 @@ def insert_sample(token: str, r: dict, zone_count, grouped, largest, detail, ale
         f"{viol_arr}, {n(len(r['speakers']))}, {n(r['speakers_over_retry_threshold'])}, "
         f"{n(r['max_retry_pct'])}, {s(r['worst_speaker'])}, {n(zone_count)}, {n(grouped)}, "
         f"{n(largest)}, '{detail_json}'::jsonb, {str(alerted).lower()}, "
-        f"{s(getpass.getuser() + '@' + socket.gethostname().split('.')[0])}) RETURNING id;"
+        f"{s(_whoami())}) RETURNING id;"
     )
     return supa_sql(token, sql)[0]["id"]
 
