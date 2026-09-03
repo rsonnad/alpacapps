@@ -699,6 +699,24 @@
       <p style="margin-top:0.6rem;">It is not as sharp as Claude Sonnet 5 on genuinely hard problems. That is the trade you are making to pay nothing monthly &mdash; and it is a good trade for the bulk of setup work, which is mechanical.</p>
     </div>
 
+    <h3>e. Turn thinking on</h3>
+    <p>This one is easy to miss and it matters. By default Zed sends the request with reasoning <strong>off</strong>, so GLM 5.3 Flash answers immediately without thinking first. That is fast and cheap, and noticeably worse on anything hard.</p>
+    <p>Open <strong>Settings &rarr; Edit in settings.json</strong> (the button in the top-right corner of the settings window, visible in the screenshots above) and set your default model like this:</p>
+
+    <div class="prompt-block" id="zed-thinking-config"><button class="copy-btn" onclick="copyById('zed-thinking-config')">Copy</button>{
+  "agent": {
+    "default_model": {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "enable_thinking": true
+    }
+  }
+}</div>
+
+    <p class="small muted">The file lives at <code>~/.config/zed/settings.json</code>. Zed hot-reloads it, so the change takes effect on your next message &mdash; no restart.</p>
+
+    <p>With <code>enable_thinking</code> on and no effort level set, OpenRouter applies its own default (medium) reasoning effort. You are trading some speed and some output-token cost for materially better work on the problems where it counts. Leave it on.</p>
+
     <div class="callout callout--secure">
       <p><strong>This recommendation was checked on 2 September 2026.</strong> Models move faster than documentation does. <strong>If you are reading this after October 2026, assume something newer, better, or cheaper exists</strong> &mdash; open <a href="https://openrouter.ai/models" target="_blank" rel="noopener">openrouter.ai/models</a>, sort by price, and look at what is near the top before you commit to any model named on this page. The instructions here do not depend on which model you pick.</p>
     </div>
@@ -728,6 +746,18 @@
     <a href="https://github.com/rsonnad/alpacapps-infra">Template repo</a>
   </div>
 </main>
+
+<script>
+function copyById(id) {
+  var el = document.getElementById(id);
+  var text = el.textContent.replace(/^\s*Copy\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = el.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
 
 <script src="/vendor/supabase-js-2.39.3.min.js"></script>
 <script type="module" src="/shared/version-info.js"></script>
