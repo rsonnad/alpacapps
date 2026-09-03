@@ -1,12 +1,12 @@
 {
-  "version": "v260902.14 8:43p",
-  "release": 1829,
-  "sha": "f115f37ef4",
-  "fullSha": "f115f37ef4018fab69e56835231791a70d97751d",
+  "version": "v260902.15 9:03p",
+  "release": 1830,
+  "sha": "68c1882023",
+  "fullSha": "68c1882023c9b5711e049b872fd9bbfb230237a3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-03T01:43:03+00:00",
-  "commits": [{"sha":"f115f37ef4","message":"feat(infra): recommend GLM 5.3 Flash, and date the model recommendations","author":"Otto"}]
+  "pushedAt": "2026-09-03T02:03:00+00:00",
+  "commits": [{"sha":"68c1882023","message":"feat(sauna): full album gallery, lightbox nav, on-page video, Flex 8 is live","author":"Otto"}]
 }
