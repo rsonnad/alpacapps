@@ -1,12 +1,12 @@
 {
-  "version": "v260902.11 8:02p",
-  "release": 1826,
-  "sha": "9fc1b85a83",
-  "fullSha": "9fc1b85a83756b09fe2eb712e1a428df368d2808",
+  "version": "v260902.12 8:35p",
+  "release": 1827,
+  "sha": "47db83557e",
+  "fullSha": "47db83557e92065ef3749d6e120d9cb6a32ae952",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-03T01:02:34+00:00",
-  "commits": [{"sha":"9fc1b85a83","message":"feat(infra): offer a free coding-agent path alongside Claude/ChatGPT","author":"Otto"}]
+  "machine": "runnervmejwal",
+  "pushedAt": "2026-09-03T01:35:15+00:00",
+  "commits": [{"sha":"47db83557e","message":"feat(infra): Zed-only free route with a screenshot walkthrough page","author":"Otto"}]
 }
