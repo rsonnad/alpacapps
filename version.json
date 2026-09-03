@@ -1,12 +1,12 @@
 {
-  "version": "v260902.12 8:35p",
-  "release": 1827,
-  "sha": "47db83557e",
-  "fullSha": "47db83557e92065ef3749d6e120d9cb6a32ae952",
+  "version": "v260902.13 8:39p",
+  "release": 1828,
+  "sha": "7a290fad7d",
+  "fullSha": "7a290fad7d71ba8219fe05927f935edc18345688",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmejwal",
-  "pushedAt": "2026-09-03T01:35:15+00:00",
-  "commits": [{"sha":"47db83557e","message":"feat(infra): Zed-only free route with a screenshot walkthrough page","author":"Otto"}]
+  "machine": "runnervmgx7h7",
+  "pushedAt": "2026-09-03T01:39:56+00:00",
+  "commits": [{"sha":"7a290fad7d","message":"feat(infra): add Zed setup screenshots","author":"Otto"}]
 }
