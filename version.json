@@ -1,12 +1,12 @@
 {
-  "version": "v260902.18 10:12p",
-  "release": 1833,
-  "sha": "03c003d8cd",
-  "fullSha": "03c003d8cdf008cf2adcf3575fd3bffeb76d52cb",
+  "version": "v260902.19 10:31p",
+  "release": 1834,
+  "sha": "abb3788ebd",
+  "fullSha": "abb3788ebd1a9ae943761da9aa2b07bbca18c860",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-03T03:12:16+00:00",
-  "commits": [{"sha":"03c003d8cd","message":"chore(infra): use full-resolution testimonial PNGs, reorder","author":"Otto"}]
+  "pushedAt": "2026-09-03T03:31:51+00:00",
+  "commits": [{"sha":"abb3788ebd","message":"chore(infra): add Zed Zygote wordmark rendered in Lilex Bold","author":"Otto"}]
 }
