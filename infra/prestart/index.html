@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlpacApps Infra — Before You Start</title>
-  <meta name="description" content="Install Claude Desktop or ChatGPT Desktop with Codex, then let it help you create your GitHub, Supabase, Cloudflare, Google Cloud, and Resend accounts before AlpacApps setup begins.">
+  <meta name="description" content="Pick a coding agent — a Claude or ChatGPT subscription, or a free editor with your own OpenRouter key — then let it help you create your GitHub, Supabase, Cloudflare, Google Cloud, and Resend accounts before AlpacApps setup begins.">
   <meta property="og:title" content="AlpacApps Infra — Before You Start">
   <meta property="og:description" content="Set up core tools and services, then let Code mode bootstrap an AlpacApps project.">
   <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
@@ -429,6 +429,40 @@
     .button--claude:hover { background: #665684; color: #fff; }
     .button--codex { background: #10a37f; color: #fff; }
     .button--codex:hover { background: #0b7a5e; color: #fff; }
+    .button--free { background: #2f7d6b; color: #fff; }
+    .button--free:hover { background: #22604f; color: #fff; }
+    .choice-card--paid { border-color: var(--claude-border); background: var(--claude-bg); }
+    .choice-card--paid .pick { border-color: var(--claude-border); color: #5a4a7a; }
+    .choice-card--free { border-color: #2f7d6b; background: #f0faf7; }
+    .choice-card--free .pick { border-color: #2f7d6b; color: #1f5f51; }
+    .subopt {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 0.85rem 0.95rem 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .subopt h4 {
+      margin: 0 0 0.35rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .subopt p { margin: 0 0 0.65rem; font-size: 0.85rem; }
+    .subopt .button { margin-top: 0; }
+    .tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+      opacity: 0.8;
+    }
+    .choice-card .card-foot { margin: auto 0 0; padding-top: 0.35rem; }
     .choice-or {
       text-align: center;
       font-size: 0.78rem;
@@ -486,8 +520,8 @@
     <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="AlpacApps — AI-powered platform with alpacas" class="hero-image" width="1509" height="475">
     <div class="hero-text">
       <span class="eyebrow">Before you start</span>
-      <h1>Install your <span>AI desktop app</span>, then set up the core services</h1>
-      <p>Start in <strong>Claude Code</strong> or <strong>Codex</strong> from an empty folder. First configure screenshots, then let the agent guide account creation and bootstrap the project. It handles the terminal work; you handle the account screens and paste screenshots when asked.</p>
+      <h1>Install your <span>coding agent</span>, then set up the core services</h1>
+      <p>Run a coding agent from an empty folder &mdash; a paid one like <strong>Claude Code</strong> or <strong>Codex</strong>, or a free editor driven by your own OpenRouter key. First configure screenshots, then let the agent guide account creation and bootstrap the project. It handles the terminal work; you handle the account screens and paste screenshots when asked.</p>
       <span class="badge">20&ndash;40 minutes &middot; Code-first setup</span>
     </div>
   </div>
@@ -500,7 +534,7 @@
     <ol class="steps-list">
       <li><strong>Set up screenshots first</strong> &mdash; Shottr on Mac or ShareX on Windows, then paste one test capture into Code mode.</li>
       <li><strong>Create one dedicated Gmail account</strong> for the project, used as the login for every service below.</li>
-      <li><strong>Pick and install one AI desktop app</strong> &mdash; Claude Desktop or ChatGPT Desktop (Codex) &mdash; then open Code mode in an empty folder.</li>
+      <li><strong>Pick and install one coding agent</strong> &mdash; a Claude or ChatGPT subscription, or a free editor (VS&nbsp;Code with Kilo Code, or Zed) running on your own OpenRouter key &mdash; then open it in an empty folder.</li>
       <li><strong>Set up Bitwarden</strong> &mdash; the recommended default credential manager &mdash; so every password and key has one safe home.</li>
       <li><strong>Create the six core service accounts and register a domain</strong> &mdash; GitHub first, then Supabase, Cloudflare, Google Cloud, Resend, OpenRouter, and a branded domain &mdash; with the coding agent guiding you as you go.</li>
       <li><strong>Continue setup</strong> at <a href="/infra/">alpacaplayhouse.com/infra</a>, where the agent creates, clones, and deploys the project.</li>
@@ -564,55 +598,74 @@
 
   <!-- STOP 2: pick your assistant -->
   <section class="section" id="pick-your-assistant">
-    <h2>Step 2 &mdash; Install Claude Desktop <em>or</em> ChatGPT Desktop</h2>
-    <p>AlpacApps works with either one. Pick <strong>one</strong> and install it now &mdash; you will use it for the rest of this page and for the whole setup afterward.</p>
+    <h2>Step 2 &mdash; Pick how you pay for the agent: subscription <em>or</em> free plus OpenRouter</h2>
+    <p>Something has to do the actual work, and there are two ways to get it. <strong>Option A</strong> is a flat monthly subscription and the smoothest road. <strong>Option B</strong> costs nothing up front &mdash; a free editor, a free open-source coding agent, and an <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key you pay per token on. Pick <strong>one</strong> and install it now; you use it for the rest of this page and the whole setup afterward.</p>
 
     <div class="choice-grid">
-      <!-- Claude -->
-      <div class="choice-card choice-card--claude">
-        <span class="pick">Option A &middot; Recommended</span>
+      <!-- Option A: subscription -->
+      <div class="choice-card choice-card--paid">
+        <span class="pick">Option A &middot; Subscription &middot; Recommended</span>
         <div class="choice-head">
           <img src="https://cdn.simpleicons.org/anthropic/7c6a9a" alt="" width="24" height="24">
-          <h3>Claude Desktop</h3>
+          <h3>Pay a monthly subscription</h3>
         </div>
-        <p>Anthropic&rsquo;s desktop app. Open <strong>Claude Code</strong> immediately in an empty folder; it guides account setup, creates and clones the project, then does the build.</p>
-        <ul>
-          <li>One app for both chat and coding</li>
-          <li>Reads screenshots you paste in</li>
-          <li>Free to start; Pro $20/mo or Max $100/mo recommended</li>
-        </ul>
-        <a class="button button--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
-        <p class="small muted" style="margin: 0.6rem 0 0;">No account yet? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
+        <p>One app, one flat bill, no keys to wire up. The AlpacApps instructions were written and tested against these two, so the steps on the next page match what you actually see on screen.</p>
+
+        <div class="subopt">
+          <h4>Claude Desktop <span class="tag">Best tested</span></h4>
+          <p>Anthropic&rsquo;s desktop app. Open <strong>Claude Code</strong> in an empty folder; it guides account setup, creates and clones the project, then does the build. Reads screenshots you paste in.</p>
+          <p class="small muted">Free tier to try it; Pro $20/mo or Max $100/mo for real use.</p>
+          <a class="button button--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
+          <p class="small muted" style="margin: 0.6rem 0 0;">No account yet? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
+        </div>
+
+        <div class="subopt">
+          <h4>ChatGPT Desktop (Codex)</h4>
+          <p>OpenAI&rsquo;s desktop app, same flow through <strong>Codex</strong>. Familiar if you already use ChatGPT, and also reads pasted screenshots.</p>
+          <p class="small muted">Codex needs a paid plan &mdash; Go $8/mo is the cheapest on-ramp, Plus is $20/mo.</p>
+          <a class="button button--codex" href="https://chatgpt.com/download" target="_blank" rel="noopener">Download ChatGPT Desktop &rarr;</a>
+          <p class="small muted" style="margin: 0.6rem 0 0;">Codex CLI (optional, later): <code>npm i -g @openai/codex</code> &mdash; see <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">developers.openai.com/codex</a>.</p>
+        </div>
       </div>
 
-      <!-- Codex -->
-      <div class="choice-card choice-card--codex">
-        <span class="pick">Option B</span>
+      <!-- Option B: free agent + OpenRouter -->
+      <div class="choice-card choice-card--free">
+        <span class="pick">Option B &middot; No subscription</span>
         <div class="choice-head">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <h3>ChatGPT Desktop (Codex)</h3>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#2f7d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Free coding agent + OpenRouter key</h3>
         </div>
-        <p>OpenAI&rsquo;s desktop app. Open <strong>Codex</strong> immediately in an empty folder; it guides account setup, creates and clones the project, then does the build.</p>
-        <ul>
-          <li>Familiar if you already use ChatGPT</li>
-          <li>Reads screenshots you paste in</li>
-          <li>Codex needs a paid plan &mdash; Plus $20/mo or Pro $200/mo</li>
-        </ul>
-        <a class="button button--codex" href="https://chatgpt.com/download" target="_blank" rel="noopener">Download ChatGPT Desktop &rarr;</a>
-        <p class="small muted" style="margin: 0.6rem 0 0;">Codex CLI (optional, later): <code>npm i -g @openai/codex</code> &mdash; see <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">developers.openai.com/codex</a>.</p>
+        <p>The editor and the agent are both free downloads with no monthly plan. <strong>Do this first:</strong> create an <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> account, add a few dollars of credit, and make a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>. That key is what makes either app below work, and you pay only for the tokens you actually use &mdash; cents a day on a cheap model.</p>
+
+        <div class="subopt">
+          <h4>VS Code + Kilo Code <span class="tag">Most guidance</span></h4>
+          <p>VS Code is free and needs no account. Add the <strong>Kilo Code</strong> extension &mdash; free and open source &mdash; paste your OpenRouter key into it, and choose a model. Best of the free options for a beginner: separate Plan, Code, Ask and Debug modes, and an approval prompt before it edits a file or runs a command.</p>
+          <p class="small muted">Heaviest on memory &mdash; think 3&ndash;4&nbsp;GB once extensions load.</p>
+          <a class="button button--free" href="https://code.visualstudio.com/download" target="_blank" rel="noopener">Download VS Code &rarr;</a>
+          <p class="small muted" style="margin: 0.6rem 0 0;">Then install <a href="https://kilocode.ai" target="_blank" rel="noopener">Kilo Code</a> from the Extensions panel.</p>
+        </div>
+
+        <div class="subopt">
+          <h4>Zed <span class="tag">Lightest</span></h4>
+          <p>Free and open source, and OpenRouter is a built-in provider in its Agent Panel &mdash; paste the key, pick a model, open your folder. Nothing extra to install. Built in Rust rather than Electron, so it runs in a fraction of the memory: the one to pick on an older or 8&nbsp;GB laptop.</p>
+          <p class="small muted">Plainer chat than Kilo Code &mdash; you steer more of it yourself.</p>
+          <a class="button button--free" href="https://zed.dev/download" target="_blank" rel="noopener">Download Zed &rarr;</a>
+        </div>
+
+        <p class="small muted card-foot"><strong>Fair warning.</strong> This route is slower and more hands-on, and the pages here are worded for Claude Code and Codex &mdash; the steps still apply, you will just translate the occasional button name. Tell your agent to read <code>AGENTS.md</code> at the start of each session so it picks up the project rules.</p>
       </div>
     </div>
-    <p class="choice-or">Either one works &mdash; pick one, not both</p>
+    <p class="choice-or">Pick one path &mdash; you do not need both</p>
 
     <div class="callout">
-      <p><strong>Which should I pick?</strong> If you have no strong preference, choose <strong>Claude Desktop</strong> &mdash; the AlpacApps setup instructions were written and tested against it. Choose <strong>ChatGPT Desktop</strong> if you already pay for ChatGPT and would rather not add a second subscription. In either case, enter Code mode in an empty folder right away; the repo ships both <code>CLAUDE.md</code> and <code>AGENTS.md</code>.</p>
+      <p><strong>Which should I pick?</strong> If $8&ndash;$20 a month is comfortable, take <strong>Option A</strong>, and within it <strong>Claude Desktop</strong> unless you already pay for ChatGPT &mdash; these instructions were written and tested against it. Take <strong>Option B</strong> if you would rather not add a subscription, or you want to find out whether this suits you before paying for anything. Nothing in the project is tied to one agent: the repo ships both <code>CLAUDE.md</code> and <code>AGENTS.md</code>, so you can switch later without redoing work. Whichever you pick, start it in a new, empty folder.</p>
     </div>
   </section>
 
   <!-- STOP 3: let it help you -->
   <section class="section">
     <h2>Step 3 &mdash; Open Code mode and paste this prompt</h2>
-    <p>Open <strong>Claude Code</strong> or <strong>Codex</strong> in a new, empty folder and paste the prompt below. The agent will guide each signup, tell you exactly what to click, and read the screenshots you paste when you get stuck.</p>
+    <p>Open the agent you just installed &mdash; <strong>Claude Code</strong>, <strong>Codex</strong>, <strong>Kilo Code</strong> or <strong>Zed</strong>&rsquo;s agent panel &mdash; in a new, empty folder and paste the prompt below. It will guide each signup and tell you exactly what to click. Claude Code and Codex also read screenshots you paste when you get stuck; on the free route, describe what you see instead.</p>
     <div class="prompt-block" id="prestart-prompt"><button class="copy-btn" onclick="copyById('prestart-prompt')">Copy</button>I'm getting ready to set up an AlpacApps project. I am in Code mode in an empty folder. First ask whether I already use a password manager. Evaluate its CLI for interactive authentication and scoped, safe reads from Claude Code/Codex, explain whether it works, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain as the automation source. Then help me set up the core services in this order: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.
 
 GitHub goes first because Supabase, Cloudflare, and Resend all support "Continue with GitHub" — use that for each of them instead of creating separate passwords. Google Cloud uses my project Gmail instead.
@@ -837,16 +890,17 @@ Do not create unrelated API keys, tokens, projects, or domains yet. The required
     <h2>Step 6 &mdash; Configure OpenRouter for delegated coding and review</h2>
     <p><strong>This is a core setup step.</strong> It requires a small prepaid balance, and gives the main coding agent two lower-cost delegated models for implementation and code review.</p>
 
-    <p>Once you are building a lot, most of the tokens go to grunt work &mdash; renaming things, filling in boilerplate, applying the same edit across twelve files. That work does not need a frontier model. The pattern here is <strong>orchestrator plus worker</strong>, and it works with either app you picked in Step 2:</p>
+    <p>Once you are building a lot, most of the tokens go to grunt work &mdash; renaming things, filling in boilerplate, applying the same edit across twelve files. That work does not need a frontier model. The pattern here is <strong>orchestrator plus worker</strong>, and it works with any of the agents in Step 2. If you took the free route you already have the OpenRouter account and key from Step 2 &mdash; this step is where you decide which models it spends on:</p>
     <div class="split">
       <div class="mini-panel">
-        <h3>Orchestrator &mdash; whichever app you picked</h3>
+        <h3>Orchestrator &mdash; whichever agent you picked</h3>
         <ul>
           <li><strong>Claude Sonnet</strong> if you chose Claude Desktop</li>
           <li><strong>GPT&#8209;5.6 Luna</strong> if you chose ChatGPT Desktop / Codex</li>
+          <li>A strong OpenRouter model if you took the free route</li>
           <li>Reads the codebase and decides what to change</li>
           <li>Writes the spec, then reviews what comes back</li>
-          <li>Stays on the subscription you already pay for</li>
+          <li>Billed to your subscription, or to OpenRouter credit</li>
         </ul>
       </div>
       <div class="mini-panel">
@@ -916,7 +970,7 @@ Do not create unrelated API keys, tokens, projects, or domains yet. The required
     <h2>You&rsquo;re ready</h2>
     <p>You are done with pre-start when an approved credential manager plus all six core services are registered to your project Gmail, you can sign in to each one, and you know where the saved credentials live.</p>
     <div class="callout callout--done">
-      <p><strong>What to tell your assistant next:</strong> &ldquo;I installed Claude Desktop (or ChatGPT Desktop), evaluated my credential manager, created my GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter accounts, and stored credentials in the approved manager. Google OAuth configuration automation is ready. Start the AlpacApps Infra setup.&rdquo;</p>
+      <p><strong>What to tell your assistant next:</strong> &ldquo;I installed my coding agent, evaluated my credential manager, created my GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter accounts, and stored credentials in the approved manager. Google OAuth configuration automation is ready. Start the AlpacApps Infra setup.&rdquo;</p>
     </div>
     <div class="cta-row">
       <a class="button button--primary" href="/infra/">Start AlpacApps Infra setup &rarr;</a>

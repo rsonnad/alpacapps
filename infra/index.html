@@ -737,6 +737,39 @@
     .choice-btn--claude:hover { background: #665684; }
     .choice-btn--codex { background: #10a37f; }
     .choice-btn--codex:hover { background: #0b7a5e; }
+    .choice-btn--free { background: #2f7d6b; }
+    .choice-btn--free:hover { background: #22604f; }
+    .choice-card--paid { border-color: var(--claude-border); background: var(--claude-bg); }
+    .choice-card--paid .pick { border-color: var(--claude-border); color: #5a4a7a; }
+    .choice-card--free { border-color: #2f7d6b; background: #f0faf7; }
+    .choice-card--free .pick { border-color: #2f7d6b; color: #1f5f51; }
+    .subopt {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 0.85rem 0.95rem 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .subopt h4 {
+      margin: 0 0 0.35rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .subopt p { margin: 0 0 0.65rem; font-size: 0.85rem; }
+    .choice-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+      opacity: 0.8;
+    }
+    .choice-card .card-foot { margin: auto 0 0; padding-top: 0.35rem; }
     .choice-or {
       text-align: center;
       font-size: 0.78rem;
@@ -1052,6 +1085,7 @@
             <tbody>
               <tr><td><a href="https://openai.com/chatgpt/pricing" target="_blank" rel="noopener">ChatGPT Go</a></td><td>$8/mo</td><td>Yes &mdash; this is the whole thing. Flat price, no meter.</td></tr>
               <tr><td><a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> credit</td><td>~$1/mo</td><td>No. A cost-saver you add later, if ever.</td></tr>
+              <tr><td>Free editor (<a href="https://code.visualstudio.com" target="_blank" rel="noopener">VS&nbsp;Code</a> + Kilo Code, or <a href="https://zed.dev" target="_blank" rel="noopener">Zed</a>) on OpenRouter</td><td>$0 + tokens</td><td>Instead of the above, if you want no subscription at all.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1061,6 +1095,7 @@
         </ul>
         <p><strong>OpenRouter is optional &mdash; skip it until it earns its place.</strong> It is not part of getting started and nothing breaks without it. Its only job is to make heavy months cheaper: you point the boring, repetitive work at a very cheap model instead of spending your ChatGPT allowance on it.</p>
         <p>The moment to bother is when you start bumping into limits, or notice you are burning good tokens on drudgery &mdash; bulk edits, first drafts, file wrangling. Then add about a dollar of credit and wire in <a href="https://openrouter.ai/deepseek/deepseek-v4-flash" target="_blank" rel="noopener">DeepSeek v4 Flash</a>, which runs around <strong>$0.05 per million input tokens</strong>. A dollar covers more routine work than most people get through in a month. The <a href="#worker-model">worker model step</a> below walks through it whenever you are ready &mdash; day one or month six, it does not matter.</p>
+        <p><strong>Or pay no subscription at all.</strong> The editor and the agent can both be free: VS&nbsp;Code with the open-source Kilo Code extension, or Zed, either one pointed at an OpenRouter key. Then there is no monthly bill, only tokens &mdash; often cents a day. The trade is that you steer more and the wording on these pages assumes Claude Code or Codex. Good if $8 a month is the sticking point, or you want to try before you commit.</p>
         <p><strong>Going up instead</strong> is the other direction and most people never need it. Claude or ChatGPT Plus at $20 is smarter on genuinely hard problems; $100&ndash;$200 plans exist for people building heavily all day. Start at $8 and move only if you hit a wall.</p>
         <p class="small muted" style="font-size:0.8rem;">A custom domain, if you want one, is about $10 a year. Prices checked August 2026.</p>
       </div>
@@ -1157,7 +1192,7 @@
       Optional account setup homework
       <span class="step-time">15&ndash;30 min</span>
     </h2>
-    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, Claude Desktop or ChatGPT Desktop, and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
+    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, picking a coding agent (paid or free), and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
     <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 0.6rem;">
       <a href="/infra/prestart/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
         Before you start &rarr;
@@ -1250,47 +1285,66 @@
     <h2>
       <span class="step-num">1</span>
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Install Claude Desktop <em>or</em> ChatGPT Desktop
+      Install a coding agent &mdash; subscription <em>or</em> free
       <span class="step-time">2 min</span>
     </h2>
-    <p>AlpacApps works with either assistant. Pick <strong>one</strong>, then enter its coding mode (<strong>Claude Code</strong> or <strong>Codex</strong>) right away. Start it in a new, empty folder; the agent creates and clones the project for you.</p>
+    <p>Two ways to get the agent that does the work. <strong>Option A</strong> is a flat monthly subscription. <strong>Option B</strong> costs nothing up front: a free editor plus your own <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key, billed per token. Pick <strong>one</strong>, then open it in a new, empty folder &mdash; the agent creates and clones the project for you.</p>
 
     <div class="choice-grid">
-      <div class="choice-card choice-card--claude">
-        <span class="pick">Option A &middot; Recommended</span>
+      <div class="choice-card choice-card--paid">
+        <span class="pick">Option A &middot; Subscription &middot; Recommended</span>
         <div class="choice-head">
           <img src="https://cdn.simpleicons.org/anthropic/7c6a9a" alt="" width="24" height="24">
-          <h3>Claude Desktop</h3>
+          <h3>Pay a monthly subscription</h3>
         </div>
-        <p>Claude Code works from an empty folder and handles the setup, clone, and future development.</p>
-        <ul>
-          <li>Reads screenshots you paste in</li>
-          <li>Uses <code>CLAUDE.md</code> project directives</li>
-          <li>Free to start; Pro $20/mo or Max $100/mo recommended</li>
-        </ul>
-        <a class="choice-btn choice-btn--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
-        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.6rem 0 0;">No account? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
+        <p>One app, one flat bill, nothing to wire up. These pages were written and tested against these two, so the steps match what you see.</p>
+
+        <div class="subopt">
+          <h4>Claude Desktop <span class="choice-tag">Best tested</span></h4>
+          <p><strong>Claude Code</strong> works from an empty folder and handles setup, clone, and future development. Reads screenshots you paste in, and uses <code>CLAUDE.md</code> project directives.</p>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">Free to start; Pro $20/mo or Max $100/mo recommended.</p>
+          <a class="choice-btn choice-btn--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">No account? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
+        </div>
+
+        <div class="subopt">
+          <h4>ChatGPT Desktop (Codex)</h4>
+          <p><strong>Codex</strong> &mdash; in the app&rsquo;s sidebar or the Codex CLI &mdash; handles setup, cloning, and the build. Reads pasted screenshots, and uses <code>AGENTS.md</code> project directives.</p>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">Codex requires a paid plan &mdash; Go $8/mo, Plus $20/mo, or Pro $200/mo.</p>
+          <a class="choice-btn choice-btn--codex" href="https://chatgpt.com/download" target="_blank" rel="noopener">Download ChatGPT Desktop &rarr;</a>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">Codex CLI: <code>npm i -g @openai/codex</code> &mdash; <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">docs</a>.</p>
+        </div>
       </div>
 
-      <div class="choice-card choice-card--codex">
-        <span class="pick">Option B</span>
+      <div class="choice-card choice-card--free">
+        <span class="pick">Option B &middot; No subscription</span>
         <div class="choice-head">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <h3>ChatGPT Desktop (Codex)</h3>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#2f7d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Free coding agent + OpenRouter key</h3>
         </div>
-        <p>Codex &mdash; in the app&rsquo;s sidebar or the Codex CLI &mdash; handles setup, cloning, and the build.</p>
-        <ul>
-          <li>Reads screenshots you paste in</li>
-          <li>Uses <code>AGENTS.md</code> project directives</li>
-          <li>Codex requires a paid plan &mdash; Plus $20/mo or Pro $200/mo</li>
-        </ul>
-        <a class="choice-btn choice-btn--codex" href="https://chatgpt.com/download" target="_blank" rel="noopener">Download ChatGPT Desktop &rarr;</a>
-        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.6rem 0 0;">Codex CLI: <code>npm i -g @openai/codex</code> &mdash; <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">docs</a>.</p>
+        <p>Editor and agent are free downloads, no monthly plan. <strong>First</strong> make a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> and add a few dollars of credit &mdash; you then pay only for tokens used, cents a day on a cheap model. This also covers <a href="#worker-model">Step 5</a> for you.</p>
+
+        <div class="subopt">
+          <h4>VS Code + Kilo Code <span class="choice-tag">Most guidance</span></h4>
+          <p>VS Code is free with no account. Add the free, open-source <strong>Kilo Code</strong> extension, paste in your OpenRouter key, pick a model. Separate Plan, Code, Ask and Debug modes, and an approval prompt before it edits a file or runs a command.</p>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">Heaviest on memory &mdash; 3&ndash;4&nbsp;GB with extensions loaded.</p>
+          <a class="choice-btn choice-btn--free" href="https://code.visualstudio.com/download" target="_blank" rel="noopener">Download VS Code &rarr;</a>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">Then add <a href="https://kilocode.ai" target="_blank" rel="noopener">Kilo Code</a> from the Extensions panel.</p>
+        </div>
+
+        <div class="subopt">
+          <h4>Zed <span class="choice-tag">Lightest</span></h4>
+          <p>Free and open source, with OpenRouter built into its Agent Panel &mdash; paste the key, pick a model, open the folder. Nothing extra to install. Rust rather than Electron, so it runs in a fraction of the memory: the pick for an older or 8&nbsp;GB machine.</p>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">Plainer chat than Kilo Code &mdash; you steer more of it yourself.</p>
+          <a class="choice-btn choice-btn--free" href="https://zed.dev/download" target="_blank" rel="noopener">Download Zed &rarr;</a>
+        </div>
+
+        <p class="card-foot" style="font-size:0.82rem;color:var(--text-muted);margin:auto 0 0;padding-top:0.35rem;"><strong>Fair warning:</strong> slower and more hands-on, and these pages are worded for Claude Code and Codex &mdash; the steps still apply, you just translate the odd button name. Tell the agent to read <code>AGENTS.md</code> when a session starts.</p>
       </div>
     </div>
-    <p class="choice-or">Either one works &mdash; pick one, not both</p>
+    <p class="choice-or">Pick one path &mdash; you do not need both</p>
 
-    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">Never installed either one? The <a href="/infra/prestart/">Before you start</a> page walks through installing it and creating your accounts with its help.</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">Never installed any of these? The <a href="/infra/prestart/">Before you start</a> page walks through installing one and creating your accounts with its help.</p>
   </div>
 
   <!-- STEP 2 -->
@@ -1454,10 +1508,11 @@ $env:BW_SESSION = &amp; .\scripts\bw-unlock.ps1</div>
         <h4>Orchestrator &mdash; the app from Step 1</h4>
         <ul>
           <li><strong>Claude Sonnet</strong> in Claude Code, or</li>
-          <li><strong>GPT&#8209;5.6 Luna</strong> in ChatGPT Desktop / Codex</li>
+          <li><strong>GPT&#8209;5.6 Luna</strong> in ChatGPT Desktop / Codex, or</li>
+          <li>A strong OpenRouter model in Kilo Code / Zed</li>
           <li>Reads the repo, decides what changes</li>
           <li>Writes the spec and reviews the result</li>
-          <li>Billed to your existing subscription</li>
+          <li>Billed to your subscription, or to OpenRouter credit</li>
         </ul>
       </div>
       <div class="ds-panel ds-panel--work">

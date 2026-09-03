@@ -8,7 +8,7 @@
 AlpacApps is a full-stack platform using:
 - **GitHub Pages** — static site hosting (free)
 - **Supabase** — PostgreSQL database, auth, storage, edge functions (free tier)
-- **Claude Code** — AI developer agent that writes and deploys code
+- **A coding agent** — Claude Code or Codex on a subscription, or a free editor (VS Code + Kilo Code, or Zed) driven by the user's own OpenRouter key
 - **Tailwind CSS v4** — styling framework
 
 Architecture: Browser → GitHub Pages → Supabase (no server-side code). Edge functions handle sensitive operations.
@@ -16,7 +16,16 @@ Architecture: Browser → GitHub Pages → Supabase (no server-side code). Edge 
 ## Setup Flow
 
 ### Phase 1: Start in Code mode from an empty folder
-The user opens **Claude Code or Codex Code mode immediately** and selects a new, empty local folder (not an existing repository). The agent should bootstrap the project from there. It should:
+The user opens their coding agent immediately and selects a new, empty local folder (not an existing repository). The agent should bootstrap the project from there.
+
+**Which agent:** the user picks one of two paths on the [pre-start page](https://alpacaplayhouse.com/infra/prestart/#pick-your-assistant).
+
+- **Subscription (recommended, best tested)** — Claude Code in Claude Desktop, or Codex in ChatGPT Desktop.
+- **Free + OpenRouter** — VS Code with the open-source Kilo Code extension, or Zed, either one running on the user's own OpenRouter key and billed per token. No monthly plan; the user needs the OpenRouter key and a few dollars of credit *before* starting.
+
+If the user is on the free path: read `AGENTS.md` at the start of every session for project directives, expect no screenshot-pasting (ask the user to describe what they see instead), and treat the OpenRouter setup as already done rather than as a later optional step.
+
+It should:
 
 1. **Set up screenshots** — Detect the user's OS and help them set up one-click full-screen screenshot-to-clipboard:
    - **macOS**: Install [Shottr](https://shottr.cc) (free). After installing, configure these settings:
