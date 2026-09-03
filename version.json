@@ -1,12 +1,12 @@
 {
-  "version": "v260902.16 9:14p",
-  "release": 1831,
-  "sha": "abe4776c38",
-  "fullSha": "abe4776c3884e36181500f5bec06d74c7bb6fc23",
+  "version": "v260902.17 10:07p",
+  "release": 1832,
+  "sha": "e42560ea90",
+  "fullSha": "e42560ea90126ba0932e761daf95caeacfd80c60",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-03T02:14:43+00:00",
-  "commits": [{"sha":"abe4776c38","message":"feat(infra/zed): enable thinking when using GLM 5.3 Flash","author":"Otto"}]
+  "machine": "runnervmejwal",
+  "pushedAt": "2026-09-03T03:07:12+00:00",
+  "commits": [{"sha":"e42560ea90","message":"chore(infra): add zygote testimonial screenshots for outreach email","author":"Otto"}]
 }
