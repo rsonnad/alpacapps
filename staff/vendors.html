@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Vendors - AlpacAPPs Staff</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>try{var c=localStorage.getItem("genalpaca-cached-auth");if(c&&JSON.parse(c).appUser)document.documentElement.dataset.cachedAuth="1"}catch(e){}</script>
+  <style>.hidden{display:none!important}[data-cached-auth] #loadingOverlay{opacity:0!important;pointer-events:none!important;visibility:hidden!important}[data-cached-auth] #appContent.hidden{display:block!important}#loadingOverlay{position:fixed;inset:0;background:#f6f5f0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .16s ease-out}.loading-overlay__logo{display:flex;align-items:center;gap:.75rem;min-height:40px}.loading-overlay__icon{height:40px;width:auto;max-width:none}.loading-overlay__wordmark{height:28px;width:auto;max-width:none}</style>
+  <link rel="stylesheet" href="/rentals/styles.css?v=5">
+  <link rel="stylesheet" href="/rentals/admin/styles.css?v=5">
+  <link rel="stylesheet" href="/rentals/admin/manage-shared.css?v=5">
+  <link rel="stylesheet" href="/staff/rentals.css?v=5">
+  <style>
+    /* ===== Vendor Directory ===== */
+    .vend-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .vend-search {
+      width: 200px;
+      padding: 0.4rem 0.65rem 0.4rem 1.8rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.82rem;
+      background: var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 0.55rem center;
+      color: var(--text);
+    }
+    .vend-search:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(200,150,50,0.15);
+    }
+    .vend-filters {
+      display: flex;
+      gap: 0.2rem;
+      flex-wrap: wrap;
+    }
+    .vend-chip {
+      padding: 0.18rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1.2;
+    }
+    .vend-chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .vend-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .vend-count {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    /* Table grid */
+    .vend-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .vend-col-header {
+      display: grid;
+      grid-template-columns: minmax(190px, 1fr) 90px 130px 110px 60px;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.3rem 0.75rem;
+      border-bottom: 1.5px solid var(--border);
+      margin-bottom: 0.15rem;
+    }
+    .vend-col-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .vend-col-label.col-actions {
+      text-align: right;
+    }
+    .vend-card {
+      display: grid;
+      grid-template-columns: minmax(190px, 1fr) 90px 130px 110px 60px;
+      gap: 0.5rem;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.4rem 0.75rem;
+      margin-bottom: 0.2rem;
+      transition: border-color 0.15s;
+    }
+    .vend-card:hover {
+      border-color: var(--accent-light);
+    }
+    .vend-card-name {
+      display: flex;
+      flex-direction: column;
+      gap: 0.05rem;
+      min-width: 0;
+    }
+    .vend-card-title {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .vend-card-subtitle {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .vend-card-subtitle a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .vend-card-subtitle a:hover {
+      text-decoration: underline;
+    }
+    .vend-card-type {
+      font-size: 0.6rem;
+      font-weight: 500;
+      padding: 0.1rem 0.35rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      text-align: center;
+      white-space: nowrap;
+      line-height: 1.4;
+      justify-self: start;
+    }
+    .vend-card-type[data-type="utility"]     { background: #dbeafe; color: #1e40af; }
+    .vend-card-type[data-type="contractor"]  { background: #fef3c7; color: #92400e; }
+    .vend-card-type[data-type="service"]     { background: #d1fae5; color: #065f46; }
+    .vend-card-type[data-type="supplier"]    { background: #ffedd5; color: #9a3412; }
+    .vend-card-type[data-type="government"]  { background: #e0e7ff; color: #3730a3; }
+    .vend-card-type[data-type=""]            { background: #f3f4f6; color: #6b7280; }
+    .vend-phone {
+      font-size: 0.8rem;
+      color: var(--text);
+      font-family: 'SF Mono', 'Menlo', monospace;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .vend-phone a { color: var(--text); text-decoration: none; }
+    .vend-phone a:hover { color: var(--accent); text-decoration: underline; }
+    .vend-acct {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Menlo', monospace;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .vend-muted {
+      color: var(--text-muted);
+      font-style: italic;
+      font-family: inherit;
+      font-size: 0.78rem;
+    }
+    .vend-actions {
+      display: flex;
+      gap: 0.1rem;
+      justify-content: flex-end;
+    }
+    .vend-btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.15rem;
+      color: var(--text-muted);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+    }
+    .vend-btn-icon:hover {
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+    .vend-btn-icon svg {
+      width: 13px;
+      height: 13px;
+    }
+    .vend-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 768px) {
+      .vend-search { width: 100%; }
+      .vend-count { margin-left: 0; }
+      .vend-col-header { display: none; }
+      .vend-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+      }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="../styles/site.css">
+  <link rel="stylesheet" href="../styles/tailwind.out.css">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay__logo">
+      <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-black-transparent.png" alt="" class="loading-overlay__icon" width="28" height="40" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 21 30%22%3E%3Cpath d=%22M10.5 1.5C8.3 1.5 6.5 3.3 6.5 5.5v4.1L3.8 13c-1 1.3-1.5 2.8-1.5 4.4 0 4.6 3.7 8.3 8.2 8.3s8.2-3.7 8.2-8.3c0-1.6-.5-3.2-1.5-4.4l-2.7-3.4V5.5c0-2.2-1.8-4-4-4z%22 fill=%22%231f1720%22/%3E%3Cellipse cx=%2210.5%22 cy=%2218.6%22 rx=%223.1%22 ry=%224.7%22 fill=%22%23f6f5f0%22/%3E%3C/svg%3E'">
+      <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/wordmark-black-transparent.png" alt="Alpaca Playhouse" class="loading-overlay__wordmark" width="28" height="28" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 28%22%3E%3Ctext x=%220%22 y=%2220%22 font-size=%2216%22 font-family=%22Arial,sans-serif%22 fill=%22%231f1720%22%3EAlpaca%3C/text%3E%3C/svg%3E'">
+    </div>
+    <div class="spinner spinner--sm"></div>
+  </div>
+
+  <!-- Access denied (populated by JS) -->
+  <div id="unauthorizedOverlay" class="loading-overlay hidden"></div>
+
+  <!-- Main app content -->
+  <div id="appContent" class="hidden">
+    <div id="siteHeader"></div>
+
+    <span data-site-version style="display:none">v260823.08 7:39a</span>
+
+    <div class="context-switcher hidden" id="contextSwitcher">
+      <a href="/residents/" class="context-switcher-btn">Resident</a>
+      <a class="context-switcher-btn active">Staff</a>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="manage-tabs" id="tabNav"></div>
+
+    <!-- Main Content -->
+    <main class="manage-content settings-page">
+      <div class="settings-group">
+        <div class="settings-group-header" style="justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-5h6v5"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
+            <h2>Vendors &amp; Contractors</h2>
+          </div>
+          <button class="btn-small btn-primary" id="addVendorBtn">+ Add Vendor</button>
+        </div>
+
+        <div class="vend-toolbar">
+          <input type="text" class="vend-search" id="vendSearch" placeholder="Search...">
+          <div class="vend-filters" id="vendFilters"></div>
+          <span class="vend-count" id="vendCount"></span>
+        </div>
+
+        <div class="vend-grid" id="vendGrid">
+          <!-- Rows rendered by JS -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="vendorModal" class="modal hidden">
+    <div class="modal-content" style="max-width:520px;">
+      <div class="modal-header">
+        <h2 id="vendorModalTitle">Add Vendor</h2>
+        <button class="modal-close" id="closeVendorModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="vendorForm" onsubmit="return false;">
+          <input type="hidden" id="vendorId">
+          <div class="form-group">
+            <label for="vendorName">Name *</label>
+            <input type="text" id="vendorName" required placeholder="e.g. Texas Disposal Systems">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vendorType">Type</label>
+              <select id="vendorType">
+                <option value="">—</option>
+                <option value="utility">Utility</option>
+                <option value="contractor">Contractor</option>
+                <option value="service">Service</option>
+                <option value="supplier">Supplier</option>
+                <option value="government">Government</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="vendorCategory">Category</label>
+              <select id="vendorCategory"></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vendorPhone">Phone</label>
+              <input type="tel" id="vendorPhone" placeholder="(800) 555-0100">
+            </div>
+            <div class="form-group">
+              <label for="vendorAccount">Account #</label>
+              <input type="text" id="vendorAccount" placeholder="Our account number">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="vendorEmail">Email</label>
+            <input type="email" id="vendorEmail" placeholder="support@vendor.com">
+          </div>
+          <div class="form-group">
+            <label for="vendorContact">Contact Person</label>
+            <input type="text" id="vendorContact" placeholder="Rep name, if we have one">
+          </div>
+          <div class="form-group">
+            <label for="vendorWebsite">Website</label>
+            <input type="url" id="vendorWebsite" placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label for="vendorAddress">Address</label>
+            <input type="text" id="vendorAddress" placeholder="Street, city, state">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vendorLicense">License #</label>
+              <input type="text" id="vendorLicense" placeholder="Trade license, if any">
+            </div>
+            <div class="form-group">
+              <label for="vendorInsurance">Insurance Expires</label>
+              <input type="date" id="vendorInsurance">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="vendorNotes">Notes</label>
+            <textarea id="vendorNotes" rows="2" placeholder="Hours, gate codes, service days..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="archiveVendorBtn" style="display:none;">Archive</button>
+        <button class="btn-secondary" id="cancelVendorBtn">Cancel</button>
+        <button class="btn-primary" id="saveVendorBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instant chrome: skip spinner + pre-render header for returning users -->
+  <script src="../shared/instant-chrome.js"></script>
+
+  <script src="../shared/version-info.js" type="module"></script>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script src="vendors.js" type="module"></script>
+</body>
+</html>

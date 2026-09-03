@@ -17,6 +17,7 @@ export const ALL_ADMIN_TABS = [
   { id: 'media',        label: 'Media',       href: ROUTES.staff.media,        permission: 'view_media',      section: 'staff', description: 'Photo and video library across all spaces.' },
   { id: 'sms',          label: 'SMS',         href: ROUTES.staff.sms,          permission: 'view_sms',        section: 'staff', feature: 'sms', description: 'Outbound and inbound text-message threads with residents and guests.' },
   { id: 'purchases',    label: 'Purchases',   href: ROUTES.staff.purchases,    permission: 'view_purchases',  section: 'staff', description: 'Receipts, vendor bills, and reimbursable purchases.' },
+  { id: 'vendors',      label: 'Vendors',     href: ROUTES.staff.vendors,      permission: 'view_purchases',  section: 'staff', description: 'Utility providers, contractors, and suppliers — phone numbers and account numbers.' },
   { id: 'hours',        label: 'Workstuff',   href: ROUTES.staff.worktracking, permission: 'view_hours',      section: 'staff', feature: 'associates', description: 'Associate time clock, schedules, and work photo log.' },
   { id: 'payments',     label: 'Payments',    href: ROUTES.staff.payments,     permission: 'view_hours',      section: 'staff', feature: 'associates', description: 'Associate payouts, invoices, and payment history.' },
   { id: 'faq',          label: 'FAQ/AI',      href: ROUTES.staff.faq,          permission: 'view_faq',        section: 'staff', feature: 'pai', description: 'AI knowledge base, FAQ entries, and PAI training data.' },

@@ -261,6 +261,24 @@ brand_config    - Singleton (id=1) brand configuration stored as JSONB
                   Readable by all (anon), writable by admin only
 ```
 
+### Vendors & Contractors (lightweight CRM)
+```
+vendors - Utility providers, contractors, and suppliers. ONE ROW PER COMPANY —
+          not per property. Predates migration tracking; adopted and extended by
+          supabase/migrations/20260831_vendor_crm_fields.sql
+          (id, name, vendor_type, category, phone, email, contact_name,
+           account_number, website, address, license_number, insurance_expires,
+           notes, is_active, metadata [jsonb], total_spent, purchase_count,
+           created_at, updated_at)
+          vendor_type CHECK: utility | contractor | service | supplier | government
+          category is FREE TEXT (purchases flow wrote arbitrary values); the
+           vendors UI offers a dropdown to keep new rows consistent
+          total_spent / purchase_count are maintained by the purchases flow
+          Soft delete via is_active=false — never hard-delete, purchases reference it
+          RLS: staff+ read, admin/oracle write
+          UI: /staff/vendors.html (staff/vendors.js) · read-only view in staff/purchases.js
+```
+
 ### Associate Hours & Payouts
 ```
 associate_profiles   - Associate metadata
