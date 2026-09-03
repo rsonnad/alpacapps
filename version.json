@@ -1,12 +1,12 @@
 {
-  "version": "v260902.20 10:40p",
-  "release": 1835,
-  "sha": "6011b45dca",
-  "fullSha": "6011b45dcad09d826ba72a87a0ade1c7af3ae29e",
+  "version": "v260902.21 11:06p",
+  "release": 1836,
+  "sha": "3f7f2aa24a",
+  "fullSha": "3f7f2aa24a90ae355382eab98b8998ac11463d5e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmgx7h7",
-  "pushedAt": "2026-09-03T03:40:05+00:00",
-  "commits": [{"sha":"6011b45dca","message":"chore(infra): Zed Zygote wordmark in Lilex 500, Zed brand blue","author":"Otto"}]
+  "pushedAt": "2026-09-03T04:06:05+00:00",
+  "commits": [{"sha":"3f7f2aa24a","message":"feat(infra): add Zed Zygote testimonial messages page","author":"Otto"}]
 }
