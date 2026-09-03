@@ -940,6 +940,24 @@ recorded the sample as found (`udm_boot_service='missing'`, `detail.remediation.
 Router verified afterwards: `enabled`, snooping `0`, querier `0`. A remediation event bypasses
 the 6 h alert debounce so it is emailed immediately.
 
+### ⚠️ NEVER call `crontab` from inside a cron job (macOS)
+
+`crontab -` **hangs forever** when invoked from a cron-launched process on macOS.
+Verified 2026-09-03: both one-shot scripts self-disarmed by piping into `crontab -` as
+their first action, and both froze on that line — `crontab -` processes stuck **12 h 38 m**
+(the 03:00 reboot) and **6 h 38 m** (the 09:00 test). Neither script got past line 1, so
+the reboot never happened, the test never ran, and neither cron entry disarmed. The logs
+were empty and the processes looked alive, so nothing alerted.
+
+One-shot semantics now come from a **sentinel file** (`~/.<script-name>.done`): the script
+refuses to run if it exists, and writes it before doing any work. Remove the crontab line
+from an interactive shell afterwards — that works fine, it is only the cron context that
+hangs. Re-arm by deleting the sentinel.
+
+This is a second instance of the macOS-cron permission class already documented for script
+locations (see `service-access.md` §0 TCC gotcha): **cron on this box cannot do things an
+interactive shell can.** Assume any `crontab`/TCC-adjacent call from cron will hang, not fail.
+
 ### Proving persistence: do a controlled reboot
 
 "Persistence UNPROVEN" stays in the weekly report until the UDM actually reboots, and waiting

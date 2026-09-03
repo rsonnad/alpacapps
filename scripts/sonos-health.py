@@ -73,7 +73,12 @@ REALERT_HOURS = 6
 # transition produced ~8 emails on 2026-09-02 for wobble that needed no action.
 # Advisory findings must persist ADVISORY_STREAK consecutive samples before they
 # page at all, then stay quiet for ADVISORY_REALERT_HOURS.
-CRITICAL_MARKERS = ("CRITICAL", "REMEDIATED", "controller data unavailable")
+# "controller data unavailable" is deliberately NOT critical: the kernel tripwire
+# reads over SSH and keeps working when the controller API blips, so it is a
+# monitoring gap rather than a Sonos fault. It fired once in 63 runs on
+# 2026-09-03 and paged immediately for a single transient login failure. As an
+# advisory it still pages if it persists an hour, which is when it matters.
+CRITICAL_MARKERS = ("CRITICAL", "REMEDIATED")
 ADVISORY_STREAK = 4            # 4 x 15 min = sustained for an hour
 ADVISORY_REALERT_HOURS = 24
 

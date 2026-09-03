@@ -14,6 +14,7 @@
 # Arm (Alpuca), e.g. for 03:00 on Sep 3:
 #   ( crontab -l; echo '0 3 3 9 * PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin /Users/alpuca/scripts/udm-controlled-reboot.sh >> /Users/alpuca/logs/udm-reboot.log 2>&1' ) | crontab -
 #
+# Re-arm after it has fired: rm ~/.udm-controlled-reboot.done
 # Afterwards the 15-min sonos-health collector captures the post-boot state; the
 # Monday report flips "persistence UNPROVEN" to CONFIRMED or shows what came up wrong.
 #
@@ -24,8 +25,18 @@ ts() { date '+%Y-%m-%d %H:%M:%S %Z'; }
 log() { echo "[$(ts)] [udm-controlled-reboot] $*"; }
 
 # 1. Disarm before doing anything else.
-crontab -l 2>/dev/null | grep -v 'udm-controlled-reboot' | crontab -
-log "crontab entry removed — this will not fire again"
+# DO NOT call `crontab` here. On macOS `crontab -` HANGS FOREVER when invoked
+# from inside a cron job (verified 2026-09-03: two `crontab -` processes stuck
+# 12h38m and 6h38m, both scripts frozen on this very line, so neither the reboot
+# nor the test ever ran and neither entry disarmed). One-shot semantics come from
+# a sentinel file instead; remove the crontab line from an interactive shell.
+SENTINEL="$HOME/.udm-controlled-reboot.done"
+if [ -e "$SENTINEL" ]; then
+  log "sentinel $SENTINEL exists — already ran on $(cat "$SENTINEL" 2>/dev/null); exiting"
+  exit 0
+fi
+date '+%Y-%m-%dT%H:%M:%S%z' > "$SENTINEL"
+log "sentinel written — this will not run again until $SENTINEL is removed"
 
 # 2. Credentials (same file the collector uses).
 ENV_FILE="$HOME/.unifi-snapshot.env"
