@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "alpacapps-local",
+      "runtimeExecutable": "/opt/homebrew/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "8093", "--directory", "/Users/otter/Documents/codingprojects/alpacapps"],
+      "port": 8093
+    },
+    {
       "name": "alpacapps",
       "runtimeExecutable": "/opt/homebrew/bin/python3",
       "runtimeArgs": ["-m", "http.server", "8091", "--directory", "/Users/rahulio/Documents/CodingProjects/genalpaca-admin/.claude/worktrees/elated-northcutt"],
