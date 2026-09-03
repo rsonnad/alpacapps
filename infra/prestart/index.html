@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlpacApps Infra — Before You Start</title>
-  <meta name="description" content="Pick a coding agent — a Claude or ChatGPT subscription, or a free editor with your own OpenRouter key — then let it help you create your GitHub, Supabase, Cloudflare, Google Cloud, and Resend accounts before AlpacApps setup begins.">
+  <meta name="description" content="Pick a coding agent — a Claude or ChatGPT subscription, or Zed free on its trial credit — then let it help you create your GitHub, Supabase, Cloudflare, Google Cloud, and Resend accounts before AlpacApps setup begins.">
   <meta property="og:title" content="AlpacApps Infra — Before You Start">
   <meta property="og:description" content="Set up core tools and services, then let Code mode bootstrap an AlpacApps project.">
   <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
@@ -521,7 +521,7 @@
     <div class="hero-text">
       <span class="eyebrow">Before you start</span>
       <h1>Install your <span>coding agent</span>, then set up the core services</h1>
-      <p>Run a coding agent from an empty folder &mdash; a paid one like <strong>Claude Code</strong> or <strong>Codex</strong>, or a free editor driven by your own OpenRouter key. First configure screenshots, then let the agent guide account creation and bootstrap the project. It handles the terminal work; you handle the account screens and paste screenshots when asked.</p>
+      <p>Run a coding agent from an empty folder &mdash; a paid one like <strong>Claude Code</strong> or <strong>Codex</strong>, or <strong>Zed</strong> free on its trial credit. First configure screenshots, then let the agent guide account creation and bootstrap the project. It handles the terminal work; you handle the account screens and paste screenshots when asked.</p>
       <span class="badge">20&ndash;40 minutes &middot; Code-first setup</span>
     </div>
   </div>
@@ -534,7 +534,7 @@
     <ol class="steps-list">
       <li><strong>Set up screenshots first</strong> &mdash; Shottr on Mac or ShareX on Windows, then paste one test capture into Code mode.</li>
       <li><strong>Create one dedicated Gmail account</strong> for the project, used as the login for every service below.</li>
-      <li><strong>Pick and install one coding agent</strong> &mdash; a Claude or ChatGPT subscription, or a free editor (VS&nbsp;Code with Kilo Code, or Zed) running on your own OpenRouter key &mdash; then open it in an empty folder.</li>
+      <li><strong>Pick and install one coding agent</strong> &mdash; a Claude or ChatGPT subscription, or <a href="/infra/zed/">Zed</a> free on its trial credit &mdash; then open it in an empty folder.</li>
       <li><strong>Set up Bitwarden</strong> &mdash; the recommended default credential manager &mdash; so every password and key has one safe home.</li>
       <li><strong>Create the six core service accounts and register a domain</strong> &mdash; GitHub first, then Supabase, Cloudflare, Google Cloud, Resend, OpenRouter, and a branded domain &mdash; with the coding agent guiding you as you go.</li>
       <li><strong>Continue setup</strong> at <a href="/infra/">alpacaplayhouse.com/infra</a>, where the agent creates, clones, and deploys the project.</li>
@@ -599,7 +599,7 @@
   <!-- STOP 2: pick your assistant -->
   <section class="section" id="pick-your-assistant">
     <h2>Step 2 &mdash; Pick how you pay for the agent: subscription <em>or</em> free plus OpenRouter</h2>
-    <p>Something has to do the actual work, and there are two ways to get it. <strong>Option A</strong> is a flat monthly subscription and the smoothest road. <strong>Option B</strong> costs nothing up front &mdash; a free editor, a free open-source coding agent, and an <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key you pay per token on. Pick <strong>one</strong> and install it now; you use it for the rest of this page and the whole setup afterward.</p>
+    <p>Something has to do the actual work, and there are two ways to get it. <strong>Option A</strong> is a flat monthly subscription and the smoothest road. <strong>Option B</strong> costs nothing &mdash; <a href="/infra/zed/">Zed</a> is free, its two-week Pro trial includes $20 of model credit, and after that you can keep going on your own <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key, billed per token. Pick <strong>one</strong> and install it now; you use it for the rest of this page and the whole setup afterward.</p>
 
     <div class="choice-grid">
       <!-- Option A: subscription -->
@@ -633,23 +633,16 @@
         <span class="pick">Option B &middot; No subscription</span>
         <div class="choice-head">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#2f7d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <h3>Free coding agent + OpenRouter key</h3>
+          <h3>Zed &mdash; free, with $20 of trial credit</h3>
         </div>
-        <p>The editor and the agent are both free downloads with no monthly plan. <strong>Do this first:</strong> create an <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> account, add a few dollars of credit, and make a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>. That key is what makes either app below work, and you pay only for the tokens you actually use &mdash; cents a day on a cheap model.</p>
+        <p>Zed is a free, open-source editor with an AI agent built in. Start its <strong>two-week Pro trial</strong> and you get <strong>$20 of model credit</strong> &mdash; enough to get the project standing up before you decide whether to pay anyone anything.</p>
 
         <div class="subopt">
-          <h4>VS Code + Kilo Code <span class="tag">Most guidance</span></h4>
-          <p>VS Code is free and needs no account. Add the <strong>Kilo Code</strong> extension &mdash; free and open source &mdash; paste your OpenRouter key into it, and choose a model. Best of the free options for a beginner: separate Plan, Code, Ask and Debug modes, and an approval prompt before it edits a file or runs a command.</p>
-          <p class="small muted">Heaviest on memory &mdash; think 3&ndash;4&nbsp;GB once extensions load.</p>
-          <a class="button button--free" href="https://code.visualstudio.com/download" target="_blank" rel="noopener">Download VS Code &rarr;</a>
-          <p class="small muted" style="margin: 0.6rem 0 0;">Then install <a href="https://kilocode.ai" target="_blank" rel="noopener">Kilo Code</a> from the Extensions panel.</p>
-        </div>
-
-        <div class="subopt">
-          <h4>Zed <span class="tag">Lightest</span></h4>
-          <p>Free and open source, and OpenRouter is a built-in provider in its Agent Panel &mdash; paste the key, pick a model, open your folder. Nothing extra to install. Built in Rust rather than Electron, so it runs in a fraction of the memory: the one to pick on an older or 8&nbsp;GB laptop.</p>
-          <p class="small muted">Plainer chat than Kilo Code &mdash; you steer more of it yourself.</p>
-          <a class="button button--free" href="https://zed.dev/download" target="_blank" rel="noopener">Download Zed &rarr;</a>
+          <h4>Zed <span class="tag">Free trial credit</span></h4>
+          <p>Install it, sign in, upgrade to the free trial from your account page, then set the agent&rsquo;s model to <strong>Claude Sonnet 5</strong>. Open your empty folder and start. Built in Rust rather than Electron, so it also runs in a fraction of the memory of a heavier editor &mdash; the one to pick on an older or 8&nbsp;GB laptop.</p>
+          <p class="small muted">After the trial: Pro is $10/mo, or stay on the free plan and run it on your own OpenRouter key.</p>
+          <a class="button button--free" href="/infra/zed/">Zed setup walkthrough &rarr;</a>
+          <p class="small muted" style="margin: 0.6rem 0 0;">Screenshot-by-screenshot: install, the trial, the model, and the optional OpenRouter key.</p>
         </div>
 
         <p class="small muted card-foot"><strong>Fair warning.</strong> This route is slower and more hands-on, and the pages here are worded for Claude Code and Codex &mdash; the steps still apply, you will just translate the occasional button name. Tell your agent to read <code>AGENTS.md</code> at the start of each session so it picks up the project rules.</p>
@@ -658,14 +651,14 @@
     <p class="choice-or">Pick one path &mdash; you do not need both</p>
 
     <div class="callout">
-      <p><strong>Which should I pick?</strong> If $8&ndash;$20 a month is comfortable, take <strong>Option A</strong>, and within it <strong>Claude Desktop</strong> unless you already pay for ChatGPT &mdash; these instructions were written and tested against it. Take <strong>Option B</strong> if you would rather not add a subscription, or you want to find out whether this suits you before paying for anything. Nothing in the project is tied to one agent: the repo ships both <code>CLAUDE.md</code> and <code>AGENTS.md</code>, so you can switch later without redoing work. Whichever you pick, start it in a new, empty folder.</p>
+      <p><strong>Which should I pick?</strong> If $8&ndash;$20 a month is comfortable, take <strong>Option A</strong>, and within it <strong>Claude Desktop</strong> unless you already pay for ChatGPT &mdash; these instructions were written and tested against it. Take <strong>Option B</strong> if you would rather not add a subscription, or you want to find out whether this suits you before paying for anything &mdash; the trial credit is real money you did not spend. Nothing in the project is tied to one agent: the repo ships both <code>CLAUDE.md</code> and <code>AGENTS.md</code>, so you can switch later without redoing work. Whichever you pick, start it in a new, empty folder.</p>
     </div>
   </section>
 
   <!-- STOP 3: let it help you -->
   <section class="section">
     <h2>Step 3 &mdash; Open Code mode and paste this prompt</h2>
-    <p>Open the agent you just installed &mdash; <strong>Claude Code</strong>, <strong>Codex</strong>, <strong>Kilo Code</strong> or <strong>Zed</strong>&rsquo;s agent panel &mdash; in a new, empty folder and paste the prompt below. It will guide each signup and tell you exactly what to click. Claude Code and Codex also read screenshots you paste when you get stuck; on the free route, describe what you see instead.</p>
+    <p>Open the agent you just installed &mdash; <strong>Claude Code</strong>, <strong>Codex</strong>, or <strong>Zed</strong>&rsquo;s Agent Panel &mdash; in a new, empty folder and paste the prompt below. It will guide each signup and tell you exactly what to click. Claude Code and Codex also read screenshots you paste when you get stuck; on the free route, describe what you see instead.</p>
     <div class="prompt-block" id="prestart-prompt"><button class="copy-btn" onclick="copyById('prestart-prompt')">Copy</button>I'm getting ready to set up an AlpacApps project. I am in Code mode in an empty folder. First ask whether I already use a password manager. Evaluate its CLI for interactive authentication and scoped, safe reads from Claude Code/Codex, explain whether it works, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain as the automation source. Then help me set up the core services in this order: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.
 
 GitHub goes first because Supabase, Cloudflare, and Resend all support "Continue with GitHub" — use that for each of them instead of creating separate passwords. Google Cloud uses my project Gmail instead.

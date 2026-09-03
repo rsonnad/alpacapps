@@ -1093,7 +1093,7 @@
             <tbody>
               <tr><td><a href="https://openai.com/chatgpt/pricing" target="_blank" rel="noopener">ChatGPT Go</a></td><td>$8/mo</td><td>Yes &mdash; this is the whole thing. Flat price, no meter.</td></tr>
               <tr><td><a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> credit</td><td>~$1/mo</td><td>No. A cost-saver you add later, if ever.</td></tr>
-              <tr><td>Free editor (<a href="https://code.visualstudio.com" target="_blank" rel="noopener">VS&nbsp;Code</a> + Kilo Code, or <a href="https://zed.dev" target="_blank" rel="noopener">Zed</a>) on OpenRouter</td><td>$0 + tokens</td><td>Instead of the above, if you want no subscription at all.</td></tr>
+              <tr><td><a href="/infra/zed/">Zed</a> &mdash; free trial credit, then your own key</td><td>$0, then tokens</td><td>Instead of the above, if you want no subscription at all.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1103,7 +1103,7 @@
         </ul>
         <p><strong>OpenRouter is optional &mdash; skip it until it earns its place.</strong> It is not part of getting started and nothing breaks without it. Its only job is to make heavy months cheaper: you point the boring, repetitive work at a very cheap model instead of spending your ChatGPT allowance on it.</p>
         <p>The moment to bother is when you start bumping into limits, or notice you are burning good tokens on drudgery &mdash; bulk edits, first drafts, file wrangling. Then add about a dollar of credit and wire in <a href="https://openrouter.ai/deepseek/deepseek-v4-flash" target="_blank" rel="noopener">DeepSeek v4 Flash</a>, which runs around <strong>$0.05 per million input tokens</strong>. A dollar covers more routine work than most people get through in a month. The <a href="#worker-model">worker model step</a> below walks through it whenever you are ready &mdash; day one or month six, it does not matter.</p>
-        <p><strong>Or pay no subscription at all.</strong> The editor and the agent can both be free: VS&nbsp;Code with the open-source Kilo Code extension, or Zed, either one pointed at an OpenRouter key. Then there is no monthly bill, only tokens &mdash; often cents a day. The trade is that you steer more and the wording on these pages assumes Claude Code or Codex. Good if $8 a month is the sticking point, or you want to try before you commit.</p>
+        <p><strong>Or pay no subscription at all.</strong> <a href="/infra/zed/">Zed</a> is free and open source, and its two-week Pro trial hands you $20 of model credit &mdash; enough to build with before spending anything. After that, keep it free by pointing it at your own OpenRouter key and paying only for tokens, often cents a day. The trade is that you steer more and the wording on these pages assumes Claude Code or Codex. Good if $8 a month is the sticking point, or you want to try before you commit.</p>
         <p><strong>Going up instead</strong> is the other direction and most people never need it. Claude or ChatGPT Plus at $20 is smarter on genuinely hard problems; $100&ndash;$200 plans exist for people building heavily all day. Start at $8 and move only if you hit a wall.</p>
         <p class="small muted" style="font-size:0.8rem;">A custom domain, if you want one, is about $10 a year. Prices checked August 2026.</p>
       </div>
@@ -1200,7 +1200,7 @@
       Optional account setup homework
       <span class="step-time">15&ndash;30 min</span>
     </h2>
-    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, picking a coding agent (paid or free), and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
+    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, picking a coding agent (paid, or Zed free), and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
     <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 0.6rem;">
       <a href="/infra/prestart/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
         Before you start &rarr;
@@ -1289,7 +1289,7 @@
       Install a coding agent &mdash; subscription <em>or</em> free
       <span class="step-time">2 min</span>
     </h2>
-    <p>Two ways to get the agent that does the work. <strong>Option A</strong> is a flat monthly subscription. <strong>Option B</strong> costs nothing up front: a free editor plus your own <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key, billed per token. Pick <strong>one</strong>, then open it in a new, empty folder &mdash; the agent creates and clones the project for you.</p>
+    <p>Two ways to get the agent that does the work. <strong>Option A</strong> is a flat monthly subscription. <strong>Option B</strong> costs nothing: <a href="/infra/zed/">Zed</a> is free, its two-week Pro trial includes $20 of model credit, and after that it runs on your own <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key, billed per token. Pick <strong>one</strong>, then open it in a new, empty folder &mdash; the agent creates and clones the project for you.</p>
 
     <div class="choice-grid">
       <div class="choice-card choice-card--paid">
@@ -1321,23 +1321,16 @@
         <span class="pick">Option B &middot; No subscription</span>
         <div class="choice-head">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#2f7d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <h3>Free coding agent + OpenRouter key</h3>
+          <h3>Zed &mdash; free, with $20 of trial credit</h3>
         </div>
-        <p>Editor and agent are free downloads, no monthly plan. <strong>First</strong> make a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> and add a few dollars of credit &mdash; you then pay only for tokens used, cents a day on a cheap model. This also covers <a href="#worker-model">Step 5</a> for you.</p>
+        <p>Zed is a free, open-source editor with an AI agent built in. Its <strong>two-week Pro trial</strong> includes <strong>$20 of model credit</strong> &mdash; enough to get the project standing up before you pay anyone anything.</p>
 
         <div class="subopt">
-          <h4>VS Code + Kilo Code <span class="choice-tag">Most guidance</span></h4>
-          <p>VS Code is free with no account. Add the free, open-source <strong>Kilo Code</strong> extension, paste in your OpenRouter key, pick a model. Separate Plan, Code, Ask and Debug modes, and an approval prompt before it edits a file or runs a command.</p>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">Heaviest on memory &mdash; 3&ndash;4&nbsp;GB with extensions loaded.</p>
-          <a class="choice-btn choice-btn--free" href="https://code.visualstudio.com/download" target="_blank" rel="noopener">Download VS Code &rarr;</a>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">Then add <a href="https://kilocode.ai" target="_blank" rel="noopener">Kilo Code</a> from the Extensions panel.</p>
-        </div>
-
-        <div class="subopt">
-          <h4>Zed <span class="choice-tag">Lightest</span></h4>
-          <p>Free and open source, with OpenRouter built into its Agent Panel &mdash; paste the key, pick a model, open the folder. Nothing extra to install. Rust rather than Electron, so it runs in a fraction of the memory: the pick for an older or 8&nbsp;GB machine.</p>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">Plainer chat than Kilo Code &mdash; you steer more of it yourself.</p>
-          <a class="choice-btn choice-btn--free" href="https://zed.dev/download" target="_blank" rel="noopener">Download Zed &rarr;</a>
+          <h4>Zed <span class="choice-tag">Free trial credit</span></h4>
+          <p>Install, sign in, start the free trial from your account page, then set the agent&rsquo;s model to <strong>Claude Sonnet 5</strong> and open your empty folder. Rust rather than Electron, so it also runs in a fraction of the memory of a heavier editor.</p>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">After the trial: Pro is $10/mo, or stay free and run it on your own <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter key</a> &mdash; covered in <a href="#worker-model">Step 5</a>.</p>
+          <a class="choice-btn choice-btn--free" href="/infra/zed/">Zed setup walkthrough &rarr;</a>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">Screenshot-by-screenshot: install, trial, model, and the optional OpenRouter key.</p>
         </div>
 
         <p class="card-foot" style="font-size:0.82rem;color:var(--text-muted);margin:auto 0 0;padding-top:0.35rem;"><strong>Fair warning:</strong> slower and more hands-on, and these pages are worded for Claude Code and Codex &mdash; the steps still apply, you just translate the odd button name. Tell the agent to read <code>AGENTS.md</code> when a session starts.</p>
@@ -1540,7 +1533,7 @@ $env:BW_SESSION = &amp; .\scripts\bw-unlock.ps1</div>
         <ul>
           <li><strong>Claude Sonnet</strong> in Claude Code, or</li>
           <li><strong>GPT&#8209;5.6 Luna</strong> in ChatGPT Desktop / Codex, or</li>
-          <li>A strong OpenRouter model in Kilo Code / Zed</li>
+          <li><strong>Claude Sonnet 5</strong> in Zed, on trial credit or OpenRouter</li>
           <li>Reads the repo, decides what changes</li>
           <li>Writes the spec and reviews the result</li>
           <li>Billed to your subscription, or to OpenRouter credit</li>

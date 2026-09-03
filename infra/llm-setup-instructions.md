@@ -8,7 +8,7 @@
 AlpacApps is a full-stack platform using:
 - **GitHub Pages** — static site hosting (free)
 - **Supabase** — PostgreSQL database, auth, storage, edge functions (free tier)
-- **A coding agent** — Claude Code or Codex on a subscription, or a free editor (VS Code + Kilo Code, or Zed) driven by the user's own OpenRouter key
+- **A coding agent** — Claude Code or Codex on a subscription, or Zed running on its trial credit / the user's own OpenRouter key
 - **Tailwind CSS v4** — styling framework
 
 Architecture: Browser → GitHub Pages → Supabase (no server-side code). Edge functions handle sensitive operations.
@@ -21,9 +21,9 @@ The user opens their coding agent immediately and selects a new, empty local fol
 **Which agent:** the user picks one of two paths on the [pre-start page](https://alpacaplayhouse.com/infra/prestart/#pick-your-assistant).
 
 - **Subscription (recommended, best tested)** — Claude Code in Claude Desktop, or Codex in ChatGPT Desktop.
-- **Free + OpenRouter** — VS Code with the open-source Kilo Code extension, or Zed, either one running on the user's own OpenRouter key and billed per token. No monthly plan; the user needs the OpenRouter key and a few dollars of credit *before* starting.
+- **Free — Zed** ([walkthrough](https://alpacaplayhouse.com/infra/zed/)) — free, open-source editor with a built-in agent. Its two-week Pro trial includes $20 of model credit, so no key or payment is needed to start. The model should be set to **Claude Sonnet 5**. Once the credit is gone, the user adds their own OpenRouter key under Settings → AI → LLM Providers and pays per token.
 
-If the user is on the free path: read `AGENTS.md` at the start of every session for project directives, expect no screenshot-pasting (ask the user to describe what they see instead), and treat the OpenRouter setup as already done rather than as a later optional step.
+If the user is on the free path: read `AGENTS.md` at the start of every session for project directives, expect no screenshot-pasting (ask the user to describe what they see instead), and do not treat OpenRouter as a prerequisite — it only matters after the trial credit runs out.
 
 It should:
 

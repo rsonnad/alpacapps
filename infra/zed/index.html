@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlpacApps Infra &mdash; Set Up Zed (Free Route)</title>
+  <meta name="description" content="Install Zed, start the two-week Pro trial with $20 of model credit, set the model to Claude Sonnet 5, and optionally add your own OpenRouter key.">
+  <meta property="og:title" content="AlpacApps Infra &mdash; Set Up Zed">
+  <meta property="og:description" content="The no-subscription route: Zed, the two-week Pro trial, Claude Sonnet 5, and an optional OpenRouter key.">
+  <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:url" content="https://alpacaplayhouse.com/infra/zed/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AlpacApps">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AlpacApps Infra &mdash; Set Up Zed">
+  <meta name="twitter:description" content="The no-subscription route: Zed, the two-week Pro trial, Claude Sonnet 5, and an optional OpenRouter key.">
+  <meta name="twitter:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
+  <meta name="twitter:image:alt" content="AlpacApps Infra &mdash; Zed setup">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-warm: #faf8f5;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent: #c9a87c;
+      --accent-light: #f5efe6;
+      --border: #e5e5e5;
+      --success: #6b8e5a;
+      --success-light: #eef5eb;
+      --warning-bg: #fceee9;
+      --warning-border: #c75b3a;
+      --info-bg: #edf4fb;
+      --info-border: #5c7da3;
+      --claude-bg: #f3effc;
+      --claude-border: #7c6a9a;
+      --shadow: 0 1px 3px rgba(26,26,26,0.06), 0 1px 2px rgba(26,26,26,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-warm);
+      line-height: 1.7;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); transition: color 0.2s; overflow-wrap: anywhere; }
+    a:hover { color: #a08050; }
+    p { margin-bottom: 0.85rem; }
+    ul, ol { padding-left: 1.45rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.38rem; }
+    li::marker { color: var(--accent); font-weight: 700; }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--accent-light);
+      color: #6b5230;
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.86em;
+      overflow-wrap: anywhere;
+    }
+
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: calc(80px + 1rem) 1.5rem 0;
+    }
+    .hero-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(26,26,26,0.08), 0 1px 3px rgba(26,26,26,0.06);
+      overflow: hidden;
+      position: relative;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), rgba(201,168,124,0.3));
+      border-radius: 16px 16px 0 0;
+    }
+    .hero-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 16px 16px 0 0;
+    }
+    .hero-text {
+      padding: 2rem 2.5rem 2.5rem;
+    }
+    .eyebrow {
+      display: inline-block;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.55rem;
+    }
+    h1 {
+      font-size: 2.35rem;
+      font-weight: 400;
+      line-height: 1.18;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    h1 span { color: var(--accent); }
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin-bottom: 1.25rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 0.45rem 1.25rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(201,168,124,0.2);
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      min-width: 0;
+    }
+    .section {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      min-width: 0;
+    }
+    .section h2 {
+      font-size: 1.45rem;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+    .section h3 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin: 1.5rem 0 0.55rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.055em;
+    }
+    .section h3:first-of-type { margin-top: 1rem; }
+    .muted { color: var(--text-muted); }
+    .small { font-size: 0.86rem; }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-top: 1.1rem;
+    }
+    .quick-card {
+      background: var(--bg-warm);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      min-height: 112px;
+      min-width: 0;
+    }
+    .quick-card strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.92rem;
+    }
+    .quick-card span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .callout {
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      margin: 1rem 0;
+      border: 1px solid var(--border);
+      background: var(--bg-warm);
+      min-width: 0;
+    }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout--secure {
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+    }
+    .callout--info {
+      background: var(--info-bg);
+      border-color: var(--info-border);
+    }
+    .callout--done {
+      background: var(--success-light);
+      border-color: var(--success);
+    }
+
+    .service {
+      border-top: 1px solid var(--border);
+      padding-top: 1.35rem;
+      margin-top: 1.35rem;
+      min-width: 0;
+    }
+    .service:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .service-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.45rem;
+    }
+    .service-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .service-title h2 { margin: 0; }
+    .service-title .tag {
+      margin-left: auto;
+      white-space: nowrap;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-radius: 999px;
+      padding: 0.22rem 0.65rem;
+      color: var(--success);
+      background: var(--success-light);
+      border: 1px solid rgba(107,142,90,0.18);
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 0.9rem;
+      min-width: 0;
+    }
+    .mini-panel {
+      background: var(--bg-warm);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      min-width: 0;
+    }
+    .mini-panel h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    .mini-panel ul { margin-bottom: 0; }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      min-height: 42px;
+      padding: 0.62rem 1.1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      border: 1px solid transparent;
+    }
+    .button--primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .button--primary:hover { color: #fff; background: #a08050; }
+    .button--secondary {
+      color: var(--text);
+      background: var(--bg);
+      border-color: var(--border);
+    }
+    .button--secondary:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .prompt-block {
+      position: relative;
+      background: var(--claude-bg);
+      border: 2px solid var(--claude-border);
+      border-radius: 8px;
+      padding: 1.35rem;
+      margin: 1rem 0;
+      font-size: 0.83rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: #5a4a7a;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(124,106,154,0.15);
+      color: #5a4a7a;
+      border: none;
+      border-radius: 6px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(124,106,154,0.25); }
+
+    .footer-links {
+      text-align: center;
+      padding: 2rem 0;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .footer-links a { margin: 0 1rem; }
+
+    @media (max-width: 720px) {
+      .hero { padding-top: calc(72px + 1rem); }
+      .hero-text { padding: 1.5rem 1.75rem 1.75rem; text-align: center; }
+      h1 { font-size: 1.85rem; }
+      .section { padding: 1.5rem; }
+      .quick-grid, .split { grid-template-columns: 1fr; }
+      .service-title { align-items: flex-start; }
+      .service-title .tag { margin-left: 0; }
+      .service-title { flex-wrap: wrap; }
+      .footer-links a { display: block; margin: 0.35rem 0; }
+    }
+
+    @media print {
+      body { background: white; }
+      .aap-header, .aap-mobile-nav { display: none; }
+      .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+
+    /* --- Assistant choice (Claude vs Codex) --- */
+    .choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.25rem 0 0.5rem;
+      align-items: stretch;
+    }
+    .choice-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-warm);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem 1.35rem 1.25rem;
+      min-width: 0;
+    }
+    .choice-card--claude { border-color: var(--claude-border); background: var(--claude-bg); }
+    .choice-card--codex { border-color: #10a37f; background: #eefaf6; }
+    .choice-card .pick {
+      position: absolute;
+      top: -0.72rem;
+      left: 1.25rem;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .choice-card--claude .pick { border-color: var(--claude-border); color: #5a4a7a; }
+    .choice-card--codex .pick { border-color: #10a37f; color: #0b7a5e; }
+    .choice-head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .choice-head h3 {
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .choice-card p { font-size: 0.9rem; }
+    .choice-card ul { margin: 0 0 0.9rem 0; padding-left: 1.25rem; font-size: 0.87rem; list-style: disc; }
+    .choice-card .button { margin-top: auto; }
+    .button--claude { background: var(--claude-border); color: #fff; }
+    .button--claude:hover { background: #665684; color: #fff; }
+    .button--codex { background: #10a37f; color: #fff; }
+    .button--codex:hover { background: #0b7a5e; color: #fff; }
+    .button--free { background: #2f7d6b; color: #fff; }
+    .button--free:hover { background: #22604f; color: #fff; }
+    .choice-card--paid { border-color: var(--claude-border); background: var(--claude-bg); }
+    .choice-card--paid .pick { border-color: var(--claude-border); color: #5a4a7a; }
+    .choice-card--free { border-color: #2f7d6b; background: #f0faf7; }
+    .choice-card--free .pick { border-color: #2f7d6b; color: #1f5f51; }
+    .subopt {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 0.85rem 0.95rem 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .subopt h4 {
+      margin: 0 0 0.35rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .subopt p { margin: 0 0 0.65rem; font-size: 0.85rem; }
+    .subopt .button { margin-top: 0; }
+    .tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+      opacity: 0.8;
+    }
+    .choice-card .card-foot { margin: auto 0 0; padding-top: 0.35rem; }
+    .choice-or {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    .steps-list { counter-reset: prestep; list-style: none; padding-left: 0; }
+    .steps-list > li {
+      position: relative;
+      padding-left: 2.4rem;
+      margin-bottom: 0.75rem;
+    }
+    .steps-list > li::before {
+      counter-increment: prestep;
+      content: counter(prestep);
+      position: absolute;
+      left: 0;
+      top: 0.15rem;
+      width: 1.65rem;
+      height: 1.65rem;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Tailwind preflight strips list markers site-wide — restore them here,
+       since this page is read as ordered, followable steps. */
+    .section ul { list-style: disc; }
+    .section ol { list-style: decimal; }
+    .choice-card ul { list-style: disc; }
+    .section ol.steps-list, .section ol.steps-list > li { list-style: none; }
+
+    @media (max-width: 720px) {
+      .choice-grid { grid-template-columns: 1fr; }
+    }
+
+    /* --- Zed page: screenshots and platform buttons --- */
+    .shot {
+      margin: 1.1rem 0 1.4rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--bg-warm);
+    }
+    .shot img { display: block; width: 100%; height: auto; }
+    .shot figcaption {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      padding: 0.7rem 0.95rem 0.8rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .shot--missing img { display: none; }
+    .shot--missing figcaption { border-top: 0; }
+    .platform-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1rem 0 0.5rem; }
+    .kbd {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      padding: 0.05rem 0.4rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85em;
+      background: var(--bg-warm);
+      white-space: nowrap;
+    }
+    .fact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin: 1.1rem 0 0.4rem;
+    }
+    .fact {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      background: var(--bg-warm);
+    }
+    .fact h4 { margin: 0 0 0.25rem; font-size: 0.9rem; }
+    .fact p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+    @media (max-width: 720px) {
+      .fact-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<span data-site-version style="display:none;">v260902.10 7:10p</span>
+<div id="siteHeader"></div>
+
+<!-- HERO BANNER — matches the Infra banner card pattern. -->
+<div class="hero">
+  <div class="hero-card">
+    <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="AlpacApps — AI-powered platform with alpacas" class="hero-image" width="1509" height="475">
+    <div class="hero-text">
+      <span class="eyebrow">The free route</span>
+      <h1>Set up <span>Zed</span> as your coding agent</h1>
+      <p>Zed is a free, open-source editor with an AI agent built in. Start the two-week Pro trial and you get <strong>$20 of model credit</strong> with no subscription to keep &mdash; enough to get an AlpacApps project standing up before you decide whether to pay anyone. This page covers the install, the one model setting that matters, and the optional OpenRouter key for afterwards.</p>
+      <span class="badge">10 minutes &middot; No subscription required</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <section class="section">
+    <h2>What you&rsquo;ll do on this page</h2>
+    <ol class="steps-list">
+      <li><strong>Install Zed</strong> &mdash; free download for macOS, Windows, or Linux.</li>
+      <li><strong>Sign in and start the Pro free trial</strong> &mdash; two weeks, $20 of model credit.</li>
+      <li><strong>Set the agent&rsquo;s model to Claude Sonnet 5</strong> &mdash; the one setting worth getting right.</li>
+      <li><strong>Optional:</strong> add your own <strong>OpenRouter</strong> key so you can keep going cheaply when the trial credit runs out.</li>
+    </ol>
+    <div class="callout callout--info">
+      <p><strong>Why this route exists.</strong> The rest of the AlpacApps instructions assume Claude Code or Codex on a paid plan. Zed is the way to do the same work without a subscription: the editor is free forever, and the agent runs on trial credit first and your own API key after. It is slower and more hands-on, but nothing here is locked behind a monthly bill.</p>
+    </div>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="section" id="install">
+    <h2>Step 1 &mdash; Install Zed</h2>
+    <p>Free download, no account needed just to install. The download page detects your platform and offers the right build.</p>
+
+    <div class="platform-row">
+      <a class="button button--primary" href="https://zed.dev/download" target="_blank" rel="noopener">Download Zed for macOS &rarr;</a>
+      <a class="button button--primary" href="https://zed.dev/download" target="_blank" rel="noopener">Download Zed for Windows &rarr;</a>
+    </div>
+    <p class="small muted">Both buttons go to <a href="https://zed.dev/download" target="_blank" rel="noopener">zed.dev/download</a>, which carries the macOS build (requires macOS 10.15 or later), the Windows build, and Linux. On Linux you can instead run <code>curl -f https://zed.dev/install.sh | sh</code>.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="section" id="trial">
+    <h2>Step 2 &mdash; Sign in, then start the Pro free trial</h2>
+    <p>Open Zed and sign in with your project account. Then go to your <a href="https://zed.dev/account" target="_blank" rel="noopener">Account page</a> while logged in and upgrade to <strong>Pro</strong> to start the free trial.</p>
+
+    <div class="fact-grid">
+      <div class="fact">
+        <h4>The trial</h4>
+        <p>Two weeks, and <strong>$20 of token credits</strong> included, plus unlimited accepted edit predictions. It ends when the two weeks pass or the credits run out &mdash; whichever comes first.</p>
+      </div>
+      <div class="fact">
+        <h4>After the trial</h4>
+        <p>Pro is <strong>$10/month</strong> with $5 of tokens included, billed at list price +10% beyond that. Or drop back to the free Personal plan and run the agent on your own key &mdash; see Step 4.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><strong>One thing to know about the trial.</strong> The very top-end models &mdash; Claude Fable, Claude Opus, and GPT Pro &mdash; are not available during it. That is fine: the model this page tells you to use is, and it is more than strong enough for the setup work.</p>
+    </div>
+    <p class="small muted">Plans and credit amounts change. Current terms are always at <a href="https://zed.dev/pricing" target="_blank" rel="noopener">zed.dev/pricing</a>.</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="section" id="model">
+    <h2>Step 3 &mdash; Open your project folder and set the model</h2>
+    <ol class="steps-list">
+      <li><strong>Open a new, empty folder</strong> &mdash; <em>File &rarr; Open Folder</em>. Do not point it at an existing repository; the agent creates and clones the project for you.</li>
+      <li><strong>Open the Agent Panel</strong> &mdash; the assistant icon in the bottom-right status bar, or the Command Palette (<span class="kbd">Cmd</span> <span class="kbd">Shift</span> <span class="kbd">P</span>) and run <code>agent: new thread</code>.</li>
+      <li><strong>Click the model name</strong> at the bottom right of the Agent Panel. A <em>Select a model&hellip;</em> list opens.</li>
+      <li><strong>Choose <span class="kbd">Claude Sonnet 5</span></strong> under the <em>Zed</em> heading &mdash; the one tagged <em>Latest</em>.</li>
+    </ol>
+    <div class="callout callout--done">
+      <p><strong>Claude Sonnet 5 is the setting that matters.</strong> It is the strongest coding model included in the trial credit, and it is what the AlpacApps instructions were written against. You can switch models per thread later &mdash; but start here, and change only when you have a reason.</p>
+    </div>
+  </section>
+
+  <!-- WHERE SETTINGS LIVE -->
+  <section class="section" id="settings">
+    <h2>Where Zed&rsquo;s settings live</h2>
+    <p>You need this window for Step 4, and for anything else you ever change in Zed. Two ways in:</p>
+    <ul>
+      <li>The macOS menu bar: <strong>Zed &rarr; Settings &rarr; Open Settings</strong></li>
+      <li>Or just press <span class="kbd">Cmd</span> <span class="kbd">,</span></li>
+    </ul>
+    <p>Either one lands you here &mdash; the sidebar down the left is how you move between sections:</p>
+
+    <figure class="shot">
+      <img src="/infra/zed/zed-settings-general.png" alt="Zed settings window open on the General section, with the section list down the left sidebar" loading="lazy" onerror="this.closest('.shot').classList.add('shot--missing')">
+      <figcaption>Zed Settings, General. The left sidebar &mdash; General, Appearance, Keymap, Editor, &hellip; <strong>AI</strong>, Network, Developer &mdash; is your map of the whole app.</figcaption>
+    </figure>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="section" id="openrouter">
+    <h2>Step 4 <span class="small muted">(optional)</span> &mdash; Bring your own OpenRouter key</h2>
+    <p>Skip this until you need it. Come back when the trial credit runs out, or when you want a very cheap model for the repetitive work. <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> is one account that reaches hundreds of models, billed per token with no subscription &mdash; often cents a day on a cheap model.</p>
+
+    <h3>a. Create the key</h3>
+    <p>Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>, create a key, and add a few dollars of credit to the account. Store the key in your credential manager the moment you have it.</p>
+
+    <div class="callout callout--secure">
+      <p><strong>Never paste an API key into a chat &mdash; including a chat with your coding agent.</strong> If a key has ever been in one, treat it as burned: revoke it at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> and create a replacement before you save it anywhere.</p>
+    </div>
+
+    <h3>b. Open Settings &rarr; AI</h3>
+    <p>Press <span class="kbd">Cmd</span> <span class="kbd">,</span>, then click <strong>AI</strong> in the left sidebar. Find <strong>LLM Providers</strong> and click <strong>Configure</strong>.</p>
+
+    <figure class="shot">
+      <img src="/infra/zed/zed-settings-ai.png" alt="Zed settings window on the AI section, showing Disable AI, Threads Sidebar Side, LLM Providers with a Configure button, External Agents, MCP Servers, Skills and Sandbox" loading="lazy" onerror="this.closest('.shot').classList.add('shot--missing')">
+      <figcaption>Settings &rarr; AI. <strong>LLM Providers</strong> is the row you want &mdash; click its <em>Configure</em> button. (The others here are for later: MCP servers, agent skills, and the terminal sandbox.)</figcaption>
+    </figure>
+
+    <h3>c. Scroll to OpenRouter and paste the key</h3>
+    <p>You land on <code>User / AI / General / LLM Providers</code> &mdash; a long list of providers, each with its own API key box. Scroll down to <strong>OpenRouter</strong> and paste your key in.</p>
+
+    <figure class="shot">
+      <img src="/infra/zed/zed-settings-llm-providers.png" alt="Zed LLM Providers settings page showing OpenCode, OpenRouter with API Key Configured and a Reset Key button, Vercel AI Gateway, and xAI" loading="lazy" onerror="this.closest('.shot').classList.add('shot--missing')">
+      <figcaption>When the key is saved, OpenRouter shows a green <strong>API Key Configured</strong> with a <em>Reset Key</em> button beside it &mdash; that is how you know it took.</figcaption>
+    </figure>
+
+    <div class="callout">
+      <p><strong>Do not click &ldquo;Add Provider&rdquo;.</strong> OpenRouter is already built in, farther down the list &mdash; that button is for providers Zed does not ship with. If you cannot spot it, use the <em>Search settings&hellip;</em> box at the top left and search for <code>OpenRouter</code>.</p>
+    </div>
+
+    <h3>d. Pick an OpenRouter model</h3>
+    <p>Go back to the Agent Panel, click the model name at the bottom right, and choose one of the OpenRouter models now in the list. That work is billed to your OpenRouter credit instead of to Zed.</p>
+  </section>
+
+  <!-- NOTES -->
+  <section class="section" id="notes">
+    <h2>Before you start building</h2>
+    <div class="callout callout--info">
+      <p><strong>Point the agent at the project rules.</strong> Tell it to read <code>AGENTS.md</code> at the start of every session. The repo ships both <code>CLAUDE.md</code> and <code>AGENTS.md</code>, and that file is what keeps it building the way the rest of these instructions assume.</p>
+    </div>
+    <div class="callout">
+      <p><strong>Fair warning, honestly.</strong> The AlpacApps pages are worded for Claude Code and Codex &mdash; the steps all apply, you will just translate the occasional button name. Zed&rsquo;s Agent Panel is also a plainer chat than Claude Code, so you steer more of the work yourself. If that starts costing you more time than the subscription would cost in money, switching later is easy: nothing in the project is tied to one agent.</p>
+    </div>
+
+    <div class="cta-row">
+      <a class="button button--primary" href="/infra/prestart/">Back to Before you start &rarr;</a>
+      <a class="button button--secondary" href="/infra/">AlpacApps Infra setup</a>
+    </div>
+  </section>
+
+  <div class="footer-links">
+    <a href="/infra/">Infra home</a>
+    <a href="/infra/prestart/">Before you start</a>
+    <a href="/infra/accountsetup/">Account setup checklist</a>
+    <a href="/docs/alpacappsinfra.html">Full manual setup guide</a>
+    <a href="https://github.com/rsonnad/alpacapps-infra">Template repo</a>
+  </div>
+</main>
+
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module" src="/shared/version-info.js"></script>
+<script type="module">
+  import { initPublicPage } from '/shared/public-shell.js';
+  initPublicPage({ transparent: false, light: false });
+</script>
+
+</body>
+</html>
