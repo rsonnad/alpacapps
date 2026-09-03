@@ -212,7 +212,7 @@
         <strong>How to play music:</strong> Use <strong>Spotify Connect</strong> or the <strong>Sonos S1 app</strong> while connected to the Black Rock City WiFi network. Select the "Sauna" room in Sonos. You can also use AirPlay via the WiiM Pro receiver.
       </div>
 
-      <p>The system is driven by a Behringer Flow 8 digital mixer with four output paths: stereo mains, a dedicated subwoofer channel, and tactile bass transducers. Settings can be adjusted in real time via the Flow 8 mobile app from inside the sauna.</p>
+      <p>The system is driven by a miniDSP Flex 8 digital signal processor with four active output paths: stereo mains, a dedicated subwoofer channel, and tactile bass transducers. Volume and presets are adjusted on the Flex 8 at the equipment rack.</p>
     </section>
 
     <hr style="margin: 2rem 0;">
@@ -229,14 +229,13 @@
     <section id="equipment">
       <h2>3. Equipment List</h2>
 
-      <h3>Mixing &amp; Source</h3>
+      <h3>Source &amp; DSP</h3>
       <table class="equipment-table">
         <thead><tr><th>Device</th><th>Notes</th></tr></thead>
         <tbody>
           <tr><td>Sonos Connect Gen 2</td><td>Signal input source (discontinued)</td></tr>
           <tr><td>WiiM Pro AirPlay 2 Receiver</td><td>AirPlay input source</td></tr>
-          <tr><td>Behringer Flow 8 Mixer</td><td>Main mixer &amp; DSP, 4 outputs (L/R + 2 monitors)</td></tr>
-          <tr><td>MiniDSP Flex 8</td><td>Advanced 8-channel DSP (installed &mdash; tuning pending)</td></tr>
+          <tr><td>MiniDSP Flex 8</td><td>Main DSP &amp; volume, 8 output channels &mdash; crossovers, EQ, time alignment, Dirac room correction (tuning pass pending)</td></tr>
           <tr><td>Dirac UMIK-1 Microphone</td><td>Room measurement &amp; calibration mic</td></tr>
         </tbody>
       </table>
@@ -271,23 +270,22 @@
     <!-- Signal Flow -->
     <section id="signal-flow">
       <h2>4. Signal Flow</h2>
-      <p>The Behringer Flow 8 mixer has 4 outputs that drive 4 separate audio paths:</p>
+      <p>The miniDSP Flex 8 drives 4 separate audio paths from its outputs:</p>
 
       <div class="signal-flow">
-Sonos / WiiM <span class="arrow">&rarr;</span> Flow 8 Mixer<br>
+Sonos / WiiM <span class="arrow">&rarr;</span> miniDSP Flex 8 (input / volume / DSP)<br>
 <br>
-Flow 8 MAIN OUT (L/R) <span class="arrow">&rarr;</span> Yamaha RX-V871 <span class="arrow">&rarr;</span> Polk Atrium 8 speakers<br>
-&nbsp;&nbsp;Cable: 1/4" TRS to RCA<br>
+Flex 8 Out 1&ndash;2 (L/R mains) <span class="arrow">&rarr;</span> Yamaha RX-V871 <span class="arrow">&rarr;</span> Polk Atrium 8 speakers<br>
 &nbsp;&nbsp;Purpose: Full-range stereo<br>
 <br>
-Flow 8 MONITOR 1 <span class="arrow">&rarr;</span> LAB Gruppen E8:2 <span class="arrow">&rarr;</span> JBL C29AV-1 subwoofer<br>
-&nbsp;&nbsp;Cable: 1/4" TRS to XLR (balanced)<br>
+Flex 8 Out 3 (Sub) <span class="arrow">&rarr;</span> LAB Gruppen E8:2 <span class="arrow">&rarr;</span> JBL C29AV-1 subwoofer<br>
 &nbsp;&nbsp;Purpose: Low frequency for sub<br>
 <br>
-Flow 8 MONITOR 2 <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow">&rarr;</span> Aurasound shakers<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&boxvr; Line Out <span class="arrow">&rarr;</span> BKA-1000P <span class="arrow">&rarr;</span> Buttkickers<br>
-&nbsp;&nbsp;Cable: 1/4" TRS to RCA, then RCA daisy-chain<br>
-&nbsp;&nbsp;Purpose: Low frequency for tactile transducers
+Flex 8 Out 4 (Tactile) <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow">&rarr;</span> Aurasound shakers<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&boxvr; Line Out <span class="arrow">&rarr;</span> BKA-1000P <span class="arrow">&rarr;</span> Buttkickers<br>
+&nbsp;&nbsp;Purpose: Low frequency for tactile transducers<br>
+<br>
+Outs 5&ndash;8: Spare / future expansion
       </div>
 
       <div class="info-box">
@@ -303,31 +301,14 @@ Flow 8 MONITOR 2 <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow"
 
       <div class="config-grid">
         <div class="config-card">
-          <h4>Flow 8 &mdash; Main Out (to Yamaha)</h4>
+          <h4>miniDSP Flex 8</h4>
           <ul>
-            <li>High-pass filter: 80 Hz</li>
-            <li>EQ: Flat/neutral</li>
-            <li>Output level: 75% (-7.5 dB)</li>
-          </ul>
-        </div>
-
-        <div class="config-card">
-          <h4>Flow 8 &mdash; Monitor 1 (to LAB Gruppen)</h4>
-          <ul>
-            <li>Low-pass filter: 100 Hz</li>
-            <li>High-pass filter: 20 Hz</li>
-            <li>Output level: 100% (0 dB)</li>
-            <li>Pan: Center</li>
-          </ul>
-        </div>
-
-        <div class="config-card">
-          <h4>Flow 8 &mdash; Monitor 2 (to BKA chain)</h4>
-          <ul>
-            <li>Low-pass filter: 100 Hz</li>
-            <li>High-pass filter: 25 Hz</li>
-            <li>Output level: 85% (-3 dB)</li>
-            <li>Pan: Center</li>
+            <li>Role: input source, volume, and all frequency routing</li>
+            <li>Out 1&ndash;2: L/R mains to Yamaha</li>
+            <li>Out 3: sub to LAB Gruppen</li>
+            <li>Out 4: tactile to BKA-300-4 (daisy-chains to BKA-1000P)</li>
+            <li>Per-output crossovers/EQ: pending the calibration pass (section 9)</li>
+            <li>Outs 5&ndash;8: spare</li>
           </ul>
         </div>
 
@@ -426,7 +407,7 @@ Flow 8 MONITOR 2 <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow"
       <h2>7. Initial Setup Procedure</h2>
       <ol>
         <li>Start with all amp gains at minimum</li>
-        <li>Set Flow 8 output levels as specified above</li>
+        <li>Configure the Flex 8: input source, volume, and output levels as specified above</li>
         <li>Gradually increase each amp's gain:
           <ul>
             <li>Start with main speakers (Yamaha)</li>
@@ -447,11 +428,11 @@ Flow 8 MONITOR 2 <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow"
       <h2>8. Sauna Environment Tips</h2>
 
       <div class="info-box info-box--warning">
-        <strong>Heat &amp; Moisture Warning:</strong> Electronics in a sauna are exposed to extreme heat and humidity. All amps, the mixer, and the Yamaha receiver should be placed <strong>outside the sauna</strong> or in a well-ventilated, humidity-controlled equipment area. Only speaker wire should run inside.
+        <strong>Heat &amp; Moisture Warning:</strong> Electronics in a sauna are exposed to extreme heat and humidity. All amps, the Flex 8, and the Yamaha receiver should be placed <strong>outside the sauna</strong> or in a well-ventilated, humidity-controlled equipment area. Only speaker wire should run inside.
       </div>
 
       <ul>
-        <li><strong>Equipment placement:</strong> Keep all amps and the Flow 8 in a lower-temperature zone with fan or ventilation. Heat kills electronics and can trigger thermal protection mid-session.</li>
+        <li><strong>Equipment placement:</strong> Keep all amps and the Flex 8 in a lower-temperature zone with fan or ventilation. Heat kills electronics and can trigger thermal protection mid-session.</li>
         <li><strong>Moisture-proofing:</strong> Use marine-grade or outdoor-rated cables and connectors. Consider silicone boot covers on exposed jacks.</li>
         <li><strong>Cable management:</strong> Keep unbalanced cable runs as short as possible (&lt;10-15 ft). Use balanced (TRS-to-XLR) for longer distances, especially for the sub signal. Label and route cables away from high-heat surfaces.</li>
         <li><strong>Calibration:</strong> Use the UMIK-1 for real-time RTA measurement. Expect big lumps or dips in mid-bass due to reflective wood surfaces and sloped ceiling. Correct gently&mdash;too much EQ sounds unnatural.</li>
@@ -464,19 +445,18 @@ Flow 8 MONITOR 2 <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow"
     <!-- miniDSP Future -->
     <section id="dsp-future">
       <h2>9. miniDSP Flex 8</h2>
-      <p>The miniDSP Flex 8 provides up to 8 input + 8 output channels of digital signal processing, including EQ, crossovers, time alignment, and Dirac room correction. It is <strong>installed and running</strong>, replacing the Flow 8's limited DSP capabilities while the Flow 8 remains the front-end mixer.</p>
+      <p>The miniDSP Flex 8 provides up to 8 input + 8 output channels of digital signal processing, including EQ, crossovers, time alignment, and Dirac room correction. It is <strong>installed and running</strong> as the system's front-end: input selection, volume control, and all DSP. It replaced the Behringer Flow 8 mixer that originally drove the system.</p>
       <p class="note"><strong>Outstanding:</strong> the calibration pass. Until someone measures the room with the UMIK-1 and REW, folds the crossovers off the downstream amps onto the Flex 8, and applies correction, the system is not yet realising what the Flex 8 makes possible. The settings in section 5 are still the amp-side values the system was commissioned with.</p>
 
       <h3>Signal Flow with Flex 8</h3>
       <div class="signal-flow">
-Sonos / WiiM <span class="arrow">&rarr;</span> Flow 8 (mixer/volume) <span class="arrow">&rarr;</span> miniDSP Flex 8<br>
+Sonos / WiiM <span class="arrow">&rarr;</span> miniDSP Flex 8 (input / volume / DSP)<br>
 <br>
-Flex 8 Out 1 (L main) <span class="arrow">&rarr;</span> Yamaha <span class="arrow">&rarr;</span> Left Polk Atrium 8<br>
-Flex 8 Out 2 (R main) <span class="arrow">&rarr;</span> Yamaha <span class="arrow">&rarr;</span> Right Polk Atrium 8<br>
+Flex 8 Out 1&ndash;2 (L/R mains) <span class="arrow">&rarr;</span> Yamaha <span class="arrow">&rarr;</span> Polk Atrium 8 speakers<br>
 Flex 8 Out 3 (Sub)    <span class="arrow">&rarr;</span> LAB Gruppen E8:2 <span class="arrow">&rarr;</span> JBL sub<br>
-Flex 8 Out 4 (Tactile 1) <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow">&rarr;</span> Aurasound shakers<br>
-Flex 8 Out 5 (Tactile 2) <span class="arrow">&rarr;</span> BKA-1000P <span class="arrow">&rarr;</span> Buttkickers<br>
-Outs 6-8: Future expansion
+Flex 8 Out 4 (Tactile) <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow">&rarr;</span> Aurasound shakers<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&boxvr; Line Out <span class="arrow">&rarr;</span> BKA-1000P <span class="arrow">&rarr;</span> Buttkickers<br>
+Outs 5-8: Future expansion
       </div>
 
       <h3>Benefits of Centralizing DSP</h3>
