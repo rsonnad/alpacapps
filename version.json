@@ -1,12 +1,12 @@
 {
-  "version": "v260902.08 6:51p",
-  "release": 1823,
-  "sha": "158f3a30c6",
-  "fullSha": "158f3a30c6ea8318dfc7c32ba5fecfec34aff8db",
+  "version": "v260902.09 6:59p",
+  "release": 1824,
+  "sha": "a2d5b4092c",
+  "fullSha": "a2d5b4092c0ca339ae45183f573ed417d36b493c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmejwal",
-  "pushedAt": "2026-09-02T23:51:57+00:00",
-  "commits": [{"sha":"158f3a30c6","message":"fix(photos): repair dead YouTube video IDs and swap bad Garage Mahal thumbnail","author":"Otto"}]
+  "pushedAt": "2026-09-02T23:59:15+00:00",
+  "commits": [{"sha":"a2d5b4092c","message":"feat(sauna): add /sauna/ page covering the sauna and its sound system","author":"Otto"}]
 }
