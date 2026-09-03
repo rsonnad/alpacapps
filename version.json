@@ -1,12 +1,12 @@
 {
-  "version": "v260902.17 10:07p",
-  "release": 1832,
-  "sha": "e42560ea90",
-  "fullSha": "e42560ea90126ba0932e761daf95caeacfd80c60",
+  "version": "v260902.18 10:12p",
+  "release": 1833,
+  "sha": "03c003d8cd",
+  "fullSha": "03c003d8cdf008cf2adcf3575fd3bffeb76d52cb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmejwal",
-  "pushedAt": "2026-09-03T03:07:12+00:00",
-  "commits": [{"sha":"e42560ea90","message":"chore(infra): add zygote testimonial screenshots for outreach email","author":"Otto"}]
+  "machine": "runnervmgx7h7",
+  "pushedAt": "2026-09-03T03:12:16+00:00",
+  "commits": [{"sha":"03c003d8cd","message":"chore(infra): use full-resolution testimonial PNGs, reorder","author":"Otto"}]
 }
