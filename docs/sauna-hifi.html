@@ -198,7 +198,7 @@
         <li><a href="#wiring">Speaker & Transducer Wiring</a></li>
         <li><a href="#setup-procedure">Initial Setup Procedure</a></li>
         <li><a href="#environment">Sauna Environment Tips</a></li>
-        <li><a href="#dsp-future">Future: miniDSP Flex 8</a></li>
+        <li><a href="#dsp-future">miniDSP Flex 8</a></li>
         <li><a href="#jbl-dsp">JBL Speaker DSP Config</a></li>
       </ul>
     </nav>
@@ -236,7 +236,7 @@
           <tr><td>Sonos Connect Gen 2</td><td>Signal input source (discontinued)</td></tr>
           <tr><td>WiiM Pro AirPlay 2 Receiver</td><td>AirPlay input source</td></tr>
           <tr><td>Behringer Flow 8 Mixer</td><td>Main mixer &amp; DSP, 4 outputs (L/R + 2 monitors)</td></tr>
-          <tr><td>MiniDSP Flex 8</td><td>Advanced 8-channel DSP (future upgrade)</td></tr>
+          <tr><td>MiniDSP Flex 8</td><td>Advanced 8-channel DSP (installed &mdash; tuning pending)</td></tr>
           <tr><td>Dirac UMIK-1 Microphone</td><td>Room measurement &amp; calibration mic</td></tr>
         </tbody>
       </table>
@@ -463,10 +463,11 @@ Flow 8 MONITOR 2 <span class="arrow">&rarr;</span> BKA-300-4 <span class="arrow"
 
     <!-- miniDSP Future -->
     <section id="dsp-future">
-      <h2>9. Future Upgrade: miniDSP Flex 8</h2>
-      <p>The miniDSP Flex 8 provides up to 8 input + 8 output channels of digital signal processing, including EQ, crossovers, time alignment, and Dirac room correction. It would replace the Flow 8's limited DSP capabilities while the Flow 8 remains useful as the front-end mixer.</p>
+      <h2>9. miniDSP Flex 8</h2>
+      <p>The miniDSP Flex 8 provides up to 8 input + 8 output channels of digital signal processing, including EQ, crossovers, time alignment, and Dirac room correction. It is <strong>installed and running</strong>, replacing the Flow 8's limited DSP capabilities while the Flow 8 remains the front-end mixer.</p>
+      <p class="note"><strong>Outstanding:</strong> the calibration pass. Until someone measures the room with the UMIK-1 and REW, folds the crossovers off the downstream amps onto the Flex 8, and applies correction, the system is not yet realising what the Flex 8 makes possible. The settings in section 5 are still the amp-side values the system was commissioned with.</p>
 
-      <h3>Recommended Signal Flow with Flex 8</h3>
+      <h3>Signal Flow with Flex 8</h3>
       <div class="signal-flow">
 Sonos / WiiM <span class="arrow">&rarr;</span> Flow 8 (mixer/volume) <span class="arrow">&rarr;</span> miniDSP Flex 8<br>
 <br>
@@ -519,7 +520,14 @@ Outs 6-8: Future expansion
     <span class="aap-header__version"></span>
   </footer>
 
-  <script src="/shared/site-components.js"></script>
-  <script src="/shared/version-info.js"></script>
+  <!-- Both files are ES modules; loading them as classic scripts threw and left
+       the mobile nav and version badge dead. site-components pulls in the auth /
+       supabase chain, which needs the vendor bundle on window first. -->
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module" src="/shared/version-info.js"></script>
+  <script type="module">
+    import { initSiteComponents } from '/shared/site-components.js';
+    initSiteComponents();
+  </script>
 </body>
 </html>
