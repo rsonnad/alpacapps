@@ -26,6 +26,7 @@
   "homepage": "https://github.com/rsonnad/alpacapps#readme",
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.18",
+    "marked": "^18.0.11",
     "tailwindcss": "^4.1.18"
   },
   "dependencies": {

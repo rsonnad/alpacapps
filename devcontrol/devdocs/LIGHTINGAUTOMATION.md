@@ -889,6 +889,7 @@ Add the new room/device to the relevant sections above:
 ### Quick-add checklist (copy-paste)
 
 ```
+[ ] Native app (Govee/SmartLife/WiZ) checked for a pre-existing schedule/timer — disabled if found
 [ ] Bulb commissioned in HA (entity ID: ___)
 [ ] Entity renamed in registry (stop→edit→start)
 [ ] Added to configuration.yaml group
@@ -916,6 +917,13 @@ Add the new room/device to the relevant sections above:
 **SSH to Alpuca not working:**
 - Key auth: `ssh paca@192.168.1.200` (preferred, tested working)
 - If key auth fails, check `~/.ssh/authorized_keys` on Alpuca
+
+**Light turns on/off at a fixed time with no corresponding HAOS/API action ("ghost" schedule):**
+- **Root cause:** Govee, Tuya/SmartLife, and WiZ bulbs all ship with a native schedule/timer feature in their own vendor app. This is a *second control plane* that runs independently of HAOS and independently of the cloud APIs our edge functions call — commissioning a bulb into HAOS or `lighting_devices` does not touch or clear it. The vendor-app timer keeps firing forever until someone opens that app and turns it off.
+- **This is invisible to our stack — don't waste time looking for it here.** The Govee Developer API (`openapi.api.govee.com`, used by `supabase/functions/govee-control/index.ts`) exposes only `getDevices`, `getDeviceState`, `controlDevice`, `getScenes`, `syncCapabilities` — no endpoint to read or write scheduled times. There is no HAOS entity, DB column, or `api_usage_log` row that will surface a native app schedule. Same story for Tuya/SmartLife and WiZ's own apps.
+- **Diagnostic signal:** the on/off repeats at the same clock time, survives a full HAOS restart, and has no matching HAOS automation trigger, `lights.sh` invocation, or edge-function call in `api_usage_log` at that timestamp.
+- **Fix:** open the device's native vendor app (Govee Home / Smart Life) on a phone, find the specific bulb/strip, open its Schedule or Timer tab, and delete/disable the schedule. Cannot be done via SSH, `ha-cmd.sh`, or any edge function — the vendor apps don't expose this over API.
+- **Prevention:** when commissioning a new bulb (see "How to Add a New Light" above), explicitly check the vendor app for a pre-existing or accidentally-created schedule and clear it — now step 1 of the checklist below.
 
 ---
 
