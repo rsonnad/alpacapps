@@ -1,12 +1,12 @@
 {
-  "version": "v260903.03 3:41p",
-  "release": 1839,
-  "sha": "3717ed118d",
-  "fullSha": "3717ed118d70f99c3062fd50523d724d98aa1509",
+  "version": "v260903.04 8:29p",
+  "release": 1840,
+  "sha": "caf6811de6",
+  "fullSha": "caf6811de6177db5b2128224173bf59bc8b85caa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmejwal",
-  "pushedAt": "2026-09-03T20:41:53+00:00",
-  "commits": [{"sha":"3717ed118d","message":"Fix one-shot scripts hanging on crontab; downgrade controller-unavailable","author":"Otto"}]
+  "machine": "runnervmgx7h7",
+  "pushedAt": "2026-09-04T01:29:19+00:00",
+  "commits": [{"sha":"caf6811de6","message":"fix(routes): sync routes.ts with the new vendors route","author":"Otto"}]
 }
