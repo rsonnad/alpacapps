@@ -457,11 +457,11 @@ function getFilteredSpaces() {
   // Visibility filter
   const visibility = document.getElementById('visibilityFilter')?.value || '';
   if (visibility === 'listed') {
-    filtered = filtered.filter(s => s.is_listed && !s.is_secret);
+    filtered = filtered.filter(s => s.is_listed && !s.is_secret_effective);
   } else if (visibility === 'unlisted') {
     filtered = filtered.filter(s => !s.is_listed);
   } else if (visibility === 'secret') {
-    filtered = filtered.filter(s => s.is_secret);
+    filtered = filtered.filter(s => s.is_secret_effective);
   }
 
   // Type filter (Dwellings, Event Spaces, Other)
@@ -619,7 +619,9 @@ function renderCards(spacesToRender) {
     let badges = `<span class="badge ${fromBadgeClass}">Available: ${availFromStr}</span>`;
     badges += `<span class="badge ${untilBadgeClass} badge-right">Until: ${availUntilStr}</span>`;
 
+    // Inherited = hidden only because an ancestor is secret, not by its own flag
     if (space.is_secret) badges += '<span class="badge secret">Secret</span>';
+    else if (space.is_secret_effective) badges += '<span class="badge secret">Secret (inherited)</span>';
     else if (!space.is_listed) badges += '<span class="badge unlisted">Unlisted</span>';
 
     const beds = getBedSummary(space);
@@ -750,6 +752,7 @@ function renderTable(spacesToRender) {
 
     let visBadge = '';
     if (space.is_secret) visBadge = '<span class="badge badge-circle secret" title="Secret">S</span>';
+    else if (space.is_secret_effective) visBadge = '<span class="badge badge-circle secret" title="Secret (inherited from parent)">S</span>';
     else if (!space.is_listed) visBadge = '<span class="badge badge-circle unlisted" title="Unlisted">U</span>';
 
     const thumbnail = space.photos.length > 0

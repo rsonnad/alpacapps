@@ -173,7 +173,7 @@ async function handleSpaces(supabase: any, req: ApiRequest, auth: any, perm: any
 
       // Public/resident users only see listed, non-secret spaces
       if (auth.userLevel < 2) {
-        query = query.eq("is_listed", true).eq("is_secret", false);
+        query = query.eq("is_listed", true).eq("is_secret_effective", false);
       }
 
       // Filters
@@ -198,7 +198,7 @@ async function handleSpaces(supabase: any, req: ApiRequest, auth: any, perm: any
         .eq("id", req.id);
 
       if (auth.userLevel < 2) {
-        query = query.eq("is_listed", true).eq("is_secret", false);
+        query = query.eq("is_listed", true).eq("is_secret_effective", false);
       }
 
       const { data, error: err } = await query.single();

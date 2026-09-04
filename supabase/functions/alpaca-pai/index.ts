@@ -1894,14 +1894,14 @@ async function executeToolCall(
 
         let query = supabaseForSearch
           .from("spaces")
-          .select("id, name, description, parent_id, monthly_rate, weekly_rate, nightly_rate, beds_king, beds_queen, beds_double, beds_twin, beds_folding, bath_privacy, bath_fixture, sq_footage, type, is_listed, is_secret, space_amenities(amenity:amenity_id(name, category))")
+          .select("id, name, description, parent_id, monthly_rate, weekly_rate, nightly_rate, beds_king, beds_queen, beds_double, beds_twin, beds_folding, bath_privacy, bath_fixture, sq_footage, type, is_listed, is_secret, is_secret_effective, space_amenities(amenity:amenity_id(name, category))")
           .eq("is_archived", false);
 
         // Role-based visibility:
         // staff+ (level 2+): see all non-archived spaces (unlisted too)
         // resident/associate (level 1): see listed + non-secret spaces
         // unknown/prospect/guest (level 0): see only listed + non-secret (public view)
-        if (scope.userLevel < 2) query = query.eq("is_listed", true).eq("is_secret", false);
+        if (scope.userLevel < 2) query = query.eq("is_listed", true).eq("is_secret_effective", false);
 
         if (spaceType === "dwelling") query = query.eq("can_be_dwelling", true);
         else if (spaceType === "event") query = query.eq("can_be_event", true);

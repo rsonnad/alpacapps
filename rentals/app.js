@@ -141,7 +141,7 @@ async function loadData(retryCount = 0) {
         id, name, slug, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
-        min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event, lock_type,
+        min_residents, max_residents, is_listed, is_secret, is_secret_effective, is_micro, can_be_dwelling, can_be_event, lock_type,
         parent_id,
         parent:parent_id(name, slug),
         space_amenities(amenity:amenity_id(name)),
@@ -374,7 +374,7 @@ function setView(view) {
 // Filtering - only show listed, non-secret spaces in the listing
 function getFilteredSpaces() {
   // Filter to only listed, non-secret spaces for browsing
-  let filtered = spaces.filter(s => s.is_listed && !s.is_secret);
+  let filtered = spaces.filter(s => s.is_listed && !s.is_secret_effective);
 
   // Search
   const search = searchInput.value.toLowerCase();
@@ -673,7 +673,7 @@ async function fetchAndShowSpace(spaceId) {
         id, name, slug, description, location, monthly_rate,
         sq_footage, bath_privacy, bath_fixture,
         beds_king, beds_queen, beds_double, beds_twin, beds_folding,
-        min_residents, max_residents, is_listed, is_secret, is_micro, can_be_dwelling, can_be_event, lock_type,
+        min_residents, max_residents, is_listed, is_secret, is_secret_effective, is_micro, can_be_dwelling, can_be_event, lock_type,
         parent:parent_id(name, slug),
         space_amenities(amenity:amenity_id(name)),
         media_spaces(display_order, is_primary, media:media_id(id, url, caption))
