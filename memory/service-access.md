@@ -30,6 +30,36 @@ curl -sS -X POST "https://api.supabase.com/v1/projects/aphrrfprbixmhissnjfn/data
   -d '{"query":"select now()"}'
 ```
 
+**Use curl, not Python `urllib`.** `api.supabase.com` sits behind Cloudflare, which
+bans the `Python-urllib/*` User-Agent: every request comes back `403` with body
+`error code: 1010` regardless of the SQL. This looks exactly like a permissions or
+bad-SQL failure and is neither. Either use curl, or set a normal `User-Agent` header.
+`requests` is fine. Verified 2026-09-03.
+
+For multi-statement DDL, build the JSON payload with Python and hand the file to curl,
+so quoting and `$$`-blocks survive intact:
+
+```bash
+python3 -c "import json;print(json.dumps({'query':open('migrations/FILE.sql').read()}))" > /tmp/mig.json
+curl -sS -X POST "$URL" -H "Authorization: Bearer $MGMT_TOKEN" \
+  -H "Content-Type: application/json" --data-binary @/tmp/mig.json
+```
+
+The endpoint returns `201` with `[]` on success for a write-only migration.
+
+### Bitwarden Is Per-Machine
+
+`bw-read` / `~/bin/bw-unlock` unlock headlessly only where the master password is in
+that machine's Keychain. Keychains do not sync between BlackbookPro16 and Alpuca, so
+storing it on one does nothing for the other:
+
+```bash
+security add-generic-password -U -s bw-master -a "$USER" -w
+```
+
+As of 2026-09-03 this is present on **Alpuca** and absent on **BlackbookPro16**, so
+run Supabase management calls from Alpuca over `ssh alpuca 'bash -s' < script.sh`.
+
 ### Deploy Telnyx Webhook
 
 `telnyx-webhook` must allow external Telnyx POSTs through Supabase's gateway.
@@ -134,13 +164,24 @@ Use when checking the primary home server, LAN devices, or the FlashForge printe
 ### Tailscale SSH
 
 ```bash
-ssh -F /dev/null -i ~/.ssh/id_ed25519 \
-  -o IdentitiesOnly=yes \
-  -o IdentityAgent=none \
-  -o PreferredAuthentications=publickey \
-  -o PasswordAuthentication=no \
-  -o StrictHostKeyChecking=accept-new \
-  alpuca@100.74.59.97
+ssh alpuca
+```
+
+`~/.ssh/config` has a `Host alpuca` block pointing at `~/.ssh/alpuca_ed25519`, and the
+hostname resolves over Tailscale MagicDNS, so the shorthand is enough. Explicit form:
+
+```bash
+ssh -i ~/.ssh/alpuca_ed25519 -o IdentitiesOnly=yes alpuca@100.74.59.97
+```
+
+The key is **`alpuca_ed25519`**, not `id_ed25519` — there is no `id_ed25519` on
+BlackbookPro16, and using that name fails with `Permission denied (publickey)`.
+Verified 2026-09-03 from BlackbookPro16.
+
+To run something there non-interactively, pipe a script over stdin:
+
+```bash
+ssh alpuca 'bash -s' < /path/to/local-script.sh
 ```
 
 ### Printer Proxy Health
