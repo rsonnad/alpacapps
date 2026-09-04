@@ -68,6 +68,7 @@ export const ROUTES = {
     media:        '/staff/media.html',
     sms:          '/staff/sms-messages.html',
     purchases:    '/staff/purchases.html',
+    vendors:      '/staff/vendors.html',
     worktracking: '/staff/worktracking.html',
     payments:     '/staff/payments.html',
     faq:          '/staff/faq.html',
