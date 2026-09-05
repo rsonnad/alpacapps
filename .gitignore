@@ -67,3 +67,7 @@ __pycache__/
 
 # Codex CLI machine-local config — holds plaintext API tokens on some machines
 .codex/
+
+# Rental contracts contain renter PII — keep local, store in R2
+contracts/*.pdf
+contracts/generate_weekley_contract.py
