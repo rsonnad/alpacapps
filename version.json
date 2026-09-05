@@ -1,12 +1,12 @@
 {
-  "version": "v260903.06 8:38p",
-  "release": 1842,
-  "sha": "49b97748bd",
-  "fullSha": "49b97748bd109b957e2fa204462a67707907aaa7",
+  "version": "v260905.01 1:24p",
+  "release": 1843,
+  "sha": "8e787db7da",
+  "fullSha": "8e787db7da9682fd459c934f69fc1c1cc4e1e93e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmejwal",
-  "pushedAt": "2026-09-04T01:38:46+00:00",
-  "commits": [{"sha":"49b97748bd","message":"feat(spaces): hide Odyssey Van from public browsing","author":"Otto"}]
+  "pushedAt": "2026-09-05T18:24:57+00:00",
+  "commits": [{"sha":"8e787db7da","message":"feat(people): add vehicle_renter person_type; keep rental contracts out of git","author":"Paca"}]
 }
