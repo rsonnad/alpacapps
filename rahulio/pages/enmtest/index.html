@@ -236,23 +236,16 @@
     .q-notes .taker-fb em { opacity: .55; font-style: normal; font-size: .6875rem;
       display: block; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
 
-    /* Pointer to the general notes, which sit below a full-height stage. */
-    .admin-arrow {
-      display: block; margin: 0 auto; text-align: center;
-      background: none; border: 0; cursor: pointer; font-family: inherit;
-      font-size: .8125rem; font-weight: 600; color: var(--text);
-      padding: 14px; opacity: .75;
+    /* Always-visible pointer to the whole-quiz notes below. */
+    .admin-bar {
+      position: sticky; top: 0; z-index: 30;
+      display: block; width: 100%; border: 0; cursor: pointer;
+      font-family: inherit; font-size: .8125rem; font-weight: 600;
+      letter-spacing: .02em; background: var(--btn); color: #fff;
+      padding: 9px 16px; text-align: center;
     }
-    .admin-arrow:hover { opacity: 1; }
-    .admin-arrow .chev { display: block; font-size: 1.125rem; line-height: 1; margin-top: 2px; }
-
-    .admin-jump {
-      position: fixed; top: 8px; left: 12px; z-index: 30;
-      font-size: .6875rem; font-weight: 600; letter-spacing: .03em;
-      background: var(--btn); color: #fff; text-decoration: none;
-      padding: 5px 12px; border-radius: 20px;
-    }
-    .admin-jump:hover { background: var(--btn-hover); }
+    .admin-bar:hover { background: var(--btn-hover); }
+    .admin-bar .chev { margin-left: 4px; }
 
     .version-badge {
       position: fixed; top: 8px; right: 12px; z-index: 30;
@@ -386,9 +379,13 @@
        touches this directory. Keep the VERSION markers exactly as they are. -->
   <div class="version-badge"><!--VERSION-->v09-11-26-02<!--/VERSION--></div>
 
-  <!-- Shown only to admin/staff. The review panel sits below a full-height
-       quiz stage, so without this it is easy to believe it is not there. -->
-  <a class="admin-jump" id="adminJump" href="#adminPanel" hidden>General Quiz Notes <span id="adminJumpCount"></span></a>
+  <!-- Shown only to admin/staff. The review panel sits below a full-height quiz
+       stage, so without a persistent pointer it reads as not being there at all.
+       Sticky rather than fixed so it never overlaps the quiz content. -->
+  <button class="admin-bar" id="adminBar" hidden>
+    General Quiz Notes for Admin <span id="adminJumpCount"></span>
+    <span class="chev">&#x2193;</span>
+  </button>
 
   <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
@@ -429,7 +426,6 @@
 
     <!-- ── Questions ── -->
     <section class="screen" id="screenQuestion">
-      <div class="q-notes" id="questionNotes" hidden></div>
       <div class="q-feedback">
         <button type="button" id="feedbackOpen">Give feedback on this question</button>
         <span class="thanks" id="feedbackThanks" hidden>Thanks &mdash; that's logged.</span>
@@ -441,6 +437,7 @@
         <button class="btn" id="nextBtn">Next</button>
       </div>
       <p class="hint" id="multiHint" hidden></p>
+      <div class="q-notes" id="questionNotes" hidden></div>
     </section>
 
     <!-- ── Result ── -->
@@ -483,10 +480,6 @@
       <p class="save-note" id="saveNote"></p>
     </section>
   </div>
-
-  <button class="admin-arrow" id="adminArrow" hidden>
-    General Quiz Notes for Admin<span class="chev">&#x2193;</span>
-  </button>
 
   <!-- Feedback from quiz takers, opened from the link above each question. -->
   <div class="modal-backdrop" id="feedbackModal" hidden>
@@ -1089,11 +1082,10 @@
       admin.active = true;
       const panel = $('adminPanel');
       panel.hidden = false;
-      $('adminJump').hidden = false;
-      $('adminArrow').hidden = false;
+      $('adminBar').hidden = false;
       $('adminEmail').value = localStorage.getItem(ADMIN_EMAIL_KEY) || '';
 
-      $('adminArrow').addEventListener('click', () => {
+      $('adminBar').addEventListener('click', () => {
         panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
 
@@ -1143,7 +1135,7 @@
         if (!items.length && !said.length) { host.hidden = true; return; }
 
         host.hidden = false;
-        host.innerHTML = '<h4>Notes for admin &middot; this question</h4>';
+        host.innerHTML = '<h4>Notes for admin &middot; the question above</h4>';
 
         items.forEach(item => {
           const el = document.createElement('div');
