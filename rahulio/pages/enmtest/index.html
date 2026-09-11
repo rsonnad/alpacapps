@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discover your ENM Style</title>
+  <meta name="description" content="Curious about ethical non-monogamy, but not sure where to begin? Take the quiz to discover the relationship style that may fit you best.">
+  <meta name="robots" content="noindex">
+  <meta property="og:title" content="Discover your ENM Style">
+  <meta property="og:description" content="Curious about ethical non-monogamy, but not sure where to begin? Take the quiz to discover the relationship style that may fit you best.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/enmtest/">
+  <meta property="og:image" content="https://alpacaplayhouse.com/rahulio/pages/enmtest/img/cover-e13e86.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="../favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4eee9;
+      --text: #3c3c3c;
+      --btn: #fc6a77;
+      --btn-hover: #e0606b;
+      --btn-font: #ffffff;
+      --progress: #e8505e;
+      --option: rgb(244, 225, 226);
+      --option-selected: #fc6a77;
+      --option-font: #3c3c3c;
+      --radius: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Several elements below set display, which would otherwise beat [hidden]. */
+    [hidden] { display: none !important; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Progress bar pinned to the very top, as in the source quiz ── */
+    .progress-track {
+      position: fixed; top: 0; left: 0; right: 0; height: 5px;
+      background: transparent; z-index: 20;
+    }
+    .progress-fill {
+      height: 100%; width: 0; background: var(--progress);
+      transition: width .35s ease;
+    }
+
+    .stage {
+      min-height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 44px 20px 90px;
+    }
+
+    .screen { width: 100%; max-width: 720px; display: none; }
+    .screen.active { display: block; animation: fade .3s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    h1.headline {
+      font-size: clamp(1.5rem, 4vw, 2.125rem);
+      font-weight: 400; line-height: 1.25;
+      text-align: center; margin-bottom: 28px;
+    }
+
+    /* ── Cover ── */
+    .cover-img {
+      width: 100%; aspect-ratio: 16 / 9;
+      background-size: cover; background-position: center;
+      border-radius: var(--radius); margin-bottom: 26px;
+    }
+    .rich { font-size: 1rem; }
+    .rich p { margin: 0 0 12px; }
+    .rich p:empty { margin: 0 0 6px; }
+    .rich strong { font-weight: 700; }
+    .rich h2 { font-size: 1.15rem; font-weight: 600; margin: 18px 0 10px; line-height: 1.35; }
+    .rich hr { border: 0; border-top: 1px solid rgba(60,60,60,.18); margin: 20px 0; }
+    .rich ul { margin: 0 0 14px; padding-left: 22px; }
+    .rich li { margin-bottom: 8px; }
+    .rich li p { margin: 0; }
+
+    .btn {
+      display: inline-block; border: 0; cursor: pointer;
+      font-family: inherit; font-size: 1rem; font-weight: 600;
+      background: var(--btn); color: var(--btn-font);
+      padding: 14px 34px; border-radius: 30px;
+      transition: background .18s ease, transform .18s ease;
+      text-decoration: none;
+    }
+    .btn:hover { background: var(--btn-hover); }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-row { text-align: center; margin-top: 28px; }
+
+    /* ── Question options ── */
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option {
+      display: flex; align-items: center; gap: 14px;
+      width: 100%; text-align: left;
+      background: var(--option); color: var(--option-font);
+      border: 0; border-radius: var(--radius);
+      font-family: inherit; font-size: .9375rem; line-height: 1.4;
+      padding: 14px 18px; cursor: pointer;
+      transition: background .18s ease, color .18s ease;
+    }
+    .option:hover { background: #f2d4d6; }
+    .option .box {
+      flex: 0 0 18px; width: 18px; height: 18px;
+      background: #fff; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .option .box svg { width: 12px; height: 12px; opacity: 0; transition: opacity .15s ease; }
+    .option.selected { background: var(--option-selected); color: #fff; }
+    .option.selected .box svg { opacity: 1; }
+
+    /* Image-answer questions render as a grid of picture cards */
+    .options.image-grid {
+      display: grid; gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    }
+    .options.image-grid .option {
+      flex-direction: column; align-items: stretch; gap: 0;
+      padding: 0; overflow: hidden;
+    }
+    .options.image-grid .option .thumb {
+      width: 100%; aspect-ratio: 4 / 3;
+      background-size: cover; background-position: center;
+    }
+    .options.image-grid .option .label { padding: 12px 14px; }
+    .options.image-grid .option .box { display: none; }
+
+    .question-img {
+      width: 100%; aspect-ratio: 16 / 9;
+      background-size: cover; background-position: center;
+      border-radius: var(--radius); margin-bottom: 24px;
+    }
+
+    .hint { text-align: center; font-size: .8125rem; opacity: .6; margin-top: 16px; }
+
+    /* ── Footer: back arrow + counter, matching the source layout ── */
+    .quiz-footer {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 14px 20px; font-size: .8125rem; opacity: .75;
+      pointer-events: none;
+    }
+    .quiz-footer .back {
+      position: absolute; left: 18px;
+      pointer-events: auto;
+      background: var(--btn); color: #fff; border: 0;
+      width: 30px; height: 30px; border-radius: 5px;
+      cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+    }
+    .quiz-footer .back.show { display: flex; }
+    .quiz-footer .back:hover { background: var(--btn-hover); }
+
+    /* ── Email gate ── */
+    .gate { max-width: 520px; margin: 0 auto; }
+    .gate .sub { text-align: center; font-size: .9375rem; margin-bottom: 26px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: .8125rem; font-weight: 600; margin-bottom: 6px; }
+    .field input {
+      width: 100%; font-family: inherit; font-size: 1rem; color: var(--text);
+      background: #fff; border: 1px solid #e3d7d2; border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+    .field input:focus { outline: 2px solid var(--btn); outline-offset: -1px; border-color: transparent; }
+    .consent {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: .8125rem; margin: 18px 0 4px; cursor: pointer;
+    }
+    .consent input { margin-top: 3px; accent-color: var(--btn); flex: 0 0 auto; }
+    .form-error { color: #b3261e; font-size: .8125rem; margin-top: 10px; text-align: center; min-height: 1.2em; }
+    .privacy { text-align: center; font-size: .75rem; opacity: .6; margin-top: 18px; }
+
+    /* ── Result ── */
+    .result-img {
+      width: 100%; max-height: 420px; aspect-ratio: 16 / 9;
+      background-size: cover; background-position: center;
+      border-radius: var(--radius); margin-bottom: 24px;
+    }
+    .result-title {
+      font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700;
+      text-align: center; margin-bottom: 22px; line-height: 1.25;
+    }
+    .top-results { margin-top: 44px; border-top: 1px solid rgba(60,60,60,.18); padding-top: 26px; }
+    .top-results h2 { font-size: 1.125rem; font-weight: 600; text-align: center; margin-bottom: 20px; }
+    .bar-row { margin-bottom: 14px; }
+    .bar-row .bar-label {
+      display: flex; justify-content: space-between; gap: 12px;
+      font-size: .875rem; margin-bottom: 5px;
+    }
+    .bar-track { background: #fff; border-radius: 20px; height: 12px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--btn); border-radius: 20px; transition: width .5s ease; }
+    .bar-row button {
+      margin-top: 8px; font-family: inherit; font-size: .75rem; font-weight: 600;
+      background: var(--bg); color: var(--text);
+      border: 1px solid rgba(60,60,60,.2); border-radius: 20px;
+      padding: 5px 14px; cursor: pointer;
+    }
+    .bar-row button:hover { background: #fff; }
+    .bar-row button[aria-current="true"] { background: var(--btn); color: #fff; border-color: var(--btn); }
+
+    .save-note { text-align: center; font-size: .75rem; opacity: .55; margin-top: 26px; }
+
+    @media (max-width: 600px) {
+      .stage { padding: 34px 16px 84px; }
+      .option { font-size: .875rem; padding: 13px 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="stage">
+    <!-- ── Cover ── -->
+    <section class="screen active" id="screenCover">
+      <h1 class="headline" id="coverTitle"></h1>
+      <div class="cover-img" id="coverImg"></div>
+      <div class="rich" id="coverDesc"></div>
+      <div class="btn-row"><button class="btn" id="startBtn"></button></div>
+    </section>
+
+    <!-- ── Email gate (moved ahead of the questions) ── -->
+    <section class="screen" id="screenGate">
+      <div class="gate">
+        <h1 class="headline" id="gateHeading"></h1>
+        <p class="sub" id="gateSub"></p>
+        <form id="gateForm" novalidate>
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" name="firstName" autocomplete="given-name" placeholder="What should we call you?">
+          </div>
+          <div class="field">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" autocomplete="email" required placeholder="you@example.com">
+          </div>
+          <label class="consent">
+            <input type="checkbox" id="consent">
+            <span id="consentText"></span>
+          </label>
+          <p class="form-error" id="gateError" role="alert"></p>
+          <div class="btn-row"><button class="btn" type="submit" id="gateSubmit">Start the quiz</button></div>
+        </form>
+        <p class="privacy">Your answers stay private. We never share them, and you can unsubscribe at any time.</p>
+      </div>
+    </section>
+
+    <!-- ── Questions ── -->
+    <section class="screen" id="screenQuestion">
+      <div class="question-img" id="questionImg" hidden></div>
+      <h1 class="headline" id="questionTitle"></h1>
+      <div class="options" id="questionOptions"></div>
+      <div class="btn-row" id="multiRow" hidden>
+        <button class="btn" id="nextBtn">Next</button>
+      </div>
+      <p class="hint" id="multiHint" hidden></p>
+    </section>
+
+    <!-- ── Result ── -->
+    <section class="screen" id="screenResult">
+      <div class="result-img" id="resultImg" hidden></div>
+      <h1 class="result-title" id="resultTitle"></h1>
+      <div class="rich" id="resultDesc"></div>
+      <div class="btn-row" id="resultCtaRow" hidden>
+        <a class="btn" id="resultCta" target="_blank" rel="noopener"></a>
+      </div>
+      <div class="top-results" id="topResults" hidden>
+        <h2 id="topResultsTitle"></h2>
+        <div id="topResultsBars"></div>
+      </div>
+      <p class="save-note" id="saveNote"></p>
+    </section>
+  </div>
+
+  <div class="quiz-footer" id="quizFooter" hidden>
+    <button class="back" id="backBtn" aria-label="Previous question">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"
+           stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <span id="counter"></span>
+  </div>
+
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module">
+    import { QUIZ } from './quiz-data.js';
+    import { supabase } from '/shared/supabase.js';
+
+    const $ = id => document.getElementById(id);
+    const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fc6a77" stroke-width="4" ' +
+      'stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+    /* Interact stores crops as percentages of the source image; translate that
+       into a background-position/size so framing survives the port. */
+    function applyImage(el, img) {
+      if (!img) { el.hidden = true; return; }
+      el.hidden = false;
+      el.style.backgroundImage = `url("${img.src}")`;
+      const c = img.crop;
+      if (c && c.width && c.height) {
+        el.style.backgroundSize = `${(100 / c.width) * 100}% ${(100 / c.height) * 100}%`;
+        const px = c.width >= 100 ? 50 : (c.x / (100 - c.width)) * 100;
+        const py = c.height >= 100 ? 50 : (c.y / (100 - c.height)) * 100;
+        el.style.backgroundPosition = `${px}% ${py}%`;
+      } else {
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
+      }
+    }
+
+    const state = {
+      leadId: null,
+      sessionId: null,
+      startedAt: null,
+      /* answers[i] = array of selected option indexes for question i */
+      answers: QUIZ.questions.map(() => []),
+      current: 0,
+      shownResult: null,
+    };
+
+    function show(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === screenId));
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    /* ── Cover ─────────────────────────────────────────────────────────────── */
+    $('coverTitle').textContent = QUIZ.title;
+    $('coverDesc').innerHTML = QUIZ.description;
+    applyImage($('coverImg'), QUIZ.cover.src ? QUIZ.cover : null);
+    $('coverImg').setAttribute('role', 'img');
+    $('coverImg').setAttribute('aria-label', QUIZ.cover.alt || '');
+    $('startBtn').textContent = QUIZ.startButton.label.trim();
+    $('startBtn').addEventListener('click', () => show('screenGate'));
+
+    /* ── Email gate ────────────────────────────────────────────────────────── */
+    $('gateHeading').textContent = QUIZ.emailGate.heading;
+    $('gateSub').textContent = QUIZ.emailGate.subheading;
+    $('consentText').textContent = QUIZ.emailGate.confirmText;
+
+    $('gateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $('email').value.trim();
+      const firstName = $('firstName').value.trim();
+      const err = $('gateError');
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        err.textContent = 'Please enter a valid email address so we can send your result.';
+        $('email').focus();
+        return;
+      }
+      err.textContent = '';
+
+      const btn = $('gateSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Starting…';
+
+      state.leadId = crypto.randomUUID();
+      state.startedAt = new Date();
+
+      /* A backend hiccup must never cost us the quiz-taker: log and carry on. */
+      try {
+        const { error } = await supabase.from('enm_quiz_leads').insert({
+          id: state.leadId,
+          email,
+          first_name: firstName || null,
+          consented: $('consent').checked,
+          source: 'enmtest',
+          referrer: document.referrer || null,
+          user_agent: navigator.userAgent,
+        });
+        if (error) throw error;
+      } catch (e2) {
+        console.error('[enm-quiz] lead insert failed', e2);
+        state.leadId = null;
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Start the quiz';
+      state.current = 0;
+      renderQuestion();
+      show('screenQuestion');
+      $('quizFooter').hidden = false;
+    });
+
+    /* ── Questions ─────────────────────────────────────────────────────────── */
+    function renderQuestion() {
+      const q = QUIZ.questions[state.current];
+      const selected = state.answers[state.current];
+
+      applyImage($('questionImg'), q.img);
+      $('questionTitle').textContent = q.title;
+
+      const wrap = $('questionOptions');
+      wrap.className = 'options' + (q.answerType === 'image' ? ' image-grid' : '');
+      wrap.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option' + (selected.includes(idx) ? ' selected' : '');
+        btn.setAttribute('aria-pressed', String(selected.includes(idx)));
+
+        if (q.answerType === 'image' && opt.img) {
+          const thumb = document.createElement('div');
+          thumb.className = 'thumb';
+          applyImage(thumb, opt.img);
+          btn.appendChild(thumb);
+          const label = document.createElement('span');
+          label.className = 'label';
+          label.textContent = opt.text;
+          btn.appendChild(label);
+        } else {
+          btn.innerHTML = `<span class="box">${CHECK}</span>`;
+          const label = document.createElement('span');
+          label.textContent = opt.text;
+          btn.appendChild(label);
+        }
+
+        btn.addEventListener('click', () => choose(idx));
+        wrap.appendChild(btn);
+      });
+
+      const multi = q.multi;
+      $('multiRow').hidden = !multi;
+      $('multiHint').hidden = !multi;
+      if (multi) {
+        $('multiHint').textContent = `Select at least ${q.min}${q.max > q.min ? `, up to ${q.max}` : ''}.`;
+        $('nextBtn').disabled = selected.length < q.min;
+      }
+
+      $('counter').textContent = `${state.current + 1} / ${QUIZ.questions.length}`;
+      $('backBtn').classList.toggle('show', state.current > 0);
+      $('progressFill').style.width = `${(state.current / QUIZ.questions.length) * 100}%`;
+    }
+
+    function choose(idx) {
+      const q = QUIZ.questions[state.current];
+      const selected = state.answers[state.current];
+
+      if (!q.multi) {
+        state.answers[state.current] = [idx];
+        renderQuestion();
+        /* Single-select auto-advances, as in the source quiz. */
+        setTimeout(advance, 260);
+        return;
+      }
+
+      const at = selected.indexOf(idx);
+      if (at >= 0) selected.splice(at, 1);
+      else if (selected.length < q.max) selected.push(idx);
+      renderQuestion();
+    }
+
+    function advance() {
+      if (state.current < QUIZ.questions.length - 1) {
+        state.current += 1;
+        renderQuestion();
+      } else {
+        finish();
+      }
+    }
+
+    $('nextBtn').addEventListener('click', () => {
+      const q = QUIZ.questions[state.current];
+      if (state.answers[state.current].length < q.min) return;
+      advance();
+    });
+
+    $('backBtn').addEventListener('click', () => {
+      if (state.current === 0) return;
+      state.current -= 1;
+      renderQuestion();
+    });
+
+    /* ── Scoring ───────────────────────────────────────────────────────────── */
+    /* Each option maps to a 1-based result index (0 = scores nothing). Every
+       selected option adds one point; the highest total wins, ties breaking
+       toward the earlier result, which is how Interact orders them. */
+    function score() {
+      const totals = new Map(QUIZ.results.map(r => [r.index, 0]));
+      state.answers.forEach((selected, qi) => {
+        selected.forEach(oi => {
+          const target = QUIZ.questions[qi].options[oi].result;
+          const list = Array.isArray(target) ? target : [target];
+          list.forEach(t => { if (t > 0 && totals.has(t)) totals.set(t, totals.get(t) + 1); });
+        });
+      });
+
+      const total = [...totals.values()].reduce((a, b) => a + b, 0);
+      const ranked = QUIZ.results
+        .map(r => ({ result: r, points: totals.get(r.index) }))
+        .sort((a, b) => b.points - a.points || a.result.index - b.result.index);
+
+      return { ranked, total, totals };
+    }
+
+    function finish() {
+      $('progressFill').style.width = '100%';
+      $('quizFooter').hidden = true;
+
+      const { ranked, total, totals } = score();
+      /* Nothing scored (every answer was a neutral option) — "Still Exploring"
+         is the designed fallback for someone who hasn't landed anywhere yet. */
+      const top = ranked.filter(r => r.points > 0).slice(0, QUIZ.multipleResultsMax);
+      const list = top.length ? top : [{ result: QUIZ.results[0], points: 0 }];
+
+      renderResult(list[0].result);
+
+      if (list.length > 1) {
+        $('topResults').hidden = false;
+        $('topResultsTitle').textContent = QUIZ.topResultsTitle;
+        const bars = $('topResultsBars');
+        bars.innerHTML = '';
+        list.forEach(({ result, points }) => {
+          const pct = total ? Math.round((points / total) * 100) : 0;
+          const row = document.createElement('div');
+          row.className = 'bar-row';
+          row.innerHTML =
+            `<div class="bar-label"><span></span><span>${pct}%</span></div>` +
+            `<div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>`;
+          row.querySelector('.bar-label span').textContent = result.title;
+          const more = document.createElement('button');
+          more.type = 'button';
+          more.textContent = 'More Details';
+          more.addEventListener('click', () => {
+            renderResult(result);
+            bars.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(b === more)));
+            $('screenResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          row.appendChild(more);
+          bars.appendChild(row);
+        });
+        bars.querySelector('button')?.setAttribute('aria-current', 'true');
+      }
+
+      show('screenResult');
+      persist(list, totals, total);
+    }
+
+    function renderResult(result) {
+      state.shownResult = result;
+      applyImage($('resultImg'), result.img);
+      $('resultTitle').textContent = result.title;
+      $('resultDesc').innerHTML = result.description;
+      if (result.cta) {
+        $('resultCtaRow').hidden = false;
+        const a = $('resultCta');
+        a.textContent = result.cta.label;
+        a.href = result.cta.url;
+        a.target = result.cta.blank === false ? '_self' : '_blank';
+      } else {
+        $('resultCtaRow').hidden = true;
+      }
+    }
+
+    /* ── Persistence ───────────────────────────────────────────────────────── */
+    /* One write at the end: the session plus every answer. Ids are generated
+       here because the anon role can insert but never select these tables. */
+    async function persist(topList, totals, total) {
+      if (!state.leadId) return;
+      state.sessionId = crypto.randomUUID();
+      const completedAt = new Date();
+      const winner = topList[0].result;
+
+      const scores = {};
+      QUIZ.results.forEach(r => { scores[r.uid] = totals.get(r.index); });
+
+      try {
+        const { error: sErr } = await supabase.from('enm_quiz_sessions').insert({
+          id: state.sessionId,
+          lead_id: state.leadId,
+          result_uid: winner.uid,
+          result_title: winner.title,
+          top_results: topList.map(({ result, points }) => ({
+            uid: result.uid,
+            title: result.title,
+            score: points,
+            percent: total ? Math.round((points / total) * 100) : 0,
+          })),
+          scores,
+          started_at: state.startedAt ? state.startedAt.toISOString() : null,
+          completed_at: completedAt.toISOString(),
+          duration_seconds: state.startedAt
+            ? Math.round((completedAt - state.startedAt) / 1000)
+            : null,
+        });
+        if (sErr) throw sErr;
+
+        const rows = [];
+        state.answers.forEach((selected, qi) => {
+          if (!selected.length) return;
+          const q = QUIZ.questions[qi];
+          const chosen = selected.map(i => q.options[i]);
+          const scored = chosen
+            .flatMap(o => (Array.isArray(o.result) ? o.result : [o.result]))
+            .filter(n => n > 0)
+            .map(n => QUIZ.results.find(r => r.index === n)?.uid)
+            .filter(Boolean);
+          rows.push({
+            session_id: state.sessionId,
+            lead_id: state.leadId,
+            question_number: qi + 1,
+            question_uid: q.uid,
+            question_title: q.title,
+            option_uids: chosen.map(o => o.uid),
+            option_texts: chosen.map(o => o.text),
+            scored_results: scored,
+          });
+        });
+
+        if (rows.length) {
+          const { error: aErr } = await supabase.from('enm_quiz_answers').insert(rows);
+          if (aErr) throw aErr;
+        }
+
+        $('saveNote').textContent = 'Your result has been saved.';
+      } catch (e) {
+        console.error('[enm-quiz] session save failed', e);
+        $('saveNote').textContent = '';
+      }
+    }
+  </script>
+</body>
+</html>
