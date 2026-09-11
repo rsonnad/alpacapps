@@ -291,6 +291,31 @@
     <span id="counter"></span>
   </div>
 
+  <!--
+    The page depends on /vendor/ and /shared/ resolving from the site root, and on
+    ES modules, so it only works when served over HTTP. Opened straight off disk as
+    a file:// URL those absolute paths point at the filesystem root and the module
+    never runs, leaving a blank cream page with an unlabelled button. Say so instead.
+  -->
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (document.getElementById('coverTitle').textContent) return;
+        var fileUrl = location.protocol === 'file:';
+        document.querySelector('.stage').innerHTML =
+          '<div style="max-width:560px;margin:60px auto;text-align:center">' +
+          '<h1 style="font-size:1.4rem;font-weight:600;margin-bottom:14px">This page needs a web server</h1>' +
+          '<p style="margin-bottom:14px">' +
+          (fileUrl
+            ? 'It was opened directly from disk (a <code>file://</code> URL). Its scripts load from the site root, which only exists over HTTP.'
+            : 'Its scripts failed to load. Check that <code>/vendor/</code> and <code>/shared/</code> are reachable from this host.') +
+          '</p>' +
+          '<p style="font-size:.8125rem;opacity:.75">Serve the repository root and open ' +
+          '<code>/rahulio/pages/enmtest/</code> from there.</p></div>';
+      }, 1500);
+    });
+  </script>
+
   <script src="/vendor/supabase-js-2.39.3.min.js"></script>
   <script type="module">
     import { QUIZ } from './quiz-data.js';
