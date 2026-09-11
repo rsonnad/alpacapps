@@ -1067,16 +1067,24 @@
        anchor and live in the panel below the stage. Both are decided the same
        way and both feed the same rebuild. */
     (async function initAdmin() {
-      let isStaff = false;
+      /* Rights here are page-scoped: site admin/staff, or an email on the
+         enm_quiz_admins allowlist. enm_is_quiz_admin() is the same predicate the
+         RLS policies use, so the panel can never show to someone whose reads
+         would come back empty anyway. */
+      let canAdmin = false;
       try {
-        const { initAuth, getAuthState } = await import('/shared/auth.js');
+        const { initAuth } = await import('/shared/auth.js');
         await initAuth();
-        isStaff = ['admin', 'staff'].includes(getAuthState().role);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const { data, error } = await supabase.rpc('enm_is_quiz_admin');
+        if (error) throw error;
+        canAdmin = data === true;
       } catch (e) {
-        console.debug('[enm-quiz] auth unavailable, admin notes stay hidden', e);
+        console.debug('[enm-quiz] admin check unavailable, notes stay hidden', e);
         return;
       }
-      if (!isStaff) return;
+      if (!canAdmin) return;
 
       admin.active = true;
       const panel = $('adminPanel');
