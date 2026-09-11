@@ -1,0 +1,80 @@
+# Stamps a per-day, per-push version onto the ENM quiz page: v MM-DD-YY-NN,
+# where NN restarts at 01 each day and increments on every later push.
+#
+# The version.json path exclusion matters: without it the stamping commit would
+# re-trigger this workflow on itself. The [skip ci] marker is belt and braces.
+name: ENM quiz version stamp
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'rahulio/pages/enmtest/**'
+      - '!rahulio/pages/enmtest/version.json'
+
+concurrency:
+  group: enm-quiz-version
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  stamp:
+    # Never react to our own stamping commit.
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Compute and stamp version
+        id: stamp
+        run: |
+          set -euo pipefail
+          PAGE=rahulio/pages/enmtest/index.html
+          TODAY=$(date -u +%m-%d-%y)
+
+          CURRENT=$(sed -n 's/.*<!--VERSION-->v\(.*\)<!--\/VERSION-->.*/\1/p' "$PAGE" | head -1)
+          CUR_DATE=${CURRENT%-*}
+          CUR_SEQ=${CURRENT##*-}
+
+          if [ "$CUR_DATE" = "$TODAY" ]; then
+            SEQ=$(printf '%02d' $((10#$CUR_SEQ + 1)))
+          else
+            SEQ=01
+          fi
+          VERSION="v${TODAY}-${SEQ}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Stamping $VERSION (was ${CURRENT:-none})"
+
+          python3 - "$PAGE" "$VERSION" <<'PY'
+          import re, sys
+          path, version = sys.argv[1], sys.argv[2]
+          s = open(path).read()
+          new, n = re.subn(r'(<!--VERSION-->).*?(<!--/VERSION-->)',
+                           lambda m: m.group(1) + version + m.group(2), s, count=1)
+          if n != 1:
+              raise SystemExit(f'VERSION markers not found in {path}')
+          open(path, 'w').write(new)
+          PY
+
+          mkdir -p rahulio/pages/enmtest
+          printf '{\n  "version": "%s",\n  "stampedAt": "%s",\n  "sha": "%s"\n}\n' \
+            "$VERSION" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${GITHUB_SHA:0:10}" \
+            > rahulio/pages/enmtest/version.json
+
+      - name: Commit
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Nothing to stamp."
+            exit 0
+          fi
+          git config user.name alpacapps-bot
+          git config user.email pai@alpacaplayhouse.com
+          git add rahulio/pages/enmtest/index.html rahulio/pages/enmtest/version.json
+          git commit -m "chore: stamp ENM quiz ${{ steps.stamp.outputs.version }} [skip ci]"
+          git push origin HEAD:main

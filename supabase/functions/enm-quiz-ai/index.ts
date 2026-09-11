@@ -57,9 +57,11 @@ async function ask(kind: string, prompt: string, actor: string | null, opts: Ask
     messages,
     max_tokens: opts.maxTokens ?? 6000,
     temperature: opts.temperature ?? 0.4,
-    // "minimal" still reasons, but briefly — enough to stay accurate without
-    // spending the whole completion budget before it starts answering.
-    reasoning: { effort: "minimal" },
+    // Reasoning cannot be disabled on this endpoint, so it has to be budgeted
+    // for: "high" spends ~350 reasoning tokens before answering, which the
+    // max_tokens values below leave room for. An undersized budget gets eaten
+    // by reasoning and the answer never arrives at all.
+    reasoning: { effort: Deno.env.get("ENM_REASONING_EFFORT") || "high" },
   };
   if (opts.json) body.response_format = { type: "json_object" };
 

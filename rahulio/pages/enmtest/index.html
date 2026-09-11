@@ -213,6 +213,20 @@
 
     .save-note { text-align: center; font-size: .75rem; opacity: .55; margin-top: 26px; }
 
+    .admin-jump {
+      position: fixed; top: 8px; left: 12px; z-index: 30;
+      font-size: .6875rem; font-weight: 600; letter-spacing: .03em;
+      background: var(--btn); color: #fff; text-decoration: none;
+      padding: 5px 12px; border-radius: 20px;
+    }
+    .admin-jump:hover { background: var(--btn-hover); }
+
+    .version-badge {
+      position: fixed; top: 8px; right: 12px; z-index: 30;
+      font-size: .6875rem; letter-spacing: .04em; opacity: .45;
+      font-variant-numeric: tabular-nums; pointer-events: none;
+    }
+
     /* ── Per-question feedback ── */
     .q-feedback { text-align: center; margin-bottom: 18px; }
     .q-feedback button {
@@ -335,6 +349,14 @@
   </style>
 </head>
 <body>
+  <!-- Stamped by .github/workflows/enm-quiz-version.yml on every push that
+       touches this directory. Keep the VERSION markers exactly as they are. -->
+  <div class="version-badge"><!--VERSION-->v09-11-26-01<!--/VERSION--></div>
+
+  <!-- Shown only to admin/staff. The review panel sits below a full-height
+       quiz stage, so without this it is easy to believe it is not there. -->
+  <a class="admin-jump" id="adminJump" href="#adminPanel" hidden>Quiz design review <span id="adminJumpCount"></span></a>
+
   <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
   <div class="stage">
@@ -1015,6 +1037,7 @@
 
       const panel = $('adminPanel');
       panel.hidden = false;
+      $('adminJump').hidden = false;
       $('adminEmail').value = localStorage.getItem(ADMIN_EMAIL_KEY) || '';
 
       async function loadItems() {
@@ -1027,6 +1050,7 @@
         if (error) { host.textContent = `Could not load review items: ${error.message}`; return; }
         if (!data?.length) { host.textContent = 'No review items yet. Run a review below.'; return; }
 
+        $('adminJumpCount').textContent = `(${data.length})`;
         host.innerHTML = '';
         let lastGroup = null;
         data.forEach(item => {

@@ -77,7 +77,7 @@ async function askModel(instructions, files) {
       // Reasoning is mandatory on this endpoint and comes out of the same
       // budget, so leave generous headroom above the size of the edits.
       max_tokens: 40000,
-      reasoning: { effort: 'minimal' },
+      reasoning: { effort: process.env.ENM_REASONING_EFFORT || 'high' },
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: SYSTEM },
