@@ -236,13 +236,13 @@
     .q-notes .taker-fb em { opacity: .55; font-style: normal; font-size: .6875rem;
       display: block; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
 
-    /* Always-visible pointer to the whole-quiz notes below. */
+    /* Pointer to the whole-quiz notes, sitting under the per-question notes. */
     .admin-bar {
-      position: sticky; top: 0; z-index: 30;
-      display: block; width: 100%; border: 0; cursor: pointer;
+      display: block; width: 100%; max-width: 720px; margin: 14px auto 0;
+      border: 0; cursor: pointer; border-radius: var(--radius);
       font-family: inherit; font-size: .8125rem; font-weight: 600;
       letter-spacing: .02em; background: var(--btn); color: #fff;
-      padding: 9px 16px; text-align: center;
+      padding: 11px 16px; text-align: center;
     }
     .admin-bar:hover { background: var(--btn-hover); }
     .admin-bar .chev { margin-left: 4px; }
@@ -254,7 +254,7 @@
     }
 
     /* ── Per-question feedback ── */
-    .q-feedback { text-align: center; margin-bottom: 18px; }
+    .q-feedback { text-align: center; margin-top: 20px; }
     .q-feedback button {
       background: none; border: 0; font-family: inherit; font-size: .75rem;
       color: var(--text); opacity: .5; cursor: pointer; text-decoration: underline;
@@ -379,14 +379,6 @@
        touches this directory. Keep the VERSION markers exactly as they are. -->
   <div class="version-badge"><!--VERSION-->v09-11-26-03<!--/VERSION--></div>
 
-  <!-- Shown only to admin/staff. The review panel sits below a full-height quiz
-       stage, so without a persistent pointer it reads as not being there at all.
-       Sticky rather than fixed so it never overlaps the quiz content. -->
-  <button class="admin-bar" id="adminBar" hidden>
-    General Quiz Notes for Admin <span id="adminJumpCount"></span>
-    <span class="chev">&#x2193;</span>
-  </button>
-
   <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
   <div class="stage">
@@ -426,10 +418,6 @@
 
     <!-- ── Questions ── -->
     <section class="screen" id="screenQuestion">
-      <div class="q-feedback">
-        <button type="button" id="feedbackOpen">Give feedback on this question</button>
-        <span class="thanks" id="feedbackThanks" hidden>Thanks &mdash; that's logged.</span>
-      </div>
       <div class="question-img" id="questionImg" hidden></div>
       <h1 class="headline" id="questionTitle"></h1>
       <div class="options" id="questionOptions"></div>
@@ -437,6 +425,10 @@
         <button class="btn" id="nextBtn">Next</button>
       </div>
       <p class="hint" id="multiHint" hidden></p>
+      <div class="q-feedback">
+        <button type="button" id="feedbackOpen">Give feedback on this question</button>
+        <span class="thanks" id="feedbackThanks" hidden>Thanks &mdash; that's logged.</span>
+      </div>
       <div class="q-notes" id="questionNotes" hidden></div>
     </section>
 
@@ -479,6 +471,13 @@
 
       <p class="save-note" id="saveNote"></p>
     </section>
+
+    <!-- Shown only to admin/staff. Sits directly under the per-question notes
+         at the foot of the stage, pointing at the whole-quiz notes below. -->
+    <button class="admin-bar" id="adminBar" hidden>
+      General Quiz Notes for Admin <span id="adminJumpCount"></span>
+      <span class="chev">&#x2193;</span>
+    </button>
   </div>
 
   <!-- Feedback from quiz takers, opened from the link above each question. -->
