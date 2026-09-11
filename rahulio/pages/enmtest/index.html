@@ -213,6 +213,39 @@
 
     .save-note { text-align: center; font-size: .75rem; opacity: .55; margin-top: 26px; }
 
+    /* Per-question notes, shown inline above the question for admins only. */
+    .q-notes {
+      background: #fff; border-radius: var(--radius);
+      padding: 14px 16px; margin-bottom: 18px;
+      border-left: 3px solid var(--btn);
+    }
+    .q-notes h4 {
+      font-size: .6875rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; opacity: .5; margin-bottom: 10px;
+    }
+    .q-notes .note + .note { margin-top: 14px; border-top: 1px solid rgba(60,60,60,.1); padding-top: 12px; }
+    .q-notes .note-title { font-weight: 600; font-size: .875rem; margin-bottom: 4px; }
+    .q-notes .note-body { font-size: .8125rem; line-height: 1.5; margin-bottom: 6px; }
+    .q-notes .note-rec { font-size: .8125rem; line-height: 1.5; opacity: .85; }
+    .q-notes .note-rec b { font-weight: 600; }
+    .q-notes .decide button { font-size: .6875rem; padding: 5px 12px; }
+    .q-notes .taker-fb {
+      font-size: .8125rem; line-height: 1.5; margin-top: 4px;
+      background: var(--bg); border-radius: 6px; padding: 8px 10px;
+    }
+    .q-notes .taker-fb em { opacity: .55; font-style: normal; font-size: .6875rem;
+      display: block; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+
+    /* Pointer to the general notes, which sit below a full-height stage. */
+    .admin-arrow {
+      display: block; margin: 0 auto; text-align: center;
+      background: none; border: 0; cursor: pointer; font-family: inherit;
+      font-size: .8125rem; font-weight: 600; color: var(--text);
+      padding: 14px; opacity: .75;
+    }
+    .admin-arrow:hover { opacity: 1; }
+    .admin-arrow .chev { display: block; font-size: 1.125rem; line-height: 1; margin-top: 2px; }
+
     .admin-jump {
       position: fixed; top: 8px; left: 12px; z-index: 30;
       font-size: .6875rem; font-weight: 600; letter-spacing: .03em;
@@ -355,7 +388,7 @@
 
   <!-- Shown only to admin/staff. The review panel sits below a full-height
        quiz stage, so without this it is easy to believe it is not there. -->
-  <a class="admin-jump" id="adminJump" href="#adminPanel" hidden>Quiz design review <span id="adminJumpCount"></span></a>
+  <a class="admin-jump" id="adminJump" href="#adminPanel" hidden>General Quiz Notes <span id="adminJumpCount"></span></a>
 
   <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
@@ -396,6 +429,7 @@
 
     <!-- ── Questions ── -->
     <section class="screen" id="screenQuestion">
+      <div class="q-notes" id="questionNotes" hidden></div>
       <div class="q-feedback">
         <button type="button" id="feedbackOpen">Give feedback on this question</button>
         <span class="thanks" id="feedbackThanks" hidden>Thanks &mdash; that's logged.</span>
@@ -450,6 +484,10 @@
     </section>
   </div>
 
+  <button class="admin-arrow" id="adminArrow" hidden>
+    General Quiz Notes for Admin<span class="chev">&#x2193;</span>
+  </button>
+
   <!-- Feedback from quiz takers, opened from the link above each question. -->
   <div class="modal-backdrop" id="feedbackModal" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
@@ -469,9 +507,10 @@
     rather than the security boundary.
   -->
   <section class="admin" id="adminPanel" hidden>
-    <h2>Quiz design review</h2>
-    <p class="lede">Findings from the question-by-question pass. Decide each one, then rebuild
-       the page from everything you have accepted.</p>
+    <h2>General Quiz Notes for Admin</h2>
+    <p class="lede">Findings about the quiz as a whole. Notes on individual questions appear
+       above each question as you go through it. Decide each one, then rebuild the page from
+       everything you have accepted &mdash; wherever you accepted it.</p>
     <div id="adminItems"></div>
 
     <div class="admin-tools">
@@ -590,6 +629,10 @@
       finalTotal: 0,
     };
 
+    /* Admin review notes. Populated after auth resolves, which can land after
+       the first question has already rendered, so both paths re-render. */
+    const admin = { active: false, items: [], feedback: new Map(), refreshQuestion: () => {} };
+
     function show(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === screenId));
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -657,6 +700,8 @@
         $('multiHint').textContent = `Select at least ${q.min}${q.max > q.min ? `, up to ${q.max}` : ''}.`;
         $('nextBtn').disabled = selected.length < q.min;
       }
+
+      admin.refreshQuestion();
 
       $('counter').textContent = `${state.current + 1} / ${QUIZ.questions.length}`;
       $('backBtn').classList.toggle('show', state.current > 0);
@@ -1020,9 +1065,15 @@
       }
     });
 
-    /* ── Admin panel ───────────────────────────────────────────────────────── */
+    /* ── Admin review ──────────────────────────────────────────────────────── */
     /* Loaded last and entirely optional: any failure here must leave the quiz
-       itself working for the public. */
+       itself working for the public.
+
+       Notes are split by where they are useful. A finding about question 7 is
+       only actionable while you are looking at question 7, so it renders inline
+       above that question. Findings about the quiz as a whole have no such
+       anchor and live in the panel below the stage. Both are decided the same
+       way and both feed the same rebuild. */
     (async function initAdmin() {
       let isStaff = false;
       try {
@@ -1030,82 +1081,146 @@
         await initAuth();
         isStaff = ['admin', 'staff'].includes(getAuthState().role);
       } catch (e) {
-        console.debug('[enm-quiz] auth unavailable, admin panel stays hidden', e);
+        console.debug('[enm-quiz] auth unavailable, admin notes stay hidden', e);
         return;
       }
       if (!isStaff) return;
 
+      admin.active = true;
       const panel = $('adminPanel');
       panel.hidden = false;
       $('adminJump').hidden = false;
+      $('adminArrow').hidden = false;
       $('adminEmail').value = localStorage.getItem(ADMIN_EMAIL_KEY) || '';
 
-      async function loadItems() {
-        const { data, error } = await supabase
-          .from('enm_quiz_review_items')
-          .select('id, question_number, category, title, finding, recommendation, status, applied_at')
-          .order('sort_order').order('question_number');
+      $('adminArrow').addEventListener('click', () => {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
 
-        const host = $('adminItems');
-        if (error) { host.textContent = `Could not load review items: ${error.message}`; return; }
-        if (!data?.length) { host.textContent = 'No review items yet. Run a review below.'; return; }
-
-        $('adminJumpCount').textContent = `(${data.length})`;
-        host.innerHTML = '';
-        let lastGroup = null;
-        data.forEach(item => {
-          const group = item.question_number === 0 ? 'Across the whole quiz' : 'Individual questions';
-          if (group !== lastGroup) {
-            const h = document.createElement('div');
-            h.className = 'admin-group';
-            h.textContent = group;
-            host.appendChild(h);
-            lastGroup = group;
-          }
-
-          const el = document.createElement('div');
-          el.className = 'item';
-          el.dataset.status = item.status;
-          el.innerHTML =
-            `<div class="head">
-               <span class="qnum">${item.question_number === 0 ? 'Quiz' : 'Q' + item.question_number}</span>
-               <span class="cat">${esc(item.category)}</span>
-               <span class="title">${esc(item.title)}</span>
-             </div>
-             <p class="finding">${esc(item.finding)}</p>
-             <p class="rec"><b>Do this:</b> ${esc(item.recommendation)}</p>
-             <div class="decide"></div>`;
-
-          const decide = el.querySelector('.decide');
-          [['accepted', 'Yes'], ['declined', 'No'], ['postponed', 'Postpone']].forEach(([value, label]) => {
-            const b = document.createElement('button');
-            b.type = 'button';
-            b.textContent = label;
-            b.setAttribute('aria-pressed', String(item.status === value));
-            b.addEventListener('click', async () => {
-              const next = item.status === value ? 'pending' : value;
-              const { error: uErr } = await supabase
-                .from('enm_quiz_review_items')
-                .update({ status: next, decided_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-                .eq('id', item.id);
-              if (uErr) { alert(`Could not save: ${uErr.message}`); return; }
-              item.status = next;
-              el.dataset.status = next;
-              decide.querySelectorAll('button').forEach(x =>
-                x.setAttribute('aria-pressed', String(x === b && next !== 'pending')));
-            });
-            decide.appendChild(b);
+      /* Yes / No / Postpone, shared by the inline notes and the panel. Clicking
+         the current status again clears it back to pending. */
+      function decideControls(item, onChange) {
+        const wrap = document.createElement('div');
+        wrap.className = 'decide';
+        [['accepted', 'Yes'], ['declined', 'No'], ['postponed', 'Postpone']].forEach(([value, label]) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = label;
+          b.setAttribute('aria-pressed', String(item.status === value));
+          b.addEventListener('click', async () => {
+            const next = item.status === value ? 'pending' : value;
+            const { error } = await supabase
+              .from('enm_quiz_review_items')
+              .update({ status: next, decided_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+              .eq('id', item.id);
+            if (error) { alert(`Could not save: ${error.message}`); return; }
+            item.status = next;
+            wrap.querySelectorAll('button').forEach(x =>
+              x.setAttribute('aria-pressed', String(x === b && next !== 'pending')));
+            onChange?.(next);
           });
+          wrap.appendChild(b);
+        });
 
-          if (item.applied_at) {
-            const applied = document.createElement('span');
-            applied.className = 'applied';
-            applied.textContent = `applied ${new Date(item.applied_at).toLocaleDateString()}`;
-            decide.appendChild(applied);
-          }
+        if (item.applied_at) {
+          const applied = document.createElement('span');
+          applied.className = 'applied';
+          applied.textContent = `applied ${new Date(item.applied_at).toLocaleDateString()}`;
+          wrap.appendChild(applied);
+        }
+        return wrap;
+      }
 
+      /* Above the fold: this question's findings, plus anything a taker said
+         about this exact question. */
+      admin.refreshQuestion = function refreshQuestion() {
+        const host = $('questionNotes');
+        if (!host || !admin.active) return;
+
+        const number = state.current + 1;
+        const items = admin.items.filter(i => i.question_number === number);
+        const said = admin.feedback.get(number) || [];
+        if (!items.length && !said.length) { host.hidden = true; return; }
+
+        host.hidden = false;
+        host.innerHTML = '<h4>Notes for admin &middot; this question</h4>';
+
+        items.forEach(item => {
+          const el = document.createElement('div');
+          el.className = 'note';
+          el.innerHTML =
+            `<p class="note-title">${esc(item.title)}</p>` +
+            `<p class="note-body">${esc(item.finding)}</p>` +
+            `<p class="note-rec"><b>Do this:</b> ${esc(item.recommendation)}</p>`;
+          el.appendChild(decideControls(item));
           host.appendChild(el);
         });
+
+        said.slice(0, 5).forEach(text => {
+          const el = document.createElement('div');
+          el.className = 'note';
+          el.innerHTML = `<div class="taker-fb"><em>A quiz taker said</em>${esc(text)}</div>`;
+          host.appendChild(el);
+        });
+      };
+
+      async function loadItems() {
+        const [{ data, error }, { data: fb }] = await Promise.all([
+          supabase.from('enm_quiz_review_items')
+            .select('id, question_number, category, title, finding, recommendation, status, applied_at')
+            .order('sort_order').order('question_number'),
+          supabase.from('enm_quiz_question_feedback')
+            .select('question_number, feedback')
+            .order('created_at', { ascending: false }).limit(200),
+        ]);
+
+        const host = $('adminItems');
+        if (error) { host.textContent = `Could not load notes: ${error.message}`; return; }
+
+        admin.items = data ?? [];
+        admin.feedback = new Map();
+        (fb ?? []).forEach(row => {
+          const list = admin.feedback.get(row.question_number) || [];
+          list.push(row.feedback);
+          admin.feedback.set(row.question_number, list);
+        });
+
+        const general = admin.items.filter(i => i.question_number === 0);
+        const perQuestion = admin.items.length - general.length;
+        $('adminJumpCount').textContent = `(${general.length})`;
+
+        host.innerHTML = '';
+        if (!general.length) {
+          host.textContent = 'No general notes yet. Run a review below.';
+        } else {
+          general.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'item';
+            el.dataset.status = item.status;
+            el.innerHTML =
+              `<div class="head">
+                 <span class="qnum">Quiz</span>
+                 <span class="cat">${esc(item.category)}</span>
+                 <span class="title">${esc(item.title)}</span>
+               </div>
+               <p class="finding">${esc(item.finding)}</p>
+               <p class="rec"><b>Do this:</b> ${esc(item.recommendation)}</p>`;
+            el.appendChild(decideControls(item, next => { el.dataset.status = next; }));
+            host.appendChild(el);
+          });
+        }
+
+        if (perQuestion) {
+          const hint = document.createElement('p');
+          hint.className = 'lede';
+          hint.style.marginTop = '16px';
+          hint.textContent =
+            `${perQuestion} more note${perQuestion === 1 ? '' : 's'} about individual questions ` +
+            `appear above those questions as you go through the quiz.`;
+          host.appendChild(hint);
+        }
+
+        admin.refreshQuestion();
       }
 
       await loadItems();
@@ -1148,7 +1263,7 @@
         const data = await callAi({ action: 'review', quiz_text: quizText },
           $('reviewOut'), $('reviewRefresh'), 'Reviewing…');
         if (data) {
-          $('reviewOut').textContent = `Added ${data.added} new finding(s).`;
+          $('reviewOut').textContent = `Added ${data.added} new note(s).`;
           await loadItems();
         }
       });
@@ -1169,12 +1284,12 @@
 
         if (!accepted?.length) {
           out.classList.add('show');
-          out.textContent = 'Nothing to apply — mark at least one item Yes first.';
+          out.textContent = 'Nothing to apply — mark at least one note Yes first, here or above a question.';
           return;
         }
 
         if (!confirm(
-          `Apply ${accepted.length} accepted item(s) to this page, commit to main and deploy?\n\n` +
+          `Apply ${accepted.length} accepted note(s) to this page, commit to main and deploy?\n\n` +
           `Only rahulio/pages/enmtest/ can be changed. You will get an email at ${email} when it is live.`
         )) return;
 

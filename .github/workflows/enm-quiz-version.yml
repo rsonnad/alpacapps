@@ -1,8 +1,10 @@
 # Stamps a per-day, per-push version onto the ENM quiz page: v MM-DD-YY-NN,
 # where NN restarts at 01 each day and increments on every later push.
 #
-# The version.json path exclusion matters: without it the stamping commit would
-# re-trigger this workflow on itself. The [skip ci] marker is belt and braces.
+# The stamping commit touches this same directory, so the [skip ci] guard on the
+# job below is what stops it re-triggering on itself. An earlier version tried to
+# do that with a '!...version.json' path exclusion instead and the workflow never
+# fired at all — a negated path here suppressed the whole trigger.
 name: ENM quiz version stamp
 
 on:
@@ -10,7 +12,7 @@ on:
     branches: [main]
     paths:
       - 'rahulio/pages/enmtest/**'
-      - '!rahulio/pages/enmtest/version.json'
+  workflow_dispatch:
 
 concurrency:
   group: enm-quiz-version
