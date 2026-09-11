@@ -213,6 +213,121 @@
 
     .save-note { text-align: center; font-size: .75rem; opacity: .55; margin-top: 26px; }
 
+    /* ── Per-question feedback ── */
+    .q-feedback { text-align: center; margin-bottom: 18px; }
+    .q-feedback button {
+      background: none; border: 0; font-family: inherit; font-size: .75rem;
+      color: var(--text); opacity: .5; cursor: pointer; text-decoration: underline;
+      text-underline-offset: 3px; padding: 4px;
+    }
+    .q-feedback button:hover { opacity: .85; }
+    .q-feedback .thanks { font-size: .75rem; opacity: .6; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(40,30,30,.45);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; z-index: 50;
+    }
+    .modal {
+      background: #fff; border-radius: 12px; padding: 24px;
+      width: 100%; max-width: 460px;
+    }
+    .modal h2 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+    .modal .q { font-size: .8125rem; opacity: .65; margin-bottom: 14px; }
+    .modal textarea {
+      width: 100%; min-height: 110px; resize: vertical;
+      font-family: inherit; font-size: .9375rem; color: var(--text);
+      border: 1px solid #e3d7d2; border-radius: var(--radius); padding: 11px 13px;
+    }
+    .modal textarea:focus { outline: 2px solid var(--btn); outline-offset: -1px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+    .btn-ghost {
+      background: none; border: 1px solid rgba(60,60,60,.25); color: var(--text);
+      font-family: inherit; font-size: .875rem; font-weight: 600;
+      padding: 10px 20px; border-radius: 30px; cursor: pointer;
+    }
+    .btn-ghost:hover { background: var(--bg); }
+
+    /* ── AI situation summary on the result screen ── */
+    .summary { margin-top: 40px; border-top: 1px solid rgba(60,60,60,.18); padding-top: 26px; }
+    .summary h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: 6px; }
+    .summary .headline { font-size: 1.0625rem; line-height: 1.45; margin-bottom: 16px; font-weight: 500; }
+    .summary .body p { margin-bottom: 12px; }
+    .summary h3 { font-size: .8125rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; opacity: .55; margin: 24px 0 12px; }
+    .card {
+      background: #fff; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
+    }
+    .card strong { display: block; margin-bottom: 4px; font-size: .9375rem; }
+    .card span { font-size: .875rem; line-height: 1.5; }
+    .summary-loading { font-size: .875rem; opacity: .6; padding: 10px 0; }
+
+    /* ── Partner invite ── */
+    .partner-box {
+      background: #fff; border-radius: var(--radius); padding: 16px; margin-top: 26px;
+    }
+    .partner-box h3 { font-size: .9375rem; font-weight: 600; margin-bottom: 5px; }
+    .partner-box p { font-size: .8125rem; opacity: .7; margin-bottom: 12px; line-height: 1.5; }
+    .partner-box .row { display: flex; gap: 8px; }
+    .partner-box input { flex: 1; }
+    .partner-box .note { margin: 10px 0 0; font-size: .8125rem; }
+
+    /* ── Admin panel ── */
+    .admin {
+      max-width: 860px; margin: 60px auto 0; padding: 26px 20px 80px;
+      border-top: 2px solid rgba(60,60,60,.2);
+    }
+    .admin h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 4px; }
+    .admin .lede { font-size: .875rem; opacity: .7; margin-bottom: 22px; }
+    .admin-group { font-size: .75rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; opacity: .5; margin: 26px 0 10px; }
+    .item {
+      background: #fff; border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+      border-left: 3px solid transparent;
+    }
+    .item[data-status="accepted"] { border-left-color: #2f9e5f; }
+    .item[data-status="declined"] { border-left-color: #b3261e; opacity: .6; }
+    .item[data-status="postponed"] { border-left-color: #d68910; }
+    .item .head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+    .item .qnum {
+      font-size: .6875rem; font-weight: 700; background: var(--option);
+      padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+    }
+    .item .cat { font-size: .6875rem; opacity: .55; text-transform: uppercase; letter-spacing: .05em; }
+    .item .title { font-weight: 600; font-size: .9375rem; flex: 1 1 100%; }
+    .item .finding, .item .rec { font-size: .875rem; line-height: 1.55; margin-bottom: 8px; }
+    .item .rec { border-left: 2px solid var(--option); padding-left: 10px; }
+    .item .rec b { font-weight: 600; }
+    .decide { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+    .decide button {
+      font-family: inherit; font-size: .75rem; font-weight: 600; cursor: pointer;
+      border: 1px solid rgba(60,60,60,.2); background: var(--bg); color: var(--text);
+      border-radius: 20px; padding: 6px 14px;
+    }
+    .decide button:hover { background: var(--option); }
+    .decide button[aria-pressed="true"] { background: var(--btn); color: #fff; border-color: var(--btn); }
+    .decide .applied { font-size: .6875rem; opacity: .6; margin-left: auto; }
+
+    .admin-tools { display: grid; gap: 14px; margin-top: 28px; }
+    .tool { background: #fff; border-radius: var(--radius); padding: 18px; }
+    .tool h3 { font-size: .9375rem; font-weight: 600; margin-bottom: 4px; }
+    .tool p { font-size: .8125rem; opacity: .7; margin-bottom: 12px; line-height: 1.5; }
+    .tool textarea {
+      width: 100%; min-height: 90px; resize: vertical; font-family: inherit; font-size: .875rem;
+      color: var(--text); border: 1px solid #e3d7d2; border-radius: var(--radius); padding: 11px 13px;
+    }
+    .tool input[type="email"] {
+      width: 100%; font-family: inherit; font-size: .875rem; color: var(--text);
+      border: 1px solid #e3d7d2; border-radius: var(--radius); padding: 10px 13px; margin-bottom: 10px;
+    }
+    .tool .out {
+      margin-top: 12px; font-size: .875rem; line-height: 1.6; white-space: pre-wrap;
+      background: var(--bg); border-radius: var(--radius); padding: 13px; display: none;
+    }
+    .tool .out.show { display: block; }
+    .danger { border: 1px solid rgba(252,106,119,.5); }
+    .danger h3 { color: #c0392b; }
+
     @media (max-width: 600px) {
       .stage { padding: 34px 16px 84px; }
       .option { font-size: .875rem; padding: 13px 15px; }
@@ -253,11 +368,16 @@
           <div class="btn-row"><button class="btn" type="submit" id="gateSubmit">Start the quiz</button></div>
         </form>
         <p class="privacy">Your answers stay private. We never share them, and you can unsubscribe at any time.</p>
+        <p class="privacy" id="gateProgress">That's all 20 questions &mdash; this is the last step.</p>
       </div>
     </section>
 
     <!-- ── Questions ── -->
     <section class="screen" id="screenQuestion">
+      <div class="q-feedback">
+        <button type="button" id="feedbackOpen">Give feedback on this question</button>
+        <span class="thanks" id="feedbackThanks" hidden>Thanks &mdash; that's logged.</span>
+      </div>
       <div class="question-img" id="questionImg" hidden></div>
       <h1 class="headline" id="questionTitle"></h1>
       <div class="options" id="questionOptions"></div>
@@ -275,13 +395,96 @@
       <div class="btn-row" id="resultCtaRow" hidden>
         <a class="btn" id="resultCta" target="_blank" rel="noopener"></a>
       </div>
+      <div class="summary" id="summaryBlock" hidden>
+        <h2>Where this leaves you</h2>
+        <p class="summary-loading" id="summaryLoading">Reading your answers back&hellip;</p>
+        <div id="summaryContent" hidden>
+          <p class="headline" id="summaryHeadline"></p>
+          <div class="body" id="summarySituation"></div>
+          <h3>What is likely to be hard</h3>
+          <div id="summaryChallenges"></div>
+          <h3>Worth learning about next</h3>
+          <div id="summaryTopics"></div>
+        </div>
+      </div>
+
       <div class="top-results" id="topResults" hidden>
         <h2 id="topResultsTitle"></h2>
         <div id="topResultsBars"></div>
       </div>
+
+      <div class="partner-box" id="partnerBox" hidden>
+        <h3>Invite your partner to take it too</h3>
+        <p>They get their own link and answer for themselves &mdash; you will not see their
+           answers unless they show you. We tag the two runs as a pair so you can compare.</p>
+        <form class="row" id="partnerForm">
+          <input type="email" id="partnerEmail" placeholder="their@email.com" autocomplete="off">
+          <button class="btn" type="submit" id="partnerSubmit">Send</button>
+        </form>
+        <p class="note" id="partnerNote" hidden></p>
+      </div>
+
       <p class="save-note" id="saveNote"></p>
     </section>
   </div>
+
+  <!-- Feedback from quiz takers, opened from the link above each question. -->
+  <div class="modal-backdrop" id="feedbackModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+      <h2 id="feedbackTitle">What did not work about this question?</h2>
+      <p class="q" id="feedbackQuestion"></p>
+      <textarea id="feedbackText" placeholder="Confusing wording, a missing answer, something that did not apply to you&hellip;"></textarea>
+      <div class="modal-actions">
+        <button class="btn-ghost" type="button" id="feedbackCancel">Cancel</button>
+        <button class="btn" type="button" id="feedbackSend">Send feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <!--
+    Admin surface. Hidden unless the signed-in app_user is admin or staff; the
+    data behind it is RLS-protected either way, so a hidden panel is a nicety
+    rather than the security boundary.
+  -->
+  <section class="admin" id="adminPanel" hidden>
+    <h2>Quiz design review</h2>
+    <p class="lede">Findings from the question-by-question pass. Decide each one, then rebuild
+       the page from everything you have accepted.</p>
+    <div id="adminItems"></div>
+
+    <div class="admin-tools">
+      <div class="tool">
+        <h3>Ask GLM 5.3 about this quiz</h3>
+        <p>Free-form prompt. Nothing here changes the page.</p>
+        <textarea id="promptBox" placeholder="e.g. Rewrite Q7 so it works for a single person&hellip;"></textarea>
+        <div class="btn-row" style="text-align:left;margin-top:10px">
+          <button class="btn" type="button" id="promptSend">Send prompt</button>
+        </div>
+        <div class="out" id="promptOut"></div>
+      </div>
+
+      <div class="tool">
+        <h3>Regenerate findings</h3>
+        <p>Re-reads the quiz and any feedback takers have left, and adds findings not already listed.</p>
+        <div class="btn-row" style="text-align:left">
+          <button class="btn" type="button" id="reviewRefresh">Run review</button>
+        </div>
+        <div class="out" id="reviewOut"></div>
+      </div>
+
+      <div class="tool danger">
+        <h3>Update site</h3>
+        <p>Applies every <b>accepted</b> item to this page, commits to main and deploys.
+           Scoped to <code>rahulio/pages/enmtest/</code> &mdash; nothing else can be touched.
+           You will get an email when it is live.</p>
+        <input type="email" id="adminEmail" placeholder="your@email.com — where the confirmation goes">
+        <div class="btn-row" style="text-align:left">
+          <button class="btn" type="button" id="updateSite">Update site</button>
+        </div>
+        <div class="out" id="updateOut"></div>
+      </div>
+    </div>
+  </section>
 
   <div class="quiz-footer" id="quizFooter" hidden>
     <button class="back" id="backBtn" aria-label="Previous question">
@@ -325,6 +528,10 @@
     const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fc6a77" stroke-width="4" ' +
       'stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
+    const AI_FN = 'enm-quiz-ai';
+    const INVITE_FN = 'enm-quiz-invite';
+    const ADMIN_EMAIL_KEY = 'enmtest.adminEmail';
+
     /* Interact stores crops as percentages of the source image; translate that
        into a background-position/size so framing survives the port. */
     function applyImage(el, img) {
@@ -343,14 +550,22 @@
       }
     }
 
+    const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
     const state = {
+      /* Generated up front so per-question feedback can be stitched to the run
+         even though the session row is not written until the very end. */
+      runId: crypto.randomUUID(),
       leadId: null,
       sessionId: null,
       startedAt: null,
-      /* answers[i] = array of selected option indexes for question i */
+      inviteToken: new URLSearchParams(location.search).get('invite'),
       answers: QUIZ.questions.map(() => []),
       current: 0,
-      shownResult: null,
+      finalTop: null,
+      finalTotals: null,
+      finalTotal: 0,
     };
 
     function show(screenId) {
@@ -365,52 +580,8 @@
     $('coverImg').setAttribute('role', 'img');
     $('coverImg').setAttribute('aria-label', QUIZ.cover.alt || '');
     $('startBtn').textContent = QUIZ.startButton.label.trim();
-    $('startBtn').addEventListener('click', () => show('screenGate'));
-
-    /* ── Email gate ────────────────────────────────────────────────────────── */
-    $('gateHeading').textContent = QUIZ.emailGate.heading;
-    $('gateSub').textContent = QUIZ.emailGate.subheading;
-    $('consentText').textContent = QUIZ.emailGate.confirmText;
-
-    $('gateForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = $('email').value.trim();
-      const firstName = $('firstName').value.trim();
-      const err = $('gateError');
-
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-        err.textContent = 'Please enter a valid email address so we can send your result.';
-        $('email').focus();
-        return;
-      }
-      err.textContent = '';
-
-      const btn = $('gateSubmit');
-      btn.disabled = true;
-      btn.textContent = 'Starting…';
-
-      state.leadId = crypto.randomUUID();
+    $('startBtn').addEventListener('click', () => {
       state.startedAt = new Date();
-
-      /* A backend hiccup must never cost us the quiz-taker: log and carry on. */
-      try {
-        const { error } = await supabase.from('enm_quiz_leads').insert({
-          id: state.leadId,
-          email,
-          first_name: firstName || null,
-          consented: $('consent').checked,
-          source: 'enmtest',
-          referrer: document.referrer || null,
-          user_agent: navigator.userAgent,
-        });
-        if (error) throw error;
-      } catch (e2) {
-        console.error('[enm-quiz] lead insert failed', e2);
-        state.leadId = null;
-      }
-
-      btn.disabled = false;
-      btn.textContent = 'Start the quiz';
       state.current = 0;
       renderQuestion();
       show('screenQuestion');
@@ -424,6 +595,8 @@
 
       applyImage($('questionImg'), q.img);
       $('questionTitle').textContent = q.title;
+      $('feedbackThanks').hidden = true;
+      $('feedbackOpen').hidden = false;
 
       const wrap = $('questionOptions');
       wrap.className = 'options' + (q.answerType === 'image' ? ' image-grid' : '');
@@ -491,13 +664,12 @@
         state.current += 1;
         renderQuestion();
       } else {
-        finish();
+        finishQuestions();
       }
     }
 
     $('nextBtn').addEventListener('click', () => {
-      const q = QUIZ.questions[state.current];
-      if (state.answers[state.current].length < q.min) return;
+      if (state.answers[state.current].length < QUIZ.questions[state.current].min) return;
       advance();
     });
 
@@ -505,6 +677,48 @@
       if (state.current === 0) return;
       state.current -= 1;
       renderQuestion();
+    });
+
+    /* ── Per-question feedback ─────────────────────────────────────────────── */
+    $('feedbackOpen').addEventListener('click', () => {
+      $('feedbackQuestion').textContent =
+        `Q${state.current + 1}. ${QUIZ.questions[state.current].title}`;
+      $('feedbackText').value = '';
+      $('feedbackModal').hidden = false;
+      $('feedbackText').focus();
+    });
+
+    const closeFeedback = () => { $('feedbackModal').hidden = true; };
+    $('feedbackCancel').addEventListener('click', closeFeedback);
+    $('feedbackModal').addEventListener('click', e => {
+      if (e.target === $('feedbackModal')) closeFeedback();
+    });
+
+    $('feedbackSend').addEventListener('click', async () => {
+      const text = $('feedbackText').value.trim();
+      if (!text) { closeFeedback(); return; }
+
+      const qi = state.current;
+      const q = QUIZ.questions[qi];
+      closeFeedback();
+      /* Optimistic: the taker is mid-quiz and should not wait on a write. */
+      $('feedbackOpen').hidden = true;
+      $('feedbackThanks').hidden = false;
+
+      try {
+        await supabase.from('enm_quiz_question_feedback').insert({
+          run_id: state.runId,
+          question_number: qi + 1,
+          question_uid: q.uid,
+          question_title: q.title,
+          feedback: text,
+          selected_texts: state.answers[qi].map(i => q.options[i].text),
+          page_path: location.pathname,
+          user_agent: navigator.userAgent,
+        });
+      } catch (e) {
+        console.error('[enm-quiz] feedback insert failed', e);
+      }
     });
 
     /* ── Scoring ───────────────────────────────────────────────────────────── */
@@ -529,88 +743,87 @@
       return { ranked, total, totals };
     }
 
-    function finish() {
+    /* The email gate now sits here, after the last question, so the result is
+       computed first and held until the address is in. */
+    function finishQuestions() {
       $('progressFill').style.width = '100%';
       $('quizFooter').hidden = true;
 
       const { ranked, total, totals } = score();
+      const top = ranked.filter(r => r.points > 0).slice(0, QUIZ.multipleResultsMax);
       /* Nothing scored (every answer was a neutral option) — "Still Exploring"
          is the designed fallback for someone who hasn't landed anywhere yet. */
-      const top = ranked.filter(r => r.points > 0).slice(0, QUIZ.multipleResultsMax);
-      const list = top.length ? top : [{ result: QUIZ.results[0], points: 0 }];
+      state.finalTop = top.length ? top : [{ result: QUIZ.results[0], points: 0 }];
+      state.finalTotals = totals;
+      state.finalTotal = total;
 
-      renderResult(list[0].result);
-
-      if (list.length > 1) {
-        $('topResults').hidden = false;
-        $('topResultsTitle').textContent = QUIZ.topResultsTitle;
-        const bars = $('topResultsBars');
-        bars.innerHTML = '';
-        list.forEach(({ result, points }) => {
-          const pct = total ? Math.round((points / total) * 100) : 0;
-          const row = document.createElement('div');
-          row.className = 'bar-row';
-          row.innerHTML =
-            `<div class="bar-label"><span></span><span>${pct}%</span></div>` +
-            `<div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>`;
-          row.querySelector('.bar-label span').textContent = result.title;
-          const more = document.createElement('button');
-          more.type = 'button';
-          more.textContent = 'More Details';
-          more.addEventListener('click', () => {
-            renderResult(result);
-            bars.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(b === more)));
-            $('screenResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          });
-          row.appendChild(more);
-          bars.appendChild(row);
-        });
-        bars.querySelector('button')?.setAttribute('aria-current', 'true');
-      }
-
-      show('screenResult');
-      persist(list, totals, total);
+      show('screenGate');
     }
 
-    function renderResult(result) {
-      state.shownResult = result;
-      applyImage($('resultImg'), result.img);
-      $('resultTitle').textContent = result.title;
-      $('resultDesc').innerHTML = result.description;
-      if (result.cta) {
-        $('resultCtaRow').hidden = false;
-        const a = $('resultCta');
-        a.textContent = result.cta.label;
-        a.href = result.cta.url;
-        a.target = result.cta.blank === false ? '_self' : '_blank';
-      } else {
-        $('resultCtaRow').hidden = true;
+    /* ── Email gate ────────────────────────────────────────────────────────── */
+    $('gateHeading').textContent = QUIZ.emailGate.heading;
+    $('gateSub').textContent = QUIZ.emailGate.subheading;
+    $('consentText').textContent = QUIZ.emailGate.confirmText;
+
+    $('gateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $('email').value.trim();
+      const firstName = $('firstName').value.trim();
+      const err = $('gateError');
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        err.textContent = 'Please enter a valid email address so we can send your result.';
+        $('email').focus();
+        return;
       }
-    }
+      err.textContent = '';
+
+      const btn = $('gateSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Working…';
+
+      await persist(email, firstName, $('consent').checked);
+
+      btn.disabled = false;
+      btn.textContent = 'See my result';
+      renderResultScreen();
+    });
 
     /* ── Persistence ───────────────────────────────────────────────────────── */
-    /* One write at the end: the session plus every answer. Ids are generated
-       here because the anon role can insert but never select these tables. */
-    async function persist(topList, totals, total) {
-      if (!state.leadId) return;
+    /* One write pass at the end: lead, session, then every answer. Ids are
+       generated here because the anon role can insert but never select. */
+    async function persist(email, firstName, consented) {
+      state.leadId = crypto.randomUUID();
       state.sessionId = crypto.randomUUID();
       const completedAt = new Date();
-      const winner = topList[0].result;
+      const winner = state.finalTop[0].result;
 
       const scores = {};
-      QUIZ.results.forEach(r => { scores[r.uid] = totals.get(r.index); });
+      QUIZ.results.forEach(r => { scores[r.uid] = state.finalTotals.get(r.index); });
 
       try {
+        const { error: lErr } = await supabase.from('enm_quiz_leads').insert({
+          id: state.leadId,
+          email,
+          first_name: firstName || null,
+          consented,
+          source: 'enmtest',
+          referrer: document.referrer || null,
+          user_agent: navigator.userAgent,
+        });
+        if (lErr) throw lErr;
+
         const { error: sErr } = await supabase.from('enm_quiz_sessions').insert({
           id: state.sessionId,
+          run_id: state.runId,
           lead_id: state.leadId,
           result_uid: winner.uid,
           result_title: winner.title,
-          top_results: topList.map(({ result, points }) => ({
+          top_results: state.finalTop.map(({ result, points }) => ({
             uid: result.uid,
             title: result.title,
             score: points,
-            percent: total ? Math.round((points / total) * 100) : 0,
+            percent: state.finalTotal ? Math.round((points / state.finalTotal) * 100) : 0,
           })),
           scores,
           started_at: state.startedAt ? state.startedAt.toISOString() : null,
@@ -649,11 +862,311 @@
         }
 
         $('saveNote').textContent = 'Your result has been saved.';
+
+        /* Arrived from a partner's invite link — tie the two runs together. */
+        if (state.inviteToken) {
+          supabase.functions.invoke(INVITE_FN, {
+            body: { action: 'redeem', invite_token: state.inviteToken, run_id: state.runId },
+          }).catch(e => console.error('[enm-quiz] partner link failed', e));
+        }
       } catch (e) {
-        console.error('[enm-quiz] session save failed', e);
+        console.error('[enm-quiz] save failed', e);
+        state.leadId = null;
         $('saveNote').textContent = '';
       }
     }
+
+    /* ── Result ────────────────────────────────────────────────────────────── */
+    function renderResultScreen() {
+      const list = state.finalTop;
+      renderResult(list[0].result);
+
+      if (list.length > 1) {
+        $('topResults').hidden = false;
+        $('topResultsTitle').textContent = QUIZ.topResultsTitle;
+        const bars = $('topResultsBars');
+        bars.innerHTML = '';
+        list.forEach(({ result, points }) => {
+          const pct = state.finalTotal ? Math.round((points / state.finalTotal) * 100) : 0;
+          const row = document.createElement('div');
+          row.className = 'bar-row';
+          row.innerHTML =
+            `<div class="bar-label"><span></span><span>${pct}%</span></div>` +
+            `<div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>`;
+          row.querySelector('.bar-label span').textContent = result.title;
+          const more = document.createElement('button');
+          more.type = 'button';
+          more.textContent = 'More Details';
+          more.addEventListener('click', () => {
+            renderResult(result);
+            bars.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(b === more)));
+            $('screenResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          row.appendChild(more);
+          bars.appendChild(row);
+        });
+        bars.querySelector('button')?.setAttribute('aria-current', 'true');
+      }
+
+      /* Only offer the partner invite to someone who did not arrive from one. */
+      $('partnerBox').hidden = !state.leadId || !!state.inviteToken;
+
+      show('screenResult');
+      loadSummary();
+    }
+
+    function renderResult(result) {
+      applyImage($('resultImg'), result.img);
+      $('resultTitle').textContent = result.title;
+      $('resultDesc').innerHTML = result.description;
+      if (result.cta) {
+        $('resultCtaRow').hidden = false;
+        const a = $('resultCta');
+        a.textContent = result.cta.label;
+        a.href = result.cta.url;
+        a.target = result.cta.blank === false ? '_self' : '_blank';
+      } else {
+        $('resultCtaRow').hidden = true;
+      }
+    }
+
+    /* ── AI situation summary ──────────────────────────────────────────────── */
+    async function loadSummary() {
+      if (!state.leadId) return;
+      $('summaryBlock').hidden = false;
+
+      try {
+        const { data, error } = await supabase.functions.invoke(AI_FN, {
+          body: { action: 'summary', run_id: state.runId },
+        });
+        if (error) throw error;
+        const s = data?.summary;
+        if (!s) throw new Error('No summary returned');
+
+        $('summaryHeadline').textContent = s.headline || '';
+        $('summarySituation').innerHTML = String(s.situation || '')
+          .split(/\n{2,}/).filter(Boolean).map(par => `<p>${esc(par)}</p>`).join('');
+
+        $('summaryChallenges').innerHTML = (s.challenges || [])
+          .map(c => `<div class="card"><strong>${esc(c.title)}</strong><span>${esc(c.detail)}</span></div>`)
+          .join('');
+        $('summaryTopics').innerHTML = (s.topics || [])
+          .map(t => `<div class="card"><strong>${esc(t.title)}</strong><span>${esc(t.why)}</span></div>`)
+          .join('');
+
+        $('summaryLoading').hidden = true;
+        $('summaryContent').hidden = false;
+      } catch (e) {
+        console.error('[enm-quiz] summary failed', e);
+        /* The scored result is the product; the summary is a bonus. Drop the
+           whole block rather than leaving a broken spinner on the page. */
+        $('summaryBlock').hidden = true;
+      }
+    }
+
+    /* ── Partner invite ────────────────────────────────────────────────────── */
+    $('partnerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const partnerEmail = $('partnerEmail').value.trim();
+      const note = $('partnerNote');
+      const btn = $('partnerSubmit');
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(partnerEmail)) {
+        note.hidden = false;
+        note.textContent = 'That does not look like a valid email address.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      note.hidden = true;
+
+      try {
+        const { data, error } = await supabase.functions.invoke(INVITE_FN, {
+          body: { action: 'send', run_id: state.runId, partner_email: partnerEmail },
+        });
+        if (error || data?.error) throw new Error(data?.error || 'send failed');
+        $('partnerForm').hidden = true;
+        note.hidden = false;
+        note.textContent = `Invite sent to ${partnerEmail}.`;
+      } catch (err) {
+        console.error('[enm-quiz] invite failed', err);
+        note.hidden = false;
+        note.textContent = 'Could not send that invite just now. Try again in a moment.';
+        btn.disabled = false;
+        btn.textContent = 'Send';
+      }
+    });
+
+    /* ── Admin panel ───────────────────────────────────────────────────────── */
+    /* Loaded last and entirely optional: any failure here must leave the quiz
+       itself working for the public. */
+    (async function initAdmin() {
+      let isStaff = false;
+      try {
+        const { initAuth, getAuthState } = await import('/shared/auth.js');
+        await initAuth();
+        isStaff = ['admin', 'staff'].includes(getAuthState().role);
+      } catch (e) {
+        console.debug('[enm-quiz] auth unavailable, admin panel stays hidden', e);
+        return;
+      }
+      if (!isStaff) return;
+
+      const panel = $('adminPanel');
+      panel.hidden = false;
+      $('adminEmail').value = localStorage.getItem(ADMIN_EMAIL_KEY) || '';
+
+      async function loadItems() {
+        const { data, error } = await supabase
+          .from('enm_quiz_review_items')
+          .select('id, question_number, category, title, finding, recommendation, status, applied_at')
+          .order('sort_order').order('question_number');
+
+        const host = $('adminItems');
+        if (error) { host.textContent = `Could not load review items: ${error.message}`; return; }
+        if (!data?.length) { host.textContent = 'No review items yet. Run a review below.'; return; }
+
+        host.innerHTML = '';
+        let lastGroup = null;
+        data.forEach(item => {
+          const group = item.question_number === 0 ? 'Across the whole quiz' : 'Individual questions';
+          if (group !== lastGroup) {
+            const h = document.createElement('div');
+            h.className = 'admin-group';
+            h.textContent = group;
+            host.appendChild(h);
+            lastGroup = group;
+          }
+
+          const el = document.createElement('div');
+          el.className = 'item';
+          el.dataset.status = item.status;
+          el.innerHTML =
+            `<div class="head">
+               <span class="qnum">${item.question_number === 0 ? 'Quiz' : 'Q' + item.question_number}</span>
+               <span class="cat">${esc(item.category)}</span>
+               <span class="title">${esc(item.title)}</span>
+             </div>
+             <p class="finding">${esc(item.finding)}</p>
+             <p class="rec"><b>Do this:</b> ${esc(item.recommendation)}</p>
+             <div class="decide"></div>`;
+
+          const decide = el.querySelector('.decide');
+          [['accepted', 'Yes'], ['declined', 'No'], ['postponed', 'Postpone']].forEach(([value, label]) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = label;
+            b.setAttribute('aria-pressed', String(item.status === value));
+            b.addEventListener('click', async () => {
+              const next = item.status === value ? 'pending' : value;
+              const { error: uErr } = await supabase
+                .from('enm_quiz_review_items')
+                .update({ status: next, decided_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+                .eq('id', item.id);
+              if (uErr) { alert(`Could not save: ${uErr.message}`); return; }
+              item.status = next;
+              el.dataset.status = next;
+              decide.querySelectorAll('button').forEach(x =>
+                x.setAttribute('aria-pressed', String(x === b && next !== 'pending')));
+            });
+            decide.appendChild(b);
+          });
+
+          if (item.applied_at) {
+            const applied = document.createElement('span');
+            applied.className = 'applied';
+            applied.textContent = `applied ${new Date(item.applied_at).toLocaleDateString()}`;
+            decide.appendChild(applied);
+          }
+
+          host.appendChild(el);
+        });
+      }
+
+      await loadItems();
+
+      async function callAi(body, outEl, button, workingLabel) {
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = workingLabel;
+        outEl.classList.add('show');
+        outEl.textContent = 'Working…';
+        try {
+          const { data, error } = await supabase.functions.invoke(AI_FN, { body });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          return data;
+        } catch (e) {
+          outEl.textContent = `Failed: ${e.message || e}`;
+          return null;
+        } finally {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      }
+
+      $('promptSend').addEventListener('click', async () => {
+        const prompt = $('promptBox').value.trim();
+        if (!prompt) return;
+        const data = await callAi({ action: 'prompt', prompt }, $('promptOut'), $('promptSend'), 'Thinking…');
+        if (data) $('promptOut').textContent = data.reply || '(empty response)';
+      });
+
+      $('reviewRefresh').addEventListener('click', async () => {
+        /* Hand the model the quiz as it actually stands rather than a summary. */
+        const quizText = QUIZ.questions.map((q, i) =>
+          `Q${i + 1} [${q.multi ? 'multi' : 'single'}${q.answerType === 'image' ? ', image' : ''}]: ${q.title}\n` +
+          q.options.map((o, j) =>
+            `   ${j}. ${o.text}  -> result ${JSON.stringify(o.result)}`).join('\n'),
+        ).join('\n\n') + '\n\nResults: ' + QUIZ.results.map(r => `${r.index}=${r.title}`).join(', ');
+
+        const data = await callAi({ action: 'review', quiz_text: quizText },
+          $('reviewOut'), $('reviewRefresh'), 'Reviewing…');
+        if (data) {
+          $('reviewOut').textContent = `Added ${data.added} new finding(s).`;
+          await loadItems();
+        }
+      });
+
+      $('updateSite').addEventListener('click', async () => {
+        const email = $('adminEmail').value.trim();
+        const out = $('updateOut');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+          out.classList.add('show');
+          out.textContent = 'Enter the email address that should get the confirmation.';
+          $('adminEmail').focus();
+          return;
+        }
+        localStorage.setItem(ADMIN_EMAIL_KEY, email);
+
+        const { data: accepted } = await supabase
+          .from('enm_quiz_review_items').select('id').eq('status', 'accepted').is('applied_at', null);
+
+        if (!accepted?.length) {
+          out.classList.add('show');
+          out.textContent = 'Nothing to apply — mark at least one item Yes first.';
+          return;
+        }
+
+        if (!confirm(
+          `Apply ${accepted.length} accepted item(s) to this page, commit to main and deploy?\n\n` +
+          `Only rahulio/pages/enmtest/ can be changed. You will get an email at ${email} when it is live.`
+        )) return;
+
+        const data = await callAi(
+          { action: 'site-update', email, review_item_ids: accepted.map(i => i.id) },
+          out, $('updateSite'), 'Queuing…');
+
+        if (data) {
+          out.textContent = data.dispatched
+            ? `Queued and CI started. Change ${data.change_id.slice(0, 8)}. ` +
+              `You will get an email at ${email} when the deploy is live.`
+            : `Queued as change ${data.change_id.slice(0, 8)}. No dispatch token is configured, ` +
+              `so the scheduled run will pick it up within 15 minutes and email ${email}.`;
+        }
+      });
+    })();
   </script>
 </body>
 </html>

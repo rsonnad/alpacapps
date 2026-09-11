@@ -71,3 +71,7 @@ __pycache__/
 # Rental contracts contain renter PII — keep local, store in R2
 contracts/*.pdf
 contracts/generate_weekley_contract.py
+
+# Supabase CLI / Deno scratch, created by local tooling
+deno.lock
+supabase/.temp/linked-project.json

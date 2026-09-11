@@ -1,0 +1,46 @@
+# Applies ENM-quiz site changes that an admin approved on the page itself.
+#
+# The edge function only queues a row; the commit happens here so it can use the
+# repository's own GITHUB_TOKEN. repository_dispatch makes an approved rebuild
+# effectively immediate, and the schedule is the safety net for when no dispatch
+# token is configured.
+name: ENM quiz site update
+
+on:
+  repository_dispatch:
+    types: [enm-quiz-site-update]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      change_id:
+        description: 'Apply one specific queued change (blank = all queued)'
+        required: false
+
+concurrency:
+  group: enm-quiz-site-update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply queued changes
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_ENM_KEY: ${{ secrets.OPENROUTER_ENM_KEY }}
+          CHANGE_ID: ${{ github.event.client_payload.change_id || inputs.change_id }}
+        run: node scripts/enm-quiz-apply-site-changes.mjs
