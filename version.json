@@ -1,12 +1,12 @@
 {
-  "version": "v260911.01 2:37p",
-  "release": 1846,
-  "sha": "e6975bb1af",
-  "fullSha": "e6975bb1af34c3705ec7f99fb96c06d8789f2816",
+  "version": "v260911.02 3:56p",
+  "release": 1847,
+  "sha": "fcbfffa361",
+  "fullSha": "fcbfffa361ca3c1819a88cb5e43cf436cd3a9301",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmlun5p",
-  "pushedAt": "2026-09-11T19:37:39+00:00",
-  "commits": [{"sha":"db45ec6177","message":"Port the ENM Style quiz to rahulio/pages/enmtest with its own backend","author":"Blotto"},{"sha":"e6975bb1af","message":"Explain the blank page when enmtest is opened as a file:// URL","author":"Blotto"}]
+  "pushedAt": "2026-09-11T20:56:20+00:00",
+  "commits": [{"sha":"fcbfffa361","message":"ENM quiz: email gate at the end, partner invites, AI summary, admin review","author":"Blotto"}]
 }
