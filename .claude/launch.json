@@ -2,27 +2,63 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "alpacapps-porto",
+      "runtimeExecutable": "/opt/homebrew/bin/python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8094",
+        "--directory",
+        "/Volumes/PortoSams2T/CodingProjectx/alpacapps"
+      ],
+      "port": 8094
+    },
+    {
       "name": "alpacapps-local",
       "runtimeExecutable": "/opt/homebrew/bin/python3",
-      "runtimeArgs": ["-m", "http.server", "8093", "--directory", "/Users/otter/Documents/codingprojects/alpacapps"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8093",
+        "--directory",
+        "/Users/otter/Documents/codingprojects/alpacapps"
+      ],
       "port": 8093
     },
     {
       "name": "alpacapps",
       "runtimeExecutable": "/opt/homebrew/bin/python3",
-      "runtimeArgs": ["-m", "http.server", "8091", "--directory", "/Users/rahulio/Documents/CodingProjects/genalpaca-admin/.claude/worktrees/elated-northcutt"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8091",
+        "--directory",
+        "/Users/rahulio/Documents/CodingProjects/genalpaca-admin/.claude/worktrees/elated-northcutt"
+      ],
       "port": 8091
     },
     {
       "name": "mistiq-cards",
       "runtimeExecutable": "/opt/homebrew/bin/python3",
-      "runtimeArgs": ["-m", "http.server", "8092", "--directory", "/Users/rahulio/Documents/CodingProjects/genalpaca-admin/.claude/worktrees/optimistic-sammet/mistiq"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8092",
+        "--directory",
+        "/Users/rahulio/Documents/CodingProjects/genalpaca-admin/.claude/worktrees/optimistic-sammet/mistiq"
+      ],
       "port": 8092
     },
     {
       "name": "finleg",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "-p", "3001"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3001"
+      ],
       "port": 3001,
       "cwd": "/Users/rahulio/Documents/CodingProjects/finleg"
     }

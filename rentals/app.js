@@ -825,6 +825,17 @@ function displaySpaceDetail(space) {
     `;
   });
 
+  // Final card: link to the full photo gallery (house + events)
+  ancestorPhotosHtml += `
+    <div class="detail-section detail-photos detail-more-photos">
+      <a class="more-photos-card" href="https://alpacaplayhouse.com/photos" target="_blank" rel="noopener">
+        <span class="more-photos-icon">📷</span>
+        <span class="more-photos-text">Click here for many more photos of the house and events</span>
+        <span class="more-photos-arrow">→</span>
+      </a>
+    </div>
+  `;
+
   // Availability info
   const availFromStr = space.isAvailable ? 'Now' : (space.availableFrom ? formatDate(space.availableFrom) : 'TBD');
   const availUntilStr = space.availableUntil ? formatDate(space.availableUntil) : 'Ongoing';
