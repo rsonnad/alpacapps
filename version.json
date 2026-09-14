@@ -1,12 +1,12 @@
 {
-  "version": "v260912.01 6:58p",
-  "release": 1851,
-  "sha": "2dcdb49d5e",
-  "fullSha": "2dcdb49d5e5c0d55b3ce529428d5ae357b3834c7",
+  "version": "v260914.01 8:20a",
+  "release": 1852,
+  "sha": "7c2d99c238",
+  "fullSha": "7c2d99c238ef2569a9b95b47a8ad8a3977b6730f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmlun5p",
-  "pushedAt": "2026-09-12T23:58:29+00:00",
-  "commits": [{"sha":"2dcdb49d5e","message":"feat(rentals): more-photos link card in space modal; unlist cabins; Master Pasture Suite $995 from Oct 1","author":"Paca"}]
+  "pushedAt": "2026-09-14T13:20:34+00:00",
+  "commits": [{"sha":"7c2d99c238","message":"Stop daily digest emails for expired approval-queue items.","author":"Blotto"}]
 }
