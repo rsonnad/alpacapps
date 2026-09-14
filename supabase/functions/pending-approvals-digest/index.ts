@@ -44,11 +44,21 @@ serve(async (req) => {
   const legacyJwt = Deno.env.get('LEGACY_SERVICE_ROLE_KEY') || supabaseServiceKey;
   const sb = createClient(supabaseUrl, supabaseServiceKey);
 
+  // Approve links refuse past expires_at (7-day limit). Mark those expired
+  // here so they drop out of the digest instead of nagging forever.
+  const nowIso = new Date().toISOString();
+  await sb
+    .from('pending_email_approvals')
+    .update({ status: 'expired' })
+    .eq('status', 'pending')
+    .lt('expires_at', nowIso);
+
   const cutoffIso = new Date(Date.now() - STUCK_THRESHOLD_HOURS * 60 * 60 * 1000).toISOString();
   const { data: stuck, error } = await sb
     .from('pending_email_approvals')
     .select('id, email_type, to_addresses, subject, created_at, expires_at, approval_token')
     .eq('status', 'pending')
+    .gt('expires_at', nowIso)
     .lt('created_at', cutoffIso)
     .order('created_at', { ascending: true });
 

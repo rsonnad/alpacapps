@@ -4,6 +4,7 @@
 
 ## Recent Changes to Be Aware Of
 
+0. **Expired email approvals no longer stay in the daily digest** — `pending-approvals-digest` now marks past-`expires_at` rows `expired` before counting stuck mail. Approve links already refused those (7-day limit), so they were dead items that kept the 8 AM digest firing.
 0. **HAOS VM disk grown 20→30 GB (v260908)** — Supervisor backups were blocked at 0 GB free. Image is `haos_generic-aarch64-17.1.img`; LaunchDaemon `com.alpacapps.homeassistant-vm` KeepAlive-restarts QEMU — bootout that plist before `qemu-img resize`. App snapshots live in `haos_backups`; VM copies in `/Volumes/rvault20/BackupsRS/haos-vm/`.
 1. **AlpacApps RVAULT backups self-heal; email after 2 days (v260908)** — Weekly backup died every Monday since 2026-04-27 (`aws` hardcoded at `/usr/local/bin/aws`). Watchdog now treats stale `backup_files` as unhealthy, repairs and re-queues, and emails `rahulioson@gmail.com` only after 2 days of failed repair. **Do not** restore the Intel aws path or the "no failed triggers in 24h = healthy" check.
 1. **Infra page hero banner redesign (v260310)** — Both `/infra/index.html` and `/docs/alpacappsinfra.html` use a full-width banner card hero (alpaca AI banner image spanning the card width, text below). **Do NOT revert to the old dark full-bleed hero** — it was lost once already and had to be restored. Both files have a `⚠️ HERO BANNER` HTML comment marking the section.
