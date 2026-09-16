@@ -919,6 +919,7 @@ function formatRecurrence(schedule) {
     case 'weekdays': return 'Weekdays';
     case 'weekends': return 'Weekends';
     case 'once': return schedule.one_time_date || 'Once';
+    case 'every_other_day': return schedule.one_time_date ? `Every other day (from ${schedule.one_time_date})` : 'Every other day';
     case 'custom': {
       const dayNames = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       return (schedule.custom_days || []).map(d => dayNames[d] || d).join(', ');
@@ -1027,6 +1028,7 @@ function openScheduleModal(schedule = null) {
             <option value="weekdays" ${schedule?.recurrence === 'weekdays' ? 'selected' : ''}>Weekdays</option>
             <option value="weekends" ${schedule?.recurrence === 'weekends' ? 'selected' : ''}>Weekends</option>
             <option value="custom" ${schedule?.recurrence === 'custom' ? 'selected' : ''}>Custom Days</option>
+            <option value="every_other_day" ${schedule?.recurrence === 'every_other_day' ? 'selected' : ''}>Every Other Day</option>
             <option value="once" ${schedule?.recurrence === 'once' ? 'selected' : ''}>One Time</option>
           </select>
         </div>
@@ -1052,8 +1054,8 @@ function openScheduleModal(schedule = null) {
             ).join('')}
           </div>
         </div>
-        <div class="form-group" id="oneDateGroup" style="display:${schedule?.recurrence === 'once' ? 'block' : 'none'}">
-          <label>Date</label>
+        <div class="form-group" id="oneDateGroup" style="display:${(schedule?.recurrence === 'once' || schedule?.recurrence === 'every_other_day') ? 'block' : 'none'}">
+          <label id="oneDateLabel">${schedule?.recurrence === 'every_other_day' ? 'Start date (fires this day and every 2nd day after)' : 'Date'}</label>
           <input type="date" name="one_time_date" value="${schedule?.one_time_date || ''}">
         </div>
         <label class="form-checkbox">
@@ -1075,7 +1077,11 @@ function openScheduleModal(schedule = null) {
   const recurrenceSelect = modal.querySelector('#scheduleRecurrence');
   recurrenceSelect.addEventListener('change', () => {
     modal.querySelector('#customDaysGroup').style.display = recurrenceSelect.value === 'custom' ? 'block' : 'none';
-    modal.querySelector('#oneDateGroup').style.display = recurrenceSelect.value === 'once' ? 'block' : 'none';
+    const showDate = recurrenceSelect.value === 'once' || recurrenceSelect.value === 'every_other_day';
+    modal.querySelector('#oneDateGroup').style.display = showDate ? 'block' : 'none';
+    modal.querySelector('#oneDateLabel').textContent = recurrenceSelect.value === 'every_other_day'
+      ? 'Start date (fires this day and every 2nd day after)'
+      : 'Date';
   });
   const providerSelect = modal.querySelector('#scheduleSourceProvider');
   const updateSourceFields = () => {
@@ -1118,7 +1124,9 @@ function openScheduleModal(schedule = null) {
       custom_days: form.recurrence.value === 'custom'
         ? [...form.querySelectorAll('[name="custom_days"]:checked')].map(c => parseInt(c.value))
         : null,
-      one_time_date: form.recurrence.value === 'once' ? form.one_time_date.value || null : null,
+      one_time_date: (form.recurrence.value === 'once' || form.recurrence.value === 'every_other_day')
+        ? form.one_time_date.value || null
+        : null,
       keep_grouped: form.keep_grouped.checked,
       shuffle: form.shuffle.checked,
       repeat_mode: form.repeat_mode.value,

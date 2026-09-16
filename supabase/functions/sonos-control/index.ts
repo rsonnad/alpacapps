@@ -854,6 +854,17 @@ serve(async (req) => {
           case "once":
             matchesDay = sched.one_time_date === todayDate;
             break;
+          case "every_other_day": {
+            // one_time_date doubles as the anchor date: this schedule fires on
+            // the anchor and every 2nd day after it.
+            if (sched.one_time_date) {
+              const anchor = new Date(`${sched.one_time_date}T00:00:00`);
+              const today = new Date(`${todayDate}T00:00:00`);
+              const diffDays = Math.round((today.getTime() - anchor.getTime()) / (24 * 60 * 60 * 1000));
+              matchesDay = diffDays >= 0 && diffDays % 2 === 0;
+            }
+            break;
+          }
           default:
             matchesDay = false;
         }
