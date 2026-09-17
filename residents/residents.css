@@ -5391,6 +5391,84 @@ span.sonos-library-item__star.starred {
   margin-bottom: 0.75rem;
 }
 
+/* Thermostat schedule rules */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.schedule-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+}
+
+.schedule-row.inactive {
+  opacity: 0.55;
+}
+
+.schedule-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.schedule-row__title {
+  font-weight: 600;
+}
+
+.schedule-row__detail {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.schedule-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.schedule-form {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.schedule-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.schedule-form input,
+.schedule-form select {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.schedule-form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* ===== WEATHER FORECAST ===== */
 .rain-summary__status {
   display: flex;

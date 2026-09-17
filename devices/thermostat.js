@@ -74,6 +74,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (hasPermission('admin_climate_settings')) {
         await loadNestSettings();
+        await loadSchedules();
+        setupScheduleEventListeners();
       }
     },
   });
@@ -1013,4 +1015,213 @@ async function discoverDevices() {
       btn.textContent = 'Discover Devices';
     }
   }
+}
+
+// =============================================
+// ADMIN: SCHEDULED AUTOMATIONS (thermostat_rules)
+// =============================================
+let schedules = [];
+
+const RECURRENCE_LABELS = { daily: 'daily', weekdays: 'weekdays', weekends: 'weekends' };
+
+async function loadSchedules() {
+  try {
+    const { data, error } = await supabase
+      .from('thermostat_rules')
+      .select('id, name, device_id, rule_type, conditions, actions, is_active, last_triggered, nest_devices(room_name)')
+      .eq('rule_type', 'scheduled_time')
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    schedules = data || [];
+    renderSchedules();
+    populateScheduleDeviceOptions();
+  } catch (err) {
+    console.error('Failed to load thermostat schedules:', err);
+    const list = document.getElementById('scheduleList');
+    if (list) list.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">Failed to load schedules.</p>';
+  }
+}
+
+function populateScheduleDeviceOptions() {
+  const select = document.getElementById('scheduleFormDevice');
+  if (!select) return;
+  select.innerHTML = thermostats.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.roomName)}</option>`).join('');
+}
+
+function formatTimeOfDay(hour, minute) {
+  const h = Number(hour), m = Number(minute) || 0;
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
+function renderSchedules() {
+  const list = document.getElementById('scheduleList');
+  if (!list) return;
+
+  if (!schedules.length) {
+    list.innerHTML = '<p class="text-muted" style="font-size: 0.85rem;">No scheduled automations yet.</p>';
+    return;
+  }
+
+  list.innerHTML = schedules.map(s => {
+    const cond = s.conditions || {};
+    const act = s.actions || {};
+    const timeStr = formatTimeOfDay(cond.hour, cond.minute);
+    const recurrence = RECURRENCE_LABELS[cond.recurrence] || cond.recurrence || 'daily';
+    const room = s.nest_devices?.room_name || 'Unknown room';
+    const actionStr = act.mode === 'OFF'
+      ? 'Off'
+      : `${formatMode(act.mode)}${act.temperature != null ? ` to ${act.temperature}°F` : ''}`;
+
+    return `
+      <div class="schedule-row ${s.is_active ? '' : 'inactive'}" data-schedule-id="${escapeHtml(s.id)}">
+        <div class="schedule-row__info">
+          <span class="schedule-row__title">${escapeHtml(room)} &mdash; ${actionStr}</span>
+          <span class="schedule-row__detail">${escapeHtml(recurrence)} at ${timeStr}${s.is_active ? '' : ' (paused)'}</span>
+        </div>
+        <div class="schedule-row__actions">
+          <button class="btn-small" data-schedule-action="toggle" data-schedule-id="${escapeHtml(s.id)}">${s.is_active ? 'Pause' : 'Resume'}</button>
+          <button class="btn-small" data-schedule-action="edit" data-schedule-id="${escapeHtml(s.id)}">Edit</button>
+          <button class="btn-small btn-secondary" data-schedule-action="delete" data-schedule-id="${escapeHtml(s.id)}">Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openScheduleForm(schedule = null) {
+  const form = document.getElementById('scheduleForm');
+  if (!form) return;
+  form.classList.remove('hidden');
+
+  const idField = document.getElementById('scheduleFormId');
+  const deviceField = document.getElementById('scheduleFormDevice');
+  const timeField = document.getElementById('scheduleFormTime');
+  const recurrenceField = document.getElementById('scheduleFormRecurrence');
+  const modeField = document.getElementById('scheduleFormMode');
+  const tempField = document.getElementById('scheduleFormTemp');
+
+  if (schedule) {
+    const cond = schedule.conditions || {};
+    const act = schedule.actions || {};
+    idField.value = schedule.id;
+    if (schedule.device_id) deviceField.value = schedule.device_id;
+    timeField.value = `${String(cond.hour ?? 21).padStart(2, '0')}:${String(cond.minute ?? 0).padStart(2, '0')}`;
+    recurrenceField.value = cond.recurrence || 'daily';
+    modeField.value = act.mode || 'COOL';
+    tempField.value = act.temperature ?? 88;
+  } else {
+    idField.value = '';
+    timeField.value = '21:00';
+    recurrenceField.value = 'daily';
+    modeField.value = 'COOL';
+    tempField.value = 88;
+  }
+  updateScheduleFormTempVisibility();
+  form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeScheduleForm() {
+  document.getElementById('scheduleForm')?.classList.add('hidden');
+}
+
+function updateScheduleFormTempVisibility() {
+  const mode = document.getElementById('scheduleFormMode')?.value;
+  const tempWrap = document.getElementById('scheduleFormTempWrap');
+  if (tempWrap) tempWrap.style.display = mode === 'OFF' ? 'none' : '';
+}
+
+async function saveScheduleForm() {
+  const id = document.getElementById('scheduleFormId')?.value;
+  const deviceId = document.getElementById('scheduleFormDevice')?.value;
+  const time = document.getElementById('scheduleFormTime')?.value || '21:00';
+  const recurrence = document.getElementById('scheduleFormRecurrence')?.value;
+  const mode = document.getElementById('scheduleFormMode')?.value;
+  const temp = document.getElementById('scheduleFormTemp')?.value;
+
+  if (!deviceId) {
+    showToast('Pick a thermostat', 'error');
+    return;
+  }
+
+  const [hour, minute] = time.split(':').map(Number);
+  const device = thermostats.find(t => t.id === deviceId);
+  const conditions = { hour, minute, recurrence: recurrence || 'daily' };
+  const actions = mode === 'OFF' ? { mode: 'OFF' } : { mode, temperature: Number(temp) };
+  const name = `${device?.roomName || 'Thermostat'} scheduled ${mode === 'OFF' ? 'off' : `${mode.toLowerCase()} ${temp}°F`}`;
+
+  const saveBtn = document.getElementById('scheduleFormSave');
+  saveBtn.disabled = true;
+  try {
+    if (id) {
+      const { error } = await supabase
+        .from('thermostat_rules')
+        .update({ device_id: deviceId, name, conditions, actions, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+      showToast('Schedule updated', 'success', 2000);
+    } else {
+      const { error } = await supabase
+        .from('thermostat_rules')
+        .insert({ device_id: deviceId, name, rule_type: 'scheduled_time', conditions, actions, is_active: true, priority: 0 });
+      if (error) throw error;
+      showToast('Schedule created', 'success', 2000);
+    }
+    closeScheduleForm();
+    await loadSchedules();
+  } catch (err) {
+    showToast(`Failed to save schedule: ${err.message}`, 'error');
+  } finally {
+    saveBtn.disabled = false;
+  }
+}
+
+async function toggleSchedule(id) {
+  const s = schedules.find(r => r.id === id);
+  if (!s) return;
+  try {
+    const { error } = await supabase
+      .from('thermostat_rules')
+      .update({ is_active: !s.is_active, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+    await loadSchedules();
+  } catch (err) {
+    showToast(`Failed to update schedule: ${err.message}`, 'error');
+  }
+}
+
+async function deleteSchedule(id) {
+  const s = schedules.find(r => r.id === id);
+  if (!s) return;
+  if (!confirm(`Delete schedule "${s.name}"?`)) return;
+  try {
+    const { error } = await supabase.from('thermostat_rules').delete().eq('id', id);
+    if (error) throw error;
+    showToast('Schedule deleted', 'success', 2000);
+    await loadSchedules();
+  } catch (err) {
+    showToast(`Failed to delete schedule: ${err.message}`, 'error');
+  }
+}
+
+function setupScheduleEventListeners() {
+  document.getElementById('addScheduleBtn')?.addEventListener('click', () => openScheduleForm());
+  document.getElementById('scheduleFormCancel')?.addEventListener('click', closeScheduleForm);
+  document.getElementById('scheduleFormSave')?.addEventListener('click', saveScheduleForm);
+  document.getElementById('scheduleFormMode')?.addEventListener('change', updateScheduleFormTempVisibility);
+
+  document.getElementById('scheduleList')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-schedule-action]');
+    if (!btn) return;
+    const id = btn.dataset.scheduleId;
+    const action = btn.dataset.scheduleAction;
+    if (action === 'toggle') toggleSchedule(id);
+    else if (action === 'delete') deleteSchedule(id);
+    else if (action === 'edit') {
+      const s = schedules.find(r => r.id === id);
+      if (s) openScheduleForm(s);
+    }
+  });
 }
