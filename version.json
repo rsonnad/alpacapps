@@ -1,12 +1,12 @@
 {
-  "version": "v260914.01 8:20a",
-  "release": 1852,
-  "sha": "7c2d99c238",
-  "fullSha": "7c2d99c238ef2569a9b95b47a8ad8a3977b6730f",
+  "version": "v260918.01 11:27a",
+  "release": 1853,
+  "sha": "a48fd57148",
+  "fullSha": "a48fd5714816c54c09f71aa26836a79c656866b6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmlun5p",
-  "pushedAt": "2026-09-14T13:20:34+00:00",
-  "commits": [{"sha":"7c2d99c238","message":"Stop daily digest emails for expired approval-queue items.","author":"Blotto"}]
+  "pushedAt": "2026-09-18T16:27:10+00:00",
+  "commits": [{"sha":"0ad771aa31","message":"Add every_other_day recurrence to Sonos schedule runner","author":"Blotto"},{"sha":"2cdf849422","message":"Widen sonos_schedules CHECK constraints for every_other_day + url","author":"Blotto"},{"sha":"a48fd57148","message":"Merge pull request #130 from rsonnad/claude/leonard-cohen-playlist-f20572","author":"Rahul"}]
 }
