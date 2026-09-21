@@ -8,18 +8,20 @@ Use for AlpacApps Supabase project `aphrrfprbixmhissnjfn`.
 
 ### Get Management Token
 
-Preferred Bitwarden item:
+Bitwarden item name is `Supabase — AlpacApps Project` (em dash, not hyphen).
+Field: `Management API Token`.
 
 ```bash
-MGMT_TOKEN=$(bw get item "fd5b3ae7-d6a7-4e57-8475-b410007ea3a7" 2>/dev/null \
-  | python3 -c "import sys,json; item=json.load(sys.stdin); [print(f['value'], end='') for f in item.get('fields', []) if f['name'] == 'Management API Token']")
+export BW_SESSION=$(cat ~/.bw-session)
+MGMT_TOKEN=$(~/bin/bw-read 'Supabase — AlpacApps Project' 'Management API Token')
 ```
 
-If Bitwarden is locked, unlock first:
+**Pass the item NAME, never the UUID.** `bw-read` resolves via
+`bw list items --search`, which matches names and URIs but not ids — a UUID
+returns `item not found`. Verified 2026-09-21.
 
-```bash
-export BW_SESSION=$(~/bin/bw-unlock)
-```
+If that errors with `vault is locked; open bwaccesser first`, open **bwaccesser**
+to mint `~/.bw-session`. `bw-read` does not unlock on its own.
 
 ### Run SQL
 
@@ -49,16 +51,14 @@ The endpoint returns `201` with `[]` on success for a write-only migration.
 
 ### Bitwarden Is Per-Machine
 
-`bw-read` / `~/bin/bw-unlock` unlock headlessly only where the master password is in
-that machine's Keychain. Keychains do not sync between BlackbookPro16 and Alpuca, so
-storing it on one does nothing for the other:
+`~/.bw-session` is per-machine and does not sync between BlackbookPro16 and Alpuca.
+The current `bw-read` never unlocks by itself — it reads `BW_SESSION`, else
+`~/.bw-session`, and exits 1 otherwise. Open **bwaccesser** on the machine you are
+actually running from.
 
-```bash
-security add-generic-password -U -s bw-master -a "$USER" -w
-```
-
-As of 2026-09-03 this is present on **Alpuca** and absent on **BlackbookPro16**, so
-run Supabase management calls from Alpuca over `ssh alpuca 'bash -s' < script.sh`.
+Sessions lapse. A previously working recipe failing with `vault is locked` means the
+session expired, not that the item name or field is wrong — reopen bwaccesser before
+re-diagnosing anything else.
 
 ### Deploy Telnyx Webhook
 
