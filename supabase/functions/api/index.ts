@@ -748,7 +748,7 @@ async function handleProfile(supabase: any, req: ApiRequest, auth: any, _perm: a
 
 // ─── vehicles ───────────────────────────────────────────────────────
 
-async function handleVehicles(supabase: any, req: ApiRequest, auth: any, _perm: any): Promise<Response> {
+async function handleVehicles(supabase: any, req: ApiRequest, auth: any, perm: any): Promise<Response> {
   switch (req.action) {
     case "list": {
       let query = supabase
@@ -788,9 +788,17 @@ async function handleVehicles(supabase: any, req: ApiRequest, auth: any, _perm: 
 
     case "update": {
       if (!req.id) return error("id is required", 400);
+      // Staff / API-key callers (level < 3) can only write registration fields.
+      let payload = req.data || {};
+      if (auth.userLevel < 3 && perm.staffFields) {
+        payload = Object.fromEntries(
+          Object.entries(payload).filter(([k]) => perm.staffFields!.includes(k))
+        );
+      }
+      if (!Object.keys(payload).length) return error("No permitted fields in update payload", 400);
       const { data, error: err } = await supabase
         .from("vehicles")
-        .update(req.data)
+        .update(payload)
         .eq("id", req.id)
         .select()
         .single();

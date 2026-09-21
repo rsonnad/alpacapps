@@ -111,7 +111,13 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     list:   { minLevel: 1 },
     get:    { minLevel: 1 },
     create: { minLevel: 3 },
-    update: { minLevel: 2 },
+    // Staff/API-key callers (level < 3) may only touch registration fields;
+    // vin, license_plate, ownership, etc. require admin. Used by the
+    // "Meta Muse" registration-update agent's scoped API key.
+    update: { minLevel: 2, staffFields: [
+      "registration_state", "registration_number", "registration_expiry",
+      "registration_doc_url", "registered_owner_name",
+    ]},
     delete: { minLevel: 3 },
   },
 

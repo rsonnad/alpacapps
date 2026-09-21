@@ -381,10 +381,14 @@ apikey: <SUPABASE_ANON_KEY>
 | list | 1 | All residents can see active vehicles. Ordered by display_order. |
 | get | 1 | Includes full `last_state` JSONB. |
 | create | 3 | Admin only |
-| update | 2 | Staff can update state. Admin for config. |
+| update | 2 | Staff/API-key callers (level 2) can only write `registration_*` fields (see below). Admin (level 3+) can update any column. |
 | delete | 3 | Soft delete (sets `is_active = false`) |
 
 **Key columns:** `id`, `name`, `make`, `model`, `year`, `color`, `color_hex`, `vin`, `owner_name`, `vehicle_state` (online/asleep/offline/unknown), `display_order`, `is_active`, `last_state` (JSONB), `last_synced_at`
+
+**Registration columns** (writable by level-2 callers, e.g. an API key scoped to `vehicles`/`update`): `registration_state`, `registration_number`, `registration_expiry` (date), `registration_doc_url`, `registered_owner_name`. Added in `supabase/migrations/20260921_vehicle_registration_fields.sql`.
+
+**Scoped API key for external registration-updating agents:** create one with `scripts/create-api-key.js` (`permission_level: 2`, `allowed_resources: ["vehicles"]`, `allowed_actions: ["list","get","update"]`). The `staffFields` allowlist in `api-permissions.ts` means such a key can never write `vin`, `license_plate`, or other non-registration columns even if misused — only the fields listed above.
 
 **`last_state` JSONB includes:** `battery_level`, `range_miles`, `charging_state`, `locked`, `latitude`, `longitude`, `speed_mph`, `odometer_miles`, `inside_temp_f`, `outside_temp_f`, `tire_pressure_fl/fr/rl/rr`
 
