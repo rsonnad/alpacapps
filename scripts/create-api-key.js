@@ -15,7 +15,6 @@
  *     --actions list,get,update
  */
 
-import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
@@ -41,8 +40,6 @@ if (!name) {
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
 async function main() {
   const secret = crypto.randomBytes(24).toString('base64url'); // ~32 chars, URL-safe
   const prefix = 'amk_'; // AlpacApps Meta-muse Key
@@ -50,9 +47,15 @@ async function main() {
   const keyHash = crypto.createHash('sha256').update(plaintextKey).digest('hex');
   const keyPrefix = plaintextKey.slice(0, 12); // for display in admin UI, e.g. "amk_AbCdEfGh"
 
-  const { data, error } = await supabase
-    .from('api_keys')
-    .insert({
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/api_keys`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_SERVICE_ROLE_KEY,
+      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+    },
+    body: JSON.stringify({
       name,
       key_hash: keyHash,
       key_prefix: keyPrefix,
@@ -60,14 +63,15 @@ async function main() {
       allowed_resources: resources.length ? resources : null,
       allowed_actions: actions,
       is_active: true,
-    })
-    .select()
-    .single();
+    }),
+  });
 
-  if (error) {
-    console.error('Insert failed:', error.message);
+  if (!res.ok) {
+    console.error('Insert failed:', res.status, await res.text());
     process.exit(1);
   }
+
+  const [data] = await res.json();
 
   console.log('Created API key row:', data.id);
   console.log('');
