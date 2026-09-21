@@ -1,12 +1,12 @@
 {
-  "version": "v260921.01 12:18p",
-  "release": 1854,
-  "sha": "0bdf0449a1",
-  "fullSha": "0bdf0449a12e39557809e44273efb47f7dd35355",
+  "version": "v260921.02 4:00p",
+  "release": 1855,
+  "sha": "b53e4e6f75",
+  "fullSha": "b53e4e6f75e795de806d4360c533e993cabc1b28",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmlun5p",
-  "pushedAt": "2026-09-21T17:18:38+00:00",
-  "commits": [{"sha":"0bdf0449a1","message":"memory: correct Supabase token recipe for current bw-read","author":"Blotto"}]
+  "pushedAt": "2026-09-21T21:00:42+00:00",
+  "commits": [{"sha":"8fed9ec88f","message":"Add vehicle registration fields + scoped API key path for Meta Muse agent","author":"Blotto"},{"sha":"b53e4e6f75","message":"Drop @supabase/supabase-js dep from create-api-key.js","author":"Blotto"}]
 }
