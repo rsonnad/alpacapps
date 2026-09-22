@@ -1,12 +1,12 @@
 {
-  "version": "v260922.01 1:54p",
-  "release": 1856,
-  "sha": "9753d66b82",
-  "fullSha": "9753d66b822b9f2934bee0c6c329f625ec69624e",
+  "version": "v260922.02 2:16p",
+  "release": 1857,
+  "sha": "13f39df36e",
+  "fullSha": "13f39df36e89ea74b9b48f96d741e6d2b4d53f6f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmlun5p",
-  "pushedAt": "2026-09-22T18:54:53+00:00",
-  "commits": [{"sha":"9753d66b82","message":"docs(lighting): add Shower Tower group, flag stale Govee API key","author":"Blotto"}]
+  "machine": "runnervmtr4k5",
+  "pushedAt": "2026-09-22T19:16:25+00:00",
+  "commits": [{"sha":"13f39df36e","message":"feat(signing): e-signing for vehicle rental agreements","author":"Blotto"}]
 }
