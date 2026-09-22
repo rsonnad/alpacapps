@@ -24,7 +24,7 @@ On Alpuca or via SSH. No entity IDs needed.
 ssh paca@192.168.1.200 "~/lights.sh kitchen,living red"
 ```
 
-**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `dining`, `facade`, `sauna`, `cabins-fence`, `garage`, `garage-ceiling`, `garage-dj`, `garage-dj-strip`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `all`
+**Rooms:** `kitchen`, `kitchen-nook`, `living`, `skyloft`, `skyloft-bath`, `master-bath`, `stairs`, `cabin`, `nook`, `dining`, `facade`, `sauna`, `cabins-fence`, `garage`, `garage-ceiling`, `garage-dj`, `garage-dj-strip`, `garage-opener`, `outhouse`, `cedar`, `fishbowl`, `tea-lounge`, `spartan`, `shower-tower`, `all`
 **Colors:** `red`, `green`, `blue`, `purple`, `magenta`, `pink`, `cyan`, `orange`, `amber`, `white`, `daylight`, `soft`, `warm`, `on`, `off`, `NNNNk` (e.g. `2700k`), or `#RRGGBB` hex
 **Brightness:** Optional percentage, e.g. `50%`. Default is 100%.
 
@@ -376,6 +376,36 @@ Individual Govee BR30s: `light.kitchen_ceiling_5`, `light.kitchen_ceiling_6`, `l
 
 ---
 
+### Shower Tower
+
+**Entity:** `light.shower_tower` (15 members: 2 downlights, 4 flood segments, 9 bulbs). HA area `shower_tower` on the Sparadise floor. Mirrors the "Shower Tower" room in the Govee app.
+
+```bash
+~/lights.sh shower-tower soft 10%     # aliases: showertower, shower
+~/ha-cmd.sh 'light/turn_on' '{"entity_id":"light.shower_tower","brightness_pct":10}'
+```
+
+| Device | Model | HAOS Entity | MAC |
+|--------|-------|-------------|-----|
+| Shower LED Downlight | H7075 | `light.shower_led_downlight` | F0:72:DB:C3:46:06:4C:3E |
+| Shower Nook Downlight | H7075 | `light.shower_nook_downlight` | 10:63:DB:C3:45:C6:63:24 |
+| shower flood | H7057 | `light.shower_flood_segment_1`–`_4` | 19:4B:DB:C3:43:86:13:70 |
+| Shower Tower Bulb 1 | H600B | `light.shower_tower_bulb_1` | 02:21:B0:A6:04:3C:1F:88 |
+| Shower Tower Bulb 2 | H600B | `light.shower_tower_bulb_2` | 59:30:DC:B4:D9:5A:A6:04 |
+| Shower Tower Bulb 3 | H600B | `light.shower_tower_bulb_3` | 69:7B:3C:DC:75:07:8A:64 |
+| Shower Tower Bulb 4 | H600B | `light.shower_tower_bulb_4` | 84:3E:B0:A6:04:3D:6B:AC |
+| Shower Tower Bulb 5 | H600B | `light.shower_tower_bulb_5` | 87:22:3C:DC:75:05:A4:B4 |
+| Shower Tower Bulb 6 | H600B | `light.shower_tower_bulb_6` | 8E:F3:B0:A6:04:3C:B3:C4 |
+| Shower Tower Bulb 7 | H600B | `light.shower_tower_bulb_7` | 92:06:B0:A6:04:2F:EE:30 |
+| Shower Tower Bulb 8 | H600B | `light.shower_tower_bulb_8` | E0:A1:B0:A6:04:2B:D2:90 |
+| Shower Tower Bulb 9 | H600B | `light.shower_tower_bulb_9` | FC:4C:DC:B4:D9:4C:AF:68 |
+
+> Bulb numbers follow MAC order, not physical position. Renumber once positions are mapped.
+> The group holds the flood's **segment** entities because `light.shower_flood` itself has reported `unavailable` since 2026-09-13 while its segments still respond.
+> The H600B bulbs are named "Shower Tower Bulb N" in HA only; in the Govee app they are still "Govee Smart Bulb".
+
+---
+
 ### Spartan Trailer
 
 Three spaces with 12 Govee H601F bars total, plus 2 strip lights and 2 porch lights.
@@ -619,6 +649,7 @@ Controlled via Govee cloud API. Groups accessible through `lights.sh`, HTTP API,
 | Spartan Cedar | `cedar` | HAOS (Govee integration) | 4 H601F | Light bars — see Spartan section |
 | Spartan Fishbowl | `fishbowl` | HAOS (Govee integration) | 2 H601F | Light bars — see Spartan section |
 | Spartan Lounge | `tea-lounge` | HAOS (Govee integration) | 6 H601F | Light bars — see Spartan section |
+| Shower Tower | `shower-tower` | HAOS (Govee integration) | 2 H7075, 1 H7057, 9 H600B | Downlights, flood, bulbs — see Shower Tower section |
 | Outdoor | — | Govee Cloud | 12 | String lights, fence, floods, pathway |
 | Interior | — | Govee Cloud | 5 | LED strips, star projector |
 
@@ -631,6 +662,10 @@ Controlled via Govee cloud API. Groups accessible through `lights.sh`, HTTP API,
 ```
 
 **Govee API key:** stored at `~/.govee-api-key` on Alpuca and in `govee_config` table (id=1).
+
+> **⚠ 2026-09-22:** the key in `~/.govee-api-key` returns **401**. The HAOS Govee integration holds its own key, which still works, so HAOS-routed rooms are unaffected. `lights.sh` never reaches its Govee cloud path (no room routes there). The `govee-control` edge function reads `govee_config.api_key`; check that key too.
+
+> **New Govee devices don't appear in HAOS automatically.** After adding devices in the Govee app, reload the integration: `POST /api/config/config_entries/entry/01KMQAK4XDN4GW40SSVEAZ1C0T/reload`.
 
 **Alexa:** Enable the **Govee Home** Alexa skill. Groups from the Govee app (Garage Mahal, Outhouse, etc.) will appear as Alexa devices.
 
