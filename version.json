@@ -1,12 +1,12 @@
 {
-  "version": "v260921.02 4:00p",
-  "release": 1855,
-  "sha": "b53e4e6f75",
-  "fullSha": "b53e4e6f75e795de806d4360c533e993cabc1b28",
+  "version": "v260922.01 1:54p",
+  "release": 1856,
+  "sha": "9753d66b82",
+  "fullSha": "9753d66b822b9f2934bee0c6c329f625ec69624e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmlun5p",
-  "pushedAt": "2026-09-21T21:00:42+00:00",
-  "commits": [{"sha":"8fed9ec88f","message":"Add vehicle registration fields + scoped API key path for Meta Muse agent","author":"Blotto"},{"sha":"b53e4e6f75","message":"Drop @supabase/supabase-js dep from create-api-key.js","author":"Blotto"}]
+  "pushedAt": "2026-09-22T18:54:53+00:00",
+  "commits": [{"sha":"9753d66b82","message":"docs(lighting): add Shower Tower group, flag stale Govee API key","author":"Blotto"}]
 }
