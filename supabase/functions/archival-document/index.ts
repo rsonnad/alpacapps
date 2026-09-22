@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
 
     const { data: row, error } = await supabase
       .from('signature_audit_log')
-      .select('id, document_type, rental_application_id, event_hosting_request_id, signing_version, signer_name, signer_email, signed_at, ip_address, user_agent, document_hash, signature_image_url, document_html')
+      .select('id, document_type, rental_application_id, event_hosting_request_id, vehicle_rental_id, signing_version, signer_name, signer_email, signed_at, ip_address, user_agent, document_hash, signature_image_url, document_html')
       .eq('id', auditId)
       .maybeSingle();
 
@@ -81,13 +81,15 @@ Deno.serve(async (req) => {
       userAgent: row.user_agent || '',
       documentHash: row.document_hash || '',
       signatureImageUrl: row.signature_image_url || '',
+      // Must match what process-signature passed when it wrote the original.
+      documentType: row.document_type,
     });
 
     if (url.searchParams.get('format') === 'json') {
       return json({
         id: row.id,
         document_type: row.document_type,
-        application_id: row.rental_application_id || row.event_hosting_request_id,
+        application_id: row.rental_application_id || row.event_hosting_request_id || row.vehicle_rental_id,
         signing_version: row.signing_version,
         signed_at: row.signed_at,
         signer_name: row.signer_name,

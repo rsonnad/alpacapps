@@ -586,6 +586,12 @@ Each external service was chosen for specific reasons. This section documents wh
 
 ## Decisions
 
+### 2026-09-22: Vehicle Rental Agreements Are Signed From a Frozen Snapshot
+
+**Decision:** Vehicle rental agreements use the native e-signature flow (owner pre-signs, the renter's signature completes execution), but unlike leases the agreement is rendered once at send time and frozen. `send-vehicle-rental-signing` renders the `vehicle_rental` template from `vehicle_rentals` + `contract_terms`, and stores the HTML, its hash, and the signing token in `vehicle_rental_signings` — a table with RLS on and no policies, reachable only by the service role. `get-signing-document` and `process-signature` serve and verify that snapshot verbatim and never re-render. Executed copies are linked through the `/rentals/signed/` viewer rather than directly.
+
+**Why:** `vehicle_rentals` is readable and writable by the public `anon` role (policy `Allow all vehicle_rentals`, `USING true`), and the anon key ships in client JS. The lease pattern — token on the record, contract re-rendered from the live row at signing time — would have let anyone read a renter's signing token and sign as them, or edit the rate or damage list after sending and have the tampered terms render and hash-verify cleanly. Freezing the text in a service-role-only table makes what the renter reads in the email byte-for-byte what they sign. The viewer exists because Supabase Storage now serves `.html` from public buckets as `text/plain` with `nosniff`, so a direct link shows source code; this also affects every executed lease link and is tracked separately along with the `rental_applications` RLS exposure.
+
 ### 2026-08-12: Separate Documented Warnings from Editorial Analysis
 
 **Decision:** Maintain `youarewarned.com` as two clearly labeled public content types: first-person, evidence-linked warning reports under `/warnings/`, and broader editorial analysis under `/articles/`. Analysis that discusses a warning published by the same site must disclose that relationship, attribute disputed facts to the reporting guest, preserve correction and right-of-reply language, and use canonical metadata plus a sitemap for machine discovery.

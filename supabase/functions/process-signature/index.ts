@@ -120,6 +120,16 @@ Deno.serve(async (req) => {
       .eq('signing_token', token)
       .single() : { data: null };
 
+    // Vehicle rental agreements take their own path: the document is a
+    // snapshot frozen at send time in vehicle_rental_signings, not a
+    // re-render, and the record lives in a different table.
+    if (!rentalApp && !eventReq) {
+      const vehicleResponse = await handleVehicleRentalSignature(supabase, {
+        token, signature_image, document_hash, document_html, ipAddress, userAgent,
+      });
+      if (vehicleResponse) return vehicleResponse;
+    }
+
     const app = rentalApp || eventReq;
     const docType = rentalApp ? 'rental' : 'event';
 
@@ -587,6 +597,229 @@ function jsonError(message: string, status: number): Response {
 async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Complete a vehicle rental signature. Returns null when the token is not a
+ * vehicle rental token, so the caller can fall through to its 404.
+ *
+ * Mirrors the lease path — signature image, archival HTML before any status
+ * change, owner + renter audit rows, token invalidation, confirmation email —
+ * with two differences: the canonical document is the snapshot frozen at send
+ * time rather than a re-render, and both audit rows are written in a single
+ * INSERT so a failure can't leave half an execution on record.
+ */
+async function handleVehicleRentalSignature(supabase: any, s: {
+  token: string;
+  signature_image: string;
+  document_hash: string;
+  document_html: string;
+  ipAddress: string;
+  userAgent: string;
+}): Promise<Response | null> {
+  const { data: signing } = await supabase
+    .from('vehicle_rental_signings')
+    .select('id, vehicle_rental_id, status, token_expires_at, signing_version, signer_name, signer_email, cc_emails, document_html, template_id, template_version, sent_at, sent_by')
+    .eq('signing_token', s.token)
+    .maybeSingle();
+  if (!signing) return null;
+
+  if (signing.status === 'signed') return jsonError('Document already signed', 409);
+  if (signing.status !== 'sent') {
+    return jsonError('This signing link was replaced by a newer one. Please use the most recent link.', 410);
+  }
+  if (new Date(signing.token_expires_at) < new Date()) return jsonError('Signing link has expired', 410);
+
+  // The renter must have been shown exactly the frozen agreement. (document_hash
+  // was already verified against document_html by the caller.)
+  if (s.document_html !== signing.document_html) {
+    return jsonError('The signing document changed; please reload the latest signing link', 409);
+  }
+
+  const rentalId = signing.vehicle_rental_id;
+  const signedAt = new Date().toISOString();
+
+  // ── Signature image ──
+  const base64Data = s.signature_image.replace(/^data:image\/\w+;base64,/, '');
+  const signatureBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+  const sigPath = `signatures/sig-vehicle_rental-${rentalId}-${Date.now()}.png`;
+  const { error: sigUploadErr } = await supabase.storage
+    .from('lease-documents')
+    .upload(sigPath, signatureBytes, { contentType: 'image/png', upsert: true });
+  if (sigUploadErr) {
+    console.error('Vehicle signature upload error:', sigUploadErr);
+    throw new Error('Failed to store signature');
+  }
+  const signatureImageUrl = supabase.storage.from('lease-documents').getPublicUrl(sigPath).data.publicUrl;
+
+  // ── Executed agreement, preserved before anything is marked signed ──
+  // Storage serves .html from public buckets as text/plain, so people are
+  // sent to the rentals/signed/ viewer; the raw object URL stays on record.
+  const objectName = `vehicle-${rentalId}-${Date.now()}.html`;
+  const viewerUrl = `https://alpacaplayhouse.com/rentals/signed/?doc=${encodeURIComponent(objectName)}`;
+  let signedDocUrl: string | null = null;
+  try {
+    const fullSignedHtml = buildArchivalLeaseHtml({
+      documentHtml: s.document_html,
+      signerName: signing.signer_name,
+      signerEmail: signing.signer_email,
+      signedAt,
+      ipAddress: s.ipAddress,
+      userAgent: s.userAgent,
+      documentHash: s.document_hash,
+      signatureImageUrl,
+      documentType: 'vehicle_rental',
+    });
+    const objectPath = `signed/${objectName}`;
+    // String body, not Blob — see the lease path above for why.
+    const { error: uploadErr } = await supabase.storage
+      .from('lease-documents')
+      .upload(objectPath, fullSignedHtml, {
+        contentType: 'text/html; charset=utf-8',
+        cacheControl: '31536000', upsert: false,
+      });
+    if (uploadErr) throw uploadErr;
+    signedDocUrl = supabase.storage.from('lease-documents').getPublicUrl(objectPath).data?.publicUrl || null;
+    if (!signedDocUrl) throw new Error('Unable to resolve archival agreement URL');
+  } catch (e) {
+    console.error('Vehicle archival HTML save failed:', e);
+    return jsonError('Could not preserve the executed agreement. Nothing was marked signed; please try again.', 500);
+  }
+
+  // ── Audit trail: renter + owner in one statement ──
+  // The renter's row uses signer_role 'tenant' deliberately: the Alpuca PDF
+  // archiver's queue (idx_signature_audit_pdf_queue) selects on that role.
+  const common = {
+    document_type: 'vehicle_rental',
+    vehicle_rental_id: rentalId,
+    document_hash: s.document_hash,
+    document_html: s.document_html,
+    signed_at: signedAt,
+    template_id: signing.template_id,
+    template_version: signing.template_version,
+    signing_version: signing.signing_version,
+  };
+  const { error: auditErr } = await supabase.from('signature_audit_log').insert([
+    {
+      ...common,
+      signer_name: signing.signer_name,
+      signer_email: signing.signer_email,
+      signer_role: 'tenant',
+      ip_address: s.ipAddress,
+      user_agent: s.userAgent,
+      signature_image_url: signatureImageUrl,
+    },
+    {
+      ...common,
+      signer_name: 'Rahul Sonnad',
+      signer_email: 'alpacaplayhouse@gmail.com',
+      signer_role: 'landlord',
+      ip_address: 'auto-signed (pre-authorized at send)',
+      user_agent: 'AlpacApps Native Signing System',
+      landlord_user_id: /^[0-9a-f-]{36}$/i.test(signing.sent_by || '') ? signing.sent_by : null,
+      signing_token_issued_at: signing.sent_at,
+    },
+  ]);
+  if (auditErr) {
+    console.error('Vehicle audit log error:', auditErr);
+    return auditErr.code === '23505'
+      ? jsonError('This document has already been signed.', 409)
+      : jsonError('Could not preserve the signature audit trail.', 500);
+  }
+
+  // ── Close the link — guarded so a replaced or raced link can't complete ──
+  const { data: closed, error: closeErr } = await supabase
+    .from('vehicle_rental_signings')
+    .update({ status: 'signed', signed_at: signedAt, agreement_document_url: signedDocUrl })
+    .eq('id', signing.id)
+    .eq('signing_token', s.token)
+    .eq('status', 'sent')
+    .select('id')
+    .maybeSingle();
+  if (closeErr) throw closeErr;
+  if (!closed) return jsonError('This signing link was replaced before completion. Please use the most recent link.', 409);
+
+  await supabase
+    .from('vehicle_rentals')
+    .update({ agreement_status: 'signed', agreement_signed_at: signedAt, contract_signed_at: signedAt, updated_at: signedAt })
+    .eq('id', rentalId);
+
+  // ── Confirmation to the renter, copying everyone on the original send ──
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  if (RESEND_API_KEY) {
+    const { data: rental } = await supabase
+      .from('vehicle_rentals')
+      .select('vehicle_year, vehicle_make, vehicle_model, current_monthly_rate, security_deposit_amount')
+      .eq('id', rentalId)
+      .single();
+    await sendVehicleRentalSignedEmail(RESEND_API_KEY, {
+      to: signing.signer_email,
+      cc: (signing.cc_emails || []).filter((c: string) => c.toLowerCase() !== signing.signer_email.toLowerCase()),
+      firstName: String(signing.signer_name || '').split(' ')[0],
+      vehicleLabel: [rental?.vehicle_year, rental?.vehicle_make, rental?.vehicle_model].filter(Boolean).join(' '),
+      dueOnExecution: Number(rental?.security_deposit_amount || 0) + Number(rental?.current_monthly_rate || 0),
+      archivalUrl: viewerUrl,
+      signedAt,
+      ipAddress: s.ipAddress,
+      userAgent: s.userAgent,
+      documentHash: s.document_hash,
+      signatureImageUrl,
+    });
+  }
+
+  return new Response(JSON.stringify({
+    success: true,
+    message: 'Document signed successfully',
+    document_type: 'vehicle_rental',
+    signed_at: signedAt,
+  }), { headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' } });
+}
+
+async function sendVehicleRentalSignedEmail(apiKey: string, o: {
+  to: string; cc: string[]; firstName: string; vehicleLabel: string; dueOnExecution: number;
+  archivalUrl: string | null; signedAt: string; ipAddress: string; userAgent: string;
+  documentHash: string; signatureImageUrl: string;
+}) {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: SENDER_MAP.pai.from,
+        to: [o.to],
+        cc: o.cc,
+        reply_to: 'alpacaplayhouse@gmail.com',
+        subject: 'Vehicle Rental Agreement Signed - Alpaca Playhouse',
+        html: `
+          <h2>Vehicle Rental Agreement Signed</h2>
+          <p>Hi ${o.firstName},</p>
+          <p>Your rental agreement for the <strong>${o.vehicleLabel}</strong> is now fully executed — signed by you and by the Owner, Rahul Sonnad.</p>
+
+          ${o.archivalUrl ? `<p style="margin: 12px 0 18px 0;"><a href="${o.archivalUrl}" style="display:inline-block;background:#3d8b7a;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:600;">View signed agreement</a></p>` : ''}
+
+          ${auditBlockHtml({ ...o, documentType: 'vehicle_rental' })}
+
+          <div style="background: #fdf6ee; border-left: 4px solid #d4883a; padding: 15px; margin: 20px 0;">
+            <strong>Due now, per Section 14:</strong>
+            <ul style="margin: 8px 0 0; padding-left: 20px;">
+              <li>Security deposit and first month's rent: <strong>$${o.dueOnExecution.toLocaleString('en-US')}</strong> — <a href="https://alpacaplayhouse.com/pay">alpacaplayhouse.com/pay</a></li>
+              <li>A copy of your driver's license</li>
+              <li>Your insurance declarations page, with Rahul Sonnad listed as owner/beneficiary</li>
+            </ul>
+            <p style="margin: 8px 0 0;">Reply to this email with the documents.</p>
+          </div>
+
+          <p>Questions? Reply to this email.</p>
+          <p>Best regards,<br>Alpaca Playhouse</p>
+          <div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>
+        `,
+      }),
+    });
+    if (!res.ok) console.error('Vehicle signed email failed:', res.status, await res.text().catch(() => ''));
+    else console.log('Vehicle rental signed email sent to', o.to);
+  } catch (e) {
+    console.error('Error sending vehicle rental signed email:', e);
+  }
 }
 
 async function sendSignedEmail(apiKey: string, opts: any) {

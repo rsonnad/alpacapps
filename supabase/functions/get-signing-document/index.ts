@@ -1,6 +1,7 @@
 /**
  * Get Signing Document
- * Returns the rendered lease/event agreement HTML for a given signing token.
+ * Returns the rendered lease/event/vehicle-rental agreement HTML for a given
+ * signing token.
  * Called by the tenant-facing signing page.
  *
  * POST { token: string }
@@ -222,11 +223,43 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Try vehicle_rental_signings. Unlike leases, a vehicle agreement is
+    // rendered once at send time (send-vehicle-rental-signing) and frozen:
+    // vehicle_rentals is writable by the anon role, so re-rendering here
+    // would let anyone change the terms of a contract already sent.
+    const { data: vehicleSigning } = await supabase
+      .from('vehicle_rental_signings')
+      .select('vehicle_rental_id, status, token_expires_at, signer_name, signer_email, document_html')
+      .eq('signing_token', token)
+      .maybeSingle();
+
+    if (vehicleSigning) {
+      if (vehicleSigning.status === 'signed') {
+        return jsonError('This document has already been signed.', 409);
+      }
+      if (vehicleSigning.status !== 'sent') {
+        return jsonError('This signing link was replaced by a newer one. Please use the most recent link.', 410);
+      }
+      if (new Date(vehicleSigning.token_expires_at) < new Date()) {
+        return jsonError('This signing link has expired. Please contact the owner for a new link.', 410);
+      }
+
+      return jsonResponse({
+        document_html: vehicleSigning.document_html,
+        waiver_html: '',
+        signer_name: vehicleSigning.signer_name,
+        signer_email: vehicleSigning.signer_email,
+        document_type: 'vehicle_rental',
+        application_id: vehicleSigning.vehicle_rental_id,
+        space_name: 'Vehicle Rental',
+      });
+    }
+
     return jsonError('Invalid or expired signing link.', 404);
 
   } catch (error) {
     console.error('get-signing-document error:', error);
-    return jsonError(error.message || 'Internal error', 500);
+    return jsonError(error instanceof Error ? error.message : 'Internal error', 500);
   }
 });
 

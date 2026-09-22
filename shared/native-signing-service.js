@@ -191,6 +191,35 @@ async function sendEventForSignature(eventRequestId, recipientEmail, recipientNa
   return { token, signing_url: signingUrl, expires_at: expiresAt };
 }
 
+/**
+ * Send a vehicle rental agreement for signature.
+ *
+ * Unlike leases and events, the token, the frozen agreement, and the email
+ * are all handled server-side by the send-vehicle-rental-signing edge
+ * function: vehicle_rentals is readable and writable by the public anon role,
+ * so the signing token and the signed text can't be stored on it.
+ *
+ * Set contract terms on vehicle_rentals.contract_terms first (insurance start,
+ * initial term end, damage inventory, photo archive, retroactivity).
+ *
+ * @param {string} vehicleRentalId - vehicle_rentals.id
+ * @param {Object} [opts]
+ * @param {string[]} [opts.cc] - extra addresses copied on this email and the executed copy
+ * @param {boolean} [opts.dryRun] - render only; returns { document_html } without sending
+ */
+async function sendVehicleRentalForSignature(vehicleRentalId, { cc = [], dryRun = false } = {}) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error('Sign in as an admin to send agreements');
+  const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/send-vehicle-rental-signing`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+    body: JSON.stringify({ vehicle_rental_id: vehicleRentalId, cc, dry_run: dryRun }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Send failed (${res.status})`);
+  return data;
+}
+
 // ── Helpers: fetch lease + payment context ─────────────────────────
 
 async function fetchSigningDocument(token) {
@@ -599,6 +628,7 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
 export const nativeSigningService = {
   sendForSignature,
   sendEventForSignature,
+  sendVehicleRentalForSignature,
   resendSigningLink,
   checkSigningStatus,
   getSigningUrl,

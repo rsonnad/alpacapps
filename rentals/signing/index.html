@@ -476,8 +476,14 @@ function renderDocument() {
   document.getElementById('signerNameDisplay').textContent = documentData.signer_name;
 
   // Update page title
-  const docLabel = documentData.document_type === 'rental' ? 'Lease Agreement' : 'Event Agreement';
+  const docLabel = docLabelFor(documentData.document_type);
   document.title = `Sign ${docLabel} - Alpaca Playhouse`;
+}
+
+function docLabelFor(type) {
+  if (type === 'rental') return 'Lease Agreement';
+  if (type === 'vehicle_rental') return 'Vehicle Rental Agreement';
+  return 'Event Agreement';
 }
 
 function cleanSignatureLines(elementId) {
@@ -502,6 +508,13 @@ function initContactInfoForm() {
   const missing = !ci.current_address || !ci.emergency_contact_name || !ci.emergency_contact_phone;
   const section = document.getElementById('contactInfoSection');
   if (!section) return;
+  // Vehicle rental agreements already name the renter's address in the
+  // contract, and the server doesn't require lease-style contact records
+  // for them — don't gate their signature on this form.
+  if (documentData?.document_type === 'vehicle_rental') {
+    section.style.display = 'none';
+    return;
+  }
   if (!missing) {
     section.style.display = 'none';
     return;
@@ -582,7 +595,7 @@ function initSignaturePad() {
 function previewBeforeSign() {
   const lease = document.getElementById('leaseDocument')?.innerHTML || '';
   const waiver = document.getElementById('waiverDocument')?.innerHTML || '';
-  const title = (documentData?.document_type === 'rental' ? 'Lease Agreement' : 'Event Agreement') + ' — Preview';
+  const title = docLabelFor(documentData?.document_type) + ' — Preview';
   const w = window.open('', '_blank');
   if (!w) { alert('Please allow pop-ups to preview the document.'); return; }
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>

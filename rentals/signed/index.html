@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <title>Signed Agreement - Alpaca Playhouse</title>
+  <meta name="robots" content="noindex">
+  <!--
+    Viewer for executed agreements archived in the lease-documents/signed/
+    storage folder by process-signature.
+
+    Why this page exists: Supabase Storage serves .html objects from public
+    buckets as text/plain with nosniff, so linking straight to the archived
+    file shows its source code. This page fetches the file (the bucket allows
+    any origin) and renders it in a sandboxed frame.
+
+    Only filenames inside lease-documents/signed/ are accepted — never an
+    arbitrary URL — and the frame is sandboxed without allow-scripts.
+  -->
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: #f5f5f0;
+      color: #333;
+      min-height: 100vh;
+    }
+    .site-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 2rem;
+      background: #2d3024;
+      color: white;
+    }
+    .site-nav__logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    .site-nav__icon { height: 32px; width: auto; }
+    .print-btn {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 6px;
+      padding: 0.4rem 0.9rem;
+      font: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .print-btn:hover { background: rgba(255,255,255,0.1); }
+    .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .doc-frame {
+      width: 100%;
+      min-height: 80vh;
+      border: 0;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: block;
+    }
+    .state { text-align: center; padding: 4rem 1rem; color: #666; }
+    .state h2 { color: #2d3024; margin-bottom: 0.75rem; font-size: 1.2rem; }
+    .state a { color: #3d8b7a; }
+    @media (max-width: 600px) { .site-nav { padding: 0.75rem 1rem; } }
+    @media print {
+      .site-nav { display: none; }
+      .container { padding: 0; max-width: none; }
+      .doc-frame { box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="https://alpacaplayhouse.com" class="site-nav__logo">
+    <img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" class="site-nav__icon">
+    <span>Alpaca Playhouse</span>
+  </a>
+  <button id="printBtn" class="print-btn" type="button" hidden>Print / Save PDF</button>
+</nav>
+
+<div class="container">
+  <div id="loading" class="state"><p>Loading your signed agreement…</p></div>
+  <div id="error" class="state" hidden>
+    <h2>Unable to load this agreement</h2>
+    <p id="errorMessage">The link may be incomplete.</p>
+    <p style="margin-top:1rem;font-size:0.85rem;">Contact <a href="mailto:team@alpacaplayhouse.com">team@alpacaplayhouse.com</a> for a copy.</p>
+  </div>
+  <!-- allow-same-origin (without allow-scripts) lets this page size and print
+       the frame; scripts inside the document still cannot run. -->
+  <iframe id="docFrame" class="doc-frame" title="Signed agreement" sandbox="allow-same-origin allow-modals" hidden></iframe>
+</div>
+
+<script>
+  const SIGNED_BASE = 'https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/lease-documents/signed/';
+
+  function showError(message) {
+    document.getElementById('loading').hidden = true;
+    document.getElementById('errorMessage').textContent = message;
+    document.getElementById('error').hidden = false;
+  }
+
+  async function init() {
+    const doc = new URLSearchParams(location.search).get('doc') || '';
+    // A bare filename in the signed/ folder — no paths, no other hosts.
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.html$/.test(doc)) {
+      showError('This link is missing or has an invalid document reference.');
+      return;
+    }
+
+    let html;
+    try {
+      const res = await fetch(SIGNED_BASE + encodeURIComponent(doc), { cache: 'no-store' });
+      if (!res.ok) throw new Error(res.status === 400 || res.status === 404 ? 'not found' : `HTTP ${res.status}`);
+      html = await res.text();
+    } catch (err) {
+      showError(err.message === 'not found'
+        ? 'We couldn\'t find that agreement. The link may be out of date.'
+        : 'We couldn\'t load the agreement right now. Please try again shortly.');
+      return;
+    }
+
+    const frame = document.getElementById('docFrame');
+    frame.addEventListener('load', () => {
+      document.getElementById('loading').hidden = true;
+      frame.hidden = false;
+      // Measure the <html> box, not documentElement.scrollHeight: scrollHeight
+      // is never less than the frame's own height, so re-fitting on it only
+      // ever grows the frame.
+      const fit = () => {
+        try {
+          const h = Math.ceil(frame.contentDocument.documentElement.getBoundingClientRect().height);
+          if (h > 0) frame.style.height = h + 'px';
+        } catch (_e) { /* keep min-height */ }
+      };
+      fit();
+      // Signature images load after the document; re-fit when they do.
+      frame.contentDocument?.querySelectorAll('img').forEach(img => img.addEventListener('load', fit));
+      const title = frame.contentDocument?.title;
+      if (title) document.title = `${title} - Alpaca Playhouse`;
+      const btn = document.getElementById('printBtn');
+      btn.hidden = false;
+      btn.onclick = () => frame.contentWindow.print();
+    });
+    frame.srcdoc = html;
+  }
+
+  init();
+</script>
+</body>
+</html>
