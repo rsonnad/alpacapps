@@ -686,7 +686,7 @@ Devices in HAOS via LocalTuya (LAN, v3.3):
 Remaining devices (SmartLife app / Tuya Cloud API only, not yet in HAOS):
 - Outdoor floods (Spa, Gate, Pond, Spartan, Grill), string lights, dining bulbs
 
-**Tuya Cloud credentials:** Access ID `c9rxjqkkc3wevmpm394c` · Secret `69a76a01c1b543ab93cd5ffdc13d9e95` · Data Center: Western America
+**Tuya Cloud credentials:** Access ID & Secret: <redacted — see Bitwarden> · Data Center: Western America
 
 ---
 

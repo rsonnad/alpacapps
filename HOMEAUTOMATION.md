@@ -218,7 +218,7 @@ HAOS runs as a QEMU VM on Alpuca. It's the central hub for light control, voice 
 | **VM Host** | Alpuca (192.168.1.200) |
 | **VM IP** | 192.168.1.39 (bridged on en0) |
 | **Web UI** | http://192.168.1.39:8123 |
-| **Login** | alpacaadmin / playhouse |
+| **Login** | alpacaadmin / <redacted — see Bitwarden> |
 | **Bitwarden** | "192.168.1.39" (web login) + "Home Assistant — IoT Hub" (API keys) |
 | **Timezone** | America/Chicago |
 | **VM start** | `sudo ~/homeassistant-vm/start-ha.sh` (auto-starts via LaunchDaemon) |
@@ -295,7 +295,7 @@ export BW_SESSION=$(~/bin/bw-unlock)
 
 | Secret | Bitwarden Item | Retrieval |
 |--------|---------------|-----------|
-| **HAOS web login** | "192.168.1.39" | `alpacaadmin` / `playhouse` |
+| **HAOS web login** | "192.168.1.39" | `alpacaadmin` / <redacted — see Bitwarden> |
 | **HAOS API tokens** | "Home Assistant — IoT Hub" | Stored as Supabase secrets (write-only) |
 | **Alpuca SSH** | "Alpuca — Primary Home Server" | Key auth: `ssh paca@192.168.1.200` |
 | **Almaca SSH** | "Alpaca Mac — Local Machine" | Key auth: `ssh alpaca@192.168.1.74` |
@@ -460,7 +460,7 @@ Samsung Galaxy Tab A9 (SM-X210) wall-mounted in the hallway. Runs the kiosk disp
 | **LAN IP** | DHCP (check UniFi for current IP) |
 | **Tailscale IP** | `100.103.110.7` |
 | **Kiosk App** | Fully Kiosk Browser |
-| **Kiosk API Port** | `2323` (password: `alpaca2323`) |
+| **Kiosk API Port** | `2323` (password: <KIOSK_API_PASSWORD>) |
 | **Kiosk Settings Password** | `1234` |
 | **Kiosk App Package** | `com.alpacaplayhouse.kiosk` |
 | **WiFi Network** | Black Rock City |
@@ -479,19 +479,19 @@ From any machine on the LAN or Tailscale network:
 
 ```bash
 # Load a URL on the tablet
-curl "http://100.103.110.7:2323/?cmd=loadUrl&url=https%3A%2F%2Falpacaplayhouse.com%2Fkioskhall%2F&password=alpaca2323"
+curl "http://100.103.110.7:2323/?cmd=loadUrl&url=https%3A%2F%2Falpacaplayhouse.com%2Fkioskhall%2F&password=$KIOSK_API_PASSWORD"
 
 # Load UniFi dashboard
-curl "http://100.103.110.7:2323/?cmd=loadUrl&url=https%3A%2F%2F192.168.1.1%2Fnetwork%2Fdefault%2Fdashboard&password=alpaca2323"
+curl "http://100.103.110.7:2323/?cmd=loadUrl&url=https%3A%2F%2F192.168.1.1%2Fnetwork%2Fdefault%2Fdashboard&password=$KIOSK_API_PASSWORD"
 
 # Get device info (battery, IP, screen state)
-curl "http://100.103.110.7:2323/?cmd=getDeviceInfo&password=alpaca2323"
+curl "http://100.103.110.7:2323/?cmd=getDeviceInfo&password=$KIOSK_API_PASSWORD"
 
 # Wake screen
-curl "http://100.103.110.7:2323/?cmd=screenOn&password=alpaca2323"
+curl "http://100.103.110.7:2323/?cmd=screenOn&password=$KIOSK_API_PASSWORD"
 
 # Restart kiosk app
-curl "http://100.103.110.7:2323/?cmd=restartApp&password=alpaca2323"
+curl "http://100.103.110.7:2323/?cmd=restartApp&password=$KIOSK_API_PASSWORD"
 ```
 
 ### Remote Control via ADB (Wireless Debugging)
@@ -832,7 +832,7 @@ Uses session-based cookie auth (NOT API keys). Uses the `alpacaauto` local-only 
 # Login (from DO droplet — has direct LAN access via Tailscale subnet routing)
 # Write credentials to a JSON file first to avoid shell escaping issues with special characters
 cat > /tmp/unifi_login.json << 'EOF'
-{"username":"alpacaauto","password":"SEE_LOCAL_MD"}
+{"username":"alpacaauto","password":"<redacted>"}
 EOF
 
 curl -k -X POST \
@@ -1629,26 +1629,26 @@ Amazon/Echo devices serve as the current voice control hub for lights.
 
 | Camera | IP | Hostname | RTSP User | RTSP Password | Status |
 |--------|-----|----------|-----------|---------------|--------|
-| Wansview 1 | 192.168.1.18 | WVCABN73I8YL861I | `eVm1DUbw` | `Q9wjylqPseNj0eo5` | go2rtc can't reach (host down from LAN) |
+| Wansview 1 | 192.168.1.18 | WVCABN73I8YL861I | `eVm1DUbw` | <redacted — see Bitwarden> | go2rtc can't reach (host down from LAN) |
 | Wansview 2 | 192.168.1.21 | WVCABN8ZLH8LFC3B | — | — | Auth passes, no video (offline?) |
 | Wansview 3 | 192.168.1.26 | WVCABNUQUXILGOBE | — | — | Auth passes, no video (offline?) |
-| Wansview 4 | 192.168.1.132 | WVCB34M3DFFQBTTU | `P8oqrztI` | `UhJTMvMjQx8WAxG1` | ✅ **Streaming via go2rtc** |
+| Wansview 4 | 192.168.1.132 | WVCB34M3DFFQBTTU | `P8oqrztI` | <redacted — see Bitwarden> | ✅ **Streaming via go2rtc** |
 
 **Unmatched credentials** (from Wansview app, not yet mapped to a specific camera):
-- `5EZbH9Uf` / `96bcJZg26H6gQj2b`
-- `lHSsv3X9` / `scbevBv1uBW4n9P7`
-- `v0H7TTAR` / `8kRmuNVjy9osqAYS`
+- `5EZbH9Uf` / <redacted — see Bitwarden>
+- `lHSsv3X9` / <redacted — see Bitwarden>
+- `v0H7TTAR` / <redacted — see Bitwarden>
 
 **go2rtc streams** (in `scripts/go2rtc/go2rtc.yaml`, deployed to `~/go2rtc/go2rtc.yaml` on Almaca):
 ```yaml
 wansview-1-high:
-  - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch0
+  - rtsp://eVm1DUbw:<password>@192.168.1.18:554/live/ch0
 wansview-1-low:
-  - rtsp://eVm1DUbw:Q9wjylqPseNj0eo5@192.168.1.18:554/live/ch1
+  - rtsp://eVm1DUbw:<password>@192.168.1.18:554/live/ch1
 wansview-4-high:
-  - rtsp://P8oqrztI:UhJTMvMjQx8WAxG1@192.168.1.132:554/live/ch0
+  - rtsp://P8oqrztI:<password>@192.168.1.132:554/live/ch0
 wansview-4-low:
-  - rtsp://P8oqrztI:UhJTMvMjQx8WAxG1@192.168.1.132:554/live/ch1
+  - rtsp://P8oqrztI:<password>@192.168.1.132:554/live/ch1
 ```
 
 **DB entries** (`camera_streams` table):

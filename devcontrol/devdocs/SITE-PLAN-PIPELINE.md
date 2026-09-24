@@ -83,7 +83,7 @@ Lot rotation: ~26° from north
 
 ```bash
 # psql (on Alpuca only — not installed locally)
-PGPASSWORD='BirdBrain9gres!' /opt/homebrew/opt/libpq/bin/psql \
+PGPASSWORD='<supabase db password — Bitwarden>' /opt/homebrew/opt/libpq/bin/psql \
   -h aws-1-us-east-2.pooler.supabase.com -p 6543 \
   -U postgres.aphrrfprbixmhissnjfn -d postgres \
   --set=gssencmode=disable
@@ -276,7 +276,7 @@ One render exists: `renderings/property-birdseye-2026-03-21.png` (Cycles, 128 sa
 ssh paca@192.168.1.200
 
 # Query structures
-PGPASSWORD='BirdBrain9gres!' /opt/homebrew/opt/libpq/bin/psql \
+PGPASSWORD='<supabase db password — Bitwarden>' /opt/homebrew/opt/libpq/bin/psql \
   -h aws-1-us-east-2.pooler.supabase.com -p 6543 \
   -U postgres.aphrrfprbixmhissnjfn -d postgres \
   --set=gssencmode=disable \

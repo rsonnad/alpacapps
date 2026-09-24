@@ -75,3 +75,11 @@ contracts/generate_weekley_contract.py
 # Supabase CLI / Deno scratch, created by local tooling
 deno.lock
 supabase/.temp/linked-project.json
+
+# Private: never publish (served publicly via GitHub Pages)
+memory/service-access.md
+supabase/.temp/
+dev/testing/results.json
+dev/testing/*.html
+.claude/projects/
+scripts/go2rtc/go2rtc.yaml
