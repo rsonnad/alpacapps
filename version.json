@@ -1,12 +1,12 @@
 {
-  "version": "v260924.03 2:20p",
-  "release": 1860,
-  "sha": "f7aa957d70",
-  "fullSha": "f7aa957d701a27fb51cfbf3afb9109d0224d4da1",
+  "version": "v260924.04 2:36p",
+  "release": 1861,
+  "sha": "28d6b51c93",
+  "fullSha": "28d6b51c9326faf39f2aa297d99f1aae12b3c867",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-24T19:20:03+00:00",
-  "commits": [{"sha":"f7aa957d70","message":"security: remove exposed credentials and personal pages from the public site","author":"Blotto"}]
+  "pushedAt": "2026-09-24T19:36:22+00:00",
+  "commits": [{"sha":"28d6b51c93","message":"Restore Justin hours sign-in page (no data in file; content stays in Supabase behind RLS)","author":"Blotto"}]
 }
