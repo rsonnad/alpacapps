@@ -1,12 +1,12 @@
 {
-  "version": "v260924.01 1:34p",
-  "release": 1858,
-  "sha": "f5082e1fae",
-  "fullSha": "f5082e1fae2669a89f9384b99681518b1dcd9bed",
+  "version": "v260924.02 1:36p",
+  "release": 1859,
+  "sha": "41f7f60a3e",
+  "fullSha": "41f7f60a3e2b0c1c32138b07abd7645b1bae9f9c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-24T18:34:07+00:00",
-  "commits": [{"sha":"f5082e1fae","message":"Private page content table + auth-gated Justin hours page","author":"Blotto"}]
+  "pushedAt": "2026-09-24T18:36:28+00:00",
+  "commits": [{"sha":"41f7f60a3e","message":"chore(enm-quiz): remove ENM quiz page, workflows, script, and edge function sources","author":"Blotto"}]
 }
