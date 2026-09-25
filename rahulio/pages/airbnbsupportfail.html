@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Airbnb Support Case Record</title>
+  <meta name="description" content="The full record of how Airbnb support handled one host's case: $1,955.66 taken after Airbnb's own Senior Case Manager ruled in the host's favor.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    :root {
+      --bg: #f7f6f3; --card: #ffffff; --text: #1f1d1a; --muted: #6b665e; --line: #e4e0d8;
+      --accent: #c2410c; --accent-soft: #fdeee6; --good: #15803d; --good-soft: #e7f5ec;
+      --host: #1f2937; --host-text: #f9fafb; --agent: #f1efea;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #141311; --card: #1d1b18; --text: #eeeae3; --muted: #a39d93; --line: #34302a;
+        --accent: #fb923c; --accent-soft: #3a2415; --good: #4ade80; --good-soft: #14301f;
+        --host: #e5e7eb; --host-text: #111827; --agent: #26231f;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #141311; --card: #1d1b18; --text: #eeeae3; --muted: #a39d93; --line: #34302a;
+      --accent: #fb923c; --accent-soft: #3a2415; --good: #4ade80; --good-soft: #14301f;
+      --host: #e5e7eb; --host-text: #111827; --agent: #26231f;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+    header.hero { padding: 3rem 0 2rem; border-bottom: 1px solid var(--line); }
+    .eyebrow { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .75rem; }
+    h1 { font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.2; font-weight: 700; margin-bottom: 1rem; }
+    .lede { font-size: 1.1rem; color: var(--text); }
+    h2 { font-size: 1.3rem; margin: 2.5rem 0 1rem; }
+    h3 { font-size: 1rem; margin: 1.5rem 0 .5rem; }
+    p { margin-bottom: .9rem; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 1.75rem 0 0; }
+    .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+    .stat b { display: block; font-size: 1.5rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .stat span { font-size: .85rem; color: var(--muted); }
+    .stat.bad b { color: var(--accent); }
+    ul.points { list-style: none; display: grid; gap: 10px; }
+    ul.points li { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 14px; }
+    ul.points li strong { display: block; }
+    table.timeline { width: 100%; border-collapse: collapse; font-size: .92rem; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    table.timeline td { padding: 10px 12px; border-top: 1px solid var(--line); vertical-align: top; }
+    table.timeline tr:first-child td { border-top: 0; }
+    table.timeline td:first-child { white-space: nowrap; color: var(--muted); width: 1%; }
+    table.timeline td:nth-child(2) { font-weight: 600; white-space: nowrap; width: 1%; }
+    tr.good td:nth-child(2) { color: var(--good); }
+    tr.bad td:nth-child(2) { color: var(--accent); }
+    .quote-group { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+    .quote-group h3 { margin-top: 0; }
+    .q { margin: .35rem 0; }
+    .q .who { font-weight: 600; color: var(--muted); margin-right: .35rem; }
+    .q.rep { font-style: italic; }
+    .note { font-size: .85rem; color: var(--muted); }
+    figure { margin: 1rem 0 1.5rem; }
+    figure img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; display: block; cursor: zoom-in; background: #fff; }
+    figcaption { font-size: .85rem; color: var(--muted); margin-top: .4rem; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+    .thread { display: flex; flex-direction: column; gap: 10px; }
+    .day { text-align: center; font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 1rem 0 .25rem; }
+    .msg { max-width: 88%; padding: 10px 14px; border-radius: 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .93rem; }
+    .msg .meta { display: block; font-size: .75rem; font-weight: 600; margin-bottom: 4px; opacity: .75; white-space: normal; }
+    .msg.agent { align-self: flex-start; background: var(--agent); border: 1px solid var(--line); }
+    .msg.host { align-self: flex-end; background: var(--host); color: var(--host-text); }
+    .msg.system { align-self: center; background: transparent; color: var(--muted); font-size: .82rem; font-style: italic; padding: 2px 8px; }
+    .msg.flag { box-shadow: 0 0 0 2px var(--accent); }
+    .msg.ruling { box-shadow: 0 0 0 2px var(--good); }
+    .tag { display: inline-block; font-size: .7rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-left: 6px; vertical-align: 1px; font-style: normal; }
+    .tag.bad { background: var(--accent-soft); color: var(--accent); }
+    .tag.good { background: var(--good-soft); color: var(--good); }
+    details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+    details summary { cursor: pointer; font-weight: 600; }
+    details[open] summary { margin-bottom: 1rem; }
+    footer { margin: 3rem 0 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: .85rem; color: var(--muted); }
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100000; cursor: zoom-out; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 100%; max-height: 100%; border-radius: 6px; }
+    @media (max-width: 520px) { .msg { max-width: 96%; } table.timeline td:nth-child(2) { white-space: normal; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Airbnb support case record · Sep 20 – 25, 2026</div>
+    <h1>Airbnb took $1,955.66 from me after its own Senior Case Manager ruled in my favor.</h1>
+    <p class="lede">I've hosted on Airbnb for 5 years. This page is the complete record of how Airbnb support handled one guest's early departure: the full message thread, the payout records, and what support told me on the phone. Four of the five Airbnb staff on this case got it wrong. When 80% of the people get it wrong, it isn't a mistake. It's the system.</p>
+    <div class="stats">
+      <div class="stat bad"><b>−$1,955.66</b><span>taken from my payout</span></div>
+      <div class="stat bad"><b>4 of 5</b><span>staff got it wrong</span></div>
+      <div class="stat bad"><b>0</b><span>of my written questions answered</span></div>
+      <div class="stat bad"><b>48 hrs</b><span>of silence, case assigned to someone out for a week</span></div>
+    </div>
+  </header>
+
+  <h2>The short version</h2>
+  <ul class="points">
+    <li><strong>Refunded anyway.</strong> A Senior Case Manager ruled the guest's claim invalid and said any refund was my decision. The next day, another case manager asked whether I'd refund. Before I had even answered, Airbnb processed a date change I never accepted, refunding the guest out of my payout.</li>
+    <li><strong>4 out of 5 wrong.</strong> Four of the five support staff on my case gave me wrong information or took the wrong action.</li>
+    <li><strong>Evasive by default.</strong> I asked the same direct questions three times in writing. None were answered, including "how much have I been paid for this reservation?"</li>
+    <li><strong>Worse than a basic AI.</strong> A basic Claude model found and cited the correct policy text. Three Airbnb agents misquoted it or cited standards that don't exist.</li>
+    <li><strong>No priority, even for Airbnb's own mistakes.</strong> Airbnb admits it was wrong, but the case sits in the general queue. When will it be fixed? "Very soon." When is that? "Eventually." Maybe "a month."</li>
+    <li><strong>Nobody home.</strong> The case was assigned to a case manager on a week off, and nobody responded for 48 hours.</li>
+  </ul>
+
+  <h2>What actually happened</h2>
+  <p>A guest booked 3 months (Sep 2 – Nov 30) and stayed 17 days. Around Sep 17, the local water utility flushed its lines and the water was discolored for about 3 days. The utility's published guidance says this is sediment, it's temporary, and running the cold tap clears it. There was no boil-water notice. The property has a 6-stage filtration system for drinking water and 3 other filters.</p>
+  <p>On Sep 19 the guest messaged: <em>"I'm leaving today. Monday's payment won't go through. I've requested the unused portion through Airbnb."</em> Six and a half hours later, he asked for the first time whether the water was safe. It was. I live about 10 feet from the unit, and the day before he'd told me everything was great.</p>
+
+  <table class="timeline">
+    <tr class="bad"><td>Sun Sep 20</td><td>Agent 1</td><td>Says the guest reported the issue "in person on their very first night" (false). Cites "documentation supporting the legitimacy" of the report. Gives me <b>1 hour</b> to respond. Rules 30% back on every night from Sep 2, two weeks before the discoloration began, plus a full refund of every remaining night.</td></tr>
+    <tr class="bad"><td>Mon Sep 21</td><td>Agent 1</td><td>Backs off the first two weeks, but still cancels my payout for Sep 20 onward because of "the lack of a proper resolution from your end." Nobody ever asked me to resolve anything.</td></tr>
+    <tr class="bad"><td>Mon Sep 21</td><td>Agent 2</td><td>"The guest is eligible for a partial refund and a full refund." No answers to my questions.</td></tr>
+    <tr class="bad"><td>Mon Sep 21</td><td>Agent 3</td><td>Misquotes the Rebooking &amp; Refund Policy as "host <i>or</i> Airbnb." (The policy requires the guest to contact the host first.) Asserts a "clean, clear water" standard that isn't in Airbnb's published policies. Makes escalation conditional.</td></tr>
+    <tr class="good"><td>Mon Sep 21</td><td>Senior Case Manager</td><td>Reviews the full case. The claim is <b>invalid</b>, there's "no evidence or documentation," "no action for you," and the refund is "totally up to your discretion."</td></tr>
+    <tr><td>Tue Sep 22</td><td>Case Manager 2</td><td>Asks whether I'll refund "the unspent night" (it was about 70 nights).</td></tr>
+    <tr class="bad"><td>Wed Sep 23, 3:16 PM</td><td>Airbnb Support</td><td>The guest writes: <em>"Airbnb Support says changing the checkout to September 19 will process the refund automatically."</em></td></tr>
+    <tr class="bad"><td>Wed Sep 23, 4:07 PM</td><td>Airbnb</td><td>"Your reservation with Luka has been updated." The date change goes through. I never accepted it, and I hadn't yet answered the case manager's refund question. My payout drops from $2,963.96 to $1,008.30.</td></tr>
+    <tr><td>Wed Sep 23, 9:25 PM</td><td>Me</td><td>Answer the refund question: "Not at this time." Repeat my unanswered questions.</td></tr>
+    <tr class="bad"><td>Thu Sep 24</td><td>Nobody</td><td>"Can someone answer me?" No reply. The case manager is on a week off.</td></tr>
+    <tr class="bad"><td>Fri Sep 25</td><td>Phone rep</td><td>Confirms the change was unauthorized. Can't give a timeframe, can't escalate, can't prioritize.</td></tr>
+  </table>
+
+  <h2>The three real failures</h2>
+  <ul class="points">
+    <li><strong>1. Priority doesn't change, no matter how much harm Airbnb causes.</strong> Airbnb admits it took money from a host against its own Senior Case Manager's ruling. That case waits in the same queue, in the same order, as any routine question. The phone rep couldn't escalate it, couldn't reach a supervisor, and couldn't move it up. How badly Airbnb hurt the host has no effect on how fast Airbnb fixes it. That isn't a staffing gap. It's a design decision.</li>
+    <li><strong>2. No timely response.</strong> Two days of silence in the case thread. On the phone: "very soon," then "eventually," then "it could take a month." No date, and no maximum.</li>
+    <li><strong>3. The case went to someone who was out for a week.</strong> Nobody noticed. Nothing happened until the system automatically unassigned it.</li>
+  </ul>
+  <p class="note" style="margin-top:.75rem">Failures 2 and 3 are operational problems, and any company can fix those. Failure 1 is a choice.</p>
+
+  <h2>What Airbnb support said on the phone</h2>
+  <p class="note">From my call with Airbnb support on Sep 25, after the rep confirmed the date change had been made without my approval. Quotes are from an automatic transcript of the call, lightly cleaned up.</p>
+
+  <div class="quote-group">
+    <h3>When will I get my money back?</h3>
+    <p class="q"><span class="who">Me:</span>When will somebody get back to me?</p>
+    <p class="q rep"><span class="who">Rep:</span>"It's in the queue right now."</p>
+    <p class="q"><span class="who">Me:</span>What's the longest it could take? Could it take one month? One week?</p>
+    <p class="q rep"><span class="who">Rep:</span>"So, it could take a month. I'm not sure about that."</p>
+    <p class="q rep"><span class="who">Rep:</span>"It'll be assigned very soon."</p>
+    <p class="q"><span class="who">Me:</span>What does very soon mean?</p>
+    <p class="q rep"><span class="who">Rep:</span>"Very soon, sir."</p>
+    <p class="q rep"><span class="who">Rep:</span>"They will get to your case eventually."</p>
+  </div>
+
+  <div class="quote-group">
+    <h3>Why did nobody respond for two days?</h3>
+    <p class="q rep"><span class="who">Rep:</span>The case manager was "on their week off, therefore nobody was responding."</p>
+    <p class="q rep"><span class="who">Rep:</span>"Last week was totally fine. This week we did have a high call volume."</p>
+  </div>
+
+  <div class="quote-group">
+    <h3>Will Airbnb prioritize fixing its own mistake?</h3>
+    <p class="q rep"><span class="who">Rep:</span>"It might seem that way. I totally understand it."</p>
+    <p class="q rep"><span class="who">Rep:</span>"Intention comes with willingness, right?"</p>
+    <p class="q rep"><span class="who">Rep:</span>"I'm requesting your patience in this meantime."</p>
+    <p class="q rep"><span class="who">Rep, on the case note he added:</span>"They can prioritize your case once your case got assigned to the senior guest manager."</p>
+  </div>
+
+  <div class="quote-group">
+    <h3>How do I give feedback to someone senior?</h3>
+    <p class="q">After about three minutes of searching, the answer was <b>airbnb.com/help</b>, the general help center.</p>
+    <p class="q rep"><span class="who">Rep:</span>"We do have a spreadsheet where we check what are the links for each query. So, for the feedback, it happens to be this."</p>
+    <p class="q rep"><span class="who">Rep:</span>"We don't usually hand [it] out … once there is a case."</p>
+  </div>
+
+  <div class="quote-group">
+    <h3>How would you rate Airbnb support on this case?</h3>
+    <p class="q rep"><span class="who">Rep:</span>"Well, in general, I will rate very high."</p>
+    <p class="q"><span class="who">Me:</span>On this issue?</p>
+    <p class="q rep"><span class="who">Rep:</span>"Not in this issue."</p>
+  </div>
+
+  <div class="quote-group">
+    <h3>Closing</h3>
+    <p class="q rep"><span class="who">Rep:</span>"Hopefully, this is a good result for you."</p>
+    <p class="q rep"><span class="who">Rep:</span>"We'll take the feedback and we'll hopefully improve from there."</p>
+  </div>
+
+  <h2>Key evidence</h2>
+  <div class="gallery">
+    <figure><img src="assets/airbnbsupportfail/1-payout-cut-1955.jpg" alt="Airbnb alteration page: original payout $2,963.96, new payout $1,008.30, difference −$1,955.66"><figcaption>The date change I never accepted: payout cut by $1,955.66.</figcaption></figure>
+    <figure><img src="assets/airbnbsupportfail/3-senior-case-manager-ruling.jpg" alt="Senior Case Manager message ruling the claim invalid and the refund at the host's discretion"><figcaption>Senior Case Manager: the claim is invalid, and any refund is up to me.</figcaption></figure>
+    <figure><img src="assets/airbnbsupportfail/4-airbnb-told-guest-to-alter.jpg" alt="Guest message saying Airbnb Support told him changing the checkout will process the refund automatically"><figcaption>The guest's water question came after he'd announced he was leaving. Then: "Airbnb Support says changing the checkout… will process the refund automatically."</figcaption></figure>
+    <figure><img src="assets/airbnbsupportfail/2-agent-30pct-retroactive.jpg" alt="Agent message granting a 30 percent refund from September 2nd"><figcaption>Agent 1: 30% back from Sep 2, two weeks before the water issue started.</figcaption></figure>
+  </div>
+
+  <h2>This isn't hard to fix</h2>
+  <ul class="points">
+    <li><strong>Put cases Airbnb admits it got wrong at the top of the queue.</strong></li>
+    <li><strong>Don't assign cases to people who are out.</strong></li>
+    <li><strong>Use AI for two basic checks:</strong> Were the host's questions actually answered? Does what the agent said match Airbnb's published policy? A basic model does this reliably, and it would have caught this case on day 1.</li>
+  </ul>
+  <p style="margin-top:1rem">What I'm asking for: my $1,955.66 back, written answers to my questions, and one named person who owns this case until it's resolved.</p>
+
+  <h2>The full support thread</h2>
+  <p class="note">The complete Airbnb Support message thread, word for word. Times are as shown in my Airbnb inbox (US Central). The guest's surname and the reservation code are redacted. <span class="tag bad">wrong</span> marks messages that contradict Airbnb policy or the facts. <span class="tag good">ruling</span> marks the Senior Case Manager's decision.</p>
+  <details open>
+    <summary>Show / hide the thread (about 30 messages)</summary>
+    <div class="thread" id="thread"></div>
+  </details>
+
+  <footer>
+    Published by the host, Sep 25, 2026. Screenshots of every message and payout page are on file. Airbnb staff are identified only by the first names they used in the thread.
+  </footer>
+</div>
+
+<div class="lightbox" id="lightbox"><img alt=""></div>
+
+<script>
+// [day, author, kind, time, text, flag]  kind: agent | host | system ; flag: bad | good
+var T = [
+["Sunday, Sep 20","Gyan","agent","2:53 PM",
+"Hello Rahul,\n\nThis is Gyan with Airbnb. I hope you’re doing well. We really appreciate you being one of our Hosts, and even more so for your continued partnership with us.\n\nI’m reaching out regarding your reservation with [guest] (reservation code [redacted]), scheduled for Sep 2 to Nov 30 at Lago Pequeno @ Alpaca Playhouse. The guest reported unsafe brown water in the bathroom sink and bathtub. They also mentioned the kitchen area had similar water, and that there was no solution for the brown water in the toilet, which they consider a safety hazard. We’ve received documentation supporting the legitimacy of their report.\n\nWe appreciate that you informed the guest earlier, but this should have been handled sooner, with proper expectation setting.\n\nBecause of the reported problem, the guest checked out on Sep 19 and is now looking for a refund for the unused nights.\n\nPlease remember that by hosting on Airbnb, you agreed to comply fully with Airbnb Hosting Standards and our General Terms and Conditions. While Airbnb reserves the right to adjust policies in cases of confirmed violations, we strive to handle such matters fairly and transparently.\n\nWe expect Hosts to adhere to the following standards to ensure a comfortable and reliable experience for guests:\n\n- Reservation commitment\n- Timely communication\n- Listing accuracy\n- Listing cleanliness\n\nWe take reports like these seriously which is why we are reaching out to you to ensure that we hear your side as well before we make a decision based on the policies and guidelines that we have here. To ensure a timely resolution for this case, we hope that you can make a response. If we are unable to receive a response from you by 1 hour, we will have to proceed in deciding based on the policies and guidelines that we have.\n\nPlease do not hesitate to respond here to any information that can possibly add value to our review for this report. That way, we can create a fair and justified decision. Thank you and I hope to hear from you soon!\n\nRegards,","bad"],
+["","Rahul (host)","host","3:50 PM",
+"Hi Gyan,\n\nWe have 4 filtration systems in the house for all water.\nThe brownish water is a common occurrence in this part of Texas in all homes. However, we have 6 stage water filtration for drinking water and many water jars that can be used if you feel you need it for teeth brushing. Aqua water has assured all customers many time that this is not a health problem.\n\nyou can check on their site if you wish.\n\nI can send pictures of all the filtration systems if you would like"],
+["","Gyan","agent","6:48 PM",
+"Thanks for the reply, Rahul!\n\nWe completely understand that the regional water discoloration is an issue stemming from the local utility provider, Aqua Water, and is affecting the broader area. We also genuinely appreciate the proactive measures you have taken by installing a 6-stage filtration system in the kitchen and providing water jars for your guests.\n\nHowever, clean and clear water is a fundamental amenity and a basic requirement for any stay. While the water may be deemed safe by the city, running brownish water across the property including the bathrooms does not meet the hospitality standards expected on our platform. Guests must be able to comfortably utilize all plumbing facilities, including showers and bathroom sinks, without experiencing heavily discolored water.\n\nSince the guests reported this issue to you in person on their very first night, we must address the impact it has had on their stay. The guests have requested a full refund for the entire reservation. We agree that a full refund would not be fair to you, given your communication and the provisions you made in the kitchen.\n\nTo resolve this fairly for both parties, we are applying our standard policies for active amenity issues: September 2nd – September 18th: The guest is entitled to a partial refund 30% for these impacted nights to account for the diminished utility of the bathrooms.\n\nSeptember 19th onwards: The guest is entitled to a full refund for all unused nights since they choose to shorten their stay due to this ongoing issue.\n\nWe value your partnership and your commitment to hosting. We want to work with you to finalize these adjustments smoothly.","bad"],
+["Monday, Sep 21","Rahul (host)","host","12:03 PM",
+"The guest absolutely never reported the issue to me in person and the brown water was only present on 3 or 4 days starting on the 18th.\n\nIf the guest says they told me in person that is false. They never did."],
+["","Gyan","agent","12:26 PM","Thanks for the update, Rahul!\n\nWe’re currently waiting for a response from the host, and we’ll get back to you shortly with an update."],
+["","Gyan","agent","","Thanks for the update, Rahul!\n\nApologies for the typing error!\n\nWe’re currently waiting for a response from the guest, and we’ll get back to you shortly with an update."],
+["","Rahul (host)","host","12:39 PM",
+"generally I don't understand your policy. This is safe water meeting all standards according to the water district. Do you agree or disagree with that. If you agree, you are saying anytime I get a long term rental any guest can say the water is cloudy and leave at any time and get a partial refund of monies they paid.\n\nAquawater says:\n\n\"Cloudy or brownish water most likely due to sediment stirred up during routine line flushing or a recent repair to an Aqua WSC water line in your area.\n\nThe discoloration is typically temporary — just run your cold water tap for a few minutes and it should clear up.\"\n\nAnd this matches with the facts that it clears up after running for a few minutes.\n\nThere is also no boil water notice or anything like that.\n\nBut I want to be clear on your policy. If a utility does maintenance work for 2 days that does not effect the health and safety of anyone, this gives the right for the tenant to break a 3 month stay? If that is the case, I don't think I or others can do airbnb rentals anymore. The lead time to find someone is too high if people can leave with no notice and get retroactive monies for periods when there were no problems. it makes no sense. Please give me your official statement regarding this.\n\nhere you can see he didn't ask about water until after he informed that he was leaving. Had he done so we could have easily put a filter on his shower and again there is one of the most advanced filtration systems in the house (6 stage well maintained reverse osmosis) for drinking water.\n\n[photo attached]"],
+["","Gyan","agent","1:14 PM",
+"As informed, Rahul, we completely understand that the regional water discoloration is an issue stemming from the local utility provider, Aqua Water, and is affecting the broader area. We also appreciate the proactive steps you’ve taken, including installing a 6-stage filtration system in the kitchen and providing water jars for your guests.\n\nThat said, clean and clear water is a fundamental amenity and a basic requirement for any stay. Even if the water is considered safe by the city, running brownish water across the property, including the bathrooms, doesn’t meet the hospitality standards expected on our platform. Guests should be able to comfortably use all plumbing facilities, including showers and bathroom sinks, without heavily discolored water.\n\nSince the guests reported this issue to you in person on their very first night, we need to address the impact it had on their stay. The guests are requesting a full refund for the entire reservation. We agree that a full refund wouldn’t be fair to you, given your communication and the provisions you made in the kitchen.\n\nTo resolve this fairly for both parties, we’re applying our standard policies for active amenity issues:\n- September 2 to September 18: The guest is entitled to a 30% partial refund for the impacted nights.\n- September 19 onward: The guest is entitled to a full refund for all unused nights.\n\nWe value your partnership and your commitment to hosting, and we’d like to finalize these adjustments smoothly.","bad"],
+["","Rahul (host)","host","1:22 PM",
+"1) There were no water clarity problems before the 17th. Why do they get a retroactive refund from before there were any issues?\n\n2) This was never reported in person. That is false.\n\nI would like to escalate this, and I would like to get an official statement on why this is retroactively refunded."],
+["","Gyan","agent","1:56 PM",
+"Thanks for your response, Rahul.\n\nJust to clarify, this is what we were told by your guest. If they can’t provide documentation to support their claim, they won’t be eligible for a refund for the used nights from Sep 2 to Sep 17.\n\nAlso, based on the documentation and your confirmation that the issue was reported on Sep 17, and that the guest checked out on Sep 19, the guest will receive a partial refund for the impacted nights. The remaining nights will be canceled, so there won’t be any payout for Sep 19 onward.\n\nWould request you to please let me know if you need any further clarification or you still want me to escalate this case?","bad"],
+["","Rahul (host)","host","2:07 PM","there is no more cloudy water. that was a temporary thing. Why can they cancel the rest of their stay?\n\nwhen you say \"reported\"? what specifically do you mean? When and how?"],
+["","Gyan","agent","2:30 PM",
+"Well, I understand the confusion, Rahul.\n\nBy “reported,” we mean when you were informed about the water discoloration issue and how it was handled. This is also why the reservation is being adjusted starting Sep 20. Since the guest left on Sep 19 due to the lack of a proper resolution from your end, there won’t be any additional payout for the rest of the reservation.","bad"],
+["","Rahul (host)","host","3:52 PM",
+"I wasn't never asked to resolve this in any manner. I live 10 feet away from the guest and the day before he left he said everything is great.\n\nI was not requested to do anything about it or made known it was a problem for him.\nagain we could have easily put in a filter on his faucets if he wanted which would have made the water clear."],
+["","Rahul (host)","host","",
+"Gyan — I'm requesting escalation to a Case Manager. Before that, four points for the record.\n\n1. I was never notified and never asked to resolve anything.\nYour stated basis for cancelling the remaining nights is \"the guest left on Sep 19 due to the lack of a proper resolution from your end.\" No resolution was requested of me. I live approximately 10 feet from this unit. The day before departure the guest told me everything was great. The message thread I've submitted shows the guest did not raise water at all until after announcing he was leaving.\nTo be explicit: I did not confirm the issue was \"reported\" on Sep 17. I confirmed the discoloration occurred around then. Those are different facts and the distinction is material to your decision.\n\n2. The policy requires the guest to have come to me first.\nThe Rebooking and Refund Policy states: \"Before submitting a request to us, whenever feasible, the guest must notify the host and try to resolve the Reservation Issue directly with their host.\" Nothing made this infeasible — we were on the same property. Had he asked, I would have installed a faucet and shower filter the same day, as I offered. The remedy was trivial, available, and never requested.\n\n3. Apply one evidentiary standard.\nYou've told me the guest needs documentation to claim Sep 2–17. The claim that he reported this to me in person — which is the sole basis for the Sep 20-onward cancellation — has no documentation either. It is contradicted by the thread. Please apply the same standard to both.\n\n4. \"Clean and clear water\" is not a published standard.\nI've reviewed the Ground Rules for home hosts, the Safety Requirements for homes, and the Rebooking and Refund Policy. The health-hazard standard is \"contaminated water\" (Article 2904). No provision establishes water clarity as a host requirement. Please cite the specific provision you're applying.\nAqua Water Supply Corporation's published guidance states discoloration is \"most likely due to sediment stirred up during routine line flushing or a recent repair\" and is \"typically temporary — just run your cold water tap for a few minutes and it should clear up.\" That matches what occurred. There was no boil-water notice and no violation.\n\nWhere I stand: I'm not disputing a partial adjustment for the days the water was actually discolored. I accept that. I am disputing the cancellation of approximately 72 remaining nights. The condition was temporary, utility-caused, is fully resolved today, and I was never given the opportunity to remedy it that your own policy requires. Refund amounts under that policy turn on \"the portion of the stay affected\" — the portion affected was three days, not three months.\n\nPlease provide the Case Manager's determination in writing with the specific policy provision relied upon."],
+["","Aditya","agent","10:07 PM","I’m really sorry, but the guest is eligible for a partial refund and a full refund for the unspent nights, As per Airbnb policy","bad"],
+["","Rahul (host)","host","10:13 PM","can you escalate this to a case manager and answer the questions above?\n\ndid you get any documentation that the guest informed me in anyway as stated?"],
+["","Harleen","agent","10:27 PM",
+"I completely understand why you’d like to speak with a case manager, and I respect your request.\n\nAs outlined in our policy, if a guest has any concern during their stay, they can reach out to the host or to us, or raise the issue through the resolution request. Since the guest contacted us, they’re eligible for a refund for the impacted nights, and a full refund for any unspent nights.\n\nClean, clear water is a basic expectation for a stay, including in bathrooms and for drinking. Brownish water doesn’t meet that standard.\n\nIf you’d still like to talk to a senior case manager, please let me know and I’ll be happy to escalate this case.","bad"],
+["","Rahul (host)","host","10:45 PM",
+"yes, I would 100% like to escalate and I would like answers to all the the questions I asked, which you have not addressed.\n\nAlso please let me know what country you are in. thank you.\n\nAnd once you answer that — please proceed with the escalation to a senior case manager. For that case manager's review, I want the following on the record.\n\nA correction to the policy as it was stated to me. Harleen wrote that a guest \"can reach out to the host or to us, or raise the issue through the resolution request.\" That is not what the Rebooking and Refund Policy says. The published text reads: \"Before submitting a request to us, whenever feasible, the guest must notify the host and try to resolve the Reservation Issue directly with their host.\" That is a sequencing requirement, not an either/or. The determination in this case rests entirely on the incorrect version.\n\nFour questions, none of which has been answered across three agents:\n\nOn what date and time did the guest first contact Airbnb regarding water? (Before or after he announced he was leaving?)\nDoes Airbnb hold any documentation that the guest notified me of this issue before announcing departure? Yes or no.\nWhich specific provision of the Ground Rules, Safety Requirements, or Rebooking and Refund Policy establishes clarity of water as a host requirement? The published health-hazard standard in Article 2904 is \"contaminated water.\"\nWhy was the guest's obligation to attempt resolution with me waived, given that we were on the same property and the remedy — a faucet and shower filter — was same-day and trivial?\n\nThe facts I am asserting, which remain uncontested: The guest never raised water with me before announcing his departure. The day prior, he told me in person that everything was great. The discoloration was utility-caused, lasted approximately three days, and is fully resolved today. Aqua Water Supply Corporation publishes that such discoloration is sediment from line flushing and is temporary. There was no boil-water notice and no violation.\n\nI am not contesting a partial adjustment for the days the water was discolored. I am contesting the cancellation of approximately 72 subsequent nights, on a stay where the condition no longer exists and where I was never asked to remedy it.\n\nI look forward to the case managers respond in writing, addressing questions 1–4 specifically. thank you for your assistance on this matter."],
+["","Rohan (Senior Case Manager)","agent","11:40 PM",
+"Hello Rahul,\n\nThis is Rohan, one of the Senior Case Manager for you at Airbnb, here to handle Supervisor Escalations.\n\nI have reviewed your whole case from my end and I would like to inform you then based on the information and the documentation that has been provided by the guess the claim that they are requesting is invalid on Airbnb and you do not have to worry about it anything I can see the guest left the reservation without informing you anything regarding the issues inside the property.\n\nAccording to the guidelines if I will be there will be no action for you, and you don't have to worry about it and the refund It's totally up to your discrimination if you want to provide that you can provide that to the guest or else there will be no refund from Airbnb.\n\nThere's no evidence or documentation that has been provided to Airbnb regarding the unclean water as well that is the reason their claim is invalid.","good"],
+["Tuesday, Sep 22","Rohan (Senior Case Manager)","agent","7:11 AM",
+"I will go ahead and close this thread for the time being.\n\nFor any further assistance, please feel free to reach out to us or simply visit our Help Center at www.airbnb.com/help, we are available 24/7 and more than happy to be of assistance.\n\nYou may always reach out to us at: +1-415-800-5959 or +1-844-234-2500, or you may use our self-help guide for faster assistance on most general queries: https://www.airbnb.com/help\n\nBest Regards,\nSenior Case Manager"],
+["","Rahul (host)","host","1:27 PM",
+"Thank you, Rohan — I appreciate you actually reviewing the file.\n\nTo confirm my understanding in writing:\n\nThe guest's claim is closed as invalid, and no refund will be deducted from my payout.\nWhat happens to the remaining nights, Sep 20–Nov 30? If the guest is cancelling, please confirm which cancellation policy applies and what my payout will be.\nPlease confirm there is no penalty, warning, or listing action on my account, and no impact to my Superhost status.\nPlease confirm the expected payout amount and date.\n\nSeparately, I do want to raise the handling of this case — six conversations, contradictory statements, and a stated one-hour response deadline, on a claim your own review found had no supporting evidence. I'll raise that on its own once the reservation is settled."],
+["","Airbnb Support","system","1:27 PM","“Yes, I still need help.” → We're forwarding you to a team that can better assist you."],
+["","Aditya","agent","3:22 PM","Hi Rahul,\n\nThis is Aditya from Airbnb Support. Thanks for reaching out.\n\nI see that your concern is regarding this reservation [redacted]. I’m currently reviewing your case and will update you shortly.\n\nThank you for your patience."],
+["","Rohit (Senior Case Manager)","agent","11:24 PM","Hello Rahul,\n\nThis is Rohit, your Senior Case Manager with Airbnb, I hope this message finds you well.\n\nSo as Guest as check-out on Sep 19 2026, so I want to know are you willing to provide any refund to the Guest for the unspent night for this reservation."],
+["Wednesday, Sep 23","Guest thread","system","3:16 PM","Meanwhile, in the guest thread: “Airbnb Support says changing the checkout to September 19 will process the refund automatically.”"],
+["","Airbnb","system","4:07 PM","Email to host: “Your reservation with Luka has been updated.” Payout $2,963.96 → $1,008.30. The host never accepted the change."],
+["","Rahul (host)","host","9:25 PM",
+"not at this time. I believe the guest made false representations that created a huge amount of time, effort and other challenges. and I need to clarify that first. Also, what I really need is for someone on your side to answer the questions I have asked several times:\n\nhere they are again: and one additional.\n\nOn what date and time did the guest first contact Airbnb regarding water? (Before or after he announced he was leaving?)\n\nDoes Airbnb hold any documentation that the guest notified me of this issue before announcing departure? Yes or no.\n\nWhich specific provision of the Ground Rules, Safety Requirements, or Rebooking and Refund Policy establishes clarity of water as a host requirement? The published health-hazard standard in Article 2904 is \"contaminated water.\"\n\nWhy was the guest's obligation to attempt resolution with me waived, given that we were on the same property and the remedy — a faucet and shower filter — was same-day and trivial?\n\nDid the guest as was stated above by the other agent, tell you that he had communicated with me directly about this issue.\n\nI am not contesting a partial adjustment for the days the water was discolored. I am contesting the cancellation of approximately 72 subsequent nights, on a stay where the condition no longer exists and where I was never asked to remedy it.\n\nI look forward to the case managers respond in writing, addressing questions 1–4 specifically. thank you for your assistance on this matter."],
+["","Rahul (host)","host","","how much total money have I been paid for this reservation up to now?"],
+["Thursday, Sep 24","Rahul (host)","host","1:49 PM","can someone answer me?"],
+["","","system","","No reply."],
+["Friday, Sep 25","Rahul (host)","host","1:00 PM","hello? is anyone there?"],
+["","Rahul (host)","host","","I did not accept his request for alteration. Why was this processed?"],
+["","","system","","No reply as of publication."]
+];
+var box = document.getElementById('thread');
+T.forEach(function (m) {
+  if (m[0]) { var d = document.createElement('div'); d.className = 'day'; d.textContent = m[0]; box.appendChild(d); }
+  var el = document.createElement('div');
+  el.className = 'msg ' + m[2] + (m[5] === 'bad' ? ' flag' : m[5] === 'good' ? ' ruling' : '');
+  if (m[2] !== 'system' || m[1]) {
+    var meta = document.createElement('span'); meta.className = 'meta';
+    meta.textContent = [m[1], m[3]].filter(Boolean).join(' · ');
+    if (m[5]) { var t = document.createElement('span'); t.className = 'tag ' + m[5]; t.textContent = m[5] === 'bad' ? 'wrong' : 'ruling'; meta.appendChild(t); }
+    el.appendChild(meta);
+  }
+  el.appendChild(document.createTextNode(m[4]));
+  box.appendChild(el);
+});
+var lb = document.getElementById('lightbox');
+document.querySelectorAll('figure img').forEach(function (img) {
+  img.addEventListener('click', function () { lb.querySelector('img').src = img.src; lb.classList.add('open'); });
+});
+lb.addEventListener('click', function () { lb.classList.remove('open'); });
+</script>
+<script src="/rahulio/page-header.js" defer></script>
+</body>
+</html>
