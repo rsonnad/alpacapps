@@ -94,9 +94,15 @@ nest_config          - Google SDM API OAuth credentials (single row, id=1)
 nest_devices         - Cached thermostat info (3 devices: Master, Kitchen, Skyloft)
                       (sdm_device_id, room_name, device_type, display_order,
                        is_active, last_state [jsonb], lan_ip)
-thermostat_rules     - Future rules engine (schema only, not yet implemented)
-                      (name, device_id [FK→nest_devices], rule_type,
-                       conditions [jsonb], actions [jsonb], is_active, priority)
+thermostat_rules     - Scheduled thermostat automations, run by nest-control's
+                      "run-schedules" action via pg_cron job
+                      'thermostat-schedule-runner' (every 15 min, America/Chicago).
+                      Admin UI: devices/climate.html "Scheduled Automations".
+                      (name, device_id [FK→nest_devices], rule_type ('scheduled_time'),
+                       conditions [jsonb: hour, minute, recurrence
+                       daily/weekdays/weekends/custom/once, custom_days?, one_time_date?],
+                       actions [jsonb: mode, temperature|heatTemp+coolTemp],
+                       is_active, priority, last_triggered)
 ```
 
 ### Weather System
