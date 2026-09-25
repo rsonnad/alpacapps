@@ -1,12 +1,12 @@
 {
-  "version": "v260925.02 3:23p",
-  "release": 1863,
-  "sha": "4a54e15824",
-  "fullSha": "4a54e15824799a550229dcf8ed7683443700c2ab",
+  "version": "v260925.03 3:27p",
+  "release": 1864,
+  "sha": "f4c9132057",
+  "fullSha": "f4c9132057a6c96c3946e5fe120b8b6477e99326",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-25T20:23:26+00:00",
-  "commits": [{"sha":"4a54e15824","message":"airbnbsupportfail: round the payout loss to $2k","author":"Blotto"}]
+  "pushedAt": "2026-09-25T20:27:09+00:00",
+  "commits": [{"sha":"f4c9132057","message":"airbnbsupportfail: add greatest-hits quotes at the top","author":"Blotto"}]
 }
