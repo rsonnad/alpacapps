@@ -1,12 +1,12 @@
 {
-  "version": "v260924.04 2:36p",
-  "release": 1861,
-  "sha": "28d6b51c93",
-  "fullSha": "28d6b51c9326faf39f2aa297d99f1aae12b3c867",
+  "version": "v260925.01 3:12p",
+  "release": 1862,
+  "sha": "5f6f20605c",
+  "fullSha": "5f6f20605c6aa7548172d5af7e378264d04693b6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-24T19:36:22+00:00",
-  "commits": [{"sha":"28d6b51c93","message":"Restore Justin hours sign-in page (no data in file; content stays in Supabase behind RLS)","author":"Blotto"}]
+  "pushedAt": "2026-09-25T20:12:16+00:00",
+  "commits": [{"sha":"5f6f20605c","message":"Add Airbnb support case record page (rahulio/pages/airbnbsupportfail.html)","author":"Blotto"}]
 }
