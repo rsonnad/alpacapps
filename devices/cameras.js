@@ -117,7 +117,7 @@ async function loadCameras() {
     }
     grouped[stream.camera_name].streams[stream.quality] = stream;
   }
-  const PRIORITY_ORDER = ['Front Yard', 'Alpacamera', 'Sparadise'];
+  const PRIORITY_ORDER = ['Shower Tower', 'Front Yard', 'Alpacamera', 'Sparadise'];
   cameras = Object.values(grouped).sort((a, b) => {
     const ai = PRIORITY_ORDER.indexOf(a.name);
     const bi = PRIORITY_ORDER.indexOf(b.name);

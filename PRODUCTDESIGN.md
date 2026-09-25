@@ -685,3 +685,9 @@ Each external service was chosen for specific reasons. This section documents wh
 **Decision:** The onboarding email's "View my access codes" page (`residents/my-access.html` → `get_my_space_codes()`) must expose **only the combination for the resident's own private room/space door**. House-wide codes — `Front Door Code`, `Garage Door Code`, and anything else stored in `password_vault` with `space_id = NULL` — are deliberately unreachable by that RPC and must stay that way. Do not attach house-wide codes to a parent space (e.g. Main House) to surface them, and do not widen the RPC to return `space_id IS NULL` rows.
 
 **Why:** A resident's door combination is private to them; shared-entry codes are not theirs to receive by automated email. A guest in a Main House room (e.g. Pequeno Largo Suite) correctly receives only their own `Pequeño Door` code. Surfacing the front door code via the parent-space rule would push it to residents of all nine Main House rooms at once, turning a per-resident secret into a broadcast. Shared-entry access is handled out of band, not by the onboarding email.
+
+### 2026-09-25: Shower Tower Camera Is the Primary Resident Feed
+
+**Decision:** Once its UniFi Protect RTSP streams are configured, Shower Tower appears first in the resident Cameras page, ahead of the existing exterior feeds.
+
+**Why:** It covers the most immediate shared-area view and should be reachable without scrolling, while the existing camera grouping and quality controls continue to work unchanged.

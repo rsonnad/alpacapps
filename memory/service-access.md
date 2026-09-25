@@ -113,10 +113,21 @@ Use when checking the legacy ALMACA MacBook Pro 16, including mounted local volu
 > tailscale status | grep -i almaca
 > ```
 >
-> **Key auth from Alpuca does not work** — `alpaca@` on both the LAN and Tailscale
-> addresses returns `Permission denied (publickey,password,keyboard-interactive)`, and
-> Tailscale SSH is not enabled for this node. Almaca currently needs an interactive
-> password or a pushed public key; there is no unattended recipe yet.
+> **Verified direct access (2026-09-25).** From this Mac, use the existing
+> `~/.ssh/alpuca_ed25519` key with `IdentitiesOnly=yes` over Almaca's LAN address.
+> Do not route through Alpuca: its copy of this private key does not exist and key
+> authentication there fails.
+
+### Direct LAN SSH (verified)
+
+```bash
+ssh -i ~/.ssh/alpuca_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes \
+  -o ConnectTimeout=12 alpaca@192.168.1.74
+```
+
+Verified 2026-09-25: connected as `alpaca` to `Almaca.local` and safely disabled
+the obsolete `com.alpacapps.ptz-proxy` LaunchAgent by unloading it and renaming its
+plist to `.plist.disabled` (reversible by renaming it back and loading it).
 
 ### Tailscale SSH
 
