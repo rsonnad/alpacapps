@@ -1,12 +1,12 @@
 {
-  "version": "v260925.03 3:27p",
-  "release": 1864,
-  "sha": "f4c9132057",
-  "fullSha": "f4c9132057a6c96c3946e5fe120b8b6477e99326",
+  "version": "v260925.05 3:54p",
+  "release": 1866,
+  "sha": "ba8c97f65c",
+  "fullSha": "ba8c97f65c0bd31c80a14b12c3bb392e29961f61",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-25T20:27:09+00:00",
-  "commits": [{"sha":"f4c9132057","message":"airbnbsupportfail: add greatest-hits quotes at the top","author":"Blotto"}]
+  "pushedAt": "2026-09-25T20:54:48+00:00",
+  "commits": [{"sha":"ba8c97f65c","message":"feat(cameras): prioritize Shower Tower feed","author":"Blotto"}]
 }
