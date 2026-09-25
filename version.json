@@ -1,12 +1,12 @@
 {
-  "version": "v260925.05 3:54p",
-  "release": 1866,
-  "sha": "ba8c97f65c",
-  "fullSha": "ba8c97f65c0bd31c80a14b12c3bb392e29961f61",
+  "version": "v260925.06 3:57p",
+  "release": 1867,
+  "sha": "febc5c21a8",
+  "fullSha": "febc5c21a844c3f490e27bd6c180e47bc5deafe3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-25T20:54:48+00:00",
-  "commits": [{"sha":"ba8c97f65c","message":"feat(cameras): prioritize Shower Tower feed","author":"Blotto"}]
+  "pushedAt": "2026-09-25T20:57:04+00:00",
+  "commits": [{"sha":"febc5c21a8","message":"airbnbsupportfail: link the X write-up stored on R2","author":"Blotto"}]
 }
