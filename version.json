@@ -1,12 +1,12 @@
 {
-  "version": "v260925.01 3:12p",
-  "release": 1862,
-  "sha": "5f6f20605c",
-  "fullSha": "5f6f20605c6aa7548172d5af7e378264d04693b6",
+  "version": "v260925.02 3:23p",
+  "release": 1863,
+  "sha": "4a54e15824",
+  "fullSha": "4a54e15824799a550229dcf8ed7683443700c2ab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-25T20:12:16+00:00",
-  "commits": [{"sha":"5f6f20605c","message":"Add Airbnb support case record page (rahulio/pages/airbnbsupportfail.html)","author":"Blotto"}]
+  "pushedAt": "2026-09-25T20:23:26+00:00",
+  "commits": [{"sha":"4a54e15824","message":"airbnbsupportfail: round the payout loss to $2k","author":"Blotto"}]
 }
