@@ -62,6 +62,7 @@ When the user names a person (e.g. "is X working?", "what's X's schedule?", "wha
 3. Push immediately — GitHub Pages deploys on push to main. See `spaces/admin/devcontrol/devdocs/DEPLOY.md`
 4. CI bumps version — never bump locally
 5. Exclude `/mistiq/` from all AlpacApps work
+6. **UI page references = bare full URL.** Whenever a response mentions a page or screen in the UI (e.g. "Spaces admin", "Projects", "DevControl"), write its full URL as plain visible text, e.g. `Spaces admin: https://alpacaplayhouse.com/staff/spaces.html`. Never hide the URL behind markdown link text (`[Spaces admin](...)`) and never give only a page name or repo path. Resolve paths from `shared/routes.js` (`SITE_ORIGIN` + route); if a page isn't there, verify the file exists before writing the URL. Applies to every response, not just post-change summaries.
 
 ## TTRAN Task Routing
 
