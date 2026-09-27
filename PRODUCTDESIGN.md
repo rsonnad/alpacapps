@@ -691,3 +691,9 @@ Each external service was chosen for specific reasons. This section documents wh
 **Decision:** Once its UniFi Protect RTSP streams are configured, Shower Tower appears first in the resident Cameras page, ahead of the existing exterior feeds.
 
 **Why:** It covers the most immediate shared-area view and should be reachable without scrolling, while the existing camera grouping and quality controls continue to work unchanged.
+
+### 2026-09-27: Admin-Only Spaces Are Enforced in the Database
+
+**Decision:** A space can be marked `is_admin_only` (the "Admin only" checkbox in the Spaces editor), and such rows are readable only by admin/oracle users. It's enforced by a RESTRICTIVE RLS SELECT policy on `spaces`, not a client-side filter. Sharingwood Basement is the first admin-only space. The flag is not inherited by child spaces.
+
+**Why:** Before this, the public anon key could read the full Sharingwood row, street address included, directly from the API. A UI filter would have hidden it on screen but left it one `curl` away. A restrictive policy is ANDed with the existing permissive policies, so it can only remove rows and is safe to layer on without rewriting the live read policies, which aren't fully captured in the repo. Trade-off: for non-admins, joins from other tables (assignments, tasks) to an admin-only space return a null `space`.
