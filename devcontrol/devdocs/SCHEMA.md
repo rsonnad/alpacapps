@@ -421,6 +421,7 @@ photo_spaces    - DEPRECATED: migrated to media_spaces
 - `can_be_dwelling` - Filter for rental listings
 - `can_be_event` - Can be used for events
 - `is_archived` - Soft delete (filtered out everywhere)
+- `is_admin_only` - Only admin/oracle can read the row; enforced by a RESTRICTIVE RLS SELECT policy (`supabase/migrations/20260927_spaces_admin_only.sql`). Not inherited by child spaces. Used for Sharingwood Basement.
 
 ### Key Columns on `assignments`
 - `status` - active, pending_contract, contract_sent, completed, cancelled

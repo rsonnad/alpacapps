@@ -774,6 +774,13 @@
                   Secret
                 </label>
               </div>
+              <!-- Admin only: enforced by RLS (supabase/migrations/20260927_spaces_admin_only.sql) -->
+              <div class="form-group checkbox-group">
+                <label title="Only admins can see this space — hidden from staff, residents, associates and the public">
+                  <input type="checkbox" id="editIsAdminOnly">
+                  Admin only
+                </label>
+              </div>
             </div>
           </fieldset>
 

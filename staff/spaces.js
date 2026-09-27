@@ -620,6 +620,7 @@ function renderCards(spacesToRender) {
     badges += `<span class="badge ${untilBadgeClass} badge-right">Until: ${availUntilStr}</span>`;
 
     // Inherited = hidden only because an ancestor is secret, not by its own flag
+    if (space.is_admin_only) badges += '<span class="badge secret">Admin only</span>';
     if (space.is_secret) badges += '<span class="badge secret">Secret</span>';
     else if (space.is_secret_effective) badges += '<span class="badge secret">Secret (inherited)</span>';
     else if (!space.is_listed) badges += '<span class="badge unlisted">Unlisted</span>';
@@ -751,7 +752,8 @@ function renderTable(spacesToRender) {
       : '<span class="badge badge-circle occupied" title="Occupied">O</span>';
 
     let visBadge = '';
-    if (space.is_secret) visBadge = '<span class="badge badge-circle secret" title="Secret">S</span>';
+    if (space.is_admin_only) visBadge = '<span class="badge badge-circle secret" title="Admin only — hidden from non-admins">AO</span>';
+    else if (space.is_secret) visBadge = '<span class="badge badge-circle secret" title="Secret">S</span>';
     else if (space.is_secret_effective) visBadge = '<span class="badge badge-circle secret" title="Secret (inherited from parent)">S</span>';
     else if (!space.is_listed) visBadge = '<span class="badge badge-circle unlisted" title="Unlisted">U</span>';
 
@@ -1286,6 +1288,7 @@ async function openEditSpace(spaceId) {
   document.getElementById('editCanBeDwelling').checked = space.can_be_dwelling !== false;
   document.getElementById('editCanBeEvent').checked = space.can_be_event || false;
   document.getElementById('editIsMicro').checked = space.is_micro || false;
+  document.getElementById('editIsAdminOnly').checked = space.is_admin_only || false;
 
   // Populate amenity checkboxes
   await renderAmenityCheckboxes(space);
@@ -1473,6 +1476,12 @@ async function handleEditSpaceSubmit() {
       can_be_event: getChecked('editCanBeEvent'),
       is_micro: getChecked('editIsMicro'),
     };
+    // Only send is_admin_only once the column exists (migration
+    // 20260927_spaces_admin_only.sql); otherwise PostgREST rejects the whole save.
+    const editedSpace = allSpaces.find(s => s.id === spaceId);
+    if (editedSpace && 'is_admin_only' in editedSpace) {
+      updates.is_admin_only = getChecked('editIsAdminOnly');
+    }
 
     const { error } = await supabase
       .from('spaces')
