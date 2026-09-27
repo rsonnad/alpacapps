@@ -9,14 +9,18 @@
 -- Flags: can_be_dwelling=false (never rentable), can_be_event=false,
 -- is_listed=false (task/ops location only, not shown in consumer listings).
 --
--- Idempotent: un-archives an existing "Laundry Room" row instead of
--- inserting a duplicate.
+-- Idempotent: fixes up an existing "Laundry Room" row (archived or not)
+-- instead of inserting a duplicate.
 
+-- Also normalizes a row created via the Spaces admin "Add New Space" form,
+-- which hardcodes can_be_dwelling=true / is_listed=true (staff/spaces.js
+-- handleAddSpace) and so would list it publicly as a rental.
 UPDATE public.spaces
    SET is_archived = false,
-       can_be_dwelling = false
- WHERE lower(name) = 'laundry room'
-   AND is_archived = true;
+       can_be_dwelling = false,
+       can_be_event = false,
+       is_listed = false
+ WHERE lower(name) = 'laundry room';
 
 INSERT INTO public.spaces (name, parent_id, can_be_dwelling, can_be_event, is_listed, is_secret)
 SELECT 'Laundry Room', mh.id, false, false, false, false
