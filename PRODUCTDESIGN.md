@@ -691,3 +691,9 @@ Each external service was chosen for specific reasons. This section documents wh
 **Decision:** Once its UniFi Protect RTSP streams are configured, Shower Tower appears first in the resident Cameras page, ahead of the existing exterior feeds.
 
 **Why:** It covers the most immediate shared-area view and should be reachable without scrolling, while the existing camera grouping and quality controls continue to work unchanged.
+
+### 2026-09-28: Instant Payouts Are a Per-Associate Flag, Checked at 8 PM Central
+
+**Decision:** Associates who should be paid the same day get `associate_profiles.instant_payout = true` (first: Amber Coleman). `pay-pending-associates` then treats them as always due regardless of `payout_frequency`, runs an extra time at 8:00 PM Central (`?mode=instant`, two pg_cron jobs at 01:00/02:00 UTC with an in-function America/Chicago hour gate so it stays 8 PM across DST), and after the platform → connected-account transfer attempts a Stripe Instant Payout to the payee's debit card. If Stripe refuses, the transfer still stands and the money reaches the bank on the account's standard schedule; admin gets an "instant payout fell back" email each run until it is fixed or the flag is turned off.
+
+**Why:** Hardcoding one person into payroll code would be invisible to anyone reading the data and would need a deploy to change. A column is queryable, auditable, and reusable for the next associate. The Stripe transfer alone does not make money spendable the same day (standard Express payouts take ~2 business days), so "same day" requires Instant Payouts; making it best-effort with a fallback means a missing debit card or an instant-availability limit delays the money by days instead of blocking it. Instant Payouts carry a Stripe fee — check who bears it under Stripe Connect → Instant Payouts settings before enabling this for more associates.

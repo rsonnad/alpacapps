@@ -15,6 +15,20 @@
  *
  * Identity gate: only associates with `payment_method='stripe'` and a
  * stripe_connect_account_id are processed.
+ *
+ * Instant payout associates (`associate_profiles.instant_payout = true`):
+ *   - Are paid every run regardless of payout_frequency (always daily).
+ *   - Get an extra run at 8:00 PM America/Chicago: pg_cron calls this function
+ *     with `?mode=instant` at both 01:00 and 02:00 UTC (CDT and CST), and the
+ *     hour gate below lets through only the one that lands at 20:xx Central.
+ *     That run only touches instant_payout associates.
+ *   - After the platform → connected-account transfer, we try a Stripe Instant
+ *     Payout (connected account → debit card, minutes not days). If Stripe
+ *     refuses (no instant-eligible debit card, balance not instant-available,
+ *     etc.) the money still reaches the bank on the account's standard schedule;
+ *     the payee email shows the standard ETA and admin gets a heads-up.
+ *   `?mode=instant&force=1` skips the hour gate for manual runs, and requires
+ *   the service-role key.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
@@ -33,6 +47,11 @@ const ADMIN_ALERT_EMAILS = ['alpacaplayhouse@gmail.com', 'rahulioson@gmail.com']
 // on the first missed run. Throttled so a multi-week stall is not a daily nag.
 const FUNDING_DELAY_SOURCE_TYPE = 'associate_payout_funding_delay';
 const FUNDING_DELAY_THROTTLE_DAYS = 3;
+
+// Local hour (America/Chicago, 24h) at which the `?mode=instant` run is allowed
+// to proceed. pg_cron has no timezone support here, so it fires at both UTC
+// offsets and this gate discards the one that is not 8 PM Central.
+const INSTANT_RUN_HOUR_CENTRAL = 20;
 
 async function sendAdminAlert(resendKey: string | undefined, subject: string, html: string): Promise<void> {
   if (!resendKey) {
@@ -171,12 +190,18 @@ async function stripeGet(secret: string, path: string): Promise<any> {
   return JSON.parse(text);
 }
 
-async function stripePost(secret: string, path: string, body: Record<string, string | number>): Promise<any> {
+async function stripePost(
+  secret: string,
+  path: string,
+  body: Record<string, string | number>,
+  extraHeaders: Record<string, string> = {}
+): Promise<any> {
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${secret}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...extraHeaders
     },
     body: formEncode(body)
   });
@@ -188,6 +213,36 @@ async function stripePost(secret: string, path: string, body: Record<string, str
   return JSON.parse(text);
 }
 
+/**
+ * Push freshly transferred funds from the connected account to its debit card
+ * via Stripe Instant Payouts. Never throws: the transfer has already succeeded,
+ * so a refusal here only means the money goes out on the account's standard
+ * payout schedule instead. The Idempotency-Key ties the payout to our payouts
+ * row, so a retried run can't create a second instant payout for it.
+ */
+async function tryInstantPayout(
+  secret: string,
+  connectAccountId: string,
+  amountCents: number,
+  payoutId: string
+): Promise<{ ok: true; id: string } | { ok: false; reason: string }> {
+  try {
+    const payout = await stripePost(secret, 'payouts', {
+      amount: amountCents,
+      currency: 'usd',
+      method: 'instant',
+      'metadata[payout_id]': payoutId,
+      'metadata[source]': 'pay-pending-associates'
+    }, {
+      'Stripe-Account': connectAccountId,
+      'Idempotency-Key': `instant-payout-${payoutId}`
+    });
+    return { ok: true, id: payout.id };
+  } catch (e) {
+    return { ok: false, reason: (e as Error).message };
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) });
 
@@ -197,6 +252,30 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   const results: any[] = [];
+
+  // `?mode=instant` is the 8 PM Central run for instant_payout associates only.
+  // Anything else is the regular nightly run for everyone.
+  const params = new URL(req.url).searchParams;
+  const instantMode = params.get('mode') === 'instant';
+  if (instantMode) {
+    const hourCentral = Number(new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Chicago', hour: 'numeric', hourCycle: 'h23'
+    }).format(new Date()));
+    const force = params.get('force') === '1';
+    if (force) {
+      // This function is reachable with the public anon key, so skipping the
+      // schedule is restricted to callers holding the service-role key.
+      const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim();
+      if (token !== supabaseServiceKey) {
+        return new Response(JSON.stringify({ ok: false, error: 'force=1 requires the service-role key' }),
+          { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
+      }
+    } else if (hourCentral !== INSTANT_RUN_HOUR_CENTRAL) {
+      // The other half of the CDT/CST cron pair. Expected, not an error.
+      return new Response(JSON.stringify({ ok: true, mode: 'instant', skipped: 'outside_instant_window', hour_central: hourCentral }),
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
+    }
+  }
 
   try {
     const { data: config } = await supabase.from('stripe_config').select('*').single();
@@ -213,13 +292,15 @@ Deno.serve(async (req) => {
     const balance = await stripeGet(secretKey, 'balance');
     const availableCents = (balance.available || []).reduce((s: number, b: any) => s + (b.amount || 0), 0);
 
-    const { data: associates, error: aerr } = await supabase
+    let associatesQuery = supabase
       .from('associate_profiles')
-      .select('id, app_user_id, hourly_rate, daily_extra, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency, payout_day_of_week')
+      .select('id, app_user_id, hourly_rate, daily_extra, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency, payout_day_of_week, instant_payout')
       .eq('payment_method', 'stripe')
       .eq('is_active', true)
       .not('stripe_connect_account_id', 'is', null)
       .eq('identity_verification_status', 'verified');
+    if (instantMode) associatesQuery = associatesQuery.eq('instant_payout', true);
+    const { data: associates, error: aerr } = await associatesQuery;
 
     if (aerr) throw new Error(`associates query failed: ${aerr.message}`);
 
@@ -239,8 +320,10 @@ Deno.serve(async (req) => {
       // the 02:30 UTC run lands on exactly one Central weekday per week, a
       // weekly associate is paid once per week. Entry-level idempotency
       // (payout_time_entries UNIQUE) still prevents any double-claim.
+      // instant_payout associates are always due: "paid immediately" overrides
+      // any weekly cadence left on their profile.
       const freq = (assoc.payout_frequency || 'daily').toLowerCase();
-      if (freq !== 'daily') {
+      if (freq !== 'daily' && !assoc.instant_payout) {
         const payDay = assoc.payout_day_of_week ?? 6; // default Saturday
         if (todayDowCentral !== payDay) {
           results.push({
@@ -439,6 +522,20 @@ Deno.serve(async (req) => {
         .eq('id', payoutPre.id);
       const payoutRow = { id: payoutPre.id };
 
+      // Instant payout: move the transferred funds on to the payee's debit card
+      // now instead of waiting ~2 business days for the standard bank payout.
+      let instantResult: Awaited<ReturnType<typeof tryInstantPayout>> | null = null;
+      if (assoc.instant_payout) {
+        instantResult = await tryInstantPayout(secretKey, assoc.stripe_connect_account_id as string, amountCents, payoutPre.id);
+        if (instantResult.ok) {
+          await supabase.from('payouts')
+            .update({ stripe_instant_payout_id: instantResult.id })
+            .eq('id', payoutPre.id);
+        } else {
+          console.warn(`[instant-payout] fell back to standard for ${personName}: ${instantResult.reason}`);
+        }
+      }
+
       // #15 server-side payment_status transition; legacy is_paid is mirrored by trigger.
       const { error: uerr } = await supabase
         .from('time_entries')
@@ -455,7 +552,9 @@ Deno.serve(async (req) => {
       // (and SENDER_MAP) is the single source of truth for payout emails.
       if (recipientEmail) {
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-        const eta = addBusinessDays(new Date(), 2).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        const eta = instantResult?.ok
+          ? 'Today (instant payout to your debit card, usually within 30 minutes)'
+          : addBusinessDays(new Date(), 2).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
         const firstName = appUser?.first_name || personName.split(' ')[0];
         try {
           await fetch(`${supabaseUrl}/functions/v1/send-email`, {
@@ -472,7 +571,7 @@ Deno.serve(async (req) => {
                 first_name: firstName,
                 recipient_name: personName,
                 amount: amount.toFixed(2),
-                payment_method: 'Stripe (ACH)',
+                payment_method: instantResult?.ok ? 'Stripe Instant (debit card)' : 'Stripe (ACH)',
                 hours: totalHours.toFixed(2),
                 hourly_rate: rate.toFixed(2),
                 hourly_subtotal: hourlyAmount.toFixed(2),
@@ -503,7 +602,11 @@ Deno.serve(async (req) => {
         transfer_id: transfer.id,
         ledger_id: ledgerRow.id,
         payout_id: payoutRow?.id,
-        balance_remaining: newAvailable / 100
+        balance_remaining: newAvailable / 100,
+        ...(instantResult ? {
+          instant_payout: instantResult.ok ? 'sent' : 'fallback',
+          ...(instantResult.ok ? { instant_payout_id: instantResult.id } : { instant_fallback_reason: instantResult.reason })
+        } : {})
       });
     }
 
@@ -552,7 +655,27 @@ Deno.serve(async (req) => {
       await sendAdminAlert(resendKey, subject, html);
     }
 
-    return new Response(JSON.stringify({ ok: true, available_at_start: availableCents / 100, results }, null, 2),
+    // The payee WAS paid, just not instantly. Separate, lower-severity alert so
+    // admin can fix the cause (usually: no instant-eligible debit card on the
+    // connected account) or turn instant_payout off. Repeats each run until then.
+    const instantFallbacks = results.filter((r: any) => r.instant_payout === 'fallback');
+    if (instantFallbacks.length > 0) {
+      const rows = instantFallbacks.map((f: any) =>
+        `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">${f.person_name || f.associate_id}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;">$${Number(f.amount).toFixed(2)}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;color:#666;">${f.instant_fallback_reason}</td></tr>`
+      ).join('');
+      await sendAdminAlert(
+        resendKey,
+        `ℹ️ Instant payout fell back to standard (${instantFallbacks.length})`,
+        `<h2>Instant payout not possible — paid via standard bank payout instead</h2>
+         <p>These associates are set to <code>instant_payout</code>. Their Stripe transfer succeeded, but Stripe refused the
+         instant payout to their card, so the money will reach their bank on the normal schedule (~2 business days).</p>
+         <table style="border-collapse:collapse;width:100%;font-size:14px;"><thead><tr style="background:#f0f0f0;"><th style="padding:8px 10px;text-align:left;">Associate</th><th style="padding:8px 10px;text-align:left;">Amount</th><th style="padding:8px 10px;text-align:left;">Stripe reason</th></tr></thead><tbody>${rows}</tbody></table>
+         <p style="color:#666;font-size:13px;">Usual fix: the associate adds an instant-eligible debit card in their Stripe Express dashboard.
+         Automated alert from pay-pending-associates${instantMode ? ' (8 PM instant run)' : ''}.</p>`
+      );
+    }
+
+    return new Response(JSON.stringify({ ok: true, mode: instantMode ? 'instant' : 'standard', available_at_start: availableCents / 100, results }, null, 2),
       { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
 
   } catch (err) {

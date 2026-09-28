@@ -285,7 +285,10 @@ associate_profiles   - Associate metadata
                       (app_user_id [FK→app_users], person_id [FK→people],
                        hourly_rate, payment_method, payment_handle,
                        identity_verification_status [pending/link_sent/verified/flagged/rejected],
-                       setup_completed_at)
+                       setup_completed_at,
+                       payout_frequency [daily(null)/weekly/...], payout_day_of_week [0-6, default 6],
+                       instant_payout [bool — paid daily at 8 PM Central run + Stripe Instant Payout attempt;
+                                      see supabase/migrations/20260928_instant_payout_8pm.sql])
 time_entries         - Clock in/out records
                       (associate_id [FK→associate_profiles], space_id [FK→spaces],
                        clock_in, clock_out, duration_minutes,
@@ -301,7 +304,8 @@ paypal_config        - PayPal API credentials (single row, id=1)
 payouts              - Payout records for associate payments
                       (associate_id, person_id, amount, payment_method,
                        external_payout_id, status [pending/processing/completed/failed/returned],
-                       time_entry_ids [uuid[]], created_at, completed_at)
+                       time_entry_ids [uuid[]], created_at, completed_at,
+                       stripe_instant_payout_id [po_… when an Instant Payout to debit card succeeded])
 ```
 
 ### Identity Verification
