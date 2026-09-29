@@ -94,16 +94,12 @@ headers: { 'Cookie': sessionCookie, 'X-CSRF-Token': csrfToken }
 
 The UDM password contains `!` which bash interprets as history expansion in double-quoted strings.
 
-**WRONG:**
-```bash
-curl -d '{"username":"codingagent","password":"<PASSWORD-WITH-!>"}' ...   # ! expands
-```
+**WRONG** — typing the password literally inside double quotes, e.g. `curl -d "{... password ...}"`: bash expands the `!` before curl sees it.
 
-**RIGHT — use a file:**
+**RIGHT — pull it from Bitwarden and build the JSON with `jq`:**
 ```bash
-cat > /tmp/unifi_login.json << 'EOF'
-{"username":"codingagent","password":"<PASSWORD-WITH-!>"}
-EOF
+UDM_PASS=$(~/bin/bw-read "UniFi Dream Machine Pro — Network Gateway" password)
+jq -n --arg u codingagent --arg p "$UDM_PASS" '{username:$u, password:$p}' > /tmp/unifi_login.json
 curl -d @/tmp/unifi_login.json ...
 ```
 
