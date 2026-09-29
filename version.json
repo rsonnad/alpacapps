@@ -1,12 +1,12 @@
 {
-  "version": "v260925.06 3:57p",
-  "release": 1867,
-  "sha": "febc5c21a8",
-  "fullSha": "febc5c21a844c3f490e27bd6c180e47bc5deafe3",
+  "version": "v260928.01 8:19p",
+  "release": 1868,
+  "sha": "3fe8f03f1e",
+  "fullSha": "3fe8f03f1e2d755621406f30db4941201b43f22a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-25T20:57:04+00:00",
-  "commits": [{"sha":"febc5c21a8","message":"airbnbsupportfail: link the X write-up stored on R2","author":"Blotto"}]
+  "pushedAt": "2026-09-29T01:19:32+00:00",
+  "commits": [{"sha":"374dd56181","message":"payroll: instant payouts at 8 PM Central for flagged associates (Amber Coleman)","author":"Claude"},{"sha":"3fe8f03f1e","message":"payroll: server-authoritative payouts, one amount formula, locked-down cron","author":"Claude"}]
 }
