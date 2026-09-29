@@ -1,12 +1,12 @@
 {
-  "version": "v260929.08 3:55p",
-  "release": 1877,
-  "sha": "9f863fa4ce",
-  "fullSha": "9f863fa4cef5a77afcce2b05c6cc9b862d1dd9c6",
+  "version": "v260929.09 4:04p",
+  "release": 1878,
+  "sha": "67b32299a6",
+  "fullSha": "67b32299a6de7f850030e8e7f0bdea17fc310616",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T20:55:23+00:00",
-  "commits": [{"sha":"9f863fa4ce","message":"cameras: only show pan/tilt/preset controls on PTZ models","author":"Blotto"}]
+  "pushedAt": "2026-09-29T21:04:27+00:00",
+  "commits": [{"sha":"67b32299a6","message":"udm: switch UniFi automation login from alpacaauto to codingagent","author":"Blotto"}]
 }
