@@ -21,7 +21,7 @@ import https from 'https';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const UDM_HOST = process.env.UDM_HOST || '192.168.1.1';
-const UDM_USER = process.env.UDM_USER || 'alpacaauto';
+const UDM_USER = process.env.UDM_USER || 'codingagent';
 const UDM_PASS = process.env.UDM_PASS || '';
 const UDM_CA_CERT = process.env.UDM_CA_CERT || undefined;
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '10000'); // 10s

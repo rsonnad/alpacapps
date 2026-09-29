@@ -31,7 +31,7 @@ The UDM Pro is at **`192.168.1.1`** on the property LAN (`192.168.1.0/24`).
 | Field | Value |
 |-------|-------|
 | **Host** | `192.168.1.1` (HTTPS, port 443, self-signed cert) |
-| **Username** | `alpacaauto` (local-only admin account) |
+| **Username** | `codingagent` (local-only admin account) |
 | **Password** | Stored in `/opt/ptz-proxy/.env` and `/opt/camera-event-poller/.env` on the DO droplet (env var `UDM_PASS`). **NOT in this repo.** The password is in the gitignored `HOMEAUTOMATION.local.md`. |
 | **Auth method** | Session cookie + CSRF token from JWT (NOT API keys) |
 
@@ -39,7 +39,7 @@ The UDM Pro is at **`192.168.1.1`** on the property LAN (`192.168.1.0/24`).
 
 ```bash
 UDM_HOST=192.168.1.1
-UDM_USER=alpacaauto
+UDM_USER=codingagent
 UDM_PASS=<password from HOMEAUTOMATION.local.md>
 ```
 
@@ -47,7 +47,7 @@ Used by: `ptz-proxy` (`/opt/ptz-proxy/.env`), `camera-event-poller` (`/opt/camer
 
 ## Authentication Flow
 
-1. `POST https://192.168.1.1/api/auth/login` with `{"username":"alpacaauto","password":"<UDM_PASS>"}`
+1. `POST https://192.168.1.1/api/auth/login` with `{"username":"codingagent","password":"<UDM_PASS>"}`
 2. Response sets a `TOKEN=<jwt>` cookie
 3. Decode the JWT payload (base64) → extract `csrfToken` field
 4. All subsequent requests must include:
@@ -96,13 +96,13 @@ The UDM password contains `!` which bash interprets as history expansion in doub
 
 **WRONG:**
 ```bash
-curl -d '{"username":"alpacaauto","password":"abc!def"}' ...   # ! expands
+curl -d '{"username":"codingagent","password":"abc!def"}' ...   # ! expands
 ```
 
 **RIGHT — use a file:**
 ```bash
 cat > /tmp/unifi_login.json << 'EOF'
-{"username":"alpacaauto","password":"abc!def"}
+{"username":"codingagent","password":"abc!def"}
 EOF
 curl -d @/tmp/unifi_login.json ...
 ```
