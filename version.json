@@ -1,12 +1,12 @@
 {
-  "version": "v260928.01 8:19p",
-  "release": 1868,
-  "sha": "3fe8f03f1e",
-  "fullSha": "3fe8f03f1e2d755621406f30db4941201b43f22a",
+  "version": "v260928.02 8:24p",
+  "release": 1869,
+  "sha": "38c612f26c",
+  "fullSha": "38c612f26c060a964253bcfb4a9e0a274c58b2a5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T01:19:32+00:00",
-  "commits": [{"sha":"374dd56181","message":"payroll: instant payouts at 8 PM Central for flagged associates (Amber Coleman)","author":"Claude"},{"sha":"3fe8f03f1e","message":"payroll: server-authoritative payouts, one amount formula, locked-down cron","author":"Claude"}]
+  "pushedAt": "2026-09-29T01:24:47+00:00",
+  "commits": [{"sha":"38c612f26c","message":"scripts: payroll double-pay audit + repairs","author":"Claude"}]
 }
