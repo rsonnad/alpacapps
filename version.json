@@ -1,12 +1,12 @@
 {
-  "version": "v260929.02 4:01a",
-  "release": 1871,
-  "sha": "91524527d4",
-  "fullSha": "91524527d486ea7bde2dd220f2ee990526a9ab49",
+  "version": "v260929.03 4:04a",
+  "release": 1872,
+  "sha": "4721a54a4c",
+  "fullSha": "4721a54a4cd890992cdb3e063bcf1ea2f9091b5e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T09:01:29+00:00",
-  "commits": [{"sha":"91524527d4","message":"fix(payments): pay dialog rendered as a full-height strip on the left","author":"Blotto"}]
+  "pushedAt": "2026-09-29T09:04:28+00:00",
+  "commits": [{"sha":"4721a54a4c","message":"feat(payments): newest entries first; paid associates expand to show payouts","author":"Blotto"}]
 }
