@@ -1,12 +1,12 @@
 {
-  "version": "v260929.04 4:20a",
-  "release": 1873,
-  "sha": "4a2883b31a",
-  "fullSha": "4a2883b31a905ede62ee866833c0d915c96a7242",
+  "version": "v260929.05 4:42a",
+  "release": 1874,
+  "sha": "2bc3956b5c",
+  "fullSha": "2bc3956b5c347005b47778462ad66669cdcfe28a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T09:20:17+00:00",
-  "commits": [{"sha":"4a2883b31a","message":"fix(auth): create public app_users via RPC so uninvited sign-ups stop failing","author":"Blotto"}]
+  "pushedAt": "2026-09-29T09:42:32+00:00",
+  "commits": [{"sha":"8863e24e7e","message":"fix(security): scope app_users reads; add safe RPC paths for public pages","author":"Blotto"},{"sha":"2bc3956b5c","message":"fix(directory): load vendor supabase bundle on profile page","author":"Blotto"}]
 }
