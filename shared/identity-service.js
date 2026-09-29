@@ -149,6 +149,23 @@ export const identityService = {
    * @returns {Promise<{token: string, uploadUrl: string}>}
    */
   async requestAssociateVerification(appUserId, createdBy = null, personId = null) {
+    // Self-service: non-staff can't insert into upload_tokens directly, so mint
+    // through the RPC (always scoped to the caller's own app_user).
+    if (createdBy === 'self') {
+      const { data: selfToken, error: rpcError } = await supabase.rpc('request_my_identity_upload_token');
+      if (rpcError) throw rpcError;
+
+      await supabase
+        .from('associate_profiles')
+        .update({
+          identity_verification_status: 'link_sent',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('app_user_id', appUserId);
+
+      return { token: selfToken, uploadUrl: `https://alpacaplayhouse.com/rentals/verify.html?token=${selfToken}` };
+    }
+
     // Resolve person_id: prefer passed value, then look up from app_users
     let resolvedPersonId = personId;
     if (!resolvedPersonId) {

@@ -299,7 +299,7 @@
   <link rel="stylesheet" href="/styles/tailwind.out.css">
 </head>
 <body>
-  <span data-site-version style="display:none;">v260929.05 4:42a</span>
+  <span data-site-version style="display:none;">v260922.02 2:16p</span>
   <div id="siteHeader"></div>
 
   <div class="container">
@@ -559,9 +559,7 @@
 
       try {
         const { data: token, error } = await sb
-          .from('upload_tokens')
-          .select('*')
-          .eq('token', tokenValue)
+          .rpc('get_upload_token', { p_token: tokenValue })
           .single();
 
         if (error || !token) {
@@ -584,14 +582,11 @@
           return;
         }
 
-        // Show form with person name (app_users isn't anon-readable; the RPC
-        // returns just the name for the holder of this token)
-        const { data: nameRows } = await sb.rpc('get_upload_token_name', { p_token: tokenValue });
-        const person = nameRows?.[0] || null;
-        if (person) {
-          document.getElementById('personName').textContent = person.first_name || 'there';
+        // Show form with person name
+        if (token.app_user_id) {
+          document.getElementById('personName').textContent = token.app_user_first_name || 'there';
           // Pre-fill legal name
-          const fullName = `${person.first_name || ''} ${person.last_name || ''}`.trim();
+          const fullName = `${token.app_user_first_name || ''} ${token.app_user_last_name || ''}`.trim();
           if (fullName) document.getElementById('legalName').value = fullName;
         }
         showState(w9Form);
