@@ -1,12 +1,12 @@
 {
-  "version": "v260929.01 3:54a",
-  "release": 1870,
-  "sha": "4bb58ca761",
-  "fullSha": "4bb58ca7610c4f69c2fdb9303e877386afba4f70",
+  "version": "v260929.02 4:01a",
+  "release": 1871,
+  "sha": "91524527d4",
+  "fullSha": "91524527d486ea7bde2dd220f2ee990526a9ab49",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T08:54:41+00:00",
-  "commits": [{"sha":"4bb58ca761","message":"fix(verify-identity): associate uploads never updated associate_profiles","author":"Blotto"}]
+  "pushedAt": "2026-09-29T09:01:29+00:00",
+  "commits": [{"sha":"91524527d4","message":"fix(payments): pay dialog rendered as a full-height strip on the left","author":"Blotto"}]
 }
