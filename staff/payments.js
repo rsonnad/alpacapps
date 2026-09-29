@@ -47,6 +47,8 @@ function setupEventListeners() {
 // =============================================
 async function loadAll() {
   await Promise.all([loadAssociatesAndEntries(), loadStripeBalance(), loadRecentPayouts()]);
+  // Rows list each associate's recent payouts, which may land after the entries.
+  renderAssociateCards();
 }
 
 async function loadAssociatesAndEntries() {
@@ -61,7 +63,7 @@ async function loadAssociatesAndEntries() {
     .eq('is_paid', false)
     .eq('is_hidden', false)
     .not('clock_out', 'is', null)
-    .order('clock_in', { ascending: true });
+    .order('clock_in', { ascending: false });
 
   if (error) {
     console.error('Failed to load entries:', error);
@@ -158,6 +160,9 @@ function renderAssociateCards() {
     }
     totalUnpaidAll += totalAmount;
 
+    const payouts = recentPayouts.filter(p => p.associate_id === assoc.id);
+    const expandable = entries.length > 0 || payouts.length > 0;
+
     const row = document.createElement('div');
     row.className = `pay-row${entries.length > 0 ? ' has-unpaid' : ''}`;
 
@@ -170,6 +175,7 @@ function renderAssociateCards() {
           All paid
         </span>
         <span class="rate-tag">$${rate.toFixed(2)}/hr</span>
+        ${payouts.length ? '<span class="expand-icon">&#9654;</span>' : ''}
       `;
     } else {
       rightHtml = `
@@ -181,7 +187,7 @@ function renderAssociateCards() {
     }
 
     row.innerHTML = `
-      <div class="pay-row-header" ${entries.length ? 'role="button" tabindex="0" aria-expanded="false" aria-label="Show unpaid entries"' : ''}>
+      <div class="pay-row-header" ${expandable ? 'role="button" tabindex="0" aria-expanded="false" aria-label="Show entries and payouts"' : ''}>
         <div class="row-left">
           <h3>${name}</h3>
           <span class="connect-badge ${hasConnect ? 'connected' : 'not-connected'}">
@@ -245,6 +251,27 @@ function renderAssociateCards() {
       </div>`;
 
       row.innerHTML += detailHtml;
+    }
+
+    if (payouts.length > 0) {
+      const payoutsHtml = `<table class="unpaid-table">
+        <thead><tr><th>Paid</th><th>Amount</th><th>Method</th><th>Status</th><th>Reference</th></tr></thead><tbody>
+        ${payouts.map(p => {
+          const date = new Date(p.created_at).toLocaleDateString('en-US', { timeZone: AUSTIN_TIMEZONE, month: 'short', day: 'numeric' });
+          const ref = p.external_payout_id || '--';
+          return `<tr>
+            <td>${date}</td>
+            <td>$${(parseFloat(p.amount) || 0).toFixed(2)}</td>
+            <td>${p.payment_method || '--'}</td>
+            <td><span class="badge ${p.status || 'pending'}">${p.status || 'pending'}</span></td>
+            <td style="font-size:0.75rem;font-family:monospace;">${ref}</td>
+          </tr>`;
+        }).join('')}
+        </tbody></table>`;
+      const section = `<div class="payouts-heading">Payouts, last 30 days</div>${payoutsHtml}`;
+      const detail = row.querySelector('.pay-row-detail');
+      if (detail) detail.insertAdjacentHTML('beforeend', section);
+      else row.insertAdjacentHTML('beforeend', `<div class="pay-row-detail">${section}</div>`);
     }
 
     rows.push(row);
