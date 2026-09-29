@@ -1,12 +1,12 @@
 {
-  "version": "v260929.05 4:42a",
-  "release": 1874,
-  "sha": "2bc3956b5c",
-  "fullSha": "2bc3956b5c347005b47778462ad66669cdcfe28a",
+  "version": "v260929.06 5:14a",
+  "release": 1875,
+  "sha": "aa4088b2ca",
+  "fullSha": "aa4088b2ca4b88784e785952a560535691222ea4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T09:42:32+00:00",
-  "commits": [{"sha":"8863e24e7e","message":"fix(security): scope app_users reads; add safe RPC paths for public pages","author":"Blotto"},{"sha":"2bc3956b5c","message":"fix(directory): load vendor supabase bundle on profile page","author":"Blotto"}]
+  "pushedAt": "2026-09-29T10:14:48+00:00",
+  "commits": [{"sha":"261c39d8ff","message":"fix(security): look up upload tokens via RPC instead of open table read","author":"Blotto"},{"sha":"aa4088b2ca","message":"docs(productdesign): upload_tokens lockdown decision","author":"Blotto"}]
 }
