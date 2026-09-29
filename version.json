@@ -1,12 +1,12 @@
 {
-  "version": "v260929.07 6:10a",
-  "release": 1876,
-  "sha": "85bbe21036",
-  "fullSha": "85bbe21036bab400f5e45a11f655c35209ed0064",
+  "version": "v260929.08 3:55p",
+  "release": 1877,
+  "sha": "9f863fa4ce",
+  "fullSha": "9f863fa4cef5a77afcce2b05c6cc9b862d1dd9c6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T11:10:08+00:00",
-  "commits": [{"sha":"85bbe21036","message":"feat(apply): landing telemetry on /rentals/apply/ and daily metrics email","author":"Blotto"}]
+  "pushedAt": "2026-09-29T20:55:23+00:00",
+  "commits": [{"sha":"9f863fa4ce","message":"cameras: only show pan/tilt/preset controls on PTZ models","author":"Blotto"}]
 }
