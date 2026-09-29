@@ -709,3 +709,9 @@ Each external service was chosen for specific reasons. This section documents wh
 - **Open endpoint.** Anyone with the anon key could start a payroll run.
 
 Entry rates are snapshotted at clock-in, so they are the rate that was agreed for that work. Server-side bookkeeping makes each payout a single atomic step, not two calls that can half-succeed.
+
+### 2026-09-29: Uninvited Sign-Ups Become Public Accounts via Server RPC
+
+**Decision:** Anyone who signs in without a pending invitation gets a `public` `app_users` row created by the `ensure_public_app_user()` SECURITY DEFINER RPC, not by a client-side insert. The RPC derives every column (email, name, `person_id` link) from `auth.users` server-side; RLS on `app_users` still only permits invitation-backed self-inserts.
+
+**Why:** The client-side fallback insert always failed RLS, so every uninvited Google sign-in since April hit "Something went wrong creating your account." A looser INSERT policy would let the client choose `person_id`, `is_current_resident`, and other privileged columns on its own row.
