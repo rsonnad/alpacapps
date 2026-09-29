@@ -1377,13 +1377,9 @@ let driverSearchCache = null;
 
 async function loadResidentsList() {
   if (driverSearchCache) return driverSearchCache;
-  const { data } = await supabase
-    .from('app_users')
-    .select('id, person_id, display_name, email, role')
-    .in('role', ['resident', 'staff', 'admin', 'oracle', 'associate'])
-    .neq('id', currentUser.id)
-    .order('display_name');
-  driverSearchCache = data || [];
+  // Names-only RPC; app_users isn't readable beyond your own row.
+  const { data } = await supabase.rpc('list_member_directory');
+  driverSearchCache = (data || []).filter(u => u.id !== currentUser.id);
   return driverSearchCache;
 }
 
@@ -1415,7 +1411,7 @@ async function showAddDriverDropdown(vehicleId) {
     <div class="vehicle-driver-results">
       ${available.map(r => `
         <button class="vehicle-driver-result" data-user-id="${r.person_id}" data-vehicle-id="${vehicleId}">
-          ${escapeAttr(r.display_name || r.email)}
+          ${escapeAttr(r.display_name || [r.first_name, r.last_name].filter(Boolean).join(' ') || 'Unnamed')}
           <span style="color:var(--text-muted);font-size:0.75rem;margin-left:0.25rem">${r.role}</span>
         </button>
       `).join('')}
@@ -1526,14 +1522,9 @@ async function saveSlug() {
   errorEl.style.display = 'none';
 
   // Check uniqueness
-  const { data: existing } = await supabase
-    .from('app_users')
-    .select('id')
-    .eq('slug', slug)
-    .neq('id', currentUser.id)
-    .maybeSingle();
+  const { data: available } = await supabase.rpc('is_slug_available', { p_slug: slug });
 
-  if (existing) {
+  if (available === false) {
     errorEl.textContent = 'This URL is already taken';
     errorEl.style.display = '';
     return;
@@ -1570,14 +1561,9 @@ async function autoGenerateSlug() {
   if (RESERVED_SLUGS.includes(candidate)) return;
 
   // Check availability
-  const { data: conflict } = await supabase
-    .from('app_users')
-    .select('id')
-    .eq('slug', candidate)
-    .neq('id', currentUser.id)
-    .maybeSingle();
+  const { data: available } = await supabase.rpc('is_slug_available', { p_slug: candidate });
 
-  if (conflict) {
+  if (available === false) {
     candidate += Math.floor(Math.random() * 100);
   }
 

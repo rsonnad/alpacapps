@@ -731,7 +731,7 @@
       try {
         const { data: token, error } = await sb
           .from('upload_tokens')
-          .select('*, person:person_id(first_name, last_name), app_user:app_user_id(first_name, last_name)')
+          .select('*, person:person_id(first_name, last_name)')
           .eq('token', tokenValue)
           .single();
 
@@ -751,7 +751,12 @@
         }
 
         // Show the form — use person (rental) or app_user (associate) for name
-        const person = token.person || token.app_user;
+        // (app_users isn't anon-readable; the RPC returns just the token holder's name)
+        let person = token.person;
+        if (!person && token.app_user_id) {
+          const { data: nameRows } = await sb.rpc('get_upload_token_name', { p_token: tokenValue });
+          person = nameRows?.[0] || null;
+        }
         if (person) {
           applicantName.textContent = person.first_name || 'there';
         }

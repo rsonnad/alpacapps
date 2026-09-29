@@ -560,7 +560,7 @@
       try {
         const { data: token, error } = await sb
           .from('upload_tokens')
-          .select('*, app_user:app_user_id(first_name, last_name)')
+          .select('*')
           .eq('token', tokenValue)
           .single();
 
@@ -584,8 +584,10 @@
           return;
         }
 
-        // Show form with person name
-        const person = token.app_user;
+        // Show form with person name (app_users isn't anon-readable; the RPC
+        // returns just the name for the holder of this token)
+        const { data: nameRows } = await sb.rpc('get_upload_token_name', { p_token: tokenValue });
+        const person = nameRows?.[0] || null;
         if (person) {
           document.getElementById('personName').textContent = person.first_name || 'there';
           // Pre-fill legal name

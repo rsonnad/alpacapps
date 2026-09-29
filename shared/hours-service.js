@@ -894,6 +894,22 @@ class HoursService {
       .order('name');
 
     if (error) throw error;
+
+    // Associates can only read their own app_users row, so coworkers' embedded
+    // app_user comes back null. Fill names from the names-only directory RPC.
+    const needsNames = (data || []).some(g => (g.members || []).some(m => m.associate?.app_user_id && !m.associate.app_user));
+    if (needsNames) {
+      const { data: dir } = await supabase.rpc('list_member_directory');
+      const byId = new Map((dir || []).map(u => [u.id, u]));
+      for (const g of data) {
+        for (const m of g.members || []) {
+          if (m.associate?.app_user_id && !m.associate.app_user) {
+            const u = byId.get(m.associate.app_user_id);
+            if (u) m.associate.app_user = { id: u.id, display_name: u.display_name, first_name: u.first_name, last_name: u.last_name };
+          }
+        }
+      }
+    }
     return data || [];
   }
 
