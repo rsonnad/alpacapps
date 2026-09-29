@@ -96,13 +96,13 @@ The UDM password contains `!` which bash interprets as history expansion in doub
 
 **WRONG:**
 ```bash
-curl -d '{"username":"codingagent","password":"abc!def"}' ...   # ! expands
+curl -d '{"username":"codingagent","password":"<PASSWORD-WITH-!>"}' ...   # ! expands
 ```
 
 **RIGHT — use a file:**
 ```bash
 cat > /tmp/unifi_login.json << 'EOF'
-{"username":"codingagent","password":"abc!def"}
+{"username":"codingagent","password":"<PASSWORD-WITH-!>"}
 EOF
 curl -d @/tmp/unifi_login.json ...
 ```
