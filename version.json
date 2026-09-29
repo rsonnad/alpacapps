@@ -1,12 +1,12 @@
 {
-  "version": "v260928.02 8:24p",
-  "release": 1869,
-  "sha": "38c612f26c",
-  "fullSha": "38c612f26c060a964253bcfb4a9e0a274c58b2a5",
+  "version": "v260929.01 3:54a",
+  "release": 1870,
+  "sha": "4bb58ca761",
+  "fullSha": "4bb58ca7610c4f69c2fdb9303e877386afba4f70",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T01:24:47+00:00",
-  "commits": [{"sha":"38c612f26c","message":"scripts: payroll double-pay audit + repairs","author":"Claude"}]
+  "pushedAt": "2026-09-29T08:54:41+00:00",
+  "commits": [{"sha":"4bb58ca761","message":"fix(verify-identity): associate uploads never updated associate_profiles","author":"Blotto"}]
 }
