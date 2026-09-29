@@ -108,7 +108,9 @@ Deno.serve(async (req) => {
     }
 
     // Determine context: rental applicant (person_id) vs associate (app_user_id)
-    const isAssociateContext = !tokenRecord.person_id && !!tokenRecord.app_user_id;
+    // Associate tokens carry person_id too (identity-service resolves it), so
+    // key on the absence of a rental application, not of person_id.
+    const isAssociateContext = !!tokenRecord.app_user_id && !tokenRecord.rental_application_id;
     const person = isAssociateContext
       ? tokenRecord.app_user as { id: string; first_name: string; last_name: string; email: string }
       : tokenRecord.person as { id: string; first_name: string; last_name: string; email: string };
@@ -306,6 +308,7 @@ If this is not an ID document, return: {"error": "not_a_valid_id"}`,
     };
     if (isAssociateContext) {
       verificationBase.app_user_id = tokenRecord.app_user_id;
+      if (tokenRecord.person_id) verificationBase.person_id = tokenRecord.person_id;
     } else {
       verificationBase.rental_application_id = tokenRecord.rental_application_id;
       verificationBase.person_id = tokenRecord.person_id;
