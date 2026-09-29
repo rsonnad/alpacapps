@@ -1,12 +1,12 @@
 {
-  "version": "v260929.03 4:04a",
-  "release": 1872,
-  "sha": "4721a54a4c",
-  "fullSha": "4721a54a4cd890992cdb3e063bcf1ea2f9091b5e",
+  "version": "v260929.04 4:20a",
+  "release": 1873,
+  "sha": "4a2883b31a",
+  "fullSha": "4a2883b31a905ede62ee866833c0d915c96a7242",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T09:04:28+00:00",
-  "commits": [{"sha":"4721a54a4c","message":"feat(payments): newest entries first; paid associates expand to show payouts","author":"Blotto"}]
+  "pushedAt": "2026-09-29T09:20:17+00:00",
+  "commits": [{"sha":"4a2883b31a","message":"fix(auth): create public app_users via RPC so uninvited sign-ups stop failing","author":"Blotto"}]
 }
