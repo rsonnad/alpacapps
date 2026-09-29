@@ -1,12 +1,12 @@
 {
-  "version": "v260929.06 5:14a",
-  "release": 1875,
-  "sha": "aa4088b2ca",
-  "fullSha": "aa4088b2ca4b88784e785952a560535691222ea4",
+  "version": "v260929.07 6:10a",
+  "release": 1876,
+  "sha": "85bbe21036",
+  "fullSha": "85bbe21036bab400f5e45a11f655c35209ed0064",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T10:14:48+00:00",
-  "commits": [{"sha":"261c39d8ff","message":"fix(security): look up upload tokens via RPC instead of open table read","author":"Blotto"},{"sha":"aa4088b2ca","message":"docs(productdesign): upload_tokens lockdown decision","author":"Blotto"}]
+  "pushedAt": "2026-09-29T11:10:08+00:00",
+  "commits": [{"sha":"85bbe21036","message":"feat(apply): landing telemetry on /rentals/apply/ and daily metrics email","author":"Blotto"}]
 }
