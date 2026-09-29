@@ -1434,7 +1434,7 @@
     let staffAuthState = null;
 
     // Non-blocking auth check for staff sandbox toggle
-    (async () => {
+    const staffCheck = (async () => {
       try {
         await initAuth();
         staffAuthState = getAuthState();
@@ -1456,6 +1456,36 @@
         // Auth failure is fine — regular tenant, no toggle shown
       }
     })();
+
+    // Landing telemetry for the daily apply-page-digest email. Fire-and-forget:
+    // never blocks or breaks the form. Staff visits are flagged and excluded.
+    const TRACK_PAGE = 'rentals/apply';
+    function trackSessionId() {
+      try {
+        let id = sessionStorage.getItem('apply_track_sid');
+        if (!id) { id = crypto.randomUUID(); sessionStorage.setItem('apply_track_sid', id); }
+        return id;
+      } catch (e) { return null; }
+    }
+    async function trackEvent(event) {
+      try {
+        await Promise.race([staffCheck, new Promise(r => setTimeout(r, 3000))]);
+        if (staffTestMode) return;
+        await supabase.rpc('track_page_event', {
+          p_page: TRACK_PAGE,
+          p_event: event,
+          p_step: isStep2 ? 2 : 1,
+          p_session_id: trackSessionId(),
+          p_referrer: document.referrer || null,
+          p_utm_source: urlParams.get('utm_source'),
+          p_utm_medium: urlParams.get('utm_medium'),
+          p_utm_campaign: urlParams.get('utm_campaign'),
+          p_is_staff: !!staffAuthState?.isStaff,
+        });
+      } catch (e) { /* telemetry must never affect the page */ }
+    }
+    trackEvent('view');
+    document.getElementById('applicationForm')?.addEventListener('input', () => trackEvent('form_started'), { once: true });
 
     function updateSandboxUI(active) {
       const badge = document.getElementById('staffTestBadge');
