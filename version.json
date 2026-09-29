@@ -1,12 +1,12 @@
 {
-  "version": "v260929.10 4:12p",
-  "release": 1879,
-  "sha": "552421c063",
-  "fullSha": "552421c063d31c3cca6d308286dc5a642b7d2771",
+  "version": "v260929.11 4:37p",
+  "release": 1880,
+  "sha": "fea0ecb31e",
+  "fullSha": "fea0ecb31ed4d70a5186f6a100207315cb9503a0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-29T21:12:39+00:00",
-  "commits": [{"sha":"552421c063","message":"docs(udm): use obvious placeholder in ! history-expansion example","author":"Blotto"}]
+  "machine": "runnervm8df0l",
+  "pushedAt": "2026-09-29T21:37:53+00:00",
+  "commits": [{"sha":"fea0ecb31e","message":"docs(udm): drop literal username/password JSON from ! gotcha example","author":"Blotto"}]
 }
