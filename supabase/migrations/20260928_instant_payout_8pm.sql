@@ -6,15 +6,16 @@
 -- Rather than hardcoding a person into the payroll function, this adds a
 -- per-associate flag. pay-pending-associates treats instant_payout = true as:
 --   1. always due (ignores payout_frequency / payout_day_of_week),
---   2. included in an extra 8 PM Central run (`?mode=instant`, below),
+--   2. included in an extra 8 PM Central run (`?mode=instant`, scheduled in
+--      20260929_payroll_hardening.sql),
 --   3. after the Stripe transfer, try a Stripe Instant Payout to the payee's
 --      debit card; if Stripe refuses, the money goes out on the connected
 --      account's standard bank schedule and admin gets an email.
 -- The regular nightly run (live pg_cron job, ~02:30 UTC) still runs and also
 -- picks up anything an instant associate clocks out after 8 PM.
 --
--- ORDER MATTERS: apply this migration BEFORE deploying the updated
--- pay-pending-associates function. The function selects instant_payout; if
+-- ORDER MATTERS: apply this migration, then 20260929_payroll_hardening.sql,
+-- BEFORE deploying the updated pay-pending-associates function. The function selects instant_payout; if
 -- the column is missing, every payroll run throws (admin gets an exception
 -- alert, but nobody is paid).
 --
@@ -79,43 +80,5 @@ BEGIN
 END $$;
 
 -- 3. 8 PM Central cron ------------------------------------------------------
--- pg_cron runs in UTC. 8 PM Central is 01:00 UTC under CDT and 02:00 UTC under
--- CST, so we schedule both; the function's hour gate proceeds only when it is
--- 20:xx in America/Chicago and returns a no-op for the other one. That keeps
--- the run at 8 PM local all year with no twice-yearly cron edits.
-
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'pay-instant-associates-8pm-cdt') THEN
-    PERFORM cron.unschedule('pay-instant-associates-8pm-cdt');
-  END IF;
-  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'pay-instant-associates-8pm-cst') THEN
-    PERFORM cron.unschedule('pay-instant-associates-8pm-cst');
-  END IF;
-END $$;
-
-SELECT cron.schedule(
-  'pay-instant-associates-8pm-cdt',
-  '0 1 * * *',  -- 01:00 UTC = 8 PM CDT (Mar–Nov); 7 PM CST no-op
-  $$select net.http_post(
-      url := 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/pay-pending-associates?mode=instant',
-      headers := jsonb_build_object(
-        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key', true),
-        'Content-Type', 'application/json'
-      ),
-      body := '{}'::jsonb
-  ) as request_id$$
-);
-
-SELECT cron.schedule(
-  'pay-instant-associates-8pm-cst',
-  '0 2 * * *',  -- 02:00 UTC = 8 PM CST (Nov–Mar); 9 PM CDT no-op
-  $$select net.http_post(
-      url := 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/pay-pending-associates?mode=instant',
-      headers := jsonb_build_object(
-        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key', true),
-        'Content-Type', 'application/json'
-      ),
-      body := '{}'::jsonb
-  ) as request_id$$
-);
+-- Scheduled in 20260929_payroll_hardening.sql, which owns every payroll cron
+-- job and their auth (service-role key via public.payroll_cron_bearer()).

@@ -305,7 +305,12 @@ payouts              - Payout records for associate payments
                       (associate_id, person_id, amount, payment_method,
                        external_payout_id, status [pending/processing/completed/failed/returned],
                        time_entry_ids [uuid[]], created_at, completed_at,
-                       stripe_instant_payout_id [po_… when an Instant Payout to debit card succeeded])
+                       stripe_instant_payout_id [po_… when an Instant Payout to debit card succeeded],
+                       ledger_id, payment_handle, person_name, notes, is_test, error_message)
+payout_time_entries  - Payout ↔ entry ownership; UNIQUE(time_entry_id) is the double-pay guard
+                      (payout_id [FK→payouts, cascade], time_entry_id [FK→time_entries])
+                      time_entries.payment_status [unpaid/pending_review/approved/rejected/paid]
+                      is the source of truth — trigger mirrors it to is_paid; payment_id → ledger.id
 ```
 
 ### Identity Verification

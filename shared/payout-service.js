@@ -58,6 +58,8 @@ async function sendStripePayout(associateId, amount, timeEntryIds = [], notes = 
       transfer_id: data.transfer_id,
       test_mode: data.test_mode || false,
       message: data.message,
+      amount: data.amount,
+      entries_marked_paid: data.entries_marked_paid === true,
     };
   } catch (error) {
     console.error('Stripe payout error:', error);
@@ -197,6 +199,8 @@ async function sendPayPalPayout(associateId, amount, timeEntryIds = [], notes = 
       batch_id: data.batch_id,
       test_mode: data.test_mode || false,
       message: data.message,
+      amount: data.amount,
+      entries_marked_paid: data.entries_marked_paid === true,
     };
   } catch (error) {
     console.error('PayPal payout error:', error);

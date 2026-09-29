@@ -4,6 +4,12 @@
 
 ## Recent Changes to Be Aware Of
 
+0. **Payroll hardening (2026-09-29)** — The server does all payout bookkeeping (see ARCHITECTURE.md → *Payroll flow and invariants*):
+   - `stripe-payout` and `paypal-payout` now claim entries in `payout_time_entries` before sending money, mark entries `payment_status='paid'` and write the ledger row. The staff UI no longer calls `markPaid` after them.
+   - `markPaid` now writes `payment_status`. Before, the trigger reverted its update, so manual payments never stuck.
+   - One amount formula (`_shared/payout-breakdown.ts`): entry rate + `daily_extra` per Central work day.
+   - `pay-pending-associates` requires the service-role key or an admin JWT.
+   - Payroll cron jobs are rebuilt from `supabase/migrations/20260929_payroll_hardening.sql`, which needs Vault secret `service_role_key`.
 0. **Instant payouts at 8 PM Central (2026-09-28)** — `associate_profiles.instant_payout` (Amber Coleman first) makes `pay-pending-associates` pay that associate daily, adds a `?mode=instant` run at 8 PM Central (cron pair 01:00/02:00 UTC + America/Chicago hour gate), and tries a Stripe Instant Payout to their debit card after the transfer, falling back to the standard bank payout with an admin email. Apply `supabase/migrations/20260928_instant_payout_8pm.sql` **before** deploying the function.
 0. **Expired email approvals no longer stay in the daily digest** — `pending-approvals-digest` now marks past-`expires_at` rows `expired` before counting stuck mail. Approve links already refused those (7-day limit), so they were dead items that kept the 8 AM digest firing.
 0. **HAOS VM disk grown 20→30 GB (v260908)** — Supervisor backups were blocked at 0 GB free. Image is `haos_generic-aarch64-17.1.img`; LaunchDaemon `com.alpacapps.homeassistant-vm` KeepAlive-restarts QEMU — bootout that plist before `qemu-img resize`. App snapshots live in `haos_backups`; VM copies in `/Volumes/rvault20/BackupsRS/haos-vm/`.

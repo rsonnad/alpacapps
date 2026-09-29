@@ -410,6 +410,8 @@ function openPayModal(associateId) {
     totalHours += hrs;
     totalAmount += hrs * rate;
   }
+  const extraAmount = dailyExtraTotal(selectedEntries, assoc);
+  totalAmount += extraAmount;
 
   const dateRange = getDateRange(selectedEntries);
 
@@ -429,6 +431,7 @@ function openPayModal(associateId) {
     <div class="pay-summary-line"><span>Entries</span><span>${selectedEntries.length}</span></div>
     <div class="pay-summary-line"><span>Period</span><span>${dateRange}</span></div>
     <div class="pay-summary-line"><span>Total Hours</span><span>${totalHours.toFixed(2)}h</span></div>
+    ${extraAmount > 0 ? `<div class="pay-summary-line"><span>Daily extra</span><span>$${extraAmount.toFixed(2)}</span></div>` : ''}
     <div class="pay-summary-line total"><span>Amount</span><span>$${totalAmount.toFixed(2)}</span></div>
   `;
 
@@ -477,6 +480,19 @@ function closePayModal() {
   payingAssociateId = null;
 }
 
+// Daily extra for a set of one associate's entries: daily_extra × distinct
+// Central work days. Mirrors the server calculator in
+// supabase/functions/_shared/payout-breakdown.ts so the amount shown here is
+// the amount stripe-payout actually sends.
+function dailyExtraTotal(entries, assoc) {
+  const extra = parseFloat(assoc?.daily_extra) || 0;
+  if (extra <= 0) return 0;
+  const days = new Set(entries
+    .filter(e => (parseFloat(e.duration_minutes) || 0) > 0)
+    .map(e => new Date(e.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE })));
+  return extra * days.size;
+}
+
 async function confirmPay() {
   const btn = document.getElementById('payConfirm');
   const entryIds = JSON.parse(btn.dataset.entryIds || '[]');
@@ -499,16 +515,19 @@ async function confirmPay() {
       return;
     }
 
-    // Mark entries as paid via hours service (creates ledger entry)
+    // stripe-payout writes the ledger row and marks the entries paid. The
+    // fallback only runs against an older deployed function that doesn't.
     const assoc = associates.find(a => a.id === payingAssociateId);
     const personName = assoc?.app_user?.display_name || 'Unknown';
-    await hoursService.markPaid(entryIds, {
-      paymentMethod: 'stripe',
-      notes: `Stripe transfer ${result.transfer_id || result.payout_id || ''}. ${notes}`,
-      personName
-    });
-
-    showToast(`$${amount.toFixed(2)} sent to ${personName}`, 'success');
+    if (!result.entries_marked_paid) {
+      await hoursService.markPaid(entryIds, {
+        paymentMethod: 'stripe',
+        notes: `Stripe transfer ${result.transfer_id || result.payout_id || ''}. ${notes}`,
+        personName
+      });
+    }
+    const sent = Number(result.amount ?? amount);
+    showToast(`$${sent.toFixed(2)} sent to ${personName}`, 'success');
     closePayModal();
 
     // Refresh data
@@ -554,6 +573,7 @@ async function payAll() {
       const rate = parseFloat(e.hourly_rate) || 0;
       total += (mins / 60) * rate;
     }
+    total += dailyExtraTotal(entries, assoc);
     grandTotal += total;
     names.push(`${assoc?.app_user?.display_name || 'Unknown'} ($${total.toFixed(2)})`);
   }
@@ -581,6 +601,7 @@ async function payAll() {
       const rate = parseFloat(e.hourly_rate) || 0;
       total += (mins / 60) * rate;
     }
+    total += dailyExtraTotal(entries, assoc);
 
     const dateRange = getDateRange(entries);
     const notes = `Payment for ${(entries.reduce((s, e) => s + (parseFloat(e.duration_minutes) || 0), 0) / 60).toFixed(1)}h (${dateRange})`;
@@ -588,11 +609,15 @@ async function payAll() {
     try {
       const result = await payoutService.sendStripePayout(aid, total, entryIds, notes);
       if (result.success) {
-        await hoursService.markPaid(entryIds, {
-          paymentMethod: 'stripe',
-          notes: `Stripe transfer ${result.transfer_id || result.payout_id || ''}. ${notes}`,
-          personName
-        });
+        // stripe-payout marks the entries paid and writes the ledger row;
+        // the fallback only runs against an older deployed function.
+        if (!result.entries_marked_paid) {
+          await hoursService.markPaid(entryIds, {
+            paymentMethod: 'stripe',
+            notes: `Stripe transfer ${result.transfer_id || result.payout_id || ''}. ${notes}`,
+            personName
+          });
+        }
         successCount++;
       } else {
         console.error(`Payment failed for ${personName}:`, result.error);

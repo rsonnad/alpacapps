@@ -527,25 +527,43 @@ class HoursService {
   // ---- Payment Integration ----
 
   /**
-   * Mark time entries as paid — creates a ledger entry and links it
+   * Record a payment made OUTSIDE the app (cash, Venmo, Zelle, check…):
+   * creates a ledger entry and marks the entries paid.
+   *
+   * Do NOT call this after stripe-payout / paypal-payout — those edge functions
+   * write the ledger row and mark entries paid themselves. Calling it too
+   * double-counts the expense in the ledger.
+   *
+   * Amount matches the server calculator (supabase/functions/_shared/
+   * payout-breakdown.ts): entry hours × entry rate + daily_extra per distinct
+   * Central work day, per associate.
    */
   async markPaid(entryIds, { paymentMethod, notes, personId, personName } = {}) {
     // Fetch entries to compute total
     const { data: entries, error: fetchErr } = await supabase
       .from('time_entries')
-      .select('*, associate:associate_id(app_user_id, payment_method, app_user:app_user_id(display_name, first_name, last_name, person_id))')
+      .select('*, associate:associate_id(app_user_id, payment_method, daily_extra, app_user:app_user_id(display_name, first_name, last_name, person_id))')
       .in('id', entryIds);
 
     if (fetchErr) throw fetchErr;
     if (!entries || entries.length === 0) throw new Error('No entries found');
+    if (entries.some(e => e.is_paid)) throw new Error('Some of these entries are already paid');
 
     // Compute total
     let totalAmount = 0;
     let totalMinutes = 0;
+    const workDaysByAssociate = {};
     for (const entry of entries) {
       const mins = parseFloat(entry.duration_minutes) || 0;
       totalMinutes += mins;
       totalAmount += (mins / 60) * parseFloat(entry.hourly_rate);
+      if (mins > 0) {
+        const day = new Date(entry.clock_in).toLocaleDateString('en-CA', { timeZone: AUSTIN_TIMEZONE });
+        (workDaysByAssociate[entry.associate_id] ||= { extra: parseFloat(entry.associate?.daily_extra) || 0, days: new Set() }).days.add(day);
+      }
+    }
+    for (const { extra, days } of Object.values(workDaysByAssociate)) {
+      if (extra > 0) totalAmount += extra * days.size;
     }
 
     // Determine date range
@@ -578,10 +596,12 @@ class HoursService {
       period_end: periodEnd
     });
 
-    // Mark all entries as paid with reference to ledger
+    // Mark all entries as paid with reference to ledger. payment_status is the
+    // source of truth: the time_entries_payment_status_sync trigger sets is_paid
+    // from it, so writing only is_paid=true was silently reverted to false.
     const { error: updateErr } = await supabase
       .from('time_entries')
-      .update({ is_paid: true, payment_id: ledgerEntry.id, updated_at: new Date().toISOString() })
+      .update({ payment_status: 'paid', is_paid: true, payment_id: ledgerEntry.id, updated_at: new Date().toISOString() })
       .in('id', entryIds);
 
     if (updateErr) throw updateErr;

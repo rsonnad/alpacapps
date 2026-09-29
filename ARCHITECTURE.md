@@ -707,7 +707,30 @@ Acknowledgments (boolean flags for each policy):
 
 **payouts** - Payout records
 - `associate_id`, `person_id`, `amount`, `payment_method`
-- `external_payout_id`, `status`, `time_entry_ids` (uuid[])
+- `external_payout_id`, `status`, `time_entry_ids` (uuid[]), `ledger_id`, `stripe_instant_payout_id`
+
+**payout_time_entries** - Which payout owns which entry. `UNIQUE(time_entry_id)` is the double-pay guard.
+
+#### Payroll flow and invariants
+
+Paths that move money, all server-side:
+- `pay-pending-associates`: automatic payouts. It runs nightly at 02:30 UTC. It also runs at 8 PM Central for `instant_payout` associates, then tries a Stripe Instant Payout.
+- `stripe-payout` / `paypal-payout`: staff UI clicks, plus weekly-summary approvals via `approve-email`.
+
+Invariants every path follows. Do not break them:
+1. **One amount calculator.** `supabase/functions/_shared/payout-breakdown.ts` computes each entry's hours × its own `hourly_rate` (profile rate if missing), plus `daily_extra` × distinct Central work days. The staff UI (`staff/payments.js`, `hoursService.markPaid`) mirrors it for display.
+2. **Claim before money moves.** Steps in order (`_shared/payout-claims.ts`):
+   - insert `payouts` with status `pending`
+   - insert `payout_time_entries`
+   - call the provider
+   - write `ledger`
+   - set `time_entries.payment_status = 'paid'`
+   - **If the provider says no (4xx):** release the claim.
+   - **If the outcome is unknown (network error or 5xx):** keep the claim and mark the payout `failed`. An admin must check the provider before deleting the claim.
+3. **`payment_status` is the source of truth.** The `time_entries_payment_status_sync` trigger overwrites `is_paid`, so never write `is_paid` alone.
+4. **The server writes the ledger for provider payouts.** The client calls `hoursService.markPaid` only for payments made outside the app (cash, Zelle and similar).
+5. **Auth.** `pay-pending-associates` accepts the service-role key or an admin/oracle JWT, never the anon key. pg_cron gets the key from `public.payroll_cron_bearer()`, which reads Vault secret `service_role_key`. All payroll cron jobs are defined in `supabase/migrations/20260929_payroll_hardening.sql`.
+6. **Watchdog.** `payroll-overdue-check` flags any unpaid, clocked-out hours older than 7 days, whatever the cause.
 
 ### Identity Verification
 

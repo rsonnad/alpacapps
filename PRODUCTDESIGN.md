@@ -697,3 +697,15 @@ Each external service was chosen for specific reasons. This section documents wh
 **Decision:** Associates who should be paid the same day get `associate_profiles.instant_payout = true` (first: Amber Coleman). `pay-pending-associates` then treats them as always due regardless of `payout_frequency`, runs an extra time at 8:00 PM Central (`?mode=instant`, two pg_cron jobs at 01:00/02:00 UTC with an in-function America/Chicago hour gate so it stays 8 PM across DST), and after the platform → connected-account transfer attempts a Stripe Instant Payout to the payee's debit card. If Stripe refuses, the transfer still stands and the money reaches the bank on the account's standard schedule; admin gets an "instant payout fell back" email each run until it is fixed or the flag is turned off.
 
 **Why:** Hardcoding one person into payroll code would be invisible to anyone reading the data and would need a deploy to change. A column is queryable, auditable, and reusable for the next associate. The Stripe transfer alone does not make money spendable the same day (standard Express payouts take ~2 business days), so "same day" requires Instant Payouts; making it best-effort with a fallback means a missing debit card or an instant-availability limit delays the money by days instead of blocking it. Instant Payouts carry a Stripe fee — check who bears it under Stripe Connect → Instant Payouts settings before enabling this for more associates.
+
+### 2026-09-29: Payroll Is Server-Authoritative, With One Amount Formula
+
+**Decision:** Every path that pays an associate uses one formula: each time entry's own `hourly_rate` (the profile rate only if the entry has none), plus `daily_extra` once per Central calendar day worked. That covers the nightly auto job, the 8 PM instant run, staff-initiated Stripe/PayPal payouts, and the weekly approval flow. The edge function that moves the money also claims the entries, writes the ledger row and marks the entries paid; the browser no longer does any of that bookkeeping. `pay-pending-associates` no longer accepts the public anon key.
+
+**Why:** An audit found four ways payroll could go wrong:
+- **Double pay.** The weekly approval path never marked entries paid, so the nightly job could pay the same hours again.
+- **Manual payments not sticking.** A manually recorded cash or Zelle payment wrote only `is_paid`, which the status trigger silently reverted. The hours stayed payable.
+- **Different amounts per path.** The auto job used the current profile rate; the staff UI and its warning text used the entry's rate. Only the auto job paid `daily_extra`.
+- **Open endpoint.** Anyone with the anon key could start a payroll run.
+
+Entry rates are snapshotted at clock-in, so they are the rate that was agreed for that work. Server-side bookkeeping makes each payout a single atomic step, not two calls that can half-succeed.

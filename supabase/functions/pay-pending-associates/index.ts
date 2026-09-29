@@ -29,12 +29,16 @@
  *     the payee email shows the standard ETA and admin gets a heads-up.
  *   `?mode=instant&force=1` skips the hour gate for manual runs, and requires
  *   the service-role key.
+ *
+ * Auth: service-role key (pg_cron) or an admin/oracle JWT. The anon key is
+ * rejected. Cron jobs are defined in supabase/migrations/20260929_payroll_hardening.sql.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getCorsHeaders } from '../_shared/api-helpers.ts';
 import { rollupEntries } from '../_shared/payout-breakdown.ts';
 import { SENDER_MAP } from '../_shared/template-engine.ts';
+import { requireFunctionRoles } from '../_shared/require-auth.ts';
 
 // Admin gets an immediate, technical alert the moment a payroll run hits any
 // problem. Both addresses are on it so a funding stall can't sit unread in one
@@ -190,6 +194,9 @@ async function stripeGet(secret: string, path: string): Promise<any> {
   return JSON.parse(text);
 }
 
+/** Stripe rejected the request (4xx), so it definitely had no effect. */
+class StripeApiError extends Error {}
+
 async function stripePost(
   secret: string,
   path: string,
@@ -207,8 +214,10 @@ async function stripePost(
   });
   const text = await res.text();
   if (!res.ok) {
-    const err = JSON.parse(text);
-    throw new Error(err?.error?.message || text);
+    let msg = text;
+    try { msg = JSON.parse(text)?.error?.message || text; } catch { /* non-JSON body */ }
+    // 4xx = Stripe rejected the request. A 5xx may still have created it.
+    throw res.status < 500 ? new StripeApiError(msg) : new Error(`Stripe ${res.status}: ${msg}`);
   }
   return JSON.parse(text);
 }
@@ -251,6 +260,12 @@ Deno.serve(async (req) => {
   const resendKey = Deno.env.get('RESEND_API_KEY');
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+  // Moves money, so it must never be callable with the public anon key (which
+  // ships in every page of the site). pg_cron sends the service-role key via
+  // public.payroll_cron_bearer(); an admin/oracle JWT is allowed for manual runs.
+  const auth = await requireFunctionRoles(req, supabase, ['admin', 'oracle']);
+  if (auth.response) return auth.response;
+
   const results: any[] = [];
 
   // `?mode=instant` is the 8 PM Central run for instant_payout associates only.
@@ -263,10 +278,9 @@ Deno.serve(async (req) => {
     }).format(new Date()));
     const force = params.get('force') === '1';
     if (force) {
-      // This function is reachable with the public anon key, so skipping the
-      // schedule is restricted to callers holding the service-role key.
-      const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim();
-      if (token !== supabaseServiceKey) {
+      // Skipping the 8 PM schedule is restricted to the service-role key, so a
+      // stray admin click can't fire instant payouts (and their fees) early.
+      if (!auth.caller?.isServiceRole) {
         return new Response(JSON.stringify({ ok: false, error: 'force=1 requires the service-role key' }),
           { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
       }
@@ -339,7 +353,7 @@ Deno.serve(async (req) => {
 
       const { data: entries, error: eerr } = await supabase
         .from('time_entries')
-        .select('id, clock_in, clock_out, description, task_id')
+        .select('id, clock_in, clock_out, description, task_id, hourly_rate')
         .eq('associate_id', assoc.id)
         .eq('is_paid', false)
         .not('clock_out', 'is', null);
@@ -359,23 +373,19 @@ Deno.serve(async (req) => {
       const claimableEntries = entries.filter(e => !claimedSet.has(e.id));
       if (claimableEntries.length === 0) continue;
 
-      const totalHours = claimableEntries.reduce((s, e) => {
-        const h = (new Date(e.clock_out as string).getTime() - new Date(e.clock_in as string).getTime()) / 3_600_000;
-        return s + h;
-      }, 0);
+      // Amount comes from the shared calculator (payout-breakdown.ts) so this
+      // path, stripe-payout, paypal-payout and the weekly summary agree:
+      // each entry's own hourly_rate (profile rate as fallback) plus
+      // daily_extra × distinct work days. daily_extra was once dropped here,
+      // silently underpaying by that amount per work-day.
       const rate = parseFloat(assoc.hourly_rate as unknown as string) || 0;
-      // Daily extra: a flat per-day stipend (associate_profiles.daily_extra) that
-      // applies once per distinct calendar day worked — same day-grouping as the
-      // payout breakdown / email (clock_in date). This was historically dropped
-      // here, silently underpaying any associate with a daily_extra by that amount
-      // per work-day. hourly + extra = total transferred.
       const dailyExtra = parseFloat(assoc.daily_extra as unknown as string) || 0;
-      const workDayCount = new Set(
-        claimableEntries.filter(e => e.clock_out).map(e => (e.clock_in as string).slice(0, 10))
-      ).size;
-      const extraAmount = Math.round(dailyExtra * workDayCount * 100) / 100;
-      const hourlyAmount = Math.round(totalHours * rate * 100) / 100;
-      const amount = Math.round((hourlyAmount + extraAmount) * 100) / 100;
+      const money = rollupEntries(claimableEntries as any, rate, undefined, dailyExtra);
+      const totalHours = money.totalHours;
+      const workDayCount = money.dayCount;
+      const extraAmount = money.extraAmount;
+      const hourlyAmount = money.hourlyAmount;
+      const amount = money.totalAmount;
       const amountCents = Math.round(amount * 100);
 
       if (amountCents <= 0) continue;
@@ -435,7 +445,7 @@ Deno.serve(async (req) => {
         const { data: tasks } = await supabase.from('tasks').select('id, title').in('id', taskIds);
         for (const t of tasks || []) if (t.title) taskNames[t.id] = t.title;
       }
-      const breakdown = rollupEntries(claimableEntries as any, rate, taskNames);
+      const breakdown = rollupEntries(claimableEntries as any, rate, taskNames, dailyExtra);
       const dateRange = breakdown.period;
       const description = `Auto payout: ${personName} — ${totalHours.toFixed(2)} hrs ${dateRange.first} to ${dateRange.last}`;
 
@@ -491,10 +501,20 @@ Deno.serve(async (req) => {
           'metadata[payout_id]': payoutPre.id
         });
       } catch (transferErr) {
-        // Roll back claim so the entries become payable again on next run.
-        await supabase.from('payout_time_entries').delete().eq('payout_id', payoutPre.id);
-        await supabase.from('payouts').delete().eq('id', payoutPre.id);
-        results.push({ associate_id: assoc.id, error: 'stripe_transfer_failed', message: (transferErr as Error).message });
+        if (transferErr instanceof StripeApiError) {
+          // Stripe refused: no money moved. Roll back so the next run can pay.
+          await supabase.from('payout_time_entries').delete().eq('payout_id', payoutPre.id);
+          await supabase.from('payouts').delete().eq('id', payoutPre.id);
+          results.push({ associate_id: assoc.id, person_name: personName, error: 'stripe_transfer_failed', message: (transferErr as Error).message });
+        } else {
+          // Network/timeout: the transfer may exist. Keep the claim so no run
+          // re-pays these entries; admin must check Stripe and reconcile.
+          await supabase.from('payouts').update({
+            status: 'failed',
+            error_message: `Outcome unknown — check Stripe for metadata.payout_id=${payoutPre.id}: ${(transferErr as Error).message}`
+          }).eq('id', payoutPre.id);
+          results.push({ associate_id: assoc.id, person_name: personName, error: 'stripe_transfer_outcome_unknown', message: `Check Stripe for payout_id ${payoutPre.id} before releasing its entries. ${(transferErr as Error).message}` });
+        }
         continue;
       }
 
@@ -513,7 +533,16 @@ Deno.serve(async (req) => {
         is_test: false
       }).select('id').single();
       if (lerr) {
-        results.push({ associate_id: assoc.id, transfer_id: transfer.id, error: 'ledger_insert_failed', message: lerr.message });
+        // Money moved: still record the transfer and mark the entries paid so
+        // they can't be paid again. Only the accounting row is missing.
+        await supabase.from('payouts')
+          .update({ external_payout_id: transfer.id, status: 'processing' })
+          .eq('id', payoutPre.id);
+        await supabase.from('time_entries')
+          .update({ payment_status: 'paid', payment_id: null })
+          .in('id', claimableEntries.map(e => e.id));
+        // No transfer_id key on purpose: it keeps this row in the admin alert.
+        results.push({ associate_id: assoc.id, person_name: personName, error: 'ledger_insert_failed', message: `Transfer ${transfer.id} SENT ($${amount.toFixed(2)}); add the ledger row by hand. ${lerr.message}` });
         continue;
       }
 

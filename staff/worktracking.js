@@ -721,8 +721,11 @@ async function confirmMarkPaid() {
         const result = await payoutService.sendPayPalPayout(assocId, amount, entryIds, notes);
 
         if (result.success) {
-          // Mark entries as paid in hours service (creates ledger entry too)
-          await hoursService.markPaid(entryIds, { paymentMethod: 'paypal', notes: `PayPal payout${result.test_mode ? ' [TEST]' : ''}: ${result.message || ''}` });
+          // paypal-payout marks the entries paid and writes the ledger row; the
+          // fallback only runs against an older deployed function.
+          if (!result.entries_marked_paid) {
+            await hoursService.markPaid(entryIds, { paymentMethod: 'paypal', notes: `PayPal payout${result.test_mode ? ' [TEST]' : ''}: ${result.message || ''}` });
+          }
           successCount++;
           showToast(result.message || `Sent $${amount.toFixed(2)} via PayPal`, 'success');
         } else {
@@ -771,8 +774,11 @@ async function confirmMarkPaid() {
         const result = await payoutService.sendStripePayout(assocId, amount, entryIds, notes);
 
         if (result.success) {
-          // Mark entries as paid in hours service (creates ledger entry too)
-          await hoursService.markPaid(entryIds, { paymentMethod: 'stripe', notes: `Stripe payout${result.test_mode ? ' [TEST]' : ''}: ${result.message || ''}` });
+          // stripe-payout marks the entries paid and writes the ledger row; the
+          // fallback only runs against an older deployed function.
+          if (!result.entries_marked_paid) {
+            await hoursService.markPaid(entryIds, { paymentMethod: 'stripe', notes: `Stripe payout${result.test_mode ? ' [TEST]' : ''}: ${result.message || ''}` });
+          }
           successCount++;
           showToast(result.message || `Sent $${amount.toFixed(2)} via Stripe`, 'success');
         } else {

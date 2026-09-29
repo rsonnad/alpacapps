@@ -12,6 +12,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { buildBreakdownByEntryIds } from "../_shared/payout-breakdown.ts";
+import { claimEntries, findClaimedEntries, markEntriesPaid, releaseClaim } from "../_shared/payout-claims.ts";
 import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface PayoutRequest {
   associate_id: string;
@@ -49,6 +50,9 @@ function formEncode(obj: Record<string, string | number>): string {
     .join('&');
 }
 
+/** Stripe rejected the request (4xx), so the transfer definitely did not happen. */
+class StripeApiError extends Error {}
+
 async function createStripeTransfer(
   secretKey: string,
   amountCents: number,
@@ -79,7 +83,8 @@ async function createStripeTransfer(
   if (!response.ok) {
     const err = JSON.parse(text);
     const message = err?.error?.message || text;
-    throw new Error(message);
+    // 4xx = Stripe rejected the request. A 5xx may still have created it.
+    throw response.status < 500 ? new StripeApiError(message) : new Error(`Stripe ${response.status}: ${message}`);
   }
   return JSON.parse(text);
 }
@@ -178,8 +183,18 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
+    const alreadyClaimed = await findClaimedEntries(supabase, uniqueEntryIds);
+    if (alreadyClaimed.length > 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: `${alreadyClaimed.length} of these time entries are already part of another payout` }),
+        { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+    // Server-derived amount from the shared calculator (entry rates + daily
+    // extra). The request's `amount` is ignored.
     const hourlyRate = parseFloat(associate.hourly_rate as any) || 0;
-    const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, hourlyRate);
+    const dailyExtra = parseFloat(associate.daily_extra as any) || 0;
+    const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, hourlyRate, dailyExtra);
     amount = breakdown.totalAmount;
     if (!Number.isFinite(amount) || amount <= 0) {
       return new Response(
@@ -202,33 +217,46 @@ Deno.serve(async (req) => {
     const personId = associate.app_user?.person_id || null;
     const amountCents = Math.round(amount * 100);
     const description = notes ? `Alpaca Playhouse: ${notes}` : `Associate payment: ${personName}`;
+    const isTest = !!stripeConfig.test_mode;
 
-    if (stripeConfig.test_mode) {
+    // Claim the entries before any money moves (see _shared/payout-claims.ts).
+    const { data: payout, error: payoutPreErr } = await supabase
+      .from('payouts')
+      .insert({
+        associate_id,
+        person_id: personId,
+        person_name: personName,
+        amount,
+        payment_method: 'stripe',
+        payment_handle: connectAccountId,
+        status: 'pending',
+        time_entry_ids: uniqueEntryIds,
+        notes: isTest ? `[TEST MODE] ${notes || ''}`.trim() : (notes || null),
+        is_test: isTest
+      })
+      .select()
+      .single();
+    if (payoutPreErr || !payout) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Could not create payout record: ${payoutPreErr?.message}` }),
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+    const claimErr = await claimEntries(supabase, payout.id, uniqueEntryIds);
+    if (claimErr) {
+      await releaseClaim(supabase, payout.id);
+      return new Response(
+        JSON.stringify({ success: false, error: `These time entries were just claimed by another payout (${claimErr})` }),
+        { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (isTest) {
       console.log('TEST MODE: Would send Stripe transfer:', {
         destination: connectAccountId,
         amountCents,
         description
       });
-
-      const { data: payout, error: payoutError } = await supabase
-        .from('payouts')
-        .insert({
-          associate_id,
-          person_id: personId,
-          person_name: personName,
-          amount,
-          payment_method: 'stripe',
-          payment_handle: connectAccountId,
-          external_payout_id: `TEST-tr_${Date.now()}`,
-          status: 'completed',
-          time_entry_ids: uniqueEntryIds,
-          notes: `[TEST MODE] ${notes || ''}`.trim(),
-          is_test: true
-        })
-        .select()
-        .single();
-
-      if (payoutError) console.error('Error creating test payout record:', payoutError);
 
       const { data: ledgerEntry, error: ledgerError } = await supabase
         .from('ledger')
@@ -250,9 +278,13 @@ Deno.serve(async (req) => {
         .single();
 
       if (ledgerError) console.error('Error creating test ledger entry:', ledgerError);
-      if (payout && ledgerEntry) {
-        await supabase.from('payouts').update({ ledger_id: ledgerEntry.id }).eq('id', payout.id);
-      }
+      await supabase.from('payouts').update({
+        status: 'completed',
+        external_payout_id: `TEST-tr_${Date.now()}`,
+        ledger_id: ledgerEntry?.id ?? null
+      }).eq('id', payout.id);
+      const markErr = await markEntriesPaid(supabase, uniqueEntryIds, ledgerEntry?.id ?? null);
+      if (markErr) console.error('Error marking test entries paid:', markErr);
 
       await supabase.from('api_usage_log').insert({
         vendor: 'stripe',
@@ -268,47 +300,46 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: true,
           test_mode: true,
-          payout_id: payout?.id,
+          payout_id: payout.id,
           ledger_id: ledgerEntry?.id,
+          amount,
+          entries_marked_paid: !markErr,
           message: `[TEST] Would have sent $${amount.toFixed(2)} to ${personName} via Stripe`
         }),
         { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
-    const idempotencyKey = req.headers.get('Idempotency-Key')?.trim() || `payout-${[...uniqueEntryIds].sort().join('-')}`;
-    const transfer = await createStripeTransfer(
-      secretKey,
-      amountCents,
-      connectAccountId,
-      description,
-      { payout_associate_id: associate_id },
-      idempotencyKey
-    );
+    // Keyed on our payout row: short (Stripe caps keys at 255 chars, which a
+    // key built from entry UUIDs overflowed past 6 entries) and unique per claim.
+    const idempotencyKey = req.headers.get('Idempotency-Key')?.trim() || `stripe-payout-${payout.id}`;
+    let transfer: { id: string };
+    try {
+      transfer = await createStripeTransfer(
+        secretKey,
+        amountCents,
+        connectAccountId,
+        description,
+        { payout_associate_id: associate_id, payout_id: payout.id, source: 'stripe-payout' },
+        idempotencyKey
+      );
+    } catch (transferErr) {
+      if (transferErr instanceof StripeApiError) {
+        // Stripe refused: no money moved. Release so a later attempt can pay.
+        await releaseClaim(supabase, payout.id);
+        throw transferErr;
+      }
+      // Network/timeout: the transfer may or may not exist. Keep the claim so
+      // nothing re-pays these entries; the overdue watchdog will surface them
+      // if the transfer really didn't happen.
+      await supabase.from('payouts').update({
+        status: 'failed',
+        error_message: `Outcome unknown — check Stripe for metadata.payout_id=${payout.id} before retrying: ${(transferErr as Error).message}`
+      }).eq('id', payout.id);
+      throw new Error(`Stripe did not respond; entries stay locked to payout ${payout.id}. Check the Stripe dashboard before retrying.`);
+    }
 
     console.log('Stripe transfer created:', transfer.id);
-
-    const { data: payout, error: payoutError } = await supabase
-      .from('payouts')
-      .insert({
-        associate_id,
-        person_id: personId,
-        person_name: personName,
-        amount,
-        payment_method: 'stripe',
-        payment_handle: connectAccountId,
-        external_payout_id: transfer.id,
-        status: 'processing',
-        time_entry_ids: uniqueEntryIds,
-        notes: notes || null,
-        is_test: false
-      })
-      .select()
-      .single();
-
-    if (payoutError) {
-      console.error('Error creating payout record:', payoutError);
-    }
 
     const { data: ledgerEntry, error: ledgerError } = await supabase
       .from('ledger')
@@ -322,7 +353,7 @@ Deno.serve(async (req) => {
         person_name: personName,
         status: 'pending',
         description: `Stripe payout to ${personName}`,
-        notes: notes || null,
+        notes: `Transfer ${transfer.id}.${breakdown.extraAmount > 0 ? ` Incl $${breakdown.extraAmount.toFixed(2)} daily extra.` : ''}${notes ? ` ${notes}` : ''}`,
         recorded_by: 'system:stripe-payout',
         is_test: false
       })
@@ -330,9 +361,14 @@ Deno.serve(async (req) => {
       .single();
 
     if (ledgerError) console.error('Error creating ledger entry:', ledgerError);
-    if (payout && ledgerEntry) {
-      await supabase.from('payouts').update({ ledger_id: ledgerEntry.id }).eq('id', payout.id);
-    }
+    await supabase.from('payouts').update({
+      status: 'processing',
+      external_payout_id: transfer.id,
+      ledger_id: ledgerEntry?.id ?? null
+    }).eq('id', payout.id);
+    // Money has moved: mark paid even if the ledger write failed.
+    const markErr = await markEntriesPaid(supabase, uniqueEntryIds, ledgerEntry?.id ?? null);
+    if (markErr) console.error('CRITICAL: transfer sent but entries not marked paid:', transfer.id, markErr);
 
     await supabase.from('api_usage_log').insert({
       vendor: 'stripe',
@@ -363,8 +399,7 @@ Deno.serve(async (req) => {
         // Stripe Connect ACH transfers typically settle in 2 business days
         const expectedDeposit = addBusinessDays(new Date(), 2);
         const expectedDepositDate = expectedDeposit.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: tz });
-        const rate = parseFloat(associate.hourly_rate as any) || 0;
-        const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, rate);
+        const rate = hourlyRate;
         await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: 'POST',
           headers: {
@@ -382,8 +417,11 @@ Deno.serve(async (req) => {
               payment_method: 'Stripe (ACH)',
               payout_date: today,
               expected_deposit_date: expectedDepositDate,
-              hours: rate > 0 && amount > 0 ? (amount / rate).toFixed(2) : (breakdown.totalHours ? breakdown.totalHours.toFixed(2) : null),
+              hours: breakdown.totalHours.toFixed(2),
               hourly_rate: rate > 0 ? rate.toFixed(2) : null,
+              hourly_subtotal: breakdown.hourlyAmount.toFixed(2),
+              daily_extra: breakdown.dailyExtra.toFixed(2),
+              daily_extra_total: breakdown.extraAmount.toFixed(2),
               transfer_id: transfer.id,
               period_first: breakdown.period.first || null,
               period_last: breakdown.period.last || null,
@@ -403,9 +441,12 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        payout_id: payout?.id,
+        payout_id: payout.id,
         ledger_id: ledgerEntry?.id,
         transfer_id: transfer.id,
+        amount,
+        // Lets the staff UI skip its own markPaid (see staff/payments.js).
+        entries_marked_paid: !markErr,
         message: `Sent $${amount.toFixed(2)} to ${personName} via Stripe`
       }),
       { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
