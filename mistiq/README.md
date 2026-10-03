@@ -48,3 +48,13 @@ Other details:
 - All storage access is wrapped in try/catch; with storage blocked, steps 1/3/4 still work, only "remember my pick" is lost.
 
 Adding a language: create `xx/jobs/index.html`, add `xx` to `SUPPORTED`, add an `hreflang` line to all jobs pages, add the flag to every picker.
+
+## Mobile layout guardrails
+
+- **Fixed overlays are capped at `max-width: 100vw`** (`.mistiq-header`, `.mistiq-mobile-nav`). If anything on a page overflows horizontally, mobile Chrome widens the layout viewport and a `left:0; right:0` fixed element stretches with it. That once pushed the language picker and hamburger off-screen on a Pixel 10 (412px). `100vw` stays pinned to the screen width.
+- **Never give an image a bare `max-width: <px>`.** It overrides the global `img { max-width: 100% }`. Use `max-width: min(<px>, 100%)`. The 2026-10 overflow came from `.mistiq-facility__image { max-width: 600px }`.
+- **To check for overflow:** at 360px and 412px wide, `document.documentElement.scrollWidth` must equal `clientWidth` *with real images loaded*. A test that blocks images will miss image-caused overflow.
+
+## Assets
+
+- `saunatubs.webp` (1200×805, ~125 KB) replaces the 8.3 MB `Saunatubs.png` in Supabase storage on every home and jobs page. The original is still in the `mistiq-assets` bucket if a higher-resolution source is ever needed.
