@@ -1,12 +1,12 @@
 {
-  "version": "v261003.01 8:59a",
-  "release": 1885,
-  "sha": "5fb37b399f",
-  "fullSha": "5fb37b399f68ebec45051005aea0f06a76ea8283",
+  "version": "v261003.02 9:03a",
+  "release": 1886,
+  "sha": "83db56bf2c",
+  "fullSha": "83db56bf2ca181406193d46d2e362167405fd81a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-03T13:59:25+00:00",
-  "commits": [{"sha":"5fb37b399f","message":"Mistiq: auto-select Thai for Asian visitors + fix off-screen lang picker on mobile (#134)","author":"Rahul"}]
+  "pushedAt": "2026-10-03T14:03:00+00:00",
+  "commits": [{"sha":"83db56bf2c","message":"Mistiq jobs: auto-select Thai for Thailand only, not all of Asia (#135)","author":"Rahul"}]
 }
