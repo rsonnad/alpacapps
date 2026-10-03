@@ -308,7 +308,7 @@ Deno.serve(async (req) => {
 
     let associatesQuery = supabase
       .from('associate_profiles')
-      .select('id, app_user_id, hourly_rate, daily_extra, payment_method, stripe_connect_account_id, identity_verification_status, payout_frequency, payout_day_of_week, instant_payout')
+      .select('id, app_user_id, hourly_rate, daily_extra, payment_method, stripe_connect_account_id, identity_verification_status, w9_status, payout_frequency, payout_day_of_week, instant_payout')
       .eq('payment_method', 'stripe')
       .eq('is_active', true)
       .not('stripe_connect_account_id', 'is', null)
@@ -326,6 +326,14 @@ Deno.serve(async (req) => {
     ];
 
     for (const assoc of associates || []) {
+      // --- W-9 gate --------------------------------------------------------
+      // No payout without a W-9 on file (1099 reporting). Reported in results
+      // rather than filtered in the query so the skip is visible.
+      if (assoc.w9_status !== 'submitted') {
+        results.push({ associate_id: assoc.id, skipped: 'w9_missing' });
+        continue;
+      }
+
       // --- Pay cadence gate ---------------------------------------------
       // Honor each associate's payout_frequency. 'daily' (or null) pays every
       // run, as before. 'weekly'/'biweekly'/'monthly' only pay on their

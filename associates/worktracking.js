@@ -68,7 +68,9 @@ async function initApp() {
   // Handle Stripe onboarding return
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('stripe_onboarding') === 'complete') {
-    showToast('Stripe Connect onboarding completed!', 'success');
+    showToast(profile?.w9_status === 'submitted'
+      ? 'Stripe Connect onboarding completed!'
+      : 'Stripe connected! Last step: fill out your W-9 below to receive payments.', 'success');
     // Clean up URL
     const cleanUrl = window.location.pathname;
     window.history.replaceState({}, '', cleanUrl);
@@ -1113,6 +1115,7 @@ async function refreshPaymentTab() {
 
     // Show ID verification banner
     renderIdVerificationBanner(profile.identity_verification_status);
+    renderW9Banner(profile.w9_status);
   } catch (err) {
     console.error('Failed to refresh payment tab:', err);
   }
@@ -1349,6 +1352,33 @@ async function handleSelfVerify() {
   } catch (err) {
     showToast('Failed to start verification: ' + err.message, 'error');
     if (btn) { btn.disabled = false; btn.textContent = 'Verify My ID'; }
+  }
+}
+
+function renderW9Banner(status) {
+  const banner = document.getElementById('w9Banner');
+  if (!banner) return;
+  banner.style.display = 'block';
+
+  if (status === 'submitted') {
+    banner.innerHTML = `<div class="id-banner ok"><strong>W-9 On File</strong>Your W-9 has been received for tax reporting.</div>`;
+    return;
+  }
+
+  banner.innerHTML = `<div class="id-banner warn"><strong>W-9 Required</strong>Fill out your W-9 (takes 2 minutes) to receive payments. It's used for 1099 tax reporting.<button class="btn-verify" id="btnFillW9">Fill Out W-9</button></div>`;
+  document.getElementById('btnFillW9')?.addEventListener('click', handleSelfW9);
+}
+
+async function handleSelfW9() {
+  const btn = document.getElementById('btnFillW9');
+  if (btn) { btn.disabled = true; btn.textContent = 'Opening form...'; }
+  try {
+    const { data: token, error } = await supabase.rpc('request_my_w9_upload_token');
+    if (error) throw error;
+    window.location.href = `/rentals/w9.html?token=${token}`;
+  } catch (err) {
+    showToast('Failed to open W-9 form: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Fill Out W-9'; }
   }
 }
 

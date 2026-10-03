@@ -171,6 +171,14 @@ Deno.serve(async (req) => {
       );
     }
 
+    // W-9 gate — a W-9 must be on file before any payout (1099 reporting)
+    if (associate.w9_status !== 'submitted') {
+      return new Response(
+        JSON.stringify({ success: false, error: 'W-9 required before payout. The associate must submit their W-9 from the Payment tab of Work Tracking first.' }),
+        { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
     const uniqueEntryIds = [...new Set(time_entry_ids)].filter((id): id is string => typeof id === 'string' && id.length > 0);
     const { data: entries } = await supabase
       .from('time_entries')
