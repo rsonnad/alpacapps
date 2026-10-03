@@ -11,7 +11,7 @@
 //   1. ?lang=xx in the URL           → use it and remember it
 //   2. Remembered choice (flag click) → use it
 //   3. Browser language, if we have a non-English page for it (ja, zh, de…)
-//   4. Device time zone in Asia/*     → Thai
+//   4. Device time zone is Thailand   → Thai
 //   5. Otherwise stay on English
 //
 // Country is inferred from the device time zone, not IP geolocation: it is
@@ -22,8 +22,9 @@
   var STORE_KEY = 'mistiq-lang';
   var REF_KEY = 'mistiq-orig-referrer';
   var SUPPORTED = ['en', 'th', 'es', 'de', 'pl', 'ru', 'zh', 'ja'];
-  var ASIA_TZ = /^Asia\//;
-  var ASIA_LANG = 'th';
+  // Thailand has a single IANA zone. Neighbours (Laos, Cambodia, Vietnam)
+  // share UTC+7 but report their own zone IDs, so they stay on English.
+  var THAI_TZ = ['Asia/Bangkok'];
   var JOBS_PATH = /^\/mistiq\/(?:([a-z]{2})\/)?jobs\/?(?:index\.html)?$/;
 
   function store(k, v, session) {
@@ -86,7 +87,7 @@
   if (!target) {
     var tz = '';
     try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
-    if (ASIA_TZ.test(tz)) target = ASIA_LANG;
+    if (THAI_TZ.indexOf(tz) !== -1) target = 'th';
   }
 
   if (!target || target === 'en') return;
