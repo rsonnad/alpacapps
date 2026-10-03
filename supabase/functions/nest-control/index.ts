@@ -17,7 +17,8 @@ interface NestRequest {
     | "setTemperature"
     | "setMode"
     | "setEco"
-    | "oauthCallback";
+    | "oauthCallback"
+    | "run-schedules";
   deviceId?: string;
   temperature?: number; // Fahrenheit
   heatTemp?: number; // Fahrenheit (for HEATCOOL)
@@ -43,6 +44,15 @@ function cToF(c: number): number {
   return Math.round((c * 9) / 5 + 32);
 }
 
+// Setpoint safety clamp — shared by manual control (setTemperature) and the
+// schedule runner. Upper bound raised from 85 to 90 on 2026-09-17 for the
+// Skyloft nightly setback rule (COOL to 88°F at 9pm).
+const TEMP_MIN_F = 50;
+const TEMP_MAX_F = 90;
+function clampTemp(t: number): number {
+  return Math.max(TEMP_MIN_F, Math.min(TEMP_MAX_F, t));
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: getCorsHeaders(req) });
@@ -63,10 +73,14 @@ serve(async (req) => {
 
     // Allow trusted internal calls from PAI (service role key = already permission-checked)
     const isInternalCall = await timingSafeEqual(token, supabaseServiceKey);
+    // Allow pg_cron calls with X-Cron-Secret header (same secret as sonos-control's schedule runner)
+    const cronSecret = Deno.env.get("SCHEDULE_CRON_SECRET");
+    const cronHeader = req.headers.get("X-Cron-Secret");
+    const isCronCall = !!(cronSecret && cronHeader && await timingSafeEqual(cronHeader, cronSecret));
     let userId: string | null = null;
     let appUser: Record<string, unknown> | null = null;
 
-    if (!isInternalCall) {
+    if (!isInternalCall && !isCronCall) {
       const {
         data: { user },
         error: authError,
@@ -494,11 +508,6 @@ serve(async (req) => {
           return jsonResponse(req, { error: "Missing deviceId" }, 400);
         }
 
-        // Clamp temperature inputs to safe range (50-85°F)
-        const TEMP_MIN_F = 50;
-        const TEMP_MAX_F = 85;
-        const clampTemp = (t: number) => Math.max(TEMP_MIN_F, Math.min(TEMP_MAX_F, t));
-
         let command: string;
         let params: Record<string, number>;
 
@@ -651,6 +660,170 @@ serve(async (req) => {
           app_user_id: userId,
         });
         return jsonResponse(req, { success: true });
+      }
+
+      // =============================================
+      // Schedule Runner (internal only, called by pg_cron)
+      // =============================================
+      case "run-schedules": {
+        if (!isInternalCall && !isCronCall) {
+          return jsonResponse(req, { error: "Forbidden: internal only" }, 403);
+        }
+        console.log("Thermostat schedule runner: checking for due rules");
+
+        const nowChicago = new Date(
+          new Date().toLocaleString("en-US", { timeZone: "America/Chicago" })
+        );
+        const currentHH = String(nowChicago.getHours()).padStart(2, "0");
+        const currentMM = String(nowChicago.getMinutes()).padStart(2, "0");
+        const jsDow = nowChicago.getDay();
+        const isoDow = jsDow === 0 ? 7 : jsDow; // 1=Mon...7=Sun
+        const isWeekday = isoDow >= 1 && isoDow <= 5;
+        const todayDate = `${nowChicago.getFullYear()}-${String(nowChicago.getMonth() + 1).padStart(2, "0")}-${String(nowChicago.getDate()).padStart(2, "0")}`;
+
+        const { data: rules, error: rulesErr } = await supabase
+          .from("thermostat_rules")
+          .select("id, name, device_id, rule_type, conditions, actions, is_active, last_triggered, nest_devices(sdm_device_id, room_name)")
+          .eq("is_active", true)
+          .eq("rule_type", "scheduled_time");
+
+        if (rulesErr) {
+          console.error("Schedule runner: query error", rulesErr.message);
+          return jsonResponse(req, { error: "Failed to load thermostat rules" }, 500);
+        }
+        if (!rules || rules.length === 0) {
+          return jsonResponse(req, { status: "ok", fired: 0 });
+        }
+
+        const results: Array<{ id: string; name: string; status: string; error?: string }> = [];
+
+        for (const rule of rules as any[]) {
+          const cond = rule.conditions || {};
+          const hour = Number(cond.hour);
+          const minute = Number(cond.minute ?? 0);
+          if (Number.isNaN(hour)) continue;
+
+          // Due within a ±7 minute window of the scheduled time
+          const schedMins = hour * 60 + minute;
+          const nowMins = parseInt(currentHH) * 60 + parseInt(currentMM);
+          const diff = Math.abs(schedMins - nowMins);
+          if (diff > 7 && diff < (24 * 60 - 7)) continue;
+
+          let matchesDay = false;
+          switch (cond.recurrence || "daily") {
+            case "daily":
+              matchesDay = true;
+              break;
+            case "weekdays":
+              matchesDay = isWeekday;
+              break;
+            case "weekends":
+              matchesDay = !isWeekday;
+              break;
+            case "custom":
+              matchesDay = Array.isArray(cond.custom_days) && cond.custom_days.includes(isoDow);
+              break;
+            case "once":
+              matchesDay = cond.one_time_date === todayDate;
+              break;
+            default:
+              matchesDay = false;
+          }
+          if (!matchesDay) continue;
+
+          // Idempotency: skip if already fired in the last 30 minutes
+          if (rule.last_triggered) {
+            const msSince = Date.now() - new Date(rule.last_triggered).getTime();
+            if (msSince < 30 * 60 * 1000) {
+              console.log(`Schedule runner: skipping "${rule.name}" (fired ${Math.round(msSince / 60000)}m ago)`);
+              continue;
+            }
+          }
+
+          const device = rule.nest_devices;
+          if (!device?.sdm_device_id) {
+            results.push({ id: rule.id, name: rule.name, status: "error", error: "No device linked" });
+            continue;
+          }
+
+          console.log(`Schedule runner: firing "${rule.name}" → ${device.room_name}`, rule.actions);
+
+          try {
+            const act = rule.actions || {};
+
+            if (act.mode) {
+              const modeRes = await fetch(`${SDM_BASE_URL}/${device.sdm_device_id}:executeCommand`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  command: "sdm.devices.commands.ThermostatMode.SetMode",
+                  params: { mode: act.mode },
+                }),
+              });
+              if (!modeRes.ok) {
+                const e = await modeRes.json().catch(() => ({}));
+                throw new Error(e.error?.message || "Failed to set mode");
+              }
+            }
+
+            if (act.temperature != null || (act.heatTemp != null && act.coolTemp != null)) {
+              const effectiveMode = act.mode || device.last_state?.mode;
+              let command: string;
+              let params: Record<string, number>;
+
+              if (effectiveMode === "HEATCOOL" && act.heatTemp != null && act.coolTemp != null) {
+                command = "sdm.devices.commands.ThermostatTemperatureSetpoint.SetRange";
+                params = {
+                  heatCelsius: fToC(clampTemp(act.heatTemp)),
+                  coolCelsius: fToC(clampTemp(act.coolTemp)),
+                };
+              } else if (effectiveMode === "HEAT") {
+                command = "sdm.devices.commands.ThermostatTemperatureSetpoint.SetHeat";
+                params = { heatCelsius: fToC(clampTemp(act.temperature)) };
+              } else {
+                // Default to COOL — this is the common case (night setback)
+                command = "sdm.devices.commands.ThermostatTemperatureSetpoint.SetCool";
+                params = { coolCelsius: fToC(clampTemp(act.temperature)) };
+              }
+
+              const tempRes = await fetch(`${SDM_BASE_URL}/${device.sdm_device_id}:executeCommand`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ command, params }),
+              });
+              if (!tempRes.ok) {
+                const e = await tempRes.json().catch(() => ({}));
+                throw new Error(e.error?.message || "Failed to set temperature");
+              }
+            }
+
+            await supabase
+              .from("thermostat_rules")
+              .update({ last_triggered: new Date().toISOString() })
+              .eq("id", rule.id);
+
+            await logApiUsage(supabase, {
+              vendor: "google_sdm",
+              category: "nest_climate_control",
+              endpoint: "run-schedules",
+              units: 1,
+              unit_type: "api_calls",
+              estimated_cost_usd: 0,
+              metadata: { ruleId: rule.id, ruleName: rule.name, deviceId: device.sdm_device_id, actions: act },
+            });
+
+            results.push({ id: rule.id, name: rule.name, status: "fired" });
+          } catch (err) {
+            console.error(`Schedule runner: failed to fire "${rule.name}"`, err.message);
+            results.push({ id: rule.id, name: rule.name, status: "error", error: err.message });
+          }
+        }
+
+        return jsonResponse(req, {
+          status: "ok",
+          fired: results.filter((r) => r.status === "fired").length,
+          results,
+        });
       }
 
       default:
