@@ -16,6 +16,19 @@
   <meta name="twitter:card" content="summary_large_image">
 
 
+  <!-- Language auto-select: must run before paint (see /mistiq/README.md) -->
+  <script src="/mistiq/lang-redirect.js"></script>
+  <!-- Language alternates (keep in sync with SUPPORTED in /mistiq/lang-redirect.js) -->
+  <link rel="alternate" hreflang="en" href="https://alpacaplayhouse.com/mistiq/jobs/">
+  <link rel="alternate" hreflang="th" href="https://alpacaplayhouse.com/mistiq/th/jobs/">
+  <link rel="alternate" hreflang="es" href="https://alpacaplayhouse.com/mistiq/es/jobs/">
+  <link rel="alternate" hreflang="de" href="https://alpacaplayhouse.com/mistiq/de/jobs/">
+  <link rel="alternate" hreflang="pl" href="https://alpacaplayhouse.com/mistiq/pl/jobs/">
+  <link rel="alternate" hreflang="ru" href="https://alpacaplayhouse.com/mistiq/ru/jobs/">
+  <link rel="alternate" hreflang="zh" href="https://alpacaplayhouse.com/mistiq/zh/jobs/">
+  <link rel="alternate" hreflang="ja" href="https://alpacaplayhouse.com/mistiq/ja/jobs/">
+  <link rel="alternate" hreflang="x-default" href="https://alpacaplayhouse.com/mistiq/jobs/">
+
   <!-- Styles -->
   <link rel="stylesheet" href="/mistiq/styles.css">
 
@@ -363,7 +376,7 @@
         event_type: 'pageview',
         page: 'jobs_en',
         language: 'en',
-        referrer: document.referrer || null,
+        referrer: ('mistiqReferrer' in window ? window.mistiqReferrer : document.referrer) || null,
       }),
     }).catch(() => {});
 
@@ -379,7 +392,7 @@
             page: 'jobs_en',
             language: 'en',
             element: el.dataset.track,
-            referrer: document.referrer || null,
+            referrer: ('mistiqReferrer' in window ? window.mistiqReferrer : document.referrer) || null,
           }),
         }).catch(() => {});
       });
