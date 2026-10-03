@@ -1,12 +1,12 @@
 {
-  "version": "v261002.03 8:36p",
-  "release": 1883,
-  "sha": "a18898a679",
-  "fullSha": "a18898a67981c3237bb05d306965c603024e989f",
+  "version": "v261002.04 9:07p",
+  "release": 1884,
+  "sha": "d1ae22dbb7",
+  "fullSha": "d1ae22dbb7a87f212c2ea694c8cfcd331d2d8094",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-03T01:36:23+00:00",
-  "commits": [{"sha":"a18898a679","message":"Update spaces/ical/spartan-trailer.ics [automated]","author":"Rahul"}]
+  "pushedAt": "2026-10-03T02:07:43+00:00",
+  "commits": [{"sha":"d1ae22dbb7","message":"feat(payroll): require W-9 on file before any associate payout","author":"Blotto"}]
 }
