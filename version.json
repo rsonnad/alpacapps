@@ -1,12 +1,12 @@
 {
-  "version": "v260929.11 4:37p",
-  "release": 1880,
-  "sha": "fea0ecb31e",
-  "fullSha": "fea0ecb31ed4d70a5186f6a100207315cb9503a0",
+  "version": "v261002.01 8:09p",
+  "release": 1881,
+  "sha": "ca5886c063",
+  "fullSha": "ca5886c063d9964a0c61e4d785285cc3ac26dc3b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-09-29T21:37:53+00:00",
-  "commits": [{"sha":"fea0ecb31e","message":"docs(udm): drop literal username/password JSON from ! gotcha example","author":"Blotto"}]
+  "pushedAt": "2026-10-03T01:09:02+00:00",
+  "commits": [{"sha":"ca5886c063","message":"fix(stripe): use caller id in Connect onboard usage log","author":"Blotto"}]
 }
