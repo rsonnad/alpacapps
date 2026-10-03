@@ -31,7 +31,7 @@ Decision order on `/mistiq/jobs/`:
 | 1 | `?lang=xx` query param | go to `xx`, remember it (`?lang=en` forces English — use for testing / US-targeted links) |
 | 2 | Remembered pick (`localStorage['mistiq-lang']`, set when any flag is clicked) | go there |
 | 3 | First supported language in `navigator.languages`, if not English | go there (ja → `/ja/jobs/`, de → `/de/jobs/`…) |
-| 4 | Device time zone matches `Asia/*` | Thai |
+| 4 | Device time zone is `Asia/Bangkok` (Thailand) | Thai |
 | 5 | none | stay on English |
 
 English browser language deliberately falls through to step 4 — many Thai phones run an English UI.
@@ -39,7 +39,7 @@ English browser language deliberately falls through to step 4 — many Thai phon
 **Decision:** infer country from the device time zone (`Intl.DateTimeFormat().resolvedOptions().timeZone`), not IP geolocation.
 **Why:** GitHub Pages has no server to read a geo header; an IP-lookup API would add a network round-trip before render (visible English→Thai flash), a third-party dependency with rate limits, a privacy disclosure, and is wrong for VPN users. The time zone is synchronous and free. Trade-off: a traveler whose phone is still on home time is classified by home, which for a recruiting page is arguably the right answer.
 
-**Known coarse edge:** `Asia/*` includes India, the Gulf, Israel, Central Asia and Korea, who all get Thai unless their browser language is one we support. Narrow `ASIA_TZ` in `lang-redirect.js` if that matters.
+**Decision (2026-10-03):** Thailand only, not all of Asia. **Why:** `Asia/*` also covers India, the Gulf, Israel, Korea, etc., none of whom read Thai. Visitors elsewhere in Asia still get their own language via step 3 when we have it (ja, zh), otherwise English. To add a country, add its zone ID(s) to `THAI_TZ` in `lang-redirect.js`.
 
 Other details:
 - Redirect uses `location.replace` (no back-button loop) and preserves query string (UTM) and hash.
