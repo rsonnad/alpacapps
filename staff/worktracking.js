@@ -536,8 +536,8 @@ function updateMarkPaidButton() {
   btn.disabled = unpaidSelected.length === 0;
   recalcBtn.disabled = selectedIds.size === 0;
   btn.textContent = unpaidSelected.length > 0
-    ? `Mark ${unpaidSelected.length} as Paid`
-    : 'Mark Selected as Paid';
+    ? `Process ${unpaidSelected.length} Payment${unpaidSelected.length === 1 ? '' : 's'}`
+    : 'Process Payment';
   recalcBtn.textContent = 'Recalc';
 }
 
@@ -642,7 +642,7 @@ function updatePaypalPayoutInfo() {
   // Hide both by default
   paypalInfo.style.display = 'none';
   if (stripeInfo) stripeInfo.style.display = 'none';
-  confirmBtn.textContent = 'Confirm Payment';
+  confirmBtn.textContent = 'Record as Paid';
 
   if (method === 'paypal') {
     // Find associate's PayPal email
