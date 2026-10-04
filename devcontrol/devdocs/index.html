@@ -1,294 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev Docs — AlpacApps</title>
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <link rel="stylesheet" href="/styles/site.css">
-    <link rel="stylesheet" href="/styles/tailwind.out.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #faf9f6;
-            color: #1c1618;
-            min-height: 100vh;
-            padding: 2rem 1.5rem 4rem;
-        }
-        .container { max-width: 720px; margin: 0 auto; }
-        .header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem; }
-        h1 { font-size: 1.75rem; font-weight: 700; color: #1c1618; }
-        .back-link { font-size: 0.85rem; color: #8a7f76; text-decoration: none; }
-        .back-link:hover { color: #d4883a; }
-        .subtitle { font-size: 0.85rem; color: #8a7f76; margin-bottom: 1.5rem; }
-        .search-box {
-            display: flex; align-items: center; gap: 0.5rem;
-            background: #fff; border: 1px solid #e8e4df; border-radius: 8px;
-            padding: 0.6rem 0.75rem; margin-bottom: 0.75rem;
-        }
-        .search-box svg { color: #8a7f76; flex-shrink: 0; }
-        .search-box input {
-            flex: 1; border: none; outline: none; background: none;
-            font-size: 0.9rem; color: #1c1618;
-        }
-        .search-box input::placeholder { color: #b5aea6; }
-        .search-count { font-size: 0.75rem; color: #8a7f76; white-space: nowrap; }
-        .view-toggle {
-            display: flex; gap: 0.35rem; margin-bottom: 1.25rem;
-        }
-        .view-btn {
-            font-size: 0.75rem; padding: 0.3rem 0.65rem;
-            border: 1px solid #e8e4df; border-radius: 6px;
-            background: #fff; color: #8a7f76; cursor: pointer;
-            transition: all 0.15s;
-        }
-        .view-btn.active { background: #1c1618; color: #fff; border-color: #1c1618; }
-        .view-btn:hover:not(.active) { border-color: #d4883a; color: #d4883a; }
-        .section-label {
-            font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 0.06em; color: #8a7f76; margin: 1.5rem 0 0.5rem;
-        }
-        .docs-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
-        .doc-card {
-            background: #fff; border: 1px solid #e8e4df; border-radius: 8px;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            overflow: hidden;
-        }
-        .doc-card:hover {
-            border-color: #d4883a;
-            box-shadow: 0 2px 8px rgba(212, 136, 58, 0.12);
-        }
-        .doc-header {
-            display: flex; align-items: flex-start; justify-content: space-between;
-            padding: 0.75rem 1rem; cursor: pointer; gap: 0.75rem;
-        }
-        .doc-header-left { flex: 1; min-width: 0; }
-        .doc-title-row { display: flex; align-items: baseline; gap: 0.5rem; }
-        .doc-title { font-weight: 600; font-size: 0.95rem; }
-        .doc-section-tag {
-            font-size: 0.6rem; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 0.04em; color: #b5aea6; white-space: nowrap;
-            background: #f5f3f0; padding: 0.15rem 0.4rem; border-radius: 3px;
-        }
-        .doc-date {
-            font-size: 0.75rem; color: #8a7f76; margin-top: 0.2rem;
-        }
-        .doc-desc-preview {
-            font-size: 0.8rem; color: #8a7f76; margin-top: 0.25rem;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .doc-card.expanded .doc-desc-preview { white-space: normal; }
-        .doc-chevron {
-            color: #b5aea6; flex-shrink: 0; margin-top: 0.2rem;
-            transition: transform 0.2s;
-        }
-        .doc-card.expanded .doc-chevron { transform: rotate(90deg); }
-        .doc-body {
-            max-height: 0; overflow: hidden;
-            transition: max-height 0.25s ease;
-        }
-        .doc-card.expanded .doc-body { max-height: 200px; }
-        .doc-body-inner {
-            padding: 0 1rem 0.75rem;
-        }
-        .doc-footer {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 0.5rem;
-        }
-        .doc-file { font-size: 0.7rem; color: #b5aea6; font-family: monospace; }
-        .doc-open {
-            font-size: 0.75rem; color: #d4883a; text-decoration: none;
-            font-weight: 600; white-space: nowrap;
-        }
-        .doc-open:hover { text-decoration: underline; }
-        .auth-wall {
-            text-align: center; padding: 4rem 1rem;
-            color: #8a7f76; font-size: 0.95rem;
-        }
-        .hidden { display: none !important; }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Dev Docs — AlpacApps</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <link rel="stylesheet" href="/styles/ix.css?v=1">
+  <style>
+    .hidden { display: none !important; }
+    body { background: var(--bg, #f6f5f0); margin: 0; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; color: var(--text, #1f1720); }
+    .ix-hero-links { margin-top: 0.35rem; font-size: 0.82rem; }
+    .ix-hero-links a { color: var(--accent, #e07a3a); font-weight: 600; text-decoration: none; }
+    .ix-hero-links a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
+  <div id="siteHeader"></div>
+
+  <main class="ix-page">
+    <div class="ix-hero">
+      <div class="ix-hero-text">
+        <h1>Dev Docs</h1>
+        <p id="docsMeta">Internal development documents.</p>
+        <p class="ix-hero-links"><a href="/devcontrol/">← DevControl</a> · <a href="/intranet/#sec-devcontrol">Intranet</a></p>
+      </div>
+      <label class="ix-search hidden" id="searchWrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="searchInput" placeholder="Find a doc…" aria-label="Find a doc" autocomplete="off">
+        <kbd aria-hidden="true">/</kbd>
+      </label>
+    </div>
+
+    <nav class="ix-jump hidden" id="docsJump" aria-label="Jump to section"></nav>
+
+    <div class="ix-status" id="authWall">Checking access…</div>
+    <div id="docsRoot"></div>
+    <div class="ix-nomatch hidden" id="noMatch">No docs match that search.</div>
+
     <span data-site-version style="display:none;">v261004.07 5:15a</span>
-    <div id="siteHeader"></div>
+  </main>
 
-    <div id="authWall" class="auth-wall">
-        <p>Checking access...</p>
-    </div>
+  <script src="/vendor/supabase-js-2.39.3.min.js"></script>
+  <script type="module">
+    import { initAuth, getAuthState } from '/shared/auth.js';
+    import { renderHeader, initSiteComponents, initPublicHeaderAuth } from '/shared/site-components.js';
+    import { setupVersionInfo } from '/shared/version-info.js';
 
-    <div id="mainContent" class="container hidden">
-        <div class="header">
-            <h1>Dev Docs</h1>
-            <a href="/spaces/admin/devcontrol/" class="back-link">DevControl</a>
-        </div>
-        <p class="subtitle" id="docsMeta"></p>
+    const _i = (d) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 
-        <div class="search-box">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="searchInput" placeholder="Filter docs...">
-            <span class="search-count" id="searchCount"></span>
-        </div>
+    // Sections: tone matches /styles/ix.css data-tone palette.
+    // `updated` = last git commit date of the file; refresh when docs change.
+    const SECTIONS = [
+      { id: 'core',     title: 'Core Reference', tone: 'blue',   tagline: 'Schema, patterns, deploys, testing, and secrets.',
+        icon: _i('<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>') },
+      { id: 'devices',  title: 'Home & Devices', tone: 'teal',   tagline: 'Lighting, Sonos, Home Assistant, and maker tools.',
+        icon: _i('<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 018.91 14"/>') },
+      { id: 'agents',   title: 'AI Agents',      tone: 'violet', tagline: 'AlpaClaw, OpenClaw, shared memory, and local models.',
+        icon: _i('<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M12 3v4"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/>') },
+      { id: 'infra',    title: 'Infrastructure', tone: 'slate',  tagline: 'The Alpuca Mac, remote access, and hosting.',
+        icon: _i('<rect x="2" y="3" width="20" height="7" rx="1.5"/><rect x="2" y="14" width="20" height="7" rx="1.5"/><line x1="6" y1="6.5" x2="6.01" y2="6.5"/><line x1="6" y1="17.5" x2="6.01" y2="17.5"/>') },
+      { id: 'cad',      title: 'CAD & Property', tone: 'amber',  tagline: 'Site plans, GIS, and 3D property renders.',
+        icon: _i('<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>') },
+      { id: 'planning', title: 'Planning',       tone: 'rose',   tagline: 'Feature plans and effort assessments.',
+        icon: _i('<path d="M9 2h6a1 1 0 011 1v2h3a1 1 0 011 1v15a2 2 0 01-2 2H6a2 2 0 01-2-2V6a1 1 0 011-1h3V3a1 1 0 011-1z"/><path d="M9 14l2 2 4-4"/>') },
+    ];
 
-        <div class="view-toggle">
-            <button class="view-btn active" data-view="chrono">Recent</button>
-            <button class="view-btn" data-view="section">By Section</button>
-        </div>
+    const DOCS = [
+      // Core Reference
+      { file: 'CHANGELOG.md',       section: 'core', updated: '2026-09-29', title: 'Changelog',            desc: 'Running log of significant changes, migrations, and feature launches.' },
+      { file: 'SCHEMA.md',          section: 'core', updated: '2026-09-29', title: 'Database Schema',      desc: 'Every Supabase table, column, type, and relationship — the source of truth for data modeling.' },
+      { file: 'DEPLOY.md',          section: 'core', updated: '2026-04-28', title: 'Deployment Workflow',  desc: 'GitHub Pages deploys, CI version bumps, push protocol, and edge function deploys.' },
+      { file: 'PATTERNS.md',        section: 'core', updated: '2026-04-28', title: 'Patterns & Conventions', desc: 'Tailwind aap-* tokens, component patterns, showToast/openLightbox, and UI code standards.' },
+      { file: 'KEY-FILES.md',       section: 'core', updated: '2026-05-10', title: 'Key Files',            desc: 'Where to find pages, shared modules, config, and styles.' },
+      { file: 'INTEGRATIONS.md',    section: 'core', updated: '2026-05-11', title: 'Integrations & API Costs', desc: 'Every external API — Stripe, Twilio, Gemini, Nest, Tesla — with pricing and rate limits.' },
+      { file: 'TESTING-GUIDE.md',   section: 'core', updated: '2026-04-28', title: 'Testing Guide',        desc: 'Test accounts, auth testing, QA workflows, and admin page testing.' },
+      { file: 'SECRETS-GUIDE.md',   section: 'core', updated: '2026-04-28', title: 'Secrets Management',   desc: 'Bitwarden CLI, the bw-read helper, and credential access patterns.' },
+      { file: 'CLAUDE-TEMPLATE.md', section: 'core', updated: '2026-04-28', title: 'CLAUDE.md Templates',  desc: 'Templates for generating CLAUDE.md per persona and feature set in the setup wizard.' },
+      // Home & Devices
+      { file: 'HOMEAUTOMATION.md',  section: 'devices', updated: '2026-09-24', title: 'Home Automation',    desc: 'All smart home devices, Home Assistant setup, Nest, cameras, and migration plans.' },
+      { file: 'LIGHTINGAUTOMATION.md', section: 'devices', updated: '2026-09-24', title: 'Lighting Automation', desc: 'Light entity IDs, room commands, color reference, and HAOS control patterns.' },
+      { file: 'home-assistant-lighting-design.md', section: 'devices', updated: '2026-04-28', title: 'HA Unified Lighting Design', desc: 'Target architecture for unified HAOS lighting — entity naming, automation templates, migration status.' },
+      { file: 'SONOSAUTOMATION.md', section: 'devices', updated: '2026-09-29', title: 'Sonos Automation',   desc: 'Sonos network config, UDM Pro settings, and troubleshooting for 14-zone audio.' },
+      { file: 'spotifyapi.md',      section: 'devices', updated: '2026-04-28', title: 'Spotify API',        desc: 'Playlist creation, OAuth flow, token refresh, and Dev Mode limits.' },
+      { file: 'music-assistant-alpaca-mac-setup.md', section: 'devices', updated: '2026-05-15', title: 'Music Assistant Setup', desc: 'Docker setup for Music Assistant on the Mac mini — local music and scheduled playback.' },
+      { file: 'music-assistant-api-mapping.md', section: 'devices', updated: '2026-05-15', title: 'Music Assistant API Mapping', desc: 'Maps sonos-control edge function actions to Music Assistant API commands.' },
+      { file: 'MUSIC-ASSISTANT-EVALUATION.md', section: 'devices', updated: '2026-04-28', title: 'Music Assistant Evaluation', desc: 'Whether to replace node-sonos-http-api with Music Assistant as the Sonos controller.' },
+      { file: 'alexa-master-pasture-skill.md', section: 'devices', updated: '2026-04-28', title: 'Alexa Master Pasture Skill', desc: 'Custom Alexa skill backed by a Supabase edge function for voice lighting scenes.' },
+      { file: 'MAKERDEVICES.md',    section: 'devices', updated: '2026-05-12', title: 'Maker Devices',      desc: 'Glowforge laser cutter and FlashForge 3D printer — edge functions, tables, troubleshooting.' },
+      { file: 'sponic-tablet-setup.md', section: 'devices', updated: '2026-05-31', title: 'Sponic Tablet Setup', desc: 'Galaxy Tab A9+ setup: Tailscale, wireless adb on 5555, and the LangBang boot helper.' },
+      // AI Agents
+      { file: 'clawlikeagents.md',  section: 'agents', updated: '2026-04-28', title: 'AI Agents Overview',   desc: 'Every agent serving the property — AlpaClaw, PAI, Hermes — plus model routing and adding new ones.' },
+      { file: 'OPENCLAW_SAFE_PARTITIONED.md', section: 'agents', updated: '2026-04-28', title: 'OpenClaw: Safe & Partitioned', desc: 'Running OpenClaw in a partitioned config with limited resident exposure.' },
+      { file: 'slack-alpaclaw-reinstall.md', section: 'agents', updated: '2026-04-28', title: 'Slack AlpaClaw Reinstall', desc: 'Reinstalling the AlpaClaw Slack bot after scope or event changes.' },
+      { file: 'OPEN-BRAIN-SETUP.md', section: 'agents', updated: '2026-04-28', title: 'Open Brain',          desc: 'Shared AI memory — Slack capture, pgvector embeddings, semantic search over MCP.' },
+      { file: 'LOCAL-AI-SETUP.md',  section: 'agents', updated: '2026-05-25', title: 'Local AI Setup',       desc: 'Ollama and local models on Apple Silicon — model choice, Qwen, and storage.' },
+      // Infrastructure
+      { file: 'ALPUCA-MACHINE.md',  section: 'infra', updated: '2026-09-08', title: 'Alpuca Machine',       desc: 'The primary Mac: hardware, background services, runaway-process diagnostics, and tripwires.' },
+      { file: 'REMOTE-ACCESS.md',   section: 'infra', updated: '2026-09-29', title: 'Remote Access',        desc: 'SSH into Alpuca and the UDM Pro from off the home LAN — Tailscale, tunnels, port forwarding.' },
+      { file: 'alpaca-mac-media-tools.md', section: 'infra', updated: '2026-04-28', title: 'Media & Video Tools', desc: 'FFmpeg, yt-dlp, and media tools installed on the Alpuca Mac mini.' },
+      { file: 'AWS_VS_DIGITALOCEAN_COMPARISON.md', section: 'infra', updated: '2026-04-28', title: 'AWS vs DigitalOcean', desc: 'Cost and feature comparison for hosting workers, bots, and proxies.' },
+      // CAD & Property
+      { file: 'CAD.md',             section: 'cad', updated: '2026-04-28', title: 'CAD Tool Reference',     desc: 'Blender, QGIS, and PostGIS for the 3D property twin and site plans.' },
+      { file: 'CAD-SITE-PLANS.md',  section: 'cad', updated: '2026-04-28', title: 'Site Plans — Setup & Usage', desc: 'County-permit-ready site plans for 160 Still Forest Dr with open-source GIS.' },
+      { file: 'SITE-PLAN-PIPELINE.md', section: 'cad', updated: '2026-09-24', title: 'Site Plan & Render Pipeline', desc: 'Full context: PostGIS tables, data sources, and the rendering pipeline.' },
+      { file: 'CAD-RENDER-PIPELINE.md', section: 'cad', updated: '2026-04-28', title: '3D Render Pipeline', desc: 'Photorealistic property renders and the on-site data they need.' },
+      { file: 'SITE-rendering-log.md', section: 'cad', updated: '2026-04-28', title: 'Site Rendering Log',  desc: 'Log from the autonomous render → compare → correct loop on Alpuca.' },
+      // Planning
+      { file: 'DEMO_MODE_FEATURE_PLAN.md', section: 'planning', updated: '2026-04-28', title: 'Demo Mode Plan', desc: 'Read-only demo role with redacted sensitive data.' },
+      { file: 'MULTI_TENANCY_EFFORT_ASSESSMENT.md', section: 'planning', updated: '2026-04-28', title: 'Multi-Tenancy Assessment', desc: 'Schema, RLS, UI, and migration effort to make AlpacApps multi-tenant.' },
+    ];
 
-        <div id="docsRoot"></div>
-    </div>
+    const RECENT_COUNT = 6;
+    const sectionById = Object.fromEntries(SECTIONS.map((s) => [s.id, s]));
 
-    <script src="/vendor/supabase-js-2.39.3.min.js"></script>
-    <script type="module" src="/shared/version-info.js"></script>
-    <script type="module">
-        import { supabase } from '/shared/supabase.js';
-        import { initAuth, getAuthState } from '/shared/auth.js';
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+    const el = (id) => document.getElementById(id);
 
-        const DOCS = [
-            // — Core Reference —
-            { file: 'CHANGELOG.md', title: 'Recent Changes Changelog', section: 'Core Reference', updated: '2026-03-28', desc: 'Running log of all significant changes, migrations, and feature launches across the project.' },
-            { file: 'SCHEMA.md', title: 'Database Schema Reference', section: 'Core Reference', updated: '2026-03-27', desc: 'Full Supabase schema — every table, column, type, and relationship. The source of truth for data modeling.' },
-            { file: 'SONOSAUTOMATION.md', title: 'Sonos Automation — Alpaca Playhouse', section: 'Home & Devices', updated: '2026-03-31', desc: 'Sonos network config, UDM Pro settings, troubleshooting history, and best practices for 14-zone multi-room audio.' },
-            { file: 'sponic-tablet-setup.md', title: 'Sponic Tablet Setup — Galaxy Tab A9+', section: 'Home & Devices', updated: '2026-05-31', desc: 'Repeatable Samsung tablet setup for Tailscale, Wireless debugging, fixed adb tcpip 5555, and the LangBang boot helper.' },
-            { file: 'LIGHTINGAUTOMATION.md', title: 'Lighting Automation — Alpaca Playhouse', section: 'Home & Devices', updated: '2026-03-26', desc: 'Entity IDs, room commands, device inventory, color reference, and HAOS control patterns for all smart lights.' },
-            { file: 'PATTERNS.md', title: 'Common Patterns & Conventions', section: 'Core Reference', updated: '2026-03-25', desc: 'Tailwind aap-* tokens, component patterns, showToast/openLightbox conventions, and UI code standards.' },
-            { file: 'TESTING-GUIDE.md', title: 'Testing Guide', section: 'Core Reference', updated: '2026-03-24', desc: 'Test account credentials, auth testing workflows, QA patterns, and admin page testing procedures.' },
-            { file: 'SECRETS-GUIDE.md', title: 'Secrets Management Guide', section: 'Core Reference', updated: '2026-03-24', desc: 'Bitwarden CLI setup, bw-read helper, API key storage patterns, and credential access workflows.' },
-            { file: 'KEY-FILES.md', title: 'Key Files Reference', section: 'Core Reference', updated: '2026-03-22', desc: 'Index of the most important files in the repo — where to find pages, shared modules, config, and styles.' },
-            { file: 'HOMEAUTOMATION.md', title: 'Home Automation — Alpaca Playhouse', section: 'Home & Devices', updated: '2026-03-21', desc: 'Comprehensive reference for all smart home devices, Home Assistant setup, Nest, cameras, and migration plans.' },
-            { file: 'home-assistant-lighting-design.md', title: 'Home Assistant Unified Lighting Design', section: 'Home & Devices', updated: '2026-03-20', desc: 'Future architecture plan for unified lighting control through HAOS — entity naming, automation templates, migration status.' },
-            { file: 'DEPLOY.md', title: 'Deployment Workflow', section: 'Core Reference', updated: '2026-03-19', desc: 'GitHub Pages deploy flow, CI version bumping, push protocol, and Supabase edge function deployment.' },
-            { file: 'INTEGRATIONS.md', title: 'External Systems & API Cost Accounting', section: 'Core Reference', updated: '2026-03-18', desc: 'Every external API used — Stripe, Twilio, OpenAI, Gemini, Nest, Tesla — with pricing, rate limits, and usage notes.' },
-            { file: 'alexa-master-pasture-skill.md', title: 'Alexa Master Pasture Lighting Skill', section: 'Home & Devices', updated: '2026-03-17', desc: 'Custom Alexa skill backend using Supabase edge function for voice-controlled lighting scenes.' },
-            { file: 'LOCAL-AI-SETUP.md', title: 'Local AI Setup Guide', section: 'Infrastructure', updated: '2026-03-15', desc: 'Installing Atomic Chat + Ollama on Apple Silicon Macs. Model selection, Qwen setup, and local inference config.' },
-            { file: 'music-assistant-alpaca-mac-setup.md', title: 'Music Assistant on Almaca — Setup', section: 'Home & Devices', updated: '2026-03-14', desc: 'Docker setup for Music Assistant on the Almaca Mac mini — local/hard-drive music and scheduled playback.' },
-            { file: 'music-assistant-api-mapping.md', title: 'Music Assistant API Mapping', section: 'Home & Devices', updated: '2026-03-14', desc: 'Maps existing sonos-control edge function actions to Music Assistant API commands for migration.' },
-            { file: 'MUSIC-ASSISTANT-EVALUATION.md', title: 'Music Assistant as Sonos Controller — Eval', section: 'Home & Devices', updated: '2026-03-13', desc: 'Evaluation of switching from node-sonos-http-api to Music Assistant as the core Sonos controller.' },
-            { file: 'alpaca-mac-media-tools.md', title: 'Alpuca — Media & Video Tools Reference', section: 'Infrastructure', updated: '2026-03-12', desc: 'FFmpeg, yt-dlp, and media processing tools installed on the Alpuca Mac mini (M4).' },
-            { file: 'CLAUDE-TEMPLATE.md', title: 'CLAUDE.md Templates', section: 'Core Reference', updated: '2026-03-10', desc: 'Template system for generating CLAUDE.md files per persona and feature set during setup wizard.' },
-            { file: 'OPEN-BRAIN-SETUP.md', title: 'Open Brain — Supabase Setup', section: 'Infrastructure', updated: '2026-03-08', desc: 'Shared AI memory system — captures thoughts from Slack, stores as pgvector embeddings, exposes semantic search via MCP.' },
-            { file: 'slack-alpaclaw-reinstall.md', title: 'Slack Alpaclaw Reinstall & Troubleshoot', section: 'Infrastructure', updated: '2026-03-06', desc: 'Steps to reinstall the Alpaclaw Slack bot after scope/event changes — workspace reinstall, event subscriptions, troubleshooting.' },
-            { file: 'CAD.md', title: 'CAD & Site Plan System — Tool Reference', section: 'CAD & Property', updated: '2026-03-04', desc: 'Blender, QGIS, and PostGIS tool reference for the 3D property digital twin and site plan generation.' },
-            { file: 'CAD-SITE-PLANS.md', title: 'CAD & Site Plan — Setup & Usage', section: 'CAD & Property', updated: '2026-03-04', desc: 'Generating county-permit-ready site plans for 160 Still Forest Dr using free/open-source GIS tools.' },
-            { file: 'CAD-RENDER-PIPELINE.md', title: '3D Property Render Pipeline', section: 'CAD & Property', updated: '2026-03-03', desc: 'Photorealistic render pipeline for property visualization — awaiting on-site data collection.' },
-            { file: 'OPENCLAW_SAFE_PARTITIONED.md', title: 'OpenClaw: Safe Environment & Partitioned', section: 'Infrastructure', updated: '2026-02-28', desc: 'Running OpenClaw in a safer, partitioned config with optional limited resident exposure.' },
-            { file: 'CREDENTIALS.md', title: 'Credentials & Access (gitignored)', section: 'Core Reference', updated: '2026-02-25', desc: 'SQL credentials, SSH keys, API tokens, and service passwords. Gitignored — local only.' },
-            { file: 'DEMO_MODE_FEATURE_PLAN.md', title: 'Demo Mode Feature Plan', section: 'Planning', updated: '2026-02-20', desc: 'Let invited users experience AlpacApps in demo role — see all screens but cannot modify. Sensitive data redacted with visible styling.' },
-            { file: 'MULTI_TENANCY_EFFORT_ASSESSMENT.md', title: 'Multi-Tenancy Effort Assessment', section: 'Planning', updated: '2026-02-10', desc: 'Effort estimate for making AlpacApps multi-tenant — schema changes, RLS policies, UI separation, and migration plan.' },
-            { file: 'AWS_VS_DIGITALOCEAN_COMPARISON.md', title: 'AWS vs DigitalOcean Comparison', section: 'Infrastructure', updated: '2026-02-05', desc: 'Cost and feature comparison for hosting workers, bots, and proxies — migration effort analysis.' },
-        ];
+    function fmtDate(iso) {
+      const d = new Date(iso + 'T12:00:00');
+      const days = Math.floor((Date.now() - d) / 86400000);
+      if (days <= 0) return 'today';
+      if (days === 1) return 'yesterday';
+      if (days < 7) return `${days}d ago`;
+      const sameYear = d.getFullYear() === new Date().getFullYear();
+      return d.toLocaleDateString('en-US', sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
+    }
 
-        const SECTIONS = ['Core Reference', 'Home & Devices', 'Infrastructure', 'CAD & Property', 'Planning'];
-        let currentView = 'chrono';
+    function cardHtml(d, tone) {
+      const search = `${d.title} ${d.desc} ${d.file} ${sectionById[d.section].title}`.toLowerCase();
+      return `
+        <a class="ix-card" href="${esc(d.file)}" target="_blank" rel="noopener" data-tone="${tone}" data-search="${esc(search)}" aria-label="${esc(d.title)} — ${esc(d.desc)}">
+          <span class="ix-card-icon" aria-hidden="true">${sectionById[d.section].icon}</span>
+          <span class="ix-card-body">
+            <span class="ix-card-title">${esc(d.title)}</span>
+            <span class="ix-card-desc">${esc(d.desc)}</span>
+            <span class="ix-card-meta">Updated ${fmtDate(d.updated)} · <code>${esc(d.file)}</code></span>
+          </span>
+        </a>`;
+    }
 
-        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    // cardTone(d) optionally overrides each card's tone (default: the section's)
+    function sectionHtml({ id, title, tone, tagline, icon }, docs, cardTone) {
+      return `
+        <section class="ix-section" id="sec-${id}" data-section="${id}" data-tone="${tone}">
+          <div class="ix-section-head">
+            <span class="ix-section-icon" aria-hidden="true">${icon}</span>
+            <div class="ix-section-text">
+              <h2 class="ix-section-title">${esc(title)} <span class="ix-section-count">${docs.length}</span></h2>
+              <p class="ix-section-tagline">${esc(tagline)}</p>
+            </div>
+          </div>
+          <div class="ix-groups"><div class="ix-group"><div class="ix-grid">
+            ${docs.map((d) => cardHtml(d, cardTone ? cardTone(d) : tone)).join('')}
+          </div></div></div>
+        </section>`;
+    }
 
-        function fmtDate(iso) {
-            const d = new Date(iso + 'T12:00:00');
-            const now = new Date();
-            const diff = Math.floor((now - d) / 86400000);
-            const month = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            if (diff === 0) return 'Today';
-            if (diff === 1) return 'Yesterday';
-            if (diff < 7) return `${diff}d ago`;
-            if (diff < 30) return month;
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    function render() {
+      // "Recently updated" cards keep their own section's color so you can tell where they live.
+      const recent = [...DOCS].sort((a, b) => b.updated.localeCompare(a.updated)).slice(0, RECENT_COUNT);
+      const recentSection = { id: 'recent', title: 'Recently updated', tone: 'orange', tagline: 'The most recently changed docs.',
+        icon: _i('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>') };
+      el('docsRoot').innerHTML =
+        `<div data-recent>${sectionHtml(recentSection, recent, (d) => sectionById[d.section].tone)}</div>` +
+        SECTIONS.map((s) => sectionHtml(s, DOCS.filter((d) => d.section === s.id))).join('');
+
+      el('docsJump').innerHTML = SECTIONS.map((s) => `
+        <a class="ix-chip" href="#sec-${s.id}" data-section="${s.id}" data-tone="${s.tone}">
+          ${esc(s.title)}<span class="ix-chip-count">${DOCS.filter((d) => d.section === s.id).length}</span>
+        </a>`).join('');
+    }
+
+    function applyFilter() {
+      const q = el('searchInput').value.trim().toLowerCase();
+      // Hide the "Recently updated" duplicates while searching
+      el('docsRoot').querySelector('[data-recent]')?.classList.toggle('hidden', !!q);
+      let shown = 0;
+      el('docsRoot').querySelectorAll(':scope > .ix-section').forEach((section) => {
+        let n = 0;
+        section.querySelectorAll('.ix-card').forEach((card) => {
+          const match = !q || card.dataset.search.includes(q);
+          card.classList.toggle('hidden', !match);
+          if (match) n++;
+        });
+        section.classList.toggle('hidden', !n);
+        document.querySelector(`.ix-chip[data-section="${section.dataset.section}"]`)?.classList.toggle('ix-chip--dim', !n);
+        shown += n;
+      });
+      el('noMatch').classList.toggle('hidden', !q || shown > 0);
+    }
+
+    function wireSearch() {
+      const input = el('searchInput');
+      input.addEventListener('input', applyFilter);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          if (!input.value.trim()) return;
+          const first = el('docsRoot').querySelector(':scope > .ix-section .ix-card:not(.hidden)');
+          if (first) window.open(first.getAttribute('href'), '_blank', 'noopener');
+        } else if (e.key === 'Escape') {
+          input.value = '';
+          applyFilter();
+          input.blur();
         }
-
-        function renderCard(d) {
-            return `<div class="doc-card" data-file="${esc(d.file)}">
-                <div class="doc-header" onclick="toggleCard(this)">
-                    <div class="doc-header-left">
-                        <div class="doc-title-row">
-                            <span class="doc-title">${esc(d.title)}</span>
-                        </div>
-                        <div class="doc-desc-preview">${esc(d.desc)}</div>
-                        <div class="doc-date">${fmtDate(d.updated)} &middot; <span class="doc-section-tag">${esc(d.section)}</span></div>
-                    </div>
-                    <svg class="doc-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
-                </div>
-                <div class="doc-body">
-                    <div class="doc-body-inner">
-                        <div class="doc-footer">
-                            <span class="doc-file">${esc(d.file)}</span>
-                            <a href="${esc(d.file)}" target="_blank" class="doc-open" onclick="event.stopPropagation()">Open &rarr;</a>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement !== input && !e.metaKey && !e.ctrlKey) {
+          e.preventDefault();
+          input.focus();
         }
+      });
+    }
 
-        window.toggleCard = function(header) {
-            const card = header.closest('.doc-card');
-            card.classList.toggle('expanded');
-        };
+    function injectSiteHeader() {
+      const version = document.querySelector('[data-site-version]')?.textContent?.trim() || '';
+      el('siteHeader').innerHTML = renderHeader({ transparent: false, light: false, version, showRoleBadge: true });
+      initSiteComponents();
+      setupVersionInfo();
+      initPublicHeaderAuth({ authContainerId: 'aapHeaderAuth', signInLinkId: 'aapSignInLink' });
+    }
 
-        function render(filter = '') {
-            const root = document.getElementById('docsRoot');
-            const q = filter.toLowerCase();
-            const filtered = q ? DOCS.filter(d =>
-                d.title.toLowerCase().includes(q) ||
-                d.file.toLowerCase().includes(q) ||
-                d.desc.toLowerCase().includes(q) ||
-                d.section.toLowerCase().includes(q)
-            ) : DOCS;
-
-            document.getElementById('searchCount').textContent = q ? `${filtered.length} / ${DOCS.length}` : `${DOCS.length} docs`;
-
-            let html = '';
-            if (currentView === 'chrono') {
-                const sorted = [...filtered].sort((a, b) => b.updated.localeCompare(a.updated));
-                html += '<ul class="docs-list">';
-                for (const d of sorted) html += renderCard(d);
-                html += '</ul>';
-            } else {
-                for (const section of SECTIONS) {
-                    const items = filtered.filter(d => d.section === section);
-                    if (!items.length) continue;
-                    html += `<div class="section-label">${esc(section)}</div><ul class="docs-list">`;
-                    for (const d of items) html += renderCard(d);
-                    html += '</ul>';
-                }
-            }
-            root.innerHTML = html || '<p style="color:#8a7f76;padding:2rem 0;">No matching docs.</p>';
+    async function init() {
+      injectSiteHeader();
+      const wall = el('authWall');
+      try {
+        await initAuth();
+        const role = getAuthState()?.appUser?.role;
+        const ALLOWED = ['admin', 'oracle', 'staff', 'associate'];
+        if (!role || !ALLOWED.includes(role)) {
+          wall.innerHTML = 'Dev Docs are for associates and above. <a href="/login/?redirect=%2Fdevcontrol%2Fdevdocs%2F">Sign in</a>';
+          return;
         }
+      } catch (err) {
+        console.error('[DEVDOCS]', 'initAuth failed', err);
+        wall.innerHTML = 'Couldn’t check your access. <a href="/login/?redirect=%2Fdevcontrol%2Fdevdocs%2F">Sign in</a>';
+        return;
+      }
+      wall.classList.add('hidden');
+      el('searchWrap').classList.remove('hidden');
+      el('docsJump').classList.remove('hidden');
+      el('docsMeta').textContent = `${DOCS.length} internal development documents. Press / to search.`;
+      render();
+      wireSearch();
+    }
 
-        async function init() {
-            const wall = document.getElementById('authWall');
-            const main = document.getElementById('mainContent');
-
-            try {
-                await initAuth();
-                const auth = getAuthState();
-                const role = auth?.appUser?.role;
-                const ALLOWED = ['admin', 'staff', 'associate'];
-                if (!role || !ALLOWED.includes(role)) {
-                    wall.innerHTML = '<p>Access restricted to associates and above.</p><p style="margin-top:1rem;"><a href="/login/" style="color:#d4883a;">Sign in</a></p>';
-                    return;
-                }
-                wall.classList.add('hidden');
-                main.classList.remove('hidden');
-                document.getElementById('docsMeta').textContent = `${DOCS.length} internal development documents`;
-                render();
-
-                document.getElementById('searchInput').addEventListener('input', (e) => render(e.target.value));
-
-                document.querySelectorAll('.view-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        currentView = btn.dataset.view;
-                        render(document.getElementById('searchInput').value);
-                    });
-                });
-            } catch (err) {
-                wall.innerHTML = '<p>Authentication error. <a href="/login/" style="color:#d4883a;">Sign in</a></p>';
-            }
-        }
-
-        init();
-    </script>
+    init();
+  </script>
 </body>
 </html>

@@ -70,7 +70,7 @@ const STAFF_EXTRAS = {
 // Section → groups → items. Order follows the context-switcher nav.
 const SECTIONS = [
   {
-    id: 'devices', title: 'Devices', tagline: 'Control the house — lights, music, cameras, climate.',
+    id: 'devices', tone: 'teal', title: 'Devices', tagline: 'Control the house — lights, music, cameras, climate.',
     groups: [{ items: DEVICE_SUBTABS.map((t) => ({
       ...t,
       label: DEVICE_LABELS[t.id] || t.label,
@@ -78,11 +78,11 @@ const SECTIONS = [
     })) }],
   },
   {
-    id: 'residents', title: 'Residents', tagline: 'Your own account, access, and assistant.',
+    id: 'residents', tone: 'violet', title: 'Residents', tagline: 'Your own account, access, and assistant.',
     groups: [{ items: RESIDENT_CORE_TABS.map((t) => ({ ...t, description: RESIDENT_DESCRIPTIONS[t.id] || '' })) }],
   },
   {
-    id: 'associates', title: 'Associates', tagline: 'Clock in, log work, and track projects.',
+    id: 'associates', tone: 'amber', title: 'Associates', tagline: 'Clock in, log work, and track projects.',
     groups: [{ items: [
       { id: 'worktracking', label: 'Work Tracking',   href: ROUTES.associates.worktracking,   associate: true, description: 'Clock in and out, log hours, and upload work photos.' },
       { id: 'projects',     label: 'My Projects',     href: ROUTES.associates.projects,       associate: true, description: 'Projects you are assigned to.' },
@@ -90,7 +90,7 @@ const SECTIONS = [
     ] }],
   },
   {
-    id: 'staff', title: 'Staff', tagline: 'Run the property day to day.',
+    id: 'staff', tone: 'orange', title: 'Staff', tagline: 'Run the property day to day.',
     groups: [
       { title: 'Property',        items: adminTabs('spaces', 'phyprop', 'inventory', 'vendors', 'purchases') },
       { title: 'Rentals & Events', items: adminTabs('rentals', 'reservations', 'events') },
@@ -100,7 +100,7 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'admin', title: 'Admin', tagline: 'People, money, documents, and system config.',
+    id: 'admin', tone: 'rose', title: 'Admin', tagline: 'People, money, documents, and system config.',
     groups: [
       { title: 'People & Access', items: adminTabs('users', 'passwords') },
       { title: 'Leasing',         items: adminTabs('applications', 'signatures', 'templates') },
@@ -111,7 +111,7 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'devcontrol', title: 'DevControl', tagline: 'Engineering: schema, deploys, docs, infra.',
+    id: 'devcontrol', tone: 'blue', title: 'DevControl', tagline: 'Engineering: schema, deploys, docs, infra.',
     groups: [{ items: [
       ...adminTabs('devcontrol'),
       { id: 'devdocs', label: 'Dev Docs', href: '/devcontrol/devdocs/', permission: 'view_devcontrol', description: 'Schema, patterns, deploy, and integration docs.' },
@@ -170,7 +170,7 @@ function renderSections(canAccess) {
   }).filter((s) => s.count);
 
   el('intranetSections').innerHTML = visible.map((s) => `
-    <section class="ix-section" id="sec-${s.id}" data-section="${s.id}">
+    <section class="ix-section" id="sec-${s.id}" data-section="${s.id}" data-tone="${s.tone}">
       <div class="ix-section-head">
         <span class="ix-section-icon" aria-hidden="true">${SECTION_ICONS[s.id] || ''}</span>
         <div class="ix-section-text">
@@ -188,7 +188,7 @@ function renderSections(canAccess) {
     </section>`).join('');
 
   el('intranetJump').innerHTML = visible.map((s) => `
-    <a class="ix-chip" href="#sec-${s.id}" data-section="${s.id}">
+    <a class="ix-chip" href="#sec-${s.id}" data-section="${s.id}" data-tone="${s.tone}">
       ${escapeHtml(s.title)}<span class="ix-chip-count">${s.count}</span>
     </a>`).join('');
 
