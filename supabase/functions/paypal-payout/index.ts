@@ -422,7 +422,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             type: 'associate_payout_sent',
             to: recipientEmail,
-            bcc: 'alpacaplayhouse@gmail.com',
+            cc: 'alpacaplayhouse@gmail.com',
             data: {
               first_name: firstName,
               recipient_name: personName,
@@ -445,7 +445,7 @@ Deno.serve(async (req) => {
             }
           })
         });
-        console.log('Payout notification email queued for', recipientEmail, '(bcc admin)');
+        console.log('Payout notification email queued for', recipientEmail, '(cc admin)');
       }
     } catch (emailErr) {
       console.error('Non-fatal: payout email failed:', emailErr);
