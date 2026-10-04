@@ -94,6 +94,9 @@ BEGIN
 END $$;
 
 -- 3. Canonical payroll cron jobs -------------------------------------------
+-- ⚠️ Superseded by 20261004_payroll_cron_watchdog.sql, which re-points these
+-- jobs at public.payroll_cron_post() so failures are alerted. If you re-run
+-- this file, re-run that one afterwards.
 -- Remove every existing job that calls a payroll function, whatever it was
 -- named when created by hand, then schedule the canonical set. Matching on the
 -- command (not the name) is what makes this safe to run against the live DB,
