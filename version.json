@@ -1,12 +1,12 @@
 {
-  "version": "v261004.02 12:39a",
-  "release": 1889,
-  "sha": "06ceff3909",
-  "fullSha": "06ceff3909dfcf3b8fe97aa970961d28da63ea23",
+  "version": "v261004.03 12:43a",
+  "release": 1890,
+  "sha": "45aa248e0b",
+  "fullSha": "45aa248e0b046ba08fdaf693a72ea2419f7864a0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-04T05:39:15+00:00",
-  "commits": [{"sha":"06ceff3909","message":"fix(intranet): cache-bust intranet.js so the new page doesn't load stale JS","author":"Blotto"}]
+  "pushedAt": "2026-10-04T05:43:56+00:00",
+  "commits": [{"sha":"45aa248e0b","message":"feat(payroll): watchdog emails admins on failed payroll cron calls","author":"Blotto"}]
 }
