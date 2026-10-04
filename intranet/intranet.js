@@ -2,7 +2,9 @@
 // can open: Devices, Residents, Associates, Staff, Admin, DevControl.
 // Always renders chrome and a TOC; auth state changes which cards (or status
 // message) are visible. We never blank the page or auto-redirect.
-import { initAuth, getAuthState, onAuthStateChange, signOut } from '../shared/auth.js';
+import { initAuth, getAuthState, onAuthStateChange } from '../shared/auth.js';
+import { renderHeader, initSiteComponents, initPublicHeaderAuth } from '../shared/site-components.js';
+import { setupVersionInfo } from '../shared/version-info.js';
 import { ALL_ADMIN_TABS, TAB_ICONS as ADMIN_ICONS } from '../shared/admin-shell.js';
 import { DEVICE_SUBTABS, RESIDENT_CORE_TABS, TAB_ICONS as RESIDENT_ICONS } from '../shared/resident-tabs.js';
 import { getEnabledFeatures } from '../shared/feature-registry.js';
@@ -270,21 +272,20 @@ async function renderTOC(state) {
   }
 }
 
-function wireSignOut() {
-  const btn = el('signOutBtn');
-  if (!btn) return;
-  btn.addEventListener('click', async () => {
-    try {
-      await signOut();
-    } finally {
-      window.location.href = '/login/';
-    }
-  });
+// Same site header as the staff/admin shells (logo, wordmark, nav, user menu).
+function injectSiteHeader() {
+  const target = el('siteHeader');
+  if (!target) return;
+  const version = document.querySelector('[data-site-version]')?.textContent?.trim() || '';
+  target.innerHTML = renderHeader({ transparent: false, light: false, version, showRoleBadge: true });
+  initSiteComponents();
+  setupVersionInfo();
+  initPublicHeaderAuth({ authContainerId: 'aapHeaderAuth', signInLinkId: 'aapSignInLink' });
 }
 
 async function boot() {
+  injectSiteHeader();
   wireSearch();
-  wireSignOut();
   // Render immediately with no auth state so the page is never blank.
   await renderTOC(null);
 
@@ -306,14 +307,9 @@ async function boot() {
     state = getAuthState();
   }
 
-  if (state.isAuthenticated) el('signOutBtn')?.classList.remove('hidden');
   await renderTOC(state);
 
-  onAuthStateChange((s) => {
-    if (s.isAuthenticated) el('signOutBtn')?.classList.remove('hidden');
-    else el('signOutBtn')?.classList.add('hidden');
-    renderTOC(s);
-  });
+  onAuthStateChange((s) => renderTOC(s));
 }
 
 document.addEventListener('DOMContentLoaded', boot);
