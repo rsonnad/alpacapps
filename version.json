@@ -1,12 +1,12 @@
 {
-  "version": "v261004.03 12:43a",
-  "release": 1890,
-  "sha": "45aa248e0b",
-  "fullSha": "45aa248e0b046ba08fdaf693a72ea2419f7864a0",
+  "version": "v261004.04 12:46a",
+  "release": 1891,
+  "sha": "4e70a590c0",
+  "fullSha": "4e70a590c0d3bbbe870a9b99c3fab24e6a53989c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-04T05:43:56+00:00",
-  "commits": [{"sha":"45aa248e0b","message":"feat(payroll): watchdog emails admins on failed payroll cron calls","author":"Blotto"}]
+  "pushedAt": "2026-10-04T05:46:19+00:00",
+  "commits": [{"sha":"4e70a590c0","message":"feat(intranet): use the shared Alpaca Playhouse site header","author":"Blotto"}]
 }
