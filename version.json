@@ -1,12 +1,12 @@
 {
-  "version": "v261004.07 5:15a",
-  "release": 1894,
-  "sha": "a0f4e91299",
-  "fullSha": "a0f4e91299981e4f77cca8c6cd31c0328641e736",
+  "version": "v261004.08 5:20a",
+  "release": 1895,
+  "sha": "535f5e0ca8",
+  "fullSha": "535f5e0ca829129aaa8e8193d4fffa2cd9c016f4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-04T10:15:52+00:00",
-  "commits": [{"sha":"a0f4e91299","message":"fix(nav): point Intranet links and section roots at /intranet/","author":"Blotto"}]
+  "pushedAt": "2026-10-04T10:20:00+00:00",
+  "commits": [{"sha":"535f5e0ca8","message":"feat(devdocs): redesign Dev Docs index in the intranet style","author":"Blotto"}]
 }
