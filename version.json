@@ -1,12 +1,12 @@
 {
-  "version": "v261004.06 1:02a",
-  "release": 1893,
-  "sha": "4ce72db131",
-  "fullSha": "4ce72db131bdf54b2eb8a0586824170d5e2f8098",
+  "version": "v261004.07 5:15a",
+  "release": 1894,
+  "sha": "a0f4e91299",
+  "fullSha": "a0f4e91299981e4f77cca8c6cd31c0328641e736",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-04T06:02:42+00:00",
-  "commits": [{"sha":"4ce72db131","message":"fix(payouts): CC admin on manual payout emails instead of BCC","author":"Blotto"}]
+  "pushedAt": "2026-10-04T10:15:52+00:00",
+  "commits": [{"sha":"a0f4e91299","message":"fix(nav): point Intranet links and section roots at /intranet/","author":"Blotto"}]
 }
