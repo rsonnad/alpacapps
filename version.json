@@ -1,12 +1,12 @@
 {
-  "version": "v261003.03 11:04p",
-  "release": 1887,
-  "sha": "0d9fe50611",
-  "fullSha": "0d9fe506119452055bc26aa027ff6d672f0d7c7f",
+  "version": "v261004.01 12:36a",
+  "release": 1888,
+  "sha": "d45637fb5f",
+  "fullSha": "d45637fb5f864a2496ced9cd4e354315b8110369",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-04T04:04:33+00:00",
-  "commits": [{"sha":"0d9fe50611","message":"fix(airbnb-sync): cancel imported bookings that drop out of the Airbnb feed","author":"Blotto"}]
+  "pushedAt": "2026-10-04T05:36:28+00:00",
+  "commits": [{"sha":"d45637fb5f","message":"feat(intranet): list every internal page, grouped by section","author":"Blotto"}]
 }
