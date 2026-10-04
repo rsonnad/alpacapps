@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Intranet — AlpacAPPs</title>
-  <meta name="description" content="Staff & admin landing page — quick links to every internal AlpacAPPs tool: spaces, rentals, reservations, payments, users, settings, DevControl, and more.">
+  <meta name="description" content="Staff & admin landing page — quick links to every internal AlpacAPPs page: devices, residents, associates, staff, admin, and DevControl.">
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -47,69 +47,122 @@
     }
     .intranet-topbar__signout:hover { background: rgba(255,255,255,0.08); }
 
-    .intranet-page { max-width: 1100px; margin: 0 auto; padding: 1rem 1rem 3rem; }
-    .intranet-header { margin: 0.25rem 0 1.1rem; }
-    .intranet-header h1 { font-size: 1.4rem; font-weight: 700; margin: 0 0 0.25rem; }
-    .intranet-header p { color: var(--text-muted, #6b6660); font-size: 0.9rem; margin: 0; }
+    .intranet-page { max-width: 1180px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
 
-    .intranet-section-title {
-      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
-      font-weight: 700; color: var(--text-muted, #6b6660); margin: 1.4rem 0 0.55rem; padding-left: 0.1rem;
+    /* Hero: greeting + search */
+    .ix-hero { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.9rem 1.5rem; margin: 0.25rem 0 0.9rem; }
+    .ix-hero-text { flex: 1 1 260px; }
+    .ix-hero h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.2rem; letter-spacing: -0.01em; }
+    .ix-hero p { color: var(--text-muted, #6b6660); font-size: 0.9rem; margin: 0; }
+    .ix-search { position: relative; flex: 1 1 280px; max-width: 380px; }
+    .ix-search svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted, #6b6660); pointer-events: none; }
+    .ix-search input {
+      width: 100%; box-sizing: border-box; font: inherit; font-size: 0.92rem;
+      padding: 0.6rem 2.2rem 0.6rem 2.2rem; border-radius: 10px;
+      border: 1px solid var(--border, #e6e2db); background: #fff; color: inherit;
     }
-    .intranet-section-title:first-of-type { margin-top: 0.25rem; }
+    .ix-search input:focus { outline: none; border-color: var(--accent, #e07a3a); box-shadow: 0 0 0 3px rgba(224,122,58,0.15); }
+    .ix-search input:focus ~ kbd, .ix-search input:not(:placeholder-shown) ~ kbd { display: none; }
+    .ix-search kbd {
+      position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%);
+      font: 600 0.7rem/1 'DM Sans', system-ui, sans-serif; color: var(--text-muted, #6b6660);
+      border: 1px solid var(--border, #e6e2db); border-radius: 5px; padding: 0.2rem 0.4rem; background: var(--bg, #f6f5f0);
+    }
 
-    .intranet-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 0.7rem;
-    }
-    .intranet-card {
-      display: flex; flex-direction: column; gap: 0.4rem;
-      background: #fff;
-      border: 1px solid var(--border, #e6e2db);
-      border-radius: 12px;
-      padding: 0.85rem 0.95rem;
-      text-decoration: none; color: inherit;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-      transition: border-color .15s ease, transform .1s ease, box-shadow .15s ease;
-      min-height: 92px;
-    }
-    .intranet-card:hover, .intranet-card:focus-visible {
-      border-color: var(--accent, #e07a3a);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      transform: translateY(-1px);
-    }
-    .intranet-card:focus-visible {
-      outline: 2px solid var(--accent, #e07a3a);
-      outline-offset: 2px;
-    }
-    .intranet-card-head { display: flex; align-items: center; gap: 0.55rem; }
-    .intranet-card-icon {
-      flex: 0 0 28px; width: 28px; height: 28px;
-      display: inline-flex; align-items: center; justify-content: center;
-      color: var(--accent, #e07a3a);
+    /* Sticky jump chips */
+    .ix-jump {
+      position: sticky; top: calc(46px + env(safe-area-inset-top, 0px)); z-index: 40;
+      display: flex; gap: 0.4rem; overflow-x: auto; scrollbar-width: none;
+      padding: 0.55rem 0; margin: 0 0 0.5rem;
       background: var(--bg, #f6f5f0);
-      border-radius: 8px;
+      border-bottom: 1px solid var(--border, #e6e2db);
     }
-    .intranet-card-icon svg { width: 16px; height: 16px; }
-    .intranet-card-title { font-size: 0.98rem; font-weight: 600; line-height: 1.2; }
-    .intranet-card-desc { font-size: 0.78rem; color: var(--text-muted, #6b6660); line-height: 1.35; }
+    .ix-jump::-webkit-scrollbar { display: none; }
+    .ix-chip {
+      flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 0.75rem; border-radius: 999px;
+      background: #fff; border: 1px solid var(--border, #e6e2db);
+      color: inherit; text-decoration: none; font-size: 0.82rem; font-weight: 600;
+      transition: border-color .15s ease, opacity .15s ease;
+    }
+    .ix-chip::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--sec); }
+    .ix-chip:hover { border-color: var(--sec); }
+    .ix-chip-count { font-weight: 500; color: var(--text-muted, #6b6660); font-size: 0.75rem; }
+    .ix-chip--dim { opacity: 0.4; }
 
-    .intranet-status {
-      padding: 1.1rem 1.2rem; margin-top: 0.5rem;
+    /* Per-section accent colors */
+    [data-section="devices"]    { --sec: #2f8f83; --sec-bg: #e5f3f1; }
+    [data-section="residents"]  { --sec: #7a5bc4; --sec-bg: #efeaf9; }
+    [data-section="associates"] { --sec: #c48a1c; --sec-bg: #f8f0dd; }
+    [data-section="staff"]      { --sec: #e07a3a; --sec-bg: #fbece2; }
+    [data-section="admin"]      { --sec: #c2475a; --sec-bg: #f8e4e7; }
+    [data-section="devcontrol"] { --sec: #3f6fb5; --sec-bg: #e6edf8; }
+
+    /* Sections */
+    .ix-section {
+      scroll-margin-top: calc(100px + env(safe-area-inset-top, 0px));
+      background: #fff; border: 1px solid var(--border, #e6e2db); border-radius: 16px;
+      border-top: 3px solid var(--sec);
+      padding: 1rem 1.1rem 1.15rem; margin-top: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .ix-section-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; }
+    .ix-section-icon {
+      flex: 0 0 38px; width: 38px; height: 38px; border-radius: 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--sec-bg); color: var(--sec);
+    }
+    .ix-section-icon svg { width: 20px; height: 20px; }
+    .ix-section-title { font-size: 1.12rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.45rem; }
+    .ix-section-count {
+      font-size: 0.7rem; font-weight: 700; color: var(--sec); background: var(--sec-bg);
+      border-radius: 999px; padding: 0.1rem 0.5rem;
+    }
+    .ix-section-tagline { margin: 0.1rem 0 0; font-size: 0.83rem; color: var(--text-muted, #6b6660); }
+
+    .ix-groups--multi { display: grid; gap: 1rem 1.25rem; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+    .ix-group-title {
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+      color: var(--sec); margin: 0 0 0.4rem 0.15rem;
+    }
+    .ix-grid { display: grid; gap: 0.4rem; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .ix-groups--multi .ix-grid { grid-template-columns: 1fr; }
+
+    /* Cards: compact rows */
+    .ix-card {
+      display: flex; align-items: flex-start; gap: 0.65rem;
+      padding: 0.6rem 0.7rem; border-radius: 10px;
+      border: 1px solid transparent; background: var(--bg, #f6f5f0);
+      text-decoration: none; color: inherit;
+      transition: border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+    .ix-card:hover, .ix-card:focus-visible { border-color: var(--sec); background: #fff; transform: translateY(-1px); }
+    .ix-card:focus-visible { outline: 2px solid var(--sec); outline-offset: 2px; }
+    .ix-card-icon {
+      flex: 0 0 30px; width: 30px; height: 30px; border-radius: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--sec-bg); color: var(--sec);
+    }
+    .ix-card-icon svg { width: 16px; height: 16px; }
+    .ix-card-body { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+    .ix-card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.25; }
+    .ix-card-desc { font-size: 0.76rem; color: var(--text-muted, #6b6660); line-height: 1.35; }
+
+    .intranet-status, .ix-nomatch {
+      padding: 1rem 1.2rem; margin-top: 0.75rem;
       background: #fff; border: 1px dashed var(--border, #e6e2db); border-radius: 12px;
-      color: var(--text-muted, #6b6660); text-align: center; font-size: 0.92rem;
+      color: var(--text-muted, #6b6660); text-align: center; font-size: 0.9rem;
     }
-    .intranet-status a {
-      color: var(--accent, #e07a3a); font-weight: 600; text-decoration: none;
-    }
+    .intranet-status a { color: var(--accent, #e07a3a); font-weight: 600; text-decoration: none; }
 
-    @media (max-width: 480px) {
-      .intranet-page { padding: 0.85rem 0.75rem 2rem; }
-      .intranet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
-      .intranet-card { padding: 0.7rem 0.7rem; min-height: 84px; }
-      .intranet-card-title { font-size: 0.9rem; }
-      .intranet-card-desc { font-size: 0.72rem; }
+    @media (max-width: 600px) {
+      .intranet-page { padding: 0.9rem 1rem 2rem; }
+      .ix-hero h1 { font-size: 1.35rem; }
+      .ix-search { max-width: none; }
+      .ix-search kbd { display: none; }
+      .ix-section { padding: 0.85rem 0.8rem 0.95rem; border-radius: 14px; }
+      .ix-groups--multi { grid-template-columns: 1fr; }
+      .ix-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -129,18 +182,23 @@
   </header>
 
   <main class="intranet-page">
-    <div class="intranet-header">
-      <h1 id="intranetGreeting">Pick a section</h1>
-      <p id="intranetSubtitle">Everything in the staff and admin areas, in one place.</p>
+    <div class="ix-hero">
+      <div class="ix-hero-text">
+        <h1 id="intranetGreeting">Intranet</h1>
+        <p id="intranetSubtitle">Every internal page, in one place.</p>
+      </div>
+      <label class="ix-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="intranetSearch" placeholder="Find a page…" aria-label="Find a page" autocomplete="off">
+        <kbd aria-hidden="true">/</kbd>
+      </label>
     </div>
 
-    <h2 class="intranet-section-title hidden" id="staffSectionTitle">Staff</h2>
-    <div class="intranet-grid" id="staffGrid"></div>
-
-    <h2 class="intranet-section-title hidden" id="adminSectionTitle">Admin</h2>
-    <div class="intranet-grid" id="adminGrid"></div>
+    <nav class="ix-jump" id="intranetJump" aria-label="Jump to section"></nav>
 
     <div class="intranet-status hidden" id="intranetStatus"></div>
+    <div id="intranetSections"></div>
+    <div class="ix-nomatch hidden" id="intranetNoMatch">No pages match that search.</div>
 
     <span data-site-version style="display:none">v261003.03 11:04p</span>
   </main>
