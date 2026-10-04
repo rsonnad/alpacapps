@@ -18,6 +18,7 @@ const EXTRA_ICONS = {
   permitting: _i('<path d="M9 2h6a1 1 0 011 1v2h3a1 1 0 011 1v15a2 2 0 01-2 2H6a2 2 0 01-2-2V6a1 1 0 011-1h3V3a1 1 0 011-1z"/><path d="M9 14l2 2 4-4"/>'),
   siteplan:   _i('<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>'),
   paiimagery: _i('<path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/>'),
+  aiCosts:    _i('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'),
   devdocs:    _i('<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>'),
 };
 const ICON = (id) => ADMIN_ICONS[id] || RESIDENT_ICONS[id] || EXTRA_ICONS[id] || '';
@@ -242,6 +243,18 @@ function wireSearch() {
   });
 }
 
+// Sections render after load, so the browser can't jump to #sec-* itself.
+// /staff/, /admin/, /devices/ redirect here with those hashes.
+function scrollToHashSection() {
+  const id = decodeURIComponent(window.location.hash.slice(1));
+  if (!id.startsWith('sec-')) return;
+  const target = document.getElementById(id);
+  if (!target) return;
+  target.scrollIntoView({ block: 'start' });
+  document.querySelectorAll('.ix-section--focus').forEach((n) => n.classList.remove('ix-section--focus'));
+  target.classList.add('ix-section--focus');
+}
+
 // ---- Status ----------------------------------------------------------------
 function showStatus(html) {
   const node = el('intranetStatus');
@@ -286,8 +299,10 @@ function injectSiteHeader() {
 async function boot() {
   injectSiteHeader();
   wireSearch();
+  window.addEventListener('hashchange', scrollToHashSection);
   // Render immediately with no auth state so the page is never blank.
   await renderTOC(null);
+  scrollToHashSection();
 
   try {
     await initAuth();
@@ -308,6 +323,7 @@ async function boot() {
   }
 
   await renderTOC(state);
+  scrollToHashSection();
 
   onAuthStateChange((s) => renderTOC(s));
 }
