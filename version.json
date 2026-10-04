@@ -1,12 +1,12 @@
 {
-  "version": "v261004.04 12:46a",
-  "release": 1891,
-  "sha": "4e70a590c0",
-  "fullSha": "4e70a590c0d3bbbe870a9b99c3fab24e6a53989c",
+  "version": "v261004.05 12:47a",
+  "release": 1892,
+  "sha": "d0e3d7a78f",
+  "fullSha": "d0e3d7a78fef773929aaee1d29aea9f65ad985e1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-04T05:46:19+00:00",
-  "commits": [{"sha":"4e70a590c0","message":"feat(intranet): use the shared Alpaca Playhouse site header","author":"Blotto"}]
+  "pushedAt": "2026-10-04T05:47:25+00:00",
+  "commits": [{"sha":"d0e3d7a78f","message":"fix(workstuff): pay dialog layout + clearer \"Process Payment\" labels","author":"Blotto"}]
 }
