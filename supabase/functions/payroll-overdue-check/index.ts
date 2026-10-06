@@ -22,6 +22,8 @@
  * Query params (for testing):
  *   ?dry_run=1  -> compute + return the overdue list as JSON, send NO email
  *   ?days=N     -> override the overdue threshold (default 7)
+ *   ?dry_run=1&investigate=1 -> also queue the Alpuca Claude investigation
+ *                  (deduped), still sending NO email to admin or payees
  *
  * Deploy: supabase functions deploy payroll-overdue-check
  *   (verify_jwt stays ON; the pg_cron job passes the anon key, same as
@@ -34,6 +36,14 @@ import { SENDER_MAP } from '../_shared/template-engine.ts';
 
 const ADMIN_ALERT_EMAIL = 'alpacaplayhouse@gmail.com';
 const DEFAULT_THRESHOLD_DAYS = 7;
+const SUPABASE_PROJECT_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
+
+// Auto-investigation: each overdue finding queues a claude_tasks row that the
+// Alpuca poller (~/alpacapps-services/claude-task-poller.sh, every 2 min) runs
+// with the Claude CLI. Deduped so a multi-day stall gets one investigation per
+// distinct overdue set per window, not one per daily run.
+const INVESTIGATION_SOURCE = 'payroll-overdue-check';
+const INVESTIGATION_REPEAT_DAYS = 3;
 
 interface OverdueAssociate {
   associateId: string;
@@ -57,6 +67,101 @@ function escalationLevel(daysOverdue: number, threshold: number): number {
   if (daysOverdue >= threshold + 7) return 3;  // ~2 weeks late
   if (daysOverdue >= threshold + 3) return 2;
   return 1;
+}
+
+/** Read-only investigation brief for the Alpuca Claude CLI. */
+function buildInvestigationPrompt(overdue: OverdueAssociate[], threshold: number): string {
+  const rows = overdue.map(o =>
+    `- ${o.name} | associate_profiles.id=${o.associateId} | owed $${o.amount.toFixed(2)} | ${o.entryCount} entries | ` +
+    `oldest unpaid ${o.oldestUnpaid.slice(0, 10)} (${o.daysOverdue}d) | last payout ${o.lastPayout ? o.lastPayout.slice(0, 10) : 'never'} | ` +
+    `method=${o.paymentMethod || 'none'} | stripe_connect=${o.stripeReady ? 'yes' : 'no'}`).join('\n');
+
+  return `The payroll-overdue-check watchdog found associates with payable hours unpaid for more than ${threshold} days. ` +
+`Work out WHY the automatic payout (supabase/functions/pay-pending-associates) has not paid them, and email a diagnosis.
+
+Overdue associates:
+${rows}
+
+HARD RULES (non-negotiable — this is an investigation, not a fix):
+- Do NOT move money. Never invoke pay-pending-associates (it has no dry-run; any call pays out for real), never call any Stripe endpoint that creates/updates anything (transfers, payouts, top-ups), never use a Stripe key.
+- Do NOT write to the database. Only GET requests to PostgREST. No INSERT/UPDATE/DELETE on payouts, time_entries, ledger, associate_profiles, or anything else.
+- Do NOT edit, commit, or push code. Do NOT deploy functions.
+- Keep it bounded: about 25 tool calls max. If inconclusive, report what you checked and what is still unknown.
+
+Access (Bitwarden is NOT unlocked in this headless run — do not use bw-read):
+- Load the service key first: K=$(cat ~/alpacapps-services/.supabase-service-key)
+- Read data: curl -s -H "apikey: $K" -H "Authorization: Bearer $K" "${SUPABASE_PROJECT_URL}/rest/v1/<table>?<filters>"
+- Repo checkout is your working directory; read code there.
+
+Checklist:
+1. Read supabase/functions/pay-pending-associates/index.ts and list every condition that can exclude an associate or abort a run (payment_method, is_active, identity_verification_status, stripe_connect_account_id, payout_frequency / payout_day_of_week, Stripe balance check, minimums). Compare with the watchdog's criteria (is_active, is_paid=false, clock_out not null).
+2. For each overdue associate, fetch associate_profiles (all those columns) and check which condition fails.
+3. Fetch their recent payouts (order=created_at.desc, limit 5: status, external_payout_id, error fields, created_at) and payment_reminders with source_type=associate_payout_funding_delay (a funding-delay notice means the Stripe balance was too low).
+4. Check whether pay-pending-associates has been running: look for its pg_cron job in supabase/migrations, and if you can read cron.job_run_details via an RPC, use it; otherwise say you could not verify.
+5. Conclude with: root cause (or best hypothesis + confidence), evidence, and the exact action a human must take (e.g. "add $X to the Stripe balance", "verify identity", "fix code at file:line").
+
+Delivery: when done, send ONE email with your findings:
+curl -s -X POST "${SUPABASE_PROJECT_URL}/functions/v1/send-email" -H "Authorization: Bearer $K" -H "Content-Type: application/json" \\
+  -d '{"type":"custom","to":"${ADMIN_ALERT_EMAIL}","data":{"subject":"🔎 Payroll overdue investigation — <one-line root cause>","html":"<your findings as simple HTML>"}}'
+Build the JSON with python3 json.dumps so quoting is safe. Also print the same findings to stdout (stored as this task's result).`;
+}
+
+/**
+ * Queue a read-only Claude CLI investigation on Alpuca unless one for the same
+ * overdue set is already queued/running, or finished within the repeat window.
+ */
+async function queueInvestigation(
+  supabase: any,
+  overdue: OverdueAssociate[],
+  threshold: number,
+): Promise<{ queued: boolean; taskId: string | null; note: string }> {
+  const key = overdue.map(o => o.associateId).sort().join(',');
+  const since = new Date(Date.now() - INVESTIGATION_REPEAT_DAYS * 86_400_000).toISOString();
+
+  const { data: prior, error: perr } = await supabase
+    .from('claude_tasks')
+    .select('id, status, created_at')
+    .eq('source', INVESTIGATION_SOURCE)
+    .eq('source_id', key)
+    .or(`status.in.(pending,in_progress),created_at.gte.${since}`)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (perr) {
+    console.error(`claude_tasks dedup query failed: ${perr.message}`);
+    return { queued: false, taskId: null, note: `Auto-investigation NOT queued (dedup query failed: ${perr.message}).` };
+  }
+  if (prior && prior.length > 0) {
+    const p = prior[0];
+    return {
+      queued: false,
+      taskId: p.id,
+      note: `Auto-investigation already ${p.status === 'completed' ? 'ran' : p.status} on Alpuca (task ${p.id}, queued ${fmtDate(p.created_at)}); look for the "🔎 Payroll overdue investigation" email.`,
+    };
+  }
+
+  const total = overdue.reduce((s, o) => s + o.amount, 0);
+  const { data: task, error: terr } = await supabase
+    .from('claude_tasks')
+    .insert({
+      source: INVESTIGATION_SOURCE,
+      source_id: key,
+      target_machine: 'alpuca',
+      status: 'pending',
+      subject: `Investigate payroll overdue — ${overdue.length} associate(s), $${total.toFixed(2)}`,
+      prompt: buildInvestigationPrompt(overdue, threshold),
+      from_address: ADMIN_ALERT_EMAIL,
+    })
+    .select('id')
+    .single();
+  if (terr) {
+    console.error(`claude_tasks insert failed: ${terr.message}`);
+    return { queued: false, taskId: null, note: `Auto-investigation NOT queued (insert failed: ${terr.message}).` };
+  }
+  return {
+    queued: true,
+    taskId: task.id,
+    note: `🔎 A read-only Claude investigation was queued on Alpuca (task ${task.id}). Its diagnosis arrives as a separate "🔎 Payroll overdue investigation" email, usually within ~15 minutes.`,
+  };
 }
 
 function fmtDate(iso: string): string {
@@ -179,7 +284,10 @@ Deno.serve(async (req) => {
     }
 
     if (dryRun) {
-      return new Response(JSON.stringify({ ok: true, dry_run: true, threshold_days: threshold, overdue }, null, 2),
+      const investigation = url.searchParams.get('investigate') === '1' && overdue.length > 0
+        ? await queueInvestigation(supabase, overdue, threshold)
+        : undefined;
+      return new Response(JSON.stringify({ ok: true, dry_run: true, threshold_days: threshold, overdue, investigation }, null, 2),
         { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
     }
 
@@ -250,6 +358,9 @@ Deno.serve(async (req) => {
       if (sent.ok) payeeNotified++;
     }
 
+    // ── Auto-investigation on Alpuca (deduped) ──
+    const investigation = await queueInvestigation(supabase, overdue, threshold);
+
     // ── Admin digest (always, while anyone is overdue) ──
     const totalOwed = overdue.reduce((s, o) => s + o.amount, 0);
     const rows = overdue
@@ -282,6 +393,7 @@ Deno.serve(async (req) => {
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
+      <p style="color:#444;font-size:14px;">${investigation.note}</p>
       <p style="color:#666;font-size:13px;">Payees have been sent a delay notice (throttled). Automated daily alert from payroll-overdue-check.</p>`;
 
     const adminSent = await sendEmail(
@@ -313,6 +425,7 @@ Deno.serve(async (req) => {
       total_owed: totalOwed,
       payee_notified: payeeNotified,
       admin_alerted: adminSent.ok,
+      investigation,
     }, null, 2), { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
 
   } catch (err) {
