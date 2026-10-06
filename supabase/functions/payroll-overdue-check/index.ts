@@ -93,12 +93,12 @@ Access (Bitwarden is NOT unlocked in this headless run — do not use bw-read):
 - Read data: curl -s -H "apikey: $K" -H "Authorization: Bearer $K" "${SUPABASE_PROJECT_URL}/rest/v1/<table>?<filters>"
 - Repo checkout is your working directory; read code there.
 
-Checklist:
-1. Read supabase/functions/pay-pending-associates/index.ts and list every condition that can exclude an associate or abort a run (payment_method, is_active, identity_verification_status, stripe_connect_account_id, payout_frequency / payout_day_of_week, Stripe balance check, minimums). Compare with the watchdog's criteria (is_active, is_paid=false, clock_out not null).
-2. For each overdue associate, fetch associate_profiles (all those columns) and check which condition fails.
-3. Fetch their recent payouts (order=created_at.desc, limit 5: status, external_payout_id, error fields, created_at) and payment_reminders with source_type=associate_payout_funding_delay (a funding-delay notice means the Stripe balance was too low).
-4. Check whether pay-pending-associates has been running: look for its pg_cron job in supabase/migrations, and if you can read cron.job_run_details via an RPC, use it; otherwise say you could not verify.
-5. Conclude with: root cause (or best hypothesis + confidence), evidence, and the exact action a human must take (e.g. "add $X to the Stripe balance", "verify identity", "fix code at file:line").
+Checklist — do ALL verification yourself. Never hand a human a query to run or a log to check; you have the access.
+1. Read supabase/functions/pay-pending-associates/index.ts and list every condition that can exclude an associate or abort a run (payment_method, is_active, identity_verification_status, stripe_connect_account_id, payout_frequency / payout_day_of_week, Stripe balance, minimums). Compare with the watchdog's criteria (is_active, is_paid=false, clock_out not null).
+2. For each overdue associate, fetch associate_profiles (those columns) and identify which condition fails or which payday was missed.
+3. PRIMARY EVIDENCE — what each payroll cron call actually returned: GET payroll_cron_requests?order=requested_at.desc&limit=40 (columns: job_name, requested_at, status_code, timed_out, error_msg, response_excerpt). response_excerpt shows per-associate outcomes such as "skipped":"not_payout_day" or a transfer_id. A non-200 status_code means the run never executed. Do NOT trust cron.job_run_details: it reports "succeeded" even when the HTTP call 401'd. Known past cause: Vault secret service_role_key (used by public.payroll_cron_bearer()) not matching the functions' sb_secret_ key gives a silent 401 on every run (happened 2026-09-29 to 2026-10-04). payroll_cron_requests only has rows since 2026-10-05; for older gaps, infer from missing "Auto-fired by pay-pending-associates" payouts rows.
+4. Fetch their recent payouts (order=created_at.desc, limit 5) and payment_reminders with source_type=associate_payout_funding_delay (a funding-delay notice means the Stripe balance was too low).
+5. Conclude with: root cause (or best hypothesis + confidence) and evidence. Split remediation into (a) what is already resolved/verified healthy, with the evidence, and (b) ONLY the actions that truly need a human because they move money or need approval — e.g. paying the owed amount now instead of waiting for the next payday (give the date). For that, link https://alpacaplayhouse.com/staff/worktracking.html. Do not list "check X" or "confirm Y" as human steps.
 
 Delivery: when done, send ONE email with your findings:
 curl -s -X POST "${SUPABASE_PROJECT_URL}/functions/v1/send-email" -H "Authorization: Bearer $K" -H "Content-Type: application/json" \\
