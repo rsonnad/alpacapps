@@ -2,6 +2,23 @@
 
 Verified copy-paste recipes for external services and machines. Prefer these before rediscovering credentials or hostnames.
 
+## Claude Code Community Plugin Marketplace
+
+Verified 2026-10-07 on this Mac with Claude Code 2.1.292. The public
+Anthropic community marketplace installs through the CLI using the existing
+GitHub SSH access; no additional credential lookup was needed.
+
+```bash
+claude plugin marketplace add anthropics/claude-plugins-community
+claude plugin install html-plan@claude-community --scope user
+claude plugin details html-plan@claude-community
+claude plugin list
+```
+
+Confirmed `html-plan` 1.0.0 installed with user scope and enabled. Start a new
+Claude Code session and use `/html-plan <what to build>`. Node is required to
+pack the generated HTML page; this Mac has Node v22.23.2.
+
 ## Supabase Management API and Edge Deploy
 
 Use for AlpacApps Supabase project `aphrrfprbixmhissnjfn`.
