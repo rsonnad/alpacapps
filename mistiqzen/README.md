@@ -22,7 +22,7 @@ Exclude it from shared components, templates and packaged versions of this codeb
 
 ## Decisions
 
-**Decision (2026-10-09):** The Chiang Mai program is 2 hours (Grounding 15m, Somatics ~75m, Wind Down 15m, Integration 15m) at ฿1,500, with the same session free for Feedback Partners.
+**Decision (2026-10-09):** The Chiang Mai program is about 2 hours (Grounding 15m, Somatics ~100m, Wind Down 10m, then open-ended Integration) at ฿1,500, with the same session free for Feedback Partners.
 **Why:** Local pricing for Chiang Mai; free sessions buy detailed product feedback, video testimonials and marketing while the branch is new.
 
 **Decision:** Austin testimonials are shown, labeled as Austin guests, with every reference to Rahul removed (omissions marked with … or [brackets]). Darcy's video is not embedded because it names Rahul; its relevant part is quoted as text.
