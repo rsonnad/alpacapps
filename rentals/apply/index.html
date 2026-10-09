@@ -1598,6 +1598,27 @@
     // =============================================
     // STEP 2 INITIALIZATION
     // =============================================
+    // Mark a square_payments record completed/failed. Logs (doesn't throw) on failure.
+    async function settleSquarePaymentRecord(recordId, status, result) {
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/settle_square_payment_record`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            p_record_id: recordId,
+            p_status: status,
+            p_square_payment_id: result?.paymentId || null,
+            p_square_order_id: result?.orderId || null,
+            p_square_receipt_url: result?.receiptUrl || null,
+            p_error: result?.error || null
+          })
+        });
+        if (!resp.ok) console.error('settle_square_payment_record failed:', resp.status, await resp.text().catch(() => ''));
+      } catch (err) {
+        console.error('settle_square_payment_record failed:', err);
+      }
+    }
+
     // Mark the application fee as recorded. Non-blocking: payment already went through.
     async function recordApplicationFee(amount) {
       try {
@@ -2210,28 +2231,24 @@
           const buyerEmail = personInfo?.email || '';
           const buyerName = `${personInfo?.first_name || ''} ${personInfo?.last_name || ''}`.trim();
 
-          const paymentRecordResponse = await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+          // Create the payment record first; never charge without one
+          const paymentRecordResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_square_payment_record`, {
             method: 'POST',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=representation'
-            },
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              payment_type: FEE_TYPE,
-              reference_type: 'rental_application',
-              reference_id: continueAppId,
-              amount: feeAmount,
-              fee_code_used: appliedCode,
-              original_amount: originalAmount,
-              status: 'pending',
-              is_test: staffTestMode,
-              test_mode_overridden_by: staffTestMode && staffAuthState?.appUser?.id ? staffAuthState.appUser.id : null
+              p_reference_type: 'rental_application',
+              p_reference_id: continueAppId,
+              p_payment_type: FEE_TYPE,
+              p_amount: feeAmount,
+              p_fee_code: appliedCode || null,
+              p_original_amount: originalAmount
             })
           });
-          if (!paymentRecordResponse.ok) throw new Error('Failed to create payment record');
-          const [paymentRecord] = await paymentRecordResponse.json();
+          if (!paymentRecordResponse.ok) {
+            console.error('create_square_payment_record failed:', paymentRecordResponse.status, await paymentRecordResponse.text().catch(() => ''));
+            throw new Error('Could not start the payment. Please try again.');
+          }
+          const paymentRecord = { id: await paymentRecordResponse.json() };
 
           // Build edge function request
           const edgeFunctionBody = {
@@ -2263,19 +2280,11 @@
           const processResult = await processResponse.json();
 
           if (!processResult.success) {
-            await fetch(`${SUPABASE_URL}/rest/v1/square_payments?id=eq.${paymentRecord.id}`, {
-              method: 'PATCH',
-              headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'failed', error_message: processResult.error, updated_at: new Date().toISOString() })
-            });
+            await settleSquarePaymentRecord(paymentRecord.id, 'failed', processResult);
             throw new Error(processResult.error || 'Payment failed');
           }
 
-          await fetch(`${SUPABASE_URL}/rest/v1/square_payments?id=eq.${paymentRecord.id}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'completed', square_payment_id: processResult.paymentId, square_order_id: processResult.orderId, square_receipt_url: processResult.receiptUrl, updated_at: new Date().toISOString() })
-          });
+          await settleSquarePaymentRecord(paymentRecord.id, 'completed', processResult);
 
           await recordApplicationFee(feeAmount);
 
@@ -2287,11 +2296,11 @@
             });
           }
         } else if (feeAmount === 0) {
-          await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+          await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_square_payment_record`, {
             method: 'POST',
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ payment_type: FEE_TYPE, reference_type: 'rental_application', reference_id: continueAppId, amount: 0, fee_code_used: appliedCode, original_amount: originalAmount, status: 'completed' })
-          });
+            body: JSON.stringify({ p_reference_type: 'rental_application', p_reference_id: continueAppId, p_payment_type: FEE_TYPE, p_amount: 0, p_fee_code: appliedCode || null, p_original_amount: originalAmount })
+          }).catch(err => console.error('create_square_payment_record ($0) failed:', err));
 
           await recordApplicationFee(0);
         }

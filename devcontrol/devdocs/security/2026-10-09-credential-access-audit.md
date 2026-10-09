@@ -189,8 +189,18 @@ the updated pages were deployed and loaded signed-out in a browser.
 - Signed-in non-staff users (residents, associates) can still read all of `people`,
   `rental_applications` and `rental_payments`. `residents/bookkeeping.js` depends on
   this, so it needs own-row policies.
-- The apply and hostevent pages still write `square_payments` directly with the anon
-  key. The client also still asserts fee/deposit payment, but only for its own record now.
+- Square payment records: `square_payments` was staff/service-only, so the public
+  pages' anonymous writes were rejected. Apply stopped before charging. Hostevent
+  **charged the card with no record**, and also passed the event request id as
+  `paymentRecordId`. Migration `202610090008` adds `create_square_payment_record`
+  (only for the caller's own submitted application or recent event request; the
+  record must exist before charging) and `settle_square_payment_record`
+  (pending → completed needs a Square payment id; settles once). Both pages now use
+  them, and hostevent passes the real record id. The client still reports the
+  charge outcome, but only for its own pending record. Moving settlement into
+  `process-square-payment` would remove that trust.
+- `previous_residences` and `square_payments` still have anon table grants. RLS has
+  no anon policy, so access is denied in practice. Revoke the grants for clarity.
 - `hostevent` passes the event request id as `paymentRecordId` (pre-existing).
 - `lease-documents` is still a public bucket. Two filenames are guessable. Making it
   private needs `lease.html` and `rentals/signed` to use signed URLs.

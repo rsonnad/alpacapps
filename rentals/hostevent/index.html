@@ -2712,6 +2712,27 @@
     });
 
     // Form submission
+    // Mark a square_payments record completed/failed. Logs (doesn't throw) on failure.
+    async function settleSquarePaymentRecord(recordId, status, result) {
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/settle_square_payment_record`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            p_record_id: recordId,
+            p_status: status,
+            p_square_payment_id: result?.paymentId || null,
+            p_square_order_id: result?.orderId || null,
+            p_square_receipt_url: result?.receiptUrl || null,
+            p_error: result?.error || null
+          })
+        });
+        if (!resp.ok) console.error('settle_square_payment_record failed:', resp.status, await resp.text().catch(() => ''));
+      } catch (err) {
+        console.error('settle_square_payment_record failed:', err);
+      }
+    }
+
     // Record deposit outcome on the event request. Logs (doesn't throw) if the update is rejected.
     async function updateEventDeposit(requestId, args) {
       const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/hostevent_update_deposit`, {
@@ -2871,39 +2892,34 @@
             throw new Error(rawMsg);
           }
 
-          // Create payment record for reservation deposit
-          if (reservationAmount > 0) {
-            const reservationPaymentResponse = await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
-              method: 'POST',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-              },
-              body: JSON.stringify({
-                payment_type: FEE_TYPES.RESERVATION,
-                reference_type: 'event_hosting_request',
-                reference_id: eventRequest.id,
-                amount: reservationAmount,
-                fee_code_used: reservationCode,
-                original_amount: reservationOriginal,
-                status: 'pending',
-                is_test: staffTestMode,
-                test_mode_overridden_by: staffTestMode && staffAuthState?.appUser?.id ? staffAuthState.appUser.id : null
-              })
-            });
-
-            if (!reservationPaymentResponse.ok) {
-              console.error('Failed to create reservation deposit payment record');
-            }
+          // Create the payment record first; never charge without one
+          const recordResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_square_payment_record`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              p_reference_type: 'event_hosting_request',
+              p_reference_id: eventRequest.id,
+              p_payment_type: FEE_TYPES.RESERVATION,
+              p_amount: reservationAmount,
+              p_fee_code: reservationCode || null,
+              p_original_amount: reservationOriginal
+            })
+          });
+          if (!recordResponse.ok) {
+            console.error('create_square_payment_record failed:', recordResponse.status, await recordResponse.text().catch(() => ''));
+            throw new Error('Could not start the payment. Please try again.');
           }
+          const paymentRecordId = await recordResponse.json();
 
           // Build edge function request
           const edgeFunctionBody = {
             sourceId: tokenResult.token,
             amount: Math.round(totalDeposit * 100), // Convert to cents
-            paymentRecordId: eventRequest.id, // Use event request ID as reference
+            paymentRecordId: paymentRecordId,
             buyerEmail: email,
             note: `Event Reservation Deposit - ${getValue('event_name')} (${firstName} ${lastName})`
           };
@@ -2934,6 +2950,7 @@
           const processResult = await processResponse.json();
 
           if (!processResult.success) {
+            await settleSquarePaymentRecord(paymentRecordId, 'failed', processResult);
             // Update event request with payment failure
             await updateEventDeposit(eventRequest.id, {
               p_status: 'failed',
@@ -2953,25 +2970,11 @@
             p_error: null
           });
 
-          // Update payment records with success
-          await fetch(`${SUPABASE_URL}/rest/v1/square_payments?reference_id=eq.${eventRequest.id}&reference_type=eq.event_hosting_request`, {
-            method: 'PATCH',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              status: 'completed',
-              square_payment_id: processResult.paymentId,
-              square_receipt_url: processResult.receiptUrl,
-              updated_at: new Date().toISOString()
-            })
-          });
+          await settleSquarePaymentRecord(paymentRecordId, 'completed', processResult);
         } else {
           // Record $0 deposit if code was used to waive reservation
           if (reservationCode) {
-            await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+            await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_square_payment_record`, {
               method: 'POST',
               headers: {
                 'apikey': SUPABASE_KEY,
@@ -2979,15 +2982,14 @@
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                payment_type: FEE_TYPES.RESERVATION,
-                reference_type: 'event_hosting_request',
-                reference_id: eventRequest.id,
-                amount: 0,
-                fee_code_used: reservationCode,
-                original_amount: reservationOriginal,
-                status: 'completed'
+                p_reference_type: 'event_hosting_request',
+                p_reference_id: eventRequest.id,
+                p_payment_type: FEE_TYPES.RESERVATION,
+                p_amount: 0,
+                p_fee_code: reservationCode,
+                p_original_amount: reservationOriginal
               })
-            });
+            }).catch(err => console.error('create_square_payment_record ($0) failed:', err));
           }
         }
 
