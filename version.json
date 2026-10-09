@@ -1,12 +1,12 @@
 {
-  "version": "v261008.03 10:00p",
-  "release": 1900,
-  "sha": "dd4c696a17",
-  "fullSha": "dd4c696a177f0cc57a3c5bbb5beaa8f4b4493787",
+  "version": "v261008.04 10:14p",
+  "release": 1901,
+  "sha": "bdb15a0b6c",
+  "fullSha": "bdb15a0b6cc235f7c276c18823b747ad4131a140",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T03:00:42+00:00",
-  "commits": [{"sha":"dd4c696a17","message":"security: lock down ID documents, payouts, signed leases and anonymous writes","author":"Blotto"}]
+  "pushedAt": "2026-10-09T03:14:58+00:00",
+  "commits": [{"sha":"bdb15a0b6c","message":"docs: record credential rotation verification and pending handoffs","author":"Blotto"}]
 }
