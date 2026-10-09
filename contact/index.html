@@ -827,12 +827,8 @@
       try {
         const { supabase } = await import('/shared/supabase.js');
         // Load Vapi voice number from business entity
-        const { data: biz } = await supabase
-          .from('people')
-          .select('phone, phone2')
-          .eq('company_name', 'Alpaca Playhouse')
-          .single();
-        if (biz?.phone) {
+        const { data: bizPhone } = await supabase.rpc('get_public_contact_phone');
+        if (bizPhone) {
           const fmt = (num) => {
             const digits = num.replace(/\D/g, '');
             const d = digits.length === 11 ? digits.slice(1) : digits;
@@ -840,8 +836,8 @@
           };
           const phoneLink = document.getElementById('phoneLink');
           if (phoneLink) {
-            phoneLink.href = `tel:${biz.phone}`;
-            phoneLink.textContent = fmt(biz.phone);
+            phoneLink.href = `tel:${bizPhone}`;
+            phoneLink.textContent = fmt(bizPhone);
           }
         }
         // Load Telnyx SMS number

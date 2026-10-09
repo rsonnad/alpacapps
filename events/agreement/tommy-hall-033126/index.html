@@ -568,58 +568,6 @@
     const EVENT_REQUEST_ID = 'a960eef2-db5f-4d53-bbd9-9adedcfea2cd';
     const TOMMY_PERSON_ID = '4583368f-0dbc-400e-a7d1-9cb01fdd489b';
 
-    async function upsertPerson(firstName, lastName, email, phone, type) {
-      const headers = {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation',
-      };
-
-      // Check if person already exists by email or name
-      let existing = null;
-      if (email) {
-        const res = await fetch(
-          `${SUPABASE_URL}/rest/v1/people?email=eq.${encodeURIComponent(email)}&select=id&limit=1`,
-          { headers }
-        );
-        const data = await res.json();
-        if (data && data.length > 0) existing = data[0];
-      }
-      if (!existing && firstName && lastName) {
-        const res = await fetch(
-          `${SUPABASE_URL}/rest/v1/people?first_name=ilike.${encodeURIComponent(firstName)}&last_name=ilike.${encodeURIComponent(lastName)}&select=id&limit=1`,
-          { headers }
-        );
-        const data = await res.json();
-        if (data && data.length > 0) existing = data[0];
-      }
-
-      if (existing) {
-        await fetch(`${SUPABASE_URL}/rest/v1/people?id=eq.${existing.id}`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify({ type, ...(email && { email }), ...(phone && { phone }) }),
-        });
-        return existing.id;
-      } else {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/people`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName || '',
-            email: email || null,
-            phone: phone || null,
-            type,
-            notes: 'Event staff — Tommy Hall Mar 31 2026',
-          }),
-        });
-        const data = await res.json();
-        return data?.[0]?.id || null;
-      }
-    }
-
     submitBtn.addEventListener('click', async () => {
       if (isSubmitting) return;
       isSubmitting = true;
@@ -630,29 +578,18 @@
       const staffData = getStaffData();
 
       try {
-        // Save each staff member to people table as eventstaff
-        for (const [role, info] of Object.entries(staffData)) {
-          if (!info.name) continue;
-          const parts = info.name.split(/\s+/);
-          const firstName = parts[0] || '';
-          const lastName = parts.slice(1).join(' ') || '';
-          if (firstName) {
-            await upsertPerson(firstName, lastName, info.email || null, null, 'eventstaff');
-          }
-        }
-
+        // Crew contact info is stored with the signed agreement (user_agent JSON below).
         // Record signed agreement
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/waiver_signatures`,
+          `${SUPABASE_URL}/rest/v1/rpc/sign_waiver`,
           {
             method: 'POST',
             headers: {
               'apikey': SUPABASE_ANON_KEY,
               'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
               'Content-Type': 'application/json',
-              'Prefer': 'return=representation',
             },
-            body: JSON.stringify({
+            body: JSON.stringify({ p_waiver: {
               waiver_type: 'event_agreement',
               template_version: 1,
               signer_name: CLIENT_NAME,
@@ -661,7 +598,7 @@
               event_request_id: EVENT_REQUEST_ID,
               signed_at: new Date().toISOString(),
               user_agent: JSON.stringify({ browser: navigator.userAgent, staff: staffData }),
-            }),
+            } }),
           }
         );
 
@@ -670,8 +607,8 @@
           throw new Error(errData.message || `Server error (${response.status})`);
         }
 
-        const [record] = await response.json();
-        const ref = record?.id?.slice(0, 8)?.toUpperCase() || 'CONFIRMED';
+        const recordId = await response.json();
+        const ref = recordId?.slice(0, 8)?.toUpperCase() || 'CONFIRMED';
         const signedAt = new Date().toLocaleString('en-US', {
           month: 'long', day: 'numeric', year: 'numeric',
           hour: 'numeric', minute: '2-digit',

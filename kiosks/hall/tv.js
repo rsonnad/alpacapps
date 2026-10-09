@@ -137,14 +137,7 @@ function updateClock() {
 async function loadOccupantsTV() {
   try {
     const today = new Date().toLocaleDateString('en-CA', { timeZone: AUSTIN_TZ });
-    const { data } = await supabase
-      .from('assignments')
-      .select(`
-        id, start_date, end_date, status,
-        person:person_id(first_name),
-        assignment_spaces(space:space_id(name))
-      `)
-      .eq('status', 'active');
+    const { data } = await supabase.rpc('kiosk_current_occupants');
 
     const container = document.getElementById('tvOccupants');
     if (!data || data.length === 0) {
@@ -172,14 +165,7 @@ async function loadOccupantsTV() {
 
 async function loadEventsTV() {
   try {
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: AUSTIN_TZ });
-    const { data } = await supabase
-      .from('event_hosting_requests')
-      .select('event_name, event_date, event_start_time')
-      .eq('request_status', 'approved')
-      .gte('event_date', today)
-      .order('event_date')
-      .limit(3);
+    const { data } = await supabase.rpc('kiosk_upcoming_events');
 
     const section = document.getElementById('tvEventsSection');
     if (!data || data.length === 0) {

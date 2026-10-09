@@ -1524,7 +1524,6 @@
     let appliedCode = null;
     let squareCard = null;
     let squarePayments = null;
-    let continuePersonId = null;
     let submittedFirstName = '';
     let submittedEmail = '';
 
@@ -1599,18 +1598,36 @@
     // =============================================
     // STEP 2 INITIALIZATION
     // =============================================
+    // Mark the application fee as recorded. Non-blocking: payment already went through.
+    async function recordApplicationFee(amount) {
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_record_fee`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_application_id: continueAppId, p_amount: amount, p_code: appliedCode })
+        });
+        if (!resp.ok) {
+          console.error('apply_record_fee failed:', resp.status, await resp.text().catch(() => ''));
+        } else if ((await resp.json()) !== true) {
+          console.error('apply_record_fee did not update the application (not submitted or already paid)');
+        }
+      } catch (e) {
+        console.error('apply_record_fee error:', e);
+      }
+    }
+
     async function initStep2() {
       if (!isStep2) return;
 
       try {
-        // Fetch the application + person data
-        const appResp = await fetch(
-          `${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}&select=*,person:person_id(*)`,
-          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-        );
+        // Fetch the application + applicant name
+        const appResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_get_application`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_application_id: continueAppId })
+        });
         if (!appResp.ok) throw new Error('Failed to load application');
-        const apps = await appResp.json();
-        const appData = apps[0];
+        const appData = await appResp.json();
 
         if (!appData || appData.application_status !== 'inquiry') {
           showError('This application link is no longer valid or has already been completed.');
@@ -1618,13 +1635,10 @@
           return;
         }
 
-        continuePersonId = appData.person_id;
-        const person = appData.person;
-
         // Update UI for Step 2
         document.getElementById('headerSubtitle').textContent = 'Complete Your Application';
         document.getElementById('step2Name').textContent =
-          `${person.first_name || ''} ${person.last_name || ''}`.trim();
+          `${appData.first_name || ''} ${appData.last_name || ''}`.trim();
         document.getElementById('step1Sections').classList.add('hidden');
         document.getElementById('step2Sections').classList.remove('hidden');
         submitBtn.textContent = 'Submit Application';
@@ -2153,36 +2167,27 @@
           myspace: getValue('myspace'),
         };
 
-        // PATCH existing person record
-        await fetch(`${SUPABASE_URL}/rest/v1/people?id=eq.${continuePersonId}`, {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(personUpdate)
-        });
-
-        // PATCH rental application to 'submitted'
+        // Update person + mark application 'submitted' (one RPC)
         const appUpdate = {
-          application_status: 'submitted',
           desired_space_id: getValue('desired_space_id') || null,
           desired_move_in: getValue('desired_move_in') || null,
           desired_term: getValue('desired_term') || null,
-          submitted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
         };
 
-        await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
-          method: 'PATCH',
+        const submitResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_submit_application`, {
+          method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': `Bearer ${SUPABASE_KEY}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(appUpdate)
+          body: JSON.stringify({ p_application_id: continueAppId, p_person: personUpdate, p_application: appUpdate })
         });
+        if (!submitResp.ok) {
+          const errBody = await submitResp.json().catch(() => null);
+          throw new Error(errBody?.message || 'Failed to submit application. Please try again.');
+        }
+        const submittedApp = await submitResp.json();
 
         // Process payment if fee > 0
         if (feeAmount > 0) {
@@ -2198,11 +2203,8 @@
             throw new Error(rawMsg);
           }
 
-          // Get person email for receipt
-          const personResp = await fetch(`${SUPABASE_URL}/rest/v1/people?id=eq.${continuePersonId}&select=email,first_name,last_name`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-          });
-          const [personInfo] = await personResp.json();
+          // Person email for receipt (returned by the submit RPC)
+          const personInfo = submittedApp;
           const buyerEmail = personInfo?.email || '';
           const buyerName = `${personInfo?.first_name || ''} ${personInfo?.last_name || ''}`.trim();
 
@@ -2273,11 +2275,7 @@
             body: JSON.stringify({ status: 'completed', square_payment_id: processResult.paymentId, square_order_id: processResult.orderId, square_receipt_url: processResult.receiptUrl, updated_at: new Date().toISOString() })
           });
 
-          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ application_fee_paid: true, application_fee_amount: feeAmount, application_fee_code: appliedCode })
-          });
+          await recordApplicationFee(feeAmount);
 
           if (appliedCode) {
             await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_fee_code_usage`, {
@@ -2293,29 +2291,27 @@
             body: JSON.stringify({ payment_type: FEE_TYPE, reference_type: 'rental_application', reference_id: continueAppId, amount: 0, fee_code_used: appliedCode, original_amount: originalAmount, status: 'completed' })
           });
 
-          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ application_fee_paid: true, application_fee_amount: 0, application_fee_code: appliedCode })
-          });
+          await recordApplicationFee(0);
         }
 
         // Insert previous residence if provided
         const prevAddress = getValue('prev_address');
         if (prevAddress) {
-          await fetch(`${SUPABASE_URL}/rest/v1/previous_residences`, {
+          await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_add_previous_residence`, {
             method: 'POST',
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              person_id: continuePersonId,
-              address: prevAddress,
-              start_date: getValue('prev_start_date') || null,
-              end_date: getValue('prev_end_date') || null,
-              landlord_name: getValue('landlord_name'),
-              landlord_contact: getValue('landlord_contact'),
-              reason_for_leaving: getValue('reason_for_leaving')
+              p_application_id: continueAppId,
+              p_residence: {
+                address: prevAddress,
+                start_date: getValue('prev_start_date') || null,
+                end_date: getValue('prev_end_date') || null,
+                landlord_name: getValue('landlord_name'),
+                landlord_contact: getValue('landlord_contact'),
+                reason_for_leaving: getValue('reason_for_leaving')
+              }
             })
-          });
+          }).catch(err => console.error('apply_add_previous_residence failed:', err));
         }
 
         // Populate success summary
