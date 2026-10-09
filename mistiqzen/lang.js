@@ -25,5 +25,9 @@
   var target = null;
   if (pref === 'th' && !onThai) target = path.replace('/mistiqzen/', '/mistiqzen/th/');
   if (pref === 'en' && onThai) target = path.replace('/mistiqzen/th/', '/mistiqzen/');
-  if (target && target !== path) location.replace(target + location.hash);
+  if (target && target !== path) {
+    params.delete('lang');
+    var query = params.toString();
+    location.replace(target + (query ? '?' + query : '') + location.hash);
+  }
 })();

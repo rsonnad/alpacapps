@@ -61,18 +61,6 @@
       ],
       "port": 3001,
       "cwd": "/Users/rahulio/Documents/CodingProjects/finleg"
-    },
-    {
-      "name": "mistiqzen-worktree",
-      "runtimeExecutable": "/opt/homebrew/bin/python3",
-      "runtimeArgs": [
-        "-m",
-        "http.server",
-        "8095",
-        "--directory",
-        "/Users/otter/Documents/codingprojects/alpacapps/.claude/worktrees/mistiq-chiang-mai-fork-8a7747"
-      ],
-      "port": 8095
     }
   ]
 }

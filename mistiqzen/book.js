@@ -55,7 +55,7 @@
 
     const body = [
       t.intro,
-      '',
+      ' ',
       `${t.type}: ${typeSel.selectedOptions[0].textContent}`,
       `${t.name}: ${$('book-name').value.trim()}`,
       phone ? `${t.phone}: ${phone}` : '',
@@ -66,7 +66,7 @@
       notes ? `${t.notes}: ${notes}` : '',
       partner ? `✓ ${t.partner}` : '',
       partner && social ? `${t.social}: ${social}` : '',
-    ].filter(Boolean).join('\n');
+    ].filter(Boolean).join('\n').replace(/\n \n/, '\n\n');
 
     const url = via === 'email'
       ? `mailto:${EMAIL}?subject=${encodeURIComponent(t.subject + ' — ' + dateLabel)}&body=${encodeURIComponent(body + '\n\nalpacaplayhouse.com/mistiqzen/book/')}`
