@@ -1,12 +1,12 @@
 {
-  "version": "v261008.04 10:14p",
-  "release": 1901,
-  "sha": "bdb15a0b6c",
-  "fullSha": "bdb15a0b6cc235f7c276c18823b747ad4131a140",
+  "version": "v261008.05 10:18p",
+  "release": 1902,
+  "sha": "4d489c42b4",
+  "fullSha": "4d489c42b475865e151a915394e28a6093e112d9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T03:14:58+00:00",
-  "commits": [{"sha":"bdb15a0b6c","message":"docs: record credential rotation verification and pending handoffs","author":"Blotto"}]
+  "pushedAt": "2026-10-09T03:18:39+00:00",
+  "commits": [{"sha":"4d489c42b4","message":"security: public pages use token-scoped RPCs instead of anon table access","author":"Blotto"}]
 }
