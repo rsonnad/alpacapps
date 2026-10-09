@@ -1,12 +1,12 @@
 {
-  "version": "v261008.10 10:47p",
-  "release": 1907,
-  "sha": "8681086aa3",
-  "fullSha": "8681086aa3bdb4bdd82947b443e7b06a8e706c53",
+  "version": "v261009.01 3:12a",
+  "release": 1908,
+  "sha": "688d6b39b5",
+  "fullSha": "688d6b39b55b409400d3b19b64b232e31d650cb7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T03:47:57+00:00",
-  "commits": [{"sha":"8681086aa3","message":"fix(payments): record Square payments through scoped RPCs","author":"Blotto"}]
+  "pushedAt": "2026-10-09T08:12:46+00:00",
+  "commits": [{"sha":"c22009bc3d","message":"feat(mistiqzen): Chiang Mai branch site — Mistiq Massage by Ivy Zen","author":"Blotto"},{"sha":"a37c6bfd42","message":"docs(mistiqzen): record branch decisions","author":"Blotto"},{"sha":"688d6b39b5","message":"fix(mistiqzen): interim branch photos, keep query on language redirect","author":"Blotto"}]
 }
