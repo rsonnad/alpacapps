@@ -1,12 +1,12 @@
 {
-  "version": "v261006.02 12:57p",
-  "release": 1897,
-  "sha": "3299d59683",
-  "fullSha": "3299d59683204906ef53f94314db32c01e6ba7f2",
+  "version": "v261008.01 9:21p",
+  "release": 1898,
+  "sha": "92344bf285",
+  "fullSha": "92344bf2852811434ac5e1f4e2430775cbdfb943",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm8df0l",
-  "pushedAt": "2026-10-06T17:57:16+00:00",
-  "commits": [{"sha":"3299d59683","message":"feat(payroll): investigator verifies cron health itself, leaves only money steps to humans","author":"Blotto"}]
+  "machine": "runnervmmprz5",
+  "pushedAt": "2026-10-09T02:21:25+00:00",
+  "commits": [{"sha":"92344bf285","message":"security: lock down vendor secrets and anonymous payment-table writes","author":"Blotto"}]
 }
