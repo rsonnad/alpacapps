@@ -104,3 +104,42 @@ Run the checked-in access regression SQL through that endpoint as postgres.
 References: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [function privileges](https://supabase.com/docs/guides/database/functions),
 [secret vs public keys](https://supabase.com/docs/guides/database/secure-data).
+
+## Batch 2 — PII and anonymous writes (applied 2026-10-09)
+
+Migration `202610090004_lock_down_pii_and_anon_writes.sql`; regression test
+`supabase/tests/pii-and-anon-write-access.sql` (23 checks, all passing; run
+without its final `ROLLBACK` line through the Management API to see results).
+
+- `identity_verifications`: had anon SELECT and authenticated ALL. That exposed
+  9 people's licence number, DOB, address and 1-year signed photo URLs. It is now
+  staff-only, plus own-row read. All 11 objects in `identity-documents` were moved
+  under `r20261009/` and the 8 referenced rows re-signed, so every earlier signed
+  URL now returns 400.
+- Staff-only: `payouts`, `payment_reminders`, `vehicle_rentals`, `event_payments`,
+  `signature_audit_log`, `payout_time_entries`.
+- Public read kept, writes staff-only: `assignments`, `lease_templates`,
+  `event_agreement_templates`, `printer_devices`.
+- Writes need a signed-in user: `todo_*`, `work_groups`, `work_group_members`,
+  `associate_schedules`, `permit_tasks`, `schedule_edits`. Anon `govee_devices`
+  update and `waiver_signatures` update removed.
+- RLS enabled: `system_commands` (staff read; writers are service role) and
+  `sonos_health_samples` (writer is the Management API).
+- Storage `lease-documents`: public listing, upload, overwrite and delete removed
+  and staff-only policies added. Exact-path public links still return 200.
+
+### Still open (needs token-scoped RPCs; touches public flows)
+
+- `rental_applications`: anon SELECT/ALL, including `signing_token`, `status_token`
+  and applicant PII. Used anonymously by `rentals/apply` (select by id, PATCH) and
+  `rentals/status` (select by token).
+- `people` (83 rows): anon reads by email, plus anon insert/patch from hostevent,
+  apply and the tommy-hall agreement page.
+- `event_hosting_requests` / `event_request_spaces`: anon POST/PATCH from hostevent
+  and kiosk reads.
+- `waiver_signatures`: anon SELECT remains, because inserts use `return=representation`.
+- `rental_payments`: still public read (residents' bookkeeping reads it).
+- `lease-documents` is still a public bucket. Two filenames are guessable
+  (`event-agreements/tommy-hall-033126.pdf`, `vehicle-rentals/sonia-wendorff-…`).
+  Making the bucket private needs `lease.html` and `rentals/signed` to use signed URLs.
+- `record_release_event()` is SECURITY DEFINER and anon-executable (low impact).
