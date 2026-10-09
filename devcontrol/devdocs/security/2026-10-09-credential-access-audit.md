@@ -189,9 +189,8 @@ the updated pages were deployed and loaded signed-out in a browser.
 - Signed-in non-staff users (residents, associates) can still read all of `people`,
   `rental_applications` and `rental_payments`. `residents/bookkeeping.js` depends on
   this, so it needs own-row policies.
-- The apply and hostevent pages still write `square_payments`, and apply also writes
-  `previous_residences`-adjacent tables, directly with the anon key. The client also
-  still asserts fee/deposit payment, but only for its own record now.
+- The apply and hostevent pages still write `square_payments` directly with the anon
+  key. The client also still asserts fee/deposit payment, but only for its own record now.
 - `hostevent` passes the event request id as `paymentRecordId` (pre-existing).
 - `lease-documents` is still a public bucket. Two filenames are guessable. Making it
   private needs `lease.html` and `rentals/signed` to use signed URLs.
