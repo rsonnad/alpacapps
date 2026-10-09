@@ -1,12 +1,12 @@
 {
-  "version": "v261008.09 10:43p",
-  "release": 1906,
-  "sha": "a49ff866cb",
-  "fullSha": "a49ff866cbb93e15960298837577bdd3c4f506fe",
+  "version": "v261008.10 10:47p",
+  "release": 1907,
+  "sha": "8681086aa3",
+  "fullSha": "8681086aa3bdb4bdd82947b443e7b06a8e706c53",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T03:43:33+00:00",
-  "commits": [{"sha":"a49ff866cb","message":"docs(security): correct remaining square_payments note","author":"Blotto"}]
+  "pushedAt": "2026-10-09T03:47:57+00:00",
+  "commits": [{"sha":"8681086aa3","message":"fix(payments): record Square payments through scoped RPCs","author":"Blotto"}]
 }
