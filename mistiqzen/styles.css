@@ -484,7 +484,7 @@ img {
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s;
   border: none;
 }
 
@@ -854,7 +854,7 @@ img {
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   background: white;
 }
 
@@ -930,7 +930,7 @@ img {
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   font-family: 'Lato', sans-serif;
 }
 
@@ -1247,9 +1247,16 @@ img {
 
 .mistiq-hero--zen {
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
-              url('/mistiqzen/img/hero-chiangmai.jpg');
+              url('/mistiqzen/img/hero-chiangmai-1600.webp');
   background-size: cover;
   background-position: center;
+}
+
+@media (max-width: 800px) {
+  .mistiq-hero--zen {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
+                      url('/mistiqzen/img/hero-chiangmai-800.webp');
+  }
 }
 
 .mistiq-hero__eyebrow {
@@ -1286,6 +1293,7 @@ img {
 
 .zen-practitioner__image {
   width: 100%;
+  height: auto;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
@@ -1398,6 +1406,7 @@ img {
 
 .zen-location__image {
   width: 100%;
+  height: auto;
   border-radius: 12px;
   margin-bottom: var(--mistiq-space-lg);
 }
@@ -1417,6 +1426,25 @@ img {
 
 .zen-location__details a {
   color: var(--mistiq-accent-dark);
+}
+
+.zen-map-facade {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--mistiq-accent-dark);
+  background: var(--mistiq-warm);
+  border: 0;
+}
+
+.zen-map-facade span {
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.7rem 1.3rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .zen-location__map {

@@ -21,3 +21,15 @@
   window.addEventListener('scroll', onScroll);
   onScroll();
 })();
+
+// Map facade: the Google Maps embed is heavy on older phones, so load it only on tap
+document.querySelectorAll('.zen-map-facade').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'zen-location__map';
+    iframe.title = 'Map';
+    iframe.src = btn.dataset.src;
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    btn.replaceWith(iframe);
+  });
+});
