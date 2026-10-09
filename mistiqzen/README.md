@@ -19,3 +19,17 @@ Exclude it from shared components, templates and packaged versions of this codeb
 - Phone/WhatsApp 096 886 2601 · Facebook profile id 61592039963570 · email mistiqzen@alpacaplayhouse.com
 - 2-hour Journey: ฿1,500, or free for Feedback Partners (detailed feedback + video testimonial + marketing help)
 - Hot herbal compress replaces sauna; ice blanket replaces cold plunge
+
+## Decisions
+
+**Decision (2026-10-09):** The Chiang Mai program is 2 hours (Grounding 15m, Somatics ~75m, Wind Down 15m, Integration 15m) at ฿1,500, with the same session free for Feedback Partners.
+**Why:** Local pricing for Chiang Mai; free sessions buy detailed product feedback, video testimonials and marketing while the branch is new.
+
+**Decision:** Austin testimonials are shown, labeled as Austin guests, with every reference to Rahul removed (omissions marked with … or [brackets]). Darcy's video is not embedded because it names Rahul; its relevant part is quoted as text.
+**Why:** Ivy Zen is the Chiang Mai practitioner; the quotes describe the shared Mistique protocol, not her.
+
+**Decision:** Booking is a static form that opens WhatsApp or email with a prefilled message, plus Facebook. No backend and no Austin calendar.
+**Why:** WhatsApp and Facebook are how local customers book, and reusing the Austin form would send Chiang Mai requests to the Austin inbox.
+
+**Decision:** Language routing uses the phone's language/region (`th`, or any `-TH` region), not the time zone.
+**Why:** Tourists' phones switch to the Bangkok time zone automatically, so time zone can't tell a local from a visitor.
