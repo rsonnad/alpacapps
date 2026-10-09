@@ -98,6 +98,10 @@ async function loadStripeBalance() {
       el.textContent = '--';
       note.textContent = result.message;
     }
+  } else if (result.unavailable) {
+    // Stripe secret is server-side only; the browser can't query the balance.
+    el.textContent = '--';
+    note.textContent = 'Balance check unavailable from browser';
   } else {
     el.textContent = 'Error';
     el.style.color = '#dc2626';
