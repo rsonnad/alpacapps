@@ -23,6 +23,31 @@ pack the generated HTML page; this Mac has Node v22.23.2.
 
 Use for AlpacApps Supabase project `aphrrfprbixmhissnjfn`.
 
+### Stripe Live Key Access and Rotation
+
+Verified 2026-10-09: Stripe account `acct_1SSOIxEZGgxeL4qA` accepts the
+replacement live key. Bitwarden and `stripe_config.id = 1` contain the same
+replacement; production is active with `test_mode = false`.
+
+There are two items named `Stripe — Payment Processing`, so name-based
+`bw-read` reports an ambiguous match. The populated canonical item is
+`e6ad6b13-862c-4819-b810-b410007ea3a7`; the other item has no custom fields.
+Retrieve the canonical field without printing it:
+
+```bash
+export BW_SESSION=$(cat ~/.bw-session)
+STRIPE_KEY=$(bw get item e6ad6b13-862c-4819-b810-b410007ea3a7 | \
+  jq -r '.fields[] | select(.name == "Secret Key") | .value')
+curl -sS --fail https://api.stripe.com/v1/account \
+  -H "Authorization: Bearer $STRIPE_KEY" | jq '{id}'
+```
+
+For rotation, update the existing Bitwarden `Secret Key` and `valid from`
+fields, then update only `stripe_config` row `id = 1` through the Management
+API recipe below. Verify equality without returning the full key. The Stripe
+edge functions read the row on each request; no redeployment is needed for
+this database key change. Never print the full vault item or API key.
+
 ### Get Management Token
 
 Bitwarden item name is `Supabase — AlpacApps Project` (em dash, not hyphen).
