@@ -1,12 +1,12 @@
 {
-  "version": "v261008.01 9:21p",
-  "release": 1898,
-  "sha": "92344bf285",
-  "fullSha": "92344bf2852811434ac5e1f4e2430775cbdfb943",
+  "version": "v261008.02 9:41p",
+  "release": 1899,
+  "sha": "082352f10c",
+  "fullSha": "082352f10c81ccedecb725fa89f8210031d99aad",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T02:21:25+00:00",
-  "commits": [{"sha":"92344bf285","message":"security: lock down vendor secrets and anonymous payment-table writes","author":"Blotto"}]
+  "pushedAt": "2026-10-09T02:41:10+00:00",
+  "commits": [{"sha":"082352f10c","message":"security: restrict device credentials and rental token inventory to staff","author":"Blotto"}]
 }
