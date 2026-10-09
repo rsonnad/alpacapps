@@ -1,12 +1,12 @@
 {
-  "version": "v261008.05 10:18p",
-  "release": 1902,
-  "sha": "4d489c42b4",
-  "fullSha": "4d489c42b475865e151a915394e28a6093e112d9",
+  "version": "v261008.06 10:19p",
+  "release": 1903,
+  "sha": "25415cd983",
+  "fullSha": "25415cd98346fe2a8d4e175db5cf9ed44f328bde",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T03:18:39+00:00",
-  "commits": [{"sha":"4d489c42b4","message":"security: public pages use token-scoped RPCs instead of anon table access","author":"Blotto"}]
+  "pushedAt": "2026-10-09T03:19:46+00:00",
+  "commits": [{"sha":"25415cd983","message":"docs: point worker/infra docs at Hostinger, retire DigitalOcean","author":"Blotto"}]
 }
