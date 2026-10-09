@@ -1,12 +1,12 @@
 {
-  "version": "v261008.07 10:26p",
-  "release": 1904,
-  "sha": "7536997119",
-  "fullSha": "75369971190ef6e1671309eebb6d5c6fff07b4c2",
+  "version": "v261008.09 10:43p",
+  "release": 1906,
+  "sha": "a49ff866cb",
+  "fullSha": "a49ff866cbb93e15960298837577bdd3c4f506fe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T03:26:35+00:00",
-  "commits": [{"sha":"7536997119","message":"fix(payments): restore Square card form on public apply and host-event pages","author":"Blotto"}]
+  "pushedAt": "2026-10-09T03:43:33+00:00",
+  "commits": [{"sha":"a49ff866cb","message":"docs(security): correct remaining square_payments note","author":"Blotto"}]
 }
