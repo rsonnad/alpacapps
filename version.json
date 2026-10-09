@@ -1,12 +1,12 @@
 {
-  "version": "v261009.03 5:21a",
-  "release": 1910,
-  "sha": "41f6861822",
-  "fullSha": "41f68618220bb0f701dd16a0609789855e48c5c6",
+  "version": "v261009.04 5:24a",
+  "release": 1911,
+  "sha": "bc496781e1",
+  "fullSha": "bc496781e1ae359916d29da600e8ed99cd6fbce1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T10:21:38+00:00",
-  "commits": [{"sha":"41f6861822","message":"feat(mistiqzen): reorder journey — breathwork after Thai massage, ice blanket before herbal compress","author":"Blotto"}]
+  "pushedAt": "2026-10-09T10:24:06+00:00",
+  "commits": [{"sha":"bc496781e1","message":"feat(mistiqzen): phase times — Somatics ~100m, Wind Down 10m, open-ended Integration","author":"Blotto"}]
 }
