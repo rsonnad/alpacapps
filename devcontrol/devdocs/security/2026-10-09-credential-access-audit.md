@@ -93,6 +93,34 @@ a server credential; its safety depends on grants, policies and RPC authorizatio
    Those require a separate authorization audit; they were not changed as part of
    this credential lockdown.
 
+## Rotation follow-up (2026-10-09)
+
+- Verified the canonical Bitwarden Stripe `Secret Key` ends in `V9F8` and
+  exactly matches the active production `stripe_config.id = 1` value.
+- Found a stale `STRIPE_SECRET_KEY` in the Supabase function environment and
+  replaced it from the verified vault value. The Management API's returned
+  SHA-256 digest confirms the environment now matches the vault and database.
+- Stripe has one enabled production webhook endpoint,
+  `we_1SzXyZEZGgxeL4qABgaz2cWQ`, pointing to the project's `stripe-webhook`
+  function. Its signing secret currently matches the vault and environment;
+  rotation remains pending. Safari is prepared at that endpoint's Roll secret
+  menu. Browser credential changes require human handoff under the computer-use
+  policy; choose an overlap period before saving the replacement in Bitwarden.
+- Home Assistant's configured token is duplicated in `HA_TOKEN` and
+  `HOME_ASSISTANT_TOKEN`. Both environment values and `home_assistant_config`
+  must change together. Its current database token does not match any populated
+  Home Assistant vault item. Authenticated inspection identifies it as the
+  `DevControl Backup Monitor` long-lived token. It also occurs in Alpuca's
+  `~/.ha_llat` and `~/ha-cmd.sh`; maintenance jobs read those files. API and
+  WebSocket authentication succeeded. Rotation has not occurred: Bitwarden
+  locked before token creation, so the operation stopped without mutating HA.
+  Unlock the vault, save a replacement first, update all consumers, verify the
+  new token, and revoke only the old token's identified refresh-token record.
+- PayPal live and sandbox credentials, Telnyx's API key, Spotify's client secret,
+  and LG's PAT match their populated vault fields. This verification is not
+  rotation. Spotify access/refresh tokens also require revocation and renewed
+  authorization; rotating only its client secret is insufficient.
+
 ## Access recipe
 
 Use `memory/service-access.md` in the primary workspace for the verified Supabase
