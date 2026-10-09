@@ -156,18 +156,45 @@ without its final `ROLLBACK` line through the Management API to see results).
 - Storage `lease-documents`: public listing, upload, overwrite and delete removed
   and staff-only policies added. Exact-path public links still return 200.
 
-### Still open (needs token-scoped RPCs; touches public flows)
+## Batch 3 — public pages off direct table access (applied 2026-10-09)
 
-- `rental_applications`: anon SELECT/ALL, including `signing_token`, `status_token`
-  and applicant PII. Used anonymously by `rentals/apply` (select by id, PATCH) and
-  `rentals/status` (select by token).
-- `people` (83 rows): anon reads by email, plus anon insert/patch from hostevent,
-  apply and the tommy-hall agreement page.
-- `event_hosting_requests` / `event_request_spaces`: anon POST/PATCH from hostevent
-  and kiosk reads.
-- `waiver_signatures`: anon SELECT remains, because inserts use `return=representation`.
-- `rental_payments`: still public read (residents' bookkeeping reads it).
-- `lease-documents` is still a public bucket. Two filenames are guessable
-  (`event-agreements/tommy-hall-033126.pdf`, `vehicle-rentals/sonia-wendorff-…`).
-  Making the bucket private needs `lease.html` and `rentals/signed` to use signed URLs.
+Migrations `202610090005_public_flow_rpcs.sql` (RPCs), `202610090006_revoke_anon_pii.sql`
+(revoke) and `202610090007_square_public_config.sql`. The revoke was applied only after
+the updated pages were deployed and loaded signed-out in a browser.
+
+- Anonymous users can no longer read or write `people`, `rental_applications`,
+  `event_hosting_requests`, `event_request_spaces`, `waiver_signatures` and
+  `rental_payments` (all return 401). Policies that applied to PUBLIC/anon now apply
+  to `authenticated`, so signed-in access is unchanged.
+- The public pages call SECURITY DEFINER RPCs scoped to the caller's own identifier:
+  `apply_get_application`, `apply_submit_application` (inquiry→submitted only),
+  `apply_record_fee` and `apply_add_previous_residence` (once each),
+  `get_application_status(token)`, `hostevent_submit_request` (person find-or-create,
+  request and spaces in one transaction), `hostevent_update_deposit`
+  (pending/failed→paid/failed), `verify_resident` (current residents only),
+  `sign_waiver`, `get_public_contact_phone`, `kiosk_current_occupants`,
+  `kiosk_upcoming_events` and `get_square_public_config`.
+- Verified in a browser while signed out: status, apply, book, kiosk, TV, waiver,
+  contact and hostevent. The Square card form loads on apply and hostevent. All 23
+  role checks still pass.
+- **Square had been broken since about 2026-04-19.** `square_config` is admin-only,
+  so public pages couldn't load the app/location ids and the card form never started.
+  `get_square_public_config()` returns only those public ids and `test_mode`.
+  A read-only Square API check confirmed the location is ACTIVE with card processing.
+- The tommy-hall agreement page (event of 2026-03-31) no longer writes crew contacts
+  to `people`.
+
+### Still open
+
+- Signed-in non-staff users (residents, associates) can still read all of `people`,
+  `rental_applications` and `rental_payments`. `residents/bookkeeping.js` depends on
+  this, so it needs own-row policies.
+- The apply and hostevent pages still write `square_payments`, and apply also writes
+  `previous_residences`-adjacent tables, directly with the anon key. The client also
+  still asserts fee/deposit payment, but only for its own record now.
+- `hostevent` passes the event request id as `paymentRecordId` (pre-existing).
+- `lease-documents` is still a public bucket. Two filenames are guessable. Making it
+  private needs `lease.html` and `rentals/signed` to use signed URLs.
+- `verify-identity` still mints 1-year signed URLs; on-demand short-lived URLs would be better.
 - `record_release_event()` is SECURITY DEFINER and anon-executable (low impact).
+- The kiosk Home Assistant chat is blocked by the batch-1b HA RPC lockdown, as intended.
