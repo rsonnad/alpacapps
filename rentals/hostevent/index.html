@@ -2410,19 +2410,22 @@
 
       try {
         const configResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/square_config?select=sandbox_app_id,production_app_id,sandbox_location_id,production_location_id,test_mode`,
+          `${SUPABASE_URL}/rest/v1/rpc/get_square_public_config`,
           {
+            method: 'POST',
             headers: {
               'apikey': SUPABASE_KEY,
               'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Cache-Control': 'no-cache'
-            }
+              'Content-Type': 'application/json'
+            },
+            body: '{}'
           }
         );
 
         if (!configResponse.ok) throw new Error('Failed to load Square config');
 
-        const [config] = await configResponse.json();
+        const config = await configResponse.json();
+        if (!config) throw new Error('Square is not configured');
         squareIsTestMode = staffTestMode || config.test_mode;
         const appId = squareIsTestMode ? config.sandbox_app_id : config.production_app_id;
         const locationId = squareIsTestMode ? config.sandbox_location_id : config.production_location_id;
