@@ -15,15 +15,10 @@ let accessTokenMode = false; // true when viewing via access link (no auth)
  */
 async function validateAccessToken(token) {
   try {
-    const { data, error } = await supabase
-      .from('access_tokens')
-      .select('id, expires_at, is_revoked')
-      .eq('token', token)
-      .single();
-    if (error || !data) return false;
-    if (data.is_revoked) return false;
-    if (new Date(data.expires_at) < new Date()) return false;
-    return true;
+    const { data, error } = await supabase.rpc('validate_rental_access_token', {
+      p_token: token,
+    });
+    return !error && data === true;
   } catch (e) {
     console.error('[access-token] Validation failed:', e);
     return false;
