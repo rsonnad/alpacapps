@@ -1,12 +1,12 @@
 {
-  "version": "v261008.06 10:19p",
-  "release": 1903,
-  "sha": "25415cd983",
-  "fullSha": "25415cd98346fe2a8d4e175db5cf9ed44f328bde",
+  "version": "v261008.07 10:26p",
+  "release": 1904,
+  "sha": "7536997119",
+  "fullSha": "75369971190ef6e1671309eebb6d5c6fff07b4c2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-09T03:19:46+00:00",
-  "commits": [{"sha":"25415cd983","message":"docs: point worker/infra docs at Hostinger, retire DigitalOcean","author":"Blotto"}]
+  "pushedAt": "2026-10-09T03:26:35+00:00",
+  "commits": [{"sha":"7536997119","message":"fix(payments): restore Square card form on public apply and host-event pages","author":"Blotto"}]
 }
