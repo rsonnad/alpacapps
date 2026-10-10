@@ -434,6 +434,10 @@ oci iam availability-domain list \
 
     <p>This script retries <code>oci compute instance launch</code> every 60 seconds, rotating through availability domains, until capacity opens. Save it as <code>~/bin/oracle-auto-provision.sh</code>.</p>
 
+    <div class="warn-box">
+      <strong>AlpacApps uses a newer tool:</strong> <code>scripts/oci-a1-provisioner/</code> in the alpacapps repo replaces this loop. It makes one attempt per launchd tick, checks for an existing instance before every launch, stops on errors that retrying can't fix, verifies the home region, and stops itself on success. The script below is kept as a minimal reference. Note that the LaunchAgent in step 7 uses <code>WatchPaths</code>, which <em>starts</em> the job when the success file changes rather than stopping it.
+    </div>
+
     <div class="info-box">
       <strong>LLM Note:</strong> To adapt this script, replace the 6 variables in the <code>CONFIGURATION</code> block below. All OCIDs were collected in Steps 2 and 4. The script is self-contained with no external dependencies beyond the OCI CLI.
     </div>
