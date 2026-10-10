@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Rendered by scripts/oci-a1-provisioner/install.sh. Do not edit the installed copy by hand. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.alpuca.oci-a1-provisioner</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__HOME__/.venvs/oci-a1-provisioner/bin/python</string>
+    <string>__HOME__/scripts/oci-a1-provisioner/provision.py</string>
+    <string>run</string>
+  </array>
+  <!-- One short attempt per tick. launchd never overlaps runs of the same job. -->
+  <key>StartInterval</key>
+  <integer>120</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>Nice</key>
+  <integer>10</integer>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PROVISIONER_LAUNCHD_LABEL</key>
+    <string>com.alpuca.oci-a1-provisioner</string>
+  </dict>
+  <!-- Only Python tracebacks land here; normal output goes to provisioner.log. -->
+  <key>StandardOutPath</key>
+  <string>/dev/null</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/.local/state/oci-a1-provisioner/launchd-stderr.log</string>
+</dict>
+</plist>

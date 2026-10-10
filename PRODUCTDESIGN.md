@@ -691,3 +691,10 @@ Each external service was chosen for specific reasons. This section documents wh
 **Decision:** Once its UniFi Protect RTSP streams are configured, Shower Tower appears first in the resident Cameras page, ahead of the existing exterior feeds.
 
 **Why:** It covers the most immediate shared-area view and should be reachable without scrolling, while the existing camera grouping and quality controls continue to work unchanged.
+
+### 2026-10-10: Oracle A1 Provisioning Is a Supervised, Self-Terminating Job
+
+**Decision:** Claiming the Oracle Cloud Always Free A1 VM is done by `scripts/oci-a1-provisioner/`, a launchd agent on Alpuca that makes one `LaunchInstance` attempt per 2-minute tick and keeps an explicit state machine (`active` → `done` / `fatal` / `expired`) in `~/.local/state/oci-a1-provisioner/state.json`. Before every launch it checks OCI for a live instance with the configured name (idempotency), and it refuses to launch outside the tenancy's home region. Errors that retrying can't fix (`LimitExceeded`, 401, 400/404, repeated unknown errors or crashes) stop the job and notify. It sends a heartbeat every 7 days and gives up after 90. The legacy `oracle-auto-provision.sh` infinite loop and the browser-console retry scripts were removed.
+
+**Why:** The legacy loop ran unsupervised for months: it targeted Phoenix while the goal had moved to Montreal, kept retrying errors that retrying can't fix, and its LaunchAgent's `WatchPaths` restarted it on success. Nobody could tell whether it was still running. A short-lived, stateful, observable job can't silently run forever, can't double-launch, and anyone (person or agent) can take it over from the README.
+
