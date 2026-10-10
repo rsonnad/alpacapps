@@ -223,7 +223,7 @@
     const FORMAT = [
       null,
       v => (v / 1e6).toFixed(v < 1e6 ? 2 : 1),
-      v => Math.round(v).toString(),
+      v => v < 1 ? v.toFixed(1) : Math.round(v).toString(),
       v => v.toLocaleString('en-US'),
       v => v.toFixed(2),
     ];
