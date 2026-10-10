@@ -35,7 +35,7 @@
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
-    <span data-site-version style="display:none">v260925.06 3:57p</span>
+    <span data-site-version style="display:none">v261010.02 12:51p</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
@@ -158,24 +158,16 @@
                 <label style="font-size:0.8rem;">Client ID</label>
                 <input type="text" id="paypalSandboxClientId" placeholder="Sandbox Client ID" style="font-size:0.85rem;">
               </div>
-              <div class="form-row" style="margin-bottom:1rem;">
-                <label style="font-size:0.8rem;">Client Secret</label>
-                <input type="password" id="paypalSandboxClientSecret" placeholder="Sandbox Client Secret" style="font-size:0.85rem;">
-              </div>
+              <p style="font-size:0.8rem;margin:0 0 1rem;color:var(--text-muted);">Sandbox client secret is stored server-side; set via SQL/ops.</p>
               <h4 style="font-size:0.85rem;margin-bottom:0.5rem;color:var(--text-muted);">Production Credentials</h4>
               <div class="form-row" style="margin-bottom:0.5rem;">
                 <label style="font-size:0.8rem;">Client ID</label>
                 <input type="text" id="paypalClientId" placeholder="Production Client ID" style="font-size:0.85rem;">
               </div>
-              <div class="form-row" style="margin-bottom:1rem;">
-                <label style="font-size:0.8rem;">Client Secret</label>
-                <input type="password" id="paypalClientSecret" placeholder="Production Client Secret" style="font-size:0.85rem;">
-              </div>
+              <p style="font-size:0.8rem;margin:0 0 1rem;color:var(--text-muted);">Production client secret is stored server-side; set via SQL/ops.</p>
               <div style="display:flex;gap:0.5rem;">
                 <button class="btn-small btn-primary" id="savePaypalConfig">Save PayPal Config</button>
-                <button class="btn-small" id="testPaypalConnection" style="background:var(--surface-alt,#f0f4ff);border:1px solid var(--border);color:var(--text);">Test Connection</button>
               </div>
-              <p id="paypalTestResult" style="font-size:0.8rem;margin-top:0.5rem;color:var(--text-muted);"></p>
             </div>
           </div>
         </div>
@@ -210,24 +202,16 @@
                 <label style="font-size:0.8rem;">Publishable Key</label>
                 <input type="text" id="stripeSandboxPublishableKey" placeholder="pk_test_..." style="font-size:0.85rem;">
               </div>
-              <div class="form-row" style="margin-bottom:1rem;">
-                <label style="font-size:0.8rem;">Secret Key</label>
-                <input type="password" id="stripeSandboxSecretKey" placeholder="sk_test_..." style="font-size:0.85rem;">
-              </div>
+              <p style="font-size:0.8rem;margin:0 0 1rem;color:var(--text-muted);">Test secret key is stored server-side; set via SQL/ops.</p>
               <h4 style="font-size:0.85rem;margin-bottom:0.5rem;color:var(--text-muted);">Production Credentials</h4>
               <div class="form-row" style="margin-bottom:0.5rem;">
                 <label style="font-size:0.8rem;">Publishable Key</label>
                 <input type="text" id="stripePublishableKey" placeholder="pk_live_..." style="font-size:0.85rem;">
               </div>
-              <div class="form-row" style="margin-bottom:1rem;">
-                <label style="font-size:0.8rem;">Secret Key</label>
-                <input type="password" id="stripeSecretKey" placeholder="sk_live_..." style="font-size:0.85rem;">
-              </div>
+              <p style="font-size:0.8rem;margin:0 0 1rem;color:var(--text-muted);">Live secret key is stored server-side; set via SQL/ops.</p>
               <div style="display:flex;gap:0.5rem;">
                 <button class="btn-small btn-primary" id="saveStripeConfig">Save Stripe Config</button>
-                <button class="btn-small" id="testStripeConnection" style="background:var(--surface-alt,#f0f4ff);border:1px solid var(--border);color:var(--text);">Test Connection</button>
               </div>
-              <p id="stripeTestResult" style="font-size:0.8rem;margin-top:0.5rem;color:var(--text-muted);"></p>
             </div>
           </div>
         </div>

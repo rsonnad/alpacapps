@@ -144,6 +144,10 @@ img {
   top: 0;
   left: 0;
   right: 0;
+  /* Guard: if any page content overflows horizontally, mobile Chrome widens the
+     layout viewport and a left:0/right:0 fixed header stretches with it, pushing
+     the lang picker + hamburger off-screen. 100vw stays pinned to the screen. */
+  max-width: 100vw;
   z-index: 100;
   background: transparent;
   transition: background 0.3s, box-shadow 0.3s;
@@ -383,6 +387,7 @@ img {
   left: 0;
   right: 0;
   bottom: 0;
+  max-width: 100vw; /* same guard as .mistiq-header — keeps the close button on-screen */
   background: var(--mistiq-cream);
   z-index: 200;
   display: flex;
@@ -731,7 +736,10 @@ img {
 }
 
 .mistiq-facility__image {
-  max-width: 600px;
+  /* min() keeps the global img max-width:100% — a bare 600px overrode it and
+     overflowed every phone narrower than ~630px (Pixel 10 = 412px). */
+  max-width: min(600px, 100%);
+  height: auto;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }

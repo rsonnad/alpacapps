@@ -47,6 +47,7 @@
     /* Expandable detail area */
     .pay-row-detail { display: none; padding: 0 1.25rem 0.75rem; }
     .pay-row.expanded .pay-row-detail { display: block; }
+    .payouts-heading { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin: 0.75rem 0 0.25rem; }
 
     /* Unpaid entries table */
     .unpaid-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
@@ -93,11 +94,11 @@
     /* Modal */
     .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; }
     .modal-backdrop.open { display: flex; }
-    .modal { background: #fff; border-radius: 8px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-    .modal h3 { margin: 0 0 1rem; }
-    .modal .form-row { margin-bottom: 0.75rem; }
-    .modal .form-row label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase; }
-    .modal .form-row textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; box-sizing: border-box; resize: vertical; min-height: 60px; }
+    .pay-modal { background: #fff; border-radius: 8px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .pay-modal h3 { margin: 0 0 1rem; }
+    .pay-modal .form-row { margin-bottom: 0.75rem; }
+    .pay-modal .form-row label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase; }
+    .pay-modal .form-row textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; box-sizing: border-box; resize: vertical; min-height: 60px; }
     .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
     .modal-actions button { padding: 0.4rem 1rem; border-radius: var(--radius); font-size: 0.85rem; cursor: pointer; }
     .modal-actions .btn-cancel { background: #f3f4f6; border: 1px solid #d1d5db; color: var(--text); }
@@ -132,7 +133,7 @@
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
-    <span data-site-version style="display:none">v260925.06 3:57p</span>
+    <span data-site-version style="display:none">v261010.02 12:51p</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
@@ -193,7 +194,7 @@
 
   <!-- Pay Confirmation Modal -->
   <div class="modal-backdrop" id="payModal">
-    <div class="modal">
+    <div class="pay-modal">
       <h3 id="payModalTitle">Confirm Payment</h3>
       <div id="payModalSummary"></div>
       <div id="payModalWarning"></div>

@@ -13,6 +13,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { buildBreakdownByEntryIds } from "../_shared/payout-breakdown.ts";
+import { claimEntries, findClaimedEntries, markEntriesPaid, releaseClaim } from "../_shared/payout-claims.ts";
 import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface PayoutRequest {
   associate_id: string;
@@ -30,6 +31,9 @@ interface PayPalConfig {
   is_active: boolean;
   test_mode: boolean;
 }
+
+/** PayPal rejected the request (4xx), so no payout was created. */
+class PayPalApiError extends Error {}
 
 /**
  * Get PayPal OAuth access token using client credentials
@@ -54,7 +58,7 @@ async function getPayPalAccessToken(config: PayPalConfig): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`PayPal auth failed: ${response.status} ${errorText}`);
+    throw new PayPalApiError(`PayPal auth failed: ${response.status} ${errorText}`);
   }
 
   const data = await response.json();
@@ -107,7 +111,9 @@ async function sendPayPalPayout(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`PayPal payout failed: ${response.status} ${errorText}`);
+    // 4xx = PayPal rejected the batch. A 5xx may still have created it.
+    const msg = `PayPal payout failed: ${response.status} ${errorText}`;
+    throw response.status < 500 ? new PayPalApiError(msg) : new Error(msg);
   }
 
   const data = await response.json();
@@ -187,6 +193,14 @@ Deno.serve(async (req) => {
       );
     }
 
+    // W-9 gate — a W-9 must be on file before any payout (1099 reporting)
+    if (associate.w9_status !== 'submitted') {
+      return new Response(
+        JSON.stringify({ success: false, error: 'W-9 required before payout. The associate must submit their W-9 from the Payment tab of Work Tracking first.' }),
+        { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
     // The payee and amount are server-derived. Never accept a recipient or amount
     // override from the request body for a money-moving operation.
     const uniqueEntryIds = [...new Set(time_entry_ids)].filter((id): id is string => typeof id === 'string' && id.length > 0);
@@ -201,8 +215,17 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
+    const alreadyClaimed = await findClaimedEntries(supabase, uniqueEntryIds);
+    if (alreadyClaimed.length > 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: `${alreadyClaimed.length} of these time entries are already part of another payout` }),
+        { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+    // Shared calculator: entry rates + daily extra (see _shared/payout-breakdown.ts).
     const hourlyRate = parseFloat(associate.hourly_rate as any) || 0;
-    const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, hourlyRate);
+    const dailyExtra = parseFloat(associate.daily_extra as any) || 0;
+    const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, hourlyRate, dailyExtra);
     amount = breakdown.totalAmount;
     if (!Number.isFinite(amount) || amount <= 0) {
       return new Response(
@@ -223,41 +246,53 @@ Deno.serve(async (req) => {
       || `${associate.app_user?.first_name || ''} ${associate.app_user?.last_name || ''}`.trim()
       || 'Unknown';
     const personId = associate.app_user?.person_id || null;
+    const isTest = !!config.test_mode;
 
-    // Generate unique batch ID
+    // Claim the entries before any money moves (see _shared/payout-claims.ts).
+    const { data: payout, error: payoutPreErr } = await supabase
+      .from('payouts')
+      .insert({
+        associate_id,
+        person_id: personId,
+        person_name: personName,
+        amount,
+        payment_method: 'paypal',
+        payment_handle: paypalEmail,
+        status: 'pending',
+        time_entry_ids: uniqueEntryIds,
+        notes: isTest ? `[TEST MODE] ${notes || ''}`.trim() : (notes || null),
+        is_test: isTest,
+      })
+      .select()
+      .single();
+    if (payoutPreErr || !payout) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Could not create payout record: ${payoutPreErr?.message}` }),
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+    const claimErr = await claimEntries(supabase, payout.id, uniqueEntryIds);
+    if (claimErr) {
+      await releaseClaim(supabase, payout.id);
+      return new Response(
+        JSON.stringify({ success: false, error: `These time entries were just claimed by another payout (${claimErr})` }),
+        { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // PayPal dedupes on sender_batch_id for 30 days. Keyed on our payout row:
+    // the old key (sorted entry ids cut to 80 chars) could collide between two
+    // different payouts that shared their first entries.
     const requestedIdempotencyKey = req.headers.get('Idempotency-Key')?.trim();
-    const senderBatchId = requestedIdempotencyKey || `APC-${[...uniqueEntryIds].sort().join('-').slice(0, 80)}`;
+    const senderBatchId = requestedIdempotencyKey || `APC-${payout.id}`;
 
     // Test mode: log but don't call PayPal
-    if (config.test_mode) {
+    if (isTest) {
       console.log('TEST MODE: Would send PayPal payout:', {
         recipient: paypalEmail,
         amount,
         senderBatchId,
       });
-
-      // Create payout record (test)
-      const { data: payout, error: payoutError } = await supabase
-        .from('payouts')
-        .insert({
-          associate_id,
-          person_id: personId,
-          person_name: personName,
-          amount,
-          payment_method: 'paypal',
-          payment_handle: paypalEmail,
-          external_payout_id: `TEST-${senderBatchId}`,
-          status: 'completed',
-          time_entry_ids: uniqueEntryIds,
-          notes: `[TEST MODE] ${notes || ''}`.trim(),
-          is_test: true,
-        })
-        .select()
-        .single();
-
-      if (payoutError) {
-        console.error('Error creating test payout record:', payoutError);
-      }
 
       // Create ledger entry (test)
       const { data: ledgerEntry, error: ledgerError } = await supabase
@@ -283,17 +318,22 @@ Deno.serve(async (req) => {
         console.error('Error creating test ledger entry:', ledgerError);
       }
 
-      // Link ledger to payout
-      if (payout && ledgerEntry) {
-        await supabase.from('payouts').update({ ledger_id: ledgerEntry.id }).eq('id', payout.id);
-      }
+      await supabase.from('payouts').update({
+        status: 'completed',
+        external_payout_id: `TEST-${senderBatchId}`,
+        ledger_id: ledgerEntry?.id ?? null,
+      }).eq('id', payout.id);
+      const markErr = await markEntriesPaid(supabase, uniqueEntryIds, ledgerEntry?.id ?? null);
+      if (markErr) console.error('Error marking test entries paid:', markErr);
 
       return new Response(
         JSON.stringify({
           success: true,
           test_mode: true,
-          payout_id: payout?.id,
+          payout_id: payout.id,
           ledger_id: ledgerEntry?.id,
+          amount,
+          entries_marked_paid: !markErr,
           message: `[TEST] Would have sent $${amount.toFixed(2)} to ${paypalEmail}`,
         }),
         { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
@@ -301,34 +341,25 @@ Deno.serve(async (req) => {
     }
 
     // PRODUCTION: Send real PayPal payout
-    const accessToken = await getPayPalAccessToken(config);
-    const result = await sendPayPalPayout(accessToken, config, paypalEmail, amount, senderBatchId, notes);
+    let result: { batch_id: string; payout_item_id?: string };
+    try {
+      const accessToken = await getPayPalAccessToken(config);
+      result = await sendPayPalPayout(accessToken, config, paypalEmail, amount, senderBatchId, notes);
+    } catch (payErr) {
+      if (payErr instanceof PayPalApiError) {
+        // PayPal refused (or auth failed): no money moved. Release the claim.
+        await releaseClaim(supabase, payout.id);
+        throw payErr;
+      }
+      // Network/timeout: the payout may exist. Keep the claim so nothing re-pays.
+      await supabase.from('payouts').update({
+        status: 'failed',
+        error_message: `Outcome unknown — check PayPal for sender_batch_id ${senderBatchId} before retrying: ${(payErr as Error).message}`,
+      }).eq('id', payout.id);
+      throw new Error(`PayPal did not respond; entries stay locked to payout ${payout.id}. Check PayPal (batch ${senderBatchId}) before retrying.`);
+    }
 
     console.log('PayPal payout sent:', result);
-
-    // Create payout record
-    const { data: payout, error: payoutError } = await supabase
-      .from('payouts')
-      .insert({
-        associate_id,
-        person_id: personId,
-        person_name: personName,
-        amount,
-        payment_method: 'paypal',
-        payment_handle: paypalEmail,
-        external_payout_id: result.batch_id,
-        external_item_id: result.payout_item_id,
-        status: 'processing',
-        time_entry_ids: uniqueEntryIds,
-        notes: notes || null,
-        is_test: false,
-      })
-      .select()
-      .single();
-
-    if (payoutError) {
-      console.error('Error creating payout record:', payoutError);
-    }
 
     // Create ledger entry
     const { data: ledgerEntry, error: ledgerError } = await supabase
@@ -343,7 +374,7 @@ Deno.serve(async (req) => {
         person_name: personName,
         status: 'pending',
         description: `PayPal payout to ${personName}`,
-        notes: notes || null,
+        notes: `Batch ${result.batch_id}.${breakdown.extraAmount > 0 ? ` Incl $${breakdown.extraAmount.toFixed(2)} daily extra.` : ''}${notes ? ` ${notes}` : ''}`,
         recorded_by: 'system:paypal-payout',
         is_test: false,
       })
@@ -354,10 +385,15 @@ Deno.serve(async (req) => {
       console.error('Error creating ledger entry:', ledgerError);
     }
 
-    // Link ledger to payout
-    if (payout && ledgerEntry) {
-      await supabase.from('payouts').update({ ledger_id: ledgerEntry.id }).eq('id', payout.id);
-    }
+    await supabase.from('payouts').update({
+      status: 'processing',
+      external_payout_id: result.batch_id,
+      external_item_id: result.payout_item_id,
+      ledger_id: ledgerEntry?.id ?? null,
+    }).eq('id', payout.id);
+    // Money has moved: mark paid even if the ledger write failed.
+    const markErr = await markEntriesPaid(supabase, uniqueEntryIds, ledgerEntry?.id ?? null);
+    if (markErr) console.error('CRITICAL: PayPal payout sent but entries not marked paid:', result.batch_id, markErr);
 
     // Send payout notification email (fire-and-forget, goes through approval workflow)
     try {
@@ -376,8 +412,7 @@ Deno.serve(async (req) => {
         const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: tz });
         // PayPal payouts settle within ~30 minutes — same-day ETA
         const expectedDepositDate = `Today (${today})`;
-        const rate = parseFloat(associate.hourly_rate as any) || 0;
-        const breakdown = await buildBreakdownByEntryIds(supabase, uniqueEntryIds, rate);
+        const rate = hourlyRate;
         await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: 'POST',
           headers: {
@@ -387,7 +422,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             type: 'associate_payout_sent',
             to: recipientEmail,
-            bcc: 'alpacaplayhouse@gmail.com',
+            cc: 'alpacaplayhouse@gmail.com',
             data: {
               first_name: firstName,
               recipient_name: personName,
@@ -395,8 +430,11 @@ Deno.serve(async (req) => {
               payment_method: 'PayPal',
               payout_date: today,
               expected_deposit_date: expectedDepositDate,
-              hours: rate > 0 && amount > 0 ? (amount / rate).toFixed(2) : (breakdown.totalHours ? breakdown.totalHours.toFixed(2) : null),
+              hours: breakdown.totalHours.toFixed(2),
               hourly_rate: rate > 0 ? rate.toFixed(2) : null,
+              hourly_subtotal: breakdown.hourlyAmount.toFixed(2),
+              daily_extra: breakdown.dailyExtra.toFixed(2),
+              daily_extra_total: breakdown.extraAmount.toFixed(2),
               transfer_id: result.batch_id || null,
               period_first: breakdown.period.first || null,
               period_last: breakdown.period.last || null,
@@ -407,7 +445,7 @@ Deno.serve(async (req) => {
             }
           })
         });
-        console.log('Payout notification email queued for', recipientEmail, '(bcc admin)');
+        console.log('Payout notification email queued for', recipientEmail, '(cc admin)');
       }
     } catch (emailErr) {
       console.error('Non-fatal: payout email failed:', emailErr);
@@ -416,9 +454,12 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        payout_id: payout?.id,
+        payout_id: payout.id,
         ledger_id: ledgerEntry?.id,
         batch_id: result.batch_id,
+        amount,
+        // Lets the staff UI skip its own markPaid (see staff/payments.js).
+        entries_marked_paid: !markErr,
         message: `Sent $${amount.toFixed(2)} to ${paypalEmail} via PayPal`,
       }),
       { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }

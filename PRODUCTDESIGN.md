@@ -692,9 +692,82 @@ Each external service was chosen for specific reasons. This section documents wh
 
 **Why:** It covers the most immediate shared-area view and should be reachable without scrolling, while the existing camera grouping and quality controls continue to work unchanged.
 
+### 2026-09-28: Instant Payouts Are a Per-Associate Flag, Checked at 8 PM Central
+
+**Decision:** Associates who should be paid the same day get `associate_profiles.instant_payout = true` (first: Amber Coleman). `pay-pending-associates` then treats them as always due regardless of `payout_frequency`, runs an extra time at 8:00 PM Central (`?mode=instant`, two pg_cron jobs at 01:00/02:00 UTC with an in-function America/Chicago hour gate so it stays 8 PM across DST), and after the platform → connected-account transfer attempts a Stripe Instant Payout to the payee's debit card. If Stripe refuses, the transfer still stands and the money reaches the bank on the account's standard schedule; admin gets an "instant payout fell back" email each run until it is fixed or the flag is turned off.
+
+**Why:** Hardcoding one person into payroll code would be invisible to anyone reading the data and would need a deploy to change. A column is queryable, auditable, and reusable for the next associate. The Stripe transfer alone does not make money spendable the same day (standard Express payouts take ~2 business days), so "same day" requires Instant Payouts; making it best-effort with a fallback means a missing debit card or an instant-availability limit delays the money by days instead of blocking it. Instant Payouts carry a Stripe fee — check who bears it under Stripe Connect → Instant Payouts settings before enabling this for more associates.
+
+### 2026-09-29: Payroll Is Server-Authoritative, With One Amount Formula
+
+**Decision:** Every path that pays an associate uses one formula: each time entry's own `hourly_rate` (the profile rate only if the entry has none), plus `daily_extra` once per Central calendar day worked. That covers the nightly auto job, the 8 PM instant run, staff-initiated Stripe/PayPal payouts, and the weekly approval flow. The edge function that moves the money also claims the entries, writes the ledger row and marks the entries paid; the browser no longer does any of that bookkeeping. `pay-pending-associates` no longer accepts the public anon key.
+
+**Why:** An audit found four ways payroll could go wrong:
+- **Double pay.** The weekly approval path never marked entries paid, so the nightly job could pay the same hours again.
+- **Manual payments not sticking.** A manually recorded cash or Zelle payment wrote only `is_paid`, which the status trigger silently reverted. The hours stayed payable.
+- **Different amounts per path.** The auto job used the current profile rate; the staff UI and its warning text used the entry's rate. Only the auto job paid `daily_extra`.
+- **Open endpoint.** Anyone with the anon key could start a payroll run.
+
+Entry rates are snapshotted at clock-in, so they are the rate that was agreed for that work. Server-side bookkeeping makes each payout a single atomic step, not two calls that can half-succeed.
+
+### 2026-09-29: Uninvited Sign-Ups Become Public Accounts via Server RPC
+
+**Decision:** Anyone who signs in without a pending invitation gets a `public` `app_users` row created by the `ensure_public_app_user()` SECURITY DEFINER RPC, not by a client-side insert. The RPC derives every column (email, name, `person_id` link) from `auth.users` server-side; RLS on `app_users` still only permits invitation-backed self-inserts.
+
+**Why:** The client-side fallback insert always failed RLS, so every uninvited Google sign-in since April hit "Something went wrong creating your account." A looser INSERT policy would let the client choose `person_id`, `is_current_resident`, and other privileged columns on its own row.
+
+### 2026-09-29: app_users Is Not Publicly Readable
+
+**Decision:** The `temp_read_app_users` policy (`USING (true)`, any role including anon) is replaced by two SELECT policies: every signed-in user reads their own row (`auth_user_id = auth.uid()`), and admin/oracle/staff read all rows (via the SECURITY DEFINER helper `is_staff_or_admin_user()`). Nothing is readable by anon. Anything outside that goes through narrow RPCs: `get_directory_profile(slug)` for public profile pages (privacy settings applied in the database, gated fields returned as null, never email/allergies/dietary/privacy_settings), `list_member_directory()` for residents and associates who need other members' names (names and role only), `is_slug_available(slug)`, and `get_upload_token_name(token)` for the tokenized W-9 and ID upload pages. The `demo` role and residents granted a staff tab by permission do **not** get read-all; staff pages they open will show empty user lists.
+
+**Why:** Anyone with the public anon key could pull every user's phone, birthday, email, allergies and home base in one request. Profile privacy settings were enforced only in the browser, so they protected nothing. The demo account is for showing the product to outsiders, so giving it every real user's contact details would recreate the leak for anyone holding the demo login. Its screens already redact names, so empty lists cost little.
+
+### 2026-09-29: upload_tokens Is Staff-Only; Public Pages Use an Exact-Match RPC
+
+**Decision:** `upload_tokens` loses `anon_select_upload_tokens` (anon SELECT, `USING true`) and `authenticated_all_upload_tokens` (any signed-in user, ALL). Direct table access is now service role (edge functions) plus admin/oracle/staff via `is_staff_or_admin_user()`. The tokenized pages `rentals/verify.html` and `rentals/w9.html` call `get_upload_token(p_token)`, which returns only the matching row's type, used/expiry state, holder IDs and first/last names. It returns used and expired rows so the pages can show the right message. Associates and residents who start their own ID check mint a token through `request_my_identity_upload_token()`, which always binds the token to the caller's own `app_users` row.
+
+**Why:** Each token is a bearer credential for submitting someone's W-9 (SSN/EIN) or photo ID. Anyone with the public anon key could list every unused token and submit documents as another person. Self-service minting goes through an RPC and not an own-row INSERT policy because an INSERT policy would let the client pick `person_id`, `token_type` and `expires_at`.
+
+### 2026-09-29: Apply Page Landing Telemetry and Daily Digest
+
+**Decision:** `/rentals/apply/` records a `view` on load and `form_started` on first keystroke into `page_events`, through the `track_page_event()` RPC. The `apply-page-digest` function emails alpacaplayhouse@gmail.com at 8 AM Central with yesterday's visitors, how many started the form, inquiries, full applications, top traffic sources, and a 7-day trend. Visitors are counted by a random per-tab id kept in `sessionStorage`. Only the referring site's host and UTM tags are kept. Staff visits and staff test mode are excluded. Step-2 visits (the continue link from email) are counted separately from new landings.
+
+**Why:** We had no way to see how many people reach the application page versus how many inquire, so we couldn't tell whether a slow week meant low traffic or a form problem. Writes go through a validated RPC, not an anon-insertable table, in line with the recent move away from open anon table access. No persistent visitor id, IP, or full URL is stored, so the telemetry holds no personal information.
+
+### 2026-10-03: No Associate Payout Without a W-9 On File
+
+**Decision:** Every path that pays an associate (`stripe-payout`, `paypal-payout`, and the nightly/8 PM `pay-pending-associates` run) refuses to pay unless `associate_profiles.w9_status = 'submitted'`, alongside the existing ID-verification gate. The nightly run reports these as `skipped: 'w9_missing'` instead of silently dropping them. Associates fill the W-9 themselves from a banner on the Work Tracking Payment tab, which mints their own link through `request_my_w9_upload_token()` (reuses an open link, 14-day expiry). Returning from Stripe Connect onboarding prompts for the W-9 as the last step.
+
+**Why:** Stripe Express onboarding collects tax details inside Stripe, but the platform cannot read them back through the API, and PayPal/other methods collect nothing. W-9s were only sent by hand, so associates were being paid with no W-9 on file (two of six paid in 2026). 1099-NEC reporting needs the payee's TIN on our side; collecting it before the first payout is the only point where it reliably happens.
+
+### 2026-10-04: Payroll Cron Failures Are Alerted From Postgres, Not From the Functions
+
+**Decision:** Every payroll pg_cron job calls `public.payroll_cron_post()`, which records the pg_net request id in `payroll_cron_requests`. An hourly SQL watchdog (`payroll_cron_watchdog()`, cron `payroll-cron-watchdog`) copies each response and emails ADMIN_ALERT_EMAILS directly through Resend when a call returns non-2xx, times out, or gets no response. The Resend key for this lives in Vault (`resend_api_key`). The watchdog never goes through an edge function or `payroll_cron_bearer()`.
+
+**Why:** From 2026-09-29 to 2026-10-04 every pay-pending-associates cron call got 401 because the Vault service key was stale. The function rejected the calls before its own alert code could run, and pg_cron reported success. Any alert path that shares the payroll bearer fails along with the thing it is watching. `net._http_response` has no URL and is purged after about 6 hours, so the request id must be captured when the call is made, and the check must run hourly.
+
+### 2026-10-09: Device Credentials Are Staff-Only, Including Kiosk RPCs
+
+**Decision:** Direct access to Google TTS, LG, Anova, Govee, Nest, Home Assistant, weather, Vapi, and Tesla credential tables requires staff/admin/oracle identity. Server workers keep service-role access. The Home Assistant kiosk RPC also checks the caller and rejects anonymous callers and non-staff accounts. Printer check codes join proxy secrets as server-only columns. Existing Stripe/PayPal/Telnyx/Spotify secret-column restrictions stay server-only; publishable payment configuration remains public.
+
+**Why:** Row-level security alone was insufficient: permissive policies let ordinary accounts read device tokens, LG had an anonymous read path, and a SECURITY DEFINER kiosk RPC bypassed Home Assistant's table policy to return the full token publicly. Restricting the real database and RPC paths protects secrets even if someone skips the UI. Public kiosk HA chat and direct weather displays now require staff authentication or a future server proxy; they must not receive service credentials to regain functionality. Browser roles also lose TRUNCATE, which bypasses row policies.
+
+Rental invitation bearer tokens are also staff-only in the raw table. The public listing uses `validate_rental_access_token(token)`, which returns only a boolean for the supplied token, preserving invitation links without exposing the token inventory.
+
+### 2026-10-09: Identity Documents, Payouts and Signed Leases Are Not Public
+
+**Decision:** `identity_verifications` is staff-only, except that a signed-in user can read their own row. `payouts`, `payment_reminders`, `vehicle_rentals`, `event_payments`, `signature_audit_log` and `payout_time_entries` are staff-only. Anonymous visitors can still read assignments, lease/event templates and printer devices, but only staff can write them. Todo, work-group, schedule and permit tables need a signed-in user to write. `system_commands` and `sonos_health_samples` now have RLS, and only server writers can write to them. Nobody outside staff can list, overwrite or delete files in the `lease-documents` bucket. Existing public lease links still resolve by exact path. ID photos were moved to new storage paths so that every earlier signed link stopped working.
+
+**Why:** An anonymous visitor could read driver's licence data and year-long signed links to the licence photos. They could also rewrite payouts and assignments, and list, replace or delete signed leases. Applicant-facing flows (rental apply/status, host-event, waiver, `people`) still allow anonymous access. Each needs a token-scoped RPC before its table can be closed.
+
+### 2026-10-09: Public Pages Reach Personal Data Only Through Scoped Functions
+
+**Decision:** The anonymous key cannot read or write `people`, `rental_applications`, event requests, waivers or rental payments. Public pages (apply, application status, host an event, book, waiver, contact, hall kiosk/TV) each call a SECURITY DEFINER function. The function takes the visitor's own identifier (application link, status token, email for current residents, new request id), touches only that record, and returns only the fields the page shows. Square's card form gets its public app and location ids from `get_square_public_config()`. Access tokens never leave the server.
+
+**Why:** The anonymous key is public, so any table it can read is readable by everyone. 83 people's contact details and 42 applications, including their signing tokens, were exposed. Scoped functions keep the public flows working without exposing any table.
+
 ### 2026-10-10: Oracle A1 Provisioning Is a Supervised, Self-Terminating Job
 
 **Decision:** Claiming the Oracle Cloud Always Free A1 VM is done by `scripts/oci-a1-provisioner/`, a launchd agent on Alpuca that makes one `LaunchInstance` attempt per 2-minute tick and keeps an explicit state machine (`active` → `done` / `fatal` / `expired`) in `~/.local/state/oci-a1-provisioner/state.json`. Before every launch it checks OCI for a live instance with the configured name (idempotency), and it refuses to launch outside the tenancy's home region. Errors that retrying can't fix (`LimitExceeded`, 401, 400/404, repeated unknown errors or crashes) stop the job and notify. It sends a heartbeat every 7 days and gives up after 90. The legacy `oracle-auto-provision.sh` infinite loop and the browser-console retry scripts were removed.
 
 **Why:** The legacy loop ran unsupervised for months: it targeted Phoenix while the goal had moved to Montreal, kept retrying errors that retrying can't fix, and its LaunchAgent's `WatchPaths` restarted it on success. Nobody could tell whether it was still running. A short-lived, stateful, observable job can't silently run forever, can't double-launch, and anyone (person or agent) can take it over from the README.
-

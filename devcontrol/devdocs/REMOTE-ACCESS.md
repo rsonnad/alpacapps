@@ -106,7 +106,7 @@ ssh -o StrictHostKeyChecking=no paca@100.74.59.97 \
 # Port-forward UDM web UI (local:8443 -> UDM:443)
 ssh -o StrictHostKeyChecking=no -f -N -L 8443:192.168.1.1:443 paca@100.74.59.97
 # Then open: https://localhost:8443/  (accept self-signed cert)
-# Login: alpacaauto / (BW: "UniFi Dream Machine Pro — Network Gateway")
+# Login: codingagent / (BW: "UniFi Dream Machine Pro — Network Gateway")
 
 # Kill the tunnel when done
 lsof -ti:8443 | xargs kill
@@ -260,7 +260,7 @@ ssh paca@100.74.59.97 "sshpass -p '\$(bw-read \"UniFi Dream Machine Pro — Netw
 | Account | Method | Permissions | Use for |
 |---------|--------|-------------|---------|
 | `root` | SSH only | Full root shell | Firewall rules, iptables, system config |
-| `alpacaauto` | Web API | Super Admin (read-write with CSRF) | Network settings, client listing |
+| `codingagent` | Web API | Super Admin (read-write with CSRF) | Network settings, client listing |
 
 **UDM SSH requires `-o PubkeyAuthentication=no`** — without it, SSH tries pubkey, fails, then keyboard-interactive skips the password prompt. The `Host udm` block in **Method 0** sets this; if invoking ssh by hand, add the flag.
 

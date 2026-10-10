@@ -929,7 +929,7 @@
     <a href="/" class="site-nav__logo">
       <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/alpaca-head-white-transparent.png" alt="Alpaca Playhouse Austin" class="site-nav__icon">
       <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/logos/wordmark-white-transparent.png" alt="Alpaca Playhouse Austin" class="site-nav__wordmark">
-      <span title="Site version" class="site-nav__version">v260925.06 3:57p</span>
+      <span title="Site version" class="site-nav__version">v261010.02 12:51p</span>
     </a>
     <ul class="site-nav__links">
       <li><a href="/visiting/">Visiting</a></li>
@@ -1434,7 +1434,7 @@
     let staffAuthState = null;
 
     // Non-blocking auth check for staff sandbox toggle
-    (async () => {
+    const staffCheck = (async () => {
       try {
         await initAuth();
         staffAuthState = getAuthState();
@@ -1456,6 +1456,36 @@
         // Auth failure is fine — regular tenant, no toggle shown
       }
     })();
+
+    // Landing telemetry for the daily apply-page-digest email. Fire-and-forget:
+    // never blocks or breaks the form. Staff visits are flagged and excluded.
+    const TRACK_PAGE = 'rentals/apply';
+    function trackSessionId() {
+      try {
+        let id = sessionStorage.getItem('apply_track_sid');
+        if (!id) { id = crypto.randomUUID(); sessionStorage.setItem('apply_track_sid', id); }
+        return id;
+      } catch (e) { return null; }
+    }
+    async function trackEvent(event) {
+      try {
+        await Promise.race([staffCheck, new Promise(r => setTimeout(r, 3000))]);
+        if (staffTestMode) return;
+        await supabase.rpc('track_page_event', {
+          p_page: TRACK_PAGE,
+          p_event: event,
+          p_step: isStep2 ? 2 : 1,
+          p_session_id: trackSessionId(),
+          p_referrer: document.referrer || null,
+          p_utm_source: urlParams.get('utm_source'),
+          p_utm_medium: urlParams.get('utm_medium'),
+          p_utm_campaign: urlParams.get('utm_campaign'),
+          p_is_staff: !!staffAuthState?.isStaff,
+        });
+      } catch (e) { /* telemetry must never affect the page */ }
+    }
+    trackEvent('view');
+    document.getElementById('applicationForm')?.addEventListener('input', () => trackEvent('form_started'), { once: true });
 
     function updateSandboxUI(active) {
       const badge = document.getElementById('staffTestBadge');
@@ -1494,7 +1524,6 @@
     let appliedCode = null;
     let squareCard = null;
     let squarePayments = null;
-    let continuePersonId = null;
     let submittedFirstName = '';
     let submittedEmail = '';
 
@@ -1569,18 +1598,57 @@
     // =============================================
     // STEP 2 INITIALIZATION
     // =============================================
+    // Mark a square_payments record completed/failed. Logs (doesn't throw) on failure.
+    async function settleSquarePaymentRecord(recordId, status, result) {
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/settle_square_payment_record`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            p_record_id: recordId,
+            p_status: status,
+            p_square_payment_id: result?.paymentId || null,
+            p_square_order_id: result?.orderId || null,
+            p_square_receipt_url: result?.receiptUrl || null,
+            p_error: result?.error || null
+          })
+        });
+        if (!resp.ok) console.error('settle_square_payment_record failed:', resp.status, await resp.text().catch(() => ''));
+      } catch (err) {
+        console.error('settle_square_payment_record failed:', err);
+      }
+    }
+
+    // Mark the application fee as recorded. Non-blocking: payment already went through.
+    async function recordApplicationFee(amount) {
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_record_fee`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_application_id: continueAppId, p_amount: amount, p_code: appliedCode })
+        });
+        if (!resp.ok) {
+          console.error('apply_record_fee failed:', resp.status, await resp.text().catch(() => ''));
+        } else if ((await resp.json()) !== true) {
+          console.error('apply_record_fee did not update the application (not submitted or already paid)');
+        }
+      } catch (e) {
+        console.error('apply_record_fee error:', e);
+      }
+    }
+
     async function initStep2() {
       if (!isStep2) return;
 
       try {
-        // Fetch the application + person data
-        const appResp = await fetch(
-          `${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}&select=*,person:person_id(*)`,
-          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-        );
+        // Fetch the application + applicant name
+        const appResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_get_application`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_application_id: continueAppId })
+        });
         if (!appResp.ok) throw new Error('Failed to load application');
-        const apps = await appResp.json();
-        const appData = apps[0];
+        const appData = await appResp.json();
 
         if (!appData || appData.application_status !== 'inquiry') {
           showError('This application link is no longer valid or has already been completed.');
@@ -1588,13 +1656,10 @@
           return;
         }
 
-        continuePersonId = appData.person_id;
-        const person = appData.person;
-
         // Update UI for Step 2
         document.getElementById('headerSubtitle').textContent = 'Complete Your Application';
         document.getElementById('step2Name').textContent =
-          `${person.first_name || ''} ${person.last_name || ''}`.trim();
+          `${appData.first_name || ''} ${appData.last_name || ''}`.trim();
         document.getElementById('step1Sections').classList.add('hidden');
         document.getElementById('step2Sections').classList.remove('hidden');
         submitBtn.textContent = 'Submit Application';
@@ -1723,12 +1788,14 @@
     async function initializeSquare() {
       if (squarePayments) return;
       try {
-        const configResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/square_config?select=sandbox_app_id,production_app_id,sandbox_location_id,production_location_id,test_mode`,
-          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Cache-Control': 'no-cache' } }
-        );
+        const configResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_square_public_config`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+          body: '{}'
+        });
         if (!configResponse.ok) throw new Error('Failed to load Square config');
-        const [config] = await configResponse.json();
+        const config = await configResponse.json();
+        if (!config) throw new Error('Square is not configured');
         squareIsTestMode = staffTestMode || config.test_mode;
         const appId = squareIsTestMode ? config.sandbox_app_id : config.production_app_id;
         const locationId = squareIsTestMode ? config.sandbox_location_id : config.production_location_id;
@@ -2123,36 +2190,27 @@
           myspace: getValue('myspace'),
         };
 
-        // PATCH existing person record
-        await fetch(`${SUPABASE_URL}/rest/v1/people?id=eq.${continuePersonId}`, {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(personUpdate)
-        });
-
-        // PATCH rental application to 'submitted'
+        // Update person + mark application 'submitted' (one RPC)
         const appUpdate = {
-          application_status: 'submitted',
           desired_space_id: getValue('desired_space_id') || null,
           desired_move_in: getValue('desired_move_in') || null,
           desired_term: getValue('desired_term') || null,
-          submitted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
         };
 
-        await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
-          method: 'PATCH',
+        const submitResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_submit_application`, {
+          method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': `Bearer ${SUPABASE_KEY}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(appUpdate)
+          body: JSON.stringify({ p_application_id: continueAppId, p_person: personUpdate, p_application: appUpdate })
         });
+        if (!submitResp.ok) {
+          const errBody = await submitResp.json().catch(() => null);
+          throw new Error(errBody?.message || 'Failed to submit application. Please try again.');
+        }
+        const submittedApp = await submitResp.json();
 
         // Process payment if fee > 0
         if (feeAmount > 0) {
@@ -2168,36 +2226,29 @@
             throw new Error(rawMsg);
           }
 
-          // Get person email for receipt
-          const personResp = await fetch(`${SUPABASE_URL}/rest/v1/people?id=eq.${continuePersonId}&select=email,first_name,last_name`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-          });
-          const [personInfo] = await personResp.json();
+          // Person email for receipt (returned by the submit RPC)
+          const personInfo = submittedApp;
           const buyerEmail = personInfo?.email || '';
           const buyerName = `${personInfo?.first_name || ''} ${personInfo?.last_name || ''}`.trim();
 
-          const paymentRecordResponse = await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+          // Create the payment record first; never charge without one
+          const paymentRecordResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_square_payment_record`, {
             method: 'POST',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=representation'
-            },
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              payment_type: FEE_TYPE,
-              reference_type: 'rental_application',
-              reference_id: continueAppId,
-              amount: feeAmount,
-              fee_code_used: appliedCode,
-              original_amount: originalAmount,
-              status: 'pending',
-              is_test: staffTestMode,
-              test_mode_overridden_by: staffTestMode && staffAuthState?.appUser?.id ? staffAuthState.appUser.id : null
+              p_reference_type: 'rental_application',
+              p_reference_id: continueAppId,
+              p_payment_type: FEE_TYPE,
+              p_amount: feeAmount,
+              p_fee_code: appliedCode || null,
+              p_original_amount: originalAmount
             })
           });
-          if (!paymentRecordResponse.ok) throw new Error('Failed to create payment record');
-          const [paymentRecord] = await paymentRecordResponse.json();
+          if (!paymentRecordResponse.ok) {
+            console.error('create_square_payment_record failed:', paymentRecordResponse.status, await paymentRecordResponse.text().catch(() => ''));
+            throw new Error('Could not start the payment. Please try again.');
+          }
+          const paymentRecord = { id: await paymentRecordResponse.json() };
 
           // Build edge function request
           const edgeFunctionBody = {
@@ -2229,25 +2280,13 @@
           const processResult = await processResponse.json();
 
           if (!processResult.success) {
-            await fetch(`${SUPABASE_URL}/rest/v1/square_payments?id=eq.${paymentRecord.id}`, {
-              method: 'PATCH',
-              headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'failed', error_message: processResult.error, updated_at: new Date().toISOString() })
-            });
+            await settleSquarePaymentRecord(paymentRecord.id, 'failed', processResult);
             throw new Error(processResult.error || 'Payment failed');
           }
 
-          await fetch(`${SUPABASE_URL}/rest/v1/square_payments?id=eq.${paymentRecord.id}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'completed', square_payment_id: processResult.paymentId, square_order_id: processResult.orderId, square_receipt_url: processResult.receiptUrl, updated_at: new Date().toISOString() })
-          });
+          await settleSquarePaymentRecord(paymentRecord.id, 'completed', processResult);
 
-          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ application_fee_paid: true, application_fee_amount: feeAmount, application_fee_code: appliedCode })
-          });
+          await recordApplicationFee(feeAmount);
 
           if (appliedCode) {
             await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_fee_code_usage`, {
@@ -2257,35 +2296,33 @@
             });
           }
         } else if (feeAmount === 0) {
-          await fetch(`${SUPABASE_URL}/rest/v1/square_payments`, {
+          await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_square_payment_record`, {
             method: 'POST',
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ payment_type: FEE_TYPE, reference_type: 'rental_application', reference_id: continueAppId, amount: 0, fee_code_used: appliedCode, original_amount: originalAmount, status: 'completed' })
-          });
+            body: JSON.stringify({ p_reference_type: 'rental_application', p_reference_id: continueAppId, p_payment_type: FEE_TYPE, p_amount: 0, p_fee_code: appliedCode || null, p_original_amount: originalAmount })
+          }).catch(err => console.error('create_square_payment_record ($0) failed:', err));
 
-          await fetch(`${SUPABASE_URL}/rest/v1/rental_applications?id=eq.${continueAppId}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ application_fee_paid: true, application_fee_amount: 0, application_fee_code: appliedCode })
-          });
+          await recordApplicationFee(0);
         }
 
         // Insert previous residence if provided
         const prevAddress = getValue('prev_address');
         if (prevAddress) {
-          await fetch(`${SUPABASE_URL}/rest/v1/previous_residences`, {
+          await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_add_previous_residence`, {
             method: 'POST',
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              person_id: continuePersonId,
-              address: prevAddress,
-              start_date: getValue('prev_start_date') || null,
-              end_date: getValue('prev_end_date') || null,
-              landlord_name: getValue('landlord_name'),
-              landlord_contact: getValue('landlord_contact'),
-              reason_for_leaving: getValue('reason_for_leaving')
+              p_application_id: continueAppId,
+              p_residence: {
+                address: prevAddress,
+                start_date: getValue('prev_start_date') || null,
+                end_date: getValue('prev_end_date') || null,
+                landlord_name: getValue('landlord_name'),
+                landlord_contact: getValue('landlord_contact'),
+                reason_for_leaving: getValue('reason_for_leaving')
+              }
             })
-          });
+          }).catch(err => console.error('apply_add_previous_residence failed:', err));
         }
 
         // Populate success summary

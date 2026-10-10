@@ -429,7 +429,7 @@ YouTube Music and Spotify tokens can expire if DNS is broken (e.g., Tailscale DN
 
 - **After firmware updates or reboots:** Re-check kernel `multicast_snooping` via SSH — it resets to default (ON) on every reboot. Run: `cat /sys/devices/virtual/net/br0/bridge/multicast_snooping` — should be `0`.
 - **After AP firmware updates:** Check multicast settings haven't been reset
-- **Settings are in MongoDB** (port 27117 on UDM Pro) or via **REST API** (PUT with CSRF token — `alpacaauto` is Super Admin)
+- **Settings are in MongoDB** (port 27117 on UDM Pro) or via **REST API** (PUT with CSRF token — `codingagent` is Super Admin)
 
 #### How to read/write UDM Pro settings
 
@@ -497,7 +497,7 @@ Key MongoDB collections: `wlanconf` (WiFi), `networkconf` (LAN), `device` (switc
    ```
 3. Set `provisioned_at:0` on all UAPs/USWs to force controller re-push of config.
 
-Mongo writes bypass alpacaauto's read-only REST role (which 403s on PUT). Use the `expect` wrapper in `memory/service-access.md` § UDM Pro.
+Mongo writes bypass codingagent's read-only REST role (which 403s on PUT). Use the `expect` wrapper in `memory/service-access.md` § UDM Pro.
 
 ### Verified current WLAN state ("Black Rock City", post-change)
 
@@ -609,13 +609,13 @@ Reverting controller IGMP to `false` matches the 2026-03-06 stable snapshot (`ne
 
 ### Fix surface — write recipe
 
-`alpacaauto` has Super Admin role. Earlier note that called it "API read-only" was a CSRF-extraction bug. **CSRF lives in the `x-csrf-token` response header on login, not in the cookie file's `TOKEN` (that's a JWT).** Recipe in `memory/service-access.md` §8.
+`codingagent` has Super Admin role. Earlier note that called it "API read-only" was a CSRF-extraction bug. **CSRF lives in the `x-csrf-token` response header on login, not in the cookie file's `TOKEN` (that's a JWT).** Recipe in `memory/service-access.md` §8.
 
 ```bash
 # Capture CSRF from login RESPONSE HEADER
 HEADERS=$(curl -sk -i -c /tmp/uc.txt -X POST 'https://192.168.1.1/api/auth/login' \
   -H 'Content-Type: application/json' \
-  -d "{\"username\":\"alpacaauto\",\"password\":\"$BW_PASS\",\"remember\":true}")
+  -d "{\"username\":\"codingagent\",\"password\":\"$BW_PASS\",\"remember\":true}")
 CSRF=$(echo "$HEADERS" | grep -i '^x-csrf-token:' | tr -d '\r' | awk '{print $2}')
 
 # Set channel on an AP
@@ -770,7 +770,7 @@ AP 2.4 GHz plan still matches the 2026-05-06 fix: 4 APs ch1, 4 APs ch6, **0 on c
    ```bash
    source ~/.unifi-snapshot.env
    curl -sk -c /tmp/uc.txt -X POST 'https://192.168.1.1/api/auth/login' -H 'Content-Type: application/json' \
-     -d "{\"username\":\"alpacaauto\",\"password\":\"$UDM_WEB_PASS\",\"remember\":true}" -D /tmp/uh.txt >/dev/null
+     -d "{\"username\":\"codingagent\",\"password\":\"$UDM_WEB_PASS\",\"remember\":true}" -D /tmp/uh.txt >/dev/null
    CSRF=$(grep -i '^x-csrf-token:' /tmp/uh.txt | tr -d '\r' | awk '{print $2}')
    UID_=$(curl -sk -b /tmp/uc.txt 'https://192.168.1.1/proxy/network/api/s/default/rest/user' \
      | python3 -c "import sys,json;print([u['_id'] for u in json.load(sys.stdin)['data'] if u['mac']=='00:0e:58:21:e8:e0'][0])")

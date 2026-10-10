@@ -15,6 +15,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { rollupEntries } from "../_shared/payout-breakdown.ts";
 
 serve(async (_req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -53,6 +54,9 @@ serve(async (_req) => {
         .select("id, clock_in, clock_out, duration_minutes, description, hourly_rate, space_id, is_manual")
         .eq("associate_id", assoc.id)
         .eq("is_paid", false)
+        // Open shifts can't be paid: stripe-payout rejects the whole batch if
+        // one is included, which failed the approved payout outright.
+        .not("clock_out", "is", null)
         .order("clock_in", { ascending: true });
 
       if (entryErr) {
@@ -130,7 +134,10 @@ serve(async (_req) => {
       }
 
       const totalHours = totalMinutes / 60;
-      const amount = Math.round(totalHours * rate * 100) / 100;
+      // Same calculator stripe-payout uses on approval (entry rates + daily
+      // extra), so the amount approved here is the amount that gets sent.
+      const money = rollupEntries(entries as any, rate, undefined, parseFloat(assoc.daily_extra || "0") || 0);
+      const amount = money.totalAmount;
 
       // Determine period range
       const firstDate = new Date(entries[0].clock_in).toLocaleDateString("en-US", {
@@ -218,7 +225,7 @@ serve(async (_req) => {
   </tbody>
 </table>
 
-<p style="margin:0 0 8px;color:#7d6f74;font-size:13px;">${entries.length} time entries &bull; ${totalHours.toFixed(2)} hrs &times; $${rate.toFixed(2)}/hr = <strong>$${amount.toFixed(2)}</strong></p>
+<p style="margin:0 0 8px;color:#7d6f74;font-size:13px;">${entries.length} time entries &bull; ${totalHours.toFixed(2)} hrs${money.extraAmount > 0 ? ` + $${money.extraAmount.toFixed(2)} daily extra (${money.dayCount} day${money.dayCount === 1 ? "" : "s"})` : ""} = <strong>$${amount.toFixed(2)}</strong></p>
 ${!hasStripe ? `<div style="background:#fff8e1;border-left:4px solid #f9a825;padding:14px 20px;margin:16px 0;border-radius:0 8px 8px 0;">
   <p style="margin:0;font-weight:600;color:#e65100;">\u26a0\ufe0f Stripe Not Set Up</p>
   <p style="margin:4px 0 0;color:#2a1f23;font-size:14px;">${firstName} needs to complete Stripe Connect onboarding before payment can be sent. A setup link will be generated on approval.</p>

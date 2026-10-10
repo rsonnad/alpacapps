@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Where the Millionaires Live</title>
+  <meta name="description" content="Millionaires and billionaires across 25 markets, as raw counts and per-capita rates.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <script type="module" src="/shared/version-info.js"></script>
+  <style>
+    :root {
+      --ink: #14213d;
+      --muted: #6f6a5c;
+      --faint: #a39d8d;
+      --paper: #f7f4ec;
+      --card: #ffffff;
+      --line: #ece6d8;
+      --rule: #14213d;
+      --divider: #b8860b;
+      --teal: #2a9d8f;
+      --gold: #d4a52c;
+      --track: #f1ede3;
+      --top: #fdf6e3;
+      --hero-a: #14213d;
+      --hero-b: #26396a;
+      --hero-ink: #ffffff;
+      --hero-muted: #c9d2e6;
+      --accent: #e9c46a;
+      --shadow: 0 18px 45px rgba(20, 33, 61, 0.10);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #eef0f6;
+        --muted: #a9adba;
+        --faint: #747a8a;
+        --paper: #0f1424;
+        --card: #161d31;
+        --line: #232c45;
+        --rule: #e9c46a;
+        --divider: #e9c46a;
+        --teal: #3fbfae;
+        --gold: #e9c46a;
+        --track: #222b42;
+        --top: #1f2638;
+        --hero-a: #0b1020;
+        --hero-b: #1c2a50;
+        --shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 16px 56px; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--hero-a) 0%, var(--hero-b) 100%);
+      color: var(--hero-ink);
+      border-radius: 20px;
+      padding: 34px 32px 30px;
+      box-shadow: var(--shadow);
+    }
+    .kicker { font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+    .hero h1 { margin: 6px 0 6px; font: 700 clamp(1.9rem, 4.5vw, 2.9rem)/1.1 Georgia, "Times New Roman", serif; }
+    .hero p { margin: 0; color: var(--hero-muted); max-width: 640px; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 18px 0 22px; }
+    .stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+    .stat b { display: block; font: 700 1.6rem/1.1 Georgia, serif; }
+    .stat small { color: var(--muted); font-size: 0.8rem; }
+    .stat.m b { color: var(--teal); }
+    .stat.b b { color: var(--gold); }
+
+    /* Table */
+    .table-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+    .scroller { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; min-width: 640px; font-variant-numeric: tabular-nums; }
+    th, td { padding: 10px 14px; text-align: right; white-space: nowrap; }
+    th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--card); z-index: 1; }
+
+    thead .group th { padding: 14px 14px 4px; font: 700 0.82rem/1 Georgia, serif; letter-spacing: 0.04em; text-align: center; }
+    thead .group .gm { color: var(--teal); }
+    thead .group .gb { color: var(--gold); }
+    thead .group th span { display: inline-block; padding-bottom: 6px; border-bottom: 2px solid currentColor; }
+
+    thead .cols th {
+      font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+      border-bottom: 2px solid var(--rule); padding-top: 8px; cursor: pointer; user-select: none;
+    }
+    thead .cols th:hover { color: var(--ink); }
+    thead .cols th.on { color: var(--ink); }
+    thead .cols th .arrow { display: inline-block; width: 0.9em; color: var(--divider); }
+
+    /* The divider between the millionaire and billionaire groups */
+    .split { border-left: 2px solid var(--divider); }
+
+    tbody td { border-bottom: 1px solid var(--line); }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover td { background: var(--top); }
+    tbody tr.top td { background: var(--top); }
+    .rk { display: inline-block; width: 1.8em; color: var(--faint); font-size: 0.78rem; }
+    .mkt { font-weight: 600; }
+
+    .num { display: block; }
+    .bar { display: block; height: 4px; margin-top: 4px; background: var(--track); border-radius: 2px; position: relative; overflow: hidden; }
+    .bar i { position: absolute; right: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--teal); }
+    .b .bar i { background: var(--gold); }
+    td.rate .num { font-weight: 600; }
+
+    .hint { color: var(--muted); font-size: 0.8rem; margin: 10px 4px 0; }
+
+    /* Notes */
+    h2 { font: 700 1.4rem/1.2 Georgia, serif; margin: 38px 0 14px; }
+    .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+    .note { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--teal); border-radius: 12px; padding: 14px 16px; font-size: 0.92rem; color: var(--muted); }
+    .note:nth-child(2) { border-left-color: var(--gold); }
+    .note:nth-child(3) { border-left-color: var(--gold); }
+    .note:nth-child(4) { border-left-color: var(--faint); }
+    .note b { display: block; color: var(--ink); font-size: 1rem; margin-bottom: 4px; }
+    .fine { margin-top: 18px; font-size: 0.82rem; color: var(--muted); font-style: italic; }
+
+    @media (max-width: 600px) {
+      .wrap { padding-top: 16px; }
+      .hero { padding: 24px 20px 22px; border-radius: 16px; }
+      th, td { padding: 9px 10px; }
+      .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .stat { padding: 12px; }
+      .stat b { font-size: 1.35rem; }
+      table { min-width: 520px; }
+      th:first-child, td:first-child { box-shadow: 6px 0 8px -6px rgba(0, 0, 0, 0.25); }
+      .rk { width: 1.7em; }
+      .mkt { font-size: 0.86rem; white-space: normal; display: inline-block; max-width: 7.5em; line-height: 1.2; vertical-align: middle; }
+    }
+  </style>
+  <script src="/rahulio/page-header.js" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="kicker">Wealth by market</div>
+      <h1>Where the Millionaires Live</h1>
+      <p>Millionaires and billionaires in 25 markets, as raw counts and as rates per head of population.</p>
+    </header>
+
+    <section class="stats" aria-label="Headline numbers">
+      <div class="stat m"><b>23.8M</b><small>Millionaires in the United States</small></div>
+      <div class="stat m"><b>124</b><small>Millionaires per 1,000 in Switzerland</small></div>
+      <div class="stat b"><b>989</b><small>Billionaires in the United States</small></div>
+      <div class="stat b"><b>9.47</b><small>Billionaires per million in Hong Kong</small></div>
+    </section>
+
+    <div class="table-card">
+      <div class="scroller">
+        <table id="wealth">
+          <thead>
+            <tr class="group">
+              <th></th>
+              <th colspan="2" class="gm"><span>Millionaires</span></th>
+              <th colspan="2" class="gb split"><span>Billionaires</span></th>
+            </tr>
+            <tr class="cols">
+              <th data-col="0" data-type="text">Market<span class="arrow"></span></th>
+              <th data-col="1">Millions<span class="arrow"></span></th>
+              <th data-col="2">Per 1,000<span class="arrow"></span></th>
+              <th data-col="3" class="split">Count<span class="arrow"></span></th>
+              <th data-col="4">Per million<span class="arrow"></span></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <p class="hint">Tap a column header to sort. Bars show each value against the largest in its column.</p>
+
+    <h2>Notes on the per-capita picture</h2>
+    <div class="notes">
+      <div class="note"><b>Small hubs lead</b>Small, high-income financial/tech hubs stand out sharply: Hong Kong, Singapore, and Switzerland show the highest density of both millionaires and (especially) billionaires relative to population.</div>
+      <div class="note"><b>The US and Australia</b>The United States and Australia remain very strong on millionaires per capita; the U.S. also leads large countries on billionaires per capita.</div>
+      <div class="note"><b>Punching above their weight</b>Germany, Sweden, Taiwan, and Norway punch above their weight on billionaires per million people relative to many peers with similar or higher millionaire counts.</div>
+      <div class="note"><b>The scale effect</b>Large-population countries (China, India, Brazil, Mexico, Russia) have very low rates on both metrics, as expected given their scale.</div>
+    </div>
+    <p class="fine">Figures are approximate (population rounding and slight timing differences between millionaire and billionaire datasets). Exact per-capita rates will shift with updated population or wealth counts.</p>
+  </div>
+
+  <script>
+    // [market, millionaires, millionaires per 1,000, billionaires, billionaires per million]
+    const ROWS = [
+      ['United States', 23831000, 69.7, 989, 2.89],
+      ['Mainland China', 6327000, 4.5, 539, 0.38],
+      ['France', 2897000, 42.2, 51, 0.74],
+      ['Japan', 2732000, 22.2, 41, 0.33],
+      ['Germany', 2675000, 32.0, 212, 2.54],
+      ['United Kingdom', 2624000, 37.8, 56, 0.81],
+      ['Canada', 2098000, 50.3, 82, 1.97],
+      ['Australia', 1904000, 69.0, 47, 1.70],
+      ['Italy', 1344000, 22.8, 89, 1.51],
+      ['South Korea', 1301000, 25.2, 49, 0.95],
+      ['Netherlands', 1267000, 69.6, 13, 0.71],
+      ['Spain', 1202000, 25.0, 34, 0.71],
+      ['Switzerland', 1119000, 124.3, 45, 5.00],
+      ['India', 917000, 0.6, 229, 0.16],
+      ['Taiwan', 759000, 32.9, 66, 2.86],
+      ['Hong Kong SAR', 647000, 86.3, 71, 9.47],
+      ['Belgium', 549000, 46.5, 11, 0.93],
+      ['Sweden', 490000, 46.2, 50, 4.72],
+      ['Brazil', 433000, 2.0, 70, 0.33],
+      ['Russia', 426000, 3.0, 147, 1.02],
+      ['Mexico', 399000, 3.0, 22, 0.17],
+      ['Denmark', 376000, 62.7, 9, 1.50],
+      ['Norway', 348000, 62.1, 17, 3.04],
+      ['Saudi Arabia', 339000, 9.2, 15, 0.41],
+      ['Singapore', 331000, 55.2, 55, 9.17],
+    ];
+    const FORMAT = [
+      null,
+      v => (v / 1e6).toFixed(v < 1e6 ? 2 : 1),
+      v => v < 1 ? v.toFixed(1) : Math.round(v).toString(),
+      v => v.toLocaleString('en-US'),
+      v => v.toFixed(2),
+    ];
+    const MAX = [null, 1, 2, 3, 4].map(c => c && Math.max(...ROWS.map(r => r[c])));
+
+    const table = document.getElementById('wealth');
+    const tbody = table.querySelector('tbody');
+    const heads = table.querySelectorAll('thead .cols th');
+    let sortCol = 1;
+    let desc = true;
+
+    function cell(r, c) {
+      const group = c <= 2 ? 'm' : 'b';
+      const cls = [group, c % 2 === 0 ? 'rate' : '', c === 3 ? 'split' : ''].join(' ').trim();
+      const pct = (r[c] / MAX[c] * 100).toFixed(1);
+      return `<td class="${cls}"><span class="num">${FORMAT[c](r[c])}</span><span class="bar"><i style="width:${pct}%"></i></span></td>`;
+    }
+
+    function render() {
+      const rows = [...ROWS].sort((a, b) => {
+        const d = sortCol === 0 ? a[0].localeCompare(b[0]) : a[sortCol] - b[sortCol];
+        return desc ? -d : d;
+      });
+      tbody.innerHTML = rows.map((r, i) =>
+        `<tr class="${i < 3 && sortCol !== 0 ? 'top' : ''}"><td><span class="rk">${i + 1}</span><span class="mkt">${r[0]}</span></td>` +
+        [1, 2, 3, 4].map(c => cell(r, c)).join('') + '</tr>'
+      ).join('');
+      heads.forEach(th => {
+        const on = +th.dataset.col === sortCol;
+        th.classList.toggle('on', on);
+        th.setAttribute('aria-sort', on ? (desc ? 'descending' : 'ascending') : 'none');
+        th.querySelector('.arrow').textContent = on ? (desc ? ' ▼' : ' ▲') : '';
+      });
+    }
+
+    heads.forEach(th => th.addEventListener('click', () => {
+      const c = +th.dataset.col;
+      desc = c === sortCol ? !desc : c !== 0;
+      sortCol = c;
+      render();
+    }));
+
+    render();
+  </script>
+</body>
+</html>

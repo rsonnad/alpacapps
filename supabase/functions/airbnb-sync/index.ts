@@ -31,6 +31,7 @@ interface SyncResult {
   eventsFound: number;
   created: number;
   updated: number;
+  cancelled: number;
   skipped: number;
   blockedRanges: BlockedRange[];
   errors: string[];
@@ -114,6 +115,7 @@ serve(async (req) => {
         eventsFound: 0,
         created: 0,
         updated: 0,
+        cancelled: 0,
         skipped: 0,
         blockedRanges: [],
         errors: [],
@@ -248,6 +250,35 @@ serve(async (req) => {
             result.errors.push(`Event error: ${eventError.message}`);
           }
         }
+
+        // Cancel upcoming Airbnb-imported assignments on this space whose UID is no
+        // longer in the feed (reservation cancelled on Airbnb).
+        // Guard: an empty feed is more likely a fetch glitch than mass cancellation.
+        if (events.length > 0) {
+          const feedUids = new Set(events.map((e) => e.uid));
+          const today = new Date().toISOString().split('T')[0];
+          const { data: imported } = await supabase
+            .from('assignments')
+            .select('id, airbnb_uid, assignment_spaces!inner(space_id)')
+            .not('airbnb_uid', 'is', null)
+            .eq('status', 'active')
+            .gte('end_date', today)
+            .eq('assignment_spaces.space_id', space.id);
+
+          for (const a of (imported || [])) {
+            if (feedUids.has(a.airbnb_uid)) continue;
+            const { error: cancelError } = await supabase
+              .from('assignments')
+              .update({ status: 'cancelled' })
+              .eq('id', a.id);
+            if (cancelError) {
+              result.errors.push(`Failed to cancel ${a.id}: ${cancelError.message}`);
+            } else {
+              result.cancelled++;
+            }
+          }
+        }
+
         // Save blocked dates to the space record for display
         if (result.blockedRanges.length > 0) {
           await supabase
@@ -273,6 +304,7 @@ serve(async (req) => {
       spacesProcessed: results.length,
       totalCreated: results.reduce((sum, r) => sum + r.created, 0),
       totalUpdated: results.reduce((sum, r) => sum + r.updated, 0),
+      totalCancelled: results.reduce((sum, r) => sum + r.cancelled, 0),
       totalSkipped: results.reduce((sum, r) => sum + r.skipped, 0),
       totalErrors: results.reduce((sum, r) => sum + r.errors.length, 0),
     };

@@ -383,10 +383,21 @@ let _dbActiveTable = null;
 let _dbRowCounts = {};     // { tableName: count }
 let _dbTableData = {};     // { tableName: { columns, rows, totalCount } }
 
+// Tables with column-level grants hiding secret columns: select('*') is denied,
+// so the explorer must request only the readable (non-secret) columns.
+const DB_SAFE_COLUMNS = {
+  stripe_config: 'id, publishable_key, sandbox_publishable_key, connect_enabled, is_active, test_mode, created_at, updated_at',
+  paypal_config: 'id, client_id, sandbox_client_id, is_active, test_mode, last_error, created_at, updated_at',
+  telnyx_config: 'id, messaging_profile_id, phone_number, is_active, created_at, updated_at, test_mode, public_key',
+  printer_config: 'id, proxy_url, is_active, test_mode, last_error, last_synced_at, created_at, updated_at, check_code',
+  spotify_config: 'id, client_id, token_expires_at, is_active, test_mode, created_at, updated_at',
+};
+const dbSelectCols = (tableName) => DB_SAFE_COLUMNS[tableName] || '*';
+
 async function fetchTableRowCount(tableName) {
   if (_dbRowCounts[tableName] !== undefined) return _dbRowCounts[tableName];
   try {
-    const { count, error } = await supabase.from(tableName).select('*', { count: 'exact', head: true });
+    const { count, error } = await supabase.from(tableName).select(dbSelectCols(tableName), { count: 'exact', head: true });
     if (error) { _dbRowCounts[tableName] = '?'; return '?'; }
     _dbRowCounts[tableName] = count;
     return count;
@@ -398,8 +409,8 @@ async function fetchTableDetail(tableName, offset = 0, limit = 25) {
   if (_dbTableData[cacheKey]) return _dbTableData[cacheKey];
   try {
     const [countRes, dataRes] = await Promise.all([
-      supabase.from(tableName).select('*', { count: 'exact', head: true }),
-      supabase.from(tableName).select('*').range(offset, offset + limit - 1).limit(limit),
+      supabase.from(tableName).select(dbSelectCols(tableName), { count: 'exact', head: true }),
+      supabase.from(tableName).select(dbSelectCols(tableName)).range(offset, offset + limit - 1).limit(limit),
     ]);
     const totalCount = countRes.count ?? '?';
     const rows = dataRes.data || [];

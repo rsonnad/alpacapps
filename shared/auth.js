@@ -443,35 +443,14 @@ async function handleAuthChange(session) {
       authLog.info('No usable invitation — auto-creating as public user', { email: userEmail });
       const displayName = session.user.user_metadata?.full_name || userEmail.split('@')[0];
 
-      // Link the person record on this path too. Without person_id the account is a
-      // dead end: get_my_space_codes() and every other person-scoped query return
-      // nothing, and there is no way to tell whose account it is. Linking it means
-      // repairing a mis-roled resident is a one-field role change in admin/users.
-      let publicPersonId = null;
-      try {
-        const { data: existingPerson } = await supabase
-          .from('people').select('id').eq('email', userEmail).maybeSingle();
-        if (existingPerson) publicPersonId = existingPerson.id;
-      } catch (e) { /* non-critical */ }
-
+      // Created server-side by a SECURITY DEFINER RPC: RLS only allows invitation-backed
+      // inserts, and the RPC derives every column (incl. person_id) itself so the client
+      // can't choose them. See migrations/20260929_ensure_public_app_user.sql.
       let newPublicUser = null;
       let publicCreateError = null;
       try {
-        const publicInsertData = {
-          auth_user_id: session.user.id,
-          email: userEmail,
-          display_name: displayName,
-          ...splitDisplayName(displayName),
-          role: 'public',
-        };
-        if (publicPersonId) publicInsertData.person_id = publicPersonId;
-
         const result = await withTimeout(
-          supabase
-            .from('app_users')
-            .insert(publicInsertData)
-            .select()
-            .single(),
+          supabase.rpc('ensure_public_app_user'),
           AUTH_TIMEOUT_MS,
           'Public user creation timed out'
         );
@@ -486,7 +465,7 @@ async function handleAuthChange(session) {
         authLog.info('Created public app_user', { email: userEmail });
         currentAppUser = newPublicUser;
         currentRole = 'public';
-        currentUser.displayName = displayName;
+        currentUser.displayName = newPublicUser.display_name || displayName;
         cacheAuthState(currentUser, newPublicUser, 'public');
       } else {
         authLog.error('Error creating public app_user', publicCreateError);

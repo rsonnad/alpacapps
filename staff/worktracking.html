@@ -83,12 +83,12 @@
     /* Modal */
     .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; }
     .modal-backdrop.open { display: flex; }
-    .modal { background: #fff; border-radius: 8px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-    .modal h3 { margin: 0 0 1rem; }
-    .modal .form-row { margin-bottom: 0.75rem; }
-    .modal .form-row label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase; }
-    .modal .form-row input, .modal .form-row select, .modal .form-row textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; box-sizing: border-box; }
-    .modal .form-row textarea { resize: vertical; min-height: 60px; }
+    .wt-modal { background: #fff; border-radius: 8px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .wt-modal h3 { margin: 0 0 1rem; }
+    .wt-modal .form-row { margin-bottom: 0.75rem; }
+    .wt-modal .form-row label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase; }
+    .wt-modal .form-row input, .wt-modal .form-row select, .wt-modal .form-row textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius); font-size: 0.85rem; box-sizing: border-box; }
+    .wt-modal .form-row textarea { resize: vertical; min-height: 60px; }
     .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
     .modal-actions button { padding: 0.4rem 1rem; border-radius: var(--radius); font-size: 0.85rem; cursor: pointer; }
     .modal-actions .btn-cancel { background: #f3f4f6; border: 1px solid #d1d5db; color: var(--text); }
@@ -175,7 +175,7 @@
   <div id="appContent" class="hidden">
     <div id="siteHeader"></div>
 
-    <span data-site-version style="display:none">v260925.06 3:57p</span>
+    <span data-site-version style="display:none">v261010.02 12:51p</span>
 
     <div class="context-switcher hidden" id="contextSwitcher">
       <a href="/residents/" class="context-switcher-btn">Resident</a>
@@ -239,7 +239,7 @@
           <h2>Time Entries</h2>
           <div class="section-actions">
             <button class="btn-recalc" id="btnRecalc" disabled>Recalc</button>
-            <button class="btn-mark-paid" id="btnMarkPaid" disabled>Mark Selected as Paid</button>
+            <button class="btn-mark-paid" id="btnMarkPaid" disabled>Process Payment</button>
             <button class="btn-add" id="btnAddEntry">+ Add Entry</button>
           </div>
         </div>
@@ -314,21 +314,25 @@
 
   <!-- Mark Paid Modal -->
   <div class="modal-backdrop" id="paidModal">
-    <div class="modal">
-      <h3>Mark as Paid</h3>
+    <div class="wt-modal">
+      <h3>Process Payment</h3>
       <p id="paidModalSummary" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;"></p>
       <div class="form-row">
         <label>Payment Method</label>
         <select id="paidMethod">
-          <option value="stripe">Stripe ACH (Preferred)</option>
-          <option value="paypal">PayPal</option>
-          <option value="venmo">Venmo</option>
-          <option value="zelle">Zelle</option>
-          <option value="square">Square</option>
-          <option value="cash">Cash</option>
-          <option value="check">Check</option>
-          <option value="bank_ach">Bank/ACH</option>
-          <option value="other">Other</option>
+          <optgroup label="Send money now">
+            <option value="stripe">Stripe ACH (Preferred)</option>
+            <option value="paypal">PayPal</option>
+          </optgroup>
+          <optgroup label="Record a payment already made">
+            <option value="venmo">Venmo</option>
+            <option value="zelle">Zelle</option>
+            <option value="square">Square</option>
+            <option value="cash">Cash</option>
+            <option value="check">Check</option>
+            <option value="bank_ach">Bank/ACH</option>
+            <option value="other">Other</option>
+          </optgroup>
         </select>
       </div>
       <!-- PayPal payout info (shown when PayPal selected) -->
@@ -357,14 +361,14 @@
       </div>
       <div class="modal-actions">
         <button class="btn-cancel" id="paidCancel">Cancel</button>
-        <button class="btn-confirm" id="paidConfirm">Confirm Payment</button>
+        <button class="btn-confirm" id="paidConfirm">Record as Paid</button>
       </div>
     </div>
   </div>
 
   <!-- Add Entry Modal -->
   <div class="modal-backdrop" id="addEntryModal">
-    <div class="modal">
+    <div class="wt-modal">
       <h3 id="addEntryTitle">Add Manual Entry</h3>
       <div class="form-row">
         <label>Associate</label>

@@ -106,7 +106,7 @@ echo "uptime=$(cut -d' ' -f1 /proc/uptime 2>/dev/null)"
 echo "firmware=$(ubnt-device-info firmware 2>/dev/null || cat /etc/unifi-os/version 2>/dev/null)"
 curl -sk -c /tmp/sh.txt -X POST 'https://localhost/api/auth/login' \
   -H 'Content-Type: application/json' \
-  -d "{\\"username\\":\\"alpacaauto\\",\\"password\\":\\"$WP\\",\\"remember\\":true}" > /dev/null
+  -d "{\\"username\\":\\"codingagent\\",\\"password\\":\\"$WP\\",\\"remember\\":true}" > /dev/null
 echo "===NETWORKS==="
 curl -sk -b /tmp/sh.txt 'https://localhost/proxy/network/api/s/default/rest/networkconf'
 echo ""

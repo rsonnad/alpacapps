@@ -58,6 +58,8 @@ async function sendStripePayout(associateId, amount, timeEntryIds = [], notes = 
       transfer_id: data.transfer_id,
       test_mode: data.test_mode || false,
       message: data.message,
+      amount: data.amount,
+      entries_marked_paid: data.entries_marked_paid === true,
     };
   } catch (error) {
     console.error('Stripe payout error:', error);
@@ -197,6 +199,8 @@ async function sendPayPalPayout(associateId, amount, timeEntryIds = [], notes = 
       batch_id: data.batch_id,
       test_mode: data.test_mode || false,
       message: data.message,
+      amount: data.amount,
+      entries_marked_paid: data.entries_marked_paid === true,
     };
   } catch (error) {
     console.error('PayPal payout error:', error);
@@ -300,13 +304,19 @@ async function getPayoutSummary(dateFrom, dateTo) {
 
 // ---- Config ----
 
+// Non-secret columns only. Secret columns (client_secret, secret_key, webhook
+// secrets, etc.) are hidden from anon/authenticated by column grants and are
+// set server-side via SQL by the operator, never from the browser.
+const PAYPAL_CONFIG_COLUMNS = 'id, client_id, sandbox_client_id, is_active, test_mode, last_error, created_at, updated_at';
+const STRIPE_CONFIG_COLUMNS = 'id, publishable_key, sandbox_publishable_key, connect_enabled, is_active, test_mode, created_at, updated_at';
+
 /**
- * Get PayPal config (for settings page)
+ * Get PayPal config (for settings page) — non-secret columns only
  */
 async function getPayPalConfig() {
   const { data, error } = await supabase
     .from('paypal_config')
-    .select('*')
+    .select(PAYPAL_CONFIG_COLUMNS)
     .single();
 
   if (error) throw error;
@@ -314,14 +324,14 @@ async function getPayPalConfig() {
 }
 
 /**
- * Update PayPal config
+ * Update PayPal config (non-secret columns only)
  */
 async function updatePayPalConfig(updates) {
   const { data, error } = await supabase
     .from('paypal_config')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', 1)
-    .select()
+    .select(PAYPAL_CONFIG_COLUMNS)
     .single();
 
   if (error) throw error;
@@ -329,56 +339,20 @@ async function updatePayPalConfig(updates) {
 }
 
 /**
- * Test PayPal connection by obtaining an OAuth token
+ * PayPal connection test. The client secret is server-side only, so the
+ * browser can no longer authenticate against PayPal directly.
  */
 async function testPayPalConnection() {
-  try {
-    const config = await getPayPalConfig();
-    if (!config) return { success: false, error: 'No PayPal config found' };
-
-    const clientId = config.test_mode ? config.sandbox_client_id : config.client_id;
-    const clientSecret = config.test_mode ? config.sandbox_client_secret : config.client_secret;
-
-    if (!clientId || !clientSecret) {
-      return { success: false, error: `Missing ${config.test_mode ? 'sandbox' : 'production'} credentials` };
-    }
-
-    const baseUrl = config.test_mode
-      ? 'https://api-m.sandbox.paypal.com'
-      : 'https://api-m.paypal.com';
-
-    const credentials = btoa(`${clientId}:${clientSecret}`);
-    const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: 'grant_type=client_credentials',
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      return {
-        success: true,
-        message: `Connected! Token expires in ${data.expires_in}s. Mode: ${config.test_mode ? 'Sandbox' : 'Production'}`,
-      };
-    } else {
-      const errorText = await response.text();
-      return { success: false, error: `PayPal auth failed: ${response.status} - ${errorText}` };
-    }
-  } catch (error) {
-    return { success: false, error: error.message || 'Connection test failed' };
-  }
+  return { success: false, unavailable: true, error: 'Connection check unavailable from browser (secrets are stored server-side)' };
 }
 
 /**
- * Get Stripe config (for settings page)
+ * Get Stripe config (for settings page) — non-secret columns only
  */
 async function getStripeConfig() {
   const { data, error } = await supabase
     .from('stripe_config')
-    .select('*')
+    .select(STRIPE_CONFIG_COLUMNS)
     .single();
 
   if (error) throw error;
@@ -386,14 +360,14 @@ async function getStripeConfig() {
 }
 
 /**
- * Update Stripe config
+ * Update Stripe config (non-secret columns only)
  */
 async function updateStripeConfig(updates) {
   const { data, error } = await supabase
     .from('stripe_config')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', 1)
-    .select()
+    .select(STRIPE_CONFIG_COLUMNS)
     .single();
 
   if (error) throw error;
@@ -401,37 +375,11 @@ async function updateStripeConfig(updates) {
 }
 
 /**
- * Test Stripe connection by checking balance endpoint
+ * Stripe connection / balance test. The secret key is server-side only, so
+ * the browser can no longer call api.stripe.com directly.
  */
 async function testStripeConnection() {
-  try {
-    const config = await getStripeConfig();
-    if (!config) return { success: false, error: 'No Stripe config found' };
-
-    const secretKey = config.test_mode ? config.sandbox_secret_key : config.secret_key;
-
-    if (!secretKey) {
-      return { success: false, error: `Missing ${config.test_mode ? 'test' : 'live'} secret key` };
-    }
-
-    const response = await fetch('https://api.stripe.com/v1/balance', {
-      headers: { 'Authorization': `Bearer ${secretKey}` }
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      const available = data.available?.[0]?.amount || 0;
-      return {
-        success: true,
-        message: `Connected! Balance: $${(available / 100).toFixed(2)}. Mode: ${config.test_mode ? 'Test' : 'Live'}. Connect: ${config.connect_enabled ? 'Enabled' : 'Disabled'}.`,
-      };
-    } else {
-      const errorText = await response.text();
-      return { success: false, error: `Stripe auth failed: ${response.status} - ${errorText}` };
-    }
-  } catch (error) {
-    return { success: false, error: error.message || 'Connection test failed' };
-  }
+  return { success: false, unavailable: true, error: 'Balance check unavailable from browser (secrets are stored server-side)' };
 }
 
 // ---- Export ----

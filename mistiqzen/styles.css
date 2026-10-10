@@ -1,0 +1,1604 @@
+/**
+ * Mistique Journey Styles
+ *
+ * A warm, spa-like aesthetic with beige/cream tones
+ */
+
+/* =============================================
+   CSS VARIABLES
+   ============================================= */
+
+:root {
+  /* Colors - Warm, earthy palette */
+  --mistiq-bg: #f9f6f1;
+  --mistiq-bg-alt: #f0ebe3;
+  --mistiq-text: #3d3d3d;
+  --mistiq-text-light: #6b6b6b;
+  --mistiq-accent: #8b7355;
+  --mistiq-accent-dark: #6d5a45;
+  --mistiq-gold: #c4a77d;
+  --mistiq-cream: #fdfbf7;
+  --mistiq-warm: #e8ddd0;
+
+  /* Typography */
+  --mistiq-font-heading: 'Cormorant Garamond', Georgia, serif;
+  --mistiq-font-body: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Spacing */
+  --mistiq-space-xs: 0.25rem;
+  --mistiq-space-sm: 0.75rem;
+  --mistiq-space-md: 1rem;
+  --mistiq-space-lg: 1.5rem;
+  --mistiq-space-xl: 2.5rem;
+
+  /* Sizing */
+  --mistiq-max-width: 1200px;
+  --mistiq-content-width: 800px;
+}
+
+/* =============================================
+   BASE STYLES
+   ============================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--mistiq-font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--mistiq-text);
+  background: var(--mistiq-bg);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--mistiq-font-heading);
+  font-weight: 500;
+  line-height: 1.3;
+  margin: 0 0 1rem;
+  color: var(--mistiq-text);
+}
+
+h1 { font-size: 3rem; }
+h2 { font-size: 2.25rem; }
+h3 { font-size: 1.5rem; }
+
+p {
+  margin: 0 0 1rem;
+}
+
+a {
+  color: var(--mistiq-accent);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--mistiq-accent-dark);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* =============================================
+   LAYOUT
+   ============================================= */
+
+.mistiq-container {
+  max-width: var(--mistiq-max-width);
+  margin: 0 auto;
+  padding: 0 var(--mistiq-space-md);
+}
+
+.mistiq-section {
+  padding: var(--mistiq-space-lg) 0;
+}
+
+.mistiq-section--alt {
+  background: var(--mistiq-bg-alt);
+}
+
+.mistiq-section--cta {
+  background: linear-gradient(135deg, var(--mistiq-accent), var(--mistiq-accent-dark));
+  color: white;
+  text-align: center;
+}
+
+.mistiq-section--cta h2,
+.mistiq-section--cta p {
+  color: white;
+}
+
+.mistiq-section__title {
+  text-align: center;
+  margin-bottom: var(--mistiq-space-sm);
+}
+
+.mistiq-section__subtitle {
+  text-align: center;
+  color: var(--mistiq-text-light);
+  max-width: 600px;
+  margin: 0 auto var(--mistiq-space-md);
+  font-size: 1.1rem;
+}
+
+.mistiq-section--cta .mistiq-section__subtitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* =============================================
+   HEADER
+   ============================================= */
+
+.mistiq-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: transparent;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.mistiq-header--scrolled {
+  background: var(--mistiq-cream);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+}
+
+.mistiq-header__inner {
+  max-width: var(--mistiq-max-width);
+  margin: 0 auto;
+  padding: var(--mistiq-space-sm) var(--mistiq-space-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mistiq-header__logo {
+  text-decoration: none;
+}
+
+.mistiq-header__logo-text {
+  font-family: var(--mistiq-font-heading);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: white;
+  transition: color 0.3s;
+}
+
+.mistiq-header--scrolled .mistiq-header__logo-text {
+  color: var(--mistiq-text);
+}
+
+.mistiq-header__version {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+  margin-left: 0.25rem;
+  cursor: pointer;
+}
+
+.mistiq-header--scrolled .mistiq-header__version {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.mistiq-nav__list {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--mistiq-space-md);
+}
+
+.mistiq-nav__link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+
+.mistiq-header--scrolled .mistiq-nav__link {
+  color: var(--mistiq-text);
+}
+
+.mistiq-nav__link:hover {
+  color: var(--mistiq-gold);
+}
+
+.mistiq-nav__link--cta {
+  background: var(--mistiq-gold);
+  color: white !important;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.mistiq-nav__link--cta:hover {
+  background: var(--mistiq-accent);
+  color: white !important;
+}
+
+/* Language Picker Dropdown */
+.mistiq-lang-picker {
+  position: relative;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  align-self: center;
+}
+
+.mistiq-lang-picker__current {
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  line-height: 1;
+  position: relative;
+  top: 1px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.mistiq-lang-picker__current::after {
+  content: "▼";
+  font-size: 0.5rem;
+  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.9);
+  transition: color 0.3s;
+}
+
+.mistiq-header--scrolled .mistiq-lang-picker__current::after {
+  color: var(--mistiq-text);
+}
+
+.mistiq-lang-picker__dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem;
+  display: none;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 50px;
+  z-index: 1000;
+}
+
+.mistiq-lang-picker:hover .mistiq-lang-picker__dropdown,
+.mistiq-lang-picker:focus-within .mistiq-lang-picker__dropdown,
+.mistiq-lang-picker--open .mistiq-lang-picker__dropdown {
+  display: flex;
+}
+
+.mistiq-lang-picker__flag {
+  font-size: 1.25rem;
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.2s, transform 0.2s;
+  padding: 0.25rem;
+  text-align: center;
+  line-height: 1;
+}
+
+.mistiq-lang-picker__flag:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background: var(--mistiq-bg-alt);
+  border-radius: 4px;
+}
+
+/* Header controls (lang picker + hamburger, always visible) */
+.mistiq-header__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Mobile menu toggle */
+.mistiq-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.mistiq-menu-toggle__bar {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: white;
+  margin: 5px 0;
+  transition: background 0.3s;
+}
+
+.mistiq-header--scrolled .mistiq-menu-toggle__bar {
+  background: var(--mistiq-text);
+}
+
+/* On desktop: hide the header-level lang picker and mobile jobs link (nav has its own) */
+.mistiq-header__controls .mistiq-lang-picker {
+  display: none;
+}
+
+.mistiq-header__jobs-link {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mistiq-nav {
+    display: none;
+  }
+
+  .mistiq-menu-toggle {
+    display: block;
+  }
+
+  /* On mobile: show the header-level lang picker */
+  .mistiq-header__controls .mistiq-lang-picker {
+    display: flex;
+  }
+
+  /* On mobile: show a prominent Jobs link in the header */
+  .mistiq-header__jobs-link {
+    display: inline-block;
+    font-family: var(--mistiq-font-heading);
+    font-size: 1rem;
+    color: white;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    transition: color 0.3s;
+  }
+
+  .mistiq-header--scrolled .mistiq-header__jobs-link {
+    color: var(--mistiq-text);
+  }
+
+  .mistiq-header__jobs-link:hover {
+    color: var(--mistiq-gold);
+  }
+}
+
+/* =============================================
+   MOBILE NAVIGATION
+   ============================================= */
+
+.mistiq-mobile-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--mistiq-cream);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.mistiq-mobile-nav--open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mistiq-mobile-nav__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--mistiq-text);
+}
+
+.mistiq-mobile-nav__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.mistiq-mobile-nav__item {
+  margin: 1.5rem 0;
+}
+
+.mistiq-mobile-nav__link {
+  font-family: var(--mistiq-font-heading);
+  font-size: 1.75rem;
+  color: var(--mistiq-text);
+}
+
+.mistiq-mobile-nav__lang {
+  margin-top: 1rem;
+}
+
+.mistiq-mobile-nav__lang a {
+  font-size: 2rem;
+}
+
+/* =============================================
+   HERO SECTION
+   ============================================= */
+
+.mistiq-hero {
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)),
+              url('https://aphrrfprbixmhissnjfn.supabase.co/storage/v1/object/public/mistiq-assets/hero-studio.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: var(--mistiq-space-xl) var(--mistiq-space-md);
+}
+
+.mistiq-hero__content {
+  max-width: 700px;
+}
+
+.mistiq-hero__title {
+  font-size: 3.5rem;
+  color: white;
+  margin-bottom: var(--mistiq-space-sm);
+  font-weight: 400;
+}
+
+.mistiq-hero__subtitle {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: var(--mistiq-space-md);
+  font-style: italic;
+}
+
+/* =============================================
+   BUTTONS
+   ============================================= */
+
+.mistiq-btn {
+  display: inline-block;
+  padding: 0.875rem 2rem;
+  border-radius: 4px;
+  font-family: var(--mistiq-font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  border: none;
+}
+
+.mistiq-btn--primary {
+  background: white;
+  color: var(--mistiq-accent);
+}
+
+.mistiq-btn--primary:hover {
+  background: var(--mistiq-gold);
+  color: white;
+}
+
+.mistiq-btn--large {
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+}
+
+/* =============================================
+   INTRO SECTION
+   ============================================= */
+
+.mistiq-intro {
+  max-width: var(--mistiq-content-width);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mistiq-intro__text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--mistiq-text-light);
+}
+
+.mistiq-intro__text strong {
+  color: var(--mistiq-text);
+}
+
+/* =============================================
+   ELEMENTS GRID
+   ============================================= */
+
+.mistiq-elements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--mistiq-space-md);
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.mistiq-element-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mistiq-element-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+.mistiq-element-card__image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.mistiq-element-card__title {
+  font-size: 1.1rem;
+  padding: var(--mistiq-space-sm) var(--mistiq-space-sm) 0;
+  margin-bottom: 0.25rem;
+}
+
+.mistiq-element-card__desc {
+  padding: 0 var(--mistiq-space-sm) var(--mistiq-space-sm);
+  color: var(--mistiq-text-light);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* =============================================
+   TESTIMONIALS
+   ============================================= */
+
+.mistiq-testimonials {
+  max-width: var(--mistiq-content-width);
+  margin: 0 auto;
+}
+
+.mistiq-testimonial {
+  margin: 0 0 var(--mistiq-space-md);
+  padding: var(--mistiq-space-md);
+  background: var(--mistiq-bg-alt);
+  border-radius: 12px;
+  border-left: 4px solid var(--mistiq-gold);
+}
+
+.mistiq-testimonial p {
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: var(--mistiq-space-sm);
+}
+
+.mistiq-testimonial cite {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--mistiq-accent);
+}
+
+.mistiq-video-testimonial {
+  max-width: 256px;
+  margin: var(--mistiq-space-lg) auto 0;
+  text-align: center;
+}
+
+.mistiq-video-testimonial__title {
+  font-family: var(--mistiq-font-heading);
+  font-size: 1.3rem;
+  color: var(--mistiq-accent);
+  margin-bottom: var(--mistiq-space-sm);
+}
+
+.mistiq-video-testimonial__player {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* =============================================
+   PHASES
+   ============================================= */
+
+.mistiq-phases {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.mistiq-phase {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--mistiq-space-md);
+  margin-bottom: var(--mistiq-space-lg);
+  align-items: start;
+}
+
+.mistiq-phase:nth-child(even) {
+  direction: rtl;
+}
+
+.mistiq-phase:nth-child(even) > * {
+  direction: ltr;
+}
+
+.mistiq-phase__image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.mistiq-phase__content {
+  padding-top: var(--mistiq-space-sm);
+}
+
+.mistiq-phase__title {
+  color: var(--mistiq-accent);
+  margin-bottom: var(--mistiq-space-sm);
+}
+
+.mistiq-phase__content p {
+  color: var(--mistiq-text-light);
+}
+
+@media (max-width: 768px) {
+  .mistiq-phase {
+    grid-template-columns: 1fr;
+  }
+
+  .mistiq-phase:nth-child(even) {
+    direction: ltr;
+  }
+}
+
+/* =============================================
+   TECHNIQUES
+   ============================================= */
+
+.mistiq-techniques {
+  max-width: var(--mistiq-content-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mistiq-space-md);
+}
+
+.mistiq-techniques__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mistiq-techniques__list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--mistiq-warm);
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.mistiq-techniques__list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--mistiq-gold);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.mistiq-techniques__note {
+  background: var(--mistiq-bg-alt);
+  padding: var(--mistiq-space-md);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.mistiq-techniques__note p {
+  margin: 0;
+  font-style: italic;
+  color: var(--mistiq-text-light);
+}
+
+@media (max-width: 768px) {
+  .mistiq-techniques {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mistiq-facility {
+  margin-top: var(--mistiq-space-lg);
+  text-align: center;
+}
+
+.mistiq-facility__image {
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* =============================================
+   CTA
+   ============================================= */
+
+.mistiq-cta__contact {
+  margin-top: var(--mistiq-space-md);
+  opacity: 0.9;
+}
+
+.mistiq-cta__contact a {
+  color: white;
+  text-decoration: underline;
+}
+
+/* =============================================
+   FOOTER
+   ============================================= */
+
+.mistiq-footer {
+  background: var(--mistiq-text);
+  color: white;
+  padding: var(--mistiq-space-lg) var(--mistiq-space-md);
+  text-align: center;
+}
+
+.mistiq-footer__brand {
+  font-family: var(--mistiq-font-heading);
+  font-size: 1.5rem;
+  margin: 0 0 0.25rem;
+}
+
+.mistiq-footer__location {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 var(--mistiq-space-sm);
+}
+
+.mistiq-footer__link {
+  color: var(--mistiq-gold);
+  display: inline-block;
+  margin-bottom: var(--mistiq-space-md);
+}
+
+.mistiq-footer__copyright {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  h1 { font-size: 2.25rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.25rem; }
+
+  .mistiq-hero__title {
+    font-size: 2.5rem;
+  }
+
+  .mistiq-hero__subtitle {
+    font-size: 1.25rem;
+  }
+
+  .mistiq-section {
+    padding: var(--mistiq-space-lg) 0;
+  }
+
+  .mistiq-elements-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .mistiq-elements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mistiq-hero__title {
+    font-size: 2rem;
+  }
+
+  .mistiq-booking__packages {
+    flex-direction: column;
+  }
+}
+
+/* =============================================
+   BOOKING SECTION
+   ============================================= */
+
+.mistiq-booking {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.mistiq-booking__packages {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.mistiq-package {
+  flex: 1;
+  cursor: pointer;
+  display: block;
+}
+
+.mistiq-package input[type="radio"] {
+  display: none;
+}
+
+.mistiq-package__content {
+  border: 2px solid var(--mistiq-border, #e6e2d9);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  background: white;
+}
+
+.mistiq-package input:checked + .mistiq-package__content {
+  border-color: var(--mistiq-accent);
+  background: rgba(139, 115, 85, 0.04);
+  box-shadow: 0 0 0 1px var(--mistiq-accent);
+}
+
+.mistiq-package__title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--mistiq-text);
+}
+
+.mistiq-package__desc {
+  font-size: 0.9rem;
+  color: var(--mistiq-text-muted, #7d6f74);
+  margin: 0 0 1rem;
+}
+
+.mistiq-package__price {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--mistiq-accent);
+}
+
+.mistiq-package__price s {
+  color: var(--mistiq-text-muted, #7d6f74);
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+.mistiq-booking__promo {
+  margin-bottom: 1.5rem;
+}
+
+.mistiq-booking__promo label {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: var(--mistiq-text);
+}
+
+.mistiq-booking__promo-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.mistiq-booking__promo-row input {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--mistiq-border, #e6e2d9);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Lato', sans-serif;
+  background: white;
+}
+
+.mistiq-booking__promo-row input:focus {
+  outline: none;
+  border-color: var(--mistiq-accent);
+}
+
+.mistiq-btn--secondary {
+  background: transparent;
+  color: var(--mistiq-accent);
+  border: 1px solid var(--mistiq-accent);
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  font-family: 'Lato', sans-serif;
+}
+
+.mistiq-btn--secondary:hover {
+  background: var(--mistiq-accent);
+  color: white;
+}
+
+.mistiq-booking__promo-msg {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  min-height: 1.2em;
+}
+
+.mistiq-booking__promo-msg.success {
+  color: #2d7a3a;
+}
+
+.mistiq-booking__promo-msg.error {
+  color: #c44;
+}
+
+.mistiq-booking__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--mistiq-border, #e6e2d9);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.mistiq-booking__total-price {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--mistiq-accent);
+}
+
+.mistiq-booking__note {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--mistiq-text-muted, #7d6f74);
+  margin-top: 1rem;
+}
+
+/* Contrast fixes for booking elements on brown CTA background */
+.mistiq-section--cta .mistiq-booking__promo label,
+.mistiq-section--cta .mistiq-booking__total {
+  color: white;
+}
+
+.mistiq-section--cta .mistiq-booking__total-price {
+  color: var(--mistiq-gold);
+  font-size: 2rem;
+}
+
+.mistiq-section--cta .mistiq-booking__total {
+  border-top-color: rgba(255, 255, 255, 0.3);
+}
+
+.mistiq-section--cta .mistiq-btn--secondary {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.mistiq-section--cta .mistiq-btn--secondary:hover {
+  background: white;
+  color: var(--mistiq-accent-dark);
+}
+
+.mistiq-section--cta .mistiq-booking__note {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.mistiq-section--cta .mistiq-booking__promo-msg.success {
+  color: #a8e6b4;
+}
+
+.mistiq-section--cta .mistiq-booking__promo-msg.error {
+  color: #ffa0a0;
+}
+
+/* =============================================
+   BOOKING PAGE
+   ============================================= */
+
+.mistiq-book-hero {
+  padding: 8rem 0 3rem;
+  text-align: center;
+  background: linear-gradient(135deg, var(--mistiq-bg-alt), var(--mistiq-warm));
+}
+
+.mistiq-book-hero__title {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.mistiq-book-hero__subtitle {
+  font-size: 1.2rem;
+  color: var(--mistiq-text-light);
+  margin: 0;
+}
+
+/* Info cards */
+.mistiq-book-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--mistiq-space-md);
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mistiq-book-info__card {
+  padding: var(--mistiq-space-md);
+}
+
+.mistiq-book-info__icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--mistiq-gold);
+}
+
+.mistiq-book-info__card h3 {
+  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.mistiq-book-info__card p {
+  color: var(--mistiq-text-light);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Calendar embed */
+.mistiq-book-calendar {
+  max-width: 900px;
+  margin: 0 auto var(--mistiq-space-md);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+.mistiq-book-calendar__iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+}
+
+.mistiq-book-calendar__hint {
+  text-align: center;
+  color: var(--mistiq-text-light);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Booking form */
+.mistiq-book-form-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.mistiq-book-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--mistiq-space-md);
+  margin-bottom: var(--mistiq-space-md);
+}
+
+.mistiq-book-form__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.mistiq-book-form__field--full {
+  margin-bottom: var(--mistiq-space-md);
+}
+
+.mistiq-book-form__field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--mistiq-text);
+  margin-bottom: 0.35rem;
+}
+
+.mistiq-book-form__field input,
+.mistiq-book-form__field select,
+.mistiq-book-form__field textarea {
+  font-family: var(--mistiq-font-body);
+  font-size: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--mistiq-warm);
+  border-radius: 8px;
+  background: white;
+  color: var(--mistiq-text);
+  transition: border-color 0.2s;
+}
+
+.mistiq-book-form__field input:focus,
+.mistiq-book-form__field select:focus,
+.mistiq-book-form__field textarea:focus {
+  outline: none;
+  border-color: var(--mistiq-gold);
+}
+
+.mistiq-book-form__field textarea {
+  resize: vertical;
+}
+
+.mistiq-btn--book {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background: var(--mistiq-accent);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mistiq-btn--book:hover {
+  background: var(--mistiq-accent-dark);
+}
+
+/* Confirmation */
+.mistiq-book-confirm {
+  text-align: center;
+  padding: var(--mistiq-space-xl) 0;
+}
+
+.mistiq-book-confirm__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #4caf50;
+  color: white;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--mistiq-space-md);
+}
+
+.mistiq-book-confirm h3 {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.mistiq-book-confirm p {
+  color: var(--mistiq-text-light);
+  margin-bottom: var(--mistiq-space-md);
+}
+
+/* Preparation grid */
+.mistiq-book-prep {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--mistiq-space-md);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.mistiq-book-prep__item {
+  background: white;
+  padding: var(--mistiq-space-md);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.mistiq-book-prep__item h3 {
+  font-size: 1.1rem;
+  color: var(--mistiq-accent);
+  margin-bottom: 0.5rem;
+}
+
+.mistiq-book-prep__item p {
+  color: var(--mistiq-text-light);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .mistiq-book-hero__title {
+    font-size: 2.25rem;
+  }
+
+  .mistiq-book-info {
+    grid-template-columns: 1fr;
+    gap: var(--mistiq-space-sm);
+  }
+
+  .mistiq-book-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  .mistiq-book-calendar__iframe {
+    height: 450px;
+  }
+
+  .mistiq-book-prep {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =============================================
+   MISTIQ ZEN — CHIANG MAI BRANCH ADDITIONS
+   ============================================= */
+
+.mistiq-hero--zen {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
+              url('/mistiqzen/img/hero-chiangmai-1600.webp');
+  background-size: cover;
+  background-position: center;
+}
+
+@media (max-width: 800px) {
+  .mistiq-hero--zen {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
+                      url('/mistiqzen/img/hero-chiangmai-800.webp');
+  }
+}
+
+.mistiq-hero__eyebrow {
+  font-family: var(--mistiq-font-body);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  margin-bottom: var(--mistiq-space-md);
+  opacity: 0.9;
+}
+
+.mistiq-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.zen-header-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.zen-header-brand {
+  display: block;
+  line-height: 1.2;
+}
+
+@media (max-width: 480px) {
+  .zen-header-logo {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.mistiq-header__logo-sub {
+  display: block;
+  font-family: var(--mistiq-font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.mistiq-header--scrolled .mistiq-header__logo-sub {
+  color: var(--mistiq-text-light);
+}
+
+/* Practitioner */
+.zen-practitioner {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: var(--mistiq-space-xl);
+  align-items: center;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.zen-practitioner__image {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.zen-practitioner__logo {
+  width: 120px;
+  border-radius: 50%;
+  margin-bottom: var(--mistiq-space-md);
+}
+
+.zen-practitioner__content p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: var(--mistiq-space-md);
+}
+
+/* Pricing */
+.zen-pricing {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--mistiq-space-lg);
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.zen-price-card {
+  background: white;
+  border: 2px solid var(--mistiq-warm);
+  border-radius: 12px;
+  padding: var(--mistiq-space-xl) var(--mistiq-space-lg);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.zen-price-card--featured {
+  border-color: var(--mistiq-accent);
+}
+
+.zen-price-card__label {
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--mistiq-accent);
+  margin-bottom: var(--mistiq-space-sm);
+}
+
+.zen-price-card__title {
+  font-family: var(--mistiq-font-heading);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: var(--mistiq-space-sm);
+}
+
+.zen-price-card__price {
+  font-family: var(--mistiq-font-heading);
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--mistiq-accent);
+  line-height: 1.1;
+}
+
+.zen-price-card__duration {
+  color: var(--mistiq-text-light);
+  margin-bottom: var(--mistiq-space-lg);
+}
+
+.zen-price-card ul {
+  list-style: none;
+  text-align: left;
+  margin: 0 0 var(--mistiq-space-lg);
+  flex: 1;
+}
+
+.zen-price-card .mistiq-btn {
+  border-radius: 8px;
+  padding: 0.8rem 1.25rem;
+  font-size: 1rem;
+}
+
+.zen-price-card .mistiq-btn--primary {
+  background: var(--mistiq-accent);
+  color: white;
+}
+
+.zen-price-card .mistiq-btn--primary:hover {
+  background: var(--mistiq-accent-dark);
+}
+
+.zen-price-card li {
+  padding: 0.4rem 0 0.4rem 1.5rem;
+  position: relative;
+  line-height: 1.5;
+}
+
+.zen-price-card li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  color: var(--mistiq-gold);
+}
+
+/* Location */
+.zen-location {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--mistiq-space-xl);
+  align-items: start;
+}
+
+.zen-location__image {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: var(--mistiq-space-lg);
+}
+
+.zen-location__details dt {
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mistiq-accent);
+  margin-top: var(--mistiq-space-md);
+}
+
+.zen-location__details dd {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.zen-location__details a {
+  color: var(--mistiq-accent-dark);
+}
+
+.zen-map-facade {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--mistiq-accent-dark);
+  background: var(--mistiq-warm);
+  border: 0;
+}
+
+.zen-map-facade span {
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.7rem 1.3rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.zen-location__map {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  border: 0;
+  border-radius: 12px;
+}
+
+/* Contact buttons */
+.zen-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mistiq-space-sm);
+  justify-content: center;
+  margin-top: var(--mistiq-space-lg);
+}
+
+.zen-contact__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  color: white;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.zen-contact__btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.92;
+}
+
+.zen-contact__btn--whatsapp { background: #25a35a; }
+.zen-contact__btn--facebook { background: #1877f2; }
+.zen-contact__btn--email { background: var(--mistiq-accent); }
+.zen-contact__btn--phone { background: var(--mistiq-accent-dark); }
+
+.zen-contact--left {
+  justify-content: flex-start;
+}
+
+.zen-testimonials__note {
+  text-align: center;
+  color: var(--mistiq-text-light);
+  font-style: italic;
+  margin: calc(-1 * var(--mistiq-space-lg)) auto var(--mistiq-space-xl);
+  max-width: 640px;
+}
+
+.zen-branch-note {
+  max-width: var(--mistiq-content-width);
+  margin: var(--mistiq-space-xl) auto 0;
+  text-align: center;
+  color: var(--mistiq-text-light);
+}
+
+.zen-branch-note a {
+  color: var(--mistiq-accent-dark);
+}
+
+/* Booking form additions */
+.zen-partner-fields {
+  display: none;
+  border-left: 3px solid var(--mistiq-gold);
+  padding-left: var(--mistiq-space-md);
+  margin-bottom: var(--mistiq-space-md);
+}
+
+.zen-partner-fields--open {
+  display: block;
+}
+
+.zen-checkbox {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 0.4rem 0;
+  line-height: 1.5;
+}
+
+.zen-checkbox input {
+  margin-top: 0.3rem;
+}
+
+.zen-send-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mistiq-space-sm);
+}
+
+.zen-send-buttons button {
+  flex: 1;
+  min-width: 200px;
+  border: 0;
+  cursor: pointer;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* Thai typography */
+html[lang="th"] {
+  --mistiq-font-heading: 'Cormorant Garamond', 'Noto Serif Thai', Georgia, serif;
+  --mistiq-font-body: 'Lato', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html[lang="th"] body {
+  font-family: var(--mistiq-font-body);
+  line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+  .zen-practitioner,
+  .zen-location,
+  .zen-pricing {
+    grid-template-columns: 1fr;
+  }
+
+  .zen-practitioner__image {
+    max-width: 360px;
+    margin: 0 auto;
+    display: block;
+  }
+
+  .zen-location__map {
+    min-height: 320px;
+  }
+}

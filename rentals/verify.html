@@ -492,7 +492,7 @@
   <link rel="stylesheet" href="/styles/tailwind.out.css">
 </head>
 <body>
-  <span data-site-version style="display:none;">v260925.06 3:57p</span>
+  <span data-site-version style="display:none;">v261010.02 12:51p</span>
   <div id="siteHeader"></div>
 
   <div class="container">
@@ -730,9 +730,7 @@
 
       try {
         const { data: token, error } = await sb
-          .from('upload_tokens')
-          .select('*, person:person_id(first_name, last_name), app_user:app_user_id(first_name, last_name)')
-          .eq('token', tokenValue)
+          .rpc('get_upload_token', { p_token: tokenValue })
           .single();
 
         if (error || !token) {
@@ -751,10 +749,7 @@
         }
 
         // Show the form — use person (rental) or app_user (associate) for name
-        const person = token.person || token.app_user;
-        if (person) {
-          applicantName.textContent = person.first_name || 'there';
-        }
+        applicantName.textContent = token.person_first_name || token.app_user_first_name || 'there';
         showState(uploadForm);
 
       } catch (err) {

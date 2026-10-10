@@ -332,7 +332,7 @@
   </style>
 </head>
 <body>
-  <span data-site-version style="display:none;">v260925.06 3:57p</span>
+  <span data-site-version style="display:none;">v261010.02 12:51p</span>
   <div id="siteHeader"></div>
 
   <div class="container">
@@ -641,16 +641,15 @@
 
       try {
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/waiver_signatures`,
+          `${SUPABASE_URL}/rest/v1/rpc/sign_waiver`,
           {
             method: 'POST',
             headers: {
               'apikey': SUPABASE_ANON_KEY,
               'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
               'Content-Type': 'application/json',
-              'Prefer': 'return=representation',
             },
-            body: JSON.stringify({
+            body: JSON.stringify({ p_waiver: {
               waiver_type: 'event_waiver',
               template_version: waiverTemplate.version,
               signer_name: name,
@@ -659,7 +658,7 @@
               event_request_id: eventRequestId,
               signed_at: new Date().toISOString(),
               user_agent: navigator.userAgent,
-            }),
+            } }),
           }
         );
 
@@ -668,9 +667,9 @@
           throw new Error(errData.message || `Server error (${response.status})`);
         }
 
-        const [record] = await response.json();
+        const recordId = await response.json();
 
-        const ref = record?.id?.slice(0, 8)?.toUpperCase() || 'CONFIRMED';
+        const ref = recordId?.slice(0, 8)?.toUpperCase() || 'CONFIRMED';
 
         // Prevent duplicate on refresh
         sessionStorage.setItem('waiver_signed', JSON.stringify({
@@ -679,7 +678,7 @@
           ref,
         }));
 
-        showSuccess(name, new Date(), record?.id);
+        showSuccess(name, new Date(), recordId);
 
         // Fire-and-forget confirmation email
         if (email) {

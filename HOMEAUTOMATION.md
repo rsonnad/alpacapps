@@ -528,7 +528,7 @@ Samsung OS updates reset developer options, Tailscale battery settings, and can 
 
 ### UniFi Console Login
 
-The kiosk popup shows the UniFi dashboard. Log in once on the tablet with the `alpacaauto` account and check "Remember me" — the session persists for ~24 hours. Password is in `HOMEAUTOMATION.local.md` (gitignored).
+The kiosk popup shows the UniFi dashboard. Log in once on the tablet with the `codingagent` account and check "Remember me" — the session persists for ~24 hours. Password is in `HOMEAUTOMATION.local.md` (gitignored).
 
 ## Sonos System
 
@@ -826,13 +826,15 @@ The UDM Pro exposes a local REST API for full network management.
 
 ### Authentication
 
-Uses session-based cookie auth (NOT API keys). Uses the `alpacaauto` local-only admin account (credentials in `HOMEAUTOMATION.local.md`).
+Uses session-based cookie auth (NOT API keys). Uses the `codingagent` local-only admin account (credentials in `HOMEAUTOMATION.local.md`).
+
+> **2026-09-29:** `codingagent` replaced `alpacaauto`, which stopped accepting its password. Clients retrying with the stale password kept it rate-limited (HTTP 429) for days. Same Bitwarden password, new username. To find a client causing a lockout, count `ip=` values on `POST /api/auth/login` lines in `/data/unifi-core/logs/nginx-access.log` on the UDM (`::1` = a script that SSHes in and calls `localhost`).
 
 ```bash
 # Login (from DO droplet — has direct LAN access via Tailscale subnet routing)
 # Write credentials to a JSON file first to avoid shell escaping issues with special characters
 cat > /tmp/unifi_login.json << 'EOF'
-{"username":"alpacaauto","password":"<redacted>"}
+{"username":"codingagent","password":"<redacted>"}
 EOF
 
 curl -k -X POST \
@@ -1197,7 +1199,7 @@ Debug the proxy chain step by step:
 
 ### UDM Pro API login fails
 
-1. Verify the `alpacaauto` account exists: check UniFi OS → Admins & Users
+1. Verify the `codingagent` account exists: check UniFi OS → Admins & Users
 2. Ensure using file-based payload (`-d @/tmp/unifi_login.json`) to avoid shell escaping issues with `!` in password
 3. Verify the droplet can reach `192.168.1.1`: `curl -k -s -o /dev/null -w '%{http_code}' https://192.168.1.1/`
 4. Sessions expire — re-login if getting 401 responses

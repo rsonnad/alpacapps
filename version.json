@@ -1,12 +1,12 @@
 {
-  "version": "v260925.06 3:57p",
-  "release": 1867,
-  "sha": "febc5c21a8",
-  "fullSha": "febc5c21a844c3f490e27bd6c180e47bc5deafe3",
+  "version": "v261010.02 12:51p",
+  "release": 1914,
+  "sha": "e5a2d658c3",
+  "fullSha": "e5a2d658c3d7961cbcfc20d40974afc5a88abac1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmtr4k5",
-  "pushedAt": "2026-09-25T20:57:04+00:00",
-  "commits": [{"sha":"febc5c21a8","message":"airbnbsupportfail: link the X write-up stored on R2","author":"Blotto"}]
+  "machine": "runnervmmprz5",
+  "pushedAt": "2026-10-10T17:51:55+00:00",
+  "commits": [{"sha":"e5a2d658c3","message":"fix(rahulio): keep India's 0.6 per 1,000 instead of rounding to 1","author":"Blotto"}]
 }

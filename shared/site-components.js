@@ -390,7 +390,7 @@ function renderUserMenuHTML(appUser, profileHref) {
 
   let navLinks = '';
   if (isResident) {
-    navLinks += `<a href="${ROUTES.staff.rentals}" class="user-menu-item">Intranet</a>`;
+    navLinks += `<a href="${ROUTES.intranet.home}" class="user-menu-item">Intranet</a>`;
   }
 
   return `
@@ -437,7 +437,7 @@ export async function initPublicHeaderAuth({ authContainerId, signInLinkId, prof
         // Build mobile nav items for authenticated user
         const mobileItems = [];
         if (isResident) {
-          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="${ROUTES.staff.rentals}" class="aap-mobile-nav__link">Intranet</a></li>`);
+          mobileItems.push(`<li class="aap-mobile-nav__item"><a href="${ROUTES.intranet.home}" class="aap-mobile-nav__link">Intranet</a></li>`);
         }
         mobileItems.push(`<li class="aap-mobile-nav__item"><a href="${ROUTES.residents.profile}" class="aap-mobile-nav__link">Profile</a></li>`);
         mobileItems.push(`<li class="aap-mobile-nav__item"><button class="aap-mobile-nav__link aap-mobile-nav__signout" id="mobileSignOutBtn" style="background:none;border:none;color:#c0392b;cursor:pointer;font:inherit;padding:inherit;width:100%;text-align:left;">Sign Out</button></li>`);

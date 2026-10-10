@@ -1501,7 +1501,7 @@ async function renderPrinterSettings() {
 
   const { data: config } = await supabase
     .from('printer_config')
-    .select('*')
+    .select('id, proxy_url, is_active, test_mode, last_error, last_synced_at, created_at, updated_at, check_code')
     .eq('id', 1)
     .single();
 
@@ -1515,7 +1515,7 @@ async function renderPrinterSettings() {
       </div>
       <div>
         <label style="font-weight:600;display:block;margin-bottom:0.25rem;">Proxy Secret</label>
-        <input type="password" id="printerProxySecret" value="${c.proxy_secret || ''}" placeholder="shared secret" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.9rem;">
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:0;">Secret is stored server-side; set via SQL/ops.</p>
       </div>
       <div style="display:flex;gap:1rem;align-items:center;">
         <label><input type="checkbox" id="printerTestMode" ${c.test_mode ? 'checked' : ''}> Test Mode</label>
@@ -1541,7 +1541,6 @@ async function renderPrinterSettings() {
       const { error } = await supabase.from('printer_config').upsert({
         id: 1,
         proxy_url: document.getElementById('printerProxyUrl').value.trim(),
-        proxy_secret: document.getElementById('printerProxySecret').value.trim(),
         test_mode: document.getElementById('printerTestMode').checked,
         is_active: document.getElementById('printerIsActive').checked,
         updated_at: new Date().toISOString(),
