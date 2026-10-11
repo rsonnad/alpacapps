@@ -48,6 +48,7 @@
 
 ## Mobile App (`/mobile/`)
 - `capacitor.config.ts` - App config (ID: `com.alpacaplayhouse.app`, plugins, platform settings)
+- `scripts/oci-a1-provisioner/` - Oracle Cloud Always Free A1 VM provisioner (launchd job on Alpuca; one launch attempt per tick, state machine, self-terminating). See its README.
 - `scripts/copy-web.js` - Build script: copies web assets → www/, injects capacitor.js, patches redirects
 - `app/index.html` - App shell (loading overlay, login overlay, tab sections, bottom nav bar)
 - `app/mobile.css` - Dark theme stylesheet (all mobile CSS in one file)

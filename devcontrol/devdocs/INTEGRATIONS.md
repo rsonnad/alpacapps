@@ -233,6 +233,12 @@ The accounting admin page (`spaces/admin/accounting.html`) should show:
 - **Discord Channels:** `#alpaclaw` (ID: `1477048544501174474`), `#pai-in-the-sky` (ID: `1471024050343247894`)
 - **Credentials:** See `CLAUDE.local.md` for SSH password, API tokens, bot tokens, full `.env` contents
 
+### Oracle Cloud (Always Free A1 — provisioning)
+- **Status:** not yet provisioned. Target: `VM.Standard.A1.Flex` 4 OCPU / 24 GB / 200 GB, Ubuntu 24.04 aarch64, home region (goal: `ca-montreal-1`)
+- **Provisioner:** `scripts/oci-a1-provisioner/` (launchd job on Alpuca). Read its README for setup, operation and the "If it never lands" options (PAYG upgrade)
+- **Auth:** OCI API signing key in `~/.oci/config` on Alpuca; SSH key `~/.ssh/oracle_key`
+- **After success:** record the host's IP, Tailscale name and SSH recipe here and in `memory/service-access.md`
+
 ### DigitalOcean Droplet (DEPRECATED — migrating to Hostinger + Oracle)
 - Runs Bug Scout (`bug_scout.js`) and background workers
 - Bug Scout: polls `bug_reports` for pending bugs → runs Claude Code to fix → commits to `bugfix/` branch → merges to main

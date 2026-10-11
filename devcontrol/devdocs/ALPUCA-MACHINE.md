@@ -107,6 +107,25 @@ time out and be discarded despite having succeeded.
 Also note `flock` does not exist on macOS; the wrapper uses an atomic `mkdir`
 lock with a 1-hour staleness escape hatch.
 
+### OCI A1 provisioner (launchd, every 2 min, self-terminating)
+
+Retries Oracle Cloud `LaunchInstance` for an Always Free Ampere A1 VM until
+capacity opens. One short attempt per tick, no long-lived process. It unloads
+its own job once it succeeds or stops (fatal error / `MAX_DAYS`), and sends a
+"still trying" notification weekly so it can't be forgotten.
+
+| Item | Value |
+|---|---|
+| LaunchAgent | `~/Library/LaunchAgents/com.alpuca.oci-a1-provisioner.plist` |
+| Code | `~/scripts/oci-a1-provisioner/provision.py` (repo: `scripts/oci-a1-provisioner/`) |
+| Config | `~/.config/oci-a1-provisioner/config.env` (chmod 600) |
+| State / log | `~/.local/state/oci-a1-provisioner/{state.json,provisioner.log}` |
+| Status | `~/.venvs/oci-a1-provisioner/bin/python ~/scripts/oci-a1-provisioner/provision.py status` |
+
+Supersedes the legacy `com.oracle.arm-provision` LaunchAgent and
+`~/bin/oracle-auto-provision.sh` loop. If either still exists, it's stale:
+see `scripts/oci-a1-provisioner/README.md` → "Retiring the old script".
+
 ### Garmin Forerunner deal watcher (cron, 8:00am + 6:00pm Eastern)
 
 Grok searches eBay / Back Market / GPS Nation / Best Buy / Facebook
