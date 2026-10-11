@@ -283,7 +283,9 @@ def notify(cfg: dict, store: Store, title: str, body: str) -> None:
         }).encode()
         req = urllib.request.Request(
             "https://api.resend.com/emails", data=payload, method="POST",
-            headers={"Authorization": f"Bearer {cfg['RESEND_API_KEY']}", "Content-Type": "application/json"})
+            # Resend's Cloudflare front blocks the default "Python-urllib" UA (403, error 1010).
+            headers={"Authorization": f"Bearer {cfg['RESEND_API_KEY']}", "Content-Type": "application/json",
+                     "User-Agent": "oci-a1-provisioner/1.0"})
         try:
             urllib.request.urlopen(req, timeout=15).read()
         except Exception as e:  # noqa: BLE001 — notification is best-effort
