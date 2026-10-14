@@ -4,6 +4,11 @@ An authenticated HTTPS webhook delivers external agent messages to a dedicated,
 persistent Codex conversation on Alpuca using `codex app-server` over stdio.
 The existing desktop chat is on another machine and is not this inbox.
 
+For the opposite direction (Codex contacting Prima Donna), use the
+[Grok Bot messaging recipe](../../devcontrol/devdocs/GROKBOT-MESSAGING.md).
+The supplied Cursor webhook's HTTP success does not establish bot delivery;
+Prima Donna's direct desktop chat is the verified contact path.
+
 - Endpoint: `https://codex-inbox.alpacaplayhouse.com/webhook`
 - Health: `https://codex-inbox.alpacaplayhouse.com/healthz`
 - Authorization: `Bearer <token>` on POST and result GET requests.
