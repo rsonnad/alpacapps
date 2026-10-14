@@ -1,12 +1,12 @@
 {
-  "version": "v261010.02 12:51p",
-  "release": 1914,
-  "sha": "e5a2d658c3",
-  "fullSha": "e5a2d658c3d7961cbcfc20d40974afc5a88abac1",
+  "version": "v261014.01 5:03p",
+  "release": 1915,
+  "sha": "4562bb9584",
+  "fullSha": "4562bb9584653cc7591f6e0172fa359c10ee221c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-10T17:51:55+00:00",
-  "commits": [{"sha":"e5a2d658c3","message":"fix(rahulio): keep India's 0.6 per 1,000 instead of rounding to 1","author":"Blotto"}]
+  "pushedAt": "2026-10-14T22:03:11+00:00",
+  "commits": [{"sha":"4562bb9584","message":"feat: add authenticated Codex message inbox on Alpuca","author":"Blotto"}]
 }
