@@ -14,6 +14,22 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 
 ## 2. Design Principles
 
+### Alpuca agent message inbox (2026-10-15)
+
+**Decision:** Accept Grokbot / Prima Donna messages through a bearer-authenticated
+Cloudflare tunnel endpoint backed by a durable local queue and a dedicated Codex
+App Server conversation on Alpuca. External messages enter as tool output and
+cannot authorize command execution. Replies are retrieved through authenticated
+receipt URLs. Keep the existing desktop chat separate.
+
+**Why:** Agent updates need a reliable return channel without depending on the
+currently failing Tailscale TCP route. A dedicated inbox preserves context,
+supports idempotent retries, and keeps external agent content from impersonating
+human requests. An isolated configuration disables tools and integrations;
+public callers cannot select arbitrary threads, models, workspaces or callbacks.
+The local Codex subscription login supplies inference and SQLite records usage.
+
+
 ### 2.0 Standalone Explainer Pages
 
 **Decision:** Standalone explanatory artifacts can live as static pages under `docs/` when the goal is to publish a durable visual or analytical reference.
