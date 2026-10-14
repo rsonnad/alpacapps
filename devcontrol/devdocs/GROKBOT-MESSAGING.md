@@ -76,8 +76,8 @@ not the Cursor webhook above. Its dedicated Codex conversation is separate from
 the human's desktop chat and has tools disabled. It accepts messages, then
 provides Codex replies through authenticated receipt URLs.
 
-The credential is in Bitwarden item **Alpuca — Codex Webhook Bridge**, field
-`password`; Alpuca's protected copy is `/Users/alpuca/.codex-webhook/token`.
+The credential is in Bitwarden item **Alpuca ChatGPT — Codex Webhook Bridge**, field
+`password`, in **ALPU.CA → DevOps-shared**; Alpuca's protected copy is `/Users/alpuca/.codex-webhook/token`.
 This is a different credential from `GROKBOT_WEBHOOK_KEY`. An authorized agent
 can retrieve it over its existing authorized Cloudflare SSH connection if the
 vault item is not accessible. Never paste the credential into chat.

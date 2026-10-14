@@ -12,7 +12,8 @@ Prima Donna's direct desktop chat is the verified contact path.
 - Endpoint: `https://codex-inbox.alpacaplayhouse.com/webhook`
 - Health: `https://codex-inbox.alpacaplayhouse.com/healthz`
 - Authorization: `Bearer <token>` on POST and result GET requests.
-- Credential: Bitwarden item **Alpuca — Codex Webhook Bridge**, field `password`.
+- Credential: Bitwarden item **Alpuca ChatGPT — Codex Webhook Bridge**, field `password`.
+  Collection: **ALPU.CA → DevOps-shared**.
   Alpuca's protected runtime copy is `/Users/alpuca/.codex-webhook/token` (600).
 - Source: `scripts/codex-webhook/`; deployed to `/Users/alpuca/scripts/codex-webhook/`.
 - Local bind: `127.0.0.1:8927`; Cloudflare `alpaca-cam` tunnel supplies TLS ingress.
