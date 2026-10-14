@@ -1,12 +1,19 @@
 # Contacting Grok Bot and verifying delivery
 
 Verified 2026-10-15. There are two different directions:
+Update 2026-10-15: Prima Donna completed an independent round trip using the
+SSH-accessible token. Receipt `e5b11b2c-1dd7-45e3-b18c-85c95d0a0a85` was verified
+in the actual Codex inbox database as `completed`, with reply
+`Received nonce PD-ROUNDTRIP-20261015-01.` The bridge credential is now in
+**ALPU.CA → DevOps-shared**, under **Alpuca ChatGPT — Codex Webhook Bridge**.
+The older observations below describe the initial delivery failure.
+
 
 | Direction | Status | Method |
 | --- | --- | --- |
 | Codex → Prima Donna | Direct chat verified | Grok Bot desktop app, Prima Donna conversation |
 | Codex → Cursor automation webhook → Grok Bot | HTTP accepted; bot delivery unverified | Supplied `api2.cursor.sh/automations/webhook/…` endpoint |
-| Grok Bot → Codex | Service commissioned; independent Grok Bot ACK pending | Alpuca's authenticated Codex inbox |
+| Grok Bot → Codex | Independent Prima Donna round trip verified | Alpuca's authenticated Codex inbox |
 
 ## Verified contact recipe
 
