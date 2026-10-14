@@ -18,6 +18,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 import uuid
+from task_queue import TaskError, TaskQueue
 
 ROOT = Path(os.environ.get('CODEX_BRIDGE_STATE', str(Path.home() / '.codex-webhook')))
 INSTRUCTIONS = '''You are the Alpuca Codex message inbox for Grokbot / Prima Donna.
@@ -257,6 +258,11 @@ class Bridge(ThreadingHTTPServer):
         self.lock = (root/'service.lock').open('a')
         fcntl.flock(self.lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         self.store = Store(root)
+        self.tasks = TaskQueue(root)
+        task_key = root/'desktop-token'
+        self.desktop_token = task_key.read_text().strip() if task_key.exists() else None
+        if self.desktop_token is not None and len(self.desktop_token)<32:
+            raise ValueError('A strong desktop task bearer token is required')
         self.wake = threading.Event()
         self.stop = threading.Event()
         self.app = AppServer(root)
@@ -306,8 +312,11 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def authenticated(self):
-        expected = 'Bearer '+self.server.token
+    def authenticated(self, desktop=False):
+        token = self.server.desktop_token if desktop else self.server.token
+        if not token:
+            raise Rejected(503,'Desktop task ingress is not configured')
+        expected = 'Bearer '+token
         if not hmac.compare_digest(self.headers.get('Authorization','').encode(),expected.encode()):
             raise Rejected(401,'Unauthorized')
 
@@ -315,19 +324,25 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if self.path == '/healthz':
                 return self.reply(200, {'ok':True,'service':'alpuca-codex-inbox'})
-            self.authenticated()
-            match = re.fullmatch(r'/v1/messages/([0-9a-f-]{36})',self.path)
-            result = self.server.store.get(match[1]) if match else None
+            desktop = self.path.startswith('/v1/desktop/')
+            self.authenticated(desktop)
+            if self.path == '/v1/desktop/health':
+                return self.reply(200,self.server.tasks.health())
+            pattern = r'/v1/desktop/tasks/([0-9a-f-]{36})' if desktop else r'/v1/messages/([0-9a-f-]{36})'
+            match = re.fullmatch(pattern,self.path)
+            store = self.server.tasks if desktop else self.server.store
+            result = store.get(match[1]) if match else None
             if not result:
                 raise Rejected(404,'Not found')
             self.reply(200,result)
-        except Rejected as exc:
+        except (Rejected,TaskError) as exc:
             self.reply(exc.status,{'error':exc.message})
 
     def do_POST(self):
         try:
-            self.authenticated()
-            if self.path not in {'/webhook','/v1/messages'}:
+            desktop = self.path.startswith('/v1/desktop/')
+            self.authenticated(desktop)
+            if self.path not in {'/webhook','/v1/messages','/v1/desktop/tasks'}:
                 raise Rejected(404,'Not found')
             if self.headers.get('Content-Type','').split(';')[0].strip().lower() != 'application/json':
                 raise Rejected(415,'application/json required')
@@ -340,17 +355,22 @@ class Handler(BaseHTTPRequestHandler):
             if not 0<length<=65536:
                 raise Rejected(413,'Message must be 1–65536 bytes')
             dedupe = self.headers.get('Idempotency-Key')
+            if desktop and not dedupe:
+                raise Rejected(400,'Desktop tasks require an Idempotency-Key')
             if dedupe is not None and not re.fullmatch(r'[A-Za-z0-9._:-]{1,128}',dedupe):
                 raise Rejected(400,'Invalid Idempotency-Key')
             raw = self.rfile.read(length)
             if len(raw) != length:
                 raise Rejected(400,'Incomplete request body')
-            mid, fresh = self.server.store.accept(validate(json.loads(raw)),dedupe)
-            self.server.wake.set()
-            self.reply(202 if fresh else 200, {'accepted':True,'id':mid,'duplicate':not fresh,'status_url':'/v1/messages/'+mid})
+            store = self.server.tasks if desktop else self.server.store
+            mid, fresh = store.accept(validate(json.loads(raw)),dedupe)
+            if not desktop:
+                self.server.wake.set()
+            prefix = '/v1/desktop/tasks/' if desktop else '/v1/messages/'
+            self.reply(202 if fresh else 200, {'accepted':True,'id':mid,'duplicate':not fresh,'status_url':prefix+mid})
         except (json.JSONDecodeError, UnicodeDecodeError, RecursionError):
             self.reply(400,{'error':'Invalid JSON'})
-        except Rejected as exc:
+        except (Rejected,TaskError) as exc:
             self.reply(exc.status,{'error':exc.message})
 
 

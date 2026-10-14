@@ -29,6 +29,21 @@ human requests. An isolated configuration disables tools and integrations;
 public callers cannot select arbitrary threads, models, workspaces or callbacks.
 The local Codex subscription login supplies inference and SQLite records usage.
 
+**Desktop orchestration extension (2026-10-15):** Grokbot may submit explicitly
+authenticated desktop jobs through a separate task endpoint and credential.
+A human-started local desktop chat pulls these jobs through a local MCP receiver
+and performs them with its normal computer-use tools. Ordinary notifications
+remain tool-free. Jobs serialize use of the desktop, record approval blockers,
+and are not silently replayed after interruption.
+
+**Why:** The owner wants Grokbot to orchestrate application work on Alpuca, while
+the first bridge only supported message replies. The installed desktop app's
+private messaging interface did not respond to probes, and computer use blocks
+controlling ChatGPT's own UI. A supported local MCP receiver lets the actual
+desktop agent accept delegated tasks without UI injection or bypassing its
+approvals. A one-time human startup prompt establishes the delegation. Long
+polling avoids repeated model inference while the worker is idle.
+
 
 ### 2.0 Standalone Explainer Pages
 
