@@ -1,12 +1,12 @@
 {
-  "version": "v261016.02 10:11p",
-  "release": 1921,
-  "sha": "7655c8c05f",
-  "fullSha": "7655c8c05f02ab24dacc292ba939cc858800ae84",
+  "version": "v261016.03 10:13p",
+  "release": 1922,
+  "sha": "3f3114cdc6",
+  "fullSha": "3f3114cdc63a5ea03fb45ffa7098c09fe02d37c7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-17T03:11:01+00:00",
-  "commits": [{"sha":"7655c8c05f","message":"chore: add rotate-cron-secret.sh for the X-Cron-Secret Vault/edge secret pair","author":"Blotto"}]
+  "pushedAt": "2026-10-17T03:13:58+00:00",
+  "commits": [{"sha":"3f3114cdc6","message":"docs: record edge-function caller-auth decision","author":"Blotto"}]
 }
