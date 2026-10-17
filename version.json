@@ -1,12 +1,12 @@
 {
-  "version": "v261014.05 5:36p",
-  "release": 1919,
-  "sha": "83aebbfc79",
-  "fullSha": "83aebbfc790b51bcacab5f02cd1a163df06bfdbd",
+  "version": "v261016.01 10:06p",
+  "release": 1920,
+  "sha": "d2615c5296",
+  "fullSha": "d2615c52967fbf85ef1919f790dcffe7b4c85def",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmmprz5",
-  "pushedAt": "2026-10-14T22:36:41+00:00",
-  "commits": [{"sha":"83aebbfc79","message":"feat: queue Grokbot tasks for an actual desktop computer-use worker","author":"Blotto"}]
+  "machine": "runnervm8k3b6",
+  "pushedAt": "2026-10-17T03:06:56+00:00",
+  "commits": [{"sha":"d2615c5296","message":"fix(security): authenticate callers of cron, payout and email edge functions","author":"Blotto"}]
 }
