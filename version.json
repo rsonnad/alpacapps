@@ -1,12 +1,12 @@
 {
-  "version": "v261016.03 10:13p",
-  "release": 1922,
-  "sha": "3f3114cdc6",
-  "fullSha": "3f3114cdc63a5ea03fb45ffa7098c09fe02d37c7",
+  "version": "v261017.01 6:40a",
+  "release": 1923,
+  "sha": "ddd964395d",
+  "fullSha": "ddd964395de7bdc6976c6499f588e73a17e33c21",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-17T03:13:58+00:00",
-  "commits": [{"sha":"3f3114cdc6","message":"docs: record edge-function caller-auth decision","author":"Blotto"}]
+  "pushedAt": "2026-10-17T11:40:59+00:00",
+  "commits": [{"sha":"ddd964395d","message":"Rentals + rental notes API for Meta Muse agent; unified /api docs (#137)","author":"Rahul"}]
 }
