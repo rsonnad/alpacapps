@@ -78,6 +78,22 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     delete: { minLevel: 3 },
   },
 
+  // ── rentals (read-only view: space bookings + vehicle rentals) ──
+  // Normalized start/end dates + end_behavior (month_to_month vs fixed).
+  // Used by the Meta Muse agent's scoped API key.
+  rentals: {
+    list:   { minLevel: 2 },
+    get:    { minLevel: 2 },
+  },
+
+  // ── rental_notes (notes on a space booking or vehicle rental) ───
+  rental_notes: {
+    list:   { minLevel: 2 },
+    get:    { minLevel: 2 },
+    create: { minLevel: 2 },
+    delete: { minLevel: 3 },
+  },
+
   // ── tasks ───────────────────────────────────────────────────────
   tasks: {
     list:   { minLevel: 1 },
