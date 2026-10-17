@@ -266,11 +266,11 @@ apikey: <SUPABASE_ANON_KEY>
 | list | 2 | Defaults to current/upcoming (spaces: active, pending_contract, contract_sent; vehicles: active, draft). Sorted by soonest `end_date`, open-ended last. |
 | get | 2 | `id` = `assignment:<uuid>` or `vehicle_rental:<uuid>` |
 
-**Key fields:** `id`, `kind` (space/vehicle), `source` (airbnb/direct), `status`, `renter_name`, `renter_type`, `spaces[]`, `vehicle`, `start_date`, `end_date`, `end_behavior` (`month_to_month` | `fixed` | `unknown`), `end_behavior_source`, `rolls_to_month_to_month` (bool|null), `notice_days`, `planned_move_out`, `rate_amount`, `rate_term`, `notes[]`.
+**Key fields:** `id`, `kind` (space/vehicle), `source` (airbnb/direct), `status`, `renter_name`, `renter_type`, `spaces[]`, `vehicle`, `start_date`, `end_date`, `end_behavior` (`month_to_month` | `fixed` | `unknown`), `end_behavior_source`, `rolls_to_month_to_month` (bool|null), `notice_days`, `planned_move_out` + `planned_move_out_listed` (spaces), `ended_on` (vehicles), `rate_amount` (falls back to `monthly_rent`), `rate_term`, `notes[]`.
 
 **end_behavior inference (first match wins):** `assignments.end_behavior` set explicitly → Airbnb booking = `fixed` → linked `rental_applications.notice_period` (`none` = `fixed`, else `month_to_month`) → null `end_date` = `month_to_month` → vehicles use `auto_renew` → otherwise `unknown`.
 
-**Filters:** `kind`, `source`, `status` (string, array, or `"all"`), `starts_after`, `starts_before`, `ends_after` (includes open-ended), `ends_before`, `end_behavior`, `space` (name substring), `renter` (name substring), `include_notes` (default true). Dates are `YYYY-MM-DD`, inclusive.
+**Filters:** `kind`, `source`, `status` (string, array, or `"all"`; `completed`/`ended` are aliases), `starts_after`, `starts_before`, `ends_after` (includes open-ended), `ends_before`, `end_behavior`, `space` (name substring), `renter` (name substring), `include_notes` (default true). Dates are `YYYY-MM-DD`, inclusive.
 
 ---
 

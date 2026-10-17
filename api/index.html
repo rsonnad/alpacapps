@@ -202,7 +202,8 @@
         <tr><td><code>end_behavior_source</code></td><td>string|null</td><td>Where <code>end_behavior</code> came from: <code>explicit</code>, <code>airbnb</code>, <code>lease_application</code>, <code>open_ended</code>, <code>vehicle_auto_renew</code>, or <code>null</code> when unknown.</td></tr>
         <tr><td><code>rolls_to_month_to_month</code></td><td>bool|null</td><td>Shortcut: <code>true</code> if the rental continues monthly after <code>end_date</code>, <code>false</code> if it ends, <code>null</code> if unknown.</td></tr>
         <tr><td><code>notice_days</code></td><td>int|null</td><td>Days of notice needed to end a rolling rental, when it's recorded</td></tr>
-        <tr><td><code>planned_move_out</code></td><td>date|null</td><td>The move-out date the tenant has said they plan (spaces), or the date the vehicle rental actually ended</td></tr>
+        <tr><td><code>planned_move_out</code></td><td>date|null</td><td>Spaces only: the move-out date the tenant has told us they plan, which may be before <code>end_date</code>. <code>planned_move_out_listed</code> is <code>true</code> once that date is advertised publicly as availability.</td></tr>
+        <tr><td><code>ended_on</code></td><td>date|null</td><td>Vehicles only: the date the rental actually ended (Austin time)</td></tr>
         <tr><td><code>rate_amount</code>, <code>rate_term</code></td><td>number, string</td><td>Rent and its period: <code>monthly</code>, <code>weekly</code> or <code>nightly</code></td></tr>
         <tr><td><code>notes</code></td><td>note[]</td><td>The <a href="#rental-notes">rental notes</a>, newest first. Leave them out with <code>filters.include_notes: false</code>.</td></tr>
       </tbody>
@@ -213,9 +214,9 @@
     <div class="table-wrap"><table>
       <thead><tr><th>Filter</th><th>Type</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td><code>kind</code></td><td>string</td><td><code>space</code> or <code>vehicle</code></td></tr>
-        <tr><td><code>source</code></td><td>string</td><td><code>airbnb</code> or <code>direct</code></td></tr>
-        <tr><td><code>status</code></td><td>string | string[] | "all"</td><td>Overrides the default set of statuses</td></tr>
+        <tr><td><code>kind</code></td><td>string</td><td><code>space</code> or <code>vehicle</code>. Any other value returns 400.</td></tr>
+        <tr><td><code>source</code></td><td>string</td><td><code>airbnb</code> or <code>direct</code>. Any other value returns 400.</td></tr>
+        <tr><td><code>status</code></td><td>string | string[] | "all"</td><td>Overrides the default set of statuses. <code>completed</code> and <code>ended</code> mean the same thing for spaces and vehicles.</td></tr>
         <tr><td><code>starts_after</code> / <code>starts_before</code></td><td>date</td><td>Filter on <code>start_date</code></td></tr>
         <tr><td><code>ends_after</code> / <code>ends_before</code></td><td>date</td><td>Filter on <code>end_date</code>. <code>ends_after</code> includes open-ended rentals; <code>ends_before</code> leaves them out.</td></tr>
         <tr><td><code>end_behavior</code></td><td>string</td><td><code>month_to_month</code>, <code>fixed</code> or <code>unknown</code></td></tr>

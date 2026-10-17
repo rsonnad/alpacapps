@@ -510,6 +510,11 @@ async function handleAssignments(supabase: any, req: ApiRequest, auth: any, perm
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const SPACE_CURRENT_STATUSES = ["active", "pending_contract", "contract_sent"];
 const VEHICLE_CURRENT_STATUSES = ["active", "draft"];
+// Spaces say "completed", vehicles say "ended"; accept either for both.
+const SPACE_STATUS_ALIASES: Record<string, string> = { ended: "completed" };
+const VEHICLE_STATUS_ALIASES: Record<string, string> = { completed: "ended" };
+// PostgREST silently caps unranged selects at the project max-rows; set it explicitly.
+const RENTAL_SCAN_LIMIT = 5000;
 
 function parseRentalId(id: string): { table: "assignment" | "vehicle_rental" | null; uuid: string } {
   const m = /^(assignment|vehicle_rental):(.+)$/.exec(id);
@@ -544,7 +549,9 @@ function normalizeAssignment(a: any) {
     rolls_to_month_to_month: eb.end_behavior === "unknown" ? null : eb.end_behavior === "month_to_month",
     notice_days: a.notice_days ?? null,
     planned_move_out: a.desired_departure_date ?? null,
-    rate_amount: a.rate_amount ?? null,
+    planned_move_out_listed: !!a.desired_departure_listed,
+    ended_on: null,
+    rate_amount: a.rate_amount ?? a.monthly_rent ?? null,
     rate_term: a.rate_term ?? null,
   };
 }
@@ -567,7 +574,9 @@ function normalizeVehicleRental(v: any) {
     ...eb,
     rolls_to_month_to_month: eb.end_behavior === "month_to_month",
     notice_days: v.cancel_notice_days ?? null,
-    planned_move_out: v.ended_at ? String(v.ended_at).slice(0, 10) : null,
+    planned_move_out: null,
+    planned_move_out_listed: false,
+    ended_on: v.ended_at ? new Date(v.ended_at).toLocaleDateString("en-CA", { timeZone: "America/Chicago" }) : null,
     rate_amount: v.current_monthly_rate ?? null,
     rate_term: "monthly",
   };
@@ -575,7 +584,7 @@ function normalizeVehicleRental(v: any) {
 
 const ASSIGNMENT_RENTAL_SELECT =
   "id, status, type, start_date, end_date, end_behavior, notice_days, desired_departure_date, " +
-  "rate_amount, rate_term, airbnb_uid, person:person_id(first_name, last_name, type), " +
+  "desired_departure_listed, rate_amount, monthly_rent, rate_term, airbnb_uid, person:person_id(first_name, last_name, type), " +
   "assignment_spaces(space:space_id(name)), rental_application:rental_application_id(notice_period)";
 const VEHICLE_RENTAL_SELECT =
   "id, status, start_date, end_date, auto_renew, cancel_notice_days, ended_at, renter_name, " +
@@ -597,7 +606,8 @@ async function attachRentalNotes(supabase: any, rentals: any[]): Promise<void> {
   const fetches = [];
   if (aIds.length) fetches.push(supabase.from("rental_notes").select("*").in("assignment_id", aIds));
   if (vIds.length) fetches.push(supabase.from("rental_notes").select("*").in("vehicle_rental_id", vIds));
-  for (const { data } of await Promise.all(fetches)) {
+  for (const { data, error: err } of await Promise.all(fetches)) {
+    if (err) throw new Error(`Failed to load rental notes: ${err.message}`);
     for (const n of data || []) {
       const note = normalizeRentalNote(n);
       (byId[note.rental_id] ||= []).push(note);
@@ -628,8 +638,15 @@ async function handleRentals(supabase: any, req: ApiRequest, _auth: any, _perm: 
       for (const k of ["starts_after", "starts_before", "ends_after", "ends_before"]) {
         if (f[k] && !DATE_RE.test(String(f[k]))) return error(`filters.${k} must be YYYY-MM-DD`, 400);
       }
+      if (f.kind && !["space", "vehicle"].includes(f.kind)) return error("filters.kind must be space or vehicle", 400);
+      if (f.source && !["airbnb", "direct"].includes(f.source)) return error("filters.source must be airbnb or direct", 400);
+      if (f.end_behavior && !["month_to_month", "fixed", "unknown"].includes(f.end_behavior)) {
+        return error("filters.end_behavior must be month_to_month, fixed or unknown", 400);
+      }
       const statusAll = f.status === "all";
-      const statuses = statusAll ? null : f.status ? [].concat(f.status) : null;
+      const statuses: string[] | null = statusAll ? null : f.status ? [].concat(f.status).map(String) : null;
+      const spaceStatuses = statuses?.map((st) => SPACE_STATUS_ALIASES[st] || st);
+      const vehicleStatuses = statuses?.map((st) => VEHICLE_STATUS_ALIASES[st] || st);
       const wantSpace = !f.kind || f.kind === "space";
       const wantVehicle = (!f.kind || f.kind === "vehicle") && f.source !== "airbnb";
 
@@ -637,18 +654,18 @@ async function handleRentals(supabase: any, req: ApiRequest, _auth: any, _perm: 
 
       if (wantSpace) {
         let q = supabase.from("assignments").select(ASSIGNMENT_RENTAL_SELECT).eq("type", "dwelling");
-        if (!statusAll) q = q.in("status", statuses || SPACE_CURRENT_STATUSES);
+        if (!statusAll) q = q.in("status", spaceStatuses || SPACE_CURRENT_STATUSES);
         if (f.source === "airbnb") q = q.not("airbnb_uid", "is", null);
         if (f.source === "direct") q = q.is("airbnb_uid", null);
-        const { data, error: err } = await applyRentalDateFilters(q, f);
+        const { data, error: err } = await applyRentalDateFilters(q, f).range(0, RENTAL_SCAN_LIMIT - 1);
         if (err) return error(err.message, 500);
         rentals.push(...(data || []).map(normalizeAssignment));
       }
 
       if (wantVehicle) {
         let q = supabase.from("vehicle_rentals").select(VEHICLE_RENTAL_SELECT);
-        if (!statusAll) q = q.in("status", statuses || VEHICLE_CURRENT_STATUSES);
-        const { data, error: err } = await applyRentalDateFilters(q, f);
+        if (!statusAll) q = q.in("status", vehicleStatuses || VEHICLE_CURRENT_STATUSES);
+        const { data, error: err } = await applyRentalDateFilters(q, f).range(0, RENTAL_SCAN_LIMIT - 1);
         if (err) return error(err.message, 500);
         rentals.push(...(data || []).map(normalizeVehicleRental));
       }
@@ -679,11 +696,14 @@ async function handleRentals(supabase: any, req: ApiRequest, _auth: any, _perm: 
       const { table, uuid } = parseRentalId(req.id);
       let rental: any = null;
       if (table !== "vehicle_rental") {
-        const { data } = await supabase.from("assignments").select(ASSIGNMENT_RENTAL_SELECT).eq("id", uuid).maybeSingle();
+        const { data, error: err } = await supabase.from("assignments").select(ASSIGNMENT_RENTAL_SELECT)
+          .eq("id", uuid).eq("type", "dwelling").maybeSingle();
+        if (err && table === "assignment") return error(err.message, 500);
         if (data) rental = normalizeAssignment(data);
       }
       if (!rental && table !== "assignment") {
-        const { data } = await supabase.from("vehicle_rentals").select(VEHICLE_RENTAL_SELECT).eq("id", uuid).maybeSingle();
+        const { data, error: err } = await supabase.from("vehicle_rentals").select(VEHICLE_RENTAL_SELECT).eq("id", uuid).maybeSingle();
+        if (err && table === "vehicle_rental") return error(err.message, 500);
         if (data) rental = normalizeVehicleRental(data);
       }
       if (!rental) return error("Rental not found", 404);
