@@ -513,7 +513,7 @@ const VEHICLE_CURRENT_STATUSES = ["active", "draft"];
 // Spaces say "completed", vehicles say "ended"; accept either for both.
 const SPACE_STATUS_ALIASES: Record<string, string> = { ended: "completed" };
 const VEHICLE_STATUS_ALIASES: Record<string, string> = { completed: "ended" };
-// PostgREST silently caps unranged selects at the project max-rows; set it explicitly.
+// Upper bound per table scan. PostgREST max-rows may cap lower; `truncated` reports it.
 const RENTAL_SCAN_LIMIT = 5000;
 
 function parseRentalId(id: string): { table: "assignment" | "vehicle_rental" | null; uuid: string } {
@@ -647,26 +647,35 @@ async function handleRentals(supabase: any, req: ApiRequest, _auth: any, _perm: 
       const statuses: string[] | null = statusAll ? null : f.status ? [].concat(f.status).map(String) : null;
       const spaceStatuses = statuses?.map((st) => SPACE_STATUS_ALIASES[st] || st);
       const vehicleStatuses = statuses?.map((st) => VEHICLE_STATUS_ALIASES[st] || st);
+      // Default view is "current and upcoming": hide contracts whose end_date has
+      // already passed (e.g. a contract_sent that was never closed out).
+      if (!f.status) {
+        const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+        if (!f.ends_after || f.ends_after < today) f.ends_after = today;
+      }
       const wantSpace = !f.kind || f.kind === "space";
       const wantVehicle = (!f.kind || f.kind === "vehicle") && f.source !== "airbnb";
 
       let rentals: any[] = [];
+      let truncated = false;
 
       if (wantSpace) {
-        let q = supabase.from("assignments").select(ASSIGNMENT_RENTAL_SELECT).eq("type", "dwelling");
+        let q = supabase.from("assignments").select(ASSIGNMENT_RENTAL_SELECT, { count: "exact" }).eq("type", "dwelling");
         if (!statusAll) q = q.in("status", spaceStatuses || SPACE_CURRENT_STATUSES);
         if (f.source === "airbnb") q = q.not("airbnb_uid", "is", null);
         if (f.source === "direct") q = q.is("airbnb_uid", null);
-        const { data, error: err } = await applyRentalDateFilters(q, f).range(0, RENTAL_SCAN_LIMIT - 1);
+        const { data, error: err, count: total } = await applyRentalDateFilters(q, f).range(0, RENTAL_SCAN_LIMIT - 1);
         if (err) return error(err.message, 500);
+        if ((total ?? 0) > (data || []).length) truncated = true;
         rentals.push(...(data || []).map(normalizeAssignment));
       }
 
       if (wantVehicle) {
-        let q = supabase.from("vehicle_rentals").select(VEHICLE_RENTAL_SELECT);
+        let q = supabase.from("vehicle_rentals").select(VEHICLE_RENTAL_SELECT, { count: "exact" });
         if (!statusAll) q = q.in("status", vehicleStatuses || VEHICLE_CURRENT_STATUSES);
-        const { data, error: err } = await applyRentalDateFilters(q, f).range(0, RENTAL_SCAN_LIMIT - 1);
+        const { data, error: err, count: total } = await applyRentalDateFilters(q, f).range(0, RENTAL_SCAN_LIMIT - 1);
         if (err) return error(err.message, 500);
+        if ((total ?? 0) > (data || []).length) truncated = true;
         rentals.push(...(data || []).map(normalizeVehicleRental));
       }
 
@@ -688,6 +697,9 @@ async function handleRentals(supabase: any, req: ApiRequest, _auth: any, _perm: 
       const offset = req.offset || 0;
       const page = rentals.slice(offset, offset + Math.min(req.limit || 100, 500));
       if (includeNotes) await attachRentalNotes(supabase, page);
+      if (truncated) {
+        return jsonResponse({ data: page, count, truncated: true, error: null });
+      }
       return success(page, count);
     }
 

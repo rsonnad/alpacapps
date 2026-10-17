@@ -148,7 +148,7 @@
       <li><strong>Allowed resources:</strong> for example only <code>rentals</code>, <code>rental_notes</code> and <code>vehicles</code>. Any other resource returns <code>403</code>.</li>
       <li><strong>Allowed actions:</strong> for example <code>list</code>, <code>get</code>, <code>create</code>. A key can never do more than its level allows. Deletes on <code>rental_notes</code> need admin, so a staff key can't remove notes.</li>
     </ul>
-    <p>Keys start with <code>amk_</code>, and each call updates the key's <code>last_used_at</code>. To revoke a key, set <code>is_active = false</code> on its row. It stops working on the next request.</p>
+    <p>Keys made by the script start with <code>amk_</code>, and each call updates the key's <code>last_used_at</code>. To revoke a key, set <code>is_active = false</code> on its row. It stops working on the next request.</p>
     <div class="callout ok"><strong>Issuing a key (admins):</strong> run <code>scripts/create-api-key.js --name "…" --level 2 --resources rentals,rental_notes --actions list,get,create</code>. It prints the key once. Store it in Bitwarden straight away, then paste it into the agent's secret or credential settings. Never paste it into the agent's prompt or into a chat.</div>
 
     <h2 id="format">Request &amp; response</h2>
@@ -210,7 +210,7 @@
     </table></div>
 
     <h3>list filters</h3>
-    <p>By default, <code>list</code> returns <strong>current and upcoming</strong> rentals: spaces that are <code>active</code>, <code>pending_contract</code> or <code>contract_sent</code>, and vehicles that are <code>active</code> or <code>draft</code>. Results are sorted by soonest <code>end_date</code>, with open-ended rentals last. Date filters are inclusive.</p>
+    <p>By default, <code>list</code> returns <strong>current and upcoming</strong> rentals: spaces that are <code>active</code>, <code>pending_contract</code> or <code>contract_sent</code>, and vehicles that are <code>active</code> or <code>draft</code>. Rentals whose <code>end_date</code> has already passed are left out unless you pass <code>status</code>. Results are sorted by soonest <code>end_date</code>, with open-ended rentals last. Date filters are inclusive. If the response includes <code>"truncated": true</code>, narrow the filters.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>Filter</th><th>Type</th><th>Description</th></tr></thead>
       <tbody>
@@ -233,7 +233,7 @@
       <tbody>
         <tr><td><code>month_to_month</code></td><td>The initial term ends, but the rental <strong>automatically continues monthly</strong> until either side gives notice (<code>notice_days</code>). If <code>end_date</code> is null it's open-ended from the start.</td><td>Don't treat <code>end_date</code> as a move-out. Check <code>planned_move_out</code> and the notes.</td></tr>
         <tr><td><code>fixed</code></td><td>The rental <strong>ends</strong>. The renter leaves unless a new agreement is made. Every Airbnb booking is fixed; an extension shows up as a changed <code>end_date</code> once it's confirmed in Airbnb.</td><td>Treat <code>end_date</code> as the move-out and turnover date.</td></tr>
-        <tr><td><code>unknown</code></td><td>The agreement doesn't record which it is. This is common for older direct leases entered by hand.</td><td>Ask a human, or ask an admin to set it.</td></tr>
+        <tr><td><code>unknown</code></td><td>The agreement doesn't record which it is. This is common for older direct leases entered by hand.</td><td>Ask a human. A staff member can record the answer with <code>{"resource":"assignments","action":"update","id":"&lt;uuid&gt;","data":{"end_behavior":"fixed"}}</code>.</td></tr>
       </tbody>
     </table></div>
     <p class="muted">How it's decided, first match wins:</p>
