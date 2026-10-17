@@ -13,6 +13,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireCronOrRoles } from "../_shared/require-auth.ts";
 interface ICalEvent {
   uid: string;
   summary: string;
@@ -48,6 +49,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+    const auth = await requireCronOrRoles(req, supabase as any, ['admin', 'oracle']);
+    if (auth.response) return auth.response;
 
     // Get all spaces with Airbnb iCal URLs (include parent_id to detect parent/child)
     const { data: spaces, error: spacesError } = await supabase

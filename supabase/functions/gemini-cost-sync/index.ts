@@ -23,6 +23,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireCronOrRoles } from "../_shared/require-auth.ts";
 
 // ─── Projects billed for Gemini (rolled up under AlpacAppsBill) ──────
 const PROJECTS = [
@@ -156,6 +157,10 @@ serve(async (req) => {
     return new Response("ok", { headers: getCorsHeaders(req) });
   }
   const cors = { ...getCorsHeaders(req), "Content-Type": "application/json" };
+
+  const authClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const auth = await requireCronOrRoles(req, authClient as any, ["admin", "oracle"]);
+  if (auth.response) return auth.response;
 
   try {
     const b64 = Deno.env.get("GCP_MONITORING_SA_KEY_B64");

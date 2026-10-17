@@ -887,7 +887,6 @@ async function checkSpamThresholdAndAlert(
       console.log(`PAI spam threshold (${PAI_SPAM_ALERT_THRESHOLD}) reached, alerting admin`);
 
       const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
 
       // Get admin emails
       const { data: admins } = await supabase
@@ -900,7 +899,7 @@ async function checkSpamThresholdAndAlert(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseAnonKey}`,
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""}`,
         },
         body: JSON.stringify({
           type: "pai_email_reply",
@@ -1201,7 +1200,6 @@ async function sendPaiDocumentNotification(
   files: Array<{ name: string; type: string; size: string }>
 ): Promise<void> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
 
   // Get admin emails
   const { data: admins } = await supabase
@@ -1215,7 +1213,7 @@ async function sendPaiDocumentNotification(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${supabaseAnonKey}`,
+      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""}`,
     },
     body: JSON.stringify({
       type: "pai_document_received",

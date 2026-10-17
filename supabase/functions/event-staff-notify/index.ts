@@ -10,6 +10,7 @@
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 
 interface StaffMember {
   role: string;
@@ -40,6 +41,13 @@ Deno.serve(async (req) => {
     if (!RESEND_API_KEY) {
       throw new Error('RESEND_API_KEY not configured');
     }
+
+    // Staff/admin or other edge functions only. This emails arbitrary addresses from our
+    // domain, so it must not be reachable with the public anon key. (Its one caller,
+    // events/agreement/tommy-hall-033126, was a one-off page for a 2026-03-31 event.)
+    const authSb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const auth = await requireFunctionRoles(req, authSb, ['admin', 'oracle', 'staff']);
+    if (auth.response) return auth.response;
 
     const payload: NotifyPayload = await req.json();
     if (!payload.event_request_id || !Array.isArray(payload.staff) || payload.staff.length > 20) {

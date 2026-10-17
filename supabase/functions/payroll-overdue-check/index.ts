@@ -33,6 +33,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getCorsHeaders } from '../_shared/api-helpers.ts';
 import { SENDER_MAP } from '../_shared/template-engine.ts';
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 
 const ADMIN_ALERT_EMAIL = 'alpacaplayhouse@gmail.com';
 const DEFAULT_THRESHOLD_DAYS = 7;
@@ -200,6 +201,8 @@ Deno.serve(async (req) => {
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const resendKey = Deno.env.get('RESEND_API_KEY');
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const auth = await requireFunctionRoles(req, supabase, ['admin', 'oracle']);
+  if (auth.response) return auth.response;
 
   const url = new URL(req.url);
   const dryRun = url.searchParams.get('dry_run') === '1';

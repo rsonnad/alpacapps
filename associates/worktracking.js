@@ -2418,11 +2418,13 @@ function initPhotoAiTab() {
 
       // Step 2: Call pai-photo-analyze edge function
       showToast('Analyzing with PAI...', 'info', 5000);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Your session expired — please sign in again.');
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/pai-photo-analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'apikey': SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({

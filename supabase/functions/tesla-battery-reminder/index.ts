@@ -11,6 +11,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { wrapEmailHtml } from "../_shared/email-brand-wrapper.ts";
+import { requireCronOrRoles } from "../_shared/require-auth.ts";
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,6 +22,8 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const auth = await requireCronOrRoles(req, supabase, ['admin', 'oracle']);
+    if (auth.response) return auth.response;
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) {
