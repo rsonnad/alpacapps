@@ -1,12 +1,12 @@
 {
-  "version": "v261019.02 10:48a",
-  "release": 1925,
-  "sha": "225711cb45",
-  "fullSha": "225711cb452eca0042cf9230de1e7ba4bfeb90e6",
+  "version": "v261019.03 11:12a",
+  "release": 1926,
+  "sha": "5f36f5bbe9",
+  "fullSha": "5f36f5bbe93d8fdf45c122853822ab55d85eeb0c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-19T15:48:01+00:00",
-  "commits": [{"sha":"225711cb45","message":"Warsaw apartment board: redeploy trigger (refresh timestamp)","author":"Muse (Almusca)"}]
+  "machine": "runnervm8k3b6",
+  "pushedAt": "2026-10-19T16:12:04+00:00",
+  "commits": [{"sha":"5f36f5bbe9","message":"fix: separate publishing concurrency from stalled legacy release runs","author":"Blotto"}]
 }
