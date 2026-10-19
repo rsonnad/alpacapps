@@ -1,12 +1,12 @@
 {
-  "version": "v261019.03 11:12a",
-  "release": 1926,
-  "sha": "5f36f5bbe9",
-  "fullSha": "5f36f5bbe93d8fdf45c122853822ab55d85eeb0c",
+  "version": "v261019.04 10:57a",
+  "release": 1927,
+  "sha": "017401a950",
+  "fullSha": "017401a950a2925670dd9972db4012e33074b132",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-19T16:12:04+00:00",
-  "commits": [{"sha":"5f36f5bbe9","message":"fix: separate publishing concurrency from stalled legacy release runs","author":"Blotto"}]
+  "pushedAt": "2026-10-19T15:57:56+00:00",
+  "commits": [{"sha":"ba6f3e85d2","message":"fix: deploy Pages through release CI and verify public Muse content","author":"Blotto"}]
 }
