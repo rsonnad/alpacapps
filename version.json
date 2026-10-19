@@ -1,12 +1,12 @@
 {
-  "version": "v261019.01 10:40a",
-  "release": 1924,
-  "sha": "ff540e2288",
-  "fullSha": "ff540e2288413c213592d305a1d9cc6c94dd7dec",
+  "version": "v261019.02 10:48a",
+  "release": 1925,
+  "sha": "225711cb45",
+  "fullSha": "225711cb452eca0042cf9230de1e7ba4bfeb90e6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-19T15:40:28+00:00",
-  "commits": [{"sha":"ff540e2288","message":"Warsaw apartment board: initial 69 listings under muse/warsawapt","author":"Muse (Almusca)"}]
+  "machine": "runnervmxehtw",
+  "pushedAt": "2026-10-19T15:48:01+00:00",
+  "commits": [{"sha":"225711cb45","message":"Warsaw apartment board: redeploy trigger (refresh timestamp)","author":"Muse (Almusca)"}]
 }
