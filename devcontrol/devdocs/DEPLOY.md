@@ -2,7 +2,14 @@
 
 ## GitHub Pages (Static Site)
 
-Deploys from `main` branch. No build step — push to main and it's live.
+Publishes `main` through `.github/workflows/bump-version-on-push.yml` with GitHub Pages Actions (repository Pages `build_type: workflow`). The workflow builds CSS, records the version, pushes the CI commit, packages committed files, deploys, and checks the public content. Releases run serially. A push is not considered public until the verification step passes.
+
+Manual retry without a commit or version bump:
+```bash
+gh workflow run bump-version-on-push.yml --repo rsonnad/alpacapps --ref main
+```
+
+Muse pages live at `muse/<project>/index.html` and publish at `https://alpacaplayhouse.com/muse/<project>/`. Keep Muse changes under `muse/`, rebase before pushing, and never force-push. All Muse HTML files, deployment metadata, and version.json are checked against the artifact bytes for up to five minutes after deployment. GitHub outages can still prevent deployment; inspect the workflow before reporting success.
 
 ### Push Workflow
 ```bash
