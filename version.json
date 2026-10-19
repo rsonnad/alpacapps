@@ -1,12 +1,12 @@
 {
-  "version": "v261017.01 6:40a",
-  "release": 1923,
-  "sha": "ddd964395d",
-  "fullSha": "ddd964395de7bdc6976c6499f588e73a17e33c21",
+  "version": "v261019.01 10:40a",
+  "release": 1924,
+  "sha": "ff540e2288",
+  "fullSha": "ff540e2288413c213592d305a1d9cc6c94dd7dec",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-17T11:40:59+00:00",
-  "commits": [{"sha":"ddd964395d","message":"Rentals + rental notes API for Meta Muse agent; unified /api docs (#137)","author":"Rahul"}]
+  "pushedAt": "2026-10-19T15:40:28+00:00",
+  "commits": [{"sha":"ff540e2288","message":"Warsaw apartment board: initial 69 listings under muse/warsawapt","author":"Muse (Almusca)"}]
 }
