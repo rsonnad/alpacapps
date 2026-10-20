@@ -1,12 +1,12 @@
 {
-  "version": "v261019.05 12:41p",
-  "release": 1928,
-  "sha": "b580cd429c",
-  "fullSha": "b580cd429ca010a41c61f29c0631ae88d88082c9",
+  "version": "v261020.01 7:26a",
+  "release": 1929,
+  "sha": "f392fafb39",
+  "fullSha": "f392fafb3995a3ba23f9831177a7413c69c92d7c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-19T17:41:13+00:00",
-  "commits": [{"sha":"b580cd429c","message":"Warsaw apartment board: daily refresh 2026-10-19 (70 listings)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-20T12:26:42+00:00",
+  "commits": [{"sha":"f392fafb39","message":"Warsaw apartment board: daily refresh 2026-10-20 (91 listings)","author":"Muse (Almusca)"}]
 }
