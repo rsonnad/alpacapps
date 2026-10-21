@@ -1,12 +1,12 @@
 {
-  "version": "v261021.03 4:07a",
-  "release": 1933,
-  "sha": "a600c6d253",
-  "fullSha": "a600c6d2536fc111bf5c2c115b8a75749a79ce1c",
+  "version": "v261021.04 5:55a",
+  "release": 1934,
+  "sha": "8c3388e715",
+  "fullSha": "8c3388e715733065010d1f332d0dc47ffb9509c2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-21T09:07:50+00:00",
-  "commits": [{"sha":"a600c6d253","message":"Warsaw apartment board: show straight-line and bike distances side by side","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-21T10:55:17+00:00",
+  "commits": [{"sha":"8c3388e715","message":"fix(rentals): no-deposit stays still need a signed lease before Ready","author":"Blotto"}]
 }
