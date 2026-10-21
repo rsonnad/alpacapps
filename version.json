@@ -1,12 +1,12 @@
 {
-  "version": "v261021.01 2:31a",
-  "release": 1931,
-  "sha": "492bd250f6",
-  "fullSha": "492bd250f66502abd55a6bf5f205cd29009850fc",
+  "version": "v261021.02 3:46a",
+  "release": 1932,
+  "sha": "ab7dbac4b8",
+  "fullSha": "ab7dbac4b8d671772004612d506f4ec536a30b6d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-21T07:31:36+00:00",
-  "commits": [{"sha":"492bd250f6","message":"Warsaw apartment board: daily refresh 2026-10-21 (108 listings)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-21T08:46:38+00:00",
+  "commits": [{"sha":"ab7dbac4b8","message":"Warsaw apartment board: bike-route distances to Centralna + Zdrofit Koneser (replace Wschodnia straight-line)","author":"Muse (Almusca)"}]
 }
