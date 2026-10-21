@@ -75,3 +75,6 @@ contracts/generate_weekley_contract.py
 # Supabase CLI / Deno scratch, created by local tooling
 deno.lock
 supabase/.temp/linked-project.json
+
+# GrokBot Vapi setup prompt (names 1Password vault items; keep out of public Pages)
+docs/grokbot-vapi-setup.md
