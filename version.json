@@ -1,12 +1,12 @@
 {
-  "version": "v261021.06 6:44a",
-  "release": 1936,
-  "sha": "b10e6a014a",
-  "fullSha": "b10e6a014ad445a4edfaa4f911d2b8a386af69fe",
+  "version": "v261021.07 9:54a",
+  "release": 1937,
+  "sha": "133f2d79fd",
+  "fullSha": "133f2d79fde12eba780bbb077e95b0934a9310a5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-21T11:44:15+00:00",
-  "commits": [{"sha":"b10e6a014a","message":"docs: record no-early-termination lease default (template v4)","author":"Blotto"}]
+  "machine": "runnervm8k3b6",
+  "pushedAt": "2026-10-21T14:54:50+00:00",
+  "commits": [{"sha":"133f2d79fd","message":"fix(rentals): lease signing date off by one for admins outside Texas","author":"Blotto"}]
 }
