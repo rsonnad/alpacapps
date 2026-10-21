@@ -1,12 +1,12 @@
 {
-  "version": "v261021.09 12:21p",
-  "release": 1939,
-  "sha": "f3a0c0130d",
-  "fullSha": "f3a0c0130dfcf3139c085dc273f3248c37dbeef4",
+  "version": "v261021.10 2:06p",
+  "release": 1940,
+  "sha": "472d2ab047",
+  "fullSha": "472d2ab047a23e5d4c92a13dee19cf7a66066965",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-21T17:21:53+00:00",
-  "commits": [{"sha":"f3a0c0130d","message":"feat(signing): payment due within 24 hours after a lease is signed","author":"Blotto"}]
+  "machine": "runnervm8k3b6",
+  "pushedAt": "2026-10-21T19:06:55+00:00",
+  "commits": [{"sha":"472d2ab047","message":"feat(rentals): remind and alert on the 24-hour payment deadline","author":"Blotto"}]
 }
