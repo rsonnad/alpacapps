@@ -1,12 +1,12 @@
 {
-  "version": "v261020.02 7:35a",
-  "release": 1930,
-  "sha": "d6dd85654c",
-  "fullSha": "d6dd85654c3c827f62ddaddb542e67e6e3e57339",
+  "version": "v261021.01 2:31a",
+  "release": 1931,
+  "sha": "492bd250f6",
+  "fullSha": "492bd250f66502abd55a6bf5f205cd29009850fc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-20T12:35:15+00:00",
-  "commits": [{"sha":"d6dd85654c","message":"Warsaw apartment board: fix double-counted split prices (3 listings)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-21T07:31:36+00:00",
+  "commits": [{"sha":"492bd250f6","message":"Warsaw apartment board: daily refresh 2026-10-21 (108 listings)","author":"Muse (Almusca)"}]
 }
