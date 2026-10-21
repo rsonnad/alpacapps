@@ -2141,7 +2141,7 @@ window.createDraftLeaseAction = async function() {
   const restore = setActionPaneLoading('Sending…');
   try {
     const [template, agreementData] = await Promise.all([
-      leaseTemplateService.getActiveTemplate(),
+      leaseTemplateService.getLeaseTemplateForApplication(currentApplicationId),
       rentalService.getAgreementData(currentApplicationId),
     ]);
     if (!template || !agreementData) {
@@ -3349,7 +3349,7 @@ async function updateDocumentsTabState(app) {
 
   // Load template and agreement data
   try {
-    currentLeaseTemplate = await leaseTemplateService.getActiveTemplate();
+    currentLeaseTemplate = await leaseTemplateService.getLeaseTemplateForApplication(app.id);
     currentAgreementData = await rentalService.getAgreementData(app.id);
 
     if (!currentLeaseTemplate) {
@@ -3646,7 +3646,7 @@ async function previewLease() {
 
   try {
     // Always refresh template and data to get latest terms
-    currentLeaseTemplate = await leaseTemplateService.getActiveTemplate();
+    currentLeaseTemplate = await leaseTemplateService.getLeaseTemplateForApplication(currentApplicationId);
     currentAgreementData = await rentalService.getAgreementData(currentApplicationId);
 
     if (!currentLeaseTemplate || !currentAgreementData) {
@@ -3693,7 +3693,7 @@ async function generateLeasePdf() {
 
   try {
     // Always refresh template and data to get latest terms
-    currentLeaseTemplate = await leaseTemplateService.getActiveTemplate();
+    currentLeaseTemplate = await leaseTemplateService.getLeaseTemplateForApplication(currentApplicationId);
     currentAgreementData = await rentalService.getAgreementData(currentApplicationId);
 
     if (!currentLeaseTemplate || !currentAgreementData) {
