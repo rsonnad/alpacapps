@@ -667,7 +667,10 @@ async function getAgreementData(applicationId) {
   };
 
   // Format signing date (e.g., "23 day of Oct 2025") in Austin timezone
-  const signingDate = getAustinToday();
+  // Format the current instant in Austin. getAustinToday() is local midnight in
+  // the browser's zone, which reads as the previous day in Austin for admins
+  // east of Texas (e.g. Europe).
+  const signingDate = new Date();
   const signingDay = signingDate.toLocaleDateString('en-US', { day: 'numeric', timeZone: AUSTIN_TIMEZONE });
   const signingMonth = signingDate.toLocaleDateString('en-US', { month: 'short', timeZone: AUSTIN_TIMEZONE });
   const signingYear = signingDate.toLocaleDateString('en-US', { year: 'numeric', timeZone: AUSTIN_TIMEZONE });
