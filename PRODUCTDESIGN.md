@@ -821,3 +821,10 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision:** The standard residency lease (`lease_templates`, "Alpaca Playhouse Residency Lease" v4) no longer lets the tenant end the lease early with a prorated refund. Unless a lease's Additional Terms say otherwise, rent for the full term is due, prepaid rent is not refunded on early departure, and a month-to-month lease ends only with the notice set under Lease Term. The two-business-day refund line now covers only rent paid past the lease's actual end. One-off leases are pinned per application with `rental_applications.signing_lease_template_id`, and the admin PDF now uses the pinned template too, so the reviewed PDF matches what the tenant signs.
 
 **Why:** The v3 clause ("Tenant shall have the right to terminate this Lease before the end of the Term. Any payments will be prorata refunded") contradicted fixed terms and notice deadlines, such as Curran Flanders' Fuego + Skyloft lease, whose renewal depends on notice by Nov 16. Exceptions belong in Additional Terms for that one lease, not in the default.
+
+
+### Polish sovereign AI infrastructure playbook (2026-10-21)
+
+**Decision:** Publish the English plan followed by a full Polish version at `/rahulio/pages/polishdc/`, with a compatibility redirect from the requested `/rahulio/page/polishdc/`. Keep the business infrastructure-led, distinguish sourced market evidence from assumptions, and expose an editable reserved-capacity economics model.
+
+**Why:** The reader is evaluating a Polish/EU sovereign AI capacity business. National investment announcements do not establish a startup's addressable shortage, and modular hardware deployment claims omit site readiness. A bilingual evidence-led plan with explicit purchase gates and costs makes the opportunity reviewable before committing capital.
