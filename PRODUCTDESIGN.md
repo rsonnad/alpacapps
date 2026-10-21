@@ -828,3 +828,9 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision:** Publish the English plan followed by a full Polish version at `/rahulio/pages/polishdc/`, with a compatibility redirect from the requested `/rahulio/page/polishdc/`. Keep the business infrastructure-led, distinguish sourced market evidence from assumptions, and expose an editable reserved-capacity economics model.
 
 **Why:** The reader is evaluating a Polish/EU sovereign AI capacity business. National investment announcements do not establish a startup's addressable shortage, and modular hardware deployment claims omit site readiness. A bilingual evidence-led plan with explicit purchase gates and costs makes the opportunity reviewable before committing capital.
+
+### 2026-10-21: Payment Due Within 24 Hours of Signing
+
+**Decision:** The lease-signed email (process-signature) now asks for payment within 24 hours, with the deadline in Texas time, "to hold your reservation." The amount is the reservation deposit when one is set. Otherwise it is the first rent payment (`move_in_deposit_amount`) plus the security deposit, less a paid application fee. It no longer falls back to one month's rent when the reservation deposit is $0. Prepaid stays (`require_deposit = false`) and confirmed deposits get no ask. Signing also sets `deposit_status = 'requested'`. The email no longer states a monthly rent, since some leases have several rates. In the admin Deposits tab, a hand-set move-in amount is shown as the first payment instead of being prorated.
+
+**Why:** Payment should be locked in right after the tenant commits. The old fallback would have asked Curran Flanders for a $995 "reservation deposit" when he owes $600 + $750. Nothing yet releases a reservation automatically when the 24 hours pass; that is a separate change.

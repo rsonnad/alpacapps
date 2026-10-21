@@ -3083,6 +3083,18 @@ function getPreMoveInCharges(app) {
   const rateTerm = app.approved_rate_term || 'monthly';
   const storedMoveIn = Number(app.move_in_deposit_amount || app.approved_rate) || 0;
 
+  // A move-in amount set by hand (anything other than one month's rent, which
+  // saveTerms writes by default) is the agreed first payment; don't prorate it.
+  const customMoveIn = app.move_in_deposit_amount != null && Number(app.move_in_deposit_amount) !== rate;
+  if (rateTerm === 'monthly' && customMoveIn) {
+    return {
+      moveInDue: Number(app.move_in_deposit_amount),
+      moveInLabel: 'First rent payment',
+      moveInNote: 'As set in the agreed terms.',
+      securityDeposit,
+    };
+  }
+
   if (rateTerm === 'monthly' && app.approved_move_in && rate > 0) {
     const proration = rentalService.calculateProration(app.approved_move_in, rate);
     const monthLabel = parseAustinDate(app.approved_move_in).toLocaleDateString('en-US', { month: 'long' });
