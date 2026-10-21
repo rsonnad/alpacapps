@@ -1804,7 +1804,9 @@ function renderReadyPane(app, guidance, actions) {
 
   const agreementRow = leaseNotRequired
     ? '<div class="checklist-row done">&#10003; Lease not required (VIP/comp)</div>'
-    : '<div class="checklist-row done">&#10003; Agreement signed</div>';
+    : agSigned
+      ? '<div class="checklist-row done">&#10003; Agreement signed</div>'
+      : '<div class="checklist-row">&#9675; Agreement not signed yet</div>';
 
   guidance.innerHTML = `
     <div class="action-pane-instruction">

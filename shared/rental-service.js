@@ -182,9 +182,13 @@ function getPipelineStage(application) {
   // Active resident — moved in, currently staying
   if (application.move_in_confirmed_at) return 'active_resident';
 
-  // Ready for move-in — deposit confirmed, or deposit not required
-  if (application.deposit_status === DEPOSIT_STATUS.CONFIRMED ||
-      application.require_deposit === false) return 'ready';
+  // Ready for move-in — deposit confirmed (or not required) and lease signed
+  // (or not required). A no-deposit stay that still needs a lease must go
+  // through the contract stage first, or the Generate/Send CTA never shows.
+  const leaseDone = application.require_lease === false ||
+    application.agreement_status === AGREEMENT_STATUS.SIGNED;
+  if (leaseDone && (application.deposit_status === DEPOSIT_STATUS.CONFIRMED ||
+      application.require_deposit === false)) return 'ready';
 
   // Deposit stage
   if ([DEPOSIT_STATUS.REQUESTED, DEPOSIT_STATUS.PARTIAL, DEPOSIT_STATUS.RECEIVED].includes(application.deposit_status)) {
