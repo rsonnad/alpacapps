@@ -815,3 +815,9 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision:** Publish the committed static snapshot through the existing release workflow using GitHub Pages Actions. Serialize releases, deploy after the CI version commit, support manual deployment retries without version changes, and verify public deployment metadata, version.json, and every Muse HTML page against the artifact bytes. Muse publishes under `muse/<project>/index.html`.
 
 **Why:** Muse pushed valid pages while the legacy Pages builds failed or remained inconsistently queued, leaving the public site on an older release. Git push success is insufficient proof of publication. A single release/deploy workflow and a bounded public content check make failure visible and allow retry without dummy commits. GitHub service failures remain possible.
+
+### 2026-10-21: Leases Have No Early Termination by Default
+
+**Decision:** The standard residency lease (`lease_templates`, "Alpaca Playhouse Residency Lease" v4) no longer lets the tenant end the lease early with a prorated refund. Unless a lease's Additional Terms say otherwise, rent for the full term is due, prepaid rent is not refunded on early departure, and a month-to-month lease ends only with the notice set under Lease Term. The two-business-day refund line now covers only rent paid past the lease's actual end. One-off leases are pinned per application with `rental_applications.signing_lease_template_id`, and the admin PDF now uses the pinned template too, so the reviewed PDF matches what the tenant signs.
+
+**Why:** The v3 clause ("Tenant shall have the right to terminate this Lease before the end of the Term. Any payments will be prorata refunded") contradicted fixed terms and notice deadlines, such as Curran Flanders' Fuego + Skyloft lease, whose renewal depends on notice by Nov 16. Exceptions belong in Additional Terms for that one lease, not in the default.
