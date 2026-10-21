@@ -1,12 +1,12 @@
 {
-  "version": "v261021.02 3:46a",
-  "release": 1932,
-  "sha": "ab7dbac4b8",
-  "fullSha": "ab7dbac4b8d671772004612d506f4ec536a30b6d",
+  "version": "v261021.03 4:07a",
+  "release": 1933,
+  "sha": "a600c6d253",
+  "fullSha": "a600c6d2536fc111bf5c2c115b8a75749a79ce1c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-21T08:46:38+00:00",
-  "commits": [{"sha":"ab7dbac4b8","message":"Warsaw apartment board: bike-route distances to Centralna + Zdrofit Koneser (replace Wschodnia straight-line)","author":"Muse (Almusca)"}]
+  "machine": "runnervm8k3b6",
+  "pushedAt": "2026-10-21T09:07:50+00:00",
+  "commits": [{"sha":"a600c6d253","message":"Warsaw apartment board: show straight-line and bike distances side by side","author":"Muse (Almusca)"}]
 }
