@@ -1,12 +1,12 @@
 {
-  "version": "v261021.07 9:54a",
-  "release": 1937,
-  "sha": "133f2d79fd",
-  "fullSha": "133f2d79fde12eba780bbb077e95b0934a9310a5",
+  "version": "v261021.08 11:59a",
+  "release": 1938,
+  "sha": "d42518e114",
+  "fullSha": "d42518e114be351d3a6bb8ff368e0e822282c122",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-21T14:54:50+00:00",
-  "commits": [{"sha":"133f2d79fd","message":"fix(rentals): lease signing date off by one for admins outside Texas","author":"Blotto"}]
+  "pushedAt": "2026-10-21T16:59:46+00:00",
+  "commits": [{"sha":"d42518e114","message":"feat(rahulio): publish bilingual Polish sovereign AI infrastructure plan","author":"Blotto"}]
 }
