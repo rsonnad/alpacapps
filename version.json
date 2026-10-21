@@ -1,12 +1,12 @@
 {
-  "version": "v261021.08 11:59a",
-  "release": 1938,
-  "sha": "d42518e114",
-  "fullSha": "d42518e114be351d3a6bb8ff368e0e822282c122",
+  "version": "v261021.09 12:21p",
+  "release": 1939,
+  "sha": "f3a0c0130d",
+  "fullSha": "f3a0c0130dfcf3139c085dc273f3248c37dbeef4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-21T16:59:46+00:00",
-  "commits": [{"sha":"d42518e114","message":"feat(rahulio): publish bilingual Polish sovereign AI infrastructure plan","author":"Blotto"}]
+  "machine": "runnervmxehtw",
+  "pushedAt": "2026-10-21T17:21:53+00:00",
+  "commits": [{"sha":"f3a0c0130d","message":"feat(signing): payment due within 24 hours after a lease is signed","author":"Blotto"}]
 }
