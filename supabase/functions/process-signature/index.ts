@@ -21,6 +21,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { buildArchivalLeaseHtml, auditBlockHtml, formatDateTime } from "../_shared/archival-lease.ts";
+import { computePaymentDueAtSigning, formatChicagoDeadline, formatMoney } from "../_shared/payment-due.ts";
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -843,39 +844,10 @@ async function sendVehicleRentalSignedEmail(apiKey: string, o: {
   }
 }
 
-/**
- * What a tenant owes right after signing. A reservation deposit, when set,
- * is the ask (credited toward first month's rent). Otherwise it is the first
- * rent payment plus the security deposit, less a paid application fee.
- */
-function computePaymentDueAtSigning(app: any): { items: { label: string; amount: number }[]; total: number; creditedToRent: boolean } {
-  const num = (v: any) => Number(v) || 0;
-  const reservation = num(app?.reservation_deposit_amount);
-  if (reservation > 0) {
-    return { items: [{ label: 'Reservation Deposit', amount: reservation }], total: reservation, creditedToRent: true };
-  }
-  const items: { label: string; amount: number }[] = [];
-  const firstRent = num(app?.move_in_deposit_amount);
-  const security = num(app?.security_deposit_amount);
-  const appFee = app?.application_fee_paid ? num(app?.application_fee_amount) : 0;
-  if (firstRent > 0) items.push({ label: 'First Rent Payment', amount: firstRent });
-  if (security > 0) items.push({ label: 'Security Deposit', amount: security });
-  if (appFee > 0) items.push({ label: 'Application Fee Credit', amount: -appFee });
-  const total = Math.max(0, Math.round(items.reduce((t, i) => t + i.amount, 0) * 100) / 100);
-  return { items, total, creditedToRent: false };
-}
-
-function formatChicagoDeadline(d: Date): string {
-  return d.toLocaleString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit',
-    timeZone: 'America/Chicago', timeZoneName: 'short',
-  });
-}
-
 function paymentDueHtml(opts: any): string {
   const due = opts.paymentDue;
   if (!due || !(due.total > 0)) return '';
-  const money = (n: number) => `${n < 0 ? '-' : ''}$${Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const money = formatMoney;
   const rows = due.items.map((i: any) => `
               <tr>
                 <td style="padding: 6px 0;">${i.label}</td>
