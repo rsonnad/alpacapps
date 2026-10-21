@@ -1,12 +1,12 @@
 {
-  "version": "v261021.05 6:40a",
-  "release": 1935,
-  "sha": "35073f6e8e",
-  "fullSha": "35073f6e8eb712a6b472195157b0d2eb85032e25",
+  "version": "v261021.06 6:44a",
+  "release": 1936,
+  "sha": "b10e6a014a",
+  "fullSha": "b10e6a014ad445a4edfaa4f911d2b8a386af69fe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-21T11:40:16+00:00",
-  "commits": [{"sha":"35073f6e8e","message":"fix(rentals): admin lease PDF honors an application's pinned template","author":"Blotto"}]
+  "pushedAt": "2026-10-21T11:44:15+00:00",
+  "commits": [{"sha":"b10e6a014a","message":"docs: record no-early-termination lease default (template v4)","author":"Blotto"}]
 }
