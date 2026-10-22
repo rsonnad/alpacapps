@@ -95,6 +95,7 @@ Deno.serve(async (req) => {
         move_in_deposit_amount,
         require_deposit,
         deposit_status,
+        payment_deadline_at,
         approved_move_in,
         waiver_template_id,
         approved_space:approved_space_id (id, name),
@@ -497,7 +498,11 @@ Deno.serve(async (req) => {
         const paymentDue = rentalApp?.require_deposit === false || rentalApp?.deposit_status === 'confirmed'
           ? null
           : computePaymentDueAtSigning(rentalApp);
-        const paymentDeadline = formatChicagoDeadline(new Date(new Date(signedAt).getTime() + 24 * 60 * 60 * 1000));
+        // An admin-set deadline wins over the default 24 hours after signing.
+        const deadlineOverride = (rentalApp as any)?.payment_deadline_at;
+        const paymentDeadline = formatChicagoDeadline(deadlineOverride
+          ? new Date(deadlineOverride)
+          : new Date(new Date(signedAt).getTime() + 24 * 60 * 60 * 1000));
 
         if (paymentDue && paymentDue.total > 0) {
           // Same state change as rentalService.requestDeposit(), so the
@@ -524,11 +529,14 @@ Deno.serve(async (req) => {
           to: person.email,
           firstName: person.first_name,
           subject: paymentDue && paymentDue.total > 0
-            ? 'Lease Signed - Payment Due Within 24 Hours - Alpaca Playhouse'
+            ? (deadlineOverride
+              ? `Lease Signed - Payment Due by ${paymentDeadline} - Alpaca Playhouse`
+              : 'Lease Signed - Payment Due Within 24 Hours - Alpaca Playhouse')
             : 'Lease Signed - Alpaca Playhouse',
           spaceName,
           paymentDue,
           paymentDeadline,
+          paymentDeadlineCustom: !!deadlineOverride,
           moveInDate: moveInDateFormatted,
           rate: rentalApp?.approved_rate,
           rateTerm: rateTermDisplay,
@@ -855,8 +863,8 @@ function paymentDueHtml(opts: any): string {
               </tr>`).join('');
   return `
           <div style="background: #fff4e5; border: 2px solid #f9a825; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #b26a00;">Payment Due Within 24 Hours</h3>
-            <p>Payment is required within 24 hours, by <strong>${opts.paymentDeadline}</strong>, to hold your reservation.</p>
+            <h3 style="margin-top: 0; color: #b26a00;">${opts.paymentDeadlineCustom ? 'Payment Due' : 'Payment Due Within 24 Hours'}</h3>
+            <p>Payment is required ${opts.paymentDeadlineCustom ? '' : 'within 24 hours, '}by <strong>${opts.paymentDeadline}</strong>, to hold your reservation.</p>
             <table style="border-collapse: collapse; width: 100%; max-width: 400px;">${rows}
               <tr>
                 <td style="padding: 8px 0; border-top: 1px solid #ddd;"><strong>Total Due Now</strong></td>
