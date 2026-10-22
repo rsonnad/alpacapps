@@ -1,12 +1,12 @@
 {
-  "version": "v261022.04 3:08a",
-  "release": 1944,
-  "sha": "aa91a83f95",
-  "fullSha": "aa91a83f959aa541886ca62af6b7694747d136da",
+  "version": "v261022.05 5:23a",
+  "release": 1945,
+  "sha": "c372c92271",
+  "fullSha": "c372c92271e02d33f89e4aabfc77ed733c27974a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-22T08:08:35+00:00",
-  "commits": [{"sha":"aa91a83f95","message":"feat(rentals): deadline follow-up honors payment_deadline_at","author":"Blotto"}]
+  "pushedAt": "2026-10-22T10:23:43+00:00",
+  "commits": [{"sha":"c372c92271","message":"Harden dependency policy and isolate privileged Pages release jobs","author":"Blotto"}]
 }
