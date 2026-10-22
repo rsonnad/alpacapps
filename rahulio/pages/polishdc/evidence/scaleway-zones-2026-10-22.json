@@ -1,0 +1,150 @@
+{
+  "checked_utc": "2026-10-22T11:36:22.063317+00:00",
+  "results": [
+    {
+      "zone": "fr-par-1",
+      "type": "L4-1-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-1",
+      "type": "L4-2-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-1",
+      "type": "L4-4-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-1",
+      "type": "L4-8-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "B300-SXM-8-288G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "RENDER-S",
+      "availability": "available"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-1-80G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-2-80G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-SXM-2-80G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-SXM-4-80G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-SXM-8-80G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L40S-1-48G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L40S-2-48G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L40S-4-48G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L40S-8-48G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L4-1-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L4-2-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L4-4-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L4-8-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "H100-1-80G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "H100-2-80G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L40S-1-48G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L40S-2-48G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L40S-4-48G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L40S-8-48G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L4-1-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L4-2-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L4-4-24G",
+      "availability": "shortage"
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L4-8-24G",
+      "availability": "shortage"
+    }
+  ]
+}
