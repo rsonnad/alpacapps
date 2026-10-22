@@ -1,12 +1,12 @@
 {
-  "version": "v261022.06 5:29a",
-  "release": 1946,
-  "sha": "4c88c688f1",
-  "fullSha": "4c88c688f1e81752e67c79d637f67fe86b23b59a",
+  "version": "v261022.07 5:33a",
+  "release": 1947,
+  "sha": "280d587171",
+  "fullSha": "280d5871718f2d63b77e916dcd8afd7f42a09cbe",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-22T10:29:32+00:00",
-  "commits": [{"sha":"4c88c688f1","message":"Reject npm flags that re-enable dependency lifecycle scripts","author":"Blotto"}]
+  "machine": "runnervmxehtw",
+  "pushedAt": "2026-10-22T10:33:43+00:00",
+  "commits": [{"sha":"280d587171","message":"Enforce unambiguous install defaults and release-only secrets","author":"Blotto"}]
 }
