@@ -1,12 +1,12 @@
 {
-  "version": "v261021.10 2:06p",
-  "release": 1940,
-  "sha": "472d2ab047",
-  "fullSha": "472d2ab047a23e5d4c92a13dee19cf7a66066965",
+  "version": "v261022.01 2:35a",
+  "release": 1941,
+  "sha": "12a149b84e",
+  "fullSha": "12a149b84e7396e376b5f3d5474b1bd95c2b7db4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-21T19:06:55+00:00",
-  "commits": [{"sha":"472d2ab047","message":"feat(rentals): remind and alert on the 24-hour payment deadline","author":"Blotto"}]
+  "machine": "runnervmxehtw",
+  "pushedAt": "2026-10-22T07:35:00+00:00",
+  "commits": [{"sha":"12a149b84e","message":"Warsaw apartment board: daily refresh 2026-10-22 (121 listings)","author":"Muse (Almusca)"}]
 }
