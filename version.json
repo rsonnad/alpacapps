@@ -1,12 +1,12 @@
 {
-  "version": "v261022.02 3:05a",
-  "release": 1942,
-  "sha": "03d075f8c1",
-  "fullSha": "03d075f8c11685e1d25c48a04b2a1c546ed583af",
+  "version": "v261022.03 3:05a",
+  "release": 1943,
+  "sha": "312915dbcf",
+  "fullSha": "312915dbcf7a705a480c7698322844adf53b821d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-22T08:05:09+00:00",
-  "commits": [{"sha":"03d075f8c1","message":"fix(signing): leases with a waiver could never be signed","author":"Blotto"}]
+  "machine": "runnervm8k3b6",
+  "pushedAt": "2026-10-22T08:05:52+00:00",
+  "commits": [{"sha":"c5f7719050","message":"feat(signing): per-application payment deadline override","author":"Blotto"}]
 }
