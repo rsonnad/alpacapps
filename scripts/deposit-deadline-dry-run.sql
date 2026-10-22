@@ -1,9 +1,11 @@
--- Who would be reminded (20h-24h) or flagged overdue (24h+) right now.
--- reminder_h/deadline_h are parameters; the second run loosens them to 0 to prove the filter shape.
-with p as (select 20::numeric as reminder_h, 24::numeric as deadline_h),
-c as (
+-- Who deposit-deadline-check would contact right now (read-only).
+-- Deadline = payment_deadline_at if set, else 24h after the later of deposit_requested_at / agreement_signed_at.
+-- tenant_reminder: within 4h before the deadline. admin_alert: deadline passed.
+-- Ignores the sent-once stamps, so it shows everyone in the window.
+with c as (
   select a.id, trim(coalesce(pe.first_name,'')||' '||coalesce(pe.last_name,'')) as name, pe.email,
-    greatest(a.deposit_requested_at, coalesce(a.agreement_signed_at, a.deposit_requested_at)) as clock_start,
+    coalesce(a.payment_deadline_at,
+      greatest(a.deposit_requested_at, coalesce(a.agreement_signed_at, a.deposit_requested_at)) + interval '24 hours') as deadline,
     case when coalesce(a.reservation_deposit_amount,0) > 0
       then case when a.reservation_deposit_paid then 0 else a.reservation_deposit_amount end
       else greatest(0,
@@ -16,9 +18,8 @@ c as (
     and a.require_deposit is distinct from false
     and a.is_archived is not true
 )
-select c.*, round(extract(epoch from now()-clock_start)/3600,1) as hours_elapsed,
-  case when now()-clock_start >= make_interval(hours => p.deadline_h::int) then 'admin_alert'
-       when now()-clock_start >= make_interval(hours => p.reminder_h::int) then 'tenant_reminder' end as action,
+select c.*, round(extract(epoch from deadline - now())/3600, 1) as hours_to_deadline,
+  case when now() >= deadline then 'admin_alert' else 'tenant_reminder' end as action,
   'https://alpacaplayhouse.com/staff/rentals.html#applicant='||c.id as admin_url
-from c, p where c.amount_due > 0 and now()-clock_start >= make_interval(hours => p.reminder_h::int)
-order by clock_start;
+from c where c.amount_due > 0 and now() >= deadline - interval '4 hours'
+order by deadline;

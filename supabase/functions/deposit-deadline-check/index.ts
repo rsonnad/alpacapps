@@ -3,13 +3,14 @@
  * hours" line in the lease-signed email (process-signature).
  *
  * For signed leases whose payment is still `requested`:
- *   - 20h+ after the deadline clock started: one reminder to the tenant.
- *   - 24h+ : one alert to the house inbox listing everyone newly overdue.
+ *   - 4h before the deadline: one reminder to the tenant.
+ *   - After the deadline: one alert to the house inbox listing everyone newly overdue.
  * It never cancels or releases a reservation. Staff decide that.
  *
- * The clock starts at the later of deposit_requested_at and
- * agreement_signed_at, so a deposit requested before signing still gets the
- * full 24 hours the email promised.
+ * The deadline is payment_deadline_at when staff set one (the lease-signed
+ * email shows the same date). Otherwise it is 24 hours after the later of
+ * deposit_requested_at and agreement_signed_at, so a deposit requested before
+ * signing still gets the full 24 hours the email promised.
  *
  * Trigger: hourly via pg_cron → public.cron_post() (X-Cron-Secret).
  * Manual (admin/oracle JWT): POST {"dry_run": true} lists who would be
@@ -24,8 +25,8 @@ import { computePaymentDueAtSigning, formatChicagoDeadline, formatMoney } from "
 
 const ADMIN_EMAIL = 'alpacaplayhouse@gmail.com';
 const HOUR = 60 * 60 * 1000;
-const REMINDER_AFTER_H = 20;
-const DEADLINE_H = 24;
+const REMIND_BEFORE_H = 4;
+const DEFAULT_DEADLINE_H = 24;
 
 interface Candidate {
   id: string;
@@ -38,7 +39,7 @@ interface Candidate {
   creditedToRent: boolean;
   clockStart: string;
   deadline: Date;
-  hoursElapsed: number;
+  hoursToDeadline: number;
   adminUrl: string;
 }
 
@@ -59,7 +60,7 @@ Deno.serve(async (req) => {
     const { data: apps, error } = await supabase
       .from('rental_applications')
       .select(`
-        id, is_archived, require_deposit, deposit_requested_at, agreement_signed_at,
+        id, is_archived, require_deposit, deposit_requested_at, agreement_signed_at, payment_deadline_at,
         payment_reminder_sent_at, payment_overdue_alert_sent_at,
         reservation_deposit_amount, reservation_deposit_paid,
         move_in_deposit_amount, move_in_deposit_paid,
@@ -88,7 +89,10 @@ Deno.serve(async (req) => {
         new Date(a.deposit_requested_at).getTime(),
         a.agreement_signed_at ? new Date(a.agreement_signed_at).getTime() : 0,
       );
-      const hoursElapsed = (now - startMs) / HOUR;
+      const deadlineMs = a.payment_deadline_at
+        ? new Date(a.payment_deadline_at).getTime()
+        : startMs + DEFAULT_DEADLINE_H * HOUR;
+      const hoursToDeadline = (deadlineMs - now) / HOUR;
       const person = a.person || {};
       const c: Candidate = {
         id: a.id,
@@ -100,8 +104,8 @@ Deno.serve(async (req) => {
         items: due.items,
         creditedToRent: due.creditedToRent,
         clockStart: new Date(startMs).toISOString(),
-        deadline: new Date(startMs + DEADLINE_H * HOUR),
-        hoursElapsed: Math.round(hoursElapsed * 10) / 10,
+        deadline: new Date(deadlineMs),
+        hoursToDeadline: Math.round(hoursToDeadline * 10) / 10,
         adminUrl: `https://alpacaplayhouse.com/staff/rentals.html#applicant=${a.id}`,
       };
 
@@ -110,13 +114,13 @@ Deno.serve(async (req) => {
       const alerted = a.payment_overdue_alert_sent_at && new Date(a.payment_overdue_alert_sent_at).getTime() >= startMs;
 
       // Tenant reminder only before the deadline; once overdue, staff follow up.
-      if (!reminded && hoursElapsed >= REMINDER_AFTER_H && hoursElapsed < DEADLINE_H && c.email) toRemind.push(c);
-      if (!alerted && hoursElapsed >= DEADLINE_H) toAlert.push(c);
+      if (!reminded && hoursToDeadline <= REMIND_BEFORE_H && hoursToDeadline > 0 && c.email) toRemind.push(c);
+      if (!alerted && hoursToDeadline <= 0) toAlert.push(c);
     }
 
     const summarize = (list: Candidate[]) => list.map((c) => ({
       id: c.id, name: c.name, email: c.email, amount: c.amount,
-      deadline: c.deadline.toISOString(), hours_elapsed: c.hoursElapsed, admin_url: c.adminUrl,
+      deadline: c.deadline.toISOString(), hours_to_deadline: c.hoursToDeadline, admin_url: c.adminUrl,
     }));
 
     if (dryRun) {
@@ -170,7 +174,7 @@ Deno.serve(async (req) => {
     if (claimed.length) {
       const err = await sendEmail(resendKey, {
         to: [ADMIN_EMAIL],
-        subject: `Payment overdue: ${claimed.length} signed lease${claimed.length === 1 ? '' : 's'} past the 24-hour deadline`,
+        subject: `Payment overdue: ${claimed.length} signed lease${claimed.length === 1 ? '' : 's'} past their payment deadline`,
         html: adminAlertHtml(claimed),
       });
       if (err) {
@@ -259,7 +263,7 @@ function adminAlertHtml(list: Candidate[]): string {
         <td style="padding: 6px 8px; border-bottom: 1px solid #eee;"><a href="${c.adminUrl}">Open</a></td>
       </tr>`).join('');
   return `
-    <p>These tenants signed their lease but haven't paid within the 24 hours the lease-signed email asked for.</p>
+    <p>These tenants signed their lease but haven't paid by the deadline in their lease-signed email.</p>
     <p>Nothing has been cancelled. Their reservations are still held until you decide.</p>
     <table style="border-collapse: collapse; width: 100%;">
       <tr style="text-align: left; background: #f5f5f5;">
