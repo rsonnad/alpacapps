@@ -14,7 +14,7 @@ const path = require('path');
 const { marked } = require('marked');
 
 const ROOT = path.resolve(__dirname, '..');
-const DEVDOCS = path.join(ROOT, 'devdocs');
+const DEVDOCS = path.join(ROOT, 'devcontrol', 'devdocs');
 const RENDERED = path.join(DEVDOCS, 'rendered');
 
 // ── Doc config: maps filename → visual theme + metadata ──
