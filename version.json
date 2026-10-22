@@ -1,12 +1,12 @@
 {
-  "version": "v261022.01 2:35a",
-  "release": 1941,
-  "sha": "12a149b84e",
-  "fullSha": "12a149b84e7396e376b5f3d5474b1bd95c2b7db4",
+  "version": "v261022.02 3:05a",
+  "release": 1942,
+  "sha": "03d075f8c1",
+  "fullSha": "03d075f8c11685e1d25c48a04b2a1c546ed583af",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmxehtw",
-  "pushedAt": "2026-10-22T07:35:00+00:00",
-  "commits": [{"sha":"12a149b84e","message":"Warsaw apartment board: daily refresh 2026-10-22 (121 listings)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-22T08:05:09+00:00",
+  "commits": [{"sha":"03d075f8c1","message":"fix(signing): leases with a waiver could never be signed","author":"Blotto"}]
 }
