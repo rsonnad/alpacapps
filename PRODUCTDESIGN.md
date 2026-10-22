@@ -862,3 +862,10 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision:** Replace the Polish DC page's hypothetical tenant-count economics with dated provider availability evidence, explicitly qualified competing offers, an editable full-cost GPU-hour model, and a staged commercial validation playbook for a founder who assembles partners and contracts. Archive selected public availability observations alongside links to the live source.
 
 **Why:** A provider's transient shortage and a public cloud list price do not establish an executable margin. Hardware equivalence, paid occupancy, contract duration, financing, service obligations and sovereignty requirements determine whether assembling compute, colocation and power creates value. The founder should validate a matched transaction before purchasing equipment.
+
+
+### Polish DC prospect and partner shortlist (2026-10-22)
+
+**Decision:** Add ten potential customers and ten supply or operating partners to the existing English/Polish page, with cited public contact routes, specific fit and qualification gaps, and personalized draft messages. Keep drafts expandable and copyable; no outreach is sent by the page.
+
+**Why:** The validation campaign needs concrete organizations and useful first questions. Verified AI activity or a published infrastructure service establishes relevance, not buying intent, spare capacity or partnership agreement. Named people are included only with sourced professional context; otherwise the page specifies a routing role.
