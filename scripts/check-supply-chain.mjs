@@ -25,7 +25,7 @@ export function checkWorkflow(text, name) {
     for (const command of line.split(/&&|\|\||[;|]/)) {
       if (/\bnpm\s+(?:ci|install|i|update|rebuild)\b/.test(command) && !/\bnpm ci --ignore-scripts(?:\s|$)/.test(command.trim())) throw new Error(`Unsafe npm install: ${name}`);
     }
-    if (/\bnpm ci\b/.test(line) && /--ignore-scripts(?:=false)|--foreground-scripts|--(?:no-)?ignore-scripts=false/.test(line)) throw new Error(`Lifecycle scripts enabled: ${name}`);
+    if (/\bnpm ci\b/.test(line) && /--no-ignore-scripts\b|--ignore-scripts(?:=|\s+)false\b|--foreground-scripts\b/.test(line)) throw new Error(`Lifecycle scripts enabled: ${name}`);
     if (/pull_request_target\s*:/.test(line)) throw new Error(`Privileged PR trigger: ${name}`);
   }
 }

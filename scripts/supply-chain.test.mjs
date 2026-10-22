@@ -19,7 +19,7 @@ test('lock guard requires matching manifest, registry HTTPS, SHA512 and v3', () 
 });
 test('every workflow npm install command must disable lifecycle scripts', () => {
   checkWorkflow('run: npm ci --ignore-scripts', 'safe');
-  for (const command of ['npm ci', 'npm install', 'npm ci --ignore-scripts=false', 'npm ci --ignore-scripts && npm install', 'npm ci --ignore-scripts; npm ci', 'npm ci --ignore-scripts\n npm rebuild']) assert.throws(() => checkWorkflow(`run: ${command}`, 'unsafe'), command);
+  for (const command of ['npm ci', 'npm install', 'npm ci --ignore-scripts=false', 'npm ci --ignore-scripts --no-ignore-scripts', 'npm ci --ignore-scripts --ignore-scripts false', 'npm ci --ignore-scripts && npm install', 'npm ci --ignore-scripts; npm ci', 'npm ci --ignore-scripts\n npm rebuild']) assert.throws(() => checkWorkflow(`run: ${command}`, 'unsafe'), command);
   assert.throws(() => checkWorkflow('uses: actions/checkout@v6', 'unsafe'));
   assert.throws(() => checkWorkflow('pull_request_target:', 'unsafe'));
 });
