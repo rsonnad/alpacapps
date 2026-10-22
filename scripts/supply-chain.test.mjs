@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
-import { checkLock, checkWorkflow, checkReleaseWorkflow } from './check-supply-chain.mjs';
+import { checkLock, checkWorkflow, checkReleaseWorkflow, checkNpmConfig } from './check-supply-chain.mjs';
 import { findings, regressions } from './check-dependency-audit.mjs';
 
 const pkg = { dependencies: { demo: '^1' } };
@@ -10,6 +10,11 @@ const advisory = { severity: 'high', url: 'https://github.com/advisories/GHSA-ab
 const report = () => ({ auditReportVersion: 2, metadata: { vulnerabilities: { high: 1, critical: 0 } }, vulnerabilities: { demo: { via: [advisory], nodes: ['node_modules/demo'] } } });
 const baseline = () => ({ schemaVersion: 1, reason: 'reviewed debt', expires: '2026-11-21T00:00:00Z', accepted: findings(report(), lock()) });
 const now = new Date('2026-10-22T00:00:00Z');
+
+test('local install policy cannot be undone by a second npm setting', () => {
+  checkNpmConfig('# Local install default\nignore-scripts=true\n');
+  for (const config of ['', 'ignore-scripts=false', 'ignore-scripts=true\nignore-scripts=false', 'ignore-scripts=true\nignore_scripts=false']) assert.throws(() => checkNpmConfig(config));
+});
 
 test('lock guard requires matching manifest, registry HTTPS, SHA512 and v3', () => {
   checkLock(pkg, lock());
@@ -44,6 +49,8 @@ test('release isolation rejects privilege and dependency execution regressions',
   const workflow = readFileSync(new URL('../.github/workflows/bump-version-on-push.yml', import.meta.url), 'utf8');
   checkReleaseWorkflow(workflow);
   for (const [from, to] of [
+    ['permissions:\n  contents: read', 'permissions:\n  contents: read\n  pages: write'],
+    ['jobs:\n', 'env:\n  TOKEN: ${{ secrets.GITHUB_TOKEN }}\njobs:\n'],
     ['  build:\n', '  build:\n    env:\n      TOKEN: ${{ secrets.GITHUB_TOKEN }}\n'],
     ['  build:\n', '  build:\n    permissions:\n      contents: write\n'],
     ['  release:\n', '  release:\n    run: npm run css:build\n'],
