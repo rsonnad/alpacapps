@@ -14,6 +14,21 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 
 ## 2. Design Principles
 
+### Supply-chain isolation (2026-10-22)
+
+**Decision:** Build dependencies on a read-only GitHub-hosted runner with lifecycle
+scripts disabled. Move only three allowlisted generated assets into a fresh
+release job; deploy Pages in a third job. Pin actions to commit SHAs, enforce
+lockfile registry/integrity checks, audit on PRs and weekly, and open dependency
+update PRs through Dependabot. Document exact existing high advisories with an
+expiring exception; never exempt a critical advisory.
+
+**Why:** A dependency or build tool must not inherit the Supabase service role,
+a repository write token, or Pages deployment identity. The exact source built
+must be the one released. Existing dependency debt stays visible without hiding
+new advisories or shipping an untested browser-tool major upgrade.
+
+
 ### Alpuca agent message inbox (2026-10-15)
 
 **Decision:** Accept Grokbot / Prima Donna messages through a bearer-authenticated

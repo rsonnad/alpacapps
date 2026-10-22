@@ -83,3 +83,6 @@ dev/testing/results.json
 dev/testing/*.html
 .claude/projects/
 scripts/go2rtc/go2rtc.yaml
+
+# Full npm audit report is uploaded by CI, not published by Pages.
+dependency-audit.json

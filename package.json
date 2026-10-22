@@ -7,6 +7,8 @@
     "doc": "docs"
   },
   "scripts": {
+    "security:check": "node scripts/check-supply-chain.mjs && node --test scripts/supply-chain.test.mjs",
+    "security:audit": "node scripts/check-dependency-audit.mjs",
     "css:build": "tailwindcss -i styles/tailwind.css -o styles/tailwind.out.css --minify",
     "css:watch": "tailwindcss -i styles/tailwind.css -o styles/tailwind.out.css --watch",
     "glowforge:refresh-session": "node scripts/refresh-glowforge-session.js",

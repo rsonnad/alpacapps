@@ -2,7 +2,7 @@
 
 ## GitHub Pages (Static Site)
 
-Publishes `main` through `.github/workflows/bump-version-on-push.yml` with GitHub Pages Actions (repository Pages `build_type: workflow`). The workflow builds CSS, records the version, pushes the CI commit, packages committed files, deploys, and checks the public content. Releases run serially. A push is not considered public until the verification step passes.
+Publishes `main` through `.github/workflows/bump-version-on-push.yml` with GitHub Pages Actions (repository Pages `build_type: workflow`). The workflow builds CSS on a read-only runner, records the version and uploads committed files on a fresh release runner, then deploys and checks public content on a third runner. No installed dependency code runs in either privileged job. Releases run serially. A push is not considered public until the verification step passes.
 
 Manual retry without a commit or version bump:
 ```bash
@@ -45,3 +45,12 @@ CI bumps automatically via GitHub Action on every push. **Never bump locally.**
 ## Tailwind CSS
 
 After adding new Tailwind classes, run: `npm run css:build`
+
+## Supply-chain checks
+
+Read [SUPPLY-CHAIN.md](SUPPLY-CHAIN.md) before changing release jobs or dependencies.
+`npm run security:check` checks SHA pins, lockfile integrity and privilege isolation;
+`npm run security:audit` queries the registry without installing dependencies.
+The build runs both before installing dependencies. A newer main commit arriving
+during the build makes that run fail rather than rebase generated assets onto
+unbuilt source; the newer push has its own serialized release.
