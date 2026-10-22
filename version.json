@@ -1,12 +1,12 @@
 {
-  "version": "v261022.11 10:00a",
-  "release": 1951,
-  "sha": "b0c4e76f9a",
-  "fullSha": "b0c4e76f9a77f83682ee189be0900f080c11c1ca",
+  "version": "v261022.12 10:08a",
+  "release": 1952,
+  "sha": "0f645ba26d",
+  "fullSha": "0f645ba26de3d871f608910c626b44933dd902bb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmfese6",
-  "pushedAt": "2026-10-22T15:00:16+00:00",
-  "commits": [{"sha":"b0c4e76f9a","message":"Publish BookingHost red-flags case page: summary, full escalation record (PL/EN), and consumer/host warning plan (muse/bookinghostredflags)","author":"Muse (Almusca)"}]
+  "machine": "runnervm8k3b6",
+  "pushedAt": "2026-10-22T15:08:06+00:00",
+  "commits": [{"sha":"0f645ba26d","message":"Refresh bookinghostredflags page (deploy nudge)","author":"Muse (Almusca)"}]
 }
