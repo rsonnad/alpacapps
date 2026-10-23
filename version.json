@@ -1,12 +1,12 @@
 {
-  "version": "v261023.01 2:26a",
-  "release": 1953,
-  "sha": "2d2045918d",
-  "fullSha": "2d2045918db0285abbc0325c24e1b641612c704a",
+  "version": "v261023.02 3:18a",
+  "release": 1954,
+  "sha": "b0deb1d0f5",
+  "fullSha": "b0deb1d0f5a2a86f8ad44c0425f9af191fdfb941",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-23T07:26:43+00:00",
-  "commits": [{"sha":"2d2045918d","message":"Warsaw apartment board: daily refresh 2026-10-23 (135 listings)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-23T08:18:38+00:00",
+  "commits": [{"sha":"b0deb1d0f5","message":"Warsaw apartment board: listing links open in new tab; Google Maps link in Area column","author":"Muse (Almusca)"}]
 }
