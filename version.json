@@ -1,12 +1,12 @@
 {
-  "version": "v261022.12 10:08a",
-  "release": 1952,
-  "sha": "0f645ba26d",
-  "fullSha": "0f645ba26de3d871f608910c626b44933dd902bb",
+  "version": "v261023.01 2:26a",
+  "release": 1953,
+  "sha": "2d2045918d",
+  "fullSha": "2d2045918db0285abbc0325c24e1b641612c704a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-22T15:08:06+00:00",
-  "commits": [{"sha":"0f645ba26d","message":"Refresh bookinghostredflags page (deploy nudge)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-23T07:26:43+00:00",
+  "commits": [{"sha":"2d2045918d","message":"Warsaw apartment board: daily refresh 2026-10-23 (135 listings)","author":"Muse (Almusca)"}]
 }
