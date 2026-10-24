@@ -1,12 +1,12 @@
 {
-  "version": "v261023.02 3:18a",
-  "release": 1954,
-  "sha": "b0deb1d0f5",
-  "fullSha": "b0deb1d0f5a2a86f8ad44c0425f9af191fdfb941",
+  "version": "v261024.01 8:27a",
+  "release": 1955,
+  "sha": "b2a13e5add",
+  "fullSha": "b2a13e5add303bd5d5ff7d0182ce0170f6f31557",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-23T08:18:38+00:00",
-  "commits": [{"sha":"b0deb1d0f5","message":"Warsaw apartment board: listing links open in new tab; Google Maps link in Area column","author":"Muse (Almusca)"}]
+  "machine": "runnervmtai0g",
+  "pushedAt": "2026-10-24T13:27:24+00:00",
+  "commits": [{"sha":"b2a13e5add","message":"fix(deps): upgrade puppeteer to 25.16.0 to clear zod advisory blocking deploys","author":"Blotto"}]
 }
