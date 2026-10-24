@@ -38,7 +38,7 @@
 - Govee lights (non-garage, ~41 devices) — needs HACS + Govee LAN/Cloud
 - Nest thermostats (3) — needs Google Device Access API
 
-> **Important:** All lighting group configurations MUST be recorded in `configuration.yaml` on HAOS (`/config/configuration.yaml`). Groups created via `group.set` service calls are non-persistent and will be lost on HAOS restart. Use `light` platform groups with `unique_id` for persistence. See `LIGHTINGAUTOMATION.md` for current groups. SSH access: `sshpass -p "playhouse" ssh root@192.168.1.39`
+> **Important:** All lighting group configurations MUST be recorded in `configuration.yaml` on HAOS (`/config/configuration.yaml`). Groups created via `group.set` service calls are non-persistent and will be lost on HAOS restart. Use `light` platform groups with `unique_id` for persistence. See `LIGHTINGAUTOMATION.md` for current groups. SSH access: `sshpass -p "$(bw-read 'Home Assistant — IoT Hub' password)" ssh root@192.168.1.39`
 - LG washer — needs HACS SmartThinQ
 - Tesla vehicles (5) — needs HACS Tesla Custom
 - UniFi Protect cameras (8) — needs API key from UDM

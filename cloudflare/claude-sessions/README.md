@@ -20,7 +20,17 @@ npx wrangler d1 execute claude-sessions --file=schema.sql --remote
 
 ### 3. Set your auth token
 
-Edit `src/index.js` and change `AUTH_TOKEN` to a secret of your choice.
+Store it as a Worker secret, never in `src/index.js` (this repo is public):
+
+```bash
+openssl rand -hex 32 | npx wrangler secret put AUTH_TOKEN
+# the public Supabase anon key, used to verify dashboard users' JWTs
+grep -o "eyJ[^']*" ../../shared/supabase.js | head -1 | npx wrangler secret put SUPABASE_ANON_KEY
+```
+
+The dashboards (DevControl, clauded/sessions.html) don't use this token. They
+send the signed-in user's Supabase access token, and the Worker allows `GET`
+for `staff`/`admin`/`oracle` app_users.
 
 ### 4. Deploy the Worker
 
@@ -39,7 +49,7 @@ chmod +x ~/.claude/hooks/save-session.sh
 
 Edit `~/.claude/hooks/save-session.sh` and set:
 - `API_URL` to your Worker URL + `/sessions`
-- `API_TOKEN` to the token you chose in step 3
+- export `CLAUDE_SESSIONS_AUTH_TOKEN` (the step 3 value) in your shell profile
 
 Then add to `~/.claude/settings.json`:
 

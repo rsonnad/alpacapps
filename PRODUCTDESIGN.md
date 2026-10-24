@@ -869,3 +869,9 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision:** Add ten potential customers and ten supply or operating partners to the existing English/Polish page, with cited public contact routes, specific fit and qualification gaps, and personalized draft messages. Keep drafts expandable and copyable; no outreach is sent by the page.
 
 **Why:** The validation campaign needs concrete organizations and useful first questions. Verified AI activity or a published infrastructure service establishes relevance, not buying intent, spare capacity or partnership agreement. Named people are included only with sourced professional context; otherwise the page specifies a routing role.
+
+### No shared secrets in published pages (2026-10-24)
+
+**Decision:** Pages served from alpacaplayhouse.com carry no API secrets. Browser dashboards authenticate to our Workers with the signed-in user's Supabase access token. The claude-sessions Worker allows reads for staff/admin/oracle. The new files-gate Worker on files.alpacaplayhouse.com allows only rahulioson@gmail.com. Each Worker verifies the token against Supabase `/auth/v1/user`. Machine writers (hooks, scripts) use a Worker secret, set with `wrangler secret put` and kept in Bitwarden. Docs name the Bitwarden item, never the value.
+
+**Why:** The repo and the Pages site are both public. A token in page JS is a token for anyone, and the 2026-10-24 security review found three such tokens served live. A Supabase JWT is short-lived and tied to a person, and the Worker can check the role.

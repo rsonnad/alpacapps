@@ -10,7 +10,6 @@ import { getAuthState } from '../shared/auth.js';
 // CONFIG — project-specific values
 // ═══════════════════════════════════════════════════════════
 const SESSIONS_API = 'https://claude-sessions.alpacapps.workers.dev';
-const SESSIONS_TOKEN = 'alpaca-sessions-2026';
 const PROJECT_FILTER = 'genalpaca'; // Only show this project's sessions
 const GH_OWNER = 'rsonnad';
 const GH_REPO = 'alpacapps';
@@ -36,7 +35,11 @@ const fmtDuration = (s) => {
   return s < 60 ? `${s}s` : s % 60 > 0 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s / 60}m`;
 };
 
-const sessionHeaders = { Authorization: `Bearer ${SESSIONS_TOKEN}` };
+// The sessions Worker accepts the signed-in staff/admin user's Supabase token.
+async function sessionHeaders() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return { Authorization: `Bearer ${session?.access_token || ''}` };
+}
 
 function copyToClipboard(text, btn) {
   navigator.clipboard.writeText(text).then(() => {
@@ -229,7 +232,7 @@ async function loadSessions() {
 
   // Stats
   try {
-    const res = await fetch(`${SESSIONS_API}/stats?project=${PROJECT_FILTER}`, { headers: sessionHeaders });
+    const res = await fetch(`${SESSIONS_API}/stats?project=${PROJECT_FILTER}`, { headers: await sessionHeaders() });
     if (res.ok) sessionsState.stats = await res.json();
   } catch {}
 
@@ -285,7 +288,7 @@ async function fetchSessions(panel) {
     if (sessionsState.dateFrom) params.set('from', sessionsState.dateFrom);
     if (sessionsState.dateTo) params.set('to', sessionsState.dateTo);
 
-    const res = await fetch(`${SESSIONS_API}/sessions?${params}`, { headers: sessionHeaders });
+    const res = await fetch(`${SESSIONS_API}/sessions?${params}`, { headers: await sessionHeaders() });
     if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
     sessionsState.items = data.sessions || data || [];
@@ -335,7 +338,7 @@ async function toggleSession(card) {
   // Fetch full transcript
   if (!sessionsState.transcriptCache[id]) {
     try {
-      const res = await fetch(`${SESSIONS_API}/sessions/${id}`, { headers: sessionHeaders });
+      const res = await fetch(`${SESSIONS_API}/sessions/${id}`, { headers: await sessionHeaders() });
       if (res.ok) { const data = await res.json(); sessionsState.transcriptCache[id] = data.transcript || ''; }
     } catch {}
   }
@@ -395,9 +398,9 @@ async function loadTokens() {
     const proj = tokensProjectFilter;
     const projParam = proj === 'all' ? 'all' : encodeURIComponent(proj);
     const [statsRes, sessionsRes, projectsRes] = await Promise.all([
-      fetch(`${SESSIONS_API}/stats?project=${projParam}`, { headers: sessionHeaders }),
-      fetch(`${SESSIONS_API}/sessions?limit=500&project=${projParam}`, { headers: sessionHeaders }),
-      fetch(`${SESSIONS_API}/projects`, { headers: sessionHeaders }),
+      fetch(`${SESSIONS_API}/stats?project=${projParam}`, { headers: await sessionHeaders() }),
+      fetch(`${SESSIONS_API}/sessions?limit=500&project=${projParam}`, { headers: await sessionHeaders() }),
+      fetch(`${SESSIONS_API}/projects`, { headers: await sessionHeaders() }),
     ]);
 
     const stats = statsRes.ok ? await statsRes.json() : {};

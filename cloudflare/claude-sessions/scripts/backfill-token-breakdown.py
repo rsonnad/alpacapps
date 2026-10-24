@@ -10,7 +10,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 API_URL = "https://claude-sessions.alpacapps.workers.dev"
-API_TOKEN = "alpaca-sessions-2026"
+# Bitwarden "claude-sessions Worker AUTH_TOKEN (alpacapps)"; export as CLAUDE_SESSIONS_AUTH_TOKEN.
+API_TOKEN = os.environ.get("CLAUDE_SESSIONS_AUTH_TOKEN") or sys.exit("set CLAUDE_SESSIONS_AUTH_TOKEN")
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 
 PRICING = {

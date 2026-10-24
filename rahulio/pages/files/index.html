@@ -271,7 +271,9 @@
 </script>
 <script>
 const API_BASE = 'https://files.alpacaplayhouse.com';
-const API_SECRET = 'fsapi_a7c3e9b2d1f0485e9c6a8d3b7e2f1c0d';
+// files.alpacaplayhouse.com sits behind the files-gate Worker (cloudflare/files-gate),
+// which checks this user's Supabase access token. No API secret lives in this page.
+let accessToken = '';
 const ALLOWED_EMAIL = 'rahulioson@gmail.com';
 const SUPABASE_URL = 'https://aphrrfprbixmhissnjfn.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaHJyZnByYml4bWhpc3NuamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzA0MjUsImV4cCI6MjA4NTUwNjQyNX0.yYkdQIq97GQgxK7yT2OQEPi5Tt-a7gM45aF8xjSD6wk';
@@ -288,7 +290,9 @@ let sb;
 
 async function initAuth() {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  sb.auth.onAuthStateChange((_event, s) => { accessToken = s?.access_token || ''; });
   const { data: { session } } = await sb.auth.getSession();
+  accessToken = session?.access_token || '';
   if (session?.user?.email === ALLOWED_EMAIL) {
     showApp();
     return;
@@ -297,6 +301,7 @@ async function initAuth() {
   const hash = window.location.hash;
   if (hash.includes('access_token')) {
     const { data: { session: newSession } } = await sb.auth.getSession();
+    accessToken = newSession?.access_token || '';
     if (newSession?.user?.email === ALLOWED_EMAIL) {
       window.location.hash = '';
       showApp();
@@ -332,13 +337,13 @@ async function api(path, params = {}) {
   for (const [k, v] of Object.entries(params)) {
     if (v !== '' && v !== null && v !== undefined) url.searchParams.set(k, v);
   }
-  const res = await fetch(url, { headers: { 'Authorization': `Bearer ${API_SECRET}` } });
+  const res = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
   if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
   return res.json();
 }
 
 function thumbUrl(fileId) {
-  return `${API_BASE}/thumbnail/${fileId}?_k=${API_SECRET}`;
+  return `${API_BASE}/thumbnail/${fileId}?jwt=${encodeURIComponent(accessToken)}`;
 }
 
 function previewUrl(fileId) {
@@ -606,9 +611,9 @@ function escHtml(s) {
   return div.innerHTML;
 }
 
-// ── Thumbnails via <img> tags with URL-based auth (no CORS preflight) ───
+// ── Thumbnails via <img> tags; the gate reads the token from ?jwt= (no CORS preflight) ───
 function thumbSrc(fileId, size = 'sm') {
-  return `${API_BASE}/thumbnail/${fileId}?key=${API_SECRET}&size=${size}`;
+  return `${API_BASE}/thumbnail/${fileId}?jwt=${encodeURIComponent(accessToken)}&size=${size}`;
 }
 
 function thumbError(img) {
@@ -659,7 +664,7 @@ function openImageLightbox(index) {
   } else {
     exifEl.textContent = '';
     fetch(`${API_BASE}/photo-exif/${f.id}`, {
-      headers: { 'Authorization': `Bearer ${API_SECRET}` }
+      headers: { 'Authorization': `Bearer ${accessToken}` }
     }).then(r => r.json()).then(data => showExif(exifEl, data)).catch(() => {});
   }
 }
@@ -668,7 +673,7 @@ window.loadFullRes = function(fileId, imgEl) {
   imgEl.style.cursor = 'wait';
   imgEl.title = 'Loading full resolution...';
   fetch(`${API_BASE}/preview/${fileId}`, {
-    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   }).then(r => r.blob()).then(blob => {
     imgEl.src = URL.createObjectURL(blob);
     imgEl.style.cursor = 'default';
@@ -702,7 +707,7 @@ function openPdfViewer(f) {
   document.body.style.overflow = 'hidden';
 
   fetch(`${API_BASE}/preview/${f.id}`, {
-    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   }).then(r => r.blob()).then(blob => {
     const url = URL.createObjectURL(blob);
     contentEl.innerHTML = `<iframe src="${url}#toolbar=1" title="${escHtml(f.name)}"></iframe>`;
@@ -722,7 +727,7 @@ function openVideoPlayer(f) {
   document.body.style.overflow = 'hidden';
 
   fetch(`${API_BASE}/preview/${f.id}`, {
-    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   }).then(r => r.blob()).then(blob => {
     const url = URL.createObjectURL(blob);
     contentEl.innerHTML = `<video controls autoplay style="max-width:90vw;max-height:80vh;border-radius:4px"><source src="${url}"></video>`;
@@ -741,7 +746,7 @@ function openAudioPlayer(f) {
   document.body.style.overflow = 'hidden';
 
   fetch(`${API_BASE}/preview/${f.id}`, {
-    headers: { 'Authorization': `Bearer ${API_SECRET}` }
+    headers: { 'Authorization': `Bearer ${accessToken}` }
   }).then(r => r.blob()).then(blob => {
     const url = URL.createObjectURL(blob);
     contentEl.innerHTML = `<div style="text-align:center"><div style="font-size:4rem;margin-bottom:1rem">\ud83c\udfa7</div><audio controls autoplay style="width:400px;max-width:90vw"><source src="${url}"></audio></div>`;

@@ -25,7 +25,7 @@ For HAOS setup, SSH access, and non-lighting devices see `devdocs/HOMEAUTOMATION
   <span class="dv-kw">ssh</span> -o PreferredAuthentications=password -o PubkeyAuthentication=no \
   -o StrictHostKeyChecking=no -o ConnectTimeout=10 alpuca@192.168.1.200 \
   &quot;~/ha-cmd.sh <span class="dv-str">'&lt;domain/service&gt;'</span> <span class="dv-str">'&lt;json&gt;'</span>&quot;</code></pre>
-    </div><p><code>~/ha-cmd.sh</code> on Alpuca handles HAOS auth (<code>alpacaadmin</code>/<code>playhouse</code>) with 25-min token caching. The long-lived HA API token (if needed directly) is in <code>devdocs/HOMEAUTOMATION.md</code> §1.</p>
+    </div><p><code>~/ha-cmd.sh</code> on Alpuca handles HAOS auth (user <code>alpacaadmin</code>, password in Bitwarden &quot;Home Assistant — IoT Hub&quot;) with 25-min token caching. The long-lived HA API token (if needed directly) is in <code>devdocs/HOMEAUTOMATION.md</code> §1.</p>
 <p><strong>DB query for current inventory:</strong></p>
 <div class="dv-code-wrap">
       <div class="dv-code-header">

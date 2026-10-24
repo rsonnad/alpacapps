@@ -6,7 +6,9 @@
 set -euo pipefail
 
 API_URL="https://claude-sessions.alpacapps.workers.dev/sessions"
-API_TOKEN="alpaca-sessions-2026"
+# Bitwarden "claude-sessions Worker AUTH_TOKEN (alpacapps)" — export it, never commit it.
+API_TOKEN="${CLAUDE_SESSIONS_AUTH_TOKEN:-}"
+[ -z "$API_TOKEN" ] && exit 0
 
 # Read hook input from stdin
 INPUT=$(cat)

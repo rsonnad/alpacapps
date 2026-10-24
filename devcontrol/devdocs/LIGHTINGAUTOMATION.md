@@ -779,7 +779,8 @@ Or check the HA iOS app → Settings → Devices for the new entry.
 
 ```bash
 # SSH to HAOS
-sshpass -p "playhouse" ssh root@192.168.1.39
+# root password: Bitwarden "Home Assistant — IoT Hub" (never inline it — this repo is public)
+sshpass -p "$(bw-read 'Home Assistant — IoT Hub' password)" ssh root@192.168.1.39
 
 # Stop HA core (prevents overwrite)
 ha core stop
