@@ -1,12 +1,12 @@
 {
-  "version": "v261024.08 9:37a",
-  "release": 1962,
-  "sha": "3544f18531",
-  "fullSha": "3544f18531c60ca1e56d03a572ae11ad1c6aa3bb",
+  "version": "v261024.10 9:40a",
+  "release": 1964,
+  "sha": "73daaed1aa",
+  "fullSha": "73daaed1aaee9d3a1478fd31a6c44726dae8a14c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtai0g",
-  "pushedAt": "2026-10-24T14:37:13+00:00",
-  "commits": [{"sha":"3544f18531","message":"bookinghostredflags: add AI-agent warning callout and 'problems at a glance' outline at the top for readability/SEO","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-24T14:40:42+00:00",
+  "commits": [{"sha":"73daaed1aa","message":"feat(rahulio): Tesla vs BMW comparison page for an Austin family","author":"Blotto"}]
 }
