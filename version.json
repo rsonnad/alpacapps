@@ -1,12 +1,12 @@
 {
-  "version": "v261024.07 9:34a",
-  "release": 1961,
-  "sha": "c57b4614b4",
-  "fullSha": "c57b4614b4364ab442b6bc77e3dd3c1a7c6ecb9f",
+  "version": "v261024.08 9:37a",
+  "release": 1962,
+  "sha": "3544f18531",
+  "fullSha": "3544f18531c60ca1e56d03a572ae11ad1c6aa3bb",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-24T14:34:16+00:00",
-  "commits": [{"sha":"c57b4614b4","message":"Refresh bookinghostredflags (deploy nudge for formatting fix)","author":"Muse (Almusca)"}]
+  "machine": "runnervmtai0g",
+  "pushedAt": "2026-10-24T14:37:13+00:00",
+  "commits": [{"sha":"3544f18531","message":"bookinghostredflags: add AI-agent warning callout and 'problems at a glance' outline at the top for readability/SEO","author":"Muse (Almusca)"}]
 }
