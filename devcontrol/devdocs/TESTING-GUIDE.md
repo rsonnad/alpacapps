@@ -5,7 +5,7 @@
 | Field | Value |
 |-------|-------|
 | Email | `testuser@alpacaplayhouse.com` |
-| Password | Bitwarden "AlpacApps — test account (testuser@alpacaplayhouse.com)" — never write it in this repo (it is public) |
+| Password | In Bitwarden, item `AlpacApps — admin test account (testuser@alpacaplayhouse.com)` (collection DevOps-alpacapps). Read it with bw-read; never paste it into the repo. |
 | Role | `admin` |
 | Auth User ID | `4b530cac-261e-4087-bb73-4258a8f6f91e` |
 | App User ID | `bd46c13d-c579-48e2-b90b-c26742812eda` |
