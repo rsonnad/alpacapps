@@ -5,13 +5,15 @@ import { logApiUsage } from "../_shared/api-usage-log.ts";
 import { timingSafeEqual } from "../_shared/timing-safe.ts";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { signOAuthState, verifyOAuthState } from "../_shared/oauth-state.ts";
 const TESLA_TOKEN_URL =
   "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token";
 const DEFAULT_FLEET_API_BASE =
   "https://fleet-api.prd.na.vn.cloud.tesla.com";
 
 interface TeslaCommandRequest {
-  action?: "exchangeCode"; // OAuth code exchange action
+  action?: "exchangeCode" | "oauthState"; // OAuth code exchange / state issuance
+  state?: string; // signed OAuth state returned by Tesla (for exchangeCode)
   vehicle_id?: number; // vehicles.id (for vehicle commands)
   command?: "door_unlock" | "door_lock" | "wake_up" | "flash_lights" | "honk_horn";
   code?: string; // OAuth authorization code
@@ -48,15 +50,20 @@ serve(async (req) => {
     const body: TeslaCommandRequest = await req.json();
 
     // ---- OAuth Code Exchange ----
-    // Handled before auth check: the OAuth code is single-use and tied to the
-    // account's client_id/secret, so session auth is not needed. This avoids
-    // failures when the user's Supabase JWT expires during the Tesla redirect.
+    // Handled before the session check so an expired Supabase JWT during the Tesla redirect
+    // doesn't break the flow. Instead the request must carry the signed `state` the server
+    // issued for this account when the flow started; without it anyone could swap the
+    // account's tokens for their own Tesla login.
     if (body.action === "exchangeCode") {
       if (!body.code) {
         return jsonResponse(req, { error: "Missing authorization code" }, 400);
       }
       if (!body.account_id) {
         return jsonResponse(req, { error: "Missing account_id" }, 400);
+      }
+      const stateAccountId = await verifyOAuthState(body.state || "");
+      if (!stateAccountId || stateAccountId !== String(body.account_id)) {
+        return jsonResponse(req, { error: "Invalid or expired authorization state. Start the Tesla connection again." }, 403);
       }
 
       // Load account to get Fleet API credentials
@@ -161,9 +168,26 @@ serve(async (req) => {
       // Check granular permission: control_cars
       const result = await getAppUserWithPermission(supabase, user.id, "control_cars");
       appUser = result.appUser;
-      if (!result.hasPermission) {
+      // Starting OAuth for your own account doesn't need control_cars; oauthState checks ownership below.
+      if (!result.hasPermission && body.action !== "oauthState") {
         return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
+    }
+
+    // ---- OAuth state issuance (signed-in callers with control_cars) ----
+    if (body.action === "oauthState") {
+      if (!body.account_id) return jsonResponse(req, { error: "Missing account_id" }, 400);
+      if (!isInternalCall && !["admin", "oracle"].includes(appUser?.role)) {
+        const { data: acct } = await supabase
+          .from("tesla_accounts")
+          .select("app_user_id")
+          .eq("id", body.account_id)
+          .maybeSingle();
+        if (!acct || acct.app_user_id !== appUser?.id) {
+          return jsonResponse(req, { error: "You can only connect your own Tesla account" }, 403);
+        }
+      }
+      return jsonResponse(req, { state: await signOAuthState(body.account_id) });
     }
 
     const { vehicle_id, command } = body;

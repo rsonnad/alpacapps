@@ -115,6 +115,22 @@ export async function checkRateLimit(
   }
 }
 
+/**
+ * Per-IP limit that is skipped when the client IP is unknown, so a missing header can't turn a
+ * per-IP limit into a site-wide one. Pair it with a global cap.
+ */
+export async function checkIpRateLimit(
+  supabase: any,
+  bucket: string,
+  req: Request,
+  maxAttempts: number,
+  windowSeconds: number,
+): Promise<boolean> {
+  const ip = getClientIp(req);
+  if (ip === 'unknown') return true;
+  return checkRateLimit(supabase, bucket, ip, maxAttempts, windowSeconds);
+}
+
 export function getClientIp(req: Request): string {
   return req.headers.get('cf-connecting-ip')
     || req.headers.get('x-real-ip')

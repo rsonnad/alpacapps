@@ -49,6 +49,8 @@ serve(async (req) => {
 
       const name = user.display_name || `${user.first_name || ""} ${user.last_name || ""}`.trim() || "Unknown";
       const firstName = user.first_name || name.split(" ")[0] || "there";
+      // display_name and entry descriptions are associate-editable; escape everything that lands in HTML.
+      const safeName = escapeHtml(name);
       const email = user.email;
 
       // ─── 2a. Get unpaid time entries ───
@@ -166,7 +168,7 @@ serve(async (req) => {
         return `<tr style="background:${dailyMap.size % 2 === 0 ? '#faf9f6' : '#f2f0e8'};">
           <td style="padding:8px 12px;border-bottom:1px solid #e6e2d9;white-space:nowrap;">${date}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #e6e2d9;text-align:right;font-weight:600;white-space:nowrap;">${hourStr}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #e6e2d9;color:#7d6f74;font-size:13px;">${descTrunc}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e6e2d9;color:#7d6f74;font-size:13px;">${escapeHtml(descTrunc)}</td>
         </tr>`;
       });
 
@@ -176,14 +178,14 @@ serve(async (req) => {
 
       const summaryHtml = `
 <h2 style="margin:0 0 4px;color:#1c1618;">Weekly Work Summary</h2>
-<p style="margin:0 0 20px;color:#7d6f74;font-size:14px;">Payroll review for <strong>${name}</strong></p>
+<p style="margin:0 0 20px;color:#7d6f74;font-size:14px;">Payroll review for <strong>${safeName}</strong></p>
 
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f2f0e8;border:1px solid #e6e2d9;border-radius:8px;margin:0 0 20px;">
   <tr><td style="padding:20px 24px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
       <tr>
         <td style="padding:0 0 8px;"><strong>Associate:</strong></td>
-        <td style="padding:0 0 8px;text-align:right;font-weight:600;">${name}</td>
+        <td style="padding:0 0 8px;text-align:right;font-weight:600;">${safeName}</td>
       </tr>
       <tr>
         <td style="padding:0 0 8px;"><strong>Period:</strong></td>
@@ -231,11 +233,13 @@ serve(async (req) => {
 <p style="margin:0 0 8px;color:#7d6f74;font-size:13px;">${entries.length} time entries &bull; ${totalHours.toFixed(2)} hrs${money.extraAmount > 0 ? ` + $${money.extraAmount.toFixed(2)} daily extra (${money.dayCount} day${money.dayCount === 1 ? "" : "s"})` : ""} = <strong>$${amount.toFixed(2)}</strong></p>
 ${!hasStripe ? `<div style="background:#fff8e1;border-left:4px solid #f9a825;padding:14px 20px;margin:16px 0;border-radius:0 8px 8px 0;">
   <p style="margin:0;font-weight:600;color:#e65100;">\u26a0\ufe0f Stripe Not Set Up</p>
-  <p style="margin:4px 0 0;color:#2a1f23;font-size:14px;">${firstName} needs to complete Stripe Connect onboarding before payment can be sent. A setup link will be generated on approval.</p>
+  <p style="margin:4px 0 0;color:#2a1f23;font-size:14px;">${escapeHtml(firstName)} needs to complete Stripe Connect onboarding before payment can be sent. A setup link will be generated on approval.</p>
 </div>` : ""}`;
 
-      // ─── 2f. Embed payroll metadata for post-approval processing ───
-      const payrollMeta = JSON.stringify({
+      // ─── 2f. Payroll metadata for post-approval processing ───
+      // Stored on the approval row (pending_email_approvals.payroll_meta), never in the email HTML,
+      // so nothing an associate types can redirect the payout or onboarding link.
+      const payrollMeta = {
         associate_id: assoc.id,
         amount,
         hourly_rate: rate,
@@ -248,10 +252,7 @@ ${!hasStripe ? `<div style="background:#fff8e1;border-left:4px solid #f9a825;pad
         associate_first_name: firstName,
         has_stripe: hasStripe,
         person_id: user.person_id,
-      });
-
-      const metaComment = `<!--[PAYROLL_META:${payrollMeta}:PAYROLL_META]-->`;
-      const fullHtml = summaryHtml + metaComment;
+      };
 
       // ─── 2g. Send via send-email (approval-gated) ───
       const sendRes = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
@@ -265,7 +266,7 @@ ${!hasStripe ? `<div style="background:#fff8e1;border-left:4px solid #f9a825;pad
           to: "alpacaplayhouse@gmail.com", // admin receives it
           subject: `Weekly Payroll — ${name} — $${amount.toFixed(2)} (${period})`,
           data: {
-            _raw_html: fullHtml,
+            _raw_html: summaryHtml,
             first_name: firstName,
             associate_name: name,
             amount: amount.toFixed(2),
@@ -296,6 +297,18 @@ ${!hasStripe ? `<div style="background:#fff8e1;border-left:4px solid #f9a825;pad
 
       console.log(`Payroll summary for ${name}: $${amount.toFixed(2)}`, JSON.stringify(sendResult));
 
+      if (sendResult.status === "pending_approval") {
+        const { error: metaErr } = await sb
+          .from("pending_email_approvals")
+          .update({ payroll_meta: payrollMeta })
+          .eq("id", sendResult.approval_id);
+        if (metaErr || !sendResult.approval_id) {
+          console.error(`Failed to store payroll_meta for ${name}:`, metaErr?.message || "no approval_id");
+          results.push({ associate: name, status: "error_payroll_meta", amount });
+          continue;
+        }
+      }
+
       results.push({
         associate: name,
         status: sendResult.status === "pending_approval" ? "approval_sent" : String(sendResult.status || "sent"),
@@ -309,6 +322,15 @@ ${!hasStripe ? `<div style="background:#fff8e1;border-left:4px solid #f9a825;pad
     return jsonResponse({ success: false, error: (err as Error).message, results }, 500);
   }
 });
+
+function escapeHtml(s: string | null | undefined): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 function getMondayOfWeek(date: Date): Date {
   const d = new Date(date);

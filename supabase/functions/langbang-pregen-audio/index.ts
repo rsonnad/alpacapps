@@ -21,6 +21,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { uploadToR2, getR2PublicUrl } from "../_shared/r2-upload.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { checkIpRateLimit, checkRateLimit } from "../_shared/function-wrapper.ts";
+
+// Anonymous endpoint that spends Azure TTS credit, so every input is bounded.
+const MAX_PHRASES = 1000;
+const MAX_NEW_SYNTHS_PER_CALL = 300;
+const MAX_TEXT_CHARS = 300;
+const LOCALE_RE = /^[a-z]{2,3}-[A-Z]{2}$/;
+const VOICE_RE = /^[a-z]{2,3}-[A-Z]{2}-[A-Za-z0-9]+Neural(\|slow50v3|\|slow60v1)?$/;
 
 interface Phrase {
   text: string;
@@ -118,15 +127,38 @@ serve(async (req) => {
       headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
+  const badRequest = (error: string, status = 400) =>
+    new Response(JSON.stringify({ error }), {
+      status,
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+    });
   try {
+    const limiter = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    if (
+      !(await checkIpRateLimit(limiter, "langbang-pregen-audio", req, 20, 3600)) ||
+      !(await checkRateLimit(limiter, "langbang-pregen-audio-global", "all", 200, 86400))
+    ) {
+      return badRequest("Rate limit exceeded", 429);
+    }
+
     const { phrases } = (await req.json()) as { phrases: Phrase[] };
     if (!Array.isArray(phrases) || phrases.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "phrases[] required" }),
-        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
-      );
+      return badRequest("phrases[] required");
+    }
+    if (phrases.length > MAX_PHRASES) {
+      return badRequest(`At most ${MAX_PHRASES} phrases per call`);
+    }
+    for (const p of phrases) {
+      if (
+        typeof p?.text !== "string" || !p.text.trim() || p.text.length > MAX_TEXT_CHARS ||
+        typeof p.locale !== "string" || !LOCALE_RE.test(p.locale) ||
+        typeof p.voice !== "string" || !VOICE_RE.test(p.voice)
+      ) {
+        return badRequest(`Each phrase needs text (1-${MAX_TEXT_CHARS} chars), a locale like pl-PL and an Azure Neural voice`);
+      }
     }
     const manifest: ManifestEntry[] = [];
+    let newSynths = 0;
     for (const p of phrases) {
       const sha1 = await sha1Hex(`${p.locale}|${p.voice}|${p.text}`);
       const key = `langbang/audio/${sha1}.mp3`;
@@ -139,6 +171,9 @@ serve(async (req) => {
             uploaded: false,
           });
           continue;
+        }
+        if (++newSynths > MAX_NEW_SYNTHS_PER_CALL) {
+          throw new Error(`Synthesis cap of ${MAX_NEW_SYNTHS_PER_CALL} per call reached; call again for the rest`);
         }
         const mp3 = await synthesize(p.text, p.voice, p.locale);
         const url = await uploadToR2(key, mp3, "audio/mpeg");

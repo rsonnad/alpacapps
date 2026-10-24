@@ -869,3 +869,10 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision:** Add ten potential customers and ten supply or operating partners to the existing English/Polish page, with cited public contact routes, specific fit and qualification gaps, and personalized draft messages. Keep drafts expandable and copyable; no outreach is sent by the page.
 
 **Why:** The validation campaign needs concrete organizations and useful first questions. Verified AI activity or a published infrastructure service establishes relevance, not buying intent, spare capacity or partnership agreement. Named people are included only with sourced professional context; otherwise the page specifies a routing role.
+
+
+### 2026-10-24: Email Never Settles Money or Runs Agents on Its Own
+
+**Decision:** Payment emails to payments@ are parsed only when Resend reports DMARC pass and the From domain is a known payment provider (the receiving bank for Zelle, or Venmo, PayPal, Square/Cash App, Coinbase). A matched deposit becomes an admin confirmation link (`confirm-deposit-payment`), and a matched rent or other payment is written to the ledger as `pending`. Nothing from email is marked paid until an admin confirms. Payment emails forwarded by hand (From is the forwarder's own address) are no longer parsed; admins get an "unverified, not recorded" notice and record them manually. Tasks emailed to claude@ always start in `review`, whoever sent them. pai@ and alpaclaw@ answer only DMARC-verified senders whose address matches an app user exactly; everyone else gets a fixed reply with no AI call. Phone calls (Vapi) need the server secret and can no longer unlock vehicles, read the vault or change data, because caller ID can be spoofed.
+
+**Why:** The From header and an email body are written by the sender. Treating them as proof let anyone record a payment or queue work on the house machines. A short admin confirmation step costs little compared with a wrongly released deposit or move-in.

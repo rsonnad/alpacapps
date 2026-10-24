@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 // =============================================
 // Types
@@ -84,6 +85,68 @@ const ROLE_LEVEL: Record<string, number> = {
   associate: 1,
   demo: 1,
 };
+
+// query_property_data allowlist. Tables and columns not listed here cannot be read through the tool.
+// `where` adds fixed row filters. password_vault is reached only through lookup_codes.
+type QueryTableRule = { cols: string[]; where?: Record<string, unknown> };
+
+const QUERY_TABLES_RESIDENT: Record<string, QueryTableRule> = {
+  people: { cols: ["id", "first_name", "type"] },
+  spaces: {
+    cols: ["id", "name", "description", "parent_id", "type", "is_active", "is_listed", "floor_level", "sq_footage",
+      "beds_king", "beds_queen", "beds_double", "beds_twin", "beds_folding", "gathering_capacity", "min_residents",
+      "max_residents", "hourly_rate", "daily_rate", "weekly_rate", "monthly_rate", "nightly_rate", "rental_term",
+      "can_be_dwelling", "can_be_event", "bath_privacy", "bath_fixture", "slug"],
+    where: { is_archived: false, is_secret_effective: false },
+  },
+  govee_devices: { cols: ["id", "name", "area", "device_type", "is_group", "online", "last_state", "is_active", "space_id"] },
+  nest_devices: { cols: ["id", "room_name", "device_type", "is_active", "last_state", "space_id"] },
+  vehicles: { cols: ["id", "name", "vehicle_make", "vehicle_model", "year", "color", "is_active", "vehicle_state", "last_state"] },
+  camera_streams: { cols: ["id", "camera_name", "location", "is_active", "space_id", "camera_model"] },
+  lg_appliances: { cols: ["id", "name", "device_type", "model", "is_active", "last_state", "space_id"] },
+  anova_ovens: { cols: ["id", "name", "oven_type", "is_active", "last_state", "space_id"] },
+  tasks: { cols: ["id", "task_number", "title", "description", "status", "priority", "space_id", "location_label", "assigned_name", "completed_at", "created_at"] },
+  brand_config: { cols: ["id", "config"] },
+  faq_entries: { cols: ["id", "question", "answer", "created_at"], where: { is_published: true } },
+  faq_context_entries: { cols: ["id", "title", "content"], where: { is_active: true } },
+  feature_requests: { cols: ["id", "description", "status", "created_at", "completed_at"] },
+  bug_reports: { cols: ["id", "description", "status", "fix_summary", "created_at"] },
+};
+
+const QUERY_TABLES_STAFF: Record<string, QueryTableRule> = {
+  ...QUERY_TABLES_RESIDENT,
+  people: {
+    cols: ["id", "first_name", "last_name", "email", "phone", "phone2", "type", "status", "notes", "application_status",
+      "desired_space_id", "desired_move_in", "company_name", "created_at"],
+  },
+  spaces: { cols: [...QUERY_TABLES_RESIDENT.spaces.cols, "is_archived", "is_secret", "address", "vacancy_notes", "standard_deposit"] },
+  vehicles: { cols: [...QUERY_TABLES_RESIDENT.vehicles.cols, "license_plate", "owner_id"] },
+  assignments: {
+    cols: ["id", "person_id", "type", "status", "start_date", "end_date", "notice_days", "rate_amount", "rate_term",
+      "monthly_rent", "deposit_amount", "is_free", "notes", "desired_departure_date", "created_at"],
+  },
+  assignment_spaces: { cols: ["id", "assignment_id", "space_id"] },
+  sms_messages: { cols: ["id", "person_id", "direction", "from_number", "to_number", "body", "sms_type", "status", "channel", "created_at"] },
+  inbound_emails: { cols: ["id", "created_at", "from_address", "to_address", "subject", "classification", "route_action", "processed_at"] },
+  voice_calls: { cols: ["id", "caller_phone", "person_id", "status", "started_at", "ended_at", "duration_seconds", "summary", "created_at"] },
+  stripe_payments: { cols: ["id", "payment_type", "reference_type", "reference_id", "amount", "fee_amount", "status", "person_id", "person_name", "is_test", "created_at"] },
+  ledger: {
+    cols: ["id", "direction", "category", "amount", "payment_method", "transaction_date", "person_id", "person_name",
+      "status", "description", "period_start", "period_end", "is_test", "created_at"],
+  },
+  api_usage_log: { cols: ["id", "vendor", "category", "endpoint", "input_tokens", "output_tokens", "units", "unit_type", "estimated_cost_usd", "created_at"] },
+  property_config: { cols: ["id", "config"] },
+  app_users: { cols: ["id", "email", "display_name", "role", "first_name", "last_name", "person_id", "is_current_resident", "last_login_at"] },
+  pai_interactions: { cols: ["id", "app_user_id", "source", "message_preview", "created_at"] },
+  tasks: { cols: [...QUERY_TABLES_RESIDENT.tasks.cols, "notes", "assigned_to", "created_by"] },
+  faq_entries: { cols: ["id", "question", "answer", "ai_answer", "is_published", "user_name", "created_at", "answered_at"] },
+  feature_requests: { cols: [...QUERY_TABLES_RESIDENT.feature_requests.cols, "requester_name", "progress_message", "build_summary"] },
+  bug_reports: { cols: [...QUERY_TABLES_RESIDENT.bug_reports.cols, "reporter_name", "page_url", "error_message", "source"] },
+};
+
+// Tools that a phone call can never run. Caller ID is spoofable, so it must not unlock
+// vehicles, reveal vault entries or change data.
+const VOICE_BLOCKED_TOOLS = new Set(["control_vehicle", "lookup_codes", "manage_data"]);
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
@@ -1381,14 +1444,14 @@ const TOOL_DECLARATIONS = [
   {
     name: "query_property_data",
     description:
-      "Flexible database query tool for looking up ANY property data. Use this when manage_data doesn't cover the table you need, or when you need more complex queries (joins, aggregations, date ranges). Supports all tables in the data catalog. This is your most powerful research tool — use it whenever you need to find information.",
+      "Flexible database query tool for looking up ANY property data. Use this when manage_data doesn't cover the table you need, or for filtered and date-range queries. Tables and columns are limited per role; if a table or column is refused, the error lists what is allowed. Door codes and passwords are only available through lookup_codes.",
     parameters: {
       type: "object",
       properties: {
         table: {
           type: "string",
           enum: [
-            "people", "assignments", "assignment_spaces", "spaces", "password_vault",
+            "people", "assignments", "assignment_spaces", "spaces",
             "govee_devices", "nest_devices", "vehicles", "camera_streams",
             "lg_appliances", "anova_ovens", "inbound_emails", "voice_calls",
             "sms_messages", "tasks", "events", "documents", "stripe_payments",
@@ -1400,7 +1463,7 @@ const TOOL_DECLARATIONS = [
         },
         select: {
           type: "string",
-          description: "Comma-separated columns to return (e.g. 'first_name, last_name, email, phone'). Use '*' for all columns. Can include joins using Supabase syntax (e.g. 'id, name, assignments(start_date, end_date)').",
+          description: "Comma-separated columns to return (e.g. 'first_name, type'). Use '*' for every column your role may read. Joins are not supported; each table exposes a fixed set of columns per role.",
         },
         filters: {
           type: "object",
@@ -2865,37 +2928,60 @@ async function executeToolCall(
         const table = args.table;
         if (!table) return "Error: table is required.";
 
-        // Restrict sensitive tables to staff+
-        const staffOnlyTables = ["app_users", "api_usage_log", "stripe_payments", "ledger", "password_vault", "inbound_emails", "voice_calls"];
-        if (staffOnlyTables.includes(table) && scope.userLevel < 2) {
-          return `Permission denied: querying ${table} requires staff role or higher.`;
+        // Per-role allowlist of tables and columns. The query runs with the service role,
+        // so anything not listed here (credentials, tokens, PII columns) must stay unreachable.
+        const rules = scope.userLevel >= 2 ? QUERY_TABLES_STAFF : QUERY_TABLES_RESIDENT;
+        const rule = rules[table];
+        if (!rule) {
+          return `Permission denied: ${table} is not available to your role through query_property_data.`;
+        }
+
+        const requested = String(args.select || "*").split(",").map((c: string) => c.trim()).filter(Boolean);
+        const selectList = requested.length === 0 || requested.includes("*") ? rule.cols : requested;
+        const badCol = selectList.find((c: string) => !rule.cols.includes(c));
+        if (badCol) {
+          return `Permission denied: column "${badCol}" of ${table} is not available. Allowed columns: ${rule.cols.join(", ")}`;
         }
 
         const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-        const selectCols = args.select || "*";
         const limit = Math.min(args.limit || 25, 100);
 
-        let query = supabaseAdmin.from(table).select(selectCols).limit(limit);
+        let query = supabaseAdmin.from(table).select(selectList.join(",")).limit(limit);
+        for (const [col, value] of Object.entries(rule.where || {})) {
+          query = query.eq(col, value);
+        }
 
-        // Apply filters
+        // Apply filters (filter columns must be allowlisted too, or a filter could probe hidden columns)
         const filters = args.filters || {};
         for (const [key, value] of Object.entries(filters)) {
-          if (key.startsWith("gte_")) {
-            query = query.gte(key.slice(4), value);
-          } else if (key.startsWith("lte_")) {
-            query = query.lte(key.slice(4), value);
-          } else if (key.startsWith("like_")) {
-            query = query.ilike(key.slice(5), `%${value}%`);
-          } else if (key.startsWith("not_")) {
-            query = query.neq(key.slice(4), value);
-          } else if (key.startsWith("is_null_")) {
+          let op = "eq";
+          let col = key;
+          for (const prefix of ["gte_", "lte_", "like_", "not_", "is_null_"]) {
+            if (key.startsWith(prefix)) {
+              op = prefix.slice(0, -1);
+              col = key.slice(prefix.length);
+              break;
+            }
+          }
+          if (!rule.cols.includes(col)) {
+            return `Permission denied: cannot filter ${table} on "${col}".`;
+          }
+          if (op === "gte") {
+            query = query.gte(col, value);
+          } else if (op === "lte") {
+            query = query.lte(col, value);
+          } else if (op === "like") {
+            query = query.ilike(col, `%${value}%`);
+          } else if (op === "not") {
+            query = query.neq(col, value);
+          } else if (op === "is_null") {
             if (value) {
-              query = query.is(key.slice(8), null);
+              query = query.is(col, null);
             } else {
-              query = query.not(key.slice(8), "is", null);
+              query = query.not(col, "is", null);
             }
           } else {
-            query = query.eq(key, value);
+            query = query.eq(col, value);
           }
         }
 
@@ -2903,23 +2989,13 @@ async function executeToolCall(
         if (args.order_by) {
           const desc = args.order_by.startsWith("-");
           const col = desc ? args.order_by.slice(1) : args.order_by;
+          if (!rule.cols.includes(col)) return `Permission denied: cannot sort ${table} by "${col}".`;
           query = query.order(col, { ascending: !desc });
         }
 
         const { data, error } = await query;
         if (error) return `Error querying ${table}: ${error.message}`;
         if (!data || data.length === 0) return `No results found in ${table} with the given filters.`;
-
-        // For residents, filter out other people's personal info from certain tables
-        if (scope.userLevel < 2 && table === "people") {
-          // Only show their own person record or basic public info
-          const filtered = (data as any[]).map((p: any) => ({
-            first_name: p.first_name,
-            type: p.type,
-            ...(p.id === scope.appUserId ? p : {}),
-          }));
-          return `Found ${filtered.length} result(s) in ${table}:\n${JSON.stringify(filtered, null, 2)}`;
-        }
 
         return `Found ${data.length} result(s) in ${table}:\n${JSON.stringify(data, null, 2)}`;
       }
@@ -3324,10 +3400,8 @@ function buildVapiToolsList(scope: UserScope): any[] {
   if (scope.userLevel >= 1) tools.push(vapiToolWrapper(findTool("control_sonos")));
   if (scope.userLevel >= 1) tools.push(vapiToolWrapper(findTool("announce")));
   if (scope.nestDevices.length) tools.push(vapiToolWrapper(findTool("control_thermostat")));
-  if (scope.teslaVehicles.length) tools.push(vapiToolWrapper(findTool("control_vehicle")));
   tools.push(vapiToolWrapper(findTool("get_device_status")));
   tools.push(vapiToolWrapper(findTool("search_spaces")));
-  tools.push(vapiToolWrapper(findTool("lookup_codes")));
   tools.push(vapiToolWrapper(findTool("lookup_document")));
   // Laundry status available to all
   if (scope.laundryAppliances.length) {
@@ -3355,7 +3429,7 @@ function buildVapiToolsList(scope: UserScope): any[] {
     tools.push(vapiToolWrapper(findTool("get_person_context")));
     tools.push(vapiToolWrapper(findTool("generate_image")));
   }
-  return tools;
+  return tools.filter((t) => !VOICE_BLOCKED_TOOLS.has(t.function?.name));
 }
 
 // =============================================
@@ -3584,9 +3658,16 @@ async function handleVapiToolCalls(req: Request, body: any, supabase: any): Prom
     goveeApiKey = gc?.api_key || "";
   }
 
+  // Only run tools this caller's assistant was offered, never the voice-blocked ones.
+  const offeredTools = new Set(buildVapiToolsList(scope).map((t) => t.function?.name));
+
   const results = [];
   for (const tc of toolCallList) {
     const fnName = tc.function?.name;
+    if (!offeredTools.has(fnName) || VOICE_BLOCKED_TOOLS.has(fnName)) {
+      results.push({ toolCallId: tc.id, result: `Error: ${fnName} is not available by phone. Use the app instead.` });
+      continue;
+    }
     const fnArgs = typeof tc.function?.arguments === "string"
       ? JSON.parse(tc.function.arguments)
       : tc.function?.arguments || {};
@@ -3630,8 +3711,8 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
   // Supabase gateway strips/transforms Authorization headers, so also accept service key in body
   const bodyServiceKey = body.serviceKey ?? "";
   const serviceKeyPlatform = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const isServiceKey = token === serviceKeyPlatform ||
-    bodyServiceKey === serviceKeyPlatform;
+  const isServiceKey = (!!token && await timingSafeEqual(token, serviceKeyPlatform)) ||
+    (!!bodyServiceKey && await timingSafeEqual(String(bodyServiceKey), serviceKeyPlatform));
 
   let appUser: any;
   let userLevel: number;
@@ -3643,7 +3724,7 @@ async function handleChatRequest(req: Request, body: any, supabase: any): Promis
       const { data: appUserRow } = await supabase
         .from("app_users")
         .select("id, auth_user_id, role, display_name, email, person_id")
-        .ilike("email", senderEmail)
+        .eq("email", senderEmail)
         .limit(1)
         .maybeSingle();
       if (appUserRow?.auth_user_id) {
@@ -4061,6 +4142,15 @@ serve(async (req) => {
 
     // Detect Vapi message types vs chat requests
     const vapiMessageType = body.message?.type || body.type;
+
+    if (vapiMessageType === "assistant-request" || vapiMessageType === "tool-calls") {
+      // Vapi sends the server-URL secret as X-Vapi-Secret (same secret as vapi-server / vapi-webhook).
+      const vapiSecret = Deno.env.get("VAPI_WEBHOOK_SECRET");
+      const suppliedSecret = req.headers.get("x-vapi-secret");
+      if (!vapiSecret || !suppliedSecret || !(await timingSafeEqual(suppliedSecret, vapiSecret))) {
+        return jsonResponse(req, { error: "Invalid server authentication" }, 401);
+      }
+    }
 
     if (vapiMessageType === "assistant-request") {
       return await handleVapiAssistantRequest(req, body, supabase);

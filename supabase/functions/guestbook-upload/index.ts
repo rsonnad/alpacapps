@@ -10,27 +10,53 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { uploadToR2 } from '../_shared/r2-upload.ts';
+import { checkIpRateLimit, checkRateLimit } from '../_shared/function-wrapper.ts';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+
+// The kiosk records webm (Chrome) or mp4 (Safari). Nothing else may be written to the public bucket.
+const ALLOWED_TYPES: Record<string, Record<string, string>> = {
+  video: { 'video/webm': 'webm', 'video/mp4': 'mp4' },
+  audio: { 'audio/webm': 'webm', 'audio/mp4': 'm4a' },
+};
+
+/** Check the container magic bytes so a renamed HTML or script file is rejected. */
+function looksLikeMedia(bytes: Uint8Array, ext: string): boolean {
+  if (ext === 'webm') return bytes[0] === 0x1a && bytes[1] === 0x45 && bytes[2] === 0xdf && bytes[3] === 0xa3;
+  return String.fromCharCode(...bytes.slice(4, 8)) === 'ftyp';
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
+
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // The hall kiosk is one IP, so the per-IP limit is generous; the daily cap bounds total storage.
+    if (
+      !(await checkIpRateLimit(supabase, 'guestbook-upload', req, 60, 3600)) ||
+      !(await checkRateLimit(supabase, 'guestbook-upload-global', 'all', 300, 86400))
+    ) {
+      return json({ error: 'Too many uploads, try again later' }, 429);
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    const key = formData.get('key') as string;
-    const guestName = formData.get('guest_name') as string || null;
-    const mediaType = formData.get('media_type') as string || 'video';
-    const contentType = formData.get('content_type') as string || 'video/webm';
+    const guestName = String(formData.get('guest_name') || '').trim().slice(0, 100) || null;
+    const mediaType = formData.get('media_type') === 'audio' ? 'audio' : 'video';
+    // The client-supplied key is ignored; the server picks the object key.
+    const baseType = String(formData.get('content_type') || file?.type || '').split(';')[0].trim().toLowerCase();
+    const ext = ALLOWED_TYPES[mediaType][baseType];
 
-    if (!file || !key) {
-      return new Response(
-        JSON.stringify({ error: 'Missing file or key' }),
-        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!file) return json({ error: 'Missing file' }, 400);
+    if (!ext) return json({ error: `Unsupported content type for ${mediaType}` }, 415);
 
     // Read file bytes
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -43,13 +69,13 @@ serve(async (req) => {
       );
     }
 
-    // Upload to R2
-    const publicUrl = await uploadToR2(key, bytes, contentType);
+    if (bytes.length < 8 || !looksLikeMedia(bytes, ext)) {
+      return json({ error: 'File is not a recognized recording' }, 415);
+    }
 
-    // Create guestbook entry in DB
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Upload to R2 under a server-generated key
+    const key = `guestbook/${mediaType}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+    const publicUrl = await uploadToR2(key, bytes, baseType);
 
     const entry: Record<string, unknown> = {
       guest_name: guestName,
