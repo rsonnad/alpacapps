@@ -1,12 +1,12 @@
 {
-  "version": "v261024.13 10:46a",
-  "release": 1967,
-  "sha": "ac896a3c2e",
-  "fullSha": "ac896a3c2e0309fc2584680089a932a7a0ecb75b",
+  "version": "v261024.15 11:02a",
+  "release": 1969,
+  "sha": "189a5d97da",
+  "fullSha": "189a5d97dabff90f72a8639f766cd6bf658dd7fa",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtai0g",
-  "pushedAt": "2026-10-24T15:46:16+00:00",
-  "commits": [{"sha":"ac896a3c2e","message":"bookinghostredflags: add photographic evidence section (drain trap, sludge removed, spoon of sludge, never-cleaned table)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-24T16:02:30+00:00",
+  "commits": [{"sha":"189a5d97da","message":"Refresh bookinghostredflags (deploy nudge for photo update)","author":"Muse (Almusca)"}]
 }
