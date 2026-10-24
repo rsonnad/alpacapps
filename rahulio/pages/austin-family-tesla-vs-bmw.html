@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tesla vs. BMW for an Austin Family of Four</title>
+  <meta name="description" content="Two parents, two 6-year-olds, Austin traffic and Texas heat. A data-driven look at Tesla Model Y vs. BMW X5 and iX on safety, self-driving, and what each car is worth in five years.">
+  <meta property="og:title" content="Tesla vs. BMW for an Austin Family of Four">
+  <meta property="og:description" content="Safety ratings, FSD, robotaxis and resale value: Model Y vs. BMW X5 / iX for a family with two 6-year-olds in Austin.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/austin-family-tesla-vs-bmw.html">
+  <meta property="og:image" content="https://alpacaplayhouse.com/rahulio/pages/images/get-a-tesla-og.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Tesla vs. BMW for an Austin Family of Four">
+  <meta name="twitter:description" content="Safety, self-driving and resale: Model Y vs. BMW for a family with two 6-year-olds.">
+  <meta name="twitter:image" content="https://alpacaplayhouse.com/rahulio/pages/images/get-a-tesla-og.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg: #faf8f6;
+      --surface: #ffffff;
+      --surface2: #f4f1ee;
+      --surface3: #ebe7e3;
+      --border: #e2ddd8;
+      --border-light: #d0c8c0;
+      --text: #1a1a1a;
+      --text-soft: #3d3d3d;
+      --text-dim: #6b6b6b;
+      --text-muted: #9a9a9a;
+      --accent: #7c5cbf;
+      --accent-soft: rgba(124, 92, 191, 0.08);
+      --green: #16a34a;
+      --green-soft: rgba(22, 163, 74, 0.07);
+      --green-border: rgba(22, 163, 74, 0.22);
+      --yellow: #ca8a04;
+      --yellow-soft: rgba(202, 138, 4, 0.07);
+      --yellow-border: rgba(202, 138, 4, 0.22);
+      --red: #dc2626;
+      --red-soft: rgba(220, 38, 38, 0.06);
+      --red-border: rgba(220, 38, 38, 0.20);
+      --purple: #9333ea;
+      --purple-soft: rgba(147, 51, 234, 0.07);
+      --purple-border: rgba(147, 51, 234, 0.20);
+      --orange: #ea580c;
+      --orange-soft: rgba(234, 88, 12, 0.07);
+      --teal: #0d9488;
+      --teal-soft: rgba(13, 148, 136, 0.07);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 4.5rem 1.5rem 3rem;
+      text-align: center;
+      background: linear-gradient(180deg, #f0e8f5 0%, #f6f0eb 40%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(147,51,234,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, #7c5cbf 0%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero .subtitle {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      max-width: 540px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+
+    /* ── Thesis Summary Cards ── */
+    .thesis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 720px;
+      margin: 0 auto 1.75rem;
+      text-align: left;
+    }
+    .thesis-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      position: relative;
+    }
+    .thesis-card.full-width {
+      grid-column: 1 / -1;
+      text-align: center;
+      background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+      border-color: rgba(124,92,191,0.25);
+    }
+    .thesis-card .tc-icon {
+      font-size: 1.3rem;
+      margin-bottom: 0.35rem;
+    }
+    .thesis-card .tc-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .thesis-card .tc-headline {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      margin-bottom: 0.25rem;
+    }
+    .thesis-card .tc-detail {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .thesis-card .tc-chips {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .thesis-card.full-width .tc-headline {
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+    .thesis-card.full-width .tc-detail {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ── Vehicle inventory strip ── */
+    .hero-inventory {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding-top: 0.5rem;
+    }
+    .hero-inv-item {
+      text-align: center;
+    }
+    .hero-inv-item .inv-num {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    .hero-inv-item .inv-num.blue { color: var(--accent); }
+    .hero-inv-item .inv-num.green { color: var(--green); }
+    .hero-inv-item .inv-num.purple { color: var(--purple); }
+    .hero-inv-item .inv-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+    }
+
+    /* ── Container ── */
+    .container { max-width: 920px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ── Expandable Sections ── */
+    .case-section {
+      margin: 2rem 0;
+    }
+    .section-toggle {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .section-toggle:hover {
+      border-color: var(--border-light);
+      background: var(--surface2);
+    }
+    .section-toggle[aria-expanded="true"] {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom-color: transparent;
+    }
+    .section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .section-toggle-text h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.15rem;
+    }
+    .section-toggle-text p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .section-chevron {
+      margin-left: auto;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      transition: transform 0.25s;
+      flex-shrink: 0;
+    }
+    .section-toggle[aria-expanded="true"] .section-chevron {
+      transform: rotate(180deg);
+    }
+    .section-body {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      padding: 1.5rem;
+    }
+    .section-body.open {
+      display: block;
+    }
+
+    /* ── Content blocks inside sections ── */
+    .content-block {
+      margin-bottom: 1.5rem;
+    }
+    .content-block:last-child { margin-bottom: 0; }
+    .content-block h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .content-block p {
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-callout {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+      margin: 0.75rem 0;
+    }
+    .stat-callout .big-num {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .stat-callout .context {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-top: 0.25rem;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    .compare-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.15rem;
+    }
+    .compare-card.highlight {
+      border-color: var(--green-border);
+      background: var(--green-soft);
+    }
+    .compare-card.dim {
+      opacity: 0.75;
+    }
+    .compare-card .card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .compare-card .card-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .compare-card .card-detail {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+    }
+
+    .risk-bar {
+      margin: 0.75rem 0;
+    }
+    .risk-bar-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      margin-bottom: 0.3rem;
+    }
+    .risk-bar-label .rank { font-weight: 600; }
+    .risk-bar-track {
+      height: 8px;
+      background: var(--surface3);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .risk-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 0.4rem;
+      flex-shrink: 0;
+    }
+    .timeline-item .year-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.1rem;
+    }
+    .timeline-item .desc {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .savings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 0.75rem 0;
+    }
+    .savings-table th {
+      text-align: left;
+      font-weight: 600;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 2px solid var(--border-light);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+    .savings-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-soft);
+    }
+    .savings-table .savings-val {
+      font-weight: 700;
+      color: var(--green);
+    }
+    .savings-table .cost-val {
+      color: var(--red);
+    }
+    .savings-table .total-row td {
+      border-top: 2px solid var(--border-light);
+      border-bottom: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding-top: 0.8rem;
+    }
+
+    .bottom-line-box {
+      background: linear-gradient(135deg, var(--green-soft), var(--surface));
+      border: 1px solid var(--green-border);
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+      margin-top: 1rem;
+    }
+    .bottom-line-box .headline {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--green);
+      margin-bottom: 0.3rem;
+    }
+    .bottom-line-box .detail {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 3rem 0;
+    }
+
+    /* ── Vehicle Listings Section ── */
+    .listings-header {
+      margin-bottom: 1.5rem;
+    }
+    .listings-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+    }
+    .listings-header p {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Reference pricing */
+    .ref-pricing {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .ref-pricing h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+    }
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.6rem;
+    }
+    .ref-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }
+    .ref-card .trim { font-weight: 600; font-size: 0.85rem; }
+    .ref-card .msrp { font-size: 1.15rem; font-weight: 700; color: var(--accent); margin: 0.15rem 0; }
+    .ref-card .detail { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* HW4 box */
+    .hw4-box {
+      background: var(--surface);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius-lg);
+      padding: 1.15rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .hw4-box h3 { color: var(--green); margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 700; }
+    .hw4-box ul { padding-left: 1.2rem; color: var(--text-dim); font-size: 0.85rem; }
+    .hw4-box li { margin-bottom: 0.25rem; }
+    .hw4-box strong { color: var(--text-soft); }
+
+    /* Filter bar */
+    .filters {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.9rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .sort-bar select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: inherit;
+    }
+
+    /* Vehicle cards */
+    .cards { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.15rem 1.25rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .card:hover {
+      border-color: var(--border-light);
+      box-shadow: var(--shadow);
+    }
+    .card.great-deal { border-left: 3px solid var(--green); }
+    .card.good-deal { border-left: 3px solid var(--yellow); }
+    .card.fair-deal { border-left: 3px solid var(--border-light); }
+
+    .card-main { min-width: 0; }
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.4rem;
+    }
+    .card-year { font-size: 1.2rem; font-weight: 800; }
+    .card-trim { font-size: 1rem; font-weight: 500; color: var(--text-dim); }
+
+    .badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.18rem 0.5rem;
+      border-radius: 100px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .badge-hw4 { background: var(--green-soft); color: var(--green); border: 1px solid var(--green-border); }
+    .badge-hw4-likely { background: var(--yellow-soft); color: var(--yellow); border: 1px solid var(--yellow-border); }
+    .badge-hw3 { background: var(--red-soft); color: var(--red); border: 1px solid var(--red-border); }
+    .badge-fsd { background: var(--purple-soft); color: var(--purple); border: 1px solid var(--purple-border); }
+    .badge-deal-great { background: var(--green-soft); color: var(--green); }
+    .badge-deal-good { background: var(--yellow-soft); color: var(--yellow); }
+
+    .card-specs {
+      display: flex;
+      gap: 1.15rem;
+      flex-wrap: wrap;
+      margin: 0.35rem 0;
+    }
+    .spec { font-size: 0.82rem; color: var(--text-dim); }
+    .spec strong { color: var(--text-soft); font-weight: 600; }
+
+    .card-features {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.4rem;
+    }
+    .feature-chip {
+      font-size: 0.7rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.12rem 0.4rem;
+      color: var(--text-dim);
+    }
+
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      min-width: 130px;
+    }
+    .card-price { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+    .card-savings { font-size: 0.78rem; margin-top: 0.1rem; }
+    .card-savings.positive { color: var(--green); }
+    .card-savings.negative { color: var(--red); }
+    .card-link {
+      display: inline-block;
+      margin-top: 0.6rem;
+      padding: 0.45rem 1.1rem;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    .card-link:hover { opacity: 0.85; }
+
+    .card-vin {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      margin-top: 0.4rem;
+    }
+    .source-icon {
+      font-size: 0.68rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      color: var(--text-muted);
+    }
+
+    /* Top Picks */
+    .top-picks {
+      margin-bottom: 2rem;
+    }
+    .top-picks h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .pick-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .pick-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .pick-card:hover {
+      border-color: var(--border-light);
+      box-shadow: var(--shadow);
+    }
+    .pick-rank {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .pick-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a1a; }
+    .pick-rank.silver { background: linear-gradient(135deg, #c4b5cb, #a78baf); color: #1a1a1a; }
+    .pick-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+    .pick-rank.blue { background: var(--accent); color: #fff; }
+    .pick-rank.star { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a1a; width: 42px; height: 42px; font-size: 1.3rem; }
+    .pick-card.featured {
+      border: 2px solid var(--purple);
+      background: linear-gradient(135deg, rgba(147,51,234,0.03), var(--surface));
+      box-shadow: 0 2px 12px rgba(147,51,234,0.10);
+      position: relative;
+    }
+    .pick-card.featured::before {
+      content: 'OUR TOP PICK';
+      position: absolute;
+      top: -10px;
+      left: 1.25rem;
+      background: linear-gradient(135deg, var(--purple), #7c5cbf);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.65rem;
+      border-radius: 100px;
+    }
+    .pick-info h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+    .pick-info .pick-why {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      margin-bottom: 0.2rem;
+    }
+    .pick-info .pick-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .pick-price-col {
+      text-align: right;
+      min-width: 100px;
+    }
+    .pick-price-col .price {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .pick-price-col .savings {
+      font-size: 0.75rem;
+      color: var(--green);
+    }
+    .pick-price-col a {
+      display: inline-block;
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .pick-price-col a:hover { text-decoration: underline; }
+
+    .ev-durability-box {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+    }
+    .ev-durability-box h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .ev-durability-box p {
+      color: var(--text-soft);
+      margin-bottom: 0.3rem;
+    }
+    .ev-durability-box .note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-dim);
+    }
+
+    .disclaimer {
+      margin-top: 2.5rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .disclaimer strong { color: var(--text-dim); }
+
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .footer a { color: var(--accent); }
+
+    /* ── Summary graphic strip on section toggles ── */
+    .section-summary {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 100px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .summary-chip .chip-num {
+      font-weight: 800;
+    }
+    .summary-chip.red { background: var(--red-soft); color: var(--red); border-color: var(--red-border); }
+    .summary-chip.green { background: var(--green-soft); color: var(--green); border-color: var(--green-border); }
+    .summary-chip.purple { background: var(--purple-soft); color: var(--purple); border-color: var(--purple-border); }
+    .summary-chip.teal { background: var(--teal-soft); color: var(--teal); border-color: rgba(13,148,136,0.22); }
+    .summary-chip.accent { background: var(--accent-soft); color: var(--accent); border-color: rgba(124,92,191,0.22); }
+
+    @media (max-width: 700px) {
+      .hero { padding: 2rem 1rem 1.5rem; }
+      .hero h1 { font-size: 1.6rem; }
+      .hero .subtitle { font-size: 0.9rem; margin-bottom: 1.25rem; }
+      .hero img { width: 160px !important; height: 160px !important; }
+      .thesis-grid { grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+      .thesis-card { padding: 0.9rem 1rem; }
+      .thesis-card .tc-headline { font-size: 0.95rem; }
+      .thesis-card .tc-detail { font-size: 0.75rem; }
+      .thesis-card.full-width .tc-headline { font-size: 1.05rem; }
+      .hero-inventory { gap: 1rem; }
+      .hero-inv-item .inv-num { font-size: 1.25rem; }
+      .hero-inv-item .inv-label { font-size: 0.62rem; }
+      .container { padding: 0 1rem; }
+      .case-section { margin: 1.25rem 0; }
+      .section-toggle { padding: 1rem; gap: 0.75rem; }
+      .section-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+      .section-toggle-text h3 { font-size: 0.9rem; }
+      .section-toggle-text p { font-size: 0.75rem; }
+      .section-body { padding: 1rem; }
+      .content-block h4 { font-size: 0.88rem; }
+      .content-block p { font-size: 0.85rem; }
+      .stat-callout { padding: 0.9rem 1rem; }
+      .stat-callout .big-num { font-size: 1.6rem; }
+      .stat-callout .context { font-size: 0.78rem; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .compare-card .card-value { font-size: 1.15rem; }
+      .compare-card .card-detail { font-size: 0.72rem; }
+      .risk-bar-label { font-size: 0.75rem; flex-direction: column; align-items: flex-start; gap: 0.1rem; }
+      .risk-bar-label .rank { font-size: 0.7rem; }
+      .timeline-item { gap: 0.75rem; }
+      .timeline-item .desc { font-size: 0.8rem; }
+      .savings-table { font-size: 0.72rem; }
+      .savings-table th, .savings-table td { padding: 0.4rem 0.35rem; }
+      .savings-table .total-row td { font-size: 0.82rem; }
+      .bottom-line-box { padding: 1rem; }
+      .bottom-line-box .headline { font-size: 0.9rem; }
+      .bottom-line-box .detail { font-size: 0.8rem; }
+      .card { grid-template-columns: 1fr; padding: 1rem; }
+      .card-right {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 0;
+      }
+      .card-year { font-size: 1.05rem; }
+      .card-trim { font-size: 0.88rem; }
+      .card-price { font-size: 1.2rem; }
+      .card-link { padding: 0.4rem 0.9rem; font-size: 0.78rem; }
+      .ref-pricing { padding: 1rem; }
+      .ref-grid { grid-template-columns: 1fr 1fr; }
+      .ref-card { padding: 0.7rem 0.85rem; }
+      .ref-card .msrp { font-size: 1rem; }
+      .hw4-box { padding: 1rem; }
+      .hw4-box ul { font-size: 0.8rem; }
+      .listings-header h2 { font-size: 1.3rem; }
+      .filters { gap: 0.3rem; }
+      .filter-btn { padding: 0.35rem 0.7rem; font-size: 0.72rem; }
+      .pick-card { grid-template-columns: auto 1fr; gap: 0.6rem; padding: 0.85rem; }
+      .pick-rank { width: 30px; height: 30px; font-size: 0.82rem; }
+      .pick-info h4 { font-size: 0.85rem; }
+      .pick-info .pick-why { font-size: 0.75rem; }
+      .pick-price-col { grid-column: 1 / -1; text-align: left; display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+      .pick-price-col .price { font-size: 1rem; }
+      .ev-durability-box { padding: 0.85rem 1rem; font-size: 0.8rem; }
+      .ev-durability-box h4 { font-size: 0.82rem; }
+      .top-picks h3 { font-size: 1rem; }
+      .section-divider { margin: 2rem 0; }
+      .disclaimer { padding: 1rem; font-size: 0.72rem; }
+      /* Safety feature grid: single column on mobile */
+      .safety-features-grid { grid-template-columns: 1fr !important; }
+      .summary-chip { font-size: 0.65rem; padding: 0.15rem 0.4rem; }
+    }
+
+    /* ── Additions for the family comparison page ── */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0.75rem 0; }
+    .table-wrap .savings-table { margin: 0; min-width: 520px; }
+    .savings-table td.win { color: var(--green); font-weight: 700; }
+    .savings-table td.lose { color: var(--red); }
+    .savings-table td.na { color: var(--text-muted); font-style: italic; }
+    .note {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      margin: 0.75rem 0;
+    }
+    .note.warn { background: var(--yellow-soft); border-color: var(--yellow-border); color: #854d0e; }
+    .bmw-box {
+      background: linear-gradient(135deg, rgba(28,105,212,0.07), var(--surface));
+      border: 1px solid rgba(28,105,212,0.22);
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+      margin-top: 1rem;
+    }
+    .bmw-box .headline { font-weight: 700; font-size: 1rem; color: #1c69d4; margin-bottom: 0.3rem; }
+    .bmw-box ul { padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-soft); }
+    .bmw-box li { margin-bottom: 0.3rem; }
+    .check-list { list-style: none; padding: 0; margin: 0.5rem 0; }
+    .check-list li { font-size: 0.88rem; color: var(--text-soft); padding: 0.35rem 0 0.35rem 1.6rem; position: relative; }
+    .check-list li::before { content: '\2713'; position: absolute; left: 0.2rem; color: var(--green); font-weight: 800; }
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      margin: 0.75rem 0 1.25rem;
+    }
+    .video-card {
+      display: block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .video-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .video-thumb { position: relative; aspect-ratio: 16 / 9; background: #111; }
+    .video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .video-thumb .play {
+      position: absolute; inset: 0; margin: auto;
+      width: 54px; height: 38px; border-radius: 10px;
+      background: rgba(220,38,38,0.92);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.1rem;
+    }
+    .video-info { padding: 0.75rem 0.9rem 0.9rem; }
+    .video-info .v-title { font-size: 0.86rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.25rem; }
+    .video-info .v-meta { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.35rem; }
+    .video-info .v-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.45; }
+    .video-group-label {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); margin: 1.25rem 0 0.25rem;
+    }
+    .sources { font-size: 0.78rem; color: var(--text-dim); }
+    .sources ol { padding-left: 1.2rem; }
+    .sources li { margin-bottom: 0.3rem; }
+    .sources a { color: var(--accent); word-break: break-word; }
+    .content-block a { color: var(--accent); }
+    @media (max-width: 700px) {
+      .video-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <script src="/rahulio/page-header.js" defer></script>
+</head>
+<body>
+  <div id="siteHeader"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  HERO                                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-eyebrow">Two parents &middot; two 6-year-olds &middot; Austin, TX</div>
+  <h1>The Family Car Decision:<br><em>Tesla</em> vs. a Gorgeous BMW</h1>
+  <div class="subtitle">
+    The BMW is the car you want. The Tesla is the car your kids will ride in for the next five years in Austin traffic and Texas heat, while self-driving changes what every car is worth. Here's the data, current as of October 2026.
+  </div>
+
+  <div class="thesis-grid">
+    <div class="thesis-card" style="border-left:3px solid var(--green);">
+      <div class="tc-icon">&#128737;&#65039;</div>
+      <div class="tc-label">Safety</div>
+      <div class="tc-headline">Model Y: 5&#9733; NHTSA, half the rollover risk of an X5</div>
+      <div class="tc-detail">Both are IIHS Top Safety Pick+. But NHTSA gives the X5 4 stars with a 15.9% rollover risk vs. 8.6% for the Model Y, and IIHS rates Model Y rear-seat protection &ldquo;Good&rdquo; vs. &ldquo;Acceptable&rdquo; for the X5.</div>
+      <div class="tc-chips">
+        <span class="summary-chip green">5&#9733; vs 4&#9733;</span>
+        <span class="summary-chip green">8.6% vs 15.9% rollover</span>
+      </div>
+    </div>
+    <div class="thesis-card" style="border-left:3px solid var(--purple);">
+      <div class="tc-icon">&#129302;</div>
+      <div class="tc-label">Self-driving</div>
+      <div class="tc-headline" style="color:var(--purple);">Austin is ground zero for driverless cars</div>
+      <div class="tc-detail">Tesla robotaxis already run in Austin with no one inside. Tesla says owners' cars could drive unsupervised in robotaxi zones like Austin from around Q2 2027. BMW's system is hands-free on highways only, with your eyes on the road.</div>
+      <div class="tc-chips">
+        <span class="summary-chip purple">FSD v14.3</span>
+        <span class="summary-chip purple">$99/mo</span>
+      </div>
+    </div>
+    <div class="thesis-card" style="border-left:3px solid var(--teal);">
+      <div class="tc-icon">&#128176;</div>
+      <div class="tc-label">Money</div>
+      <div class="tc-headline" style="color:var(--green);">About $16,800 cheaper over 5 years</div>
+      <div class="tc-detail">Model Y AWD vs. BMW X5, counting depreciation, fuel and Texas EV fees. The X5 holds its percentage value well, but it starts $22K higher and burns ~$1,900/yr of gas.</div>
+      <div class="tc-chips">
+        <span class="summary-chip teal">~$31.9K vs ~$48.7K</span>
+      </div>
+    </div>
+    <div class="thesis-card" style="border-left:3px solid var(--orange);">
+      <div class="tc-icon">&#9728;&#65039;</div>
+      <div class="tc-label">Texas heat</div>
+      <div class="tc-headline">A car that won't let a kid cook</div>
+      <div class="tc-detail">Cabin radar detects a child left behind and alerts your phone. Cabin Overheat Protection and Camp Mode keep the cabin cool for hours, which matters in an Austin parking lot in August.</div>
+    </div>
+    <div class="thesis-card full-width">
+      <div class="tc-headline">Buy the car that's getting smarter, not the one that's getting older.</div>
+      <div class="tc-detail">Both are excellent, safe SUVs. The difference is what happens next: a Tesla on AI4 hardware keeps improving through software, while a gas BMW bought in 2026 is the kind of car self-driving is likely to make worth less.</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="note warn" style="margin-top:2rem;">
+  <strong>What we're comparing.</strong> Tesla Model Y Premium AWD (~$51.4K delivered) and the 6-seat Model Y L ($61,990) vs. the new <strong>2027 BMW X5 40 xDrive</strong> ($72,100 + $1,450 destination) and the electric <strong>BMW iX</strong> (from $75,150). BMW just replaced the X5: the 2027 model is <strong>five seats only</strong> and hasn't been crash-tested yet, so the X5 crash numbers below are for the outgoing 2026 X5. The Model X is out of production.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 1: THE KIDS                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--red-soft);color:var(--red);">&#128103;&#128102;</div>
+    <div class="section-toggle-text">
+      <h3>The Passengers: Two 6-Year-Olds in the Back Seat</h3>
+      <p>What actually matters when the most precious cargo rides behind you</p>
+      <div class="section-summary">
+        <span class="summary-chip red">Booster seats until ~8</span>
+        <span class="summary-chip red">Rear-seat protection</span>
+        <span class="summary-chip red">Hot-car risk</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+    <div class="content-block">
+      <h4>&#128186; Rear-seat crash protection is the number that matters</h4>
+      <p>Your kids will ride in the second row, in boosters, for years. Texas law requires a child safety seat until age 8 unless the child is 4'9" or taller. Crash tests have historically focused on the driver. IIHS's <strong>updated moderate-overlap test</strong> now puts a dummy in the back seat, and it's where the two cars separate:</p>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card highlight">
+        <div class="card-label">Tesla Model Y (2026&ndash;27)</div>
+        <div class="card-value" style="color:var(--green);">Good</div>
+        <div class="card-detail">Every rear-passenger measure in the IIHS updated moderate-overlap test rated Good.</div>
+      </div>
+      <div class="compare-card">
+        <div class="card-label">BMW X5 (2026)</div>
+        <div class="card-value" style="color:var(--yellow);">Acceptable</div>
+        <div class="card-detail">IIHS rated rear-passenger restraints one step lower. Still a Top Safety Pick+.</div>
+      </div>
+    </div>
+    <div class="content-block">
+      <h4>&#127777;&#65039; Austin heat is a real hazard for kids</h4>
+      <p>Texas leads the nation in child hot-car deaths (<a href="https://www.noheatstroke.org/" target="_blank" rel="noopener">NoHeatstroke.org</a>). Every parent thinks it could never happen to them. The car can be the backstop:</p>
+      <ul class="check-list">
+        <li><strong>Child Left Alone Detection</strong>: the 2026 Model Y's cabin radar senses a child left in the car, flashes the lights, sounds a tone and pushes an alert to your phone. It's on by default.</li>
+        <li><strong>Cabin Overheat Protection</strong> keeps the cabin below 105&deg;F for up to 12 hours after you walk away.</li>
+        <li><strong>Camp Mode</strong> keeps the AC running indefinitely while you wait in the car with sleeping kids; pre-cool the car from your phone before pickup.</li>
+        <li><strong>Sentry Mode</strong> records anyone who approaches the parked car.</li>
+      </ul>
+      <p style="font-size:0.8rem;color:var(--text-dim);">BMW offers remote climate start through the My BMW app. We couldn't confirm a radar-based child-presence detector on the X5 or iX from BMW USA, so ask the dealer directly.</p>
+    </div>
+    <div class="content-block">
+      <h4>&#128106; Room to grow: the Model Y L</h4>
+      <p>If grandparents, carpools or a third car seat are in the picture, the <strong>Model Y L</strong> (US launch July 2026, $61,990) adds a third row: heated, power-reclining second-row captain's chairs, a heated third row with child-seat anchors, and an 8-inch rear touchscreen. That's still about $10K less than the new X5, which <strong>dropped its third row</strong> for 2027.</p>
+    </div>
+    <div class="note">Honest caveat: IIHS rates the Model Y's LATCH child-seat anchors &ldquo;Acceptable&rdquo; (the X5 gets &ldquo;Good&rdquo;) and its seat-belt reminders &ldquo;Marginal&rdquo;. At 6, your kids are in belt-positioned boosters that don't rely on LATCH, but expect installs to take a bit more effort.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 2: SAFETY SCORECARD                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--green-soft);color:var(--green);">&#128737;&#65039;</div>
+    <div class="section-toggle-text">
+      <h3>Safety Scorecard: Model Y vs. X5 vs. iX</h3>
+      <p>Crash tests from IIHS, NHTSA and Euro NCAP, side by side</p>
+      <div class="section-summary">
+        <span class="summary-chip green">Both IIHS TSP+</span>
+        <span class="summary-chip green">5&#9733; vs 4&#9733; NHTSA</span>
+        <span class="summary-chip green">93% child score</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+    <div class="table-wrap">
+      <table class="savings-table">
+        <thead>
+          <tr><th>Test</th><th>Tesla Model Y</th><th>BMW X5</th><th>BMW iX</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>IIHS award</td><td class="win">Top Safety Pick+ (2027)</td><td>Top Safety Pick+ (2026)</td><td class="na">Not rated</td></tr>
+          <tr><td>IIHS rear-passenger protection</td><td class="win">Good</td><td>Acceptable</td><td class="na">&mdash;</td></tr>
+          <tr><td>IIHS headlights</td><td class="win">Good</td><td>Acceptable</td><td class="na">&mdash;</td></tr>
+          <tr><td>IIHS LATCH ease of use</td><td>Acceptable</td><td class="win">Good</td><td class="na">&mdash;</td></tr>
+          <tr><td>NHTSA overall</td><td class="win">5&#9733;</td><td>4&#9733;</td><td class="na">Not rated</td></tr>
+          <tr><td>NHTSA frontal crash</td><td class="win">5&#9733;</td><td>4&#9733;</td><td class="na">&mdash;</td></tr>
+          <tr><td>NHTSA rollover risk</td><td class="win">8.6% (AWD)</td><td class="lose">15.9%</td><td class="na">&mdash;</td></tr>
+          <tr><td>Euro NCAP child occupant</td><td class="win">93% (2025)</td><td class="na">&mdash;</td><td>87% (2021)</td></tr>
+          <tr><td>Euro NCAP vulnerable road users</td><td class="win">86%</td><td class="na">&mdash;</td><td>73%</td></tr>
+          <tr><td>Euro NCAP safety assist</td><td class="win">92%</td><td class="na">&mdash;</td><td>81%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="stat-callout">
+      <div class="big-num" style="color:var(--green);">~46% lower</div>
+      <div class="context">NHTSA's estimated rollover risk for the Model Y (8.6%) vs. the 2026 X5 (15.9%). A battery pack in the floor gives the Tesla a very low center of gravity. Rollovers are among the deadliest crash types.</div>
+    </div>
+    <div class="note">X5 figures are for the outgoing 2026 X5; the all-new 2027 X5 hasn't been rated by IIHS or NHTSA yet. NHTSA hasn't rated the iX or the Model Y L. Euro NCAP Model Y figures come from Euro NCAP's published table via a secondary summary.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 3: FSD                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--purple-soft);color:var(--purple);">&#129302;</div>
+    <div class="section-toggle-text">
+      <h3>FSD: The Co-Pilot That Never Gets Distracted</h3>
+      <p>What Full Self-Driving does today, what it might do in 2027, and what BMW offers instead</p>
+      <div class="section-summary">
+        <span class="summary-chip purple">v14.3</span>
+        <span class="summary-chip purple">~8x fewer major crashes (Tesla data)</span>
+        <span class="summary-chip accent">Robotaxis live in Austin</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+    <div class="content-block">
+      <h4>&#128664; What it is today</h4>
+      <p>FSD (Supervised) v14.3 drives door to door: school drop-off, MoPac, I-35, parking lots. You keep your eyes on the road and take over when needed. It's <strong>$99/month</strong>, and you can turn it on and off; Tesla stopped selling it outright in February 2026. It runs best on cars with the <strong>AI4</strong> computer, which every new Model Y has.</p>
+      <p>The value for parents: when one of the kids drops a tablet or starts a fight in the back seat, the car is still watching all eight cameras.</p>
+    </div>
+
+    <div class="content-block">
+      <h4>&#128202; Tesla's crash data (and the fair critique)</h4>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label"><span>FSD (Supervised) engaged</span><span class="rank" style="color:var(--green);">5.69M miles per major collision</span></div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:100%;background:var(--green);"></div></div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label"><span>Tesla, manual + active safety</span><span class="rank" style="color:var(--teal);">2.08M miles</span></div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:36.5%;background:var(--teal);"></div></div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label"><span>Tesla, manual only</span><span class="rank" style="color:var(--yellow);">0.86M miles</span></div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:15.1%;background:var(--yellow);"></div></div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label"><span>US average</span><span class="rank" style="color:var(--red);">0.70M miles</span></div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:12.3%;background:var(--red);"></div></div>
+    </div>
+    <div class="note">Tesla's figures (12 months, North America, reported July 2026) count crashes where an airbag deployed. Safety researcher Phil Koopman <a href="https://philkoopman.substack.com/p/new-tesla-fsd-safety-data" target="_blank" rel="noopener">points out</a> that the US average includes much older cars, that Tesla counts a crash only if FSD was on within 5 seconds (NHTSA uses 30), and that FSD users may be more careful drivers. Compared like-for-like against Tesla's own manual driving with safety features, the gain is roughly 1.8the gain is roughly 1.8&ndash;2.7x, which is still largendash;2.7x, which is still large.</div>
+
+    <div class="content-block">
+      <h4>&#127961;&#65039; Why Austin specifically</h4>
+      <p>Austin is where Tesla's driverless future is happening first. Tesla's robotaxis have run here since June 2025, with <strong>no safety monitor inside since January 2026</strong>, across ~245 square miles including the airport. Cybercabs are built at Giga Texas and have given paid rides in Austin since September 2026. On its October 21, 2026 earnings call, Tesla said customer cars could first drive <strong>unsupervised around Q2 2027, inside robotaxi zones</strong>, and Austin is the biggest one.</p>
+      <p>Tesla's timelines have slipped before (as recently as April it said Q4 2026), so treat the date as a goal, not a promise. But if it lands, an Austin family is among the first to get a car that can drive the kids home while the parents are passengers too.</p>
+    </div>
+
+    <div class="bmw-box">
+      <div class="headline">What BMW offers: Highway Assistant</div>
+      <ul>
+        <li>Hands-free driving on divided highways, up to 85 mph on the iX (BMW says up to 80 mph on the new X5).</li>
+        <li>Changes lanes when you glance at the mirror. Part of an optional Driving Assistant Professional package (~$2,500 on the 2027 X5).</li>
+        <li>Highways only, eyes on the road at all times. No city streets, no school zones, no roadmap to driving unsupervised.</li>
+      </ul>
+    </div>
+
+    <div class="note warn"><strong>The other side.</strong> NHTSA has open investigations into FSD: an engineering analysis of 3.2M vehicles over cameras blinded by glare, fog or dust (9 incidents, 1 death), and a probe into red-light running and wrong-lane driving (80 complaints by December 2025). Austin robotaxis have 36 incident reports on file, mostly minor. FSD is supervised for a reason: it's a co-pilot, not a chauffeur, until regulators say otherwise.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 4: RESALE                             -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--teal-soft);color:var(--teal);">&#128200;</div>
+    <div class="section-toggle-text">
+      <h3>Resale Value: What Self-Driving Does to the Used-Car Market</h3>
+      <p>Percentages vs. dollars, and why a 2026 gas SUV may age badly</p>
+      <div class="section-summary">
+        <span class="summary-chip teal">Model Y: &minus;55% in 5 yrs</span>
+        <span class="summary-chip teal">X5: &minus;53%</span>
+        <span class="summary-chip red">iX: &minus;69%</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+    <div class="content-block">
+      <h4>&#128201; Today's numbers (iSeeCars)</h4>
+    </div>
+    <div class="table-wrap">
+      <table class="savings-table">
+        <thead><tr><th>Model</th><th>3-year loss</th><th>5-year loss</th><th>5-year loss in $ (new price)</th></tr></thead>
+        <tbody>
+          <tr><td>Tesla Model Y AWD (~$51.4K)</td><td>44.1%</td><td>55.4%</td><td class="win">~$28,500</td></tr>
+          <tr><td>BMW X5 40 xDrive (~$73.6K)</td><td class="win">29.3%</td><td class="win">53.2%</td><td class="lose">~$39,100</td></tr>
+          <tr><td>BMW iX xDrive45 (~$76.3K)</td><td class="lose">46.7%</td><td class="lose">69.3%</td><td class="lose">~$52,900</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.88rem;color:var(--text-soft);">Credit where it's due: on percentages, the X5 has held value better, especially in the first three years. But you lose dollars, not percentages. Because the Model Y starts ~$22K cheaper, it loses about <strong>$10,600 less</strong> over five years, even at a slightly worse rate. The electric iX is the worst of all three.</p>
+
+    <div class="content-block" style="margin-top:1.25rem;">
+      <h4>&#128302; The bigger question: what happens when cars drive themselves?</h4>
+      <p>Historical depreciation assumes the future looks like the past. Self-driving may break that. Two forces to weigh for a car you'll sell around 2031:</p>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card highlight">
+        <div class="card-label">The bull case for Tesla</div>
+        <div class="card-detail" style="font-size:0.84rem;color:var(--text-soft);">
+          If owners' cars go unsupervised in 2027&ndash;28, a used AI4 Model Y becomes a car that drives itself, maybe one that can earn money on Tesla's network. Buyers will pay for that. Meanwhile ARK Invest has long forecast that cheap robotaxi rides will <strong>pull down used values for ordinary cars</strong>: why pay for a gas SUV when autonomous rides cost a fraction of ownership? A 2026 gas X5 has no path to autonomy.
+        </div>
+      </div>
+      <div class="compare-card">
+        <div class="card-label">The bear case (be clear-eyed)</div>
+        <div class="card-detail" style="font-size:0.84rem;color:var(--text-soft);">
+          Used Tesla prices fell hard in 2025 (Model Y down ~16% year over year) as Tesla cut new-car prices and the $7,500 federal credit ended. ARK's forecast is a forecast, not data. And if robotaxis get cheap enough, they could pressure <em>all</em> used-car values, Teslas included. Tesla's FSD timelines have slipped for years.
+        </div>
+      </div>
+    </div>
+    <div class="bottom-line-box">
+      <div class="headline">The bottom line on resale</div>
+      <div class="detail">On today's numbers, the Model Y already loses fewer dollars than the X5 and far fewer than the iX. Self-driving adds an asymmetric bet: if autonomy arrives roughly on schedule, the Tesla's value gets a floor the BMW can't have; if it doesn't, you still come out ahead in dollars. A 2026 gas SUV is betting that the next five years look like the last fifty.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 5: THE MATH                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--teal-soft);color:var(--teal);">&#128176;</div>
+    <div class="section-toggle-text">
+      <h3>The Math: 5-Year Cost in Austin</h3>
+      <p>Depreciation + fuel + Texas EV fees, 12,000 miles a year</p>
+      <div class="section-summary">
+        <span class="summary-chip green">Model Y: ~$31.9K</span>
+        <span class="summary-chip teal">Model Y L: ~$38.7K</span>
+        <span class="summary-chip red">X5: ~$48.7K</span>
+        <span class="summary-chip red">iX: ~$56.9K</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+    <div class="table-wrap">
+      <table class="savings-table">
+        <thead><tr><th>5-year cost</th><th>Model Y AWD</th><th>Model Y L</th><th>X5 40 xDrive</th><th>iX xDrive45</th></tr></thead>
+        <tbody>
+          <tr><td>Price delivered</td><td>~$51,380</td><td>~$63,380</td><td>$73,550</td><td>$76,325</td></tr>
+          <tr><td>Depreciation</td><td>$28,465</td><td>$35,113</td><td>$39,129</td><td>$52,893</td></tr>
+          <tr><td>Fuel / electricity</td><td>$2,436</td><td>$2,610</td><td>$9,571</td><td>$3,045</td></tr>
+          <tr><td>Texas EV fees</td><td>$1,000</td><td>$1,000</td><td>$0</td><td>$1,000</td></tr>
+          <tr class="total-row"><td>Total</td><td class="win">~$31,900</td><td>~$38,700</td><td class="lose">~$48,700</td><td class="lose">~$56,900</td></tr>
+          <tr><td style="font-size:0.78rem;">Optional FSD, 5 yrs</td><td style="font-size:0.78rem;">+$5,940</td><td style="font-size:0.78rem;">+$5,940</td><td style="font-size:0.78rem;">n/a</td><td style="font-size:0.78rem;">n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <strong>Assumptions.</strong> 12,000 mi/yr. Electricity at ~14.5&cent;/kWh (Austin Energy residential, all-in, home charging) and ~0.28 kWh/mi for the Model Y, 0.30 for the Model Y L, 0.35 for the iX. Gas at $3.67/gal (AAA, Austin, Oct 24, 2026) and ~23 mpg for the X5. Depreciation applies iSeeCars' 5-year rates to today's delivered price (Model Y L assumed to match the Model Y). Texas charges EVs $400 at first registration (covers 2 years) plus $200/yr after. Maintenance and insurance not included: EVs skip oil changes, and BMW includes 3 years/36K miles of scheduled maintenance. No federal EV credit; it ended September 30, 2025.
+    </div>
+    <div class="bottom-line-box">
+      <div class="headline">~$16,800 saved over five years with the Model Y vs. the X5</div>
+      <div class="detail">Even with FSD subscribed for all five years, the Model Y comes in ~$10,900 under the X5. The 6-seat Model Y L still costs about $10,000 less than the 5-seat X5.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 6: THE CASE FOR BMW                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:rgba(28,105,212,0.08);color:#1c69d4;">&#127950;&#65039;</div>
+    <div class="section-toggle-text">
+      <h3>The Honest Case for the BMW</h3>
+      <p>Where the X5 genuinely wins, and how much that's worth</p>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body">
+    <ul class="check-list">
+      <li><strong>It's beautiful and it drives beautifully.</strong> The X5's interior materials, ride and steering feel are a class above the Model Y. If driving is your joy, that's a real thing.</li>
+      <li><strong>Better percentage resale,</strong> particularly in years 1&ndash;3 (29% vs 44% lost).</li>
+      <li><strong>Easier car-seat installs:</strong> IIHS rates X5 LATCH &ldquo;Good&rdquo; vs. &ldquo;Acceptable&rdquo; for the Model Y.</li>
+      <li><strong>No charging to think about</strong> on road trips to Dallas, Houston or the Hill Country, though the Supercharger network along I-35 and I-10 is dense.</li>
+      <li><strong>A brand you don't have to explain</strong>, if that matters to you.</li>
+    </ul>
+    <div class="bottom-line-box" style="background:linear-gradient(135deg, rgba(28,105,212,0.06), var(--surface));border-color:rgba(28,105,212,0.22);">
+      <div class="headline" style="color:#1c69d4;">The trade</div>
+      <div class="detail">You'd be paying roughly $17,000 more over five years for a nicer interior and driving feel, while accepting a 4-star NHTSA rating, nearly double the rollover risk, a weaker rear-seat rating, and a car with no path to driving itself. If the X5 is a want, the Model Y is the need, for these two passengers especially.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SECTION 7: VIDEOS                             -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="true" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--red-soft);color:var(--red);">&#9654;&#65039;</div>
+    <div class="section-toggle-text">
+      <h3>Watch: Recent Tesla Safety Videos</h3>
+      <p>Crash tests, family reviews, FSD in action, Austin robotaxis, and the critics</p>
+      <div class="section-summary">
+        <span class="summary-chip red">9 videos</span>
+        <span class="summary-chip accent">2025&ndash;2026</span>
+      </div>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body open">
+    <div id="videoGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  VERDICT                                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="thesis-card full-width" style="margin:2.5rem 0;padding:1.75rem 1.5rem;">
+  <div class="tc-label">The verdict</div>
+  <div class="tc-headline">Get the Model Y. Put FSD on it. Take the BMW for a weekend rental.</div>
+  <div class="tc-detail" style="max-width:640px;">
+    Five stars and the lowest rollover risk, the best rear-seat crash rating, radar that won't let a child be forgotten in the Texas heat, about $17K back in your pocket, and a seat at the front of the self-driving shift in the city where it's happening first. Need room for more? The Model Y L still beats the X5 on price and gives you a third row.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SOURCES                                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="case-section">
+  <button class="section-toggle" aria-expanded="false" onclick="toggleSection(this)">
+    <div class="section-icon" style="background:var(--surface2);color:var(--text-dim);">&#128218;</div>
+    <div class="section-toggle-text">
+      <h3>Sources</h3>
+      <p>Researched October 24, 2026. Ratings and prices change; verify before you buy.</p>
+    </div>
+    <span class="section-chevron">&#9660;</span>
+  </button>
+  <div class="section-body sources">
+    <ol>
+      <li>IIHS, 2026 Tesla Model Y ratings: <a href="https://www.iihs.org/ratings/vehicle/tesla/model-y-4-door-suv/2026" target="_blank" rel="noopener">iihs.org</a>; Top Safety Picks: <a href="https://www.iihs.org/ratings/top-safety-picks/2026/all/tesla" target="_blank" rel="noopener">iihs.org</a></li>
+      <li>IIHS, 2026 BMW X5 ratings: <a href="https://www.iihs.org/ratings/vehicle/bmw/x5/2026" target="_blank" rel="noopener">iihs.org</a></li>
+      <li>NHTSA, 2026 Model Y AWD: <a href="https://api.nhtsa.gov/SafetyRatings/VehicleId/22140" target="_blank" rel="noopener">api.nhtsa.gov</a>; 2026 X5 AWD: <a href="https://api.nhtsa.gov/SafetyRatings/VehicleId/21370" target="_blank" rel="noopener">api.nhtsa.gov</a></li>
+      <li>Euro NCAP, Model Y 2025: <a href="https://news.euroncap.com/safercars/tesla-model-y---euro-ncap-2025-results---5-stars/s/f12506af-158b-4631-a546-6ca7685dea9d" target="_blank" rel="noopener">euroncap.com</a>; BMW iX: <a href="https://www.euroncap.com/en/results/bmw/ix/44196" target="_blank" rel="noopener">euroncap.com</a></li>
+      <li>2027 BMW X5 review and pricing: <a href="https://www.bmwblog.com/2026/10/22/2027-bmw-x5-40-xdrive-review/" target="_blank" rel="noopener">bmwblog.com</a>; 2026 iX pricing: <a href="https://www.cars.com/research/bmw-ix-2026/" target="_blank" rel="noopener">cars.com</a>; BMW Highway Assistant: <a href="https://faq.bmwusa.com/s/article/BMW-iX-from-032025-Driver-assistance-systems-Highway-Assistant-Availability-MY26-X5uTz?language=en_US" target="_blank" rel="noopener">bmwusa.com</a></li>
+      <li>Model Y L US launch: <a href="https://electrek.co/2026/07/02/tesla-model-y-l-us-launch-61990/" target="_blank" rel="noopener">electrek.co</a>; Model Y pricing: <a href="https://www.edmunds.com/car-news/2026-tesla-model-y-pricing-guide.html" target="_blank" rel="noopener">edmunds.com</a></li>
+      <li>Tesla FSD safety figures (summary of Tesla's report): <a href="https://www.learnmyev.com/post/tesla-fsd-supervised-safety-report-2026" target="_blank" rel="noopener">learnmyev.com</a>; critique: <a href="https://philkoopman.substack.com/p/new-tesla-fsd-safety-data" target="_blank" rel="noopener">Phil Koopman</a></li>
+      <li>FSD subscription-only: <a href="https://www.automotiveworld.com/news/tesla-abandons-fsd-purchases-goes-subscription-only/" target="_blank" rel="noopener">automotiveworld.com</a>; unsupervised timeline: <a href="https://www.cnbc.com/2026/10/21/tesla-tsla-q3-2026-earnings-report.html" target="_blank" rel="noopener">CNBC</a>, <a href="https://driveteslacanada.ca/news/tesla-unsupervised-fsd-customer-cars-q2-2027-v15/" target="_blank" rel="noopener">Drive Tesla</a></li>
+      <li>Austin robotaxi: <a href="https://tslna.com/en/tesla-robotaxi-guide/" target="_blank" rel="noopener">tslna.com</a>, <a href="https://en.wikipedia.org/wiki/Tesla_Robotaxi" target="_blank" rel="noopener">Wikipedia</a>; incidents: <a href="https://electrek.co/2026/10/15/tesla-remote-operators-crashing-robotaxis/" target="_blank" rel="noopener">electrek.co</a></li>
+      <li>NHTSA FSD investigations: <a href="https://electrek.co/2026/03/19/nhtsa-upgrades-tesla-fsd-visibility-investigation-3-2-million-vehicles/" target="_blank" rel="noopener">electrek.co</a>, <a href="https://techcrunch.com/2025/12/05/feds-find-more-complaints-of-teslas-fsd-running-red-lights-and-crossing-lanes" target="_blank" rel="noopener">TechCrunch</a></li>
+      <li>Resale: iSeeCars <a href="https://www.iseecars.com/car/tesla-model-y/resale-value" target="_blank" rel="noopener">Model Y</a>, <a href="https://www.iseecars.com/car/bmw-x5/resale-value" target="_blank" rel="noopener">X5</a>, <a href="https://www.iseecars.com/car/bmw-ix/resale-value" target="_blank" rel="noopener">iX</a>; used Tesla prices 2025: <a href="https://fortune.com/2025/07/16/used-tesla-prices-fall-ev-sales-incentives" target="_blank" rel="noopener">Fortune</a>; ARK Invest: <a href="https://ark-invest.com/research/autonomous-taxis" target="_blank" rel="noopener">ark-invest.com</a></li>
+      <li>Child Left Alone Detection: <a href="https://www.notateslaapp.com/news/2756/tesla-adds-child-left-behind-detection-to-its-vehicles" target="_blank" rel="noopener">notateslaapp.com</a>; hot-car deaths: <a href="https://www.noheatstroke.org/" target="_blank" rel="noopener">NoHeatstroke.org</a></li>
+      <li>Austin Energy rates: <a href="https://austinenergy.com/rates/residential-rates" target="_blank" rel="noopener">austinenergy.com</a>; gas prices: <a href="https://gasprices.aaa.com/?state=TX" target="_blank" rel="noopener">AAA</a>; Texas EV fee: <a href="https://content.govdelivery.com/accounts/TXDMV/bulletins/36786bc" target="_blank" rel="noopener">TxDMV</a>; federal EV credit end: <a href="https://www.irs.gov/newsroom/faqs-for-modification-of-sections-25c-25d-25e-30c-30d-45l-45w-and-179d-under-public-law-119-21-139-stat-72-july-4-2025-commonly-known-as-the-one-big-beautiful-bill-obbb" target="_blank" rel="noopener">IRS</a></li>
+    </ol>
+  </div>
+</div>
+
+<div class="disclaimer" style="margin-bottom:3rem;">
+  Not financial advice. Depreciation and self-driving timelines are estimates and forecasts, not guarantees. FSD (Supervised) requires an attentive driver at all times.
+</div>
+
+</div>
+
+<script>
+function toggleSection(btn) {
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', !expanded);
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open', !expanded);
+}
+
+// Every video ID verified via YouTube oEmbed on 2026-10-24
+const VIDEO_GROUPS = [
+  { label: 'Independent crash tests', videos: [
+    { id: 'hDq3cldbWGE', title: '2026 Tesla Model Y updated moderate overlap IIHS crash test', channel: 'IIHS', date: 'Sep 2026',
+      desc: "IIHS's 40 mph frontal test with a dummy in the back seat, where your kids ride. Rated Good." },
+    { id: 'tMzggr2BDes', title: 'Euro NCAP Crash & Safety Tests of Tesla Model Y 2025 (Best in Class)', channel: 'Euro NCAP', date: 'Nov 2025',
+      desc: 'Official crash and safety-assist footage of the refreshed Model Y: 5 stars, 93% child occupant protection.' },
+  ]},
+  { label: 'Family reviews & FSD in action', videos: [
+    { id: 'bI1PVsuDWnU', title: 'Did Tesla Make the Perfect Family Vehicle? Tesla Model Y L Full Review', channel: 'TESLARATI', date: 'Sep 2026',
+      desc: 'A family-focused look at the six-seat Model Y L: captain\'s chairs, third row and rear screen.' },
+    { id: 'Ei9q33zsmSo', title: 'Driving the Tesla Model Y L for the First Time! Also, FSD 14.3.7 Is Incredible', channel: 'Out of Spec BITS', date: 'Aug 2026',
+      desc: 'About an hour of Model Y L driving around Los Angeles on FSD (Supervised) v14.3.7.' },
+    { id: '1OKqpH4Uv88', title: 'Tesla FSD (Supervised) avoiding accidents, pedestrians and animals', channel: 'Sawyer Merritt', date: 'Aug 2026',
+      desc: 'Compilation of FSD avoiding collisions. Hand-picked clips from a Tesla fan, so it shows what\'s possible, not how often.' },
+    { id: '2V5Oqg15VpQ', title: 'Tesla Model Y FSD Hogback Test! Nothing Comes Close', channel: 'Out of Spec Testing', date: '2025',
+      desc: 'A standardized driver-assist course the team also runs on other brands\' systems.' },
+  ]},
+  { label: 'Austin robotaxi', videos: [
+    { id: 'bbPo4rt9vAM', title: 'First Unsupervised Tesla Robotaxi Ride! 22 January 2026 in Austin, Texas', channel: 'Joe Tegtmeyer', date: 'Jan 2026',
+      desc: 'A public Austin robotaxi ride with nobody in the driver\'s seat and no safety monitor.' },
+    { id: 'QwM_wgzyzWE', title: 'My First Tesla Robotaxi Ride! Autonomous Rideshare w/ Bone Stock Model Y', channel: 'Out of Spec Reviews', date: 'Mid 2025',
+      desc: 'An early ride in an unmodified Model Y during the first weeks of the Austin service.' },
+  ]},
+  { label: 'The critical view', videos: [
+    { id: 'G-lK38eBudI', title: 'Federal probe of Tesla self-driving system after reports of crashes, running red lights', channel: 'ABC7 News Bay Area', date: 'Oct 2025',
+      desc: 'News coverage of NHTSA\'s investigation into FSD red-light running and wrong-lane driving.' },
+  ]},
+];
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+document.getElementById('videoGrid').innerHTML = VIDEO_GROUPS.map(g => `
+  <div class="video-group-label">${escapeHtml(g.label)}</div>
+  <div class="video-grid">
+    ${g.videos.map(v => `
+      <a class="video-card" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">
+        <div class="video-thumb">
+          <img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy">
+          <span class="play">&#9654;</span>
+        </div>
+        <div class="video-info">
+          <div class="v-title">${escapeHtml(v.title)}</div>
+          <div class="v-meta">${escapeHtml(v.channel)} &middot; ${escapeHtml(v.date)}</div>
+          <div class="v-desc">${escapeHtml(v.desc)}</div>
+        </div>
+      </a>`).join('')}
+  </div>`).join('');
+</script>
+
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module">
+    import { initPersonalPage } from '/shared/personal-page-shell.js';
+    initPersonalPage();
+</script>
+</body>
+</html>
