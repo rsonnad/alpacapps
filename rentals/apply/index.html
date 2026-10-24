@@ -1598,45 +1598,6 @@
     // =============================================
     // STEP 2 INITIALIZATION
     // =============================================
-    // Mark a square_payments record completed/failed. Logs (doesn't throw) on failure.
-    async function settleSquarePaymentRecord(recordId, status, result) {
-      try {
-        const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/settle_square_payment_record`, {
-          method: 'POST',
-          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            p_record_id: recordId,
-            p_status: status,
-            p_square_payment_id: result?.paymentId || null,
-            p_square_order_id: result?.orderId || null,
-            p_square_receipt_url: result?.receiptUrl || null,
-            p_error: result?.error || null
-          })
-        });
-        if (!resp.ok) console.error('settle_square_payment_record failed:', resp.status, await resp.text().catch(() => ''));
-      } catch (err) {
-        console.error('settle_square_payment_record failed:', err);
-      }
-    }
-
-    // Mark the application fee as recorded. Non-blocking: payment already went through.
-    async function recordApplicationFee(amount) {
-      try {
-        const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_record_fee`, {
-          method: 'POST',
-          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ p_application_id: continueAppId, p_amount: amount, p_code: appliedCode })
-        });
-        if (!resp.ok) {
-          console.error('apply_record_fee failed:', resp.status, await resp.text().catch(() => ''));
-        } else if ((await resp.json()) !== true) {
-          console.error('apply_record_fee did not update the application (not submitted or already paid)');
-        }
-      } catch (e) {
-        console.error('apply_record_fee error:', e);
-      }
-    }
-
     async function initStep2() {
       if (!isStep2) return;
 
@@ -2279,30 +2240,18 @@
           });
           const processResult = await processResponse.json();
 
+          // process-square-payment settles the record and the application fee server-side.
           if (!processResult.success) {
-            await settleSquarePaymentRecord(paymentRecord.id, 'failed', processResult);
             throw new Error(processResult.error || 'Payment failed');
           }
-
-          await settleSquarePaymentRecord(paymentRecord.id, 'completed', processResult);
-
-          await recordApplicationFee(feeAmount);
-
-          if (appliedCode) {
-            await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_fee_code_usage`, {
-              method: 'POST',
-              headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ code_id: appliedCode })
-            });
-          }
         } else if (feeAmount === 0) {
+          // A fully waived fee is validated and recorded by the RPC itself.
           await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_square_payment_record`, {
             method: 'POST',
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ p_reference_type: 'rental_application', p_reference_id: continueAppId, p_payment_type: FEE_TYPE, p_amount: 0, p_fee_code: appliedCode || null, p_original_amount: originalAmount })
-          }).catch(err => console.error('create_square_payment_record ($0) failed:', err));
-
-          await recordApplicationFee(0);
+          }).then(async r => { if (!r.ok) console.error('create_square_payment_record ($0) failed:', r.status, await r.text().catch(() => '')); })
+            .catch(err => console.error('create_square_payment_record ($0) failed:', err));
         }
 
         // Insert previous residence if provided

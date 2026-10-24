@@ -272,11 +272,7 @@ async function loadFact() {
 
 async function loadPaiCountTV() {
   try {
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { count } = await supabase
-      .from('pai_interactions')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', since);
+    const { data: count } = await supabase.rpc('kiosk_pai_count_24h');
 
     const el = document.getElementById('tvPaiCount');
     if (count !== null && count > 0) {

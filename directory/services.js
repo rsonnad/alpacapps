@@ -343,6 +343,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('detailClose').addEventListener('click', closeDetail);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
 
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    document.getElementById('loadingState').innerHTML =
+      `<div class="dir-empty"><div class="dir-empty-icon">&#128274;</div><h2>Sign in to view services</h2><p><a href="/login/?redirect=${encodeURIComponent(location.pathname)}">Sign in</a> to see the service directory.</p></div>`;
+    return;
+  }
+
   try {
     allServices = await loadServices();
     renderFilters();

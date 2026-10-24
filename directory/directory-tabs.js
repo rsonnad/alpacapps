@@ -1,6 +1,6 @@
 /**
  * Directory Tab Navigation
- * Services remains as a public standalone page.
+ * Services is a standalone page for signed-in users (it lists infra hosts and vault item names).
  * Lighting and Devices have moved to /staff/inventory.html#devices (behind auth).
  */
 import { initNavTabList, scrollActiveIntoView } from '../shared/tab-utils.js';
