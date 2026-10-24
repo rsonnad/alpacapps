@@ -90,8 +90,15 @@ Every `light.*` service call that passes through HAOS is written to Supabase
 test, HA automations and the HA app. One Alexa command to a group fans out to one
 row per light (often ~187 rows).
 
-It does **not** see changes made outside HAOS: the Govee app, Alexa's direct Govee
-skill, and `lights.sh`'s direct Govee cloud path (`govee_control()`).
+`lights.sh`'s direct Govee cloud path (`govee_control()`) bypasses HAOS, so it logs
+its own row (`source = lights_sh_govee`, with the Govee HTTP status and the calling
+process). Nothing logs changes made in the Govee app or through Alexa's direct
+Govee skill.
+
+The writers use the alpacapps service-role key from Alpuca `~/.sb_service_key`. HAOS
+keeps a copy in `/config/secrets.yaml` as `supabase_service_key` and
+`supabase_service_bearer`. **If that key is rotated, update both places**, or logging
+stops without any error showing.
 
 | `source` | Caller |
 |----------|--------|
@@ -100,6 +107,7 @@ skill, and `lights.sh`'s direct Govee cloud path (`govee_control()`).
 | `ha_automation` | An HA automation (has a parent context) |
 | `ha_user` | Any other signed-in HA user |
 | `ha_internal` | No user and no parent |
+| `lights_sh_govee` | `lights.sh` sending straight to the Govee cloud (not via HAOS) |
 
 ```sql
 -- What turned lights red in the last day?
@@ -113,8 +121,8 @@ GROUP BY 1, 2, 3, 6 ORDER BY 1 DESC;
 
 Retention is one year (`purge-light-change-log` pg_cron job). The HAOS recorder has
 the same `call_service` and `alexa_smart_home` events for about 10 days. To query
-them directly, run from Alpuca:
-`sshpass -p playhouse ssh root@192.168.1.39` then `apk add sqlite` and
+them directly, SSH from Alpuca into the HAOS SSH add-on as root (recipe in the
+private `service-access.md`, not in this public repo), then `apk add sqlite` and
 `sqlite3 -readonly /config/home-assistant_v2.db` (`event_types`: 15 = call_service,
 24 = alexa_smart_home).
 
@@ -122,8 +130,8 @@ them directly, run from Alpuca:
 Alexa through HA Cloud, not from Spirit Whisper (disabled since Feb, never logged a
 light interaction). Alexa sent `SetColor` red to ~161–187 lights at once, at irregular
 late-evening times (Oct 22 01:14, 21:35, 22:55, 23:10; Oct 24 00:29, 00:40, 00:50 CDT).
-The Alexa `SetBrightness` on 10 lights at 23:01 every night is the dim-at-night
-routine. HA Cloud has `expose_new: true` for Alexa and Google, so new light entities,
+The Alexa `SetBrightness` on 10 lights at 23:01 every night appears to be the
+dim-at-night routine. HA Cloud has `expose_new: true` for Alexa and Google, so new light entities,
 including Govee segment entities, are exposed by default.
 
 **DB query for current inventory:**
