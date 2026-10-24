@@ -1,12 +1,12 @@
 {
-  "version": "v261024.01 8:27a",
-  "release": 1955,
-  "sha": "b2a13e5add",
-  "fullSha": "b2a13e5add303bd5d5ff7d0182ce0170f6f31557",
+  "version": "v261024.02 8:44a",
+  "release": 1956,
+  "sha": "e60e648b92",
+  "fullSha": "e60e648b9285f3b6435d65ac455af07d17a7acb2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtai0g",
-  "pushedAt": "2026-10-24T13:27:24+00:00",
-  "commits": [{"sha":"b2a13e5add","message":"fix(deps): upgrade puppeteer to 25.16.0 to clear zod advisory blocking deploys","author":"Blotto"}]
+  "pushedAt": "2026-10-24T13:44:51+00:00",
+  "commits": [{"sha":"e60e648b92","message":"feat(lights): audit log of every HAOS light command","author":"Blotto"}]
 }
