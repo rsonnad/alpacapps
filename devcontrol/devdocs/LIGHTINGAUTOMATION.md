@@ -80,6 +80,52 @@ Uses a long-lived HAOS API token (expires 2036). Token in `devdocs/HOMEAUTOMATIO
 | Hostinger workers | Same HTTP API | ~0.7s |
 | Alexa | Native HA Alexa integration (separate) | varies |
 
+### Audit log: who changed a light
+
+Every `light.*` service call that passes through HAOS is written to Supabase
+`light_change_log` by the HAOS automation **Log light commands to Supabase**
+(`automation.log_light_commands_to_supabase`, posting via
+`rest_command.log_light_change`). Added 2026-10-24. It covers Alexa and Google
+(via HA Cloud), the Light API, `lights.sh` room commands, `ha-cmd.sh`, the daily
+test, HA automations and the HA app. One Alexa command to a group fans out to one
+row per light (often ~187 rows).
+
+It does **not** see changes made outside HAOS: the Govee app, Alexa's direct Govee
+skill, and `lights.sh`'s direct Govee cloud path (`govee_control()`).
+
+| `source` | Caller |
+|----------|--------|
+| `alexa_or_google` | HA user `Home Assistant Cloud` (`62f35793…`): Alexa or Google voice, routines, groups |
+| `alpaca_admin_api` | HA user `Alpaca Admin` (`a24908cb…`): Light API, `ha-cmd.sh`, `lights.sh`, `lights-daily-test.sh` (3am), `lights-healthcheck.sh` (5am) |
+| `ha_automation` | An HA automation (has a parent context) |
+| `ha_user` | Any other signed-in HA user |
+| `ha_internal` | No user and no parent |
+
+```sql
+-- What turned lights red in the last day?
+SELECT fired_at AT TIME ZONE 'America/Chicago' AS ct, source, service,
+       count(*) AS lights, min(entity_ids[1]) AS example, service_data - 'entity_id' AS data
+FROM light_change_log
+WHERE fired_at > now() - interval '1 day'
+  AND (service_data->>'rgb_color' = '[255, 0, 0]' OR service_data ? 'hs_color')
+GROUP BY 1, 2, 3, 6 ORDER BY 1 DESC;
+```
+
+Retention is one year (`purge-light-change-log` pg_cron job). The HAOS recorder has
+the same `call_service` and `alexa_smart_home` events for about 10 days. To query
+them directly, run from Alpuca:
+`sshpass -p playhouse ssh root@192.168.1.39` then `apk add sqlite` and
+`sqlite3 -readonly /config/home-assistant_v2.db` (`event_types`: 15 = call_service,
+24 = alexa_smart_home).
+
+**2026-10-24 red-lights finding:** the kitchen and other lights turning red came from
+Alexa through HA Cloud, not from Spirit Whisper (disabled since Feb, never logged a
+light interaction). Alexa sent `SetColor` red to ~161–187 lights at once, at irregular
+late-evening times (Oct 22 01:14, 21:35, 22:55, 23:10; Oct 24 00:29, 00:40, 00:50 CDT).
+The Alexa `SetBrightness` on 10 lights at 23:01 every night is the dim-at-night
+routine. HA Cloud has `expose_new: true` for Alexa and Google, so new light entities,
+including Govee segment entities, are exposed by default.
+
 **DB query for current inventory:**
 ```sql
 SELECT room, device_name, ha_entity_id, device_brand, protocol
