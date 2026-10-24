@@ -1,12 +1,12 @@
 {
-  "version": "v261024.04 9:13a",
-  "release": 1958,
-  "sha": "82361bdadf",
-  "fullSha": "82361bdadff692568eeb97e6a5bbcea86b69f2e2",
+  "version": "v261024.05 9:16a",
+  "release": 1959,
+  "sha": "cb7067616c",
+  "fullSha": "cb7067616c991d914d823ade55717cd9f01c7ea0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm8k3b6",
-  "pushedAt": "2026-10-24T14:13:37+00:00",
-  "commits": [{"sha":"82361bdadf","message":"Update BookingHost case page: Oct 23 apology + limited offer, missed Oct 24 deadline, vacate Oct 25 + full-refund demand, unit defects, drain fixed by guest","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-24T14:16:49+00:00",
+  "commits": [{"sha":"cb7067616c","message":"Refresh bookinghostredflags (deploy nudge for Oct 24 update)","author":"Muse (Almusca)"}]
 }
