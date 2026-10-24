@@ -1002,6 +1002,11 @@
     .sources li { margin-bottom: 0.3rem; }
     .sources a { color: var(--accent); word-break: break-word; }
     .content-block a { color: var(--accent); }
+    .badge-perf { background: var(--red-soft); color: var(--red); border: 1px solid var(--red-border); }
+    .card.perf-card { border-left: 3px solid var(--red); }
+    .hw4-box ul { padding-left: 1.1rem; margin: 0 !important; list-style: disc; }
+    .hero-cta { display: inline-block; margin-top: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 99px; background: var(--accent); color: #fff; font-weight: 600; font-size: 0.88rem; text-decoration: none; }
+    .hero-cta:hover { opacity: 0.9; }
     @media (max-width: 700px) {
       .video-grid { grid-template-columns: 1fr; }
     }
@@ -1064,6 +1069,7 @@
       <div class="tc-detail">Both are excellent, safe SUVs. The difference is what happens next: a Tesla on AI4 hardware keeps improving through software, while a gas BMW bought in 2026 is the kind of car self-driving is likely to make worth less.</div>
     </div>
   </div>
+  <a class="hero-cta" href="#inventory">See 30 used Teslas near Austin, with HW4 status &darr;</a>
 </div>
 
 <div class="container">
@@ -1383,6 +1389,55 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════ -->
+<!--  USED INVENTORY NEAR AUSTIN                    -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section-divider"></div>
+
+<div class="listings-header" id="inventory">
+  <h2>Used Teslas Near Austin</h2>
+  <p>100-mile radius of 78701 &middot; scraped Oct 24, 2026 &middot; Cars.com (Tesla.com blocked) &middot; prices include $225 doc fee, not tax</p>
+</div>
+
+<div class="hw4-box">
+  <h3>&#9989; Why HW4 (AI4) matters, and how we checked it</h3>
+  <ul>
+    <li><strong>Buy HW4.</strong> HW3 cars only get a cut-down &ldquo;FSD v14.3 Lite&rdquo; (no parking features), and Tesla's unsupervised plans are built around AI4. For the self-driving and resale bet on this page, an HW3 car doesn't count.</li>
+    <li><strong>2024&ndash;2026 Model Y:</strong> all HW4. <strong>2022 and earlier:</strong> all HW3.</li>
+    <li><strong>2023 Model Y:</strong> depends on the factory and VIN. The 11th VIN character is the plant (A = Austin, F = Fremont); the last six digits are the serial. Austin-built cars from serial ~130120 and Fremont-built from ~789400 are likely HW4 (<a href="https://teslamotorsclub.com/tmc/threads/how-do-i-tell-if-i-have-hw3-of-hw4.316006/" target="_blank" rel="noopener">community-sourced cutoff</a>, not confirmed by Tesla).</li>
+    <li><strong>2023 Model X:</strong> likely HW4 (Fremont switched S/X around Feb&ndash;Mar 2023).</li>
+    <li><strong>Confirm before you buy:</strong> on the car's screen, Controls &rarr; Software &rarr; Additional Vehicle Information shows the computer. Ask the seller for a photo.</li>
+  </ul>
+</div>
+
+<div class="note" style="border-left:3px solid var(--red);">
+  <strong>&#128293; Sexy Performance models</strong> are flagged below: lowered suspension, 21&Prime; wheels, red calipers, and the acceleration to make a BMW driver smile. Our picks: the <strong>2024 Performance AWD in Austin ($39,629, HW4)</strong> is the sweet spot; the <strong>2026 Performance in Buda ($59,000, 8.6K mi)</strong> if you want nearly-new. The 2022 Performance cars are cheaper but HW3.
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="hw4">HW4 only</button>
+  <button class="filter-btn" data-filter="perf">&#128293; Sexy Performance</button>
+  <button class="filter-btn" data-filter="perf-hw4">Performance + HW4</button>
+  <button class="filter-btn" data-filter="modelx">Model X (6&ndash;7 seats)</button>
+  <button class="filter-btn" data-filter="under-35k">Under $35K</button>
+  <button class="filter-btn" data-filter="hw3">HW3 (avoid)</button>
+</div>
+<div class="sort-bar">
+  Sort by:
+  <select id="sortSelect">
+    <option value="hw-year">HW4 first, newest</option>
+    <option value="price-asc">Price: Low to High</option>
+    <option value="price-desc">Price: High to Low</option>
+    <option value="miles-asc">Miles: Low to High</option>
+  </select>
+  <span id="visibleCount" style="margin-left:auto;">&mdash;</span>
+</div>
+<div class="cards" id="cardContainer"></div>
+<div class="disclaimer" style="margin-top:1rem;">
+  Listings change fast; these were live on cars.com on October 24, 2026. FSD status comes from seller notes: only one listing (2023 Performance, Boerne) mentions Full Self-Driving, and transfer isn't stated. With FSD now $99/mo, a car without it can simply subscribe. 2023 hardware calls are VIN-based estimates; always confirm on the car's screen.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
 <!--  VERDICT                                       -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="thesis-card full-width" style="margin:2.5rem 0;padding:1.75rem 1.5rem;">
@@ -1488,6 +1543,114 @@ document.getElementById('videoGrid').innerHTML = VIDEO_GROUPS.map(g => `
         </div>
       </a>`).join('')}
   </div>`).join('');
+
+// ── Used inventory near Austin (cars.com, scraped 2026-10-24) ──
+const VEHICLES = [
+  { vin:"7SAYGDET1TA687469", year:2026, model:"Model Y", trim:"Performance", price:59000, mileage:8647, color:"Ultra Red", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"Buda, TX", link:"https://www.cars.com/vehicledetail/a7fbe558-2ef9-4990-aa24-c55cc5a4a9f3/" },
+  { vin:"7SAYGDEE7TA575325", year:2026, model:"Model Y", trim:"Long Range", price:55998, mileage:3668, color:"Blue", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"Austin, TX", link:"https://www.cars.com/vehicledetail/c751c50f-61e7-4f09-9bb6-2575e8c766dc/" },
+  { vin:"7SAYGDED3TA418995", year:2026, model:"Model Y", trim:"Premium", price:47998, mileage:12524, color:"Gray", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"Killeen, TX", link:"https://www.cars.com/vehicledetail/55b76112-d464-4ec0-a647-f597da175d08/" },
+  { vin:"7SAYGAEE5SF308636", year:2025, model:"Model Y", trim:"Long Range", price:48998, mileage:10430, color:"Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"San Marcos, TX", link:"https://www.cars.com/vehicledetail/f7bd8f3d-39ab-46d6-ad74-16702e94ec16/" },
+  { vin:"7SAYGDED0SF276431", year:2025, model:"Model Y", trim:"Long Range RWD", price:33800, mileage:10224, color:"Pearl White", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/bceded90-6f77-491d-8f69-88e4cd7170f9/" },
+  { vin:"7SAYGDED1SF232440", year:2025, model:"Model Y", trim:"Long Range", price:33300, mileage:19367, color:"Deep Blue Metallic", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"Austin, TX", note:"Title says AWD; seller notes say RWD", link:"https://www.cars.com/vehicledetail/ca8cd994-ddce-4295-9755-fa88a529693e/" },
+  { vin:"7SAYGDEF2RA294227", year:2024, model:"Model Y", trim:"Performance AWD", price:39629, mileage:49638, color:"Stealth Grey", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"Austin, TX", pick:true, link:"https://www.cars.com/vehicledetail/1f651cc6-c8d2-400a-bbc5-6bf579c9ab37/" },
+  { vin:"7SAYGAEE0RF991839", year:2024, model:"Model Y", trim:"Long Range AWD", price:37991, mileage:38653, color:"Gray", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/596280e8-5d88-4575-a862-4cbd6c2df887/" },
+  { vin:"7SAYGDED3RF107000", year:2024, model:"Model Y", trim:"Long Range RWD", price:37699, mileage:49648, color:"Stealth Grey", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"San Marcos, TX", link:"https://www.cars.com/vehicledetail/1de46ecb-8845-4709-9fbc-01b16b4599e4/" },
+  { vin:"7SAYGAEEXRF005328", year:2024, model:"Model Y", trim:"Long Range AWD", price:35169, mileage:61608, color:"Stealth Grey", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"San Marcos, TX", link:"https://www.cars.com/vehicledetail/a6df6fc7-fd2e-4c50-92e0-37509306e74d/" },
+  { vin:"7SAYGDED5RA333505", year:2024, model:"Model Y", trim:"Long Range RWD", price:31700, mileage:20651, color:"Pearl White", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/8326899a-0c35-4aef-ba5b-f12f5c5ca9fe/" },
+  { vin:"7SAYGDED2RF046450", year:2024, model:"Model Y", trim:"Long Range RWD", price:30500, mileage:16255, color:"Stealth Grey", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"Austin, TX", note:"Title says Standard Range; seller notes say Long Range RWD", link:"https://www.cars.com/vehicledetail/af547f66-ddbd-400e-86d3-7b5eb030642a/" },
+  { vin:"7SAYGDEF3PF618673", year:2023, model:"Model Y", trim:"Performance", price:36966, mileage:35877, color:"Midnight Silver", fsd:"FSD Included", hw:"HW3", hwConf:"likely", hwNote:"Fremont serial 618673, below the ~789400 HW4 cutoff", city:"Boerne, TX", note:"Seller lists Full Self-Driving Capability; ask whether it transfers", link:"https://www.cars.com/vehicledetail/7f2d9955-d409-4cdd-bc48-8b44d9311e14/" },
+  { vin:"7SAYGDEEXPA102573", year:2023, model:"Model Y", trim:"Long Range AWD", price:34420, mileage:30261, color:"White", fsd:"Unknown", hw:"HW3", hwConf:"likely", hwNote:"Austin serial 102573, below the ~130120 HW4 cutoff", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/ad7a3f1d-df3e-4935-aeaf-ff8bea877f44/" },
+  { vin:"7SAYGDEE6PF639959", year:2023, model:"Model Y", trim:"Long Range AWD", price:33972, mileage:65558, color:null, fsd:"Unknown", hw:"HW3", hwConf:"likely", hwNote:"Fremont serial 639959, below the ~789400 HW4 cutoff", city:"San Marcos, TX", link:"https://www.cars.com/vehicledetail/1d79dc23-9870-409b-b7c9-3e845021997c/" },
+  { vin:"7SAYGDEE8PA211064", year:2023, model:"Model Y", trim:"Long Range AWD", price:29275, mileage:29931, color:"Gray", fsd:"Unknown", hw:"HW4", hwConf:"likely", hwNote:"Austin serial 211064, above the ~130120 HW4 cutoff", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/7b958acb-0126-431d-a046-bbd048ceb56a/" },
+  { vin:"7SAYGDEE3PA155308", year:2023, model:"Model Y", trim:"Long Range AWD", price:28215, mileage:102691, color:"Solid Black", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"Seller notes say “Hardware/AI 4 computer”", city:"Round Rock, TX", link:"https://www.cars.com/vehicledetail/23986589-7916-4469-b1ce-c0dd00ed1187/" },
+  { vin:"7SAYGDEE8PA091153", year:2023, model:"Model Y", trim:"Long Range AWD", price:28202, mileage:88289, color:"Midnight Silver", fsd:"Unknown", hw:"HW3", hwConf:"likely", hwNote:"Austin serial 091153, below the ~130120 HW4 cutoff", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/22e4ba0d-bdf6-4c19-887f-0a9f3466de7a/" },
+  { vin:"7SAYGAEE7PF708396", year:2023, model:"Model Y", trim:"Long Range AWD", price:23210, mileage:157536, color:"Midnight Silver", fsd:"Unknown", hw:"HW3", hwConf:"likely", hwNote:"Fremont serial 708396, below the ~789400 HW4 cutoff", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/9fb6b890-1e22-4cf7-b390-17c9774c26dd/" },
+  { vin:"7SAYGDEF4NF403090", year:2022, model:"Model Y", trim:"Performance", price:33613, mileage:51578, color:"Blue", fsd:"Unknown", hw:"HW3", hwConf:"confirmed", hwNote:"2022 and earlier all HW3", city:"Buda, TX", link:"https://www.cars.com/vehicledetail/5efd4f7c-eaaf-4fe2-89ab-fa2314e53f06/" },
+  { vin:"7SAYGDEF2NF396396", year:2022, model:"Model Y", trim:"Performance AWD", price:31687, mileage:60242, color:"White", fsd:"Unknown", hw:"HW3", hwConf:"confirmed", hwNote:"2022 and earlier all HW3", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/747f504a-3598-47ba-a25e-938ace44157b/" },
+  { vin:"7SAYGDEF2NF388590", year:2022, model:"Model Y", trim:"Performance AWD", price:28990, mileage:83156, color:"Pearl White", fsd:"Unknown", hw:"HW3", hwConf:"confirmed", hwNote:"2022 and earlier all HW3", city:"Waco, TX", link:"https://www.cars.com/vehicledetail/98bd70b0-7b82-41fd-aaf5-5daee3fcedc4/" },
+  { vin:"7SAYGDEF7NF546146", year:2022, model:"Model Y", trim:"Performance AWD", price:28600, mileage:30549, color:"Deep Blue Metallic", fsd:"Unknown", hw:"HW3", hwConf:"confirmed", hwNote:"2022 and earlier all HW3", city:"Austin, TX", link:"https://www.cars.com/vehicledetail/81085236-429e-4945-82f4-bc53a7164dbb/" },
+  { vin:"7SAYGDEF0NF380990", year:2022, model:"Model Y", trim:"Performance", price:27025, mileage:101133, color:"Deep Blue", fsd:"Unknown", hw:"HW3", hwConf:"confirmed", hwNote:"2022 and earlier all HW3", city:"Austin, TX", link:"https://www.cars.com/vehicledetail/ec3ef03f-cd27-4afa-906f-c7298e462588/" },
+  { vin:"7SAYGAEE3NF537109", year:2022, model:"Model Y", trim:"Long Range AWD", price:24725, mileage:110117, color:"Pearl White", fsd:"Unknown", hw:"HW3", hwConf:"confirmed", hwNote:"2022 and earlier all HW3", city:"Austin, TX", link:"https://www.cars.com/vehicledetail/1cc76713-0155-4b67-8525-40c0a36faaa6/" },
+  { vin:"7SAXCDE56SF462541", year:2025, model:"Model X", trim:"Long Range", price:81216, mileage:34090, color:"Stealth Grey", fsd:"Unknown", hw:"HW4", hwConf:"confirmed", hwNote:"2024+ all HW4", city:"San Antonio, TX", note:"Seller notes say 5-seat interior", link:"https://www.cars.com/vehicledetail/e5084235-3b89-4e47-8356-8704031d142d/" },
+  { vin:"7SAXCDE50PF430188", year:2023, model:"Model X", trim:"", price:63998, mileage:32565, color:"Gray", fsd:"Unknown", hw:"HW4", hwConf:"likely", hwNote:"S/X switched to HW4 around Feb–Mar 2023", city:"Austin, TX", note:"AutoCheck reports accident/damage", link:"https://www.cars.com/vehicledetail/24b5b3d1-c322-4942-beb5-8ef8fb106f97/" },
+  { vin:"7SAXCDE57PF371639", year:2023, model:"Model X", trim:"", price:58438, mileage:41219, color:"White", fsd:"Unknown", hw:"HW4", hwConf:"likely", hwNote:"S/X switched to HW4 around Feb–Mar 2023", city:"Austin, TX", link:"https://www.cars.com/vehicledetail/f85879fe-2a2c-495d-8311-1ebe0e221b84/" },
+  { vin:"7SAXCBE65PF374567", year:2023, model:"Model X", trim:"Plaid", price:58300, mileage:41839, color:"Red Multi-Coat", fsd:"Unknown", hw:"HW4", hwConf:"likely", hwNote:"S/X switched to HW4 around Feb–Mar 2023", city:"Austin, TX", note:"6-seat; seller notes say Plaid, title says Base", link:"https://www.cars.com/vehicledetail/ec759104-9ffb-4531-9a23-bcefa1fc5561/" },
+  { vin:"7SAXCAE53PF378408", year:2023, model:"Model X", trim:"AWD", price:49700, mileage:26281, color:"Charcoal", fsd:"Unknown", hw:"HW4", hwConf:"likely", hwNote:"S/X switched to HW4 around Feb–Mar 2023", city:"San Antonio, TX", link:"https://www.cars.com/vehicledetail/c1166b79-8a1a-41aa-bebd-96ea5caa775d/" },
+];
+
+const isPerf = v => /Performance|Plaid/.test(v.trim);
+const fmt$ = n => '$' + n.toLocaleString();
+const fmtMi = n => n ? n.toLocaleString() + ' mi' : 'N/A';
+
+function renderCard(v) {
+  const hwBadge = v.hw === 'HW4'
+    ? (v.hwConf === 'confirmed'
+        ? '<span class="badge badge-hw4">HW4 &#10003;</span>'
+        : '<span class="badge badge-hw4-likely">HW4 likely</span>')
+    : `<span class="badge badge-hw3">HW3${v.hwConf === 'likely' ? ' likely' : ''}</span>`;
+  const perfBadge = isPerf(v) ? '<span class="badge badge-perf">&#128293; Sexy Performance</span>' : '';
+  const fsdBadge = v.fsd === 'FSD Included' ? '<span class="badge badge-fsd">FSD listed</span>' : '';
+  const pickBadge = v.pick ? '<span class="badge badge-deal-great">&#9733; Our pick</span>' : '';
+  const dealClass = v.hw === 'HW4' ? (isPerf(v) ? 'perf-card' : 'great-deal') : 'fair-deal';
+  return `
+    <div class="card ${dealClass}">
+      <div class="card-main">
+        <div class="card-top">
+          <span class="card-year">${v.year}</span>
+          <span class="card-trim">${escapeHtml(v.model)} ${escapeHtml(v.trim)}</span>
+          ${hwBadge}${perfBadge}${fsdBadge}${pickBadge}
+        </div>
+        <div class="card-specs">
+          <div class="spec"><strong>Miles:</strong> ${fmtMi(v.mileage)}</div>
+          ${v.color ? `<div class="spec"><strong>Color:</strong> ${escapeHtml(v.color)}</div>` : ''}
+          <div class="spec"><strong>Location:</strong> ${escapeHtml(v.city)}</div>
+        </div>
+        <div class="card-features">
+          <span class="feature-chip">${escapeHtml(v.hwNote)}</span>
+          ${v.note ? `<span class="feature-chip" style="color:var(--yellow);border-color:var(--yellow-border);">${escapeHtml(v.note)}</span>` : ''}
+        </div>
+        <div class="card-vin">${v.vin || 'VIN not available'}</div>
+      </div>
+      <div class="card-right">
+        <div class="card-price">${fmt$(v.price)}</div>
+        <a class="card-link" href="${v.link}" target="_blank" rel="noopener">View on cars.com &rarr;</a>
+      </div>
+    </div>`;
+}
+
+let currentFilter = 'all';
+let currentSort = 'hw-year';
+const FILTERS = {
+  'all': () => true,
+  'hw4': v => v.hw === 'HW4',
+  'perf': isPerf,
+  'perf-hw4': v => isPerf(v) && v.hw === 'HW4',
+  'modelx': v => v.model === 'Model X',
+  'under-35k': v => v.price < 35000,
+  'hw3': v => v.hw === 'HW3',
+};
+const SORTS = {
+  'hw-year': (a, b) => (a.hw === 'HW4' ? 0 : 1) - (b.hw === 'HW4' ? 0 : 1) || b.year - a.year || a.price - b.price,
+  'price-asc': (a, b) => a.price - b.price,
+  'price-desc': (a, b) => b.price - a.price,
+  'miles-asc': (a, b) => (a.mileage || 1e9) - (b.mileage || 1e9),
+};
+
+function renderInventory() {
+  const list = VEHICLES.filter(FILTERS[currentFilter]).sort(SORTS[currentSort]);
+  document.getElementById('cardContainer').innerHTML = list.length
+    ? list.map(renderCard).join('')
+    : '<div class="empty-state">No vehicles match this filter.</div>';
+  document.getElementById('visibleCount').textContent = `${list.length} of ${VEHICLES.length} shown`;
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
+  currentFilter = btn.dataset.filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+  renderInventory();
+}));
+document.getElementById('sortSelect').addEventListener('change', e => { currentSort = e.target.value; renderInventory(); });
+renderInventory();
 </script>
 
 <script src="/vendor/supabase-js-2.39.3.min.js"></script>
