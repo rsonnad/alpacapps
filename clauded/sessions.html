@@ -357,7 +357,6 @@
     // logging. See: /infra/updates.html → "Session Logging to D1"
     // ═══════════════════════════════════════════════════════════════════
     const CLAUDED_SESSIONS_API = 'https://claude-sessions.alpacapps.workers.dev'; // YOUR_SESSIONS_WORKER_URL
-    const CLAUDED_SESSIONS_TOKEN = 'alpaca-sessions-2026'; // YOUR_SESSIONS_AUTH_TOKEN
     // ═══════════════════════════════════════════════════════════════════
 
     const LIMIT = 50;
@@ -372,9 +371,7 @@
 
     function isConfigured() {
       return CLAUDED_SESSIONS_API &&
-             !CLAUDED_SESSIONS_API.includes('YOUR_') &&
-             CLAUDED_SESSIONS_TOKEN &&
-             !CLAUDED_SESSIONS_TOKEN.includes('YOUR_');
+             !CLAUDED_SESSIONS_API.includes('YOUR_');
     }
 
     function showSetupPrompt() {
@@ -418,12 +415,15 @@
       loadSessions();
     }
 
-    const headers = { 'Authorization': `Bearer ${CLAUDED_SESSIONS_TOKEN}` };
+    // The sessions Worker accepts the signed-in admin's Supabase access token
+    // (set by the admin-shell module below), never a token baked into this page.
+    let getAccessToken = async () => '';
 
     async function api(path) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
       try {
+        const headers = { 'Authorization': `Bearer ${await getAccessToken()}` };
         const res = await fetch(`${CLAUDED_SESSIONS_API}${path}`, { headers, signal: controller.signal });
         clearTimeout(timeout);
         if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -700,26 +700,33 @@
       loadSessions(true);
     }
 
-    // Boot: check config, then show UI or setup prompt
-    const urlParams = new URLSearchParams(window.location.search);
-    const singleSessionId = urlParams.get('session');
+    // Boot (called once admin auth resolves): check config, then show UI or setup prompt
+    function bootSessions(tokenGetter) {
+      getAccessToken = tokenGetter;
+      const urlParams = new URLSearchParams(window.location.search);
+      const singleSessionId = urlParams.get('session');
 
-    if (!isConfigured()) {
-      showSetupPrompt();
-    } else if (singleSessionId) {
-      showFullSessionView(singleSessionId);
-    } else {
-      showSessionsUI();
+      if (!isConfigured()) {
+        showSetupPrompt();
+      } else if (singleSessionId) {
+        showFullSessionView(singleSessionId);
+      } else {
+        showSessionsUI();
+      }
     }
   </script>
   <script type="module">
     import { initAdminPage } from '/shared/admin-shell.js';
+    import { supabase } from '/shared/supabase.js';
     document.addEventListener('DOMContentLoaded', async () => {
       await initAdminPage({
         activeTab: null,
         requiredRole: 'admin',
         section: 'admin',
-        onReady: () => {},
+        onReady: () => bootSessions(async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          return session?.access_token || '';
+        }),
       });
     });
   </script>

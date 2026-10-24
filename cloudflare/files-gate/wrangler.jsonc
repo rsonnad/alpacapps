@@ -1,0 +1,19 @@
+{
+  "name": "files-gate",
+  // AlpacApps account (wingsiebird@) — owns the alpacaplayhouse.com zone.
+  "account_id": "9cd3a280a54ce2a5b382602f0247b577",
+  "main": "src/index.js",
+  "compatibility_date": "2024-12-01",
+  "workers_dev": false,
+  "routes": [
+    { "pattern": "files.alpacaplayhouse.com/*", "zone_name": "alpacaplayhouse.com" }
+  ],
+  "vars": {
+    "ALLOWED_EMAIL": "rahulioson@gmail.com"
+  }
+  // SUPABASE_ANON_KEY (public, but kept out of the repo diff for secret scanners):
+  //   grep -o "eyJ[^']*" ../../shared/supabase.js | head -1 | npx wrangler secret put SUPABASE_ANON_KEY
+  // Secret (not in this file): ORIGIN_SECRET — the file-search server's API
+  // secret on Alpuca. Bitwarden "files.alpacaplayhouse.com origin secret".
+  //   bw-read "files.alpacaplayhouse.com origin secret" password | npx wrangler secret put ORIGIN_SECRET
+}
