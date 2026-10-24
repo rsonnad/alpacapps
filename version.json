@@ -1,12 +1,12 @@
 {
-  "version": "v261024.12 9:55a",
-  "release": 1966,
-  "sha": "d01cb829ed",
-  "fullSha": "d01cb829edb33bbaf3c175fc66eeef6e95d6158d",
+  "version": "v261024.13 10:46a",
+  "release": 1967,
+  "sha": "ac896a3c2e",
+  "fullSha": "ac896a3c2e0309fc2584680089a932a7a0ecb75b",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtai0g",
-  "pushedAt": "2026-10-24T14:55:54+00:00",
-  "commits": [{"sha":"d01cb829ed","message":"Add Sonia's women's bike watch page (muse/soniabikes)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-24T15:46:16+00:00",
+  "commits": [{"sha":"ac896a3c2e","message":"bookinghostredflags: add photographic evidence section (drain trap, sludge removed, spoon of sludge, never-cleaned table)","author":"Muse (Almusca)"}]
 }
