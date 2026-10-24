@@ -22,7 +22,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { uploadToR2, getR2PublicUrl } from "../_shared/r2-upload.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { checkRateLimit, getClientIp } from "../_shared/function-wrapper.ts";
+import { checkIpRateLimit, checkRateLimit } from "../_shared/function-wrapper.ts";
 
 // Anonymous endpoint that spends Azure TTS credit, so every input is bounded.
 const MAX_PHRASES = 1000;
@@ -135,7 +135,7 @@ serve(async (req) => {
   try {
     const limiter = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     if (
-      !(await checkRateLimit(limiter, "langbang-pregen-audio", getClientIp(req), 20, 3600)) ||
+      !(await checkIpRateLimit(limiter, "langbang-pregen-audio", req, 20, 3600)) ||
       !(await checkRateLimit(limiter, "langbang-pregen-audio-global", "all", 200, 86400))
     ) {
       return badRequest("Rate limit exceeded", 429);

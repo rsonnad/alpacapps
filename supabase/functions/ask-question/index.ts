@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { checkRateLimit, getClientIp } from "../_shared/function-wrapper.ts";
+import { checkIpRateLimit, checkRateLimit } from "../_shared/function-wrapper.ts";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
@@ -88,7 +88,7 @@ serve(async (req) => {
     // Anonymous Gemini spend: 10 questions per IP per hour, 300 per day overall.
     const limiter = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     if (
-      !(await checkRateLimit(limiter, "ask-question", getClientIp(req), 10, 3600)) ||
+      !(await checkIpRateLimit(limiter, "ask-question", req, 10, 3600)) ||
       !(await checkRateLimit(limiter, "ask-question-global", "all", 300, 86400))
     ) {
       return new Response(

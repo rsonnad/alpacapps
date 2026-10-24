@@ -18,7 +18,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
-import { checkRateLimit, getClientIp } from "../_shared/function-wrapper.ts";
+import { checkIpRateLimit, checkRateLimit } from "../_shared/function-wrapper.ts";
 
 // Anonymous endpoint: bound what one caller can write.
 const MAX_ERRORS_PER_REPORT = 20;
@@ -217,7 +217,7 @@ serve(async (req) => {
   try {
     const limiter = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     if (
-      !(await checkRateLimit(limiter, 'error-report', getClientIp(req), 30, 3600)) ||
+      !(await checkIpRateLimit(limiter, 'error-report', req, 30, 3600)) ||
       !(await checkRateLimit(limiter, 'error-report-global', 'all', 1000, 86400))
     ) {
       return new Response(

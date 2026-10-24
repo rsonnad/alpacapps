@@ -10,7 +10,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { uploadToR2 } from '../_shared/r2-upload.ts';
-import { checkRateLimit, getClientIp } from '../_shared/function-wrapper.ts';
+import { checkIpRateLimit, checkRateLimit } from '../_shared/function-wrapper.ts';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 
@@ -39,7 +39,11 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    if (!(await checkRateLimit(supabase, 'guestbook-upload', getClientIp(req), 10, 3600))) {
+    // The hall kiosk is one IP, so the per-IP limit is generous; the daily cap bounds total storage.
+    if (
+      !(await checkIpRateLimit(supabase, 'guestbook-upload', req, 60, 3600)) ||
+      !(await checkRateLimit(supabase, 'guestbook-upload-global', 'all', 300, 86400))
+    ) {
       return json({ error: 'Too many uploads, try again later' }, 429);
     }
 

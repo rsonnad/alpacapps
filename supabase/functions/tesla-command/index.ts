@@ -168,7 +168,8 @@ serve(async (req) => {
       // Check granular permission: control_cars
       const result = await getAppUserWithPermission(supabase, user.id, "control_cars");
       appUser = result.appUser;
-      if (!result.hasPermission) {
+      // Starting OAuth for your own account doesn't need control_cars; oauthState checks ownership below.
+      if (!result.hasPermission && body.action !== "oauthState") {
         return jsonResponse(req, { error: "Insufficient permissions" }, 403);
       }
     }
