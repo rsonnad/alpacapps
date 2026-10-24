@@ -1,12 +1,12 @@
 {
-  "version": "v261024.17 11:19a",
-  "release": 1971,
-  "sha": "09e239902b",
-  "fullSha": "09e239902b4762b961d9cc4f93298619ff0dff60",
+  "version": "v261024.18 12:15p",
+  "release": 1972,
+  "sha": "342529cb0a",
+  "fullSha": "342529cb0af7e35af23291eaa9df343dca4bd023",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtai0g",
-  "pushedAt": "2026-10-24T16:19:15+00:00",
-  "commits": [{"sha":"09e239902b","message":"Refresh bookinghostredflags (deploy nudge for at-a-glance restructure)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-24T17:15:56+00:00",
+  "commits": [{"sha":"342529cb0a","message":"soniabikes: add per-bike size-fit badges for 169 cm rider + sizing note","author":"Muse (Almusca)"}]
 }
