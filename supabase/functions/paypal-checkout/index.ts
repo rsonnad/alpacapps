@@ -339,14 +339,15 @@ Deno.serve(async (req) => {
             paypal_payer_email: 'test@sandbox.paypal.com',
             paypal_payer_name: 'Test User',
             updated_at: new Date().toISOString(),
-          }).eq('id', payment_record_id);
+          }).eq('id', payment_record_id).eq('paypal_order_id', order_id);
         }
 
-        // Find payment record for ledger entry
+        // Find payment record for ledger entry (must belong to this order)
         const { data: payment } = await supabase
           .from('paypal_payments')
           .select('*')
           .eq('id', payment_record_id)
+          .eq('paypal_order_id', order_id)
           .single();
 
         if (payment) {
@@ -400,9 +401,15 @@ Deno.serve(async (req) => {
             updated_at: new Date().toISOString(),
           })
           .eq('id', payment_record_id)
+          // The record must belong to the order that was actually captured, or anyone could pay
+          // a small order and mark someone else's larger record completed.
+          .eq('paypal_order_id', order_id)
           .select()
           .single();
         paymentRecord = data;
+        if (!paymentRecord) {
+          console.error('capture_order: payment_record_id does not match order_id', { order_id, payment_record_id });
+        }
       } else {
         // Try to find by order ID
         const { data } = await supabase

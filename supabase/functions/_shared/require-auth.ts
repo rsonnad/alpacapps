@@ -25,7 +25,7 @@ function authResponse(message: string, status: number): Response {
 }
 
 /** True when the token is one of the project's service-role keys (new sb_secret key or the legacy JWT). */
-async function isServiceToken(token: string): Promise<boolean> {
+export async function isServiceToken(token: string): Promise<boolean> {
   for (const name of ["SUPABASE_SERVICE_ROLE_KEY", "LEGACY_SERVICE_ROLE_KEY", "SERVICE_ROLE_JWT"]) {
     const key = Deno.env.get(name);
     if (key && await timingSafeEqual(token, key)) return true;

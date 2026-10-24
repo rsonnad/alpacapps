@@ -59,10 +59,10 @@
     const error = params.get('error');
     const stateParam = params.get('state') || '';
 
-    // State format: "accountId" or "profile:accountId"
+    // State format: "<accountId>.<exp>.<sig>" or "profile:<accountId>.<exp>.<sig>" (signed by the server)
     const stateParts = stateParam.split(':');
     const isProfileFlow = stateParts[0] === 'profile';
-    const accountId = isProfileFlow ? stateParts[1] : stateParts[0];
+    const accountId = (isProfileFlow ? stateParts[1] : stateParts[0] || '').split('.')[0];
 
     async function exchangeCode() {
       if (error) {
@@ -108,6 +108,7 @@
             action: 'exchangeCode',
             code: code,
             account_id: parseInt(accountId),
+            state: stateParam,
           }),
         });
 

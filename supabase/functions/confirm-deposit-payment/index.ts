@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
           amount_due: moveInAmt,
           amount_paid: applyAmt,
           paid_date: today,
-          payment_method: "zelle",
+          payment_method: conf.payment_method || "zelle",
           transaction_id: conf.confirmation_number,
         })
         .select()
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
         .update({
           move_in_deposit_paid: true,
           move_in_deposit_paid_at: now,
-          move_in_deposit_method: "zelle",
+          move_in_deposit_method: conf.payment_method || "zelle",
           updated_at: now,
         })
         .eq("id", application.id);
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
         direction: "income",
         category: "move_in_deposit",
         amount: applyAmt,
-        payment_method: "zelle",
+        payment_method: conf.payment_method || "zelle",
         transaction_date: today,
         person_id: application.person_id,
         person_name: personName,
@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
           amount_due: secAmt,
           amount_paid: applyAmt,
           paid_date: today,
-          payment_method: "zelle",
+          payment_method: conf.payment_method || "zelle",
           transaction_id: conf.confirmation_number,
         })
         .select()
@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
         .update({
           security_deposit_paid: true,
           security_deposit_paid_at: now,
-          security_deposit_method: "zelle",
+          security_deposit_method: conf.payment_method || "zelle",
           updated_at: now,
         })
         .eq("id", application.id);
@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
         direction: "income",
         category: "security_deposit",
         amount: applyAmt,
-        payment_method: "zelle",
+        payment_method: conf.payment_method || "zelle",
         transaction_date: today,
         person_id: application.person_id,
         person_name: personName,

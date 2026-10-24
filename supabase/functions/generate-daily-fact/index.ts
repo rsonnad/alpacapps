@@ -11,6 +11,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
@@ -35,6 +36,11 @@ serve(async (req) => {
     // Check for force regenerate
     const url = new URL(req.url);
     const force = url.searchParams.get('force') === 'true';
+    if (force) {
+      // Regenerating skips the cache and spends Gemini credit, so only admins may force it.
+      const { response: authFailure } = await requireFunctionRoles(req, supabase as any, ['admin', 'oracle']);
+      if (authFailure) return authFailure;
+    }
 
     // Check if today's fact already exists
     if (!force) {
@@ -127,7 +133,7 @@ serve(async (req) => {
   } catch (err) {
     console.error('Error:', err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: 'Failed to generate fact' }),
       { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
