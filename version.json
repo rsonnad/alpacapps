@@ -1,12 +1,12 @@
 {
-  "version": "v261024.03 8:49a",
-  "release": 1957,
-  "sha": "8fdc31c094",
-  "fullSha": "8fdc31c09487a8d14546bf4e0489e78fcff1e082",
+  "version": "v261024.04 9:13a",
+  "release": 1958,
+  "sha": "82361bdadf",
+  "fullSha": "82361bdadff692568eeb97e6a5bbcea86b69f2e2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmtai0g",
-  "pushedAt": "2026-10-24T13:49:36+00:00",
-  "commits": [{"sha":"8fdc31c094","message":"docs(lights): log lights.sh Govee path, note key locations","author":"Blotto"}]
+  "machine": "runnervm8k3b6",
+  "pushedAt": "2026-10-24T14:13:37+00:00",
+  "commits": [{"sha":"82361bdadf","message":"Update BookingHost case page: Oct 23 apology + limited offer, missed Oct 24 deadline, vacate Oct 25 + full-refund demand, unit defects, drain fixed by guest","author":"Muse (Almusca)"}]
 }
