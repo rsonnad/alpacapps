@@ -5,7 +5,7 @@
 | Field | Value |
 |-------|-------|
 | Email | `testuser@alpacaplayhouse.com` |
-| Password | `test1234` |
+| Password | Not stored in the repo (this page is public). Ask the account owner, or read it from Bitwarden. |
 | Role | `admin` |
 | Auth User ID | `4b530cac-261e-4087-bb73-4258a8f6f91e` |
 | App User ID | `bd46c13d-c579-48e2-b90b-c26742812eda` |
@@ -27,7 +27,7 @@ The Supabase auth session must be established through the site's own login page 
 ```
 1. Navigate to /login/?redirect=/spaces/admin/devcontrol.html
 2. Fill email input with testuser@alpacaplayhouse.com
-3. Fill password input with test1234
+3. Fill password input with the test account password (see the table above)
 4. Click the "Sign in" button
 5. Wait for redirect to complete (~3s)
 ```
