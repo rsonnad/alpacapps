@@ -1,12 +1,12 @@
 {
-  "version": "v261024.18 12:15p",
-  "release": 1972,
-  "sha": "342529cb0a",
-  "fullSha": "342529cb0af7e35af23291eaa9df343dca4bd023",
+  "version": "v261025.01 3:27a",
+  "release": 1973,
+  "sha": "ac31c6bb46",
+  "fullSha": "ac31c6bb460231c71171a764411fc29d0ed9b626",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmtai0g",
-  "pushedAt": "2026-10-24T17:15:56+00:00",
-  "commits": [{"sha":"342529cb0a","message":"soniabikes: add per-bike size-fit badges for 169 cm rider + sizing note","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-10-25T08:27:37+00:00",
+  "commits": [{"sha":"ac31c6bb46","message":"Warsaw apartment board: daily refresh 2026-10-25 (157 listings)","author":"Muse (Almusca)"}]
 }
