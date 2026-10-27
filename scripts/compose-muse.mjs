@@ -31,7 +31,8 @@ export function loadSources(file = process.env.MUSE_SOURCES_FILE || path.join(ro
   return { sources, claimed };
 }
 
-const warn = msg => console.log(`::warning::${msg}`);
+// Plain output under `node --test`, so test inputs don't show up as CI warnings.
+const warn = msg => console.log(process.env.NODE_TEST_CONTEXT ? `warning: ${msg}` : `::warning::${msg}`);
 
 function resolve(sources) {
   const lock = {};
