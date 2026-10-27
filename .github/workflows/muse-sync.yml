@@ -1,0 +1,44 @@
+# Muse pages live in their own repos (see muse-sources.json). Every 10 minutes,
+# compare their main branches with what the live site was built from, and start
+# a publish run if they moved. Nothing from the Muse repos is executed here.
+name: Muse sync
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: muse-sync
+  cancel-in-progress: true
+
+jobs:
+  check:
+    if: github.repository == 'rsonnad/alpacapps'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - id: check
+        run: node scripts/compose-muse.mjs check
+      - name: Start a publish run if Muse changed and none is pending
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          busy=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow bump-version-on-push.yml --limit 20 \
+            --json status --jq '[.[] | select(.status != "completed")] | length')
+          if [ "$busy" != 0 ]; then
+            echo "A publish run is already queued or running; the next check will pick up Muse changes."
+            exit 0
+          fi
+          gh workflow run bump-version-on-push.yml --repo "$GITHUB_REPOSITORY" --ref main

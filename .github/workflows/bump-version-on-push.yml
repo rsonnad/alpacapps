@@ -37,6 +37,7 @@ jobs:
         run: |
           node scripts/check-supply-chain.mjs
           node --test scripts/supply-chain.test.mjs
+          node --test scripts/compose-muse.test.mjs
           node scripts/check-dependency-audit.mjs
       - name: Build Tailwind CSS without dependency lifecycle scripts
         run: npm ci --ignore-scripts && npm run css:build
@@ -59,10 +60,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Supabase secrets live in the "release" environment, which only main can use.
+    environment: release
     permissions:
       contents: write
     outputs:
       release_sha: ${{ steps.release.outputs.sha }}
+      muse_lock: ${{ steps.muse.outputs.lock }}
     steps:
       - name: Checkout the exact source that was built
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -121,11 +125,19 @@ jobs:
             git restore --worktree .
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      # Muse pages come from their own repos (muse-sources.json), pinned here so
+      # deploy verification checks the exact same bytes.
+      - name: Pin Muse source repos
+        id: muse
+        run: echo "lock=$(node scripts/compose-muse.mjs resolve)" >> "$GITHUB_OUTPUT"
       - name: Prepare committed static site
+        env:
+          MUSE_LOCK: ${{ steps.muse.outputs.lock }}
         run: |
           mkdir -p "$RUNNER_TEMP/pages-site"
           git archive HEAD -- . ':!mistiq' | tar -x -C "$RUNNER_TEMP/pages-site"
           python3 -c 'import json,os,subprocess; p=os.environ["RUNNER_TEMP"]+"/pages-site/_deployment.json"; open(p,"w").write(json.dumps({"sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()}))'
+          node scripts/compose-muse.mjs compose "$RUNNER_TEMP/pages-site" "$MUSE_LOCK"
       - name: Upload committed site
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
@@ -154,10 +166,13 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
       - name: Prepare committed files for public verification
+        env:
+          MUSE_LOCK: ${{ needs.release.outputs.muse_lock }}
         run: |
           mkdir -p "$RUNNER_TEMP/pages-site"
           git archive HEAD -- . ':!mistiq' | tar -x -C "$RUNNER_TEMP/pages-site"
           python3 -c 'import json,os,subprocess; p=os.environ["RUNNER_TEMP"]+"/pages-site/_deployment.json"; open(p,"w").write(json.dumps({"sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()}))'
+          node scripts/compose-muse.mjs compose "$RUNNER_TEMP/pages-site" "$MUSE_LOCK"
       - name: Verify public deployment and Muse pages
         env:
           PAGES_SITE_DIR: ${{ runner.temp }}/pages-site

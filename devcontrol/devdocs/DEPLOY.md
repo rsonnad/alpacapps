@@ -9,7 +9,19 @@ Manual retry without a commit or version bump:
 gh workflow run bump-version-on-push.yml --repo rsonnad/alpacapps --ref main
 ```
 
-Muse pages live at `muse/<project>/index.html` and publish at `https://alpacaplayhouse.com/muse/<project>/`. Keep Muse changes under `muse/`, rebase before pushing, and never force-push. All Muse HTML files, deployment metadata, and version.json are checked against the artifact bytes for up to five minutes after deployment. GitHub outages can still prevent deployment; inspect the workflow before reporting success.
+Muse pages are published at `https://alpacaplayhouse.com/muse/<project>/` but are **not** stored in this repo. Each Muse has its own repo, and only those repos hold Muse's write keys:
+
+| Repo | Muse | Projects (see `muse-sources.json`) |
+|---|---|---|
+| `rsonnad/muse-rahulio` | Rahul's Muse | warsawapt, bookinghostredflags, bw-test |
+| `rsonnad/muse-sonia` | Sonia's Muse | soniabikes |
+
+- A Muse pushes `muse/<project>/` to `main` of its own repo. It has no write access to `rsonnad/alpacapps`.
+- `.github/workflows/muse-sync.yml` checks those repos every 10 minutes and starts a publish run when one moved. A run of the main workflow (push or manual) also picks up the latest Muse commits.
+- `scripts/compose-muse.mjs` pins each Muse repo's commit, copies only regular files under `muse/<project>/`, and never publishes a project that `muse-sources.json` gives to another repo. An unlisted project is published only if exactly one repo has it. Nothing from a Muse repo is executed.
+- `_deployment.json` records the alpacapps commit and each Muse repo's commit. The final verification step compares every Muse HTML file with those bytes.
+- To move or claim a project, edit `muse-sources.json` on main. To add a Muse, create its repo, add a writable deploy key from that Muse (public key only), protect its `main` (block force-push and deletion) and add it to `muse-sources.json`.
+- Supabase secrets used by the release job are in the `release` environment, which only `main` can use, so workflows on other branches cannot read them.
 
 ### Push Workflow
 ```bash
