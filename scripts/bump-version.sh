@@ -74,11 +74,11 @@ fi
 COMMITS_JSON="[]"
 COMMITS_FOR_DB="[]"
 if [ -n "$RANGE" ]; then
-  LOG=$(git log --reverse --pretty=format:'%H%x09%h%x09%an%x09%ae%x09%cI%x09%s' "$RANGE" 2>/dev/null || true)
+  LOG=$(git log --reverse --pretty=format:'%H%x1f%h%x1f%an%x1f%ae%x1f%cI%x1f%s' "$RANGE" 2>/dev/null || true)
   if [ -n "$LOG" ]; then
     DB_ENTRIES=""
     VJ_ENTRIES=""
-    while IFS=$'\t' read -r sha short aname aemail cat subj; do
+    while IFS=$'\x1f' read -r sha short aname aemail cat subj; do
       [ -z "$sha" ] && continue
       # For version.json (simple)
       [ -n "$VJ_ENTRIES" ] && VJ_ENTRIES="$VJ_ENTRIES,"
