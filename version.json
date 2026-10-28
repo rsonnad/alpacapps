@@ -1,12 +1,12 @@
 {
-  "version": "v261026.03 7:59p",
-  "release": 1978,
-  "sha": "e88ddb44dc",
-  "fullSha": "e88ddb44dcdc8ae26762f9960fb011830dbf154f",
+  "version": "v261028.01 5:25a",
+  "release": 1979,
+  "sha": "423d3b362a",
+  "fullSha": "423d3b362a8c6e7fe4efd364b647cc2a0af7d352",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmtai0g",
-  "pushedAt": "2026-10-27T00:59:15+00:00",
-  "commits": [{"sha":"e88ddb44dc","message":"chore(muse): keep test inputs out of CI warning annotations","author":"rsonnad"}]
+  "machine": "runnervm48cm3",
+  "pushedAt": "2026-10-28T10:25:08+00:00",
+  "commits": [{"sha":"423d3b362a","message":"chore(rahulio): move Tesla vs BMW page to Muse (muse-rahulio/tesla-bmw-austin)","author":"Blotto"}]
 }
