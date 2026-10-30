@@ -14,6 +14,13 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 
 ## 2. Design Principles
 
+### Infra guide agent choice (2026-10-30)
+
+**Decision:** Prefer Cursor with Grok 4.7, retain Claude Code/Codex, and replace Zed with OpenCode for minimal spending. Document optional Grok Bot webhook routines and store their credentials in project-specific Bitwarden items.
+
+**Why:** Offer a clear preferred editor while preserving familiar subscription tools and a free-tool path with explicit model usage costs. Review this release with GLM 5.3 Flash; that review choice does not change the guide recommendation.
+
+
 ### Supply-chain isolation (2026-10-22)
 
 **Decision:** Build dependencies on a read-only GitHub-hosted runner with lifecycle

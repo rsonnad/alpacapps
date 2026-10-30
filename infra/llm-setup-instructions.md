@@ -8,7 +8,7 @@
 AlpacApps is a full-stack platform using:
 - **GitHub Pages** — static site hosting (free)
 - **Supabase** — PostgreSQL database, auth, storage, edge functions (free tier)
-- **A coding agent** — Claude Code or Codex on a subscription, or Zed running on its trial credit / the user's own OpenRouter key
+- **A coding agent** — prefer Cursor with Grok 4.7; Claude Code and Codex remain alternatives; OpenCode with a low-cost provider model is the minimal-spending option
 - **Tailwind CSS v4** — styling framework
 
 Architecture: Browser → GitHub Pages → Supabase (no server-side code). Edge functions handle sensitive operations.
@@ -20,10 +20,10 @@ The user opens their coding agent immediately and selects a new, empty local fol
 
 **Which agent:** the user picks one of two paths on the [pre-start page](https://alpacaplayhouse.com/infra/prestart/#pick-your-assistant).
 
-- **Subscription (recommended, best tested)** — Claude Code in Claude Desktop, or Codex in ChatGPT Desktop.
-- **Free — Zed** ([walkthrough](https://alpacaplayhouse.com/infra/zed/)) — free, open-source editor with a built-in agent. Its two-week Pro trial includes $20 of model credit, so no key or payment is needed to start. The model should be set to **Claude Sonnet 5**. Once the credit is gone, the user adds their own OpenRouter key under Settings → AI → LLM Providers and pays per token.
+- **Preferred subscription** — install Cursor from https://cursor.com/download, select Grok 4.7 in Agent, and use the setup prompt. Claude Code and Codex remain alternatives.
+- **Minimal spending — OpenCode** ([walkthrough](https://alpacaplayhouse.com/infra/opencode/)) — a free open-source tool; provider model usage is billed separately. Launch `opencode` in an empty folder, use `/connect` for the provider, then `/models` for a low-cost model. Store keys in Bitwarden and set a provider spending limit.
 
-If the user is on the free path: read `AGENTS.md` at the start of every session for project directives, expect no screenshot-pasting (ask the user to describe what they see instead), and do not treat OpenRouter as a prerequisite — it only matters after the trial credit runs out.
+For Cursor or OpenCode, read `AGENTS.md` once the project exists. Screenshots require an image-capable model. OpenRouter credentials are needed up front if that is the chosen OpenCode provider; do not promise trial credit or free API usage.
 
 It should:
 
@@ -211,3 +211,7 @@ When updating an existing project from the template (`https://github.com/rsonnad
 - **iPhone App**: Native Swift/SwiftUI, requires macOS for Xcode builds
 - **Android App**: Native Kotlin/Jetpack Compose, builds on any OS via Android Studio
 - **Home Server**: Requires a dedicated Mac on the local network running HAOS
+
+## Optional Grok Bot
+
+Install the persistent agentic harness from https://grokbot.com. Premium and above include it; Plus does not. For webhook routines, use the desktop Bot Details → Routines → routine → Webhook fields. Save POST to and the raw key in Bitwarden, then configure the sender server-side with a Bearer Authorization header. HTTP acceptance is not proof of task completion; verify the routine history and output. Full setup: https://alpacaplayhouse.com/infra/setup-guide.html#grokbot-webhooks.

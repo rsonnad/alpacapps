@@ -270,22 +270,10 @@
     </ol>
     <div class="validate">Ask the user to confirm they have a GitHub account and <code>gh auth status</code> shows "Logged in".</div>
 
-    <h3>Pick a coding agent &mdash; subscription or free</h3>
-    <p>Something has to act as the AI developer that handles terminal work, database setup, and code generation. Either a paid assistant, or a free editor running on the user's own OpenRouter key.</p>
-    <p><strong>Option A &mdash; subscription (recommended, best tested):</strong></p>
-    <ol>
-      <li>If you don't have a Claude account, sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank">claude.ai</a> (Pro $20/mo recommended &mdash; <a href="https://claude.ai/referral/fzGCallNug" target="_blank">free week here</a>)</li>
-      <li>Download <strong>Claude Desktop</strong> from <a href="https://claude.ai/download" target="_blank">claude.ai/download</a></li>
-      <li>Install and open the app, then sign in with your Claude account (or use ChatGPT Desktop/Codex)</li>
-    </ol>
-    <p><strong>Option B &mdash; no subscription (<a href="/infra/zed/">full walkthrough with screenshots</a>):</strong></p>
-    <ol>
-      <li>Install <a href="https://zed.dev/download" target="_blank">Zed</a> &mdash; free, open source, macOS / Windows / Linux</li>
-      <li>Sign in, then upgrade to the <strong>Pro free trial</strong> from the account page &mdash; two weeks with $20 of model credit</li>
-      <li>In the Agent Panel, set the model to <strong>Claude Sonnet 5</strong></li>
-      <li>Optional, once the credit runs out: create an <a href="https://openrouter.ai/keys" target="_blank">OpenRouter key</a>, add a few dollars of credit, and paste it into Zed under <em>Settings &rarr; AI &rarr; LLM Providers</em></li>
-    </ol>
-    <div class="validate">On the free route, tell the agent to read <code>AGENTS.md</code> at the start of each session, and expect to translate the occasional Claude Code / Codex wording in these steps.</div>
+    <h3>Pick a coding agent</h3>
+    <p><strong>Preferred:</strong> <a href="https://cursor.com/download" target="_blank" rel="noopener">install Cursor</a>, sign in, open an empty folder, and select <strong>Grok 4.7</strong> in Agent. <a href="https://grok.com" target="_blank" rel="noopener">Grok chat and apps</a> are available separately. Claude Code and Codex remain alternatives.</p>
+    <p><strong>Minimal spending:</strong> follow the <a href="/infra/opencode/">OpenCode walkthrough</a>. The tool is free; connected model usage is billed separately. Run <code>opencode</code>, connect your provider with <code>/connect</code>, and select a low-cost model with <code>/models</code>. Save keys in Bitwarden and set a provider spending limit.</p>
+    <div class="validate">Once the project exists, ask Cursor or OpenCode to read <code>AGENTS.md</code>. Check image support before relying on screenshots.</div>
   </div>
 
   <!-- Step 3 -->
@@ -323,24 +311,15 @@
 
     <div class="validate">Ask the agent to confirm it created and opened the clone, then confirm the project files are present with <code>ls</code> (Mac/Linux) or <code>dir</code> (Windows).</div>
 
-    <h3>Continue in Code mode</h3>
-    <p>Keep using the same Claude Code or Codex session for the rest of setup:</p>
+    <h3>Continue in your chosen coding agent</h3>
+    <p>Keep using the agent that created the project, and open the cloned project folder if it did not switch automatically.</p>
     <ol>
-      <li>Open <strong>Claude Desktop</strong></li>
-      <li>Click the <strong>Code</strong> tab (or start a new Claude Code session)</li>
-      <li>Open the project folder the agent just cloned, if it did not switch automatically</li>
-      <li><strong>Switch to Opus 4.6</strong> &mdash; Claude Code defaults to Sonnet, but you want the most capable model. Click the model selector (bottom of the chat) and choose <strong>Claude Opus 4.6</strong> (or the latest available model)</li>
-      <li><strong>Enable "Bypass permissions"</strong> &mdash; This lets Claude Code run terminal commands without asking you to approve each one. Open Claude Code settings (click the gear icon or press <code>Cmd + ,</code> on Mac / <code>Ctrl + ,</code> on Windows), find <strong>"Bypass permissions"</strong> (or "Yolo mode"), and turn it <strong>on</strong>.</li>
+      <li><strong>Cursor:</strong> open Agent and select <strong>Grok 4.7</strong>.</li>
+      <li><strong>OpenCode:</strong> run <code>opencode</code> in the project folder with your chosen provider and model.</li>
+      <li><strong>Claude Code or Codex:</strong> continue in their coding session in the same folder.</li>
+      <li>Ask the agent to read the project instructions and confirm it can run terminal commands. Handle permission requests according to the actions being performed.</li>
     </ol>
-    <div class="callout warning">
-      <strong>Why bypass permissions?</strong> The setup wizard runs dozens of terminal commands (installing CLIs, running database migrations, deploying functions). Without bypass, Claude Code will pause and ask you to approve every single command &mdash; which makes the process painfully slow. You can always turn it off later.
-    </div>
-    <div class="callout warning">
-      <strong>Model matters!</strong> Claude Code defaults to Sonnet, which is fast but less capable. For infrastructure setup and complex tasks, switch to <strong>Opus 4.6</strong> (or the latest version) &mdash; it handles multi-step setup wizards, database migrations, and edge function deployment much more reliably.
-    </div>
-    <p>From this point on, Claude Code handles everything: terminal commands, database setup, edge functions, and code generation. You can paste the remaining instructions directly into Claude Code.</p>
-
-    <div class="validate">Ask the user to confirm they have Code mode open in their project folder with the requested permissions enabled. They should see the project files and be ready to run commands.</div>
+    <div class="validate">Confirm the agent can see the project files and is ready to continue setup.</div>
   </div>
 
   <!-- Step 4 -->
@@ -529,6 +508,26 @@ Ask me when you need credentials for optional services (API keys, etc.).</code><
       Start building by telling Claude Code what you want &mdash; it handles the code, commits, and deploys.
     </div>
 
+  </div>
+
+  <div class="guide-step" id="grokbot-webhooks">
+    <h2>Optional: Grok Bot &amp; webhook routines</h2>
+    <p><a href="https://grokbot.com" target="_blank">Install Grok Bot</a>, the persistent agentic harness, sign in, and create a project Bot. Check your plan for access before purchasing; Premium and above include Grok Bot with shared usage; Plus does not include it.</p>
+    <ol>
+      <li>Ask the Bot to create a routine triggered by a webhook, with a narrow task and expected output. For a first test, ask it only to summarize the event in its chat.</li>
+      <li>On desktop, click the Bot&rsquo;s name, open <strong>Details</strong>, find <strong>Routines</strong>, and open the routine. In <strong>Webhook</strong>, copy <strong>POST to</strong> (URL) and <strong>key</strong> (raw secret). The <strong>header</strong> field already contains the full Authorization header; do not add another Bearer prefix.</li>
+      <li>Save the URL, key, routine name, purpose, and environment in a project-specific Bitwarden item, for example <code>Your Project &mdash; Grok Bot Webhook</code>. Store account logins, recovery codes, and provider API keys in the same project collection. Never paste secret values into this repository or chat.</li>
+      <li>Retrieve the URL/key from Bitwarden into the sender&rsquo;s server-side secret store as <code>GROKBOT_WEBHOOK_URL</code> and <code>GROKBOT_WEBHOOK_KEY</code> (raw key only). Run the test below in that environment. Do not put secrets in browser JavaScript, shell history, or logs.</li>
+      <li>Check the HTTP result, then the Bot&rsquo;s chat. A 200 confirms HTTP acceptance; it does not prove a routine ran or completed. Check the routine history and output. Confirm the expected test summary before connecting real events.</li>
+    </ol>
+    <pre><code>curl --silent --show-error --output /dev/null --write-out '%{http_code}\n' \
+  --request POST "$GROKBOT_WEBHOOK_URL" \
+  --header "Authorization: Bearer $GROKBOT_WEBHOOK_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{"event":"setup.test","environment":"staging"}'</code></pre>
+    <p>These Grok Bot routine webhooks use Bearer authentication; separate Grok automations webhooks use HMAC signatures.</p>
+    <p>For failures, check the routine is active and the saved URL/key are current. If Webhook fields are absent, update the desktop app and consult support; use a schedule meanwhile. If your event provider cannot send a custom Bearer header, use a server-side adapter that verifies the provider&rsquo;s signature before forwarding a minimal payload. Keep the Bot key in that adapter&rsquo;s secret store.</p>
+    <p><a href="https://cursor.com/help/grok-bot/routines" target="_blank">Official webhook routine instructions</a> &bull; <a href="https://grokbot.com" target="_blank">Grok Bot installation guide</a></p>
   </div>
 
   <!-- Optional services reference -->

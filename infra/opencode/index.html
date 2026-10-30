@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCode setup — AlpacApps Infra</title>
+  <meta name="description" content="Install OpenCode, connect a provider, choose a low-cost model, and save credentials in Bitwarden. The tool is free; model usage is billed separately.">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/tailwind.out.css">
+  <style>
+    body { background: var(--color-aap-cream, #faf9f6); color: var(--color-aap-text, #2a1f23); font-family: system-ui, sans-serif; }
+    main { max-width: 780px; margin: 3rem auto; padding: 1.5rem; }
+    section { background: white; border: 1px solid var(--color-aap-border, #e6e2d9); border-radius: 12px; padding: 1.5rem; margin: 1.25rem 0; }
+    h1 { font-size: 2rem; } h2 { font-size: 1.3rem; margin-bottom: .75rem; }
+    p, li { line-height: 1.65; margin: .6rem 0; } ol { list-style: decimal; padding-left: 1.5rem; }
+    a { color: var(--color-aap-amber-hover, #be7830); text-decoration: underline; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 1rem; background: var(--color-aap-cream-muted, #f2f0e8); border-radius: 8px; }
+  </style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main>
+  <p><a href="/infra/">Infra overview</a> &middot; <a href="/infra/prestart/#pick-your-assistant">Choose a coding agent</a></p>
+  <h1>OpenCode for minimal spending</h1>
+  <p>OpenCode is a free, open-source coding agent. Connect a model provider and pay for that provider&rsquo;s usage. No OpenCode subscription is required for this path; paid models and optional plans have their own charges.</p>
+  <section>
+    <h2>1. Install and launch</h2>
+    <p>Use the <a href="https://opencode.ai/docs/" target="_blank" rel="noopener">official installation instructions</a> for your operating system. If Node.js and npm are already installed, the npm option is:</p>
+    <pre><code>npm install -g opencode-ai
+opencode --version</code></pre>
+    <p>Create or select a new, empty project folder in your terminal, then run <code>opencode</code> there. Keep terminal command access enabled so the agent can do setup work.</p>
+  </section>
+  <section>
+    <h2>2. Connect a low-cost model</h2>
+    <ol>
+      <li>Choose a supported provider, such as <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a>, and check its current model rates and billing requirements.</li>
+      <li>Create a provider key, set a spending limit, and save it in a project-specific Bitwarden item. Keep recovery codes and account login details there too.</li>
+      <li>In OpenCode, type <code>/connect</code> and select your provider. Enter the key through the credential prompt, not a chat message or a project file.</li>
+      <li>Type <code>/models</code> and choose a low-cost model that supports coding and tools. If you plan to paste screenshots, confirm image support too.</li>
+    </ol>
+    <p>Free-model availability and promotional credits change. This route does not depend on a trial, and does not promise free model usage. See <a href="https://opencode.ai/docs/models/" target="_blank" rel="noopener">official provider and model selection documentation</a>.</p>
+  </section>
+  <section>
+    <h2>3. Start the project</h2>
+    <p>Paste the setup prompt from <a href="/infra/#setup-prompt">the main guide</a>. The agent creates your own repository and continues setup. Once the project exists, ask it to read <code>AGENTS.md</code> before making changes.</p>
+    <p>All new credentials belong in your project&rsquo;s Bitwarden collection. Ask the agent to retrieve them only through authorized vault access; keep values out of source files, logs, and chat.</p>
+  </section>
+</main>
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module" src="/shared/version-info.js"></script>
+<script type="module">
+  import { initPublicPage } from '/shared/public-shell.js';
+  initPublicPage({ transparent: false, light: false });
+</script>
+</body>
+</html>

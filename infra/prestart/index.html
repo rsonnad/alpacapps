@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlpacApps Infra — Before You Start</title>
-  <meta name="description" content="Pick a coding agent — a Claude or ChatGPT subscription, or Zed free on its trial credit — then let it help you create your GitHub, Supabase, Cloudflare, Google Cloud, and Resend accounts before AlpacApps setup begins.">
+  <meta name="description" content="Choose Cursor with Grok 4.7, Claude Code, Codex, or OpenCode for minimal spending; configure your project and store credentials in Bitwarden.">
   <meta property="og:title" content="AlpacApps Infra — Before You Start">
   <meta property="og:description" content="Set up core tools and services, then let Code mode bootstrap an AlpacApps project.">
   <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
@@ -521,7 +521,7 @@
     <div class="hero-text">
       <span class="eyebrow">Before you start</span>
       <h1>Install your <span>coding agent</span>, then set up the core services</h1>
-      <p>Run a coding agent from an empty folder &mdash; a paid one like <strong>Claude Code</strong> or <strong>Codex</strong>, or <strong>Zed</strong> free on its trial credit. First configure screenshots, then let the agent guide account creation and bootstrap the project. It handles the terminal work; you handle the account screens and paste screenshots when asked.</p>
+      <p>Run a coding agent from an empty folder &mdash; <strong>Cursor with Grok 4.7</strong> (preferred), <strong>Claude Code</strong>, <strong>Codex</strong>, or <strong>OpenCode</strong> with a low-cost provider model. First configure screenshots, then let the agent guide account creation and bootstrap the project. It handles the terminal work; you handle the account screens and paste screenshots when asked.</p>
       <span class="badge">20&ndash;40 minutes &middot; Code-first setup</span>
     </div>
   </div>
@@ -534,7 +534,7 @@
     <ol class="steps-list">
       <li><strong>Set up screenshots first</strong> &mdash; Shottr on Mac or ShareX on Windows, then paste one test capture into Code mode.</li>
       <li><strong>Create one dedicated Gmail account</strong> for the project, used as the login for every service below.</li>
-      <li><strong>Pick and install one coding agent</strong> &mdash; a Claude or ChatGPT subscription, or <a href="/infra/zed/">Zed</a> free on its trial credit &mdash; then open it in an empty folder.</li>
+      <li><strong>Pick and install one coding agent</strong> &mdash; a Claude or ChatGPT subscription, or <a href="/infra/opencode/">OpenCode</a> with a low-cost provider model &mdash; then open it in an empty folder.</li>
       <li><strong>Set up Bitwarden</strong> &mdash; the recommended default credential manager &mdash; so every password and key has one safe home.</li>
       <li><strong>Create the six core service accounts and register a domain</strong> &mdash; GitHub first, then Supabase, Cloudflare, Google Cloud, Resend, OpenRouter, and a branded domain &mdash; with the coding agent guiding you as you go.</li>
       <li><strong>Continue setup</strong> at <a href="/infra/">alpacaplayhouse.com/infra</a>, where the agent creates, clones, and deploys the project.</li>
@@ -598,27 +598,27 @@
 
   <!-- STOP 2: pick your assistant -->
   <section class="section" id="pick-your-assistant">
-    <h2>Step 2 &mdash; Pick how you pay for the agent: subscription <em>or</em> free plus OpenRouter</h2>
-    <p>Something has to do the actual work, and there are two ways to get it. <strong>Option A</strong> is a flat monthly subscription and the smoothest road. <strong>Option B</strong> costs nothing &mdash; <a href="/infra/zed/">Zed</a> is free, its two-week Pro trial includes $20 of model credit, and after that you can keep going on your own <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key, billed per token. Pick <strong>one</strong> and install it now; you use it for the rest of this page and the whole setup afterward.</p>
+    <h2>Step 2 &mdash; Pick how you pay for the agent: subscription or minimal spending</h2>
+    <p><strong>Option A</strong> is a subscription: prefer Cursor with Grok 4.7, with Claude Code and Codex as alternatives. <strong>Option B</strong> is <a href="/infra/opencode/">OpenCode</a> for minimal spending: the tool is free and open source, while the connected model is billed separately. Choose a low-cost provider, set a spending limit, and pay for the usage you need. Pick one, then open it in a new, empty folder.</p>
 
     <div class="choice-grid">
-      <!-- Option A: subscription -->
       <div class="choice-card choice-card--paid">
-        <span class="pick">Option A &middot; Subscription &middot; Recommended</span>
-        <div class="choice-head">
-          <img src="https://cdn.simpleicons.org/anthropic/7c6a9a" alt="" width="24" height="24">
-          <h3>Pay a monthly subscription</h3>
-        </div>
-        <p>One app, one flat bill, no keys to wire up. The AlpacApps instructions were written and tested against these two, so the steps on the next page match what you actually see on screen.</p>
-
+        <span class="pick">Option A &middot; Subscription &middot; Preferred</span>
+        <div class="choice-head"><h3>Cursor with Grok 4.7</h3></div>
+        <p>Our preferred editor and model. Claude Code and Codex remain supported alternatives if you already use them. Plans have usage limits; check current access before buying.</p>
         <div class="subopt">
-          <h4>Claude Desktop <span class="tag">Best tested</span></h4>
+          <h4>Cursor + Grok 4.7 <span class="choice-tag">Preferred</span></h4>
+          <p>Install Cursor, sign in, open your empty project folder, and select <strong>Grok 4.7</strong> in Agent&rsquo;s model picker. No separate model installation is needed. Ask Agent to read <code>AGENTS.md</code> once the project exists.</p>
+          <a class="button button--claude" href="https://cursor.com/download" target="_blank" rel="noopener">Install Cursor &rarr;</a>
+          <p class="small muted"><a href="https://grok.com" target="_blank" rel="noopener">Grok chat and apps</a> &middot; <a href="https://prod.cursor.com/help/models-and-usage/grok-4-7" target="_blank" rel="noopener">Model availability</a> &middot; <a href="https://cursor.com/pricing" target="_blank" rel="noopener">Plans and usage</a>. Save logins, recovery codes, and any API keys in your project&rsquo;s Bitwarden collection.</p>
+        </div>
+        <div class="subopt">
+          <h4>Claude Desktop <span class="tag">Alternative</span></h4>
           <p>Anthropic&rsquo;s desktop app. Open <strong>Claude Code</strong> in an empty folder; it guides account setup, creates and clones the project, then does the build. Reads screenshots you paste in.</p>
           <p class="small muted">Free tier to try it; Pro $20/mo or Max $100/mo for real use.</p>
           <a class="button button--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
           <p class="small muted" style="margin: 0.6rem 0 0;">No account yet? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
         </div>
-
         <div class="subopt">
           <h4>ChatGPT Desktop (Codex)</h4>
           <p>OpenAI&rsquo;s desktop app, same flow through <strong>Codex</strong>. Familiar if you already use ChatGPT, and also reads pasted screenshots.</p>
@@ -627,39 +627,28 @@
           <p class="small muted" style="margin: 0.6rem 0 0;">Codex CLI (optional, later): <code>npm i -g @openai/codex</code> &mdash; see <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">developers.openai.com/codex</a>.</p>
         </div>
       </div>
-
-      <!-- Option B: free agent + OpenRouter -->
       <div class="choice-card choice-card--free">
-        <span class="pick">Option B &middot; No subscription</span>
-        <div class="choice-head">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#2f7d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <h3>Zed &mdash; free, with $20 of trial credit</h3>
-        </div>
-        <p>Zed is a free, open-source editor with an AI agent built in. Start its <strong>two-week Pro trial</strong> and you get <strong>$20 of model credit</strong> &mdash; enough to get the project standing up before you decide whether to pay anyone anything.</p>
-
+        <span class="pick">Option B &middot; Minimal spending</span>
+        <div class="choice-head"><h3>OpenCode &mdash; free tool, pay for model usage</h3></div>
+        <p>An open-source coding agent for your terminal or desktop. Connect a provider, choose a low-cost model, and set a provider spending limit. No tool subscription is required; API usage can still cost money.</p>
         <div class="subopt">
-          <h4>Zed <span class="tag">Free trial credit</span></h4>
-          <p>Install it, sign in, upgrade to the free trial from your account page, then set the agent&rsquo;s model to <strong>Claude Sonnet 5</strong>. Open your empty folder and start. Built in Rust rather than Electron, so it also runs in a fraction of the memory of a heavier editor &mdash; the one to pick on an older or 8&nbsp;GB laptop.</p>
-          <p class="small muted">After the trial: Pro is $10/mo, or stay on the free plan and run it on your own OpenRouter key.</p>
-          <a class="button button--free" href="/infra/zed/">Zed setup walkthrough &rarr;</a>
-          <p class="small muted" style="margin: 0.6rem 0 0;">Screenshot-by-screenshot: install, the trial, the model, and the optional OpenRouter key.</p>
+          <h4>Get started with OpenCode</h4>
+          <p>Install from the official guide, launch <code>opencode</code> in your empty folder, use <code>/connect</code> for your provider, then <code>/models</code> to choose a model.</p>
+          <a class="button button--free" href="/infra/opencode/">OpenCode setup walkthrough &rarr;</a>
+          <p class="small muted">Save the provider key in Bitwarden. Once the project exists, tell Agent to read <code>AGENTS.md</code>. Use an image-capable model for screenshots.</p>
         </div>
-
-        <p class="small muted card-foot"><strong>Fair warning.</strong> This route is slower and more hands-on, and the pages here are worded for Claude Code and Codex &mdash; the steps still apply, you will just translate the occasional button name. Tell your agent to read <code>AGENTS.md</code> at the start of each session so it picks up the project rules.</p>
       </div>
     </div>
     <p class="choice-or">Pick one path &mdash; you do not need both</p>
 
-    <div class="callout">
-      <p><strong>Which should I pick?</strong> If $8&ndash;$20 a month is comfortable, take <strong>Option A</strong>, and within it <strong>Claude Desktop</strong> unless you already pay for ChatGPT &mdash; these instructions were written and tested against it. Take <strong>Option B</strong> if you would rather not add a subscription, or you want to find out whether this suits you before paying for anything &mdash; the trial credit is real money you did not spend. Nothing in the project is tied to one agent: the repo ships both <code>CLAUDE.md</code> and <code>AGENTS.md</code>, so you can switch later without redoing work. Whichever you pick, start it in a new, empty folder.</p>
-    </div>
+    <div class="callout"><p><strong>Which should I pick?</strong> Prefer Cursor with Grok 4.7 for an editor-based workflow, keep Claude Code or Codex if they suit your existing subscription, or choose OpenCode to minimize spending with a low-cost model. Start in a new, empty folder.</p></div>
   </section>
 
   <!-- STOP 3: let it help you -->
   <section class="section">
-    <h2>Step 3 &mdash; Open Code mode and paste this prompt</h2>
-    <p>Open the agent you just installed &mdash; <strong>Claude Code</strong>, <strong>Codex</strong>, or <strong>Zed</strong>&rsquo;s Agent Panel &mdash; in a new, empty folder and paste the prompt below. It will guide each signup and tell you exactly what to click. Claude Code and Codex also read screenshots you paste when you get stuck; on the free route, describe what you see instead.</p>
-    <div class="prompt-block" id="prestart-prompt"><button class="copy-btn" onclick="copyById('prestart-prompt')">Copy</button>I'm getting ready to set up an AlpacApps project. I am in Code mode in an empty folder. First ask whether I already use a password manager. Evaluate its CLI for interactive authentication and scoped, safe reads from Claude Code/Codex, explain whether it works, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain as the automation source. Then help me set up the core services in this order: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.
+    <h2>Step 3 &mdash; Open your coding agent and paste this prompt</h2>
+    <p>Open the agent you just installed &mdash; <strong>Cursor Agent</strong>, <strong>Claude Code</strong>, <strong>Codex</strong>, or <strong>OpenCode</strong> &mdash; in a new, empty folder and paste the prompt below. It will guide each signup and tell you exactly what to click. Claude Code and Codex also read screenshots you paste when you get stuck; in OpenCode, choose an image-capable model or describe what you see instead.</p>
+    <div class="prompt-block" id="prestart-prompt"><button class="copy-btn" onclick="copyById('prestart-prompt')">Copy</button>I'm getting ready to set up an AlpacApps project. I am using a coding agent with terminal access in an empty folder. First ask whether I already use a password manager. Evaluate its CLI for interactive authentication and scoped, safe reads from my chosen coding agent, explain whether it works, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain as the automation source. Then help me set up the core services in this order: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.
 
 GitHub goes first because Supabase, Cloudflare, and Resend all support "Continue with GitHub" — use that for each of them instead of creating separate passwords. Google Cloud uses my project Gmail instead.
 

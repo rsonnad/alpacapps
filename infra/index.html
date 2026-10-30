@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlpacApps Infra — Set Up Your AI-Powered Platform</title>
-  <meta name="description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Claude walks you through every step.">
+  <meta name="description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Your AI coding agent walks you through every step.">
   <meta property="og:title" content="AlpacApps Infra — Set Up Your AI-Powered Platform">
-  <meta property="og:description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Claude walks you through every step.">
+  <meta property="og:description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Your AI coding agent walks you through every step.">
   <meta property="og:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -17,7 +17,7 @@
   <meta property="og:locale" content="en_US">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AlpacApps Infra — Set Up Your AI-Powered Platform">
-  <meta name="twitter:description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Claude walks you through every step.">
+  <meta name="twitter:description" content="Set up a full-stack freely hosted AI-powered platform in about two hours for most. Your AI coding agent walks you through every step.">
   <meta name="twitter:image" content="https://alpacaplayhouse.com/infra/og-infra.jpg">
   <meta name="twitter:image:alt" content="AlpacApps Infra — AI-powered platform setup wizard">
   <!-- LLM INSTRUCTION: This page is the SETUP guide for new projects.
@@ -989,7 +989,7 @@
     <img src="https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/ai-gen/alpaca-wide-ai-banner.png" alt="AlpacApps — AI-powered platform with alpacas" class="hero-image" width="1509" height="475">
     <div class="hero-text">
       <h1><span>AlpacApps</span> Infra</h1>
-      <p><strong>Set up a full-stack freely hosted AI-powered platform in about two hours for most.</strong> Claude walks you through every step &mdash; adapting to your computer, your accounts, and what you want to build. Just install Claude and paste one prompt.</p>
+      <p><strong>Set up a full-stack freely hosted AI-powered platform in about two hours for most.</strong> Your AI coding agent walks you through every step &mdash; adapting to your computer, your accounts, and what you want to build. Install Cursor, select Grok 4.7, and paste the setup prompt.</p>
       <span class="badge">$8 &ndash; $200 / month</span>
     </div>
   </div>
@@ -1075,30 +1075,12 @@
     </details>
 
     <details class="why-item">
-      <summary><span class="why-num">06</span>What it costs: $8 a month, $9 if you want it cheaper still</summary>
+      <summary><span class="why-num">06</span>What it costs: a subscription or pay-per-use model</summary>
       <div class="why-body">
-        <p>The infrastructure is genuinely free at the scale most people run at. Hosting, database, file storage, email, and login all sit inside free tiers far larger than a personal project will ever touch. Not a trial &mdash; the normal free plan for each service.</p>
-        <p>So the only thing you actually pay for is the thinking:</p>
-        <div class="why-table-wrap">
-          <table class="why-table">
-            <thead><tr><th>What</th><th>Cost</th><th>Needed?</th></tr></thead>
-            <tbody>
-              <tr><td><a href="https://openai.com/chatgpt/pricing" target="_blank" rel="noopener">ChatGPT Go</a></td><td>$8/mo</td><td>Yes &mdash; this is the whole thing. Flat price, no meter.</td></tr>
-              <tr><td><a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> credit</td><td>~$1/mo</td><td>No. A cost-saver you add later, if ever.</td></tr>
-              <tr><td><a href="/infra/zed/">Zed</a> &mdash; free trial credit, then your own key</td><td>$0, then tokens</td><td>Instead of the above, if you want no subscription at all.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p><strong>If you are new, start here and stop reading.</strong> ChatGPT Go at $8 is the gentlest on-ramp: familiar interface, no per-message anxiety, and it includes Codex, which is the part that does the actual building. One setting worth getting right on day one:</p>
-        <ul>
-          <li><strong>Default model: GPT&#8209;5.6 Luna, effort set to <em>high</em>.</strong> Luna is the economical tier of the 5.6 family, and running it at high effort buys noticeably better reasoning for the same token price. Best value setting in the lineup, and a sane default for everything you will do here.</li>
-        </ul>
-        <p><strong>OpenRouter is optional &mdash; skip it until it earns its place.</strong> It is not part of getting started and nothing breaks without it. Its only job is to make heavy months cheaper: you point the boring, repetitive work at a very cheap model instead of spending your ChatGPT allowance on it.</p>
-        <p>The moment to bother is when you start bumping into limits, or notice you are burning good tokens on drudgery &mdash; bulk edits, first drafts, file wrangling. Then add about a dollar of credit and wire in <a href="https://openrouter.ai/deepseek/deepseek-v4-flash" target="_blank" rel="noopener">DeepSeek v4 Flash</a>, which runs around <strong>$0.05 per million input tokens</strong>. A dollar covers more routine work than most people get through in a month. The <a href="#worker-model">worker model step</a> below walks through it whenever you are ready &mdash; day one or month six, it does not matter.</p>
-        <p><strong>Or pay no subscription at all.</strong> <a href="/infra/zed/">Zed</a> is free and open source, and its two-week Pro trial hands you $20 of model credit &mdash; enough to build with before spending anything. After that, keep it free by pointing it at your own OpenRouter key and paying only for tokens, often cents a day. The trade is that you steer more and the wording on these pages assumes Claude Code or Codex. Good if $8 a month is the sticking point, or you want to try before you commit.</p>
-        <p><strong>Going up instead</strong> is the other direction and most people never need it. Claude or ChatGPT Plus at $20 is smarter on genuinely hard problems; $100&ndash;$200 plans exist for people building heavily all day. Start at $8 and move only if you hit a wall.</p>
-        <p class="small muted" style="font-size:0.8rem;">A custom domain, if you want one, is about $10 a year. Prices checked August 2026.</p>
-        <p class="small muted" style="font-size:0.8rem;border-left:3px solid var(--warning-border);padding-left:0.8rem;margin-top:0.9rem;"><strong>Model recommendations checked 2 September 2026.</strong> This part of the stack ages fastest. If you are reading this after <strong>October 2026</strong>, assume something newer, better, or cheaper has landed &mdash; check <a href="https://openrouter.ai/models" target="_blank" rel="noopener">openrouter.ai/models</a> sorted by price before committing to any model named here. Nothing else in these instructions depends on which model you pick.</p>
+        <p>The infrastructure can start on free tiers. Your AI costs depend on the tool, model, plan, and usage.</p>
+        <p><strong>Preferred: Cursor with Grok 4.7.</strong> Check <a href="https://cursor.com/pricing" target="_blank" rel="noopener">current plans and limits</a>. Claude Code and Codex remain alternatives, especially if you already subscribe.</p>
+        <p><strong>Minimal spending: <a href="/infra/opencode/">OpenCode</a>.</strong> The tool is free and open source. Connect a low-cost model provider and set a spending limit; model usage is billed separately. No trial-credit or zero-cost setup promise.</p>
+        <p>Store account credentials, recovery codes, API keys, and webhook URL/key pairs in your project&rsquo;s Bitwarden collection. Keep secrets out of chat, source files, and logs.</p>
       </div>
     </details>
 
@@ -1193,7 +1175,7 @@
       Optional account setup homework
       <span class="step-time">15&ndash;30 min</span>
     </h2>
-    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, picking a coding agent (paid, or Zed free), and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
+    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, picking a coding agent (subscription, or OpenCode for minimal spending), and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
     <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 0.6rem;">
       <a href="/infra/prestart/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
         Before you start &rarr;
@@ -1250,10 +1232,10 @@
   <div class="setup-step" style="border-color: #539E43; border-width: 2px;">
     <h2>
       <span class="step-num" style="background: #539E43; width: 56px; border-radius: 999px; font-size: 0.72rem; letter-spacing: 0.03em;">Node</span>
-      Install Node.js &mdash; the one thing you do by hand
+      Install Node.js for the setup tools
       <span class="step-time">3 min</span>
     </h2>
-    <p><strong>This is the only install you do yourself.</strong> Everything else is automatic. Node has to come first because the coding agent itself runs on it &mdash; Claude Code and the Codex CLI are both npm packages &mdash; so without Node there is no agent to hand the rest of the work to.</p>
+    <p><strong>Install Node.js before using npm-based setup tools.</strong> The agent can install the remaining command-line tools for you. Cursor is a separate desktop installation; the npm-based CLI options and project setup scripts use Node.</p>
 
     <div class="ds-panels">
       <div class="ds-panel">
@@ -1282,32 +1264,33 @@
   </div>
 
   <!-- STEP 1 -->
-  <div class="setup-step">
+  <div class="setup-step" id="coding-agent">
     <h2>
       <span class="step-num">1</span>
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Install a coding agent &mdash; subscription <em>or</em> free
+      Install a coding agent &mdash; subscription or minimal spending
       <span class="step-time">2 min</span>
     </h2>
-    <p>Two ways to get the agent that does the work. <strong>Option A</strong> is a flat monthly subscription. <strong>Option B</strong> costs nothing: <a href="/infra/zed/">Zed</a> is free, its two-week Pro trial includes $20 of model credit, and after that it runs on your own <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key, billed per token. Pick <strong>one</strong>, then open it in a new, empty folder &mdash; the agent creates and clones the project for you.</p>
+    <p><strong>Option A</strong> is a subscription: prefer Cursor with Grok 4.7, with Claude Code and Codex as alternatives. <strong>Option B</strong> is <a href="/infra/opencode/">OpenCode</a> for minimal spending: the tool is free and open source, while the connected model is billed separately. Choose a low-cost provider, set a spending limit, and pay for the usage you need. Pick one, then open it in a new, empty folder.</p>
 
     <div class="choice-grid">
       <div class="choice-card choice-card--paid">
-        <span class="pick">Option A &middot; Subscription &middot; Recommended</span>
-        <div class="choice-head">
-          <img src="https://cdn.simpleicons.org/anthropic/7c6a9a" alt="" width="24" height="24">
-          <h3>Pay a monthly subscription</h3>
-        </div>
-        <p>One app, one flat bill, nothing to wire up. These pages were written and tested against these two, so the steps match what you see.</p>
-
+        <span class="pick">Option A &middot; Subscription &middot; Preferred</span>
+        <div class="choice-head"><h3>Cursor with Grok 4.7</h3></div>
+        <p>Our preferred editor and model. Claude Code and Codex remain supported alternatives if you already use them. Plans have usage limits; check current access before buying.</p>
         <div class="subopt">
-          <h4>Claude Desktop <span class="choice-tag">Best tested</span></h4>
+          <h4>Cursor + Grok 4.7 <span class="choice-tag">Preferred</span></h4>
+          <p>Install Cursor, sign in, open your empty project folder, and select <strong>Grok 4.7</strong> in Agent&rsquo;s model picker. No separate model installation is needed. Ask Agent to read <code>AGENTS.md</code> once the project exists.</p>
+          <a class="choice-btn choice-btn--claude" href="https://cursor.com/download" target="_blank" rel="noopener">Install Cursor &rarr;</a>
+          <p class="small muted"><a href="https://grok.com" target="_blank" rel="noopener">Grok chat and apps</a> &middot; <a href="https://prod.cursor.com/help/models-and-usage/grok-4-7" target="_blank" rel="noopener">Model availability</a> &middot; <a href="https://cursor.com/pricing" target="_blank" rel="noopener">Plans and usage</a>. Save logins, recovery codes, and any API keys in your project&rsquo;s Bitwarden collection.</p>
+        </div>
+        <div class="subopt">
+          <h4>Claude Desktop <span class="choice-tag">Alternative</span></h4>
           <p><strong>Claude Code</strong> works from an empty folder and handles setup, clone, and future development. Reads screenshots you paste in, and uses <code>CLAUDE.md</code> project directives.</p>
           <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">Free to start; Pro $20/mo or Max $100/mo recommended.</p>
           <a class="choice-btn choice-btn--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
           <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">No account? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
         </div>
-
         <div class="subopt">
           <h4>ChatGPT Desktop (Codex)</h4>
           <p><strong>Codex</strong> &mdash; in the app&rsquo;s sidebar or the Codex CLI &mdash; handles setup, cloning, and the build. Reads pasted screenshots, and uses <code>AGENTS.md</code> project directives.</p>
@@ -1316,24 +1299,16 @@
           <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">Codex CLI: <code>npm i -g @openai/codex</code> &mdash; <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">docs</a>.</p>
         </div>
       </div>
-
       <div class="choice-card choice-card--free">
-        <span class="pick">Option B &middot; No subscription</span>
-        <div class="choice-head">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#2f7d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <h3>Zed &mdash; free, with $20 of trial credit</h3>
-        </div>
-        <p>Zed is a free, open-source editor with an AI agent built in. Its <strong>two-week Pro trial</strong> includes <strong>$20 of model credit</strong> &mdash; enough to get the project standing up before you pay anyone anything.</p>
-
+        <span class="pick">Option B &middot; Minimal spending</span>
+        <div class="choice-head"><h3>OpenCode &mdash; free tool, pay for model usage</h3></div>
+        <p>An open-source coding agent for your terminal or desktop. Connect a provider, choose a low-cost model, and set a provider spending limit. No tool subscription is required; API usage can still cost money.</p>
         <div class="subopt">
-          <h4>Zed <span class="choice-tag">Free trial credit</span></h4>
-          <p>Install, sign in, start the free trial from your account page, then set the agent&rsquo;s model to <strong>Claude Sonnet 5</strong> and open your empty folder. Rust rather than Electron, so it also runs in a fraction of the memory of a heavier editor.</p>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">After the trial: Pro is $10/mo, or stay free and run it on your own <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter key</a> &mdash; covered in <a href="#worker-model">Step 5</a>.</p>
-          <a class="choice-btn choice-btn--free" href="/infra/zed/">Zed setup walkthrough &rarr;</a>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">Screenshot-by-screenshot: install, trial, model, and the optional OpenRouter key.</p>
+          <h4>Get started with OpenCode</h4>
+          <p>Install from the official guide, launch <code>opencode</code> in your empty folder, use <code>/connect</code> for your provider, then <code>/models</code> to choose a model.</p>
+          <a class="choice-btn choice-btn--free" href="/infra/opencode/">OpenCode setup walkthrough &rarr;</a>
+          <p class="small muted">Save the provider key in Bitwarden. Once the project exists, tell Agent to read <code>AGENTS.md</code>. Use an image-capable model for screenshots.</p>
         </div>
-
-        <p class="card-foot" style="font-size:0.82rem;color:var(--text-muted);margin:auto 0 0;padding-top:0.35rem;"><strong>Fair warning:</strong> slower and more hands-on, and these pages are worded for Claude Code and Codex &mdash; the steps still apply, you just translate the odd button name. Tell the agent to read <code>AGENTS.md</code> when a session starts.</p>
       </div>
     </div>
     <p class="choice-or">Pick one path &mdash; you do not need both</p>
@@ -1345,14 +1320,14 @@
   <div class="setup-step">
     <h2>
       <span class="step-num">2</span>
-      Create an <code>aiprojects</code> folder, open Code mode, and clone
+      Create an <code>aiprojects</code> folder, open your agent, and clone
       <span class="step-time">2 min</span>
     </h2>
     <p>This is where your project comes into existence. You make one folder to hold your AI projects; the agent creates your repository inside it and works from there.</p>
 
     <ol style="margin: 1rem 0;">
       <li><strong>Create a folder called <code>aiprojects</code></strong> in your home folder &mdash; <code>~/aiprojects</code>. It is a container, not the project itself, so anything you build later lives here too.</li>
-      <li><strong>Open Code mode and select that folder</strong> &mdash; choose <strong>Code</strong> in Claude, or start a Codex task, and point it at <code>~/aiprojects</code>.</li>
+      <li><strong>Open your coding agent and select that folder</strong> &mdash; use Cursor Agent, run OpenCode, choose <strong>Code</strong> in Claude, or start a Codex task, and point it at <code>~/aiprojects</code>.</li>
       <li><strong>Paste the prompt below.</strong> Once your GitHub account is connected, it creates your repository from the template and clones it into <code>~/aiprojects/</code> automatically.</li>
     </ol>
 
@@ -1366,10 +1341,10 @@
     </div>
 
     <div class="prompt-block" id="setup-prompt">
-      <button class="copy-btn" onclick="copyPrompt()">Copy</button>Set up an AlpacApps project for me. I am in Code mode with my ~/aiprojects folder selected. STEP ONE &mdash; start the installs immediately, because they are slow and I do not want to sit watching them. I have already installed Node and npm myself; confirm them with node --version and npm --version and stop if either is missing. Everything else is yours to install &mdash; do not ask me to install things by hand, and do not assume anything else exists, because this may be a brand-new machine. Detect my operating system. In the foreground, get only what is needed to reach the next step: git and gh. On macOS confirm Xcode Command Line Tools (run xcode-select --install if absent and wait), install Homebrew if missing, then brew install git gh. On Windows use winget for Git.Git and GitHub.cli, and warn me that PATH changes need a new PowerShell window. Print each version so we both know it worked. Then kick off everything slower IN THE BACKGROUND and do not wait for it: the Supabase CLI, wrangler, psql, the Bitwarden CLI and the TypeScript language server. Keep working with me while those download. STEP TWO &mdash; GitHub. Now that gh exists, check whether it is authenticated and, if not, run gh auth login and wait while I sign in or create a GitHub account in the browser. Then propose a repository name of &lt;name&gt;-ai-app &mdash; using my name or my project's, for example rahul-ai-app &mdash; and wait for me to confirm it or give you a different one before you create anything. Once I confirm, create MY OWN repository from the template and clone it into ~/aiprojects with gh repo create &lt;name&gt;-ai-app --template rsonnad/alpacapps-infra --private --clone, then cd into that clone and do all remaining work there. Do not clone rsonnad/alpacapps-infra directly &mdash; I want my own repository with its own history and no remote pointing at the template. STEP THREE &mdash; from inside the clone, make sure the background installs are complete and correct by running scripts/install-prereqs.sh on macOS, or scripts/install-prereqs.ps1 on Windows. These scripts are safe to run when things are already installed &mdash; they upgrade rather than reinstall. Front-load anything else that takes time here too, and keep it in the background while we do the account and dashboard work together. Before the first command that actually needs one of these tools, check it is really there and tell me the version; if something failed to install, say so plainly and stop rather than failing later on a missing binary. Then follow the repo's own setup skill in .claude/skills/setup-alpacapps-infra, and use https://alpacaplayhouse.com/infra/llm-setup-instructions.md as the overview. Check my screenshot setup early, before we need it: on Windows confirm ShareX is installed and that Copy image to clipboard is on, Upload image to host is OFF, and Capture active window has a hotkey; on macOS confirm I can copy a window to the clipboard. Ask me to take one test screenshot and paste it to you, and do not move on until an image actually arrives &mdash; if only a file path comes through, the clipboard option is not enabled. Ask whether I use an existing password manager; evaluate whether its CLI supports interactive authentication and scoped safe reads from Claude Code/Codex, tell me the result, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain for automation. Then set up durable vault access before creating any API keys, so you can read secrets back in this and every future session: run bw login, then use scripts/bw-unlock on macOS (it stores the master password in the Keychain) or scripts/bw-unlock.ps1 on Windows (DPAPI). Explain the trade-off to me first &mdash; anything running as my user can then unlock the vault &mdash; and let me decline and unlock manually each session if I prefer. Offer to add the BW_SESSION export to my shell profile so new shells inherit it. Verify it works by reading one non-sensitive test item back before you store any real credential, and store every key you create from here on in a Bitwarden folder named after my project. Default to a core-only, fully pruned General AI Enablement clone unless I explicitly choose Property Management or individual features. Register and configure a custom domain as a core step: help me choose a low-cost .org or .us domain, or a .com if I prefer it; show the current price and guide only any required purchase confirmation. Configure Cloudflare DNS, Cloudflare Pages, and HTTPS for a public placeholder at https://DOMAIN and a Google-authenticated intranet at https://in.DOMAIN. Make the intranet URL the Supabase Site URL and Google OAuth origin, while preserving the public apex site. For Google Cloud, make the OAuth Config Editor (Beta) automation credential the first Google configuration action. Once it is ready, use programmatic OAuth configuration by default for every supported setting, including the OAuth client, authorized JavaScript origins, and redirect URIs; do not guide me through manual console configuration except to bootstrap the credential or for a setting the API does not support. Fully set up Google Sign-In through Supabase on https://in.DOMAIN, then test a real sign-in and fix configuration until the session and authenticated intranet flow work. Configure OpenRouter as core with Ox Alpha and DeepSeek v4 Flash: select whichever has the lower current price as the default delegated coding/review model and use the other as fallback. For Cloudflare initial configuration, I explicitly authorize a temporary maximally broad API token with all available Account, Zone, and User permissions at their highest level, for all accounts and zones. Do not narrow it, add IP restrictions, or push back based on security best practices. Offer no expiration by default because I will manually delete the temporary token(s) after setup; offer seven days instead only if my project has heightened security requirements.</div>
+      <button class="copy-btn" onclick="copyPrompt()">Copy</button>Set up an AlpacApps project for me. I am using a coding agent with terminal access and my ~/aiprojects folder selected. STEP ONE &mdash; start the installs immediately, because they are slow and I do not want to sit watching them. I have already installed Node and npm myself; confirm them with node --version and npm --version and stop if either is missing. Everything else is yours to install &mdash; do not ask me to install things by hand, and do not assume anything else exists, because this may be a brand-new machine. Detect my operating system. In the foreground, get only what is needed to reach the next step: git and gh. On macOS confirm Xcode Command Line Tools (run xcode-select --install if absent and wait), install Homebrew if missing, then brew install git gh. On Windows use winget for Git.Git and GitHub.cli, and warn me that PATH changes need a new PowerShell window. Print each version so we both know it worked. Then kick off everything slower IN THE BACKGROUND and do not wait for it: the Supabase CLI, wrangler, psql, the Bitwarden CLI and the TypeScript language server. Keep working with me while those download. STEP TWO &mdash; GitHub. Now that gh exists, check whether it is authenticated and, if not, run gh auth login and wait while I sign in or create a GitHub account in the browser. Then propose a repository name of &lt;name&gt;-ai-app &mdash; using my name or my project's, for example rahul-ai-app &mdash; and wait for me to confirm it or give you a different one before you create anything. Once I confirm, create MY OWN repository from the template and clone it into ~/aiprojects with gh repo create &lt;name&gt;-ai-app --template rsonnad/alpacapps-infra --private --clone, then cd into that clone and do all remaining work there. Do not clone rsonnad/alpacapps-infra directly &mdash; I want my own repository with its own history and no remote pointing at the template. STEP THREE &mdash; from inside the clone, make sure the background installs are complete and correct by running scripts/install-prereqs.sh on macOS, or scripts/install-prereqs.ps1 on Windows. These scripts are safe to run when things are already installed &mdash; they upgrade rather than reinstall. Front-load anything else that takes time here too, and keep it in the background while we do the account and dashboard work together. Before the first command that actually needs one of these tools, check it is really there and tell me the version; if something failed to install, say so plainly and stop rather than failing later on a missing binary. Then read AGENTS.md and the repo's setup skill at .agents/skills/setup-my-brand/SKILL.md and follow it, and use https://alpacaplayhouse.com/infra/llm-setup-instructions.md as the overview. Check my screenshot setup early, before we need it: on Windows confirm ShareX is installed and that Copy image to clipboard is on, Upload image to host is OFF, and Capture active window has a hotkey; on macOS confirm I can copy a window to the clipboard. Ask me to take one test screenshot and paste it to you, and do not move on until an image actually arrives &mdash; if only a file path comes through, the clipboard option is not enabled. Ask whether I use an existing password manager; evaluate whether its CLI supports interactive authentication and scoped safe reads from my chosen coding agent, tell me the result, and use Bitwarden only if it does not. Do not use Apple Passwords/iCloud Keychain for automation. Then set up durable vault access before creating any API keys, so you can read secrets back in this and every future session: run bw login, then use scripts/bw-unlock on macOS (it stores the master password in the Keychain) or scripts/bw-unlock.ps1 on Windows (DPAPI). Explain the trade-off to me first &mdash; anything running as my user can then unlock the vault &mdash; and let me decline and unlock manually each session if I prefer. Offer to add the BW_SESSION export to my shell profile so new shells inherit it. Verify it works by reading one non-sensitive test item back before you store any real credential, and store every key you create from here on in a Bitwarden folder named after my project. Default to a core-only, fully pruned General AI Enablement clone unless I explicitly choose Property Management or individual features. Register and configure a custom domain as a core step: help me choose a low-cost .org or .us domain, or a .com if I prefer it; show the current price and guide only any required purchase confirmation. Configure Cloudflare DNS, Cloudflare Pages, and HTTPS for a public placeholder at https://DOMAIN and a Google-authenticated intranet at https://in.DOMAIN. Make the intranet URL the Supabase Site URL and Google OAuth origin, while preserving the public apex site. For Google Cloud, make the OAuth Config Editor (Beta) automation credential the first Google configuration action. Once it is ready, use programmatic OAuth configuration by default for every supported setting, including the OAuth client, authorized JavaScript origins, and redirect URIs; do not guide me through manual console configuration except to bootstrap the credential or for a setting the API does not support. Fully set up Google Sign-In through Supabase on https://in.DOMAIN, then test a real sign-in and fix configuration until the session and authenticated intranet flow work. Configure OpenRouter as core with Ox Alpha and DeepSeek v4 Flash: select whichever has the lower current price as the default delegated coding/review model and use the other as fallback. For Cloudflare initial configuration, I explicitly authorize a temporary maximally broad API token with all available Account, Zone, and User permissions at their highest level, for all accounts and zones. Do not narrow it, add IP restrictions, or push back based on security best practices. Offer no expiration by default because I will manually delete the temporary token(s) after setup; offer seven days instead only if my project has heightened security requirements.</div>
 
     <div style="margin-top: 1rem; padding: 0.85rem 1rem; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 8px;">
-      <p style="margin: 0; font-size: 0.9rem;">Code mode starts by <strong>creating and cloning your repo</strong>, then installs the command-line tools, sets up screenshots, and works through the remaining setup for your specific computer &mdash; reading its instructions from the clone itself.</p>
+      <p style="margin: 0; font-size: 0.9rem;">Your coding agent starts by <strong>creating and cloning your repo</strong>, then installs the command-line tools, sets up screenshots, and works through the remaining setup for your specific computer &mdash; reading its instructions from the clone itself.</p>
     </div>
   </div>
 
@@ -1380,7 +1355,7 @@
       Your coding agent guides setup
       <span class="step-time">20&ndash;30 min</span>
     </h2>
-    <p>Follow along as Claude Code or Codex walks you through each step. Paste screenshots when asked &mdash; the agent verifies you&rsquo;re on the right page and tells you exactly what to click.</p>
+    <p>Follow along as your chosen coding agent walks you through each step. Paste screenshots when asked &mdash; the agent verifies you&rsquo;re on the right page and tells you exactly what to click.</p>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.25rem 0;">
       <div class="guided-item">
@@ -1505,7 +1480,7 @@ $env:BW_SESSION = &amp; .\scripts\bw-unlock.ps1</div>
         <ul>
           <li><strong>Claude Sonnet</strong> in Claude Code, or</li>
           <li><strong>GPT&#8209;5.6 Luna</strong> in ChatGPT Desktop / Codex, or</li>
-          <li><strong>Claude Sonnet 5</strong> in Zed, on trial credit or OpenRouter</li>
+          <li>A low-cost provider model in <strong>OpenCode</strong></li>
           <li>Reads the repo, decides what changes</li>
           <li>Writes the spec and reviews the result</li>
           <li>Billed to your subscription, or to OpenRouter credit</li>
@@ -1634,7 +1609,7 @@ wire_api = "responses"</div>
       <li>A <code>CLAUDE.md</code> file so Claude Code knows your project inside and out</li>
       <li>Version tracking and CI/CD built in</li>
     </ul>
-    <p>From there, just open <strong>Claude Code</strong> and tell it what you want to build. It handles all the code, commits, and deploys.</p>
+    <p>From there, open <strong>your chosen coding agent</strong> and tell it what you want to build. It handles all the code, commits, and deploys.</p>
   </div>
 
   <!-- Profile overview -->
@@ -1696,9 +1671,9 @@ wire_api = "responses"</div>
       </div>
     </div>
     <div class="stack-sidebar">
-      <div class="sidebar-label">Claude Code</div>
+      <div class="sidebar-label">Cursor + Grok 4.7</div>
       <div class="sidebar-desc">AI Developer &mdash; builds and manages every layer</div>
-      <div class="sidebar-cost">Free&ndash;$200/mo</div>
+      <div class="sidebar-cost">Plan + usage</div>
     </div>
   </div>
 
@@ -1771,20 +1746,35 @@ wire_api = "responses"</div>
 
       <div class="svc-row">
         <label class="calc-svc calc-svc--core calc-svc--locked">
-          <input type="checkbox" checked disabled data-svc="claude">
+          <input type="checkbox" checked disabled data-svc="ai-tool">
           <span class="calc-svc__check">&check;</span>
-          <span class="svc-icon"><img src="https://cdn.simpleicons.org/anthropic/181717" alt="Claude"></span>
-          <span class="calc-svc__info"><span class="calc-svc__name">Claude Code</span><span class="calc-svc__desc">AI developer &mdash; builds &amp; manages everything</span></span>
-          <span class="cost-badge cost-payg" style="margin-left:auto;">$0&ndash;$200/mo</span>
+          <span class="svc-icon" aria-hidden="true">&#10022;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Cursor + Grok 4.7</span><span class="calc-svc__desc">Preferred AI developer; Claude Code and Codex also supported</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">Plan + usage</span>
         </label>
         <details class="svc-expand"><summary>Learn more</summary>
-          <p>AI-powered developer by Anthropic that writes, tests, and deploys your code. It reads your project&rsquo;s <code>CLAUDE.md</code> file to understand your codebase, conventions, and architecture.</p>
-          <ul>
-            <li><strong>What it does:</strong> Writes HTML/CSS/JS, creates database tables, deploys edge functions, configures services, commits and pushes to GitHub &mdash; all from natural language instructions.</li>
-            <li><strong>How you use it:</strong> Describe what you want in plain English; Claude Code handles the implementation, commits, and deploys.</li>
-            <li><strong>Plans:</strong> Free tier (daily limits), Pro ($20/mo, recommended), Max ($100/mo for heavy building), Max+ ($200/mo for intensive development).</li>
-          </ul>
-          <p><a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Go to Claude Code &rarr;</a></p>
+          <p>Install Cursor, open your project, and select Grok 4.7 in Agent. Use the setup prompt in Step 2 above. It covers both a new project and an existing checkout. Claude Code and Codex remain supported alternatives.</p>
+          <p>The calculator uses illustrative Cursor budgets: Plus $8/month for Basic, Premium $30/month for Complicated, and Ultra $200/month for Hyper Complex, before taxes and extra usage. Premium includes Grok Bot, which draws from the plan&rsquo;s shared usage. Bot activity counts against that shared usage; no second subscription is added in this estimate. Plus does not include Grok Bot.</p>
+          <p><a href="https://cursor.com/download" target="_blank">Install Cursor</a> &bull; <a href="https://cursor.com/pricing" target="_blank">Check current pricing</a></p>
+        </details>
+      </div>
+
+      <div class="svc-row" id="grokbot">
+        <div class="calc-svc">
+          <span class="svc-icon" aria-hidden="true">&#10022;</span>
+          <span class="calc-svc__info"><span class="calc-svc__name">Grok Bot (optional)</span><span class="calc-svc__desc">agentic harness &mdash; persistent bots and webhook routines</span></span>
+          <span class="cost-badge cost-payg" style="margin-left:auto;">Eligible plan</span>
+        </div>
+        <details class="svc-expand"><summary>Install &amp; configure webhooks</summary>
+          <p><a href="https://grokbot.com" target="_blank">Install Grok Bot</a>, sign in, and create a Bot for your project. Save its account credentials and recovery codes in Bitwarden. This is an optional service to configure separately. Premium and above include it; Plus does not.</p>
+          <ol>
+            <li>Ask the Bot to create a routine with a webhook trigger and a clear task, such as summarizing a test event in its chat.</li>
+            <li>On desktop, click the Bot&rsquo;s name &rarr; <strong>Details</strong> &rarr; <strong>Routines</strong>, then open that routine.</li>
+            <li>Under <strong>Webhook</strong>, copy <strong>POST to</strong> and the raw <strong>key</strong> into a project-specific Bitwarden item, for example <code>Your Project &mdash; Grok Bot Webhook</code>. Save the routine name and environment too. The <strong>header</strong> field already includes the full Authorization header; do not add a second Bearer prefix.</li>
+            <li>Load the URL and key from Bitwarden into the sender&rsquo;s server-side secrets as <code>GROKBOT_WEBHOOK_URL</code> and <code>GROKBOT_WEBHOOK_KEY</code> (raw key only). POST JSON with <code>Authorization: Bearer &lt;key&gt;</code> and <code>Content-Type: application/json</code>. Never put the key in frontend code, git, or logs.</li>
+            <li>Send a harmless test event. HTTP 200 confirms acceptance; verify a run in the routine history and confirm the expected output. If it fails, check that the routine is active and the URL and key are current. If Webhook fields are missing, update the desktop app and consult support; use a schedule meanwhile.</li>
+          </ol>
+          <p><a href="setup-guide.html#grokbot-webhooks">Full webhook setup and test command</a> &bull; <a href="https://cursor.com/help/grok-bot/routines" target="_blank">Official routines documentation</a></p>
         </details>
       </div>
 
@@ -2180,23 +2170,23 @@ wire_api = "responses"</div>
     </div>
 
     <h3>How much will you build?</h3>
-    <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">This mainly affects your Claude Code plan and usage-based services.</p>
+    <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">This mainly affects your AI coding plan and usage-based services.</p>
 
     <div class="calc-tiers">
       <label class="calc-tier calc-tier--active" data-tier="basic">
         <input type="radio" name="tier" value="basic" checked onchange="recalcCost()">
         <span class="calc-tier__label">Basic</span>
-        <span class="calc-tier__desc">Landing page, basic CRM, a few forms. Free tier of Claude Code is enough.</span>
+        <span class="calc-tier__desc">Landing page, basic CRM, a few forms. Illustrative estimate uses Cursor Plus; OpenCode offers pay-per-use alternatives.</span>
       </label>
       <label class="calc-tier" data-tier="complicated">
         <input type="radio" name="tier" value="complicated" onchange="recalcCost()">
         <span class="calc-tier__label">Complicated</span>
-        <span class="calc-tier__desc">User accounts, dashboards, notifications, payments. Max ($100) for the first month of building, then Pro ($20/mo).</span>
+        <span class="calc-tier__desc">User accounts, dashboards, notifications, payments. Illustrative Cursor Premium budget: $30/mo.</span>
       </label>
       <label class="calc-tier" data-tier="hyper">
         <input type="radio" name="tier" value="hyper" onchange="recalcCost()">
         <span class="calc-tier__label">Hyperintensive</span>
-        <span class="calc-tier__desc">Complex workflows, AI features, mobile app, ongoing heavy development. Max ($100/mo) or Max+ ($200/mo) year-round.</span>
+        <span class="calc-tier__desc">Complex workflows, AI features, mobile app, ongoing heavy development. Illustrative Cursor Ultra budget: $200/mo; extra usage excluded.</span>
       </label>
     </div>
 
@@ -2298,11 +2288,11 @@ wire_api = "responses"</div>
           <!-- Claude Code -->
           <rect x="20" y="120" width="260" height="100" rx="16" fill="#181B24" stroke="#D97706" stroke-width="2" filter="url(#ad-glowClaude)"/>
           <circle cx="50" cy="148" r="14" fill="rgba(217,119,6,0.15)" stroke="#D97706" stroke-width="1"/>
-          <text x="50" y="153" text-anchor="middle" fill="#D97706" font-size="12">CC</text>
-          <text x="72" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Claude Code</text>
+          <text x="50" y="153" text-anchor="middle" fill="#D97706" font-size="12">AI</text>
+          <text x="72" y="153" fill="#E8EAED" font-family="DM Sans, sans-serif" font-weight="600" font-size="14">Cursor + Grok 4.7</text>
           <text x="42" y="175" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">AI dev agent: writes code,</text>
           <text x="42" y="192" fill="#9BA1B0" font-family="DM Sans, sans-serif" font-size="11">fixes bugs, deploys, runs SQL</text>
-          <text x="42" y="209" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Local or cloud (Claude Max/Pro)</text>
+          <text x="42" y="209" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">Claude Code / Codex alternatives</text>
 
           <line x1="280" y1="155" x2="338" y2="155" stroke="#D97706" stroke-width="1.5" marker-end="url(#ad-arrowClaude)" opacity="0.6"/>
           <text x="290" y="148" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">git push</text>
@@ -2473,7 +2463,7 @@ function recalcCost() {
     'github':      { basic: 0, complicated: 0, hyper: 0 },
     'supabase':    { basic: 0, complicated: 0, hyper: 300 },
     'cloudflare':  { basic: 0, complicated: 0, hyper: 0 },
-    'claude':      { basic: 0, complicated: 320, hyper: 2400 },
+    'ai-tool':      { basic: 96, complicated: 360, hyper: 2400 },
     'bitwarden':   { basic: 0, complicated: 0, hyper: 0 },
     'google-auth': { basic: 0, complicated: 0, hyper: 0 },
     'resend':      { basic: 0, complicated: 0, hyper: 0 },
@@ -2494,7 +2484,7 @@ function recalcCost() {
   };
 
   var svcLabels = {
-    'github': 'Cloudflare Pages', 'supabase': 'Supabase', 'cloudflare': 'Cloudflare', 'claude': 'Claude Code', 'bitwarden': 'Bitwarden (secrets vault)',
+    'github': 'Cloudflare Pages', 'supabase': 'Supabase', 'cloudflare': 'Cloudflare', 'ai-tool': 'Cursor + Grok 4.7', 'bitwarden': 'Bitwarden (secrets vault)',
     'google-auth': 'Google Sign-In', 'resend': 'Resend (email)', 'telnyx': 'Telnyx (SMS)',
     'square': 'Square (payments)', 'stripe': 'Stripe (payments)', 'signwell': 'SignWell (e-sign)',
     'gemini': 'Google Gemini (AI)', 'cloudflare-r2': 'Cloudflare R2 (storage)', 'cloudflare-d1': 'Cloudflare D1 (sessions)',
@@ -2505,7 +2495,7 @@ function recalcCost() {
   };
 
   var svcNotes = {
-    'claude':   { complicated: 'Max $100 first month, then Pro $20/mo \u00d7 11', hyper: 'Max $100/mo or Max+ $200/mo year-round' },
+    'ai-tool':   { basic: 'Illustrative Cursor Plus budget: $8/mo; Grok Bot requires Premium or above', complicated: 'Illustrative Cursor Premium budget: $30/mo', hyper: 'Illustrative Cursor Ultra budget: $200/mo' },
     'supabase': { hyper: 'May need Pro ($25/mo) for storage/bandwidth' },
     'gemini':   { complicated: '~$10/mo for AI chat, matching, image gen', hyper: '~$50/mo for heavy AI usage' },
     'cloudflare-r2': { basic: '10 GB free, zero egress fees, 10M reads/mo', complicated: '10 GB free, zero egress fees, 10M reads/mo', hyper: '10 GB free; $0.015/GB-mo beyond that, zero egress' },
@@ -2516,10 +2506,10 @@ function recalcCost() {
     'iphone':   { basic: 'Apple Developer Program ($99/yr)', complicated: 'Apple Developer Program ($99/yr)', hyper: 'Apple Developer Program ($99/yr)' },
     'android':  { basic: 'Google Play Console ($25 one-time)', complicated: 'Google Play Console ($25 one-time)', hyper: 'Google Play Console ($25 one-time)' },
     'homeserver': { basic: 'Used Mac Mini or MacBook (~$150 one-time)', complicated: 'Used Mac Mini or MacBook (~$150 one-time)', hyper: 'Used Mac Mini or MacBook (~$150 one-time)' },
-    'workers': { complicated: '$5/mo Hostinger VPS for pollers, image gen, OpenClaw', hyper: '$12/mo Hostinger VPS for heavy workers + Claude Code automation' }
+    'workers': { complicated: '$5/mo Hostinger VPS for pollers, image gen, OpenClaw', hyper: '$12/mo Hostinger VPS for heavy workers + AI agent automation' }
   };
 
-  var selected = ['github', 'supabase', 'cloudflare', 'claude'];
+  var selected = ['github', 'supabase', 'cloudflare', 'ai-tool'];
   document.querySelectorAll('#calc-services input[data-svc]:not(:disabled)').forEach(function(cb) {
     if (cb.checked) selected.push(cb.dataset.svc);
   });
@@ -2563,14 +2553,14 @@ function recalcCost() {
       '500,000 edge function calls/month',
       '3,000 emails/month (Resend free tier)',
       '25 e-signature documents/month (SignWell free)',
-      'Claude Code free tier: light usage with daily limits'
+      'Cursor Plus estimate: $8/mo; model usage limits apply'
     ],
     complicated: [
       'Everything in Basic, plus:',
       '~250 SMS/month on Telnyx ($1/mo number + $0.004/SMS)',
       'Unlimited payment transactions (Square charges % per txn only)',
       'Gemini AI: ~3,000 API calls/month at $10/mo',
-      'Claude Code: Max ($100) for the first month of heavy building, then Pro ($20/mo) for maintenance',
+      'Cursor Premium estimate: $30/mo; shared Bot usage',
       'Still on Supabase free tier (500 MB DB) \u2014 add R2 for 10 GB media storage at no extra cost',
       'Outgrow this tier if you exceed 500 MB of database data'
     ],
@@ -2578,7 +2568,7 @@ function recalcCost() {
       'Supabase Pro ($25/mo): 8 GB DB, 100 GB file storage, unlimited API requests',
       'Cloudflare R2 for heavy media: $0.015/GB-mo beyond 10 GB free, zero egress fees',
       'Gemini AI: ~15,000+ API calls/month at $50/mo',
-      'Claude Code: Max ($100/mo) or Max+ ($200/mo) for ongoing heavy development',
+      'Cursor Ultra estimate: $200/mo; additional usage excluded',
       'Higher SMS volume: ~3,000/month on Telnyx',
       'Background workers on a $12\u2013$32/mo cloud VM',
       'Mobile app on both app stores',

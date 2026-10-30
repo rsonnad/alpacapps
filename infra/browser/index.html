@@ -1083,30 +1083,12 @@
     </details>
 
     <details class="why-item">
-      <summary><span class="why-num">06</span>What it costs: $8 a month, $9 if you want it cheaper still</summary>
+      <summary><span class="why-num">06</span>What it costs: a subscription or pay-per-use model</summary>
       <div class="why-body">
-        <p>The infrastructure is genuinely free at the scale most people run at. Hosting, database, file storage, email, and login all sit inside free tiers far larger than a personal project will ever touch. Not a trial &mdash; the normal free plan for each service.</p>
-        <p>So the only thing you actually pay for is the thinking:</p>
-        <div class="why-table-wrap">
-          <table class="why-table">
-            <thead><tr><th>What</th><th>Cost</th><th>Needed?</th></tr></thead>
-            <tbody>
-              <tr><td><a href="https://openai.com/chatgpt/pricing" target="_blank" rel="noopener">ChatGPT Go</a></td><td>$8/mo</td><td>Yes &mdash; this is the whole thing. Flat price, no meter.</td></tr>
-              <tr><td><a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> credit</td><td>~$1/mo</td><td>No. A cost-saver you add later, if ever.</td></tr>
-              <tr><td><a href="/infra/zed/">Zed</a> &mdash; free trial credit, then your own key</td><td>$0, then tokens</td><td>Instead of the above, if you want no subscription at all.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p><strong>If you are new, start here and stop reading.</strong> ChatGPT Go at $8 is the gentlest on-ramp: familiar interface, no per-message anxiety, and it includes Codex, which is the part that does the actual building. One setting worth getting right on day one:</p>
-        <ul>
-          <li><strong>Default model: GPT&#8209;5.6 Luna, effort set to <em>high</em>.</strong> Luna is the economical tier of the 5.6 family, and running it at high effort buys noticeably better reasoning for the same token price. Best value setting in the lineup, and a sane default for everything you will do here.</li>
-        </ul>
-        <p><strong>OpenRouter is optional &mdash; skip it until it earns its place.</strong> It is not part of getting started and nothing breaks without it. Its only job is to make heavy months cheaper: you point the boring, repetitive work at a very cheap model instead of spending your ChatGPT allowance on it.</p>
-        <p>The moment to bother is when you start bumping into limits, or notice you are burning good tokens on drudgery &mdash; bulk edits, first drafts, file wrangling. Then add about a dollar of credit and wire in <a href="https://openrouter.ai/deepseek/deepseek-v4-flash" target="_blank" rel="noopener">DeepSeek v4 Flash</a>, which runs around <strong>$0.05 per million input tokens</strong>. A dollar covers more routine work than most people get through in a month. The <a href="#worker-model">worker model step</a> below walks through it whenever you are ready &mdash; day one or month six, it does not matter.</p>
-        <p><strong>Or pay no subscription at all.</strong> <a href="/infra/zed/">Zed</a> is free and open source, and its two-week Pro trial hands you $20 of model credit &mdash; enough to build with before spending anything. After that, keep it free by pointing it at your own OpenRouter key and paying only for tokens, often cents a day. The trade is that you steer more and the wording on these pages assumes Claude Code or Codex. Good if $8 a month is the sticking point, or you want to try before you commit.</p>
-        <p><strong>Going up instead</strong> is the other direction and most people never need it. Claude or ChatGPT Plus at $20 is smarter on genuinely hard problems; $100&ndash;$200 plans exist for people building heavily all day. Start at $8 and move only if you hit a wall.</p>
-        <p class="small muted" style="font-size:0.8rem;">A custom domain, if you want one, is about $10 a year. Prices checked August 2026.</p>
-        <p class="small muted" style="font-size:0.8rem;border-left:3px solid var(--warning-border);padding-left:0.8rem;margin-top:0.9rem;"><strong>Model recommendations checked 2 September 2026.</strong> This part of the stack ages fastest. If you are reading this after <strong>October 2026</strong>, assume something newer, better, or cheaper has landed &mdash; check <a href="https://openrouter.ai/models" target="_blank" rel="noopener">openrouter.ai/models</a> sorted by price before committing to any model named here. Nothing else in these instructions depends on which model you pick.</p>
+        <p>The infrastructure can start on free tiers. Your AI costs depend on the tool, model, plan, and usage.</p>
+        <p><strong>Preferred: Cursor with Grok 4.7.</strong> Check <a href="https://cursor.com/pricing" target="_blank" rel="noopener">current plans and limits</a>. Claude Code and Codex remain alternatives, especially if you already subscribe.</p>
+        <p><strong>Minimal spending: <a href="/infra/opencode/">OpenCode</a>.</strong> The tool is free and open source. Connect a low-cost model provider and set a spending limit; model usage is billed separately. No trial-credit or zero-cost setup promise.</p>
+        <p>Store account credentials, recovery codes, API keys, and webhook URL/key pairs in your project&rsquo;s Bitwarden collection. Keep secrets out of chat, source files, and logs.</p>
       </div>
     </details>
 
@@ -1201,7 +1183,7 @@
       Optional account setup homework
       <span class="step-time">15&ndash;30 min</span>
     </h2>
-    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, picking a coding agent (paid, or Zed free), and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
+    <p>New to all this? Start at <strong>Before you start</strong> &mdash; it covers screenshots, choosing a credential manager, picking a coding agent (subscription, or OpenCode for minimal spending), and the six core services: GitHub, Supabase, Cloudflare, Google Cloud, Resend, and OpenRouter.</p>
     <p style="margin: 0; display: flex; flex-wrap: wrap; gap: 0.6rem;">
       <a href="/infra/prestart/" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #fff; padding: 0.65rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.92rem;">
         Before you start &rarr;
@@ -1287,28 +1269,29 @@
     <h2>
       <span class="step-num">1</span>
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Install a coding agent &mdash; subscription <em>or</em> free
+      Install a coding agent &mdash; subscription or minimal spending
       <span class="step-time">2 min</span>
     </h2>
-    <p>Two ways to get the agent that does the work. <strong>Option A</strong> is a flat monthly subscription. <strong>Option B</strong> costs nothing: <a href="/infra/zed/">Zed</a> is free, its two-week Pro trial includes $20 of model credit, and after that it runs on your own <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key, billed per token. Pick <strong>one</strong>, then open it in a new, empty folder &mdash; the agent creates and clones the project for you.</p>
+    <p><strong>Option A</strong> is a subscription: prefer Cursor with Grok 4.7, with Claude Code and Codex as alternatives. <strong>Option B</strong> is <a href="/infra/opencode/">OpenCode</a> for minimal spending: the tool is free and open source, while the connected model is billed separately. Choose a low-cost provider, set a spending limit, and pay for the usage you need. Pick one, then open it in a new, empty folder.</p>
 
     <div class="choice-grid">
       <div class="choice-card choice-card--paid">
-        <span class="pick">Option A &middot; Subscription &middot; Recommended</span>
-        <div class="choice-head">
-          <img src="https://cdn.simpleicons.org/anthropic/7c6a9a" alt="" width="24" height="24">
-          <h3>Pay a monthly subscription</h3>
-        </div>
-        <p>One app, one flat bill, nothing to wire up. These pages were written and tested against these two, so the steps match what you see.</p>
-
+        <span class="pick">Option A &middot; Subscription &middot; Preferred</span>
+        <div class="choice-head"><h3>Cursor with Grok 4.7</h3></div>
+        <p>Our preferred editor and model. Claude Code and Codex remain supported alternatives if you already use them. Plans have usage limits; check current access before buying.</p>
         <div class="subopt">
-          <h4>Claude Desktop <span class="choice-tag">Best tested</span></h4>
+          <h4>Cursor + Grok 4.7 <span class="choice-tag">Preferred</span></h4>
+          <p>Install Cursor, sign in, open your empty project folder, and select <strong>Grok 4.7</strong> in Agent&rsquo;s model picker. No separate model installation is needed. Ask Agent to read <code>AGENTS.md</code> once the project exists.</p>
+          <a class="choice-btn choice-btn--claude" href="https://cursor.com/download" target="_blank" rel="noopener">Install Cursor &rarr;</a>
+          <p class="small muted"><a href="https://grok.com" target="_blank" rel="noopener">Grok chat and apps</a> &middot; <a href="https://prod.cursor.com/help/models-and-usage/grok-4-7" target="_blank" rel="noopener">Model availability</a> &middot; <a href="https://cursor.com/pricing" target="_blank" rel="noopener">Plans and usage</a>. Save logins, recovery codes, and any API keys in your project&rsquo;s Bitwarden collection.</p>
+        </div>
+        <div class="subopt">
+          <h4>Claude Desktop <span class="choice-tag">Alternative</span></h4>
           <p><strong>Claude Code</strong> works from an empty folder and handles setup, clone, and future development. Reads screenshots you paste in, and uses <code>CLAUDE.md</code> project directives.</p>
           <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">Free to start; Pro $20/mo or Max $100/mo recommended.</p>
           <a class="choice-btn choice-btn--claude" href="https://claude.ai/download" target="_blank" rel="noopener">Download Claude Desktop &rarr;</a>
           <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">No account? Sign up at <a href="https://claude.ai/referral/fzGCallNug" target="_blank" rel="noopener">claude.ai</a>.</p>
         </div>
-
         <div class="subopt">
           <h4>ChatGPT Desktop (Codex)</h4>
           <p><strong>Codex</strong> &mdash; in the app&rsquo;s sidebar or the Codex CLI &mdash; handles setup, cloning, and the build. Reads pasted screenshots, and uses <code>AGENTS.md</code> project directives.</p>
@@ -1317,24 +1300,16 @@
           <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">Codex CLI: <code>npm i -g @openai/codex</code> &mdash; <a href="https://developers.openai.com/codex/" target="_blank" rel="noopener">docs</a>.</p>
         </div>
       </div>
-
       <div class="choice-card choice-card--free">
-        <span class="pick">Option B &middot; No subscription</span>
-        <div class="choice-head">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#2f7d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <h3>Zed &mdash; free, with $20 of trial credit</h3>
-        </div>
-        <p>Zed is a free, open-source editor with an AI agent built in. Its <strong>two-week Pro trial</strong> includes <strong>$20 of model credit</strong> &mdash; enough to get the project standing up before you pay anyone anything.</p>
-
+        <span class="pick">Option B &middot; Minimal spending</span>
+        <div class="choice-head"><h3>OpenCode &mdash; free tool, pay for model usage</h3></div>
+        <p>An open-source coding agent for your terminal or desktop. Connect a provider, choose a low-cost model, and set a provider spending limit. No tool subscription is required; API usage can still cost money.</p>
         <div class="subopt">
-          <h4>Zed <span class="choice-tag">Free trial credit</span></h4>
-          <p>Install, sign in, start the free trial from your account page, then set the agent&rsquo;s model to <strong>Claude Sonnet 5</strong> and open your empty folder. Rust rather than Electron, so it also runs in a fraction of the memory of a heavier editor.</p>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.6rem;">After the trial: Pro is $10/mo, or stay free and run it on your own <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter key</a> &mdash; covered in <a href="#worker-model">Step 5</a>.</p>
-          <a class="choice-btn choice-btn--free" href="/infra/zed/">Zed setup walkthrough &rarr;</a>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin:0.6rem 0 0;">Screenshot-by-screenshot: install, trial, model, and the optional OpenRouter key.</p>
+          <h4>Get started with OpenCode</h4>
+          <p>Install from the official guide, launch <code>opencode</code> in your empty folder, use <code>/connect</code> for your provider, then <code>/models</code> to choose a model.</p>
+          <a class="choice-btn choice-btn--free" href="/infra/opencode/">OpenCode setup walkthrough &rarr;</a>
+          <p class="small muted">Save the provider key in Bitwarden. Once the project exists, tell Agent to read <code>AGENTS.md</code>. Use an image-capable model for screenshots.</p>
         </div>
-
-        <p class="card-foot" style="font-size:0.82rem;color:var(--text-muted);margin:auto 0 0;padding-top:0.35rem;"><strong>Fair warning:</strong> slower and more hands-on, and these pages are worded for Claude Code and Codex &mdash; the steps still apply, you just translate the odd button name. Tell the agent to read <code>AGENTS.md</code> when a session starts.</p>
       </div>
     </div>
     <p class="choice-or">Pick one path &mdash; you do not need both</p>
@@ -1536,7 +1511,7 @@ $env:BW_SESSION = &amp; .\scripts\bw-unlock.ps1</div>
         <ul>
           <li><strong>Claude Sonnet</strong> in Claude Code, or</li>
           <li><strong>GPT&#8209;5.6 Luna</strong> in ChatGPT Desktop / Codex, or</li>
-          <li><strong>Claude Sonnet 5</strong> in Zed, on trial credit or OpenRouter</li>
+          <li>A low-cost provider model in <strong>OpenCode</strong></li>
           <li>Reads the repo, decides what changes</li>
           <li>Writes the spec and reviews the result</li>
           <li>Billed to your subscription, or to OpenRouter credit</li>
