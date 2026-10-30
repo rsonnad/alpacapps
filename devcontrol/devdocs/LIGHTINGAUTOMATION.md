@@ -142,8 +142,15 @@ white / 4000K about 22 minutes earlier (01:13 and 01:06 CDT). The times drift, s
 fixed-time routine. It looks like voice commands to an Echo, but HA cannot show which Echo or what
 was said. Only the Alexa voice history (https://www.amazon.com/alexa-privacy/apd/rvh) can.
 301 `light.*` entities are exposed to Alexa, 138 of them Govee `*segment*` entities, and
-`expose_new` is still `true` for both assistants. Unexposing the segments and turning
-`expose_new` off needs the user's go-ahead (it changes the shared HAOS config).
+`expose_new` was still `true` for both assistants.
+
+**Applied 2026-10-30 (user approved):** all 138 `light.*segment*` entities unexposed from
+`cloud.alexa` and `cloud.google_assistant`, and `expose_new` set to `false` for both. 163 named
+lights stay exposed to Alexa. The unexposed list is saved on Alpuca at
+`~/backups/alexa-unexposed-segments-20261030.txt`. New lights must now be exposed by hand
+(Settings → Voice assistants → Expose). Alexa can still turn the named lights red if someone
+asks it to. Check `light_change_log` after the next late-night event to confirm the fan-out is
+smaller.
 
 **DB query for current inventory:**
 ```sql
