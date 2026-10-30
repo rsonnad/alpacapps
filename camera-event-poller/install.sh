@@ -49,7 +49,7 @@ if [ ! -f "$ENV_FILE" ]; then
 SUPABASE_URL=https://aphrrfprbixmhissnjfn.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 UDM_HOST=192.168.1.1
-UDM_USER=alpacaauto
+UDM_USER=codingagent
 UDM_PASS=your-udm-password
 POLL_INTERVAL_MS=10000
 ENVEOF

@@ -14,6 +14,52 @@ The product was purpose-built for one property. Multi-tenancy is a future consid
 
 ## 2. Design Principles
 
+### Supply-chain isolation (2026-10-22)
+
+**Decision:** Build dependencies on a read-only GitHub-hosted runner with lifecycle
+scripts disabled. Move only three allowlisted generated assets into a fresh
+release job; deploy Pages in a third job. Pin actions to commit SHAs, enforce
+lockfile registry/integrity checks, audit on PRs and weekly, and open dependency
+update PRs through Dependabot. Document exact existing high advisories with an
+expiring exception; never exempt a critical advisory.
+
+**Why:** A dependency or build tool must not inherit the Supabase service role,
+a repository write token, or Pages deployment identity. The exact source built
+must be the one released. Existing dependency debt stays visible without hiding
+new advisories or shipping an untested browser-tool major upgrade.
+
+
+### Alpuca agent message inbox (2026-10-15)
+
+**Decision:** Accept Grokbot / Prima Donna messages through a bearer-authenticated
+Cloudflare tunnel endpoint backed by a durable local queue and a dedicated Codex
+App Server conversation on Alpuca. External messages enter as tool output and
+cannot authorize command execution. Replies are retrieved through authenticated
+receipt URLs. Keep the existing desktop chat separate.
+
+**Why:** Agent updates need a reliable return channel without depending on the
+currently failing Tailscale TCP route. A dedicated inbox preserves context,
+supports idempotent retries, and keeps external agent content from impersonating
+human requests. An isolated configuration disables tools and integrations;
+public callers cannot select arbitrary threads, models, workspaces or callbacks.
+The local Codex subscription login supplies inference and SQLite records usage.
+
+**Desktop orchestration extension (2026-10-15):** Grokbot may submit explicitly
+authenticated desktop jobs through a separate task endpoint and credential.
+A human-started local desktop chat pulls these jobs through a local MCP receiver
+and performs them with its normal computer-use tools. Ordinary notifications
+remain tool-free. Jobs serialize use of the desktop, record approval blockers,
+and are not silently replayed after interruption.
+
+**Why:** The owner wants Grokbot to orchestrate application work on Alpuca, while
+the first bridge only supported message replies. The installed desktop app's
+private messaging interface did not respond to probes, and computer use blocks
+controlling ChatGPT's own UI. A supported local MCP receiver lets the actual
+desktop agent accept delegated tasks without UI injection or bypassing its
+approvals. A one-time human startup prompt establishes the delegation. Long
+polling avoids repeated model inference while the worker is idle.
+
+
 ### 2.0 Standalone Explainer Pages
 
 **Decision:** Standalone explanatory artifacts can live as static pages under `docs/` when the goal is to publish a durable visual or analytical reference.
@@ -691,3 +737,149 @@ Each external service was chosen for specific reasons. This section documents wh
 **Decision:** Once its UniFi Protect RTSP streams are configured, Shower Tower appears first in the resident Cameras page, ahead of the existing exterior feeds.
 
 **Why:** It covers the most immediate shared-area view and should be reachable without scrolling, while the existing camera grouping and quality controls continue to work unchanged.
+
+### 2026-09-28: Instant Payouts Are a Per-Associate Flag, Checked at 8 PM Central
+
+**Decision:** Associates who should be paid the same day get `associate_profiles.instant_payout = true` (first: Amber Coleman). `pay-pending-associates` then treats them as always due regardless of `payout_frequency`, runs an extra time at 8:00 PM Central (`?mode=instant`, two pg_cron jobs at 01:00/02:00 UTC with an in-function America/Chicago hour gate so it stays 8 PM across DST), and after the platform → connected-account transfer attempts a Stripe Instant Payout to the payee's debit card. If Stripe refuses, the transfer still stands and the money reaches the bank on the account's standard schedule; admin gets an "instant payout fell back" email each run until it is fixed or the flag is turned off.
+
+**Why:** Hardcoding one person into payroll code would be invisible to anyone reading the data and would need a deploy to change. A column is queryable, auditable, and reusable for the next associate. The Stripe transfer alone does not make money spendable the same day (standard Express payouts take ~2 business days), so "same day" requires Instant Payouts; making it best-effort with a fallback means a missing debit card or an instant-availability limit delays the money by days instead of blocking it. Instant Payouts carry a Stripe fee — check who bears it under Stripe Connect → Instant Payouts settings before enabling this for more associates.
+
+### 2026-09-29: Payroll Is Server-Authoritative, With One Amount Formula
+
+**Decision:** Every path that pays an associate uses one formula: each time entry's own `hourly_rate` (the profile rate only if the entry has none), plus `daily_extra` once per Central calendar day worked. That covers the nightly auto job, the 8 PM instant run, staff-initiated Stripe/PayPal payouts, and the weekly approval flow. The edge function that moves the money also claims the entries, writes the ledger row and marks the entries paid; the browser no longer does any of that bookkeeping. `pay-pending-associates` no longer accepts the public anon key.
+
+**Why:** An audit found four ways payroll could go wrong:
+- **Double pay.** The weekly approval path never marked entries paid, so the nightly job could pay the same hours again.
+- **Manual payments not sticking.** A manually recorded cash or Zelle payment wrote only `is_paid`, which the status trigger silently reverted. The hours stayed payable.
+- **Different amounts per path.** The auto job used the current profile rate; the staff UI and its warning text used the entry's rate. Only the auto job paid `daily_extra`.
+- **Open endpoint.** Anyone with the anon key could start a payroll run.
+
+Entry rates are snapshotted at clock-in, so they are the rate that was agreed for that work. Server-side bookkeeping makes each payout a single atomic step, not two calls that can half-succeed.
+
+### 2026-09-29: Uninvited Sign-Ups Become Public Accounts via Server RPC
+
+**Decision:** Anyone who signs in without a pending invitation gets a `public` `app_users` row created by the `ensure_public_app_user()` SECURITY DEFINER RPC, not by a client-side insert. The RPC derives every column (email, name, `person_id` link) from `auth.users` server-side; RLS on `app_users` still only permits invitation-backed self-inserts.
+
+**Why:** The client-side fallback insert always failed RLS, so every uninvited Google sign-in since April hit "Something went wrong creating your account." A looser INSERT policy would let the client choose `person_id`, `is_current_resident`, and other privileged columns on its own row.
+
+### 2026-09-29: app_users Is Not Publicly Readable
+
+**Decision:** The `temp_read_app_users` policy (`USING (true)`, any role including anon) is replaced by two SELECT policies: every signed-in user reads their own row (`auth_user_id = auth.uid()`), and admin/oracle/staff read all rows (via the SECURITY DEFINER helper `is_staff_or_admin_user()`). Nothing is readable by anon. Anything outside that goes through narrow RPCs: `get_directory_profile(slug)` for public profile pages (privacy settings applied in the database, gated fields returned as null, never email/allergies/dietary/privacy_settings), `list_member_directory()` for residents and associates who need other members' names (names and role only), `is_slug_available(slug)`, and `get_upload_token_name(token)` for the tokenized W-9 and ID upload pages. The `demo` role and residents granted a staff tab by permission do **not** get read-all; staff pages they open will show empty user lists.
+
+**Why:** Anyone with the public anon key could pull every user's phone, birthday, email, allergies and home base in one request. Profile privacy settings were enforced only in the browser, so they protected nothing. The demo account is for showing the product to outsiders, so giving it every real user's contact details would recreate the leak for anyone holding the demo login. Its screens already redact names, so empty lists cost little.
+
+### 2026-09-29: upload_tokens Is Staff-Only; Public Pages Use an Exact-Match RPC
+
+**Decision:** `upload_tokens` loses `anon_select_upload_tokens` (anon SELECT, `USING true`) and `authenticated_all_upload_tokens` (any signed-in user, ALL). Direct table access is now service role (edge functions) plus admin/oracle/staff via `is_staff_or_admin_user()`. The tokenized pages `rentals/verify.html` and `rentals/w9.html` call `get_upload_token(p_token)`, which returns only the matching row's type, used/expiry state, holder IDs and first/last names. It returns used and expired rows so the pages can show the right message. Associates and residents who start their own ID check mint a token through `request_my_identity_upload_token()`, which always binds the token to the caller's own `app_users` row.
+
+**Why:** Each token is a bearer credential for submitting someone's W-9 (SSN/EIN) or photo ID. Anyone with the public anon key could list every unused token and submit documents as another person. Self-service minting goes through an RPC and not an own-row INSERT policy because an INSERT policy would let the client pick `person_id`, `token_type` and `expires_at`.
+
+### 2026-09-29: Apply Page Landing Telemetry and Daily Digest
+
+**Decision:** `/rentals/apply/` records a `view` on load and `form_started` on first keystroke into `page_events`, through the `track_page_event()` RPC. The `apply-page-digest` function emails alpacaplayhouse@gmail.com at 8 AM Central with yesterday's visitors, how many started the form, inquiries, full applications, top traffic sources, and a 7-day trend. Visitors are counted by a random per-tab id kept in `sessionStorage`. Only the referring site's host and UTM tags are kept. Staff visits and staff test mode are excluded. Step-2 visits (the continue link from email) are counted separately from new landings.
+
+**Why:** We had no way to see how many people reach the application page versus how many inquire, so we couldn't tell whether a slow week meant low traffic or a form problem. Writes go through a validated RPC, not an anon-insertable table, in line with the recent move away from open anon table access. No persistent visitor id, IP, or full URL is stored, so the telemetry holds no personal information.
+
+### 2026-10-03: No Associate Payout Without a W-9 On File
+
+**Decision:** Every path that pays an associate (`stripe-payout`, `paypal-payout`, and the nightly/8 PM `pay-pending-associates` run) refuses to pay unless `associate_profiles.w9_status = 'submitted'`, alongside the existing ID-verification gate. The nightly run reports these as `skipped: 'w9_missing'` instead of silently dropping them. Associates fill the W-9 themselves from a banner on the Work Tracking Payment tab, which mints their own link through `request_my_w9_upload_token()` (reuses an open link, 14-day expiry). Returning from Stripe Connect onboarding prompts for the W-9 as the last step.
+
+**Why:** Stripe Express onboarding collects tax details inside Stripe, but the platform cannot read them back through the API, and PayPal/other methods collect nothing. W-9s were only sent by hand, so associates were being paid with no W-9 on file (two of six paid in 2026). 1099-NEC reporting needs the payee's TIN on our side; collecting it before the first payout is the only point where it reliably happens.
+
+### 2026-10-04: Payroll Cron Failures Are Alerted From Postgres, Not From the Functions
+
+**Decision:** Every payroll pg_cron job calls `public.payroll_cron_post()`, which records the pg_net request id in `payroll_cron_requests`. An hourly SQL watchdog (`payroll_cron_watchdog()`, cron `payroll-cron-watchdog`) copies each response and emails ADMIN_ALERT_EMAILS directly through Resend when a call returns non-2xx, times out, or gets no response. The Resend key for this lives in Vault (`resend_api_key`). The watchdog never goes through an edge function or `payroll_cron_bearer()`.
+
+**Why:** From 2026-09-29 to 2026-10-04 every pay-pending-associates cron call got 401 because the Vault service key was stale. The function rejected the calls before its own alert code could run, and pg_cron reported success. Any alert path that shares the payroll bearer fails along with the thing it is watching. `net._http_response` has no URL and is purged after about 6 hours, so the request id must be captured when the call is made, and the check must run hourly.
+
+### 2026-10-09: Device Credentials Are Staff-Only, Including Kiosk RPCs
+
+**Decision:** Direct access to Google TTS, LG, Anova, Govee, Nest, Home Assistant, weather, Vapi, and Tesla credential tables requires staff/admin/oracle identity. Server workers keep service-role access. The Home Assistant kiosk RPC also checks the caller and rejects anonymous callers and non-staff accounts. Printer check codes join proxy secrets as server-only columns. Existing Stripe/PayPal/Telnyx/Spotify secret-column restrictions stay server-only; publishable payment configuration remains public.
+
+**Why:** Row-level security alone was insufficient: permissive policies let ordinary accounts read device tokens, LG had an anonymous read path, and a SECURITY DEFINER kiosk RPC bypassed Home Assistant's table policy to return the full token publicly. Restricting the real database and RPC paths protects secrets even if someone skips the UI. Public kiosk HA chat and direct weather displays now require staff authentication or a future server proxy; they must not receive service credentials to regain functionality. Browser roles also lose TRUNCATE, which bypasses row policies.
+
+Rental invitation bearer tokens are also staff-only in the raw table. The public listing uses `validate_rental_access_token(token)`, which returns only a boolean for the supplied token, preserving invitation links without exposing the token inventory.
+
+### 2026-10-09: Identity Documents, Payouts and Signed Leases Are Not Public
+
+**Decision:** `identity_verifications` is staff-only, except that a signed-in user can read their own row. `payouts`, `payment_reminders`, `vehicle_rentals`, `event_payments`, `signature_audit_log` and `payout_time_entries` are staff-only. Anonymous visitors can still read assignments, lease/event templates and printer devices, but only staff can write them. Todo, work-group, schedule and permit tables need a signed-in user to write. `system_commands` and `sonos_health_samples` now have RLS, and only server writers can write to them. Nobody outside staff can list, overwrite or delete files in the `lease-documents` bucket. Existing public lease links still resolve by exact path. ID photos were moved to new storage paths so that every earlier signed link stopped working.
+
+**Why:** An anonymous visitor could read driver's licence data and year-long signed links to the licence photos. They could also rewrite payouts and assignments, and list, replace or delete signed leases. Applicant-facing flows (rental apply/status, host-event, waiver, `people`) still allow anonymous access. Each needs a token-scoped RPC before its table can be closed.
+
+### 2026-10-09: Public Pages Reach Personal Data Only Through Scoped Functions
+
+**Decision:** The anonymous key cannot read or write `people`, `rental_applications`, event requests, waivers or rental payments. Public pages (apply, application status, host an event, book, waiver, contact, hall kiosk/TV) each call a SECURITY DEFINER function. The function takes the visitor's own identifier (application link, status token, email for current residents, new request id), touches only that record, and returns only the fields the page shows. Square's card form gets its public app and location ids from `get_square_public_config()`. Access tokens never leave the server.
+
+**Why:** The anonymous key is public, so any table it can read is readable by everyone. 83 people's contact details and 42 applications, including their signing tokens, were exposed. Scoped functions keep the public flows working without exposing any table.
+
+### 2026-10-17: The Anon Key Never Triggers a Scheduled, Payout or Email Function
+
+**Decision:** Every edge function that runs on a schedule, pays someone or sends email checks its caller in code. Scheduled jobs call `public.cron_post()`. It still sends the public anon JWT so the gateway accepts the call, and it adds `X-Cron-Secret` from Vault (`schedule_cron_secret`, equal to the edge secret `SCHEDULE_CRON_SECRET`). Functions opt in with `requireCronOrRoles()`, and admin/oracle can still run them by hand. Payroll jobs keep `payroll_cron_post()` with the service key. The cron secret is not accepted by payout or messaging functions. `send-email` accepts any type from other functions and from admin/oracle/staff. Everyone else may send only `contact_form` (anonymous) or `access_request` (signed in), and those always go to the house inbox with no custom sender, subject, cc or bcc. `vapi-server` requires Vapi's `X-Vapi-Secret`. Rotate the cron secret with `scripts/rotate-cron-secret.sh`.
+
+**Why:** The anon key ships in the site's JavaScript. With `verify_jwt` alone, anyone could run payroll checks, digests and reminders, send mail from our domain to any address, or look up a caller's name by phone number. A secret kept in Vault keeps those values out of `cron.job` text and leaves the service key out of every cron job that isn't payroll.
+
+### 2026-10-17: Rental Dates + Notes API for External Agents (Meta Muse)
+
+**Decision:** External agents read rental start/end dates through a read-only `rentals` resource on the existing `api` gateway, and attach free-text notes through `rental_notes` — not through a new edge function or raw `assignments` access. `rentals` normalizes space bookings (Airbnb + direct) and vehicle rentals into one shape and states, per rental, whether `end_date` is a real move-out (`fixed`) or the end of an initial term that rolls month-to-month (`month_to_month`), or that we don't know (`unknown`). An explicit `assignments.end_behavior` column overrides inference. Notes attach to the booking row (not the person) so they work for nameless Airbnb guests. Agents authenticate with a scoped, hashed `X-API-Key` stored in Bitwarden (`AlpacApps API — Meta Muse Agent`), never the service role key. All APIs are documented on one page: https://alpacaplayhouse.com/api/.
+
+**Why:** Most direct-tenant assignments predate the application flow, so `notice_period` is often missing; inventing an answer would have an agent treat a rolling lease as a move-out (or vice versa), so the API reports `unknown` and an admin can set `end_behavior` explicitly. Airbnb's iCal feed gives no guest names and all Airbnb bookings share one generic "Airbnb Guest" person, so the booking is the only stable thing a note can attach to — and `airbnb-sync` updates bookings in place by `airbnb_uid`, so notes survive date changes when a guest extends. Keeping it in the gateway reuses API-key scoping, permission levels, and usage logging.
+
+
+### 2026-10-19: Verify Pages Publishing for Muse
+
+**Decision:** Publish the committed static snapshot through the existing release workflow using GitHub Pages Actions. Serialize releases, deploy after the CI version commit, support manual deployment retries without version changes, and verify public deployment metadata, version.json, and every Muse HTML page against the artifact bytes. Muse publishes under `muse/<project>/index.html`.
+
+**Why:** Muse pushed valid pages while the legacy Pages builds failed or remained inconsistently queued, leaving the public site on an older release. Git push success is insufficient proof of publication. A single release/deploy workflow and a bounded public content check make failure visible and allow retry without dummy commits. GitHub service failures remain possible.
+
+### 2026-10-21: Leases Have No Early Termination by Default
+
+**Decision:** The standard residency lease (`lease_templates`, "Alpaca Playhouse Residency Lease" v4) no longer lets the tenant end the lease early with a prorated refund. Unless a lease's Additional Terms say otherwise, rent for the full term is due, prepaid rent is not refunded on early departure, and a month-to-month lease ends only with the notice set under Lease Term. The two-business-day refund line now covers only rent paid past the lease's actual end. One-off leases are pinned per application with `rental_applications.signing_lease_template_id`, and the admin PDF now uses the pinned template too, so the reviewed PDF matches what the tenant signs.
+
+**Why:** The v3 clause ("Tenant shall have the right to terminate this Lease before the end of the Term. Any payments will be prorata refunded") contradicted fixed terms and notice deadlines, such as Curran Flanders' Fuego + Skyloft lease, whose renewal depends on notice by Nov 16. Exceptions belong in Additional Terms for that one lease, not in the default.
+
+
+### Polish sovereign AI infrastructure playbook (2026-10-21)
+
+**Decision:** Publish the English plan followed by a full Polish version at `/rahulio/pages/polishdc/`, with a compatibility redirect from the requested `/rahulio/page/polishdc/`. Keep the business infrastructure-led, distinguish sourced market evidence from assumptions, and expose an editable reserved-capacity economics model.
+
+**Why:** The reader is evaluating a Polish/EU sovereign AI capacity business. National investment announcements do not establish a startup's addressable shortage, and modular hardware deployment claims omit site readiness. A bilingual evidence-led plan with explicit purchase gates and costs makes the opportunity reviewable before committing capital.
+
+### 2026-10-21: Payment Due Within 24 Hours of Signing
+
+**Decision:** The lease-signed email (process-signature) now asks for payment within 24 hours, with the deadline in Texas time, "to hold your reservation." The amount is the reservation deposit when one is set. Otherwise it is the first rent payment (`move_in_deposit_amount`) plus the security deposit, less a paid application fee. It no longer falls back to one month's rent when the reservation deposit is $0. Prepaid stays (`require_deposit = false`) and confirmed deposits get no ask. Signing also sets `deposit_status = 'requested'`. The email no longer states a monthly rent, since some leases have several rates. In the admin Deposits tab, a hand-set move-in amount is shown as the first payment instead of being prorated.
+
+**Why:** Payment should be locked in right after the tenant commits. The old fallback would have asked Curran Flanders for a $995 "reservation deposit" when he owes $600 + $750. Nothing yet releases a reservation automatically when the 24 hours pass; that is a separate change.
+
+### 2026-10-21: The 24-Hour Payment Deadline Reminds and Alerts, Never Cancels
+
+**Decision:** `deposit-deadline-check` runs hourly (`public.cron_post()`, job `deposit-deadline-check-hourly`). For a signed lease whose payment is still `requested` (not archived, `require_deposit` not false), it emails the tenant one reminder 4 hours before the payment deadline and emails alpacaplayhouse@gmail.com one digest once the deadline passes, listing each overdue tenant, the amount and the staff link. It never cancels or releases a reservation; staff decide. The deadline is `payment_deadline_at` when staff set one (the same date the lease-signed email shows). Otherwise it is 24 hours after the later of `deposit_requested_at` and `agreement_signed_at`, so a deposit requested before signing still gets the 24 hours the email promised. The tenant reminder goes out only before the deadline; once overdue, only the house is told. Items already marked paid are left out of the amount, and a lease with nothing left to pay is skipped. `payment_reminder_sent_at` and `payment_overdue_alert_sent_at` make each send fire once, and a stamp older than the clock start is ignored so a re-request gets its own reminder. POST `{"dry_run": true}` as admin to see who would be contacted.
+
+**Why:** The signed email says payment is due within 24 hours "to hold your reservation", but nothing followed up. Cancelling automatically would lose tenants over a late bank transfer, so the system only makes sure both sides know the deadline passed.
+
+
+### Validate sovereign GPU capacity spreads (2026-10-22)
+
+**Decision:** Replace the Polish DC page's hypothetical tenant-count economics with dated provider availability evidence, explicitly qualified competing offers, an editable full-cost GPU-hour model, and a staged commercial validation playbook for a founder who assembles partners and contracts. Archive selected public availability observations alongside links to the live source.
+
+**Why:** A provider's transient shortage and a public cloud list price do not establish an executable margin. Hardware equivalence, paid occupancy, contract duration, financing, service obligations and sovereignty requirements determine whether assembling compute, colocation and power creates value. The founder should validate a matched transaction before purchasing equipment.
+
+
+### Polish DC prospect and partner shortlist (2026-10-22)
+
+**Decision:** Add ten potential customers and ten supply or operating partners to the existing English/Polish page, with cited public contact routes, specific fit and qualification gaps, and personalized draft messages. Keep drafts expandable and copyable; no outreach is sent by the page.
+
+**Why:** The validation campaign needs concrete organizations and useful first questions. Verified AI activity or a published infrastructure service establishes relevance, not buying intent, spare capacity or partnership agreement. Named people are included only with sourced professional context; otherwise the page specifies a routing role.
+
+
+### 2026-10-24: Email Never Settles Money or Runs Agents on Its Own
+
+**Decision:** Payment emails to payments@ are parsed only when Resend reports DMARC pass and the From domain is a known payment provider (the receiving bank for Zelle, or Venmo, PayPal, Square/Cash App, Coinbase). A matched deposit becomes an admin confirmation link (`confirm-deposit-payment`), and a matched rent or other payment is written to the ledger as `pending`. Nothing from email is marked paid until an admin confirms. Payment emails forwarded by hand (From is the forwarder's own address) are no longer parsed; admins get an "unverified, not recorded" notice and record them manually. Tasks emailed to claude@ always start in `review`, whoever sent them. pai@ and alpaclaw@ answer only DMARC-verified senders whose address matches an app user exactly; everyone else gets a fixed reply with no AI call. Phone calls (Vapi) need the server secret and can no longer unlock vehicles, read the vault or change data, because caller ID can be spoofed.
+
+**Why:** The From header and an email body are written by the sender. Treating them as proof let anyone record a payment or queue work on the house machines. A short admin confirmation step costs little compared with a wrongly released deposit or move-in.
+
+### 2026-10-27: Each Muse Publishes From Its Own Repo
+
+**Decision:** Muse pages move out of `rsonnad/alpacapps` into one repo per Muse (`rsonnad/muse-rahulio`, `rsonnad/muse-sonia`). Each Muse holds a writable deploy key for its own repo only. The release workflow pins each repo's `main`, copies `muse/<project>/` files into the Pages artifact according to `muse-sources.json`, and verifies them publicly. A scheduled check publishes Muse changes within about 10 minutes. Supabase secrets moved from repo secrets to a `release` environment limited to `main`, and `main` blocks force-push and deletion.
+
+**Why:** A deploy key on alpacapps could write the whole repo: workflows, other people's pages, every branch. Any branch workflow could also read the Supabase service role key. GitHub cannot limit a deploy key to a folder or a branch on a public repo, and cannot tell two deploy keys apart, so per-Muse branches would not have kept the two Muses apart. Separate repos make "only its own content" a hard limit and take Muse out of alpacapps' Actions and secrets entirely.
+

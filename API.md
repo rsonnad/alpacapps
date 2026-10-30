@@ -2,6 +2,8 @@
 
 Centralized REST API for the AlpacApps property management system. All entity CRUD operations route through a single permissioned endpoint.
 
+> **Public, cohesive reference:** https://alpacaplayhouse.com/api/ (`api/index.html`) — covers the gateway, scoped API keys, the `rentals` / `rental_notes` resources, and the standalone edge functions. Keep both in sync when adding resources.
+
 ---
 
 ## Endpoint
@@ -23,7 +25,7 @@ Every request is resolved to a role level. Include one of these auth methods:
 |--------|--------|-------|----------|
 | User JWT | `Authorization: Bearer <jwt>` | Depends on user role | Frontend, PAI chat, mobile app |
 | Service Role Key | `Authorization: Bearer <service_role_key>` | 4 (oracle) | Edge functions, workers, internal services |
-| API Key | `X-API-Key: <key>` | Depends on key config | Third-party applets (future) |
+| API Key | `X-API-Key: <key>` | Depends on key config | External agents/integrations (e.g. Meta Muse) |
 | None | — | 0 (public) | Public data only |
 
 When using a JWT, also include the Supabase anon key:
@@ -252,6 +254,38 @@ apikey: <SUPABASE_ANON_KEY>
   }
 }
 ```
+
+---
+
+### `rentals` — Rental Start/End Dates (read-only)
+
+**Tables:** `assignments` (type `dwelling`; Airbnb + direct tenants) and `vehicle_rentals`, normalized into one shape.
+
+| Action | Min Level | Notes |
+|--------|-----------|-------|
+| list | 2 | Defaults to current/upcoming (spaces: active, pending_contract, contract_sent; vehicles: active, draft). Without `status`, rentals whose `end_date` has passed are excluded. Sorted by soonest `end_date`, open-ended last. Response adds `truncated: true` if a table scan hit its cap. |
+| get | 2 | `id` = `assignment:<uuid>` or `vehicle_rental:<uuid>` |
+
+**Key fields:** `id`, `kind` (space/vehicle), `source` (airbnb/direct), `status`, `renter_name`, `renter_type`, `spaces[]`, `vehicle`, `start_date`, `end_date`, `end_behavior` (`month_to_month` | `fixed` | `unknown`), `end_behavior_source`, `rolls_to_month_to_month` (bool|null), `notice_days`, `planned_move_out` + `planned_move_out_listed` (spaces), `ended_on` (vehicles), `rate_amount` (falls back to `monthly_rent`), `rate_term`, `notes[]`.
+
+**end_behavior inference (first match wins):** `assignments.end_behavior` set explicitly → Airbnb booking = `fixed` → linked `rental_applications.notice_period` (`none` = `fixed`, else `month_to_month`) → null `end_date` = `month_to_month` → vehicles use `auto_renew` → otherwise `unknown`. Set it explicitly with `assignments` update `{ end_behavior: 'fixed' | 'month_to_month' }`.
+
+**Filters:** `kind`, `source`, `status` (string, array, or `"all"`; `completed`/`ended` are aliases), `starts_after`, `starts_before`, `ends_after` (includes open-ended), `ends_before`, `end_behavior`, `space` (name substring), `renter` (name substring), `include_notes` (default true). Dates are `YYYY-MM-DD`, inclusive.
+
+---
+
+### `rental_notes` — Notes on a Rental
+
+**Table:** `rental_notes` (exactly one of `assignment_id` / `vehicle_rental_id`). Migration: `supabase/migrations/20261017_rental_terms_and_notes.sql`.
+
+| Action | Min Level | Notes |
+|--------|-----------|-------|
+| list | 2 | Filters: `rental_id`, `tag`, `since`. Newest first. |
+| get | 2 | |
+| create | 2 | `data: { rental_id, body (≤4000 chars), tag? }`. Author recorded from the JWT user or API key name. |
+| delete | 3 | |
+
+Returned shape: `{ id, rental_id, body, tag, author, created_at }`.
 
 ---
 
@@ -1021,6 +1055,14 @@ API_ENDPOINT: https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/api
 
 ---
 
-## Future: API Key Authentication (Phase 3)
+## API Key Authentication
 
-For third-party applets and external integrations, API key auth via `X-API-Key` header will be supported. Keys will map to an `api_keys` table with configurable role level, scopes, and rate limits.
+External agents authenticate with `X-API-Key: <key>`. Keys live in `api_keys` as a SHA-256 hash (`key_hash`) with `permission_level`, `allowed_resources`, `allowed_actions`, and optional `excluded_columns`. Create one with `scripts/create-api-key.js` (prints the plaintext once — store it in Bitwarden). Revoke with `is_active = false`.
+
+Active agent keys:
+
+| Name | Level | Resources | Actions | Bitwarden item |
+|------|-------|-----------|---------|----------------|
+| Meta Muse Agent | 2 | rentals, rental_notes, vehicles | list, get, create, update | `AlpacApps API — Meta Muse Agent` |
+| Meta Muse Vehicle Registration Agent (legacy) | 2 | vehicles | list, get, update | — (plaintext not stored) |
+| alpaclaw-readonly | 2 | spaces, assignments, vehicles, faq, documents | list, get | — |

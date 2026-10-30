@@ -1,0 +1,15 @@
+{
+  "_comment": "Which repo each Muse page comes from. CI copies muse/<project>/ from these repos into the site. A listed project is only ever taken from its own repo. An unlisted project is published if exactly one repo has it. Edit this file (on main) to move or claim a project. See devcontrol/devdocs/DEPLOY.md.",
+  "sources": [
+    {
+      "repo": "rsonnad/muse-rahulio",
+      "owner": "Rahul's Muse",
+      "projects": ["warsawapt", "bookinghostredflags", "bw-test", "tesla-bmw-austin"]
+    },
+    {
+      "repo": "rsonnad/muse-sonia",
+      "owner": "Sonia's Muse",
+      "projects": ["soniabikes"]
+    }
+  ]
+}

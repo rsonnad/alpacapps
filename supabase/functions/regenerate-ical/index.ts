@@ -16,6 +16,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 // Slug mapping
 const NAME_TO_SLUG: Record<string, string> = {
   'Spartan Fishbowl': 'spartan-fishbowl',
@@ -55,6 +56,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+    const auth = await requireFunctionRoles(req, supabase as any, ['admin', 'oracle', 'staff']);
+    if (auth.response) return auth.response;
 
     // Fetch spaces and assignments
     const { data: spaces } = await supabase

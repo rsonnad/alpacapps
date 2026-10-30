@@ -9,4 +9,5 @@ Disallow: /devcontrol/
 Disallow: /devices/
 Disallow: /mistiq/
 Disallow: /rahulio/pages/justin-gilbertson-agreement-3/
+Disallow: /rahulio/pages/justin-gilbertson-hours/
 Sitemap: https://alpacaplayhouse.com/sitemap.xml

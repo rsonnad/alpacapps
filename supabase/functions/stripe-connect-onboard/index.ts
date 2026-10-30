@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
         unit_type: 'api_calls',
         estimated_cost_usd: 0,
         metadata: { account_id: accountId, associate_id, test_mode: config.test_mode },
-        app_user_id: user.id
+        app_user_id: auth.caller?.isServiceRole ? null : (auth.caller?.appUser?.id ?? null)
       });
 
       console.log('Created Connect account:', accountId);
@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
         unit_type: 'api_calls',
         estimated_cost_usd: 0,
         metadata: { account_id: connectAccountId, associate_id, test_mode: config.test_mode },
-        app_user_id: user.id
+        app_user_id: auth.caller?.isServiceRole ? null : (auth.caller?.appUser?.id ?? null)
       });
 
       return new Response(

@@ -696,7 +696,7 @@ async function loadPayPalConfig() {
   try {
     const { data: config, error } = await supabase
       .from('paypal_config')
-      .select('*')
+      .select('id, client_id, sandbox_client_id, is_active, test_mode, last_error, created_at, updated_at')
       .single();
 
     if (error) throw error;
@@ -717,12 +717,11 @@ async function loadPayPalConfig() {
       }
     }
 
-    // Populate credential fields (hide in demo mode)
+    // Populate credential fields (hide in demo mode). Client secrets are
+    // server-side only and never read into the browser.
     const hideVal = (v) => isDemoUser() ? redactString(v, 'password') : (v || '');
     document.getElementById('paypalSandboxClientId').value = hideVal(config.sandbox_client_id);
-    document.getElementById('paypalSandboxClientSecret').value = hideVal(config.sandbox_client_secret);
     document.getElementById('paypalClientId').value = hideVal(config.client_id);
-    document.getElementById('paypalClientSecret').value = hideVal(config.client_secret);
 
   } catch (error) {
     console.error('Error loading PayPal config:', error);
@@ -733,9 +732,7 @@ async function savePayPalConfig() {
   try {
     const updates = {
       sandbox_client_id: document.getElementById('paypalSandboxClientId').value.trim() || null,
-      sandbox_client_secret: document.getElementById('paypalSandboxClientSecret').value.trim() || null,
       client_id: document.getElementById('paypalClientId').value.trim() || null,
-      client_secret: document.getElementById('paypalClientSecret').value.trim() || null,
       test_mode: document.getElementById('paypalTestMode').checked,
       is_active: document.getElementById('paypalIsActive').checked,
       updated_at: new Date().toISOString(),
@@ -767,62 +764,6 @@ async function savePayPalConfig() {
   }
 }
 
-async function testPayPalConnection() {
-  const resultEl = document.getElementById('paypalTestResult');
-  const btn = document.getElementById('testPaypalConnection');
-  resultEl.textContent = 'Testing...';
-  resultEl.style.color = 'var(--text-muted)';
-  btn.disabled = true;
-
-  try {
-    const config = {
-      test_mode: document.getElementById('paypalTestMode').checked,
-      sandbox_client_id: document.getElementById('paypalSandboxClientId').value.trim(),
-      sandbox_client_secret: document.getElementById('paypalSandboxClientSecret').value.trim(),
-      client_id: document.getElementById('paypalClientId').value.trim(),
-      client_secret: document.getElementById('paypalClientSecret').value.trim(),
-    };
-
-    const clientId = config.test_mode ? config.sandbox_client_id : config.client_id;
-    const clientSecret = config.test_mode ? config.sandbox_client_secret : config.client_secret;
-
-    if (!clientId || !clientSecret) {
-      resultEl.textContent = `Missing ${config.test_mode ? 'sandbox' : 'production'} credentials`;
-      resultEl.style.color = 'var(--error, #ef4444)';
-      return;
-    }
-
-    const baseUrl = config.test_mode
-      ? 'https://api-m.sandbox.paypal.com'
-      : 'https://api-m.paypal.com';
-
-    const credentials = btoa(`${clientId}:${clientSecret}`);
-    const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: 'grant_type=client_credentials',
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      resultEl.textContent = `Connected! Mode: ${config.test_mode ? 'Sandbox' : 'Production'}. Token expires in ${data.expires_in}s.`;
-      resultEl.style.color = 'var(--success, #22c55e)';
-    } else {
-      const errorText = await response.text();
-      resultEl.textContent = `Auth failed: ${response.status}`;
-      resultEl.style.color = 'var(--error, #ef4444)';
-    }
-  } catch (error) {
-    resultEl.textContent = 'Connection test failed: ' + error.message;
-    resultEl.style.color = 'var(--error, #ef4444)';
-  } finally {
-    btn.disabled = false;
-  }
-}
-
 // =============================================
 // STRIPE CONFIG
 // =============================================
@@ -849,12 +790,11 @@ async function loadStripeConfig() {
       }
     }
 
-    // Populate credential fields (hide in demo mode)
+    // Populate credential fields (hide in demo mode). Secret keys are
+    // server-side only and never read into the browser.
     const hideVal = (v) => isDemoUser() ? redactString(v, 'password') : (v || '');
     document.getElementById('stripeSandboxPublishableKey').value = hideVal(config.sandbox_publishable_key);
-    document.getElementById('stripeSandboxSecretKey').value = hideVal(config.sandbox_secret_key);
     document.getElementById('stripePublishableKey').value = hideVal(config.publishable_key);
-    document.getElementById('stripeSecretKey').value = hideVal(config.secret_key);
 
   } catch (error) {
     console.error('Error loading Stripe config:', error);
@@ -865,9 +805,7 @@ async function saveStripeConfig() {
   try {
     const updates = {
       sandbox_publishable_key: document.getElementById('stripeSandboxPublishableKey').value.trim() || null,
-      sandbox_secret_key: document.getElementById('stripeSandboxSecretKey').value.trim() || null,
       publishable_key: document.getElementById('stripePublishableKey').value.trim() || null,
-      secret_key: document.getElementById('stripeSecretKey').value.trim() || null,
       test_mode: document.getElementById('stripeTestMode').checked,
       is_active: document.getElementById('stripeIsActive').checked,
       connect_enabled: document.getElementById('stripeConnectEnabled').checked,
@@ -891,30 +829,6 @@ async function saveStripeConfig() {
   } catch (error) {
     console.error('Error saving Stripe config:', error);
     showToast('Failed to save Stripe config', 'error');
-  }
-}
-
-async function testStripeConnection() {
-  const resultEl = document.getElementById('stripeTestResult');
-  const btn = document.getElementById('testStripeConnection');
-  resultEl.textContent = 'Testing...';
-  resultEl.style.color = 'var(--text-muted)';
-  btn.disabled = true;
-
-  try {
-    const result = await payoutService.testStripeConnection();
-    if (result.success) {
-      resultEl.textContent = result.message;
-      resultEl.style.color = 'var(--success, #22c55e)';
-    } else {
-      resultEl.textContent = result.error;
-      resultEl.style.color = 'var(--error, #ef4444)';
-    }
-  } catch (error) {
-    resultEl.textContent = 'Connection test failed: ' + error.message;
-    resultEl.style.color = 'var(--error, #ef4444)';
-  } finally {
-    btn.disabled = false;
   }
 }
 
@@ -1428,7 +1342,6 @@ function setupEventListeners() {
 
   // PayPal config
   document.getElementById('savePaypalConfig')?.addEventListener('click', savePayPalConfig);
-  document.getElementById('testPaypalConnection')?.addEventListener('click', testPayPalConnection);
   document.getElementById('paypalTestMode')?.addEventListener('change', () => {
     const badge = document.getElementById('paypalModeBadge');
     const isActive = document.getElementById('paypalIsActive')?.checked;
@@ -1459,7 +1372,6 @@ function setupEventListeners() {
 
   // Stripe config
   document.getElementById('saveStripeConfig')?.addEventListener('click', saveStripeConfig);
-  document.getElementById('testStripeConnection')?.addEventListener('click', testStripeConnection);
   document.getElementById('stripeTestMode')?.addEventListener('change', updateStripeBadge);
   document.getElementById('stripeIsActive')?.addEventListener('change', updateStripeBadge);
 

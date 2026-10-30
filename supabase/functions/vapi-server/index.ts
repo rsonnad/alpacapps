@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { timingSafeEqual } from "../_shared/timing-safe.ts";
 function jsonResponse(req: Request, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -28,6 +29,14 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    // Vapi sends the server-URL secret as X-Vapi-Secret (same secret as vapi-webhook).
+    // Without it this endpoint maps any phone number to a person's name and greeting.
+    const vapiSecret = Deno.env.get("VAPI_WEBHOOK_SECRET");
+    const suppliedSecret = req.headers.get("x-vapi-secret");
+    if (!vapiSecret || !suppliedSecret || !(await timingSafeEqual(suppliedSecret, vapiSecret))) {
+      return jsonResponse(req, { error: "Invalid server authentication" }, 401);
+    }
+
     const body = await req.json();
     const messageType = body.message?.type || body.type;
 

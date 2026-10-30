@@ -21,7 +21,7 @@ class StripeService {
     if (this.config) return this.config;
     const { data, error } = await supabase
       .from('stripe_config')
-      .select('*')
+      .select('id, publishable_key, sandbox_publishable_key, connect_enabled, is_active, test_mode, created_at, updated_at')
       .single();
     if (error) {
       console.error('Failed to load Stripe config:', error);
@@ -151,7 +151,7 @@ class StripeService {
 export async function getStripeConfig() {
   const { data, error } = await supabase
     .from('stripe_config')
-    .select('*')
+    .select('id, publishable_key, sandbox_publishable_key, connect_enabled, is_active, test_mode, created_at, updated_at')
     .single();
   if (error) throw error;
   return data;
@@ -162,7 +162,7 @@ export async function updateStripeConfig(updates) {
     .from('stripe_config')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', 1)
-    .select()
+    .select('id, publishable_key, sandbox_publishable_key, connect_enabled, is_active, test_mode, created_at, updated_at')
     .single();
   if (error) throw error;
   return data;

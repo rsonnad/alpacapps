@@ -1,64 +1,179 @@
-# Bump version on every push to main.
-# Runs only when the push is NOT our own bump commit ([skip ci]), so we avoid a loop.
-# Version is recorded via Supabase REST API (HTTPS), then HTML + version.json are updated.
-#
-# FORK SAFETY: This workflow only runs on the original rsonnad/alpacapps repo.
-# If you forked this repo, this workflow will be skipped automatically.
-# You can safely delete this file from your fork.
-
+# Dependency code runs only in build; release and deployment use fresh runners.
 name: Bump version on push to main
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-release-main
+  cancel-in-progress: false
 
 jobs:
-  bump:
-    if: github.repository == 'rsonnad/alpacapps' && !contains(github.event.head_commit.message, '[skip ci]')
+  build:
+    if: github.repository == 'rsonnad/alpacapps' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest
-    concurrency:
-      group: version-main-sequence
-      cancel-in-progress: false
-    permissions:
-      contents: write
+    timeout-minutes: 15
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
-
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - id: source
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
-
-      - name: Build Tailwind CSS
-        run: npm ci && npm run css:build
-
-      - name: Check route constants are in sync (shared/routes.js ↔ supabase/functions/_shared/routes.ts)
+      - name: Enforce supply-chain policy
+        run: |
+          node scripts/check-supply-chain.mjs
+          node --test scripts/supply-chain.test.mjs
+          node --test scripts/compose-muse.test.mjs
+          node scripts/check-dependency-audit.mjs
+      - name: Build Tailwind CSS without dependency lifecycle scripts
+        run: npm ci --ignore-scripts && npm run css:build
+      - name: Check route constants
         run: node scripts/sync-routes.js --check
-
       - name: Regenerate Rahulio pages manifest
         run: npm run rahulio-pages-manifest
+      - name: Upload only generated site assets
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: generated-site-assets
+          path: |
+            styles/tailwind.out.css
+            rahulio/pages/pages-manifest.json
+            rahulio/pages/index.html
+          if-no-files-found: error
+          retention-days: 1
 
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Supabase secrets live in the "release" environment, which only main can use.
+    environment: release
+    permissions:
+      contents: write
+    outputs:
+      release_sha: ${{ steps.release.outputs.sha }}
+      muse_lock: ${{ steps.muse.outputs.lock }}
+    steps:
+      - name: Checkout the exact source that was built
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.build.outputs.source_sha }}
+      - name: Download generated assets outside the checkout
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: generated-site-assets
+          path: ${{ runner.temp }}/generated-site-assets
+      # Never restore node_modules, scripts, .git, or arbitrary artifact paths.
+      - name: Copy allowlisted generated files
+        run: |
+          set -euo pipefail
+          for file in styles/tailwind.out.css rahulio/pages/pages-manifest.json rahulio/pages/index.html; do
+            test -f "$RUNNER_TEMP/generated-site-assets/$file"
+            test ! -L "$RUNNER_TEMP/generated-site-assets/$file"
+            cp -- "$RUNNER_TEMP/generated-site-assets/$file" "$file"
+          done
       - name: Bump version (REST API + HTML + version.json)
+        if: github.event_name == 'push'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          RELEASE_PUSH_SHA: ${{ github.sha }}
+          RELEASE_PUSH_SHA: ${{ needs.build.outputs.source_sha }}
           RELEASE_COMPARE_FROM_SHA: ${{ github.event.before }}
-          RELEASE_COMPARE_TO_SHA: ${{ github.sha }}
+          RELEASE_COMPARE_TO_SHA: ${{ needs.build.outputs.source_sha }}
           RELEASE_ACTOR_LOGIN: ${{ github.actor }}
           RELEASE_BRANCH: main
           RELEASE_PUSHED_AT: ${{ github.event.head_commit.timestamp }}
           RELEASE_SOURCE: github-main-push
         run: ./scripts/bump-version.sh --model ci
-
       - name: Commit and push version bump
+        id: release
+        env:
+          SOURCE_SHA: ${{ needs.build.outputs.source_sha }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --staged --quiet && echo "No version changes (unexpected)" && exit 1 || true
-          git commit -m "chore: bump version [skip ci]"
-          git push origin main
+          set -euo pipefail
+          # Fail rather than rebase generated files onto a revision we never built.
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$SOURCE_SHA" || {
+            echo 'Main advanced during the build; the next release must build its own source.' >&2
+            exit 1
+          }
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add --update
+            if ! git diff --staged --quiet; then
+              git commit -m "chore: bump version [skip ci]"
+              git push origin HEAD:main
+            fi
+          else
+            # Manual retries publish the committed revision without a new version.
+            git restore --worktree .
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      # Muse pages come from their own repos (muse-sources.json), pinned here so
+      # deploy verification checks the exact same bytes.
+      - name: Pin Muse source repos
+        id: muse
+        run: echo "lock=$(node scripts/compose-muse.mjs resolve)" >> "$GITHUB_OUTPUT"
+      - name: Prepare committed static site
+        env:
+          MUSE_LOCK: ${{ steps.muse.outputs.lock }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/pages-site"
+          git archive HEAD -- . ':!mistiq' | tar -x -C "$RUNNER_TEMP/pages-site"
+          python3 -c 'import json,os,subprocess; p=os.environ["RUNNER_TEMP"]+"/pages-site/_deployment.json"; open(p,"w").write(json.dumps({"sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()}))'
+          node scripts/compose-muse.mjs compose "$RUNNER_TEMP/pages-site" "$MUSE_LOCK"
+      - name: Upload committed site
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: ${{ runner.temp }}/pages-site
+
+  deploy:
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout verification script from the released revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.release.outputs.release_sha }}
+          persist-credentials: false
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+      - name: Prepare committed files for public verification
+        env:
+          MUSE_LOCK: ${{ needs.release.outputs.muse_lock }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/pages-site"
+          git archive HEAD -- . ':!mistiq' | tar -x -C "$RUNNER_TEMP/pages-site"
+          python3 -c 'import json,os,subprocess; p=os.environ["RUNNER_TEMP"]+"/pages-site/_deployment.json"; open(p,"w").write(json.dumps({"sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()}))'
+          node scripts/compose-muse.mjs compose "$RUNNER_TEMP/pages-site" "$MUSE_LOCK"
+      - name: Verify public deployment and Muse pages
+        env:
+          PAGES_SITE_DIR: ${{ runner.temp }}/pages-site
+        run: node scripts/verify-pages-deployment.mjs

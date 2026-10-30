@@ -204,7 +204,7 @@ function renderAccessDenied(state, activeTab) {
         const msg = overlay.querySelector('#accessRequestMsg')?.value?.trim() || '';
         await supabase.functions.invoke('send-email', {
           body: {
-            template: 'access_request',
+            type: 'access_request',
             to: 'team@alpacaplayhouse.com',
             data: {
               user_name: displayName,

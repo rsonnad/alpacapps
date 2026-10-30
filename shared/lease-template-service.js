@@ -120,6 +120,31 @@ async function getActiveTemplate(type = 'lease') {
 }
 
 /**
+ * Get the lease template for one application: its pinned template
+ * (rental_applications.signing_lease_template_id) if set, else the active one.
+ * Mirrors get-signing-document so the admin PDF matches what the tenant signs.
+ * @param {string} applicationId
+ */
+async function getLeaseTemplateForApplication(applicationId) {
+  const { data: app } = await supabase
+    .from('rental_applications')
+    .select('signing_lease_template_id')
+    .eq('id', applicationId)
+    .maybeSingle();
+
+  if (app?.signing_lease_template_id) {
+    const { data: pinned } = await supabase
+      .from('lease_templates')
+      .select('*')
+      .eq('id', app.signing_lease_template_id)
+      .maybeSingle();
+    if (pinned) return pinned;
+  }
+
+  return getActiveTemplate('lease');
+}
+
+/**
  * Get all templates of a given type
  * @param {string} type - Template type: 'lease', 'renter_waiver', 'event_waiver'
  */
@@ -832,6 +857,7 @@ function getDefaultTemplate(type = 'lease') {
 export const leaseTemplateService = {
   getAvailablePlaceholders,
   getActiveTemplate,
+  getLeaseTemplateForApplication,
   getAllTemplates,
   saveTemplate,
   setActiveTemplate,

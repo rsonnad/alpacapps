@@ -23,7 +23,7 @@ AlpacApps manages rental spaces at AlpacApps Residency (160 Still Forest Drive, 
 │ GitHub Pages   │  │  OpenClaw    │  │  Native Mobile Apps  │
 │ (Web UI)       │  │  (Discord)   │  │  (iOS + Android)     │
 │                │  │              │  │                      │
-│ HTML/CSS/JS    │  │  DO Droplet  │  │  Swift (iOS)         │
+│ HTML/CSS/JS    │  │  Hostinger   │  │  Swift (iOS)         │
 │ No backend     │  │              │  │  Kotlin (Android)    │
 └──────┬─────────┘  └──────┬───────┘  └──────────┬───────────┘
        │                   │                     │
@@ -123,7 +123,7 @@ alpacapps/
 │   ├── install.html        # Tester installation guide
 │   └── icons/              # Extension icons (16, 48, 128px)
 │
-├── bug-fixer/              # Bug Scout - autonomous bug fixer (runs on DO droplet)
+├── bug-fixer/              # Bug Scout - autonomous bug fixer (runs on Hostinger VPS)
 │   ├── bug_scout.js        # Main polling loop & Claude Code execution
 │   ├── package.json        # Dependencies
 │   ├── install.sh          # Server setup script
@@ -300,7 +300,7 @@ alpacapps/
 │   ├── oven-data.js          # Anova oven state + control via `anova-control` edge function
 │   └── glowforge-data.js     # Glowforge laser cutter status via `glowforge-control` edge function
 │
-├── feature-builder/       # PAI Feature Builder (runs on DO droplet)
+├── feature-builder/       # PAI Feature Builder (runs on Hostinger VPS)
 │   ├── feature_builder.js # Poll DB → Claude Code → branch → merge
 │   ├── package.json       # Dependencies
 │   ├── install.sh         # Server setup script
@@ -309,7 +309,7 @@ alpacapps/
 ├── pai-discord/           # PAI Discord Bot (bridges Discord → alpaca-pai edge function)
 │   ├── bot.js             # Discord.js v14 bot (DMs, channels, @mentions)
 │   ├── pai-discord.service # systemd unit file
-│   └── install.sh         # Droplet installation script
+│   └── install.sh         # Server installation script
 │
 ├── bug-reporter-extension/ # Chrome extension for bug reporting
 │   ├── manifest.json       # Manifest V3
@@ -707,7 +707,30 @@ Acknowledgments (boolean flags for each policy):
 
 **payouts** - Payout records
 - `associate_id`, `person_id`, `amount`, `payment_method`
-- `external_payout_id`, `status`, `time_entry_ids` (uuid[])
+- `external_payout_id`, `status`, `time_entry_ids` (uuid[]), `ledger_id`, `stripe_instant_payout_id`
+
+**payout_time_entries** - Which payout owns which entry. `UNIQUE(time_entry_id)` is the double-pay guard.
+
+#### Payroll flow and invariants
+
+Paths that move money, all server-side:
+- `pay-pending-associates`: automatic payouts. It runs nightly at 02:30 UTC. It also runs at 8 PM Central for `instant_payout` associates, then tries a Stripe Instant Payout.
+- `stripe-payout` / `paypal-payout`: staff UI clicks, plus weekly-summary approvals via `approve-email`.
+
+Invariants every path follows. Do not break them:
+1. **One amount calculator.** `supabase/functions/_shared/payout-breakdown.ts` computes each entry's hours × its own `hourly_rate` (profile rate if missing), plus `daily_extra` × distinct Central work days. The staff UI (`staff/payments.js`, `hoursService.markPaid`) mirrors it for display.
+2. **Claim before money moves.** Steps in order (`_shared/payout-claims.ts`):
+   - insert `payouts` with status `pending`
+   - insert `payout_time_entries`
+   - call the provider
+   - write `ledger`
+   - set `time_entries.payment_status = 'paid'`
+   - **If the provider says no (4xx):** release the claim.
+   - **If the outcome is unknown (network error or 5xx):** keep the claim and mark the payout `failed`. An admin must check the provider before deleting the claim.
+3. **`payment_status` is the source of truth.** The `time_entries_payment_status_sync` trigger overwrites `is_paid`, so never write `is_paid` alone.
+4. **The server writes the ledger for provider payouts.** The client calls `hoursService.markPaid` only for payments made outside the app (cash, Zelle and similar).
+5. **Auth.** `pay-pending-associates` accepts the service-role key or an admin/oracle JWT, never the anon key. pg_cron gets the key from `public.payroll_cron_bearer()`, which reads Vault secret `service_role_key`. All payroll cron jobs are defined in `supabase/migrations/20260929_payroll_hardening.sql`.
+6. **Watchdog.** `payroll-overdue-check` flags any unpaid, clocked-out hours older than 7 days, whatever the cause.
 
 ### Identity Verification
 
@@ -1087,7 +1110,7 @@ Rich receipt with payment history, outstanding balance calculation, and "Pay Now
 - Full reference: `API.md`
 
 ### OpenClaw (Discord Bot)
-- Separate system on DigitalOcean
+- Separate system on the Hostinger VPS (alpaclaw.cloud)
 - Uses SKILL.md and API.md for API knowledge
 - Can query/update via centralized API or Supabase directly
 - Sends bank transaction text to `record-payment` Edge Function for AI-matched payment recording
@@ -1146,7 +1169,7 @@ Rich receipt with payment history, outstanding balance calculation, and "Pay Now
 ### PAI Discord Bot
 - Architecture: Lightweight Node.js bot (`pai-discord/bot.js`) using discord.js v14
 - Bridges Discord messages → `alpaca-pai` edge function (same as web chat, email, voice)
-- Service: `pai-discord.service` (systemd, bugfixer user) on DO droplet → Oracle Cloud
+- Service: `pai-discord.service` (systemd, bugfixer user) on Hostinger VPS
 - Auth: Service role key with `context.source: "discord"`, user lookup via `app_users.discord_id`
 - Features: Per-user conversation history (12 msgs, 30 min TTL), typing indicators, message splitting (2000 char limit)
 - Listens to: configured channel IDs + DMs + @mentions
@@ -1380,7 +1403,7 @@ ORDER BY count DESC;
 | GitHub | rsonnad |
 | Supabase | (Rahul's account) |
 | Hostinger | alpacaplayhouse@gmail.com |
-| DigitalOcean | (Rahul's account) — DEPRECATED |
+| DigitalOcean | wingsiebird@gmail.com — account archived 2026-10 (no servers) |
 | Oracle Cloud | wingsiebird@gmail.com (alpacapps-ops) |
 
 ## Recent Features
@@ -1583,7 +1606,7 @@ npx supabase secrets set GEMINI_API_KEY=your_key_here --project-ref aphrrfprbixm
 
 ## Bug Reporter Extension & Auto-Fix System
 
-An automated bug reporting and fixing pipeline. Testers use a Chrome extension to capture annotated screenshots and submit bug reports. A worker on the DigitalOcean droplet picks up reports, runs Claude Code to fix the bug, pushes to GitHub, and emails the reporter.
+An automated bug reporting and fixing pipeline. Testers use a Chrome extension to capture annotated screenshots and submit bug reports. A worker on the Hostinger VPS picks up reports, runs Claude Code to fix the bug, pushes to GitHub, and emails the reporter.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -1657,7 +1680,7 @@ CREATE TABLE bug_reports (
 
 ### Bug Scout Service (`bug-fixer/`)
 
-**Location:** DigitalOcean droplet (same as OpenClaw bot)
+**Location:** Hostinger VPS (`srv1433869`, 93.188.164.224)
 
 **Files:**
 - `bug_scout.js` - Main polling loop and Claude Code execution
@@ -1771,8 +1794,8 @@ const child = spawn('claude', args, {
 
 11. **Deploying Bug Scout updates:** After editing bug_scout.js locally, scp and restart:
     ```bash
-    scp -i ~/.ssh/do_bugfixer bug-fixer/bug_scout.js root@159.89.157.120:/opt/bug-fixer/bug_scout.js
-    ssh -i ~/.ssh/do_bugfixer root@159.89.157.120 "chown bugfixer:bugfixer /opt/bug-fixer/bug_scout.js && systemctl restart bug-fixer"
+    scp -i ~/.ssh/sponic_hostinger bug-fixer/bug_scout.js root@93.188.164.224:/opt/bug-fixer/bug_scout.js
+    ssh -i ~/.ssh/sponic_hostinger root@93.188.164.224 "chown bugfixer:bugfixer /opt/bug-fixer/bug_scout.js && systemctl restart bug-fixer"
     ```
 
 **Full Setup Script (`install.sh`):**
@@ -1878,7 +1901,7 @@ All bug emails CC the admin (`alpacaautomatic@gmail.com`).
 | Chrome Extension | Local install (not published to Chrome Web Store) |
 | Bug Reports DB | Supabase `bug_reports` table |
 | Screenshots | Supabase Storage `bug-screenshots` bucket |
-| Worker Service | DigitalOcean droplet (same as OpenClaw) |
+| Worker Service | Hostinger VPS (same as OpenClaw) |
 | Email Delivery | Resend (via `send-email` Edge Function) |
 
 ## Home Automation
@@ -1888,7 +1911,7 @@ Programmatic control of on-premise hardware (Sonos speakers, UniFi network, came
 See `HOMEAUTOMATION.md` for full documentation and `HOMEAUTOMATION.local.md` for credentials.
 
 ```
-DO Droplet ──── Tailscale VPN ────► Almaca (home server)
+Hostinger VPS ── Tailscale VPN ────► Almaca (home server)
                                           │
                                     LAN (192.168.1.0/24)
                                           │
@@ -1909,8 +1932,8 @@ DO Droplet ──── Tailscale VPN ────► Almaca (home server)
 | node-sonos-http-api | Alpuca :5005 | REST API for 14 Sonos speaker zones |
 | go2rtc | Almaca :1984 | RTSP→HLS restreaming from UniFi Protect |
 | talkback-relay | Almaca :8902 | WebSocket→FFmpeg→UDP two-way camera audio |
-| Tailscale | DO Droplet + Almaca | Encrypted mesh VPN for remote access |
-| Caddy | DO Droplet | Reverse proxy: cam.alpacaplayhouse.com → go2rtc |
+| Tailscale | Hostinger VPS + Almaca | Encrypted mesh VPN for remote access |
+| Caddy | Hostinger VPS | Reverse proxy: cam.alpacaplayhouse.com → go2rtc |
 | UniFi Network API | UDM Pro :443 | Firewall, DHCP, WiFi management |
 | UniFi Protect | UDM Pro :7441 | Camera RTSP streams + snapshot API |
 | Uptime Kuma | Almaca :3001 | Service health monitoring |
@@ -2070,9 +2093,11 @@ OpenClaw v2026.2.23 runs as a Docker container on the Hostinger VPS (`93.188.164
 
 **Note:** OpenClaw's `server.mjs` startup script regenerates config files from environment variables on every restart. Config changes MUST go through the `.env` file.
 
-## DigitalOcean Droplet Workers (DEPRECATED — migrating to Hostinger + Oracle)
+## Hostinger VPS Workers
 
-All background workers run on the DO droplet as systemd services:
+All background workers run on the Hostinger VPS (`srv1433869`, 93.188.164.224) as systemd services. The old DigitalOcean droplet is gone (account archived 2026-10).
+
+**Claude CLI auth:** `bug-fixer` and `feature-builder` run `claude` as the `bugfixer` user, authenticated by `CLAUDE_CODE_OAUTH_TOKEN` in each service's `/opt/<service>/.env` (a long-lived token from `claude setup-token`, set 2026-10-09). If jobs fail with "Not logged in · Please run /login", that token has expired: mint a new one and replace it in both `.env` files, then restart both services.
 
 | Service | User | Location | Purpose | Poll Interval |
 |---------|------|----------|---------|---------------|

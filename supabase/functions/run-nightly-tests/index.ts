@@ -11,6 +11,7 @@ import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { wrapEmailHtml } from "../_shared/email-brand-wrapper.ts";
 import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
+import { requireCronOrRoles } from "../_shared/require-auth.ts";
 
 interface TestResult {
   test_name: string;
@@ -29,6 +30,8 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const auth = await requireCronOrRoles(req, supabase, ['admin', 'oracle']);
+  if (auth.response) return auth.response;
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
   // Parse optional body for selective test running

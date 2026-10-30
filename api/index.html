@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlpacApps API Reference</title>
+  <meta name="description" content="AlpacApps API reference: the api gateway (rentals, rental notes, spaces, people, tasks…), authentication with scoped API keys, and standalone endpoints.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --muted: #666666;
+      --accent: #a8865a;
+      --accent-light: #f5efe6;
+      --border: #e5e2dc;
+      --code-bg: #f4f1ec;
+      --ok: #4f7a3f;
+      --ok-bg: #eef5eb;
+      --warn: #b4532f;
+      --warn-bg: #fceee9;
+      --info: #5d4f80;
+      --info-bg: #f3effc;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #141311; --surface: #1d1b18; --text: #ece8e1; --muted: #a39d93;
+        --accent: #d4b48a; --accent-light: #2a241c; --border: #34302a; --code-bg: #24211d;
+        --ok: #9cc58a; --ok-bg: #1d2a19; --warn: #e89a7c; --warn-bg: #2f1d16; --info: #bcaee0; --info-bg: #221d30;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #141311; --surface: #1d1b18; --text: #ece8e1; --muted: #a39d93;
+      --accent: #d4b48a; --accent-light: #2a241c; --border: #34302a; --code-bg: #24211d;
+      --ok: #9cc58a; --ok-bg: #1d2a19; --warn: #e89a7c; --warn-bg: #2f1d16; --info: #bcaee0; --info-bg: #221d30;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86em; }
+    code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; line-height: 1.5; }
+    pre code { background: none; padding: 0; font-size: 1em; }
+    header.top { border-bottom: 1px solid var(--border); background: var(--surface); }
+    header.top .inner { max-width: 1180px; margin: 0 auto; padding: 28px 16px 22px; }
+    header.top h1 { margin: 0 0 4px; font-size: 1.9rem; letter-spacing: -0.01em; }
+    header.top p { margin: 0; color: var(--muted); }
+    .layout { max-width: 1180px; margin: 0 auto; padding: 0 16px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; }
+    nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 24px 0; font-size: 0.9rem; }
+    nav.toc a { display: block; color: var(--muted); text-decoration: none; padding: 3px 0; }
+    nav.toc a:hover { color: var(--text); }
+    nav.toc .grp { margin: 14px 0 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 600; }
+    main { padding: 16px 0 80px; min-width: 0; }
+    h2 { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+    h2:first-child { border-top: none; margin-top: 16px; }
+    h3 { font-size: 1.1rem; margin: 30px 0 8px; }
+    .table-wrap { overflow-x: auto; margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+    table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: var(--accent-light); font-weight: 600; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    .callout { border-left: 3px solid var(--info); background: var(--info-bg); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .callout.ok { border-color: var(--ok); background: var(--ok-bg); }
+    .callout.warn { border-color: var(--warn); background: var(--warn-bg); }
+    .pill { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--accent-light); color: var(--accent); border: 1px solid var(--border); white-space: nowrap; }
+    .pill.new { background: var(--ok-bg); color: var(--ok); }
+    .muted { color: var(--muted); }
+    .endpoint { font-family: ui-monospace, Menlo, monospace; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; overflow-x: auto; white-space: nowrap; }
+    .endpoint b { color: var(--ok); margin-right: 8px; }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; gap: 0; }
+      nav.toc { position: static; max-height: none; border-bottom: 1px solid var(--border); padding: 12px 0; columns: 2; }
+      nav.toc .grp { break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+<header class="top">
+  <div class="inner">
+    <h1>AlpacApps API</h1>
+    <p>One reference for every programmatic way into AlpacApps. Most things go through the <code>api</code> gateway; a few standalone endpoints are listed afterwards.</p>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <div class="grp">Start</div>
+    <a href="#overview">Overview</a>
+    <a href="#auth">Authentication</a>
+    <a href="#keys">Getting an API key</a>
+    <a href="#format">Request &amp; response</a>
+    <div class="grp">Rentals</div>
+    <a href="#rentals">rentals</a>
+    <a href="#end-behavior">Month-to-month vs fixed</a>
+    <a href="#rental-notes">rental_notes</a>
+    <a href="#agent-recipes">Agent recipes</a>
+    <div class="grp">Gateway</div>
+    <a href="#resources">All resources</a>
+    <a href="#filters">Filters by resource</a>
+    <a href="#behaviors">Smart behaviors</a>
+    <div class="grp">Other endpoints</div>
+    <a href="#public">Public endpoints</a>
+    <a href="#staff-fns">Staff functions</a>
+    <a href="#devices">Device control</a>
+    <a href="#webhooks">Webhooks &amp; internal</a>
+  </nav>
+
+  <main>
+    <h2 id="overview">Overview</h2>
+    <p>AlpacApps runs on Supabase. Every endpoint is a Supabase edge function at:</p>
+    <div class="endpoint">https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/&lt;function&gt;</div>
+    <p>The main one is the <strong><code>api</code> gateway</strong>. It's a single permissioned endpoint for reading and writing records such as spaces, people, bookings, rentals, tasks and documents. Everything is a <code>POST</code> with a JSON body that names a <code>resource</code> and an <code>action</code>:</p>
+    <div class="endpoint"><b>POST</b>https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/api</div>
+    <div class="callout">Building an agent or an integration? Start with <a href="#keys">a scoped API key</a> and the <a href="#rentals">rentals</a> resource. <a href="#agent-recipes">Agent recipes</a> has copy-paste calls.</div>
+
+    <h2 id="auth">Authentication</h2>
+    <p>Each request is resolved to a <strong>permission level</strong>, checked in this order:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Method</th><th>Header</th><th>Level</th><th>Use for</th></tr></thead>
+      <tbody>
+        <tr><td>Scoped API key</td><td><code>X-API-Key: &lt;key&gt;</code></td><td>Set on the key</td><td>External agents and integrations, e.g. the Meta Muse agent</td></tr>
+        <tr><td>User JWT</td><td><code>Authorization: Bearer &lt;jwt&gt;</code></td><td>The user's role</td><td>The website, mobile apps, PAI chat</td></tr>
+        <tr><td>Service role key</td><td><code>Authorization: Bearer &lt;service key&gt;</code></td><td>4</td><td>Internal workers and edge functions only. Never give it to a third party.</td></tr>
+        <tr><td>None</td><td>—</td><td>0</td><td>Public data: listed spaces, FAQ, media</td></tr>
+      </tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Level</th><th>Roles</th><th>Typical access</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>public, demo</td><td>Read-only public data</td></tr>
+        <tr><td>1</td><td>resident, associate</td><td>Own records plus limited writes (tasks, bugs, profile, own hours)</td></tr>
+        <tr><td>2</td><td>staff</td><td>Read and write most operational data, including rentals and rental notes</td></tr>
+        <tr><td>3</td><td>admin</td><td>Full CRUD except system config</td></tr>
+        <tr><td>4</td><td>oracle, service key</td><td>Everything, including system config</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="keys">Getting an API key</h2>
+    <p>API keys are the right way to give an external agent access. Each key is a row in <code>api_keys</code>, and the database stores only a SHA-256 hash of the key, never the key itself. A key is limited three ways:</p>
+    <ul>
+      <li><strong>Level:</strong> the role it acts as. Agent keys are usually level 2 (staff).</li>
+      <li><strong>Allowed resources:</strong> for example only <code>rentals</code>, <code>rental_notes</code> and <code>vehicles</code>. Any other resource returns <code>403</code>.</li>
+      <li><strong>Allowed actions:</strong> for example <code>list</code>, <code>get</code>, <code>create</code>. A key can never do more than its level allows. Deletes on <code>rental_notes</code> need admin, so a staff key can't remove notes.</li>
+    </ul>
+    <p>Keys made by the script start with <code>amk_</code>, and each call updates the key's <code>last_used_at</code>. To revoke a key, set <code>is_active = false</code> on its row. It stops working on the next request.</p>
+    <div class="callout ok"><strong>Issuing a key (admins):</strong> run <code>scripts/create-api-key.js --name "…" --level 2 --resources rentals,rental_notes --actions list,get,create</code>. It prints the key once. Store it in Bitwarden straight away, then paste it into the agent's secret or credential settings. Never paste it into the agent's prompt or into a chat.</div>
+
+    <h2 id="format">Request &amp; response</h2>
+<pre><code>{
+  "resource": "rentals",          // required
+  "action":   "list",             // list | get | create | update | delete
+  "id":       "…",                // get / update / delete
+  "data":     { … },              // create / update
+  "filters":  { … },              // list
+  "limit":    100,                // default 100, max 500
+  "offset":   0,
+  "order_by": "created_at",       // most resources
+  "order_dir":"desc"
+}</code></pre>
+    <p>A success returns <code>{"data": …, "count": 42, "error": null}</code>. A failure returns <code>{"data": null, "error": "message", "code": 4xx}</code>.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>400</td><td>Bad request: unknown resource or action, or a missing or invalid field</td></tr>
+        <tr><td>401</td><td>The token or API key is invalid, expired or inactive</td></tr>
+        <tr><td>403</td><td>The caller's level is too low, or the API key isn't scoped for this resource or action</td></tr>
+        <tr><td>404</td><td>Record not found</td></tr>
+        <tr><td>405</td><td>The request wasn't a POST</td></tr>
+        <tr><td>500</td><td>Server error</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="rentals">rentals <span class="pill new">new</span></h2>
+    <p>A <strong>read-only</strong> view of every rental agreement in one shape, for answering "when does each rental start and end, and what happens at the end?". It covers:</p>
+    <ul>
+      <li><strong>Space bookings:</strong> both <em>Airbnb guests</em>, synced from Airbnb's calendar, and <em>direct tenants</em> on a lease.</li>
+      <li><strong>Vehicle rentals.</strong></li>
+    </ul>
+    <p>Levels: <code>list</code> and <code>get</code> need level 2.</p>
+
+    <h3>Rental object</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>string</td><td><code>assignment:&lt;uuid&gt;</code> for space bookings, <code>vehicle_rental:&lt;uuid&gt;</code> for vehicles. Use this id with <code>get</code> and when adding notes.</td></tr>
+        <tr><td><code>kind</code></td><td>string</td><td><code>space</code> or <code>vehicle</code></td></tr>
+        <tr><td><code>source</code></td><td>string</td><td><code>airbnb</code> (booked through Airbnb) or <code>direct</code> (our own lease or agreement)</td></tr>
+        <tr><td><code>status</code></td><td>string</td><td>Spaces: <code>active</code>, <code>pending_contract</code>, <code>contract_sent</code>, <code>completed</code>, <code>cancelled</code>, <code>prospect</code>. Vehicles: <code>draft</code>, <code>active</code>, <code>ended</code>, <code>cancelled</code>.</td></tr>
+        <tr><td><code>renter_name</code></td><td>string|null</td><td>The tenant's or renter's name. Airbnb bookings show <code>"Airbnb Guest"</code> because Airbnb's calendar feed doesn't include guest names.</td></tr>
+        <tr><td><code>renter_type</code></td><td>string|null</td><td>Person type, e.g. <code>tenant</code>, <code>airbnb_guest</code>, <code>staff</code>, <code>owner</code>. Owner holds and staff rooms show up here too.</td></tr>
+        <tr><td><code>spaces</code></td><td>string[]</td><td>Space names, e.g. <code>["Skyloft"]</code>. Empty for vehicles.</td></tr>
+        <tr><td><code>vehicle</code></td><td>string|null</td><td>Vehicle name for vehicle rentals</td></tr>
+        <tr><td><code>start_date</code></td><td>date</td><td>First day of the rental (<code>YYYY-MM-DD</code>)</td></tr>
+        <tr><td><code>end_date</code></td><td>date|null</td><td>For Airbnb bookings, the <strong>last night</strong> booked (check-out is the next day). For leases, the end of the agreed term. <code>null</code> means open-ended. See the next section for what happens on this date.</td></tr>
+        <tr><td><code>end_behavior</code></td><td>string</td><td><code>month_to_month</code>, <code>fixed</code> or <code>unknown</code>. See below.</td></tr>
+        <tr><td><code>end_behavior_source</code></td><td>string|null</td><td>Where <code>end_behavior</code> came from: <code>explicit</code>, <code>airbnb</code>, <code>lease_application</code>, <code>open_ended</code>, <code>vehicle_auto_renew</code>, or <code>null</code> when unknown.</td></tr>
+        <tr><td><code>rolls_to_month_to_month</code></td><td>bool|null</td><td>Shortcut: <code>true</code> if the rental continues monthly after <code>end_date</code>, <code>false</code> if it ends, <code>null</code> if unknown.</td></tr>
+        <tr><td><code>notice_days</code></td><td>int|null</td><td>Days of notice needed to end a rolling rental, when it's recorded</td></tr>
+        <tr><td><code>planned_move_out</code></td><td>date|null</td><td>Spaces only: the move-out date the tenant has told us they plan, which may be before <code>end_date</code>. <code>planned_move_out_listed</code> is <code>true</code> once that date is advertised publicly as availability.</td></tr>
+        <tr><td><code>ended_on</code></td><td>date|null</td><td>Vehicles only: the date the rental actually ended (Austin time)</td></tr>
+        <tr><td><code>rate_amount</code>, <code>rate_term</code></td><td>number, string</td><td>Rent and its period: <code>monthly</code>, <code>weekly</code> or <code>nightly</code></td></tr>
+        <tr><td><code>notes</code></td><td>note[]</td><td>The <a href="#rental-notes">rental notes</a>, newest first. Leave them out with <code>filters.include_notes: false</code>.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>list filters</h3>
+    <p>By default, <code>list</code> returns <strong>current and upcoming</strong> rentals: spaces that are <code>active</code>, <code>pending_contract</code> or <code>contract_sent</code>, and vehicles that are <code>active</code> or <code>draft</code>. Rentals whose <code>end_date</code> has already passed are left out unless you pass <code>status</code>. Results are sorted by soonest <code>end_date</code>, with open-ended rentals last. Date filters are inclusive. If the response includes <code>"truncated": true</code>, narrow the filters.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Filter</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>kind</code></td><td>string</td><td><code>space</code> or <code>vehicle</code>. Any other value returns 400.</td></tr>
+        <tr><td><code>source</code></td><td>string</td><td><code>airbnb</code> or <code>direct</code>. Any other value returns 400.</td></tr>
+        <tr><td><code>status</code></td><td>string | string[] | "all"</td><td>Overrides the default set of statuses. <code>completed</code> and <code>ended</code> mean the same thing for spaces and vehicles.</td></tr>
+        <tr><td><code>starts_after</code> / <code>starts_before</code></td><td>date</td><td>Filter on <code>start_date</code></td></tr>
+        <tr><td><code>ends_after</code> / <code>ends_before</code></td><td>date</td><td>Filter on <code>end_date</code>. <code>ends_after</code> includes open-ended rentals; <code>ends_before</code> leaves them out.</td></tr>
+        <tr><td><code>end_behavior</code></td><td>string</td><td><code>month_to_month</code>, <code>fixed</code> or <code>unknown</code></td></tr>
+        <tr><td><code>space</code></td><td>string</td><td>Case-insensitive match on space name, e.g. <code>"skyloft"</code></td></tr>
+        <tr><td><code>renter</code></td><td>string</td><td>Case-insensitive match on renter name</td></tr>
+        <tr><td><code>include_notes</code></td><td>bool</td><td>Default <code>true</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="end-behavior">Month-to-month vs fixed end dates</h3>
+    <p>An end date can mean two different things:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th><code>end_behavior</code></th><th>What happens on <code>end_date</code></th><th>Plan around…</th></tr></thead>
+      <tbody>
+        <tr><td><code>month_to_month</code></td><td>The initial term ends, but the rental <strong>automatically continues monthly</strong> until either side gives notice (<code>notice_days</code>). If <code>end_date</code> is null it's open-ended from the start.</td><td>Don't treat <code>end_date</code> as a move-out. Check <code>planned_move_out</code> and the notes.</td></tr>
+        <tr><td><code>fixed</code></td><td>The rental <strong>ends</strong>. The renter leaves unless a new agreement is made. Every Airbnb booking is fixed; an extension shows up as a changed <code>end_date</code> once it's confirmed in Airbnb.</td><td>Treat <code>end_date</code> as the move-out and turnover date.</td></tr>
+        <tr><td><code>unknown</code></td><td>The agreement doesn't record which it is. This is common for older direct leases entered by hand.</td><td>Ask a human. A staff member can record the answer with <code>{"resource":"assignments","action":"update","id":"&lt;uuid&gt;","data":{"end_behavior":"fixed"}}</code>.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">How it's decided, first match wins:</p>
+    <ol class="muted">
+      <li>An admin set it explicitly on the booking (<code>assignments.end_behavior</code>).</li>
+      <li>It's an Airbnb booking, so it's fixed.</li>
+      <li>It came through a lease application: a notice period of "none" means fixed, any other notice period means month-to-month.</li>
+      <li>It has no end date, so it's month-to-month.</li>
+      <li>Vehicle rentals use their auto-renew setting.</li>
+    </ol>
+    <p class="muted">Anything else is <code>unknown</code>.</p>
+
+    <h2 id="rental-notes">rental_notes <span class="pill new">new</span></h2>
+    <p>Free-text notes attached to one rental, for Airbnb guests and direct tenants alike. For example: <em>"Airbnb guest is planning to extend but hasn't finalized yet."</em> Notes are append-only for agents, and every note records who wrote it (the API key's name or the user's name).</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Action</th><th>Level</th><th>Body</th></tr></thead>
+      <tbody>
+        <tr><td><code>create</code></td><td>2</td><td><code>data: { rental_id, body, tag? }</code>. <code>rental_id</code> is the <code>id</code> from <code>rentals</code>. <code>body</code> is up to 4000 characters. <code>tag</code> is an optional short label, e.g. <code>extension</code>, <code>move_out</code>, <code>payment</code>, <code>general</code>.</td></tr>
+        <tr><td><code>list</code></td><td>2</td><td><code>filters: { rental_id?, tag?, since? }</code>, newest first</td></tr>
+        <tr><td><code>get</code></td><td>2</td><td><code>id</code></td></tr>
+        <tr><td><code>delete</code></td><td>3 (admin)</td><td><code>id</code></td></tr>
+      </tbody>
+    </table></div>
+    <p>A note object looks like <code>{ id, rental_id, body, tag, author, created_at }</code>.</p>
+
+    <h3 id="agent-recipes">Agent recipes</h3>
+    <p>Set <code>KEY</code> to the API key from the agent's secret store.</p>
+<pre><code># Everything ending in the next 30 days, soonest first
+curl -s https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/api \
+  -H "X-API-Key: $KEY" -H "Content-Type: application/json" \
+  -d '{"resource":"rentals","action":"list",
+       "filters":{"ends_after":"2026-10-17","ends_before":"2026-11-16"}}'
+
+# Leases that really end (no automatic monthly rollover)
+  -d '{"resource":"rentals","action":"list","filters":{"end_behavior":"fixed","source":"direct"}}'
+
+# Which Airbnb guest is in Skyloft?
+  -d '{"resource":"rentals","action":"list","filters":{"source":"airbnb","space":"skyloft"}}'
+
+# Attach a note to that booking (use the id from the previous call)
+  -d '{"resource":"rental_notes","action":"create",
+       "data":{"rental_id":"assignment:&lt;uuid&gt;","tag":"extension",
+               "body":"Airbnb guest is planning to extend but hasn'\''t finalized yet."}}'</code></pre>
+    <div class="callout">Airbnb guests have no names in our data. To find "the Airbnb guest in Skyloft", list with <code>source: "airbnb"</code> plus <code>space</code>, then pick the booking whose dates cover today. If more than one could match, ask a human instead of guessing.</div>
+
+    <h2 id="resources">All gateway resources</h2>
+    <p>Minimum level for each action. "rs" means row-scoped: below level 2, callers only see their own rows. "—" means the action isn't offered.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Resource</th><th>What it is</th><th>list</th><th>get</th><th>create</th><th>update</th><th>delete</th></tr></thead>
+      <tbody>
+        <tr><td><code>rentals</code> <span class="pill new">new</span></td><td>Rental start and end dates, with month-to-month vs fixed</td><td>2</td><td>2</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td><code>rental_notes</code> <span class="pill new">new</span></td><td>Notes on a rental</td><td>2</td><td>2</td><td>2</td><td>—</td><td>3</td></tr>
+        <tr><td><code>spaces</code></td><td>Rental units and amenity spaces</td><td>0</td><td>0</td><td>3</td><td>2*</td><td>3</td></tr>
+        <tr><td><code>people</code></td><td>Contact records</td><td>2</td><td>2</td><td>2</td><td>2</td><td>3</td></tr>
+        <tr><td><code>assignments</code></td><td>Raw bookings and occupancy</td><td>1 rs</td><td>1 rs</td><td>2</td><td>2</td><td>3</td></tr>
+        <tr><td><code>tasks</code></td><td>Projects board</td><td>1</td><td>1</td><td>1</td><td>1</td><td>2</td></tr>
+        <tr><td><code>users</code></td><td>App user accounts</td><td>2</td><td>2</td><td>3</td><td>3</td><td>4</td></tr>
+        <tr><td><code>profile</code></td><td>The caller's own profile</td><td>—</td><td>1</td><td>—</td><td>1</td><td>—</td></tr>
+        <tr><td><code>vehicles</code></td><td>Vehicle fleet</td><td>1</td><td>1</td><td>3</td><td>2*</td><td>3</td></tr>
+        <tr><td><code>media</code></td><td>Photos and media library</td><td>0</td><td>0</td><td>2</td><td>2</td><td>2</td></tr>
+        <tr><td><code>payments</code></td><td>Accounting ledger</td><td>2</td><td>2</td><td>2</td><td>3</td><td>4</td></tr>
+        <tr><td><code>bug_reports</code></td><td>Bug tracking</td><td>2</td><td>2</td><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td><code>time_entries</code></td><td>Associate work hours</td><td>1 rs</td><td>1 rs</td><td>1</td><td>1 rs</td><td>2</td></tr>
+        <tr><td><code>events</code></td><td>Event hosting requests</td><td>1 rs</td><td>1</td><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td><code>documents</code></td><td>Document library</td><td>1</td><td>1</td><td>2</td><td>2</td><td>3</td></tr>
+        <tr><td><code>sms</code></td><td>SMS messages</td><td>2</td><td>2</td><td>2</td><td>—</td><td>—</td></tr>
+        <tr><td><code>faq</code></td><td>PAI knowledge base</td><td>0</td><td>0</td><td>3</td><td>3</td><td>3</td></tr>
+        <tr><td><code>invitations</code></td><td>User invitations</td><td>2</td><td>2</td><td>2</td><td>3</td><td>3</td></tr>
+        <tr><td><code>password_vault</code></td><td>House credentials (wifi etc.)</td><td>1</td><td>1</td><td>3</td><td>3</td><td>3</td></tr>
+        <tr><td><code>feature_requests</code></td><td>PAI feature-builder queue</td><td>2</td><td>2</td><td>2</td><td>2</td><td>3</td></tr>
+        <tr><td><code>pai_config</code></td><td>PAI system configuration</td><td>—</td><td>3</td><td>—</td><td>3</td><td>—</td></tr>
+        <tr><td><code>tesla_accounts</code></td><td>Tesla Fleet API accounts</td><td>3</td><td>3</td><td>—</td><td>3</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">* Below admin, staff can only update certain fields. On <code>vehicles</code>, those are the registration fields: <code>registration_state</code>, <code>registration_number</code>, <code>registration_expiry</code>, <code>registration_doc_url</code>, <code>registered_owner_name</code>.</p>
+
+    <h3 id="filters">Filters by resource</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Resource</th><th>Filters</th></tr></thead>
+      <tbody>
+        <tr><td><code>spaces</code></td><td><code>type</code>, <code>can_be_dwelling</code>, <code>can_be_event</code>, <code>parent_id</code>, <code>search</code> (name)</td></tr>
+        <tr><td><code>people</code></td><td><code>type</code>, <code>search</code> (fuzzy name or email), <code>phone</code> (last 10 digits), <code>email</code></td></tr>
+        <tr><td><code>assignments</code></td><td><code>status</code>, <code>person_id</code>, <code>space_id</code>, <code>active</code> (status is active, pending_contract or contract_sent)</td></tr>
+        <tr><td><code>tasks</code></td><td><code>status</code> (open, in_progress, done or all), <code>priority</code> (1–4), <code>assigned_to</code>, <code>assigned_name</code> (fuzzy), <code>space_id</code>, <code>space_name</code> (fuzzy), <code>search</code></td></tr>
+        <tr><td><code>users</code></td><td><code>role</code>, <code>search</code></td></tr>
+        <tr><td><code>vehicles</code></td><td><code>make</code>, <code>search</code></td></tr>
+        <tr><td><code>media</code></td><td><code>category</code> (mktg, property, maintenance or ai-gen), <code>space_id</code>, <code>tag_name</code>, <code>search</code> (captions)</td></tr>
+        <tr><td><code>payments</code></td><td><code>person_id</code>, <code>type</code>, <code>payment_method</code>, <code>start_date</code>, <code>end_date</code></td></tr>
+        <tr><td><code>bug_reports</code></td><td><code>status</code>, <code>severity</code>, <code>search</code></td></tr>
+        <tr><td><code>time_entries</code></td><td><code>associate_id</code> (an <code>associate_profiles.id</code>, not a person id), <code>space_id</code>, <code>status</code>, <code>start_date</code>, <code>end_date</code></td></tr>
+        <tr><td><code>events</code></td><td><code>status</code>, <code>search</code></td></tr>
+        <tr><td><code>documents</code></td><td><code>search</code>, <code>file_type</code>, <code>storage_backend</code></td></tr>
+        <tr><td><code>sms</code></td><td><code>person_id</code>, <code>direction</code>, <code>sms_type</code>, <code>search</code></td></tr>
+        <tr><td><code>invitations</code></td><td><code>role</code>, <code>search</code></td></tr>
+        <tr><td><code>password_vault</code></td><td><code>category</code>, <code>search</code></td></tr>
+        <tr><td><code>feature_requests</code></td><td><code>status</code>, <code>search</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="behaviors">Smart behaviors</h3>
+    <ul>
+      <li><strong>Fuzzy names:</strong> fields like <code>assigned_name</code> and <code>space_name</code> resolve to ids for you, e.g. "Jon" or "skyloft".</li>
+      <li><strong>Auto-timestamps:</strong> fields like <code>completed_at</code> and <code>updated_at</code> are set by the server when status changes.</li>
+      <li><strong>Row scoping:</strong> residents and associates only see their own bookings, hours and events.</li>
+      <li><strong>Usage logging:</strong> every call is logged against the user or API key.</li>
+    </ul>
+
+    <h2 id="public">Public endpoints</h2>
+    <p>No user login needed. Supabase requires the site's public anon key in <code>apikey</code> or <code>Authorization</code>; the website already sends it.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Function</th><th>Call</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>ical</code></td><td><code>GET ?space=&lt;slug&gt;</code></td><td>An <code>.ics</code> availability feed for a space</td></tr>
+        <tr><td><code>share-space</code></td><td><code>GET ?space=&lt;slug&gt;</code></td><td>A shareable link with preview metadata that redirects to the space page</td></tr>
+        <tr><td><code>submit-rental-inquiry</code></td><td><code>POST {person, application, turnstile_token?}</code></td><td>Public rental inquiry, with spam screening and rate limits</td></tr>
+        <tr><td><code>ask-question</code></td><td><code>POST {question}</code></td><td>Answers questions about the property from spaces and the FAQ</td></tr>
+        <tr><td><code>contact-form</code></td><td><code>POST</code> form fields</td><td>Contact-us submissions</td></tr>
+        <tr><td><code>release-info</code></td><td><code>GET</code></td><td>Recent release and version events</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="staff-fns">Staff functions</h2>
+    <p>These need <code>Authorization: Bearer &lt;user JWT&gt;</code> from a signed-in user with the right role. They don't accept API keys yet. If an agent needs one of them, ask for it to be exposed through the gateway.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Function</th><th>Who</th><th>Body</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>alpaca-pai</code></td><td>any signed-in user</td><td><code>{message, conversationHistory?, context?}</code></td><td>PAI, the house AI assistant (chat with tools)</td></tr>
+        <tr><td><code>record-payment</code></td><td>staff+</td><td><code>{name, payment_string, source?}</code></td><td>Matches a payment to a tenant and records it</td></tr>
+        <tr><td><code>resolve-payment</code></td><td>staff+</td><td><code>{action, …}</code></td><td>Resolves an unmatched pending payment</td></tr>
+        <tr><td><code>create-payment-link</code></td><td>staff+</td><td><code>{amount, description, person_*, category, assignment_id?}</code></td><td>Creates a Stripe ACH payment link</td></tr>
+        <tr><td><code>send-sms</code></td><td>non-demo users</td><td><code>{type, to, data}</code></td><td>Sends a templated SMS</td></tr>
+        <tr><td><code>send-whatsapp</code></td><td>non-demo users</td><td><code>{type, to, data}</code></td><td>Sends a templated WhatsApp message</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="devices">Device control</h2>
+    <p>Each needs a user JWT with the matching permission, such as <code>control_lighting</code>, <code>control_climate</code>, <code>control_music</code> or <code>control_cars</code>. The body is always <code>{action, …}</code>.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Function</th><th>Controls</th></tr></thead>
+      <tbody>
+        <tr><td><code>home-assistant-control</code></td><td>Lights and scenes through Home Assistant (<code>on</code>, <code>brightness</code>, <code>hex_color</code>, <code>scene_entity_id</code>)</td></tr>
+        <tr><td><code>govee-control</code></td><td>Govee lights</td></tr>
+        <tr><td><code>nest-control</code></td><td>Nest thermostats (<code>mode</code>, <code>heatTemp</code>, <code>coolTemp</code>, <code>ecoMode</code>)</td></tr>
+        <tr><td><code>sonos-control</code></td><td>Sonos playback, volume, favourites and spoken announcements</td></tr>
+        <tr><td><code>tesla-command</code></td><td>Tesla vehicle commands, as <code>{vehicle_id, command}</code></td></tr>
+        <tr><td><code>lg-control</code></td><td>LG washer and dryer status</td></tr>
+        <tr><td><code>printer-control</code>, <code>glowforge-control</code>, <code>anova-control</code></td><td>3D printer, laser cutter and sous-vide</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="webhooks">Webhooks &amp; internal functions</h2>
+    <p>These aren't for outside callers. They're listed so you know they exist and don't build against them:</p>
+    <ul>
+      <li><strong>Inbound webhooks</strong>, each verified by its provider's signature: Stripe, Square, PayPal, Resend (email), Telnyx (SMS), WhatsApp, Vapi (voice), Alexa.</li>
+      <li><strong>Scheduled jobs:</strong> the Airbnb calendar sync, iCal regeneration, payment and payroll reminders, weekly reports and nightly tests.</li>
+      <li><strong>Token-link flows</strong> opened from emails: lease signing, identity verification, W-9, email approval, deposit confirmation.</li>
+    </ul>
+    <p class="muted">Missing something? Endpoints for agents should be added to the <code>api</code> gateway as a scoped resource, not as a new standalone function, so API keys, levels and logging all work the same way.</p>
+  </main>
+</div>
+</body>
+</html>

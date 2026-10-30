@@ -138,6 +138,8 @@ const RESOURCE_HANDLERS: Record<string, ResourceHandler> = {
   spaces: handleSpaces,
   people: handlePeople,
   assignments: handleAssignments,
+  rentals: handleRentals,
+  rental_notes: handleRentalNotes,
   tasks: handleTasks,
   users: handleUsers,
   profile: handleProfile,
@@ -491,6 +493,300 @@ async function handleAssignments(supabase: any, req: ApiRequest, auth: any, perm
       if (!req.id) return error("id is required", 400);
       await supabase.from("assignment_spaces").delete().eq("assignment_id", req.id);
       const { error: err } = await supabase.from("assignments").delete().eq("id", req.id);
+      if (err) return error(`Delete failed: ${err.message}`, 400);
+      return success({ deleted: true });
+    }
+  }
+  return error("Unknown action", 400);
+}
+
+// ─── rentals (read-only: space bookings + vehicle rentals) ──────────
+//
+// One normalized shape across `assignments` (Airbnb + direct tenants) and
+// `vehicle_rentals`, answering "when does it start/end, and what happens at
+// the end?". Rental ids are prefixed so rental_notes can target either table:
+//   assignment:<uuid> | vehicle_rental:<uuid>
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const SPACE_CURRENT_STATUSES = ["active", "pending_contract", "contract_sent"];
+const VEHICLE_CURRENT_STATUSES = ["active", "draft"];
+// Spaces say "completed", vehicles say "ended"; accept either for both.
+const SPACE_STATUS_ALIASES: Record<string, string> = { ended: "completed" };
+const VEHICLE_STATUS_ALIASES: Record<string, string> = { completed: "ended" };
+// Upper bound per table scan. PostgREST max-rows may cap lower; `truncated` reports it.
+const RENTAL_SCAN_LIMIT = 5000;
+
+function parseRentalId(id: string): { table: "assignment" | "vehicle_rental" | null; uuid: string } {
+  const m = /^(assignment|vehicle_rental):(.+)$/.exec(id);
+  return m ? { table: m[1] as "assignment" | "vehicle_rental", uuid: m[2] } : { table: null, uuid: id };
+}
+
+/** Decide what happens at end_date for a space booking. */
+function spaceEndBehavior(a: any): { end_behavior: string; end_behavior_source: string | null } {
+  if (a.end_behavior) return { end_behavior: a.end_behavior, end_behavior_source: "explicit" };
+  if (a.airbnb_uid) return { end_behavior: "fixed", end_behavior_source: "airbnb" };
+  const np = a.rental_application?.notice_period;
+  if (np) return { end_behavior: np === "none" ? "fixed" : "month_to_month", end_behavior_source: "lease_application" };
+  if (!a.end_date) return { end_behavior: "month_to_month", end_behavior_source: "open_ended" };
+  return { end_behavior: "unknown", end_behavior_source: null };
+}
+
+function normalizeAssignment(a: any) {
+  const eb = spaceEndBehavior(a);
+  const person = a.person;
+  return {
+    id: `assignment:${a.id}`,
+    kind: "space",
+    source: a.airbnb_uid ? "airbnb" : "direct",
+    status: a.status,
+    renter_name: person ? [person.first_name, person.last_name].filter(Boolean).join(" ") : null,
+    renter_type: person?.type ?? null,
+    spaces: (a.assignment_spaces || []).map((s: any) => s.space?.name).filter(Boolean),
+    vehicle: null,
+    start_date: a.start_date,
+    end_date: a.end_date,
+    ...eb,
+    rolls_to_month_to_month: eb.end_behavior === "unknown" ? null : eb.end_behavior === "month_to_month",
+    notice_days: a.notice_days ?? null,
+    planned_move_out: a.desired_departure_date ?? null,
+    planned_move_out_listed: !!a.desired_departure_listed,
+    ended_on: null,
+    rate_amount: a.rate_amount ?? a.monthly_rent ?? null,
+    rate_term: a.rate_term ?? null,
+  };
+}
+
+function normalizeVehicleRental(v: any) {
+  const eb = !v.end_date
+    ? { end_behavior: "month_to_month", end_behavior_source: "open_ended" }
+    : { end_behavior: v.auto_renew === false ? "fixed" : "month_to_month", end_behavior_source: "vehicle_auto_renew" };
+  return {
+    id: `vehicle_rental:${v.id}`,
+    kind: "vehicle",
+    source: "direct",
+    status: v.status,
+    renter_name: v.renter_name ?? null,
+    renter_type: null,
+    spaces: [],
+    vehicle: v.vehicle?.name || [v.vehicle_year, v.vehicle_make, v.vehicle_model].filter(Boolean).join(" ") || null,
+    start_date: v.start_date,
+    end_date: v.end_date,
+    ...eb,
+    rolls_to_month_to_month: eb.end_behavior === "month_to_month",
+    notice_days: v.cancel_notice_days ?? null,
+    planned_move_out: null,
+    planned_move_out_listed: false,
+    ended_on: v.ended_at ? new Date(v.ended_at).toLocaleDateString("en-CA", { timeZone: "America/Chicago" }) : null,
+    rate_amount: v.current_monthly_rate ?? null,
+    rate_term: "monthly",
+  };
+}
+
+const ASSIGNMENT_RENTAL_SELECT =
+  "id, status, type, start_date, end_date, end_behavior, notice_days, desired_departure_date, " +
+  "desired_departure_listed, rate_amount, monthly_rent, rate_term, airbnb_uid, person:person_id(first_name, last_name, type), " +
+  "assignment_spaces(space:space_id(name)), rental_application:rental_application_id(notice_period)";
+const VEHICLE_RENTAL_SELECT =
+  "id, status, start_date, end_date, auto_renew, cancel_notice_days, ended_at, renter_name, " +
+  "current_monthly_rate, vehicle_year, vehicle_make, vehicle_model, vehicle:vehicle_id(name)";
+
+/** Apply inclusive date-window filters. Open-ended rentals (null end) count as ending after any date. */
+function applyRentalDateFilters(query: any, f: Record<string, any>): any {
+  if (f.starts_after) query = query.gte("start_date", f.starts_after);
+  if (f.starts_before) query = query.lte("start_date", f.starts_before);
+  if (f.ends_before) query = query.lte("end_date", f.ends_before);
+  if (f.ends_after) query = query.or(`end_date.gte.${f.ends_after},end_date.is.null`);
+  return query;
+}
+
+async function attachRentalNotes(supabase: any, rentals: any[]): Promise<void> {
+  const aIds = rentals.filter((r) => r.kind === "space").map((r) => parseRentalId(r.id).uuid);
+  const vIds = rentals.filter((r) => r.kind === "vehicle").map((r) => parseRentalId(r.id).uuid);
+  const byId: Record<string, any[]> = {};
+  const fetches = [];
+  if (aIds.length) fetches.push(supabase.from("rental_notes").select("*").in("assignment_id", aIds));
+  if (vIds.length) fetches.push(supabase.from("rental_notes").select("*").in("vehicle_rental_id", vIds));
+  for (const { data, error: err } of await Promise.all(fetches)) {
+    if (err) throw new Error(`Failed to load rental notes: ${err.message}`);
+    for (const n of data || []) {
+      const note = normalizeRentalNote(n);
+      (byId[note.rental_id] ||= []).push(note);
+    }
+  }
+  for (const r of rentals) {
+    r.notes = (byId[r.id] || []).sort((x, y) => y.created_at.localeCompare(x.created_at));
+  }
+}
+
+function normalizeRentalNote(n: any) {
+  return {
+    id: n.id,
+    rental_id: n.assignment_id ? `assignment:${n.assignment_id}` : `vehicle_rental:${n.vehicle_rental_id}`,
+    body: n.body,
+    tag: n.tag,
+    author: n.author_label,
+    created_at: n.created_at,
+  };
+}
+
+async function handleRentals(supabase: any, req: ApiRequest, _auth: any, _perm: any): Promise<Response> {
+  const f = req.filters || {};
+  const includeNotes = f.include_notes !== false;
+
+  switch (req.action) {
+    case "list": {
+      for (const k of ["starts_after", "starts_before", "ends_after", "ends_before"]) {
+        if (f[k] && !DATE_RE.test(String(f[k]))) return error(`filters.${k} must be YYYY-MM-DD`, 400);
+      }
+      if (f.kind && !["space", "vehicle"].includes(f.kind)) return error("filters.kind must be space or vehicle", 400);
+      if (f.source && !["airbnb", "direct"].includes(f.source)) return error("filters.source must be airbnb or direct", 400);
+      if (f.end_behavior && !["month_to_month", "fixed", "unknown"].includes(f.end_behavior)) {
+        return error("filters.end_behavior must be month_to_month, fixed or unknown", 400);
+      }
+      const statusAll = f.status === "all";
+      const statuses: string[] | null = statusAll ? null : f.status ? [].concat(f.status).map(String) : null;
+      const spaceStatuses = statuses?.map((st) => SPACE_STATUS_ALIASES[st] || st);
+      const vehicleStatuses = statuses?.map((st) => VEHICLE_STATUS_ALIASES[st] || st);
+      // Default view is "current and upcoming": hide contracts whose end_date has
+      // already passed (e.g. a contract_sent that was never closed out).
+      if (!f.status) {
+        const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+        if (!f.ends_after || f.ends_after < today) f.ends_after = today;
+      }
+      const wantSpace = !f.kind || f.kind === "space";
+      const wantVehicle = (!f.kind || f.kind === "vehicle") && f.source !== "airbnb";
+
+      let rentals: any[] = [];
+      let truncated = false;
+
+      if (wantSpace) {
+        let q = supabase.from("assignments").select(ASSIGNMENT_RENTAL_SELECT, { count: "exact" }).eq("type", "dwelling");
+        if (!statusAll) q = q.in("status", spaceStatuses || SPACE_CURRENT_STATUSES);
+        if (f.source === "airbnb") q = q.not("airbnb_uid", "is", null);
+        if (f.source === "direct") q = q.is("airbnb_uid", null);
+        const { data, error: err, count: total } = await applyRentalDateFilters(q, f).range(0, RENTAL_SCAN_LIMIT - 1);
+        if (err) return error(err.message, 500);
+        if ((total ?? 0) > (data || []).length) truncated = true;
+        rentals.push(...(data || []).map(normalizeAssignment));
+      }
+
+      if (wantVehicle) {
+        let q = supabase.from("vehicle_rentals").select(VEHICLE_RENTAL_SELECT, { count: "exact" });
+        if (!statusAll) q = q.in("status", vehicleStatuses || VEHICLE_CURRENT_STATUSES);
+        const { data, error: err, count: total } = await applyRentalDateFilters(q, f).range(0, RENTAL_SCAN_LIMIT - 1);
+        if (err) return error(err.message, 500);
+        if ((total ?? 0) > (data || []).length) truncated = true;
+        rentals.push(...(data || []).map(normalizeVehicleRental));
+      }
+
+      if (f.end_behavior) rentals = rentals.filter((r) => r.end_behavior === f.end_behavior);
+      if (f.space) {
+        const s = String(f.space).toLowerCase();
+        rentals = rentals.filter((r) => r.spaces.some((n: string) => n.toLowerCase().includes(s)));
+      }
+      if (f.renter) {
+        const s = String(f.renter).toLowerCase();
+        rentals = rentals.filter((r) => (r.renter_name || "").toLowerCase().includes(s));
+      }
+
+      // Soonest end first; open-ended last.
+      rentals.sort((a, b) => (a.end_date || "9999-12-31").localeCompare(b.end_date || "9999-12-31")
+        || (a.start_date || "").localeCompare(b.start_date || ""));
+
+      const count = rentals.length;
+      const offset = req.offset || 0;
+      const page = rentals.slice(offset, offset + Math.min(req.limit || 100, 500));
+      if (includeNotes) await attachRentalNotes(supabase, page);
+      if (truncated) {
+        return jsonResponse({ data: page, count, truncated: true, error: null });
+      }
+      return success(page, count);
+    }
+
+    case "get": {
+      if (!req.id) return error("id is required (assignment:<uuid> or vehicle_rental:<uuid>)", 400);
+      const { table, uuid } = parseRentalId(req.id);
+      let rental: any = null;
+      if (table !== "vehicle_rental") {
+        const { data, error: err } = await supabase.from("assignments").select(ASSIGNMENT_RENTAL_SELECT)
+          .eq("id", uuid).eq("type", "dwelling").maybeSingle();
+        if (err && table === "assignment") return error(err.message, 500);
+        if (data) rental = normalizeAssignment(data);
+      }
+      if (!rental && table !== "assignment") {
+        const { data, error: err } = await supabase.from("vehicle_rentals").select(VEHICLE_RENTAL_SELECT).eq("id", uuid).maybeSingle();
+        if (err && table === "vehicle_rental") return error(err.message, 500);
+        if (data) rental = normalizeVehicleRental(data);
+      }
+      if (!rental) return error("Rental not found", 404);
+      if (includeNotes) await attachRentalNotes(supabase, [rental]);
+      return success(rental);
+    }
+  }
+  return error("Unknown action", 400);
+}
+
+// ─── rental_notes ───────────────────────────────────────────────────
+
+async function handleRentalNotes(supabase: any, req: ApiRequest, auth: any, _perm: any): Promise<Response> {
+  switch (req.action) {
+    case "list": {
+      const f = req.filters || {};
+      let query = supabase.from("rental_notes").select("*", { count: "exact" });
+      if (f.rental_id) {
+        const { table, uuid } = parseRentalId(String(f.rental_id));
+        if (!table) return error("filters.rental_id must be assignment:<uuid> or vehicle_rental:<uuid>", 400);
+        query = query.eq(table === "assignment" ? "assignment_id" : "vehicle_rental_id", uuid);
+      }
+      if (f.tag) query = query.eq("tag", f.tag);
+      if (f.since) query = query.gte("created_at", f.since);
+      query = applyPagination(query, req, "created_at", "desc");
+      const { data, error: err, count } = await query;
+      if (err) return error(err.message, 500);
+      return success((data || []).map(normalizeRentalNote), count);
+    }
+
+    case "get": {
+      if (!req.id) return error("id is required", 400);
+      const { data, error: err } = await supabase.from("rental_notes").select("*").eq("id", req.id).single();
+      if (err) return error("Note not found", 404);
+      return success(normalizeRentalNote(data));
+    }
+
+    case "create": {
+      const d = req.data || {};
+      const body = typeof d.body === "string" ? d.body.trim() : "";
+      if (!body) return error("data.body is required", 400);
+      if (body.length > 4000) return error("data.body must be 4000 characters or fewer", 400);
+      const { table, uuid } = parseRentalId(String(d.rental_id || ""));
+      if (!table) return error("data.rental_id must be assignment:<uuid> or vehicle_rental:<uuid> (from the rentals resource)", 400);
+
+      const targetTable = table === "assignment" ? "assignments" : "vehicle_rentals";
+      const { data: target } = await supabase.from(targetTable).select("id").eq("id", uuid).maybeSingle();
+      if (!target) return error("Rental not found", 404);
+
+      const appUserId = auth.appUser?.id;
+      const apiKeyMatch = /^__apikey_(.+)__$/.exec(String(appUserId || ""));
+      const { data, error: err } = await supabase
+        .from("rental_notes")
+        .insert({
+          assignment_id: table === "assignment" ? uuid : null,
+          vehicle_rental_id: table === "vehicle_rental" ? uuid : null,
+          body,
+          tag: d.tag ? String(d.tag).slice(0, 40) : null,
+          author_label: auth.appUser?.display_name || null,
+          created_by_api_key_id: apiKeyMatch ? apiKeyMatch[1] : null,
+          created_by_app_user_id: !apiKeyMatch && appUserId && !String(appUserId).startsWith("__") ? appUserId : null,
+        })
+        .select()
+        .single();
+      if (err) return error(`Create failed: ${err.message}`, 400);
+      return success(normalizeRentalNote(data));
+    }
+
+    case "delete": {
+      if (!req.id) return error("id is required", 400);
+      const { error: err } = await supabase.from("rental_notes").delete().eq("id", req.id);
       if (err) return error(`Delete failed: ${err.message}`, 400);
       return success({ deleted: true });
     }

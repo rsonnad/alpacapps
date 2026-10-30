@@ -10,6 +10,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 
 // ─── Types ─────────────────────────────────────────────────────────
 
@@ -310,6 +311,11 @@ serve(async (req) => {
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  // Signed-in team members only (associates/worktracking.js sends the session token):
+  // this spends Gemini credits, creates tasks and emails results.
+  const auth = await requireFunctionRoles(req, supabase, ["admin", "oracle", "staff", "associate", "resident"]);
+  if (auth.response) return auth.response;
 
   if (!geminiApiKey) {
     return jsonResponse(req, { error: "GEMINI_API_KEY not configured" }, 500);

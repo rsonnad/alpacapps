@@ -97,11 +97,8 @@ async function loadSpaces() {
 // Load users for "Question for" dropdown
 // =============================================
 async function loadUsers() {
-  const { data: users } = await supabase
-    .from('app_users')
-    .select('id, display_name, first_name, last_name, role, email')
-    .not('role', 'in', '("demo","prospect","public")')
-    .order('display_name');
+  // Names-only RPC (excludes demo/prospect/public roles and the bot user server-side)
+  const { data: users } = await supabase.rpc('list_member_directory');
 
   const select = document.getElementById('assignedToSelect');
   if (!users || !select) return;
@@ -125,11 +122,9 @@ async function loadUsers() {
   };
 
   users.forEach(u => {
-    // Skip bot user
-    if (u.email === 'bot@alpacaplayhouse.com') return;
     const name = (u.first_name && u.last_name)
       ? `${u.first_name} ${u.last_name}`
-      : u.display_name || u.email;
+      : u.display_name || u.first_name || 'Unnamed';
     const group = roleLabels[u.role] || 'Residents';
     if (groups[group]) {
       groups[group].push({ id: u.id, name });

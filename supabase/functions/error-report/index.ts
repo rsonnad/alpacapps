@@ -18,6 +18,11 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { checkIpRateLimit, checkRateLimit } from "../_shared/function-wrapper.ts";
+
+// Anonymous endpoint: bound what one caller can write.
+const MAX_ERRORS_PER_REPORT = 20;
+const MAX_FIELD_CHARS = 2000;
 import { ROUTES } from "../_shared/routes.ts";
 // Email configuration
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'alpacaautomatic@gmail.com';
@@ -210,19 +215,42 @@ serve(async (req) => {
   }
 
   try {
+    const limiter = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    if (
+      !(await checkIpRateLimit(limiter, 'error-report', req, 30, 3600)) ||
+      !(await checkRateLimit(limiter, 'error-report-global', 'all', 1000, 86400))
+    ) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded' }),
+        { status: 429, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body = await req.json();
 
     // Check if this is a digest request
     if (body.action === 'send_digest') {
-      return await handleDigestRequest();
+      return await handleDigestRequest(req);
     }
 
     // Otherwise handle as error report
-    return await handleErrorReport(body as ErrorReport);
+    const report = body as ErrorReport;
+    if (!Array.isArray(report.errors)) report.errors = [];
+    report.errors = report.errors.slice(0, MAX_ERRORS_PER_REPORT).map((e) => ({
+      ...e,
+      message: String(e?.message ?? '').slice(0, MAX_FIELD_CHARS),
+    }));
+    if (JSON.stringify(report).length > 100_000) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Report too large' }),
+        { status: 413, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+    return await handleErrorReport(report, req);
   } catch (err) {
     console.error('Error processing request:', err);
     return new Response(
-      JSON.stringify({ success: false, error: err.message }),
+      JSON.stringify({ success: false, error: 'Internal error' }),
       {
         status: 500,
         headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
@@ -231,7 +259,7 @@ serve(async (req) => {
   }
 });
 
-async function handleErrorReport(report: ErrorReport) {
+async function handleErrorReport(report: ErrorReport, req: Request) {
   const { errors, summary } = report;
 
   if (!errors || errors.length === 0) {
@@ -395,7 +423,7 @@ async function handleErrorReport(report: ErrorReport) {
   );
 }
 
-async function handleDigestRequest() {
+async function handleDigestRequest(req: Request) {
   console.log('Processing daily digest request');
 
   // Initialize Supabase client

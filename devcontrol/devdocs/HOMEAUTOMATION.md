@@ -95,7 +95,7 @@ alpuca ha <endpoint> '<json>' # Raw Home Assistant service call
 **Use RealVNC Viewer** (free) — not macOS Screen Sharing.app. macOS Screen Sharing forces ARD mode (always prompts for username+password via a SecureToken-gated path). RealVNC Viewer uses standard VNC protocol which reads the VNC-only password.
 
 - Connect to: `192.168.1.200`
-- Password: `alpaca` (no username field)
+- Password: <redacted — see Bitwarden> (no username field)
 
 ---
 
@@ -108,7 +108,7 @@ alpuca ha <endpoint> '<json>' # Raw Home Assistant service call
 | **HAOS Version** | 17.1 |
 | **VM IP** | `192.168.1.39` (bridged on en1 via vmnet) |
 | **Web UI** | http://192.168.1.39:8123 |
-| **Login** | `alpacaadmin` / `playhouse` |
+| **Login** | `alpacaadmin` / <redacted — see Bitwarden> |
 | **Host Machine** | Alpuca — Mac mini M4 (Apple Silicon), 24 GB RAM |
 | **Host IP** | `192.168.1.200` |
 | **Host SSH** | `ssh alpuca@192.168.1.200` (key auth — see §0 below) |

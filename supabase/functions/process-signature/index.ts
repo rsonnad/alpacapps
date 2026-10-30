@@ -21,6 +21,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { buildArchivalLeaseHtml, auditBlockHtml, formatDateTime } from "../_shared/archival-lease.ts";
+import { computePaymentDueAtSigning, formatChicagoDeadline, formatMoney } from "../_shared/payment-due.ts";
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -91,6 +92,10 @@ Deno.serve(async (req) => {
         reservation_deposit_amount,
         application_fee_paid,
         application_fee_amount,
+        move_in_deposit_amount,
+        require_deposit,
+        deposit_status,
+        payment_deadline_at,
         approved_move_in,
         waiver_template_id,
         approved_space:approved_space_id (id, name),
@@ -489,7 +494,26 @@ Deno.serve(async (req) => {
 
       if (docType === 'rental') {
         const spaceName = (rentalApp?.approved_space as any)?.name || 'your space';
-        const reservationDeposit = rentalApp?.reservation_deposit_amount || rentalApp?.approved_rate || 0;
+        // Prepaid / no-deposit stays (e.g. Airbnb-booked) get no payment ask.
+        const paymentDue = rentalApp?.require_deposit === false || rentalApp?.deposit_status === 'confirmed'
+          ? null
+          : computePaymentDueAtSigning(rentalApp);
+        // An admin-set deadline wins over the default 24 hours after signing.
+        const deadlineOverride = (rentalApp as any)?.payment_deadline_at;
+        const paymentDeadline = formatChicagoDeadline(deadlineOverride
+          ? new Date(deadlineOverride)
+          : new Date(new Date(signedAt).getTime() + 24 * 60 * 60 * 1000));
+
+        if (paymentDue && paymentDue.total > 0) {
+          // Same state change as rentalService.requestDeposit(), so the
+          // pipeline moves to the Deposit stage.
+          const { error: depReqErr } = await supabase
+            .from('rental_applications')
+            .update({ deposit_status: 'requested', deposit_requested_at: signedAt })
+            .eq('id', app.id)
+            .eq('deposit_status', 'pending');
+          if (depReqErr) console.error('Failed to mark deposit requested:', depReqErr);
+        }
 
         let moveInDateFormatted = 'TBD';
         if (rentalApp?.approved_move_in) {
@@ -504,9 +528,15 @@ Deno.serve(async (req) => {
         await sendSignedEmail(RESEND_API_KEY, {
           to: person.email,
           firstName: person.first_name,
-          subject: 'Lease Signed - Reservation Deposit Due - Alpaca Playhouse',
+          subject: paymentDue && paymentDue.total > 0
+            ? (deadlineOverride
+              ? `Lease Signed - Payment Due by ${paymentDeadline} - Alpaca Playhouse`
+              : 'Lease Signed - Payment Due Within 24 Hours - Alpaca Playhouse')
+            : 'Lease Signed - Alpaca Playhouse',
           spaceName,
-          reservationDeposit,
+          paymentDue,
+          paymentDeadline,
+          paymentDeadlineCustom: !!deadlineOverride,
           moveInDate: moveInDateFormatted,
           rate: rentalApp?.approved_rate,
           rateTerm: rateTermDisplay,
@@ -822,9 +852,36 @@ async function sendVehicleRentalSignedEmail(apiKey: string, o: {
   }
 }
 
+function paymentDueHtml(opts: any): string {
+  const due = opts.paymentDue;
+  if (!due || !(due.total > 0)) return '';
+  const money = formatMoney;
+  const rows = due.items.map((i: any) => `
+              <tr>
+                <td style="padding: 6px 0;">${i.label}</td>
+                <td style="padding: 6px 0; text-align: right;">${money(i.amount)}</td>
+              </tr>`).join('');
+  return `
+          <div style="background: #fff4e5; border: 2px solid #f9a825; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #b26a00;">${opts.paymentDeadlineCustom ? 'Payment Due' : 'Payment Due Within 24 Hours'}</h3>
+            <p>Payment is required ${opts.paymentDeadlineCustom ? '' : 'within 24 hours, '}by <strong>${opts.paymentDeadline}</strong>, to hold your reservation.</p>
+            <table style="border-collapse: collapse; width: 100%; max-width: 400px;">${rows}
+              <tr>
+                <td style="padding: 8px 0; border-top: 1px solid #ddd;"><strong>Total Due Now</strong></td>
+                <td style="padding: 8px 0; border-top: 1px solid #ddd; text-align: right; font-size: 1.2em; font-weight: bold; color: #b26a00;">${money(due.total)}</td>
+              </tr>
+            </table>
+            ${due.creditedToRent ? `<p style="font-size: 0.9em; color: #666; margin-bottom: 0;">This amount will be credited toward your first month's rent.</p>` : ''}
+          </div>
+
+          <h3>Payment Options</h3>
+          <ul style="line-height: 1.8;">${opts.paymentMethodsHtml}</ul>
+          <p><strong>Important:</strong> Please include your name in the payment memo.</p>
+`;
+}
+
 async function sendSignedEmail(apiKey: string, opts: any) {
   try {
-    const rateTermDisplay = opts.rateTerm || 'month';
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -844,25 +901,11 @@ async function sendSignedEmail(apiKey: string, opts: any) {
 
           ${auditBlockHtml(opts)}
 
-          <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #3d8b7a;">Reservation Deposit Due</h3>
-            <p>To secure your space, please submit your reservation deposit:</p>
-            <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
-              <tr>
-                <td style="padding: 8px 0;"><strong>Reservation Deposit:</strong></td>
-                <td style="padding: 8px 0; text-align: right; font-size: 1.2em; font-weight: bold; color: #3d8b7a;">$${opts.reservationDeposit}</td>
-              </tr>
-            </table>
-            <p style="font-size: 0.9em; color: #666; margin-bottom: 0;">This amount will be credited toward your first month's rent.</p>
-          </div>
-
-          <h3>Payment Options</h3>
-          <ul style="line-height: 1.8;">${opts.paymentMethodsHtml}</ul>
-          <p><strong>Important:</strong> Please include your name and "Reservation Deposit" in the payment memo.</p>
+          ${paymentDueHtml(opts)}
 
           <div style="background: #e5f4f1; border-left: 4px solid #3d8b7a; padding: 15px; margin: 20px 0;">
             <strong>Move-in Date:</strong> ${opts.moveInDate}<br>
-            <strong>Monthly Rent:</strong> $${opts.rate || 'TBD'}/${rateTermDisplay}
+            <strong>Rent:</strong> as stated in your signed lease
           </div>
 
           <div style="background: #f0f7ff; border-radius: 8px; padding: 20px; margin: 20px 0;">
@@ -871,7 +914,7 @@ async function sendSignedEmail(apiKey: string, opts: any) {
             <p style="margin-bottom: 0;"><a href="https://alpacaplayhouse.com/residents/profile.html" style="display: inline-block; background: #3d8b7a; color: #fff; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">Complete Your Profile</a></p>
           </div>
 
-          <p>Once we receive your reservation deposit, we'll send confirmation and prepare for your arrival.</p>
+          ${opts.paymentDue?.total > 0 ? `<p>Once we receive your payment, we'll send confirmation and prepare for your arrival.</p>` : ''}
           <p>Questions? Reply to this email or contact us at team@alpacaplayhouse.com</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
           <div style="text-align: center; padding: 16px;"><img src="https://alpacaplayhouse.com/assets/branding/alpaca-head-white-transparent.png" alt="" style="height: 40px; margin: 0 8px;" /><img src="https://alpacaplayhouse.com/assets/Alpaca%20Playhouse%20Highlights/Alpaca.jpg" alt="" style="height: 80px; border-radius: 8px; margin: 0 8px;" /></div>

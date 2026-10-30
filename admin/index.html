@@ -5,19 +5,19 @@
   <title>Admin — AlpacAPPs</title>
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/png" href="../favicon.png">
-  <!-- Bare /admin/ entry point. Redirects to the default admin page (users).
-       Kept after Phase 3 refactor so deep links to /admin/ resolve to a real
-       page instead of a GitHub Pages 404. -->
+  <!-- Bare /admin/ entry point. Redirects to the Admin section of the intranet TOC.
+       Kept so deep links to /admin/ resolve to a real page instead of a
+       GitHub Pages 404. -->
   <script>
     var loc = window.location;
-    var target = '/admin/users.html' + (loc.search || '') + (loc.hash || '');
+    var target = '/intranet/' + (loc.search || '') + (loc.hash || '#sec-admin');
     window.location.replace(target);
   </script>
-  <meta http-equiv="refresh" content="0; url=/admin/users.html">
+  <meta http-equiv="refresh" content="0; url=/intranet/#sec-admin">
 </head>
 <body>
   <noscript>
-    <p>Redirecting to <a href="/admin/users.html">/admin/users.html</a>…</p>
+    <p>Redirecting to <a href="/intranet/#sec-admin">the intranet</a>…</p>
   </noscript>
 </body>
 </html>

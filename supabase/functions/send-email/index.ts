@@ -16,6 +16,7 @@ import {
   type PaymentMethod,
 } from "../_shared/email-components.ts";
 import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
+import { resolveFunctionCaller } from "../_shared/require-auth.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -114,6 +115,12 @@ interface EmailRequest {
   cc?: string | string[];
   bcc?: string | string[];
 }
+
+// Email types untrusted callers may send, and the only recipient each may go to.
+const PUBLIC_EMAIL_TYPES: Record<string, { to: string; anonymous: boolean } | undefined> = {
+  contact_form: { to: "alpacaplayhouse@gmail.com", anonymous: true },   // contact/, rentals/hostevent/
+  access_request: { to: "team@alpacaplayhouse.com", anonymous: false }, // shared/*-shell.js
+};
 
 interface EmailTemplate {
   subject: string;
@@ -3012,13 +3019,38 @@ serve(async (req) => {
     }
 
     const body: EmailRequest = await req.json();
-    const { type, to, data, subject: customSubject, from, reply_to, cc, bcc } = body;
+    const { type, data } = body;
+    let { to, subject: customSubject, from, reply_to, cc, bcc } = body;
 
     if (!type || !to || !data) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: type, to, data" }),
         { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
+    }
+
+    // === CALLER CHECK ===
+    // Other edge functions (service-role key) and admin/oracle/staff users may send any type.
+    // Everyone else — the public contact forms (anon key) and signed-in residents/associates —
+    // may only send fixed notifications, always to the house inbox and never with custom
+    // sender, subject, cc or bcc. Without this the anon key is an open mail relay.
+    const authSb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { caller } = await resolveFunctionCaller(req, authSb);
+    const trusted = !!caller && (caller.isServiceRole || ["admin", "oracle", "staff"].includes(caller.appUser?.role || ""));
+    if (!trusted) {
+      const fixedRecipient = PUBLIC_EMAIL_TYPES[type];
+      const allowed = !!fixedRecipient && (fixedRecipient.anonymous || !!caller);
+      if (!allowed) {
+        return new Response(
+          JSON.stringify({ error: caller ? "Not allowed to send this email type" : "Authentication required" }),
+          { status: caller ? 403 : 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+      to = fixedRecipient.to;
+      customSubject = undefined;
+      from = undefined;
+      cc = undefined;
+      bcc = undefined;
     }
 
     // Get rendered template (DB first, then hardcoded fallback)

@@ -3,9 +3,17 @@
  * Returns rows like:
  *   { date, label, hours, amount, descriptions: string[] }
  *
- * Used by pay-pending-associates, stripe-payout, paypal-payout so all three
- * payout paths render the same "Days paid" table via the
- * `associate_payout_sent` email template.
+ * Used by pay-pending-associates, stripe-payout, paypal-payout and
+ * weekly-payroll-summary. It is the ONE place a payout amount is computed, so
+ * every path pays (and shows) the same number for the same entries:
+ *
+ *   amount = Σ entry hours × entry.hourly_rate (profile rate if the entry has none)
+ *          + daily_extra × distinct work days (America/Chicago clock_in date)
+ *
+ * Why the entry rate: time_entries.hourly_rate is snapshotted at clock-in, so
+ * a later raise or cut on the profile doesn't reprice work already done. Paths
+ * that used the profile's current rate disagreed with the staff UI (entry rate)
+ * whenever a rate changed.
  */
 
 export interface DailyBreakdownRow {
@@ -18,7 +26,10 @@ export interface DailyBreakdownRow {
 
 export interface PayoutBreakdown {
   totalHours: number;
-  totalAmount: number;
+  hourlyAmount: number;   // Σ hours × rate
+  dailyExtra: number;     // per-day stipend used
+  extraAmount: number;    // dailyExtra × dayCount
+  totalAmount: number;    // hourlyAmount + extraAmount — the amount to pay
   entryCount: number;
   dayCount: number;
   period: { first: string; last: string };
@@ -30,6 +41,18 @@ interface MinimalEntry {
   clock_out: string | null;
   description?: string | null;
   task_id?: string | null;
+  hourly_rate?: number | string | null;
+}
+
+// Work days are Central calendar days. Grouping by the UTC date (the old
+// clock_in.slice(0, 10)) split any evening after 7 PM CDT into the next day,
+// so two shifts on one day could earn daily_extra twice.
+const workDay = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+
+function entryRate(e: MinimalEntry, fallbackRate: number): number {
+  const r = parseFloat(e.hourly_rate as string);
+  return Number.isFinite(r) ? r : fallbackRate;
 }
 
 /**
@@ -40,22 +63,27 @@ interface MinimalEntry {
 export function rollupEntries(
   entries: MinimalEntry[],
   hourlyRate: number,
-  taskNamesById?: Record<string, string>
+  taskNamesById?: Record<string, string>,
+  dailyExtra = 0
 ): PayoutBreakdown {
-  const byDate = new Map<string, { hours: number; descriptions: Set<string> }>();
+  const byDate = new Map<string, { hours: number; amount: number; descriptions: Set<string> }>();
   let totalHours = 0;
+  let hourlyAmountRaw = 0;
 
   for (const e of entries) {
     if (!e.clock_out) continue;
-    const date = e.clock_in.slice(0, 10);
+    const date = workDay(e.clock_in);
     const hours =
       (new Date(e.clock_out).getTime() - new Date(e.clock_in).getTime()) /
       3_600_000;
     if (hours <= 0) continue;
     totalHours += hours;
+    const amt = hours * entryRate(e, hourlyRate);
+    hourlyAmountRaw += amt;
 
-    const slot = byDate.get(date) || { hours: 0, descriptions: new Set<string>() };
+    const slot = byDate.get(date) || { hours: 0, amount: 0, descriptions: new Set<string>() };
     slot.hours += hours;
+    slot.amount += amt;
 
     const desc = (e.description || "").trim();
     if (desc) {
@@ -75,7 +103,7 @@ export function rollupEntries(
         month: "short",
         day: "numeric",
       });
-      const amount = Math.round(v.hours * hourlyRate * 100) / 100;
+      const amount = Math.round((v.amount + (dailyExtra || 0)) * 100) / 100;
       return {
         date,
         label,
@@ -85,10 +113,16 @@ export function rollupEntries(
       };
     });
 
-  const totalAmount = Math.round(totalHours * hourlyRate * 100) / 100;
+  const extra = dailyExtra > 0 ? dailyExtra : 0;
+  const hourlyAmount = Math.round(hourlyAmountRaw * 100) / 100;
+  const extraAmount = Math.round(extra * rows.length * 100) / 100;
+  const totalAmount = Math.round((hourlyAmount + extraAmount) * 100) / 100;
   const dates = rows.map((r) => r.date);
   return {
     totalHours: Math.round(totalHours * 100) / 100,
+    hourlyAmount,
+    dailyExtra: extra,
+    extraAmount,
     totalAmount,
     entryCount: entries.filter((e) => e.clock_out).length,
     dayCount: rows.length,
@@ -111,11 +145,15 @@ export function rollupEntries(
 export async function buildBreakdownByEntryIds(
   supabase: any,
   timeEntryIds: string[],
-  hourlyRate: number
+  hourlyRate: number,
+  dailyExtra = 0
 ): Promise<PayoutBreakdown> {
   if (!timeEntryIds || timeEntryIds.length === 0) {
     return {
       totalHours: 0,
+      hourlyAmount: 0,
+      dailyExtra: 0,
+      extraAmount: 0,
       totalAmount: 0,
       entryCount: 0,
       dayCount: 0,
@@ -125,7 +163,7 @@ export async function buildBreakdownByEntryIds(
   }
   const { data: entries } = await supabase
     .from("time_entries")
-    .select("clock_in, clock_out, description, task_id")
+    .select("clock_in, clock_out, description, task_id, hourly_rate")
     .in("id", timeEntryIds);
 
   const list: MinimalEntry[] = entries || [];
@@ -144,5 +182,5 @@ export async function buildBreakdownByEntryIds(
     }
   }
 
-  return rollupEntries(list, hourlyRate, taskNames);
+  return rollupEntries(list, hourlyRate, taskNames, dailyExtra);
 }

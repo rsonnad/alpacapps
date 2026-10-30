@@ -15,6 +15,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
+import { requireCronOrRoles } from "../_shared/require-auth.ts";
 const TEAM_EMAIL = 'team@alpacaplayhouse.com';
 const ESCALATION_DAYS = [1, 3, 5, 7]; // days after due date
 const PAY_BASE_URL = 'https://alpacaplayhouse.com/pay/';
@@ -357,6 +358,8 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const auth = await requireCronOrRoles(req, supabase, ['admin', 'oracle']);
+    if (auth.response) return auth.response;
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
     if (!RESEND_API_KEY) {

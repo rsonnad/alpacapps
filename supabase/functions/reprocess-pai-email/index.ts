@@ -18,6 +18,7 @@ import {
   createPurchase,
 } from "../_shared/receipt-processor.ts";
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { requireFunctionRoles } from "../_shared/require-auth.ts";
 
 const RESEND_API_URL = "https://api.resend.com";
 
@@ -31,45 +32,16 @@ serve(async (req) => {
   }
 
   try {
-    // Auth: require service role key or admin user
-    const authHeader = req.headers.get("authorization") || "";
-    const token = authHeader.replace("Bearer ", "").trim();
+    // Auth: require a real service-role key or an admin/oracle user JWT
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
 
     // Create admin client for DB operations (uses service role key from env)
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Check if token is service_role JWT by decoding the payload
-    let isServiceRole = false;
-    try {
-      const payloadB64 = token.split(".")[1];
-      if (payloadB64) {
-        const payload = JSON.parse(atob(payloadB64));
-        isServiceRole = payload.role === "service_role";
-      }
-    } catch { /* not a valid JWT, will try user auth */ }
-
-    // If not service role, verify as admin user JWT
-    if (!isServiceRole) {
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-      if (authError || !user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-      }
-
-      const { data: appUser } = await supabase
-        .from("app_users")
-        .select("role")
-        .eq("auth_user_id", user.id)
-        .single();
-
-      if (!appUser || !["admin", "oracle"].includes(appUser.role)) {
-        return new Response(JSON.stringify({ error: "Admin role required" }), { status: 403 });
-      }
-    }
+    const { response: authFailure } = await requireFunctionRoles(req, supabase, ["admin", "oracle"]);
+    if (authFailure) return authFailure;
 
     // Parse request body
     const { email_id, force_type } = await req.json();

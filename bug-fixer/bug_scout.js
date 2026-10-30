@@ -1,12 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
-import { spawn, exec } from 'child_process';
+import { spawn, execFile } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, readFile, unlink, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
 
-const execAsync = promisify(exec);
+// execFile, never a shell: report text reaches branch names and commit messages.
+const execFileAsync = promisify(execFile);
+const git = (...args) => execFileAsync('git', args, { cwd: REPO_DIR });
 
 // ============================================
 // Configuration
@@ -59,7 +61,9 @@ async function notifyDiscord(message) {
 // ============================================
 async function gitPull() {
   try {
-    await execAsync('git fetch origin && git reset --hard origin/main', { cwd: REPO_DIR });
+    await git('checkout', '-f', 'main');
+    await git('fetch', 'origin');
+    await git('reset', '--hard', 'origin/main');
     log('info', 'Git pull complete');
   } catch (err) {
     log('error', 'Git pull failed', { error: err.message });
@@ -68,13 +72,14 @@ async function gitPull() {
 }
 
 async function gitHasChanges() {
-  const { stdout } = await execAsync('git status --porcelain', { cwd: REPO_DIR });
+  const { stdout } = await git('status', '--porcelain');
   return stdout.trim().length > 0;
 }
 
 function generateBranchName(reportId) {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  return `bugfix/${date}-${reportId}`;
+  const safeId = String(reportId).replace(/[^a-zA-Z0-9-]/g, '');
+  return `bugfix/${date}-${safeId}`;
 }
 
 async function gitCreateBranchAndCommit(description, reportId) {
@@ -83,43 +88,44 @@ async function gitCreateBranchAndCommit(description, reportId) {
   const commitMsg = `fix: ${shortDesc}\n\nAutomated fix from bug report #${reportId}.\n\nCo-Authored-By: Claude Code <noreply@anthropic.com>`;
 
   // Create and switch to fix branch
-  await execAsync(`git checkout -b ${branchName}`, { cwd: REPO_DIR });
+  await git('checkout', '-b', branchName);
   log('info', 'Created branch', { branch: branchName });
 
   // Stage and commit
-  await execAsync('git add -A', { cwd: REPO_DIR });
-  await execAsync(`git commit -m ${JSON.stringify(commitMsg)}`, { cwd: REPO_DIR });
+  await git('add', '-A');
+  await git('commit', '-m', commitMsg);
 
   // Push the branch
-  await execAsync(`git push origin ${branchName}`, { cwd: REPO_DIR });
+  await git('push', 'origin', branchName);
   log('info', 'Pushed branch', { branch: branchName });
 
-  const { stdout } = await execAsync('git rev-parse HEAD', { cwd: REPO_DIR });
+  const { stdout } = await git('rev-parse', 'HEAD');
   return { commitSha: stdout.trim(), branchName };
 }
 
-function buildBugScoutMachineName(report) {
-  const email = (report?.reporter_email || 'unknown').toLowerCase();
-  return `bug-scout-${email}`;
-}
-
-async function gitMergeBranchToMain(branchName, report) {
-  // Switch to main
-  await execAsync('git checkout main', { cwd: REPO_DIR });
-  await execAsync('git pull origin main', { cwd: REPO_DIR });
-
-  // Merge the fix branch
-  await execAsync(`git merge ${branchName} --no-ff -m "Merge ${branchName} into main"`, { cwd: REPO_DIR });
-
-  // Push main
-  await execAsync('git push origin main', { cwd: REPO_DIR });
-  log('info', 'Pushed main; release event will be recorded by CI', {
-    source: 'bug_scout',
-    machine: buildBugScoutMachineName(report),
-  });
-
-  const { stdout } = await execAsync('git rev-parse HEAD', { cwd: REPO_DIR });
-  return stdout.trim();
+/**
+ * Open a pull request for a human to review. Bug Scout never merges to main itself:
+ * main deploys to the live site, and report text is untrusted input.
+ */
+async function openPullRequest(branchName, report, fixSummary) {
+  const title = `fix: ${report.description.substring(0, 72)}`;
+  const body = [
+    `Automated fix from bug report #${report.id} (reporter: ${report.reporter_email || 'unknown'}).`,
+    '',
+    report.page_url ? `Page: ${report.page_url}` : '',
+    '',
+    'Fix summary from Claude Code:',
+    '',
+    fixSummary.substring(0, 4000),
+    '',
+    'Review the diff before merging. The report text is user-supplied.',
+  ].filter((l) => l !== null).join('\n');
+  const { stdout } = await execFileAsync(
+    'gh',
+    ['pr', 'create', '--base', 'main', '--head', branchName, '--title', title, '--body', body],
+    { cwd: REPO_DIR },
+  );
+  return stdout.trim().split('\n').pop();
 }
 
 // ============================================
@@ -527,47 +533,31 @@ async function processBugReport(report) {
       const { commitSha, branchName } = await gitCreateBranchAndCommit(report.description, report.id);
       log('info', 'Fix pushed to branch', { branch: branchName, commit: commitSha });
 
-      // 7. Merge branch to main (with version bump)
-      const mainSha = await gitMergeBranchToMain(branchName, report);
-      log('info', 'Merged to main', { branch: branchName, mainSha });
+      // 7. Open a PR for human review (never merge to main from here)
+      let prUrl = null;
+      try {
+        prUrl = await openPullRequest(branchName, report, fixSummary);
+        log('info', 'Opened pull request', { branch: branchName, pr: prUrl });
+      } catch (prErr) {
+        log('error', 'gh pr create failed; branch is pushed for manual PR', { branch: branchName, error: prErr.message });
+      }
 
-      // 8. Update report
+      // 8. Update report: the fix waits on a reviewer
       await supabase
         .from('bug_reports')
         .update({
-          status: 'fixed',
+          status: 'needs_approval',
           fix_summary: fixSummary,
-          fix_commit_sha: mainSha,
+          fix_commit_sha: commitSha,
           fix_branch: branchName,
+          notes: prUrl ? `Pull request: ${prUrl}` : `Branch pushed: ${branchName} (open a PR manually)`,
           processed_at: new Date().toISOString(),
         })
         .eq('id', report.id);
 
-      // 9. Email reporter
-      await sendEmail('bug_report_fixed', report, {
-        fix_summary: fixSummary,
-        fix_commit_sha: mainSha,
-      });
+      await notifyDiscord(`🔍 **Bug Scout: fix ready for review** — "${report.description.substring(0, 100)}"\n${prUrl || `Branch: \`${branchName}\``}`);
 
-      // 10. Take verification screenshot and send follow-up email
-      const verificationUrl = await takeVerificationScreenshot(report.page_url);
-      if (verificationUrl) {
-        await supabase
-          .from('bug_reports')
-          .update({ verification_screenshot_url: verificationUrl })
-          .eq('id', report.id);
-
-        await sendEmail('bug_report_verified', report, {
-          fix_summary: fixSummary,
-          fix_commit_sha: mainSha,
-          verification_screenshot_url: verificationUrl,
-        });
-        log('info', 'Verification screenshot email sent', { id: report.id });
-      }
-
-      await notifyDiscord(`✅ **Bug Scout: fixed** — "${report.description.substring(0, 100)}"\nBranch: \`${branchName}\` → merged to main`);
-
-      log('info', '=== Bug report fixed ===', { id: report.id, branch: branchName, commit: mainSha });
+      log('info', '=== Bug fix awaiting review ===', { id: report.id, branch: branchName, commit: commitSha, pr: prUrl });
     } else {
       // Claude Code ran but made no changes
       const msg = 'Claude Code analyzed the report but determined no code changes were needed. The issue may not be reproducible or may require manual investigation.';
@@ -612,7 +602,9 @@ async function processBugReport(report) {
 
     // Clean up any dirty git state and return to main
     try {
-      await execAsync('git checkout main 2>/dev/null; git checkout -- . && git clean -fd', { cwd: REPO_DIR });
+      await git('checkout', '-f', 'main').catch(() => {});
+      await git('checkout', '--', '.');
+      await git('clean', '-fd');
     } catch {
       // ignore cleanup errors
     }
@@ -641,6 +633,10 @@ async function pollForReports() {
       .from('bug_reports')
       .select('*')
       .eq('status', 'pending')
+      // Only human-submitted reports with a reporter address. Automatic error reports come from an
+      // anonymous endpoint, so their text must never become a Claude prompt.
+      .eq('source', 'manual')
+      .not('reporter_email', 'is', null)
       .order('created_at', { ascending: true })
       .limit(1);
 
@@ -690,8 +686,8 @@ async function main() {
 
   // Verify Claude Code is installed
   try {
-    const { stdout: claudePath } = await execAsync('which claude');
-    const { stdout: claudeVer } = await execAsync('claude --version 2>/dev/null || echo unknown');
+    const { stdout: claudePath } = await execFileAsync('which', ['claude']);
+    const { stdout: claudeVer } = await execFileAsync('claude', ['--version']).catch(() => ({ stdout: 'unknown' }));
     log('info', 'Claude Code CLI found', {
       path: claudePath.trim(),
       version: claudeVer.trim(),

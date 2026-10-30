@@ -262,6 +262,8 @@ function renderCameras() {
 
   grid.innerHTML = cameras.map((cam, i) => {
     const isBlink = cam.model === 'Blink';
+    // Only PTZ models pan/tilt/zoom; fixed Protect cameras (e.g. G5 Turret) still get snapshot/IR/LED/HDR
+    const isPtz = !!cam.protectCameraId && /PTZ/i.test(cam.model || '');
 
     if (isBlink) {
       // Blink camera: snapshot-only card (no HLS video)
@@ -329,7 +331,7 @@ function renderCameras() {
             <line x1="3" y1="21" x2="10" y2="14"></line>
           </svg>
         </button>
-        ${cam.protectCameraId ? `
+        ${isPtz ? `
         <!-- PTZ Controls (mobile overlay) -->
         <div class="ptz-controls ptz-controls--mobile" id="ptz-mobile-${i}">
           <button class="ptz-btn ptz-up" data-cam="${i}" data-dir="up" title="Tilt Up">▲</button>
@@ -345,7 +347,7 @@ function renderCameras() {
       ${cam.protectCameraId ? `
       <!-- Controls bar below video (desktop) -->
       <div class="camera-card__controls-bar" data-cam="${i}">
-        <div class="controls-bar__ptz" id="ptz-${i}">
+        ${isPtz ? `<div class="controls-bar__ptz" id="ptz-${i}">
           <button class="ptz-btn ptz-up" data-cam="${i}" data-dir="up" title="Tilt Up">▲</button>
           <button class="ptz-btn ptz-left" data-cam="${i}" data-dir="left" title="Pan Left">◀</button>
           <button class="ptz-btn ptz-home" data-cam="${i}" data-dir="home" title="Home Position">⌂</button>
@@ -353,7 +355,7 @@ function renderCameras() {
           <button class="ptz-btn ptz-down" data-cam="${i}" data-dir="down" title="Tilt Down">▼</button>
           <button class="ptz-btn ptz-zoomin" data-cam="${i}" data-dir="zoomin" title="Zoom In">+<span class="ptz-label">Zoom In</span></button>
           <button class="ptz-btn ptz-zoomout" data-cam="${i}" data-dir="zoomout" title="Zoom Out">−<span class="ptz-label">Zoom Out</span></button>
-        </div>
+        </div>` : ''}
         <div class="controls-bar__toolbar">
           <button class="toolbar-btn snapshot-btn" data-cam="${i}" title="Take Snapshot">${ICONS.snapshot}<span class="toolbar-hint">Snapshot</span></button>
           <span class="toolbar-sep"></span>
@@ -364,14 +366,14 @@ function renderCameras() {
           </select>
           <button class="toolbar-btn toolbar-toggle led-toggle" data-cam="${i}" title="Status LED">LED</button>
           <button class="toolbar-btn toolbar-toggle hdr-toggle" data-cam="${i}" title="HDR Mode">HDR</button>
-          <span class="toolbar-sep"></span>
+          ${isPtz ? `<span class="toolbar-sep"></span>
           <select class="toolbar-select preset-select" data-cam="${i}" title="PTZ Preset">
             <option value="" disabled selected>Preset</option>
             <option value="-1">Home</option>
             <option value="0">Preset 1</option>
             <option value="1">Preset 2</option>
             <option value="2">Preset 3</option>
-          </select>
+          </select>` : ''}
         </div>
       </div>
       ` : ''}
@@ -994,8 +996,8 @@ function renderLightbox() {
           <span class="toolbar-label">HDR</span>
           <button class="toolbar-btn toolbar-toggle" id="lb-hdr-toggle">Off</button>
         </div>
-        <span class="toolbar-sep"></span>
-        <div class="toolbar-group">
+        <span class="toolbar-sep" id="lb-preset-sep"></span>
+        <div class="toolbar-group" id="lb-preset-group">
           <span class="toolbar-label">Preset</span>
           <select class="toolbar-select" id="lb-preset">
             <option value="" disabled selected>Go to...</option>
@@ -1127,12 +1129,15 @@ function openLightbox(camIndex) {
   qualitySelect.value = lightboxQuality;
 
   // Show/hide PTZ and toolbar based on camera support
-  const hasPtz = !!cam.protectCameraId;
+  const hasProtect = !!cam.protectCameraId;
+  const hasPtz = hasProtect && /PTZ/i.test(cam.model || '');
   document.getElementById('lb-ptz').style.display = hasPtz ? '' : 'none';
-  document.getElementById('lb-toolbar').style.display = hasPtz ? '' : 'none';
+  document.getElementById('lb-preset-sep').style.display = hasPtz ? '' : 'none';
+  document.getElementById('lb-preset-group').style.display = hasPtz ? '' : 'none';
+  document.getElementById('lb-toolbar').style.display = hasProtect ? '' : 'none';
 
   // Update toolbar with current settings
-  if (hasPtz) {
+  if (hasProtect) {
     const s = cameraSettings[cam.protectCameraId];
     if (s) {
       document.getElementById('lb-ir-mode').value = s.irLedMode || 'auto';

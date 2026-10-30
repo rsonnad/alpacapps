@@ -2,6 +2,8 @@
  * Process Square Payment Edge Function
  *
  * Receives a tokenized card from the client and processes payment via Square API.
+ * Charges the amount on our pending square_payments record, checks Square's result,
+ * then settles the record and its application fee / event deposit server-side.
  * Supports per-session test mode override for staff/admin users.
  *
  * Deploy with: supabase functions deploy process-square-payment
@@ -52,6 +54,41 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
+
+    // The charge amount comes from our own pending record, never from the client.
+    const { data: record, error: recordError } = await supabase
+      .from('square_payments')
+      .select('id, amount, status')
+      .eq('id', paymentRecordId)
+      .maybeSingle();
+
+    if (recordError || !record || record.status !== 'pending') {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Payment record not found or not pending' }),
+        { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const amountCents = Math.round(Number(record.amount) * 100);
+    if (!(amountCents > 0) || amountCents !== amount) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Amount does not match payment record' }),
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Settles the record and its application fee / event deposit (service role only).
+    const settle = async (status: 'completed' | 'failed', p: Record<string, unknown> | null, error: string | null) => {
+      const { error: settleError } = await supabase.rpc('settle_square_payment_record', {
+        p_record_id: paymentRecordId,
+        p_status: status,
+        p_square_payment_id: (p?.id as string) ?? null,
+        p_square_order_id: (p?.order_id as string) ?? null,
+        p_square_receipt_url: (p?.receipt_url as string) ?? null,
+        p_error: error,
+      });
+      if (settleError) console.error('settle_square_payment_record failed:', settleError);
+    };
 
     // Get Square configuration
     const { data: config, error: configError } = await supabase
@@ -127,7 +164,7 @@ Deno.serve(async (req) => {
       source_id: sourceId,
       idempotency_key: idempotencyKey,
       amount_money: {
-        amount: amount,
+        amount: amountCents,
         currency: 'USD'
       },
       location_id: locationId,
@@ -160,6 +197,7 @@ Deno.serve(async (req) => {
     if (!squareResponse.ok || squareResult.errors) {
       const errorMessage = squareResult.errors?.[0]?.detail || 'Payment failed';
       console.error('Square payment failed:', squareResult);
+      await settle('failed', null, errorMessage);
 
       return new Response(
         JSON.stringify({
@@ -172,6 +210,15 @@ Deno.serve(async (req) => {
     }
 
     const payment = squareResult.payment;
+    if (payment?.status !== 'COMPLETED' || payment?.amount_money?.amount !== amountCents
+        || payment?.amount_money?.currency !== 'USD' || payment?.location_id !== locationId) {
+      console.error('Square payment not verified:', { id: payment?.id, status: payment?.status, amount: payment?.amount_money });
+      await settle('failed', null, `Square payment ${payment?.id || '?'} not completed (${payment?.status || 'unknown'})`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Payment was not completed' }),
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      );
+    }
     console.log('Square payment successful:', payment.id);
 
     // Update payment record with test mode audit info
@@ -186,6 +233,8 @@ Deno.serve(async (req) => {
       .from('square_payments')
       .update(updateData)
       .eq('id', paymentRecordId);
+
+    await settle('completed', payment, null);
 
     return new Response(
       JSON.stringify({

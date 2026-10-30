@@ -563,7 +563,7 @@ function renderUserMenu(state) {
   const isResident = ['admin', 'oracle', 'staff', 'resident', 'associate'].includes(role);
   let navLinks = '';
   if (isResident) {
-    navLinks += `<a href="${ROUTES.staff.rentals}" class="user-menu-item">Intranet</a>`;
+    navLinks += `<a href="${ROUTES.intranet.home}" class="user-menu-item">Intranet</a>`;
   }
 
   authEl.innerHTML = `

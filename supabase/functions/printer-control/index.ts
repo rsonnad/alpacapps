@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getAppUserWithPermission } from "../_shared/permissions.ts";
-import { timingSafeEqual } from "../_shared/timing-safe.ts";
+import { isServiceToken } from "../_shared/require-auth.ts";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 interface PrinterControlRequest {
@@ -80,14 +80,9 @@ serve(async (req) => {
     let appUser: any = null;
     let checkPermission: (key: string) => Promise<boolean>;
 
-    // Check for service role key - try both env var AND JWT role check
-    let isServiceRole = await timingSafeEqual(token, supabaseServiceKey);
-    if (!isServiceRole) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        isServiceRole = payload.role === 'service_role';
-      } catch { /* not a valid JWT — ignore */ }
-    }
+    // Service-role callers must present one of the real keys. A JWT whose payload merely
+    // says role=service_role is unsigned data and proves nothing (this function runs without verify_jwt).
+    const isServiceRole = await isServiceToken(token);
 
     if (isServiceRole) {
       appUser = { id: "service", role: "oracle" };
@@ -296,8 +291,13 @@ serve(async (req) => {
 
     // ---- SET TEMPERATURE ----
     if (body.action === "setTemperature") {
-      const target = body.target || "nozzle";
-      const tempC = body.tempC ?? 0;
+      const target = body.target === "bed" ? "bed" : "nozzle";
+      const tempC = Number(body.tempC ?? 0);
+      // Hard limits for the Adventurer 5M Pro: nozzle 0-280 C, bed 0-110 C. Anything else is refused, not clamped silently.
+      const maxTemp = target === "bed" ? 110 : 280;
+      if (!Number.isInteger(tempC) || tempC < 0 || tempC > maxTemp) {
+        return jsonResponse(req, { error: `tempC must be an integer from 0 to ${maxTemp} for the ${target}` }, 400);
+      }
 
       // M104 = nozzle, M140 = bed
       const gcode = target === "bed" ? `~M140 S${tempC}` : `~M104 S${tempC}`;

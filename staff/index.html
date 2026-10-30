@@ -5,13 +5,13 @@
   <title>Staff — AlpacAPPs</title>
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/png" href="../favicon.png">
-  <!-- Bare /staff/ entry point. Role-aware redirect so associates/residents
-       reaching /staff/ (e.g. login default) land somewhere they can access
-       instead of /staff/spaces.html which denies them. -->
+  <!-- Bare /staff/ entry point. Staff+ land on the Staff section of the
+       intranet TOC; associates/residents (e.g. login default) are sent
+       somewhere they can access instead. -->
   <script>
     var loc = window.location;
-    var qs = (loc.search || '') + (loc.hash || '');
-    var target = '/staff/spaces.html';
+    var qs = (loc.search || '') + (loc.hash || '#sec-staff');
+    var target = '/intranet/';
     try {
       var raw = localStorage.getItem('genalpaca-cached-auth');
       if (raw) {
@@ -23,11 +23,11 @@
     } catch (e) { /* fall through to default */ }
     window.location.replace(target + qs);
   </script>
-  <meta http-equiv="refresh" content="0; url=/staff/spaces.html">
+  <meta http-equiv="refresh" content="0; url=/intranet/#sec-staff">
 </head>
 <body>
   <noscript>
-    <p>Redirecting to <a href="/staff/spaces.html">/staff/spaces.html</a>…</p>
+    <p>Redirecting to <a href="/intranet/#sec-staff">the intranet</a>…</p>
   </noscript>
 </body>
 </html>

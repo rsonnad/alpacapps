@@ -31,14 +31,14 @@
 - Inbound: `telnyx-webhook` Edge Function -> `sms_messages` table
 - Client: `shared/sms-service.js` (mirrors email-service.js pattern)
 
-## DigitalOcean Droplet
-- Runs OpenClaw Discord bot and Bug Scout
+## Hostinger VPS (93.188.164.224)
+- Runs OpenClaw Discord bot and Bug Scout (the old DigitalOcean droplet is gone; account archived 2026-10)
 - **Workers:** Bug Scout (`bug-fixer.service`), Tesla Poller (`tesla-poller.service`), Image Gen (`image-gen.service`), LG Poller (`lg-poller.service`), Feature Builder (`feature-builder.service`)
 - Bug fixer repo is a clone of this repo, used for verification screenshots
 
 ## Home Automation (Sonos, UniFi, Cameras)
 - Full docs in `HOMEAUTOMATION.md`, credentials in `HOMEAUTOMATION.local.md`
-- Alpaca Mac bridges DO droplet to local LAN via Tailscale
+- Alpaca Mac bridges the Hostinger VPS to local LAN via Tailscale
 - Sonos HTTP API port 5005: play, pause, volume, favorites, TTS (12 zones)
 - UniFi Network API on UDM Pro port 443
 
@@ -57,14 +57,14 @@
 - Client-side only, no edge function needed
 
 ## AI Image Generation (Gemini)
-- Worker: `/opt/image-gen/worker.js` on DO droplet (`image-gen.service`)
+- Worker: `/opt/image-gen/worker.js` on Hostinger VPS (`image-gen.service`)
 - API: Gemini 2.5 Flash Image, ~$0.039/image
 - Storage: `housephotos/ai-gen/` in Supabase Storage
 - DB: `image_gen_jobs` table (job queue), results -> `media` table
 - Nano Banana MCP in `.mcp.json` for interactive Claude Code sessions
 
 ## Tesla Vehicle Data + Commands
-- Worker: `/opt/tesla-poller/worker.js` on DO droplet (`tesla-poller.service`)
+- Worker: `/opt/tesla-poller/worker.js` on Hostinger VPS (`tesla-poller.service`)
 - API: Tesla Fleet API (`fleet-api.prd.na.vn.cloud.tesla.com`)
 - App: "Tespaca" registered at developer.tesla.com
 - Polling every 5 min, sleep-aware
@@ -89,7 +89,7 @@
 ## LG ThinQ (Washer/Dryer)
 - API: LG ThinQ Connect REST API (PAT auth from connect-pat.lgthinq.com)
 - API Base: `https://api-aic.lgthinq.com`
-- Worker: `lg-poller` on DO droplet, every 30s
+- Worker: `lg-poller` on Hostinger VPS, every 30s
 - Edge function: `lg-control` (status, control, watch/unwatch, push tokens)
 - Devices: Washer (.246), Dryer (.22)
 - Washer states: POWER_OFF, INITIAL, DETECTING, RUNNING, RINSING, SPINNING, DRYING, STEAM_SOFTENING, COOL_DOWN, RINSE_HOLD, REFRESHING, PAUSE, RESERVED, END, SLEEP, ERROR
@@ -146,7 +146,7 @@
 ## PAI Discord Bot
 - Lightweight Node.js bot (`pai-discord/bot.js`) using discord.js v14
 - Bridges Discord messages → `alpaca-pai` edge function
-- Service: `pai-discord.service` (systemd) on DO droplet → Oracle Cloud
+- Service: `pai-discord.service` (systemd) on Hostinger VPS
 - Auth: Service role key with `context.source: "discord"`, user lookup via `app_users.discord_id`
 - Per-user conversation history (12 msgs, 30 min TTL), typing indicators
 - Listens to: configured channel IDs + DMs + @mentions

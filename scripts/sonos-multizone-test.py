@@ -220,7 +220,7 @@ class UDM:
 
     def _login(self):
         op = self._opener()
-        body = json.dumps({"username": "alpacaauto", "password": self.password,
+        body = json.dumps({"username": "codingagent", "password": self.password,
                            "remember": True}).encode()
         req = urllib.request.Request(f"https://{UDM_HOST}/api/auth/login", data=body,
                                      headers={"Content-Type": "application/json",

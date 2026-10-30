@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { requireFunctionRoles } from "../_shared/require-auth.ts";
+import { signOAuthState } from "../_shared/oauth-state.ts";
 
 const DEFAULT_FLEET_API_BASE = "https://fleet-api.prd.na.vn.cloud.tesla.com";
 const REDIRECT_URI = "https://alpacaplayhouse.com/auth/tesla/callback";
@@ -45,7 +46,7 @@ Deno.serve(async (req) => {
       client_id: clientId,
       redirect_uri: REDIRECT_URI,
       scope: "openid offline_access vehicle_device_data vehicle_location vehicle_cmds vehicle_charging_cmds",
-      state: `profile:${account.id}`,
+      state: `profile:${await signOAuthState(account.id)}`,
       audience: fleetApiBase,
     });
     return new Response(JSON.stringify({ url: `https://auth.tesla.com/oauth2/v3/authorize?${params}` }), {

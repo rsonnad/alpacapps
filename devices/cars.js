@@ -867,8 +867,17 @@ window._connectTesla = async function(accountId) {
     if (btn) { btn.disabled = true; btn.textContent = 'Connecting\u2026'; btn.style.opacity = '0.6'; }
   } catch(_) {}
 
-  // Build Tesla OAuth URL — callback page gets a fresh session from localStorage
-  const state = `${accountId}`;
+  // The server signs the OAuth state for this account; tesla-command refuses a code exchange without it.
+  const { data: stateData, error: stateError } = await supabase.functions.invoke('tesla-command', {
+    body: { action: 'oauthState', account_id: accountId },
+  });
+  if (stateError || !stateData?.state) {
+    showToast('Could not start Tesla connection. Please try again.', 'error');
+    await loadAccounts();
+    renderSettings();
+    return;
+  }
+  const state = stateData.state;
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: '3f53a292-07b8-443f-b86d-e4aedc37ac10',

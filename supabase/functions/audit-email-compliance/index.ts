@@ -16,6 +16,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
+import { requireCronOrRoles } from "../_shared/require-auth.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -25,11 +26,13 @@ interface Violation {
   details: string;
 }
 
-serve(async (_req) => {
+serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
   const sb = createClient(supabaseUrl, supabaseKey);
+  const auth = await requireCronOrRoles(req, sb, ['admin', 'oracle']);
+  if (auth.response) return auth.response;
 
   const violations: Violation[] = [];
 

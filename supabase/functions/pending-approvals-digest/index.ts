@@ -17,6 +17,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getCorsHeaders } from '../_shared/api-helpers.ts';
+import { requireCronOrRoles } from "../_shared/require-auth.ts";
 
 const STUCK_THRESHOLD_HOURS = 1;
 const DIGEST_TO = 'alpacaplayhouse@gmail.com';
@@ -43,6 +44,8 @@ serve(async (req) => {
   // on project config — LEGACY_SERVICE_ROLE_KEY is the JWT explicitly.
   const legacyJwt = Deno.env.get('LEGACY_SERVICE_ROLE_KEY') || supabaseServiceKey;
   const sb = createClient(supabaseUrl, supabaseServiceKey);
+  const auth = await requireCronOrRoles(req, sb, ['admin', 'oracle']);
+  if (auth.response) return auth.response;
 
   // Approve links refuse past expires_at (7-day limit). Mark those expired
   // here so they drop out of the digest instead of nagging forever.

@@ -30,7 +30,7 @@ const https = require('https');
 
 const PORT = process.env.PTZ_PORT || 8901;
 const UDM_HOST = process.env.UDM_HOST || '192.168.1.1';
-const UDM_USER = process.env.UDM_USER || 'alpacaauto';
+const UDM_USER = process.env.UDM_USER || 'codingagent';
 const UDM_PASS = process.env.UDM_PASS || '';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://rsonnad.github.io,https://alpacaplayhouse.com,https://www.alpacaplayhouse.com').split(',');
 

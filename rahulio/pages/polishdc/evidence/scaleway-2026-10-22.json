@@ -1,0 +1,165 @@
+{
+  "checked_utc": "2026-10-22T11:35:35.360624+00:00",
+  "results": [
+    {
+      "zone": "fr-par-2",
+      "type": "B300-SXM-8-288G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 60.0,
+      "gpu": 8,
+      "ram_GiB": 3840.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-1-80G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 2.8665,
+      "gpu": 1,
+      "ram_GiB": 240.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-2-80G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 5.733,
+      "gpu": 2,
+      "ram_GiB": 480.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-SXM-2-80G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 6.6198,
+      "gpu": 2,
+      "ram_GiB": 240.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-SXM-4-80G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 12.771,
+      "gpu": 4,
+      "ram_GiB": 480.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "H100-SXM-8-80G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 25.3308,
+      "gpu": 8,
+      "ram_GiB": 960.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L40S-1-48G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 1.469916,
+      "gpu": 1,
+      "ram_GiB": 96.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L40S-2-48G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 2.939832,
+      "gpu": 2,
+      "ram_GiB": 192.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L40S-4-48G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 5.879664,
+      "gpu": 4,
+      "ram_GiB": 384.0
+    },
+    {
+      "zone": "fr-par-2",
+      "type": "L40S-8-48G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 11.759328,
+      "gpu": 8,
+      "ram_GiB": 768.0
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "H100-1-80G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 2.8665,
+      "gpu": 1,
+      "ram_GiB": 240.0
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "H100-2-80G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 5.733,
+      "gpu": 2,
+      "ram_GiB": 480.0
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L40S-1-48G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 1.469916,
+      "gpu": 1,
+      "ram_GiB": 96.0
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L40S-2-48G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 2.939832,
+      "gpu": 2,
+      "ram_GiB": 192.0
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L40S-4-48G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 5.879664,
+      "gpu": 4,
+      "ram_GiB": 384.0
+    },
+    {
+      "zone": "pl-waw-2",
+      "type": "L40S-8-48G",
+      "availability": {
+        "availability": "shortage"
+      },
+      "hourly": 11.759328,
+      "gpu": 8,
+      "ram_GiB": 768.0
+    }
+  ]
+}

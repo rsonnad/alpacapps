@@ -12,28 +12,18 @@
  * event agreement, or a waiver.
  *
  * Auth: service-role only. These are executed leases containing tenant PII and
- * signatures; the anon key also satisfies verify_jwt, so the role claim is
- * checked explicitly rather than trusting that a valid JWT is a privileged one.
+ * signatures; the anon key also satisfies verify_jwt, so the caller must present
+ * one of the actual service-role keys (compared timing-safe), not just a role claim.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { buildArchivalLeaseHtml } from "../_shared/archival-lease.ts";
+import { isServiceToken } from "../_shared/require-auth.ts";
 
-function isServiceRole(req: Request): boolean {
-  const auth = req.headers.get('Authorization') || '';
-  const token = auth.replace(/^Bearer\s+/i, '');
-  const parts = token.split('.');
-  if (parts.length !== 3) return false;
-  try {
-    // verify_jwt has already validated the signature; we only need the claim.
-    const pad = (s: string) => s + '='.repeat((4 - (s.length % 4)) % 4);
-    const payload = JSON.parse(
-      atob(pad(parts[1].replace(/-/g, '+').replace(/_/g, '/'))),
-    );
-    return payload?.role === 'service_role';
-  } catch {
-    return false;
-  }
+/** True only for one of the project's real service-role keys; an unsigned role claim proves nothing. */
+async function isServiceRole(req: Request): Promise<boolean> {
+  const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
+  return !!token && await isServiceToken(token);
 }
 
 Deno.serve(async (req) => {
@@ -45,7 +35,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' },
     });
 
-  if (!isServiceRole(req)) return json({ error: 'Forbidden' }, 403);
+  if (!(await isServiceRole(req))) return json({ error: 'Forbidden' }, 403);
 
   try {
     const url = new URL(req.url);

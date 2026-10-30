@@ -58,12 +58,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Proceed without auth — anonymous viewer
     }
 
-    // Query user by slug
+    // Query user by slug. The RPC applies privacy_settings server-side and
+    // returns gated fields as null (app_users itself is not publicly readable).
     const { data: profileUser, error } = await supabase
-      .from('app_users')
-      .select('id, display_name, first_name, last_name, email, role, avatar_url, bio, phone, phone2, whatsapp, gender, pronouns, birthday, instagram, links, nationality, location_base, privacy_settings, is_current_resident, person_id, slug')
-      .eq('slug', slug)
-      .maybeSingle();
+      .rpc('get_directory_profile', { p_slug: slug });
 
     if (error || !profileUser) {
       showNotFound();

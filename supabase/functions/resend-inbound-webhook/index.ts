@@ -128,7 +128,10 @@ async function verifyWebhookSignature(
  * Retries with delay because the body may not be available immediately
  * (race condition when sending to our own domain).
  */
-async function fetchEmailContent(emailId: string, apiKey: string): Promise<{ html: string; text: string } | null> {
+async function fetchEmailContent(
+  emailId: string,
+  apiKey: string,
+): Promise<{ html: string; text: string; authentication: Record<string, string> | null } | null> {
   const MAX_ATTEMPTS = 3;
   const DELAY_MS = 2000;
 
@@ -159,13 +162,56 @@ async function fetchEmailContent(emailId: string, apiKey: string): Promise<{ htm
         continue;
       }
 
-      return { html, text };
+      return { html, text, authentication: data.authentication || null };
     } catch (error) {
       console.error("Error fetching email content:", error.message);
       if (attempt === MAX_ATTEMPTS) return null;
     }
   }
   return null;
+}
+
+const UNVERIFIED_SENDER_REPLY =
+  "Thanks for your email! I only answer questions by email for Alpaca Playhouse members writing from the address on their account.\n\n" +
+  "If you are a member, you can chat with me at https://alpacaplayhouse.com/residents/ (requires login). " +
+  "Otherwise, the team reads team@alpacaplayhouse.com.";
+
+// Domains whose payment notifications may be parsed. Zelle arrives from the receiving bank.
+const PAYMENT_SENDER_DOMAINS = [
+  "usbank.com", "schwab.com", "zellepay.com", "chase.com", "bankofamerica.com", "wellsfargo.com", "capitalone.com",
+  "venmo.com", "paypal.com", "square.com", "cash.app", "coinbase.com",
+];
+
+function senderAddress(from: string): string {
+  return (from.match(/<(.+)>/)?.[1] || from).trim().toLowerCase();
+}
+
+/** True only when Resend's receiving check reported DMARC pass, i.e. the From domain is authenticated. */
+function dmarcPassed(emailRecord: any): boolean {
+  return emailRecord.raw_payload?.authentication?.dmarc === "pass";
+}
+
+/** A payment email counts only if DMARC passed and the From domain belongs to a known payment provider. */
+function isVerifiedPaymentSender(emailRecord: any): boolean {
+  if (!dmarcPassed(emailRecord)) return false;
+  const domain = senderAddress(emailRecord.from_address || "").split("@")[1] || "";
+  return PAYMENT_SENDER_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`));
+}
+
+/**
+ * Resolve the sender to an app_users row. The From header is attacker-controlled unless DMARC passed,
+ * so an unauthenticated sender never maps to a user. Exact match on the lowercased address.
+ */
+async function findVerifiedSenderUser(supabase: any, emailRecord: any): Promise<any | null> {
+  if (!dmarcPassed(emailRecord)) return null;
+  const senderEmail = senderAddress(emailRecord.from_address || "");
+  if (!senderEmail) return null;
+  const { data } = await supabase
+    .from("app_users")
+    .select("id, email, role, display_name")
+    .eq("email", senderEmail)
+    .maybeSingle();
+  return data || null;
 }
 
 /**
@@ -887,7 +933,6 @@ async function checkSpamThresholdAndAlert(
       console.log(`PAI spam threshold (${PAI_SPAM_ALERT_THRESHOLD}) reached, alerting admin`);
 
       const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
 
       // Get admin emails
       const { data: admins } = await supabase
@@ -900,7 +945,7 @@ async function checkSpamThresholdAndAlert(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseAnonKey}`,
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""}`,
         },
         body: JSON.stringify({
           type: "pai_email_reply",
@@ -1120,6 +1165,15 @@ async function handleAlpaclawEmail(
 
   console.log(`AlpaClaw email from ${senderEmail}: subject="${subject}"`);
 
+  // The PAI call costs a Gemini Pro turn and acts with the sender's role, so only verified members get one.
+  const verifiedUser = await findVerifiedSenderUser(supabase, emailRecord);
+  if (!verifiedUser) {
+    console.log(`AlpaClaw email from unverified/unknown sender ${senderEmail}: canned reply only`);
+    await sendAlpaclawReply(resendApiKey, senderEmail, UNVERIFIED_SENDER_REPLY, subject, bodyText || bodyHtml || "");
+    await supabase.from("inbound_emails").update({ route_action: "unverified_sender_canned_reply" }).eq("id", emailRecord.id);
+    return;
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -1201,7 +1255,6 @@ async function sendPaiDocumentNotification(
   files: Array<{ name: string; type: string; size: string }>
 ): Promise<void> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
 
   // Get admin emails
   const { data: admins } = await supabase
@@ -1215,7 +1268,7 @@ async function sendPaiDocumentNotification(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${supabaseAnonKey}`,
+      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""}`,
     },
     body: JSON.stringify({
       type: "pai_document_received",
@@ -1328,86 +1381,18 @@ async function handleClaudeTaskEmail(
 
   console.log(`Claude task email from ${senderEmail}: subject="${subject}"`);
 
-  // Look up sender in app_users
-  const { data: senderUser } = await supabase
-    .from("app_users")
-    .select("id, email, role, display_name")
-    .ilike("email", senderEmail)
-    .maybeSingle();
-
-  const knownRoles = ["resident", "associate", "staff", "admin", "superadmin"];
-  const isKnownUser = senderUser && knownRoles.includes(senderUser.role);
-  const isAdmin = isKnownUser && ["admin", "superadmin"].includes(senderUser.role);
-  const senderRole = senderUser?.role || "unknown";
+  // Only a DMARC-verified sender maps to a user, and email never auto-executes: every task
+  // starts in "review" and waits for an admin, whoever sent it.
+  const senderUser = await findVerifiedSenderUser(supabase, emailRecord);
+  const senderRole = senderUser?.role || "unverified";
   const emailContent = bodyText || bodyHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
-  // RISK EVALUATION via Gemini — same pattern as feature builder
-  let riskDecision = "needs_review"; // default to safe side
-  let riskAssessment: any = {};
-
-  const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-  if (geminiApiKey) {
-    try {
-      const evalPrompt = `You are a security evaluator for a home automation system. A user (role: ${senderRole}) sent an email requesting an action be executed via Claude Code CLI on a Mac Mini server.
-
-EVALUATE this request for risk. The CLI has access to: SSH, file system, git, Supabase DB, home automation (lights, music, thermostats), backup drives.
-
-Email subject: "${subject}"
-Email body: "${emailContent.substring(0, 2000)}"
-
-Respond with ONLY valid JSON:
-{
-  "decision": "auto_execute" or "needs_review",
-  "reason": "one-line explanation",
-  "risk_factors": {
-    "modifies_infrastructure": boolean,
-    "accesses_credentials": boolean,
-    "destructive_action": boolean,
-    "financial_impact": boolean,
-    "affects_other_users": boolean
-  }
-}
-
-Guidelines:
-- auto_execute: read-only queries, status checks, restarting known services (rsync, backups), light/music control, non-destructive maintenance
-- needs_review: deleting data, modifying configs, changing passwords, financial operations, anything affecting other residents, unknown/ambiguous requests`;
-
-      const gemRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiApiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: evalPrompt }] }],
-            generationConfig: { temperature: 0.1, maxOutputTokens: 500 },
-          }),
-        }
-      );
-
-      if (gemRes.ok) {
-        const gemData = await gemRes.json();
-        const rawText = gemData.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          riskAssessment = JSON.parse(jsonMatch[0]);
-          riskDecision = riskAssessment.decision || "needs_review";
-          console.log(`Risk evaluation: decision=${riskDecision}, reason=${riskAssessment.reason}`);
-        }
-      }
-    } catch (e) {
-      console.warn(`Risk evaluation failed, defaulting to needs_review: ${e}`);
-    }
-  }
-
-  // Admins bypass review; unknown senders always need review
-  if (isAdmin) riskDecision = "auto_execute";
-  if (!isKnownUser) {
-    riskDecision = "needs_review";
-    riskAssessment.reason = `Unknown sender (${senderEmail}) — requires admin approval`;
-    riskAssessment.unknown_sender = true;
-  }
-
-  const taskStatus = riskDecision === "auto_execute" ? "pending" : "review";
+  const riskAssessment: any = {
+    reason: senderUser
+      ? `Email tasks always need admin approval (sender ${senderEmail}, role ${senderRole})`
+      : `Unverified or unknown sender (${senderEmail}) — requires admin approval`,
+    unknown_sender: !senderUser,
+  };
+  const taskStatus = "review";
 
   const prompt = `You received this email (from: ${senderEmail}, subject: "${subject}"). ` +
     `Handle the issue described. You have SSH access to Alpuca (localhost) and can run commands directly. ` +
@@ -1466,7 +1451,7 @@ Guidelines:
           to: adminEmails,
           subject: `🔍 Claude Task Needs Review: ${subject}`,
           html: `<h2>Claude Task Approval Required</h2>
-            <p><strong>From:</strong> ${senderUser.display_name || senderEmail} (${senderUser.role})</p>
+            <p><strong>From:</strong> ${senderUser?.display_name || senderEmail} (${senderRole})</p>
             <p><strong>Subject:</strong> ${subject}</p>
             <p><strong>Risk:</strong> ${riskAssessment.reason || "evaluation unavailable"}</p>
             <p><strong>Flags:</strong> ${flaggedFactors}</p>
@@ -1499,24 +1484,6 @@ Guidelines:
       });
     } catch (e) {
       console.error(`Failed to send held-for-review email: ${e}`);
-    }
-  } else {
-    // Auto-execute — send ack
-    try {
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
-        body: JSON.stringify({
-          from: SENDER_MAP.pai.from,
-          reply_to: SENDER_MAP.pai.reply_to,
-          to: senderEmail,
-          subject: `Re: ${subject}`,
-          html: `<p>Got it — this has been queued as a Claude Code task on Alpuca (task ${data.id.slice(0, 8)}).</p>` +
-            `<p>The task poller checks every 2 minutes. You'll get a follow-up when it's handled.</p>`,
-        }),
-      });
-    } catch (e) {
-      console.error(`Failed to send ack email: ${e}`);
     }
   }
 }
@@ -1620,6 +1587,16 @@ async function handlePaiEmail(
 
     // Check if we've crossed the alert threshold
     await checkSpamThresholdAndAlert(supabase, senderEmail, classification.summary);
+    return;
+  }
+
+  // Everything past spam (receipts, documents, PAI answers) acts on the sender's word, so only a
+  // DMARC-verified member continues. Unknown senders get a canned reply and no Gemini Pro call.
+  const verifiedUser = await findVerifiedSenderUser(supabase, emailRecord);
+  if (!verifiedUser) {
+    console.log(`PAI email from unverified/unknown sender ${senderEmail}: canned reply only`);
+    await sendPaiReply(resendApiKey, senderEmail, UNVERIFIED_SENDER_REPLY, subject, bodyText || bodyHtml || "");
+    await supabase.from("inbound_emails").update({ route_action: "unverified_sender_canned_reply" }).eq("id", emailRecord.id);
     return;
   }
 
@@ -2908,336 +2885,6 @@ async function findDepositApplication(supabase: any, personId: string): Promise<
 }
 
 /**
- * Auto-record a deposit payment on a rental application.
- * Splits across move-in and security deposits, flags overpayment.
- */
-async function autoRecordDeposit(
-  supabase: any,
-  application: any,
-  parsed: ZellePayment,
-  resendApiKey: string
-): Promise<void> {
-  const now = new Date().toISOString();
-  const today = now.split("T")[0];
-  let remaining = parsed.amount;
-  const personName = `${application.person.first_name} ${application.person.last_name}`;
-  let ledgerEntriesCreated = 0;
-  let ledgerErrors: string[] = [];
-
-  // Deduplicate: check if this confirmation number was already recorded
-  if (parsed.confirmationNumber) {
-    const { data: existing } = await supabase
-      .from("rental_payments")
-      .select("id")
-      .eq("transaction_id", parsed.confirmationNumber)
-      .limit(1);
-
-    if (existing && existing.length > 0) {
-      console.log(`Duplicate payment detected (conf#${parsed.confirmationNumber}), skipping`);
-      await sendPaymentNotification(resendApiKey, "duplicate", {
-        parsed,
-        personName,
-        applicationId: application.id,
-      });
-      return;
-    }
-  }
-
-  // Record move-in deposit first
-  const moveInUnpaid = !application.move_in_deposit_paid && (application.move_in_deposit_amount || 0) > 0;
-  if (moveInUnpaid && remaining > 0) {
-    const moveInAmt = application.move_in_deposit_amount;
-    const applyAmt = Math.min(remaining, moveInAmt);
-
-    const { data: rpData } = await supabase
-      .from("rental_payments")
-      .insert({
-        rental_application_id: application.id,
-        payment_type: "move_in_deposit",
-        amount_due: moveInAmt,
-        amount_paid: applyAmt,
-        paid_date: today,
-        payment_method: "zelle",
-        transaction_id: parsed.confirmationNumber,
-      })
-      .select()
-      .single();
-
-    await supabase
-      .from("rental_applications")
-      .update({
-        move_in_deposit_paid: true,
-        move_in_deposit_paid_at: now,
-        move_in_deposit_method: "zelle",
-        updated_at: now,
-      })
-      .eq("id", application.id);
-
-    const { error: moveInLedgerErr } = await supabase.from("ledger").insert({
-      direction: "income",
-      category: "move_in_deposit",
-      amount: applyAmt,
-      payment_method: "zelle",
-      transaction_date: today,
-      person_id: application.person_id,
-      person_name: personName,
-      rental_application_id: application.id,
-      rental_payment_id: rpData?.id,
-      status: "completed",
-      description: `Move-in deposit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
-      recorded_by: "system:zelle-email",
-    });
-    if (moveInLedgerErr) { console.error("CRITICAL: Move-in deposit ledger insert failed:", moveInLedgerErr); ledgerErrors.push(`move_in_deposit: ${moveInLedgerErr.message}`); }
-    else ledgerEntriesCreated++;
-
-    remaining -= applyAmt;
-    console.log(`Recorded move-in deposit: $${applyAmt} for ${personName}`);
-  }
-
-  // Record security deposit
-  const securityUnpaid = !application.security_deposit_paid && (application.security_deposit_amount || 0) > 0;
-  if (securityUnpaid && remaining > 0) {
-    const secAmt = application.security_deposit_amount;
-    const applyAmt = Math.min(remaining, secAmt);
-
-    const { data: rpData } = await supabase
-      .from("rental_payments")
-      .insert({
-        rental_application_id: application.id,
-        payment_type: "security_deposit",
-        amount_due: secAmt,
-        amount_paid: applyAmt,
-        paid_date: today,
-        payment_method: "zelle",
-        transaction_id: parsed.confirmationNumber,
-      })
-      .select()
-      .single();
-
-    await supabase
-      .from("rental_applications")
-      .update({
-        security_deposit_paid: true,
-        security_deposit_paid_at: now,
-        security_deposit_method: "zelle",
-        updated_at: now,
-      })
-      .eq("id", application.id);
-
-    const { error: secLedgerErr } = await supabase.from("ledger").insert({
-      direction: "income",
-      category: "security_deposit",
-      amount: applyAmt,
-      payment_method: "zelle",
-      transaction_date: today,
-      person_id: application.person_id,
-      person_name: personName,
-      rental_application_id: application.id,
-      rental_payment_id: rpData?.id,
-      status: "completed",
-      description: `Security deposit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
-      recorded_by: "system:zelle-email",
-    });
-    if (secLedgerErr) { console.error("CRITICAL: Security deposit ledger insert failed:", secLedgerErr); ledgerErrors.push(`security_deposit: ${secLedgerErr.message}`); }
-    else ledgerEntriesCreated++;
-
-    remaining -= applyAmt;
-    console.log(`Recorded security deposit: $${applyAmt} for ${personName}`);
-  }
-
-  // Update overall deposit status
-  const { data: updatedApp } = await supabase
-    .from("rental_applications")
-    .select("move_in_deposit_paid, security_deposit_paid, security_deposit_amount")
-    .eq("id", application.id)
-    .single();
-
-  if (updatedApp) {
-    const allPaid =
-      updatedApp.move_in_deposit_paid &&
-      (updatedApp.security_deposit_paid || (updatedApp.security_deposit_amount || 0) === 0);
-    const anyPaid = updatedApp.move_in_deposit_paid || updatedApp.security_deposit_paid;
-
-    const newStatus = allPaid ? "received" : anyPaid ? "partial" : "requested";
-    await supabase
-      .from("rental_applications")
-      .update({ deposit_status: newStatus, updated_at: now })
-      .eq("id", application.id);
-  }
-
-  // Record any overpayment as rent credit
-  const overpayment = remaining > 0 ? remaining : 0;
-  if (overpayment > 0) {
-    const { data: rpData } = await supabase
-      .from("rental_payments")
-      .insert({
-        rental_application_id: application.id,
-        payment_type: "rent_credit",
-        amount_due: 0,
-        amount_paid: overpayment,
-        paid_date: today,
-        payment_method: "zelle",
-        transaction_id: parsed.confirmationNumber,
-        notes: `Overpayment credit from $${parsed.amount.toFixed(2)} Zelle payment (deposits totaled $${(parsed.amount - overpayment).toFixed(2)})`,
-      })
-      .select()
-      .single();
-
-    const { error: overpayLedgerErr } = await supabase.from("ledger").insert({
-      direction: "income",
-      category: "rent",
-      amount: overpayment,
-      payment_method: "zelle",
-      transaction_date: today,
-      person_id: application.person_id,
-      person_name: personName,
-      rental_application_id: application.id,
-      rental_payment_id: rpData?.id,
-      status: "completed",
-      description: `Rent prepayment / overpayment credit via Zelle (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
-      recorded_by: "system:zelle-email",
-    });
-    if (overpayLedgerErr) { console.error("CRITICAL: Overpayment ledger insert failed:", overpayLedgerErr); ledgerErrors.push(`rent_overpayment: ${overpayLedgerErr.message}`); }
-    else ledgerEntriesCreated++;
-
-    console.log(`Recorded overpayment credit: $${overpayment.toFixed(2)} for ${personName}`);
-  }
-
-  // Build payment summary for receipt email
-  const chargeLines: { label: string; amount: number }[] = [];
-  if (moveInUnpaid) chargeLines.push({ label: "Move-in Deposit", amount: application.move_in_deposit_amount || 0 });
-  if (securityUnpaid) chargeLines.push({ label: "Security Deposit", amount: application.security_deposit_amount || 0 });
-  const totalCharges = chargeLines.reduce((sum, l) => sum + l.amount, 0);
-  const balance = totalCharges - parsed.amount; // Negative = credit, positive = still owed
-
-  // Send receipt email to the tenant
-  if (application.person?.email) {
-    await sendTenantReceipt(resendApiKey, {
-      tenantEmail: application.person.email,
-      tenantName: application.person.first_name,
-      paymentAmount: parsed.amount,
-      confirmationNumber: parsed.confirmationNumber,
-      chargeLines,
-      totalCharges,
-      balance,
-      overpayment,
-    });
-  }
-
-  // Notify admin — flag if ledger entries failed
-  if (ledgerErrors.length > 0) {
-    console.error(`CRITICAL: ${ledgerErrors.length} ledger insert(s) failed for ${personName} conf#${parsed.confirmationNumber}:`, ledgerErrors);
-  }
-  const notificationType = ledgerEntriesCreated > 0 ? "auto_recorded" : (ledgerErrors.length > 0 ? "ledger_failed" : "auto_recorded");
-  await sendPaymentNotification(resendApiKey, notificationType, {
-    parsed,
-    personName,
-    applicationId: application.id,
-    overpayment,
-    moveInRecorded: moveInUnpaid,
-    securityRecorded: securityUnpaid,
-    ledgerErrors: ledgerErrors.length > 0 ? ledgerErrors : undefined,
-  });
-}
-
-/**
- * Send a payment receipt email to the tenant.
- */
-async function sendTenantReceipt(
-  resendApiKey: string,
-  details: {
-    tenantEmail: string;
-    tenantName: string;
-    paymentAmount: number;
-    confirmationNumber: string | null;
-    chargeLines: { label: string; amount: number }[];
-    totalCharges: number;
-    balance: number;
-    overpayment: number;
-  }
-): Promise<void> {
-  const chargeRowsHtml = details.chargeLines
-    .map(
-      (l) =>
-        `<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;">${l.label}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">$${l.amount.toFixed(2)}</td></tr>`
-    )
-    .join("");
-
-  const balanceColor = details.balance > 0 ? "#e74c3c" : details.balance < 0 ? "#2d7d46" : "#333";
-  const balanceLabel =
-    details.balance > 0
-      ? `$${details.balance.toFixed(2)} remaining`
-      : details.balance < 0
-      ? `$${Math.abs(details.balance).toFixed(2)} credit on account`
-      : "$0.00 — Paid in full";
-
-  const subject = `Payment Received — $${details.paymentAmount.toFixed(2)}`;
-  const html = `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;">
-      <div style="background:#2d7d46;color:white;padding:20px 24px;border-radius:8px 8px 0 0;">
-        <h2 style="margin:0;font-size:20px;">&#x2705; Payment Received</h2>
-        <p style="margin:8px 0 0;opacity:0.9;">Thank you, ${details.tenantName}!</p>
-      </div>
-      <div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;padding:24px;">
-        <table style="border-collapse:collapse;width:100%;margin-bottom:16px;">
-          <tr style="background:#f8f9fa;">
-            <td style="padding:10px 12px;font-weight:bold;border-bottom:2px solid #ddd;">Description</td>
-            <td style="padding:10px 12px;font-weight:bold;border-bottom:2px solid #ddd;text-align:right;">Amount</td>
-          </tr>
-          ${chargeRowsHtml}
-          <tr style="background:#f8f9fa;">
-            <td style="padding:10px 12px;font-weight:bold;border-top:2px solid #ddd;">Total Charges</td>
-            <td style="padding:10px 12px;font-weight:bold;border-top:2px solid #ddd;text-align:right;">$${details.totalCharges.toFixed(2)}</td>
-          </tr>
-        </table>
-
-        <table style="border-collapse:collapse;width:100%;margin-bottom:16px;">
-          <tr>
-            <td style="padding:8px 12px;border-bottom:1px solid #eee;">Payment Received (Zelle)</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;color:#2d7d46;font-weight:bold;">-$${details.paymentAmount.toFixed(2)}</td>
-          </tr>
-          ${details.confirmationNumber ? `<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#999;font-size:0.85rem;">Confirmation #${details.confirmationNumber}</td><td></td></tr>` : ""}
-        </table>
-
-        <div style="background:#f8f9fa;border-radius:6px;padding:14px 16px;text-align:center;">
-          <span style="font-size:0.85rem;color:#666;">Balance</span><br/>
-          <span style="font-size:1.4rem;font-weight:bold;color:${balanceColor};">${balanceLabel}</span>
-        </div>
-
-        <p style="color:#999;font-size:0.8rem;margin-top:20px;text-align:center;">
-          AlpacApps Residency &bull; This is an automated receipt.
-        </p>
-      </div>
-    </div>
-  `;
-
-  try {
-    const res = await fetch(`${RESEND_API_URL}/emails`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: SENDER_MAP.pai.from,
-        reply_to: SENDER_MAP.pai.reply_to,
-        to: [details.tenantEmail],
-        bcc: ["alpacaautomatic@gmail.com"],
-        subject,
-        html,
-      }),
-    });
-    if (!res.ok) {
-      console.error("Failed to send tenant receipt:", await res.text());
-    } else {
-      console.log(`Sent payment receipt to ${details.tenantEmail}`);
-    }
-  } catch (err) {
-    console.error("Error sending tenant receipt:", err.message);
-  }
-}
-
-/**
  * Find applications where outstanding deposit amount matches the payment.
  */
 async function matchByAmount(supabase: any, amount: number): Promise<any[]> {
@@ -3283,7 +2930,7 @@ async function createConfirmationRequest(
       sender_name: parsed.senderName,
       amount: parsed.amount,
       confirmation_number: parsed.confirmationNumber,
-      payment_method: "zelle",
+      payment_method: ["paypal", "coinbase", "cashapp", "venmo"].includes(parsed.bank) ? parsed.bank : "zelle",
       rental_application_id: application.id,
       person_id: application.person_id,
       inbound_email_id: inboundEmailId,
@@ -3327,10 +2974,11 @@ async function sendPaymentNotification(
     const overpayStr = details.overpayment > 0
       ? `<p style="color:#e74c3c;font-weight:bold;">&#x26A0; Overpayment: $${details.overpayment.toFixed(2)} exceeds deposits owed. May need manual handling.</p>`
       : "";
-    subject = `Zelle Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    subject = `Zelle Payment Pending Confirmation: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
     html = `
       <div style="font-family:-apple-system,sans-serif;max-width:600px;">
-        <h2 style="color:#2d7d46;">&#x2705; Payment Auto-Recorded</h2>
+        <h2 style="color:#2d7d46;">&#x23F3; Payment Recorded as Pending</h2>
+        <p><strong>The ledger row is pending. Confirm it in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a> once the funds have arrived.</strong></p>
         <table style="border-collapse:collapse;width:100%;">
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
@@ -3345,7 +2993,7 @@ async function sendPaymentNotification(
       </div>
     `;
   } else if (type === "confirm_request") {
-    subject = `Confirm Zelle Payment: $${parsed.amount.toFixed(2)} from ${parsed.senderName} → ${personName}?`;
+    subject = `Confirm ${({ paypal: "PayPal", coinbase: "Coinbase", cashapp: "Cash App", venmo: "Venmo" } as Record<string, string>)[parsed.bank] || "Zelle"} Payment: $${parsed.amount.toFixed(2)} from ${parsed.senderName} → ${personName}?`;
     html = `
       <div style="font-family:-apple-system,sans-serif;max-width:600px;">
         <h2 style="color:#e67e22;">&#x1F4B0; Payment Needs Confirmation</h2>
@@ -3412,10 +3060,10 @@ async function sendPaymentNotification(
       </div>
     `;
   } else if (type === "auto_recorded_paypal") {
-    subject = `PayPal Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    subject = `PayPal Payment Pending Confirmation: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
     html = `
       <div style="font-family:-apple-system,sans-serif;max-width:600px;">
-        <h2 style="color:#003087;">&#x2705; PayPal Payment Auto-Recorded</h2>
+        <h2 style="color:#003087;">&#x23F3; PayPal Payment Recorded as Pending</h2><p><strong>The ledger row is pending. Confirm it in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a> once the funds have arrived.</strong></p>
         <table style="border-collapse:collapse;width:100%;">
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
@@ -3428,10 +3076,10 @@ async function sendPaymentNotification(
       </div>
     `;
   } else if (type === "auto_recorded_cashapp") {
-    subject = `Cash App Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    subject = `Cash App Payment Pending Confirmation: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
     html = `
       <div style="font-family:-apple-system,sans-serif;max-width:600px;">
-        <h2 style="color:#00d632;">&#x2705; Cash App Payment Auto-Recorded</h2>
+        <h2 style="color:#00d632;">&#x23F3; Cash App Payment Recorded as Pending</h2><p><strong>The ledger row is pending. Confirm it in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a> once the funds have arrived.</strong></p>
         <table style="border-collapse:collapse;width:100%;">
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
@@ -3445,10 +3093,10 @@ async function sendPaymentNotification(
       </div>
     `;
   } else if (type === "auto_recorded_venmo") {
-    subject = `Venmo Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    subject = `Venmo Payment Pending Confirmation: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
     html = `
       <div style="font-family:-apple-system,sans-serif;max-width:600px;">
-        <h2 style="color:#008CFF;">&#x2705; Venmo Payment Auto-Recorded</h2>
+        <h2 style="color:#008CFF;">&#x23F3; Venmo Payment Recorded as Pending</h2><p><strong>The ledger row is pending. Confirm it in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a> once the funds have arrived.</strong></p>
         <table style="border-collapse:collapse;width:100%;">
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
@@ -3463,10 +3111,10 @@ async function sendPaymentNotification(
       </div>
     `;
   } else if (type === "auto_recorded_coinbase") {
-    subject = `Coinbase Payment Recorded: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
+    subject = `Coinbase Payment Pending Confirmation: $${parsed.amount.toFixed(2)} from ${parsed.senderName}`;
     html = `
       <div style="font-family:-apple-system,sans-serif;max-width:600px;">
-        <h2 style="color:#0052ff;">&#x2705; Coinbase Payment Auto-Recorded</h2>
+        <h2 style="color:#0052ff;">&#x23F3; Coinbase Payment Recorded as Pending</h2><p><strong>The ledger row is pending. Confirm it in the <a href="${absoluteUrl(ROUTES.admin.accounting)}">accounting dashboard</a> once the funds have arrived.</strong></p>
         <table style="border-collapse:collapse;width:100%;">
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Amount</td><td style="padding:8px;border-bottom:1px solid #eee;">$${parsed.amount.toFixed(2)}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">From</td><td style="padding:8px;border-bottom:1px solid #eee;">${parsed.senderName}</td></tr>
@@ -3534,6 +3182,31 @@ async function handlePaymentEmail(
     ? emailRecord.body_text
     : htmlToPlainText(emailRecord.body_html || "");
   const fromAddress = emailRecord.from_address || "";
+
+  // 0. Anyone can type "You received $1,500 from JANE DOE" into an email. Only parse mail whose
+  // From domain is a payment provider and passed DMARC; everything else goes to an admin untouched.
+  if (!isVerifiedPaymentSender(emailRecord)) {
+    console.warn(`Unverified payment email from ${fromAddress} (dmarc=${emailRecord.raw_payload?.authentication?.dmarc || "none"}), not parsing`);
+    try {
+      await fetch(`${RESEND_API_URL}/emails`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: SENDER_MAP.pai.from,
+          reply_to: SENDER_MAP.pai.reply_to,
+          to: ["alpacaplayhouse@gmail.com"],
+          subject: `Unverified payment email (not recorded): ${emailRecord.subject || ""}`,
+          text: `An email to payments@ was not processed because its sender could not be verified ` +
+            `(From: ${fromAddress}; DMARC: ${emailRecord.raw_payload?.authentication?.dmarc || "none"}).\n\n` +
+            `Nothing was recorded. If this is a real payment, record it manually in the accounting dashboard: ` +
+            `${absoluteUrl(ROUTES.admin.accounting)}`,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to send unverified payment notice:", err);
+    }
+    return;
+  }
 
   // 1a. Try to parse as PayPal payment first
   const paypalParsed = parsePayPalPayment(bodyText, fromAddress);
@@ -3638,8 +3311,9 @@ async function handlePaymentEmail(
   if (nameMatch) {
     const application = await findDepositApplication(supabase, nameMatch.person_id);
     if (application) {
-      console.log(`Tier 1 match: ${parsed.senderName} → ${nameMatch.name}, app=${application.id}`);
-      await autoRecordDeposit(supabase, application, parsed, resendApiKey);
+      // Email can never mark a deposit paid on its own: an admin confirms via the emailed link.
+      console.log(`Deposit candidate: ${nameMatch.name}, app=${application.id} — requesting admin confirmation`);
+      await createConfirmationRequest(supabase, resendApiKey, parsed, application, emailRecord.id);
       return;
     }
     console.log(`Name matched ${nameMatch.name} but no pending deposit application found`);
@@ -3665,8 +3339,8 @@ async function handlePaymentEmail(
       person_name: nameMatch.name,
       assignment_id: assignment?.id || null,
       confirmation_number: parsed.confirmationNumber || null,
-      status: "completed",
-      description: `Zelle payment from ${nameMatch.name} (auto-recorded, conf#${parsed.confirmationNumber || "N/A"})`,
+      status: "pending",
+      description: `Zelle payment from ${nameMatch.name} (pending admin confirmation, conf#${parsed.confirmationNumber || "N/A"})`,
       recorded_by: "system:zelle-email",
       is_test: false,
     });
@@ -3756,9 +3430,9 @@ async function handleParsedPayPalPayment(
     // Check if there's a pending deposit application
     const application = await findDepositApplication(supabase, nameMatch.person_id);
     if (application) {
-      console.log(`PayPal payment matched to deposit application: ${nameMatch.name}, app=${application.id}`);
-      // Auto-record as deposit (reuse Zelle deposit recording with PayPal method)
-      await autoRecordPayPalDeposit(supabase, application, paypal, nameMatch, resendApiKey);
+      // Email can never mark a deposit paid on its own: an admin confirms via the emailed link.
+      console.log(`Deposit candidate: ${nameMatch.name}, app=${application.id} — requesting admin confirmation`);
+      await createConfirmationRequest(supabase, resendApiKey, { amount: paypal.amount, senderName: paypal.senderName, confirmationNumber: paypal.transactionId, bank: "paypal" }, application, emailRecord.id);
       return;
     }
 
@@ -3785,7 +3459,7 @@ async function handleParsedPayPalPayment(
       person_name: nameMatch.name,
       assignment_id: assignment?.id || null,
       paypal_transaction_id: paypal.transactionId || null,
-      status: "completed",
+      status: "pending",
       description: `PayPal payment from ${nameMatch.name}`,
       notes: paypal.senderEmail ? `PayPal email: ${paypal.senderEmail}` : null,
       recorded_by: "system:paypal-email",
@@ -3828,115 +3502,6 @@ async function handleParsedPayPalPayment(
     applicationId: "",
     pendingApps: "",
   });
-}
-
-/**
- * Auto-record a PayPal deposit payment (mirrors autoRecordDeposit for Zelle).
- */
-async function autoRecordPayPalDeposit(
-  supabase: any,
-  application: any,
-  paypal: PayPalPaymentEmail,
-  nameMatch: { person_id: string; name: string },
-  resendApiKey: string
-): Promise<void> {
-  const moveIn = application.move_in_deposit_amount || 0;
-  const security = application.security_deposit_amount || 0;
-  const totalDeposit = moveIn + security;
-  const today = new Date().toISOString().split("T")[0];
-
-  // Record move-in deposit
-  if (moveIn > 0) {
-    await supabase.from("rental_payments").insert({
-      rental_application_id: application.id,
-      payment_type: "move_in_deposit",
-      amount: moveIn,
-      payment_method: "paypal",
-      transaction_date: today,
-      transaction_id: paypal.transactionId || null,
-      status: "paid",
-      recorded_by: "system:paypal-email",
-    });
-
-    await supabase.from("ledger").insert({
-      direction: "income",
-      category: "move_in_deposit",
-      amount: moveIn,
-      payment_method: "paypal",
-      transaction_date: today,
-      person_id: nameMatch.person_id,
-      person_name: nameMatch.name,
-      rental_application_id: application.id,
-      paypal_transaction_id: paypal.transactionId || null,
-      status: "completed",
-      description: `Move-in deposit from ${nameMatch.name} (PayPal)`,
-      recorded_by: "system:paypal-email",
-    });
-  }
-
-  // Record security deposit
-  if (security > 0) {
-    await supabase.from("rental_payments").insert({
-      rental_application_id: application.id,
-      payment_type: "security_deposit",
-      amount: security,
-      payment_method: "paypal",
-      transaction_date: today,
-      transaction_id: paypal.transactionId || null,
-      status: "paid",
-      recorded_by: "system:paypal-email",
-    });
-
-    await supabase.from("ledger").insert({
-      direction: "income",
-      category: "security_deposit",
-      amount: security,
-      payment_method: "paypal",
-      transaction_date: today,
-      person_id: nameMatch.person_id,
-      person_name: nameMatch.name,
-      rental_application_id: application.id,
-      paypal_transaction_id: paypal.transactionId ? `${paypal.transactionId}-sec` : null,
-      status: "completed",
-      description: `Security deposit from ${nameMatch.name} (PayPal)`,
-      recorded_by: "system:paypal-email",
-    });
-  }
-
-  // Handle overpayment as rent credit
-  if (paypal.amount > totalDeposit && totalDeposit > 0) {
-    const overpayment = paypal.amount - totalDeposit;
-    await supabase.from("ledger").insert({
-      direction: "income",
-      category: "rent",
-      amount: overpayment,
-      payment_method: "paypal",
-      transaction_date: today,
-      person_id: nameMatch.person_id,
-      person_name: nameMatch.name,
-      rental_application_id: application.id,
-      paypal_transaction_id: paypal.transactionId ? `${paypal.transactionId}-over` : null,
-      status: "completed",
-      description: `Rent credit from overpayment by ${nameMatch.name} (PayPal)`,
-      recorded_by: "system:paypal-email",
-    });
-  }
-
-  // Update application deposit status
-  await supabase
-    .from("rental_applications")
-    .update({ deposit_status: "paid", deposit_paid_at: new Date().toISOString() })
-    .eq("id", application.id);
-
-  // Notify admin
-  await sendPaymentNotification(resendApiKey, "auto_recorded_paypal", {
-    parsed: { amount: paypal.amount, senderName: paypal.senderName, confirmationNumber: paypal.transactionId },
-    personName: nameMatch.name,
-    applicationId: application.id,
-    category: "deposit",
-  });
-
-  console.log(`Auto-recorded PayPal deposit: $${paypal.amount} from ${nameMatch.name} for app ${application.id}`);
 }
 
 // =============================================
@@ -4023,56 +3588,9 @@ async function handleParsedCoinbasePayment(
     // Check if there's a pending deposit application
     const application = await findDepositApplication(supabase, nameMatch.person_id);
     if (application) {
-      console.log(`Coinbase payment matched to deposit application: ${nameMatch.name}, app=${application.id}`);
-      const moveIn = application.move_in_deposit_amount || 0;
-      const security = application.security_deposit_amount || 0;
-      const today = new Date().toISOString().split("T")[0];
-
-      if (moveIn > 0) {
-        await supabase.from("ledger").insert({
-          direction: "income",
-          category: "move_in_deposit",
-          amount: moveIn,
-          payment_method: "coinbase",
-          transaction_date: today,
-          person_id: nameMatch.person_id,
-          person_name: nameMatch.name,
-          rental_application_id: application.id,
-          status: "completed",
-          description: `Move-in deposit from ${nameMatch.name} (Coinbase${currencyNote})`,
-          notes: coinbase.transactionId ? `Coinbase txn: ${coinbase.transactionId}` : null,
-          recorded_by: "system:coinbase-email",
-        });
-      }
-      if (security > 0) {
-        await supabase.from("ledger").insert({
-          direction: "income",
-          category: "security_deposit",
-          amount: security,
-          payment_method: "coinbase",
-          transaction_date: today,
-          person_id: nameMatch.person_id,
-          person_name: nameMatch.name,
-          rental_application_id: application.id,
-          status: "completed",
-          description: `Security deposit from ${nameMatch.name} (Coinbase${currencyNote})`,
-          notes: coinbase.transactionId ? `Coinbase txn: ${coinbase.transactionId}-sec` : null,
-          recorded_by: "system:coinbase-email",
-        });
-      }
-
-      await supabase
-        .from("rental_applications")
-        .update({ deposit_status: "paid", deposit_paid_at: new Date().toISOString() })
-        .eq("id", application.id);
-
-      await sendPaymentNotification(resendApiKey, "auto_recorded_coinbase", {
-        parsed: { amount: coinbase.amount, senderName: coinbase.senderName, confirmationNumber: coinbase.transactionId },
-        personName: nameMatch.name,
-        applicationId: application.id,
-        category: "deposit",
-      });
-      if (usdcKordekOverride) await sendUsdcKordekConfirmation(resendApiKey, coinbase, "deposit");
+      // Email can never mark a deposit paid on its own: an admin confirms via the emailed link.
+      console.log(`Deposit candidate: ${nameMatch.name}, app=${application.id} — requesting admin confirmation`);
+      await createConfirmationRequest(supabase, resendApiKey, { amount: coinbase.amount, senderName: coinbase.senderName, confirmationNumber: coinbase.transactionId, bank: "coinbase" }, application, emailRecord.id);
       return;
     }
 
@@ -4097,7 +3615,7 @@ async function handleParsedCoinbasePayment(
       person_id: nameMatch.person_id,
       person_name: nameMatch.name,
       assignment_id: assignment?.id || null,
-      status: "completed",
+      status: "pending",
       description: `Coinbase payment from ${nameMatch.name}${currencyNote}`,
       notes: coinbase.transactionId ? `Coinbase txn: ${coinbase.transactionId}` : null,
       recorded_by: "system:coinbase-email",
@@ -4178,109 +3696,9 @@ async function handleParsedCashAppPayment(
   if (nameMatch) {
     const application = await findDepositApplication(supabase, nameMatch.person_id);
     if (application) {
-      const moveIn = Number(application.move_in_deposit_amount || 0);
-      const security = Number(application.security_deposit_amount || 0);
-      const approvedRate = Number(application.approved_rate || 0);
-      const moveInDate = application.approved_move_in ? new Date(application.approved_move_in) : null;
-
-      // Try to split amount = (rent or move-in) + security
-      const breakdown: { category: string; amount: number; period_start?: string; period_end?: string }[] = [];
-
-      if (Math.abs(cashapp.amount - (moveIn + security)) < 0.01) {
-        if (moveIn > 0) breakdown.push({ category: "move_in_deposit", amount: moveIn });
-        if (security > 0) breakdown.push({ category: "security_deposit", amount: security });
-      } else if (security > 0 && approvedRate > 0 && moveInDate) {
-        // Compute prorated rent for partial first month
-        const year = moveInDate.getUTCFullYear();
-        const month = moveInDate.getUTCMonth();
-        const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-        const dayOfMonth = moveInDate.getUTCDate();
-        const remainingDays = daysInMonth - dayOfMonth + 1;
-        const prorated = Math.round((approvedRate * remainingDays / daysInMonth) * 100) / 100;
-        if (Math.abs(cashapp.amount - (prorated + security)) < 0.02) {
-          const periodStart = moveInDate.toISOString().split("T")[0];
-          const periodEnd = new Date(Date.UTC(year, month + 1, 0)).toISOString().split("T")[0];
-          breakdown.push({ category: "prorated_rent", amount: prorated, period_start: periodStart, period_end: periodEnd });
-          breakdown.push({ category: "security_deposit", amount: security });
-        }
-      }
-
-      if (breakdown.length > 0) {
-        for (let i = 0; i < breakdown.length; i++) {
-          const b = breakdown[i];
-          await supabase.from("ledger").insert({
-            direction: "income",
-            category: b.category,
-            amount: b.amount,
-            payment_method: "cashapp",
-            transaction_date: today,
-            person_id: nameMatch.person_id,
-            person_name: nameMatch.name,
-            rental_application_id: application.id,
-            status: "completed",
-            description: `${b.category.replace(/_/g, " ")} from ${nameMatch.name} (Cash App)`,
-            notes: i === 0 ? txNote : `${txNote}-2`,
-            recorded_by: "system:cashapp-email",
-            period_start: b.period_start || null,
-            period_end: b.period_end || null,
-          });
-        }
-
-        const updates: Record<string, any> = { deposit_confirmed_at: new Date().toISOString() };
-        if (breakdown.find((b) => b.category === "security_deposit")) {
-          updates.security_deposit_paid = true;
-          updates.security_deposit_paid_at = new Date().toISOString();
-          updates.security_deposit_method = "cashapp";
-        }
-        if (breakdown.find((b) => b.category === "move_in_deposit")) {
-          updates.move_in_deposit_paid = true;
-          updates.move_in_deposit_paid_at = new Date().toISOString();
-          updates.move_in_deposit_method = "cashapp";
-        }
-        // "Paid in full" means every deposit that was actually required is now paid —
-        // not that this particular payment covered a move-in deposit. A tenant with no
-        // move-in deposit due (moveIn <= 0) should never get stuck on "partial".
-        const moveInSatisfied = moveIn <= 0 || updates.move_in_deposit_paid === true;
-        const securitySatisfied = security <= 0 || updates.security_deposit_paid === true;
-        updates.deposit_status = moveInSatisfied && securitySatisfied ? "received" : "partial";
-        await supabase.from("rental_applications").update(updates).eq("id", application.id);
-
-        const breakdownHtml = `<p style="margin-top:12px;"><strong>Recorded as:</strong></p><ul>${breakdown
-          .map((b) => `<li>$${b.amount.toFixed(2)} — ${b.category.replace(/_/g, " ")}</li>`)
-          .join("")}</ul>`;
-
-        await sendPaymentNotification(resendApiKey, "auto_recorded_cashapp", {
-          parsed: { amount: cashapp.amount, senderName: cashapp.senderName, confirmationNumber: cashapp.transactionId },
-          personName: nameMatch.name,
-          applicationId: application.id,
-          category: breakdown.map((b) => b.category).join(" + "),
-          breakdownHtml,
-        });
-        console.log(`Cash App payment split-recorded: ${breakdown.map((b) => `${b.category}=$${b.amount}`).join(", ")} for ${nameMatch.name}`);
-        return;
-      }
-
-      // Couldn't split cleanly — record as a single "other" row tied to the app and notify
-      await supabase.from("ledger").insert({
-        direction: "income",
-        category: "other",
-        amount: cashapp.amount,
-        payment_method: "cashapp",
-        transaction_date: today,
-        person_id: nameMatch.person_id,
-        person_name: nameMatch.name,
-        rental_application_id: application.id,
-        status: "completed",
-        description: `Cash App payment from ${nameMatch.name} (needs review — could not split)`,
-        notes: txNote,
-        recorded_by: "system:cashapp-email",
-      });
-      await sendPaymentNotification(resendApiKey, "auto_recorded_cashapp", {
-        parsed: { amount: cashapp.amount, senderName: cashapp.senderName, confirmationNumber: cashapp.transactionId },
-        personName: nameMatch.name,
-        applicationId: application.id,
-        category: "other (needs review)",
-      });
+      // Email can never mark a deposit paid on its own: an admin confirms via the emailed link.
+      console.log(`Deposit candidate: ${nameMatch.name}, app=${application.id} — requesting admin confirmation`);
+      await createConfirmationRequest(supabase, resendApiKey, { amount: cashapp.amount, senderName: cashapp.senderName, confirmationNumber: cashapp.transactionId, bank: "cashapp" }, application, emailRecord.id);
       return;
     }
 
@@ -4304,7 +3722,7 @@ async function handleParsedCashAppPayment(
       person_id: nameMatch.person_id,
       person_name: nameMatch.name,
       assignment_id: assignment?.id || null,
-      status: "completed",
+      status: "pending",
       description: `Cash App payment from ${nameMatch.name}`,
       notes: txNote,
       recorded_by: "system:cashapp-email",
@@ -4372,111 +3790,9 @@ async function handleParsedVenmoPayment(
   if (nameMatch) {
     const application = await findDepositApplication(supabase, nameMatch.person_id);
     if (application) {
-      const moveIn = Number(application.move_in_deposit_amount || 0);
-      const security = Number(application.security_deposit_amount || 0);
-      const approvedRate = Number(application.approved_rate || 0);
-      const moveInDate = application.approved_move_in ? new Date(application.approved_move_in) : null;
-
-      // Try to split amount = (rent or move-in) + security
-      const breakdown: { category: string; amount: number; period_start?: string; period_end?: string }[] = [];
-
-      if (Math.abs(venmo.amount - (moveIn + security)) < 0.01) {
-        if (moveIn > 0) breakdown.push({ category: "move_in_deposit", amount: moveIn });
-        if (security > 0) breakdown.push({ category: "security_deposit", amount: security });
-      } else if (security > 0 && approvedRate > 0 && moveInDate) {
-        // Compute prorated rent for partial first month
-        const year = moveInDate.getUTCFullYear();
-        const month = moveInDate.getUTCMonth();
-        const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-        const dayOfMonth = moveInDate.getUTCDate();
-        const remainingDays = daysInMonth - dayOfMonth + 1;
-        const prorated = Math.round((approvedRate * remainingDays / daysInMonth) * 100) / 100;
-        if (Math.abs(venmo.amount - (prorated + security)) < 0.02) {
-          const periodStart = moveInDate.toISOString().split("T")[0];
-          const periodEnd = new Date(Date.UTC(year, month + 1, 0)).toISOString().split("T")[0];
-          breakdown.push({ category: "prorated_rent", amount: prorated, period_start: periodStart, period_end: periodEnd });
-          breakdown.push({ category: "security_deposit", amount: security });
-        }
-      }
-
-      if (breakdown.length > 0) {
-        for (let i = 0; i < breakdown.length; i++) {
-          const b = breakdown[i];
-          await supabase.from("ledger").insert({
-            direction: "income",
-            category: b.category,
-            amount: b.amount,
-            payment_method: "venmo",
-            transaction_date: today,
-            person_id: nameMatch.person_id,
-            person_name: nameMatch.name,
-            rental_application_id: application.id,
-            status: "completed",
-            description: `${b.category.replace(/_/g, " ")} from ${nameMatch.name} (Venmo)${memoStr}`,
-            notes: i === 0 ? txNote : `${txNote}-2`,
-            recorded_by: "system:venmo-email",
-            period_start: b.period_start || null,
-            period_end: b.period_end || null,
-          });
-        }
-
-        const updates: Record<string, any> = { deposit_confirmed_at: new Date().toISOString() };
-        if (breakdown.find((b) => b.category === "security_deposit")) {
-          updates.security_deposit_paid = true;
-          updates.security_deposit_paid_at = new Date().toISOString();
-          updates.security_deposit_method = "venmo";
-        }
-        if (breakdown.find((b) => b.category === "move_in_deposit")) {
-          updates.move_in_deposit_paid = true;
-          updates.move_in_deposit_paid_at = new Date().toISOString();
-          updates.move_in_deposit_method = "venmo";
-        }
-        // "Paid in full" means every deposit that was actually required is now paid —
-        // not that this particular payment covered a move-in deposit. A tenant with no
-        // move-in deposit due (moveIn <= 0) should never get stuck on "partial".
-        const moveInSatisfied = moveIn <= 0 || updates.move_in_deposit_paid === true;
-        const securitySatisfied = security <= 0 || updates.security_deposit_paid === true;
-        updates.deposit_status = moveInSatisfied && securitySatisfied ? "received" : "partial";
-        await supabase.from("rental_applications").update(updates).eq("id", application.id);
-
-        const breakdownHtml = `<p style="margin-top:12px;"><strong>Recorded as:</strong></p><ul>${breakdown
-          .map((b) => `<li>$${b.amount.toFixed(2)} — ${b.category.replace(/_/g, " ")}</li>`)
-          .join("")}</ul>`;
-
-        await sendPaymentNotification(resendApiKey, "auto_recorded_venmo", {
-          parsed: { amount: venmo.amount, senderName: venmo.senderName, confirmationNumber: venmo.transactionId },
-          personName: nameMatch.name,
-          applicationId: application.id,
-          category: breakdown.map((b) => b.category).join(" + "),
-          breakdownHtml,
-          memo: venmo.memo,
-        });
-        console.log(`Venmo payment split-recorded: ${breakdown.map((b) => `${b.category}=$${b.amount}`).join(", ")} for ${nameMatch.name}`);
-        return;
-      }
-
-      // Couldn't split cleanly — record as a single "other" row tied to the app and notify
-      await supabase.from("ledger").insert({
-        direction: "income",
-        category: "other",
-        amount: venmo.amount,
-        payment_method: "venmo",
-        transaction_date: today,
-        person_id: nameMatch.person_id,
-        person_name: nameMatch.name,
-        rental_application_id: application.id,
-        status: "completed",
-        description: `Venmo payment from ${nameMatch.name} (needs review — could not split)${memoStr}`,
-        notes: txNote,
-        recorded_by: "system:venmo-email",
-      });
-      await sendPaymentNotification(resendApiKey, "auto_recorded_venmo", {
-        parsed: { amount: venmo.amount, senderName: venmo.senderName, confirmationNumber: venmo.transactionId },
-        personName: nameMatch.name,
-        applicationId: application.id,
-        category: "other (needs review)",
-        memo: venmo.memo,
-      });
+      // Email can never mark a deposit paid on its own: an admin confirms via the emailed link.
+      console.log(`Deposit candidate: ${nameMatch.name}, app=${application.id} — requesting admin confirmation`);
+      await createConfirmationRequest(supabase, resendApiKey, { amount: venmo.amount, senderName: venmo.senderName, confirmationNumber: venmo.transactionId, bank: "venmo" }, application, emailRecord.id);
       return;
     }
 
@@ -4500,7 +3816,7 @@ async function handleParsedVenmoPayment(
       person_id: nameMatch.person_id,
       person_name: nameMatch.name,
       assignment_id: assignment?.id || null,
-      status: "completed",
+      status: "pending",
       description: `Venmo payment from ${nameMatch.name}${memoStr}`,
       notes: txNote,
       recorded_by: "system:venmo-email",
@@ -4840,6 +4156,8 @@ serve(async (req) => {
       html = content.html;
       text = content.text;
     }
+    // Keep Resend's SPF/DKIM/DMARC verdicts with the stored payload. Sender-based trust reads them.
+    data.authentication = content?.authentication || null;
 
     // ==============================================
     // EVENT STAFF CONFIRMATION DETECTOR

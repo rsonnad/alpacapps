@@ -1,10 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { checkIpRateLimit, checkRateLimit } from "../_shared/function-wrapper.ts";
 
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CONTEXT_URL = `${SUPABASE_URL}/storage/v1/object/public/site-content/context.json`;
+const MAX_QUESTION_CHARS = 500;
 
 interface ContextData {
   spaces?: Array<{
@@ -82,17 +85,33 @@ serve(async (req) => {
       throw new Error("GEMINI_API_KEY not configured");
     }
 
-    console.log("GEMINI_API_KEY prefix:", GEMINI_API_KEY.substring(0, 10) + "...");
+    // Anonymous Gemini spend: 10 questions per IP per hour, 300 per day overall.
+    const limiter = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    if (
+      !(await checkIpRateLimit(limiter, "ask-question", req, 10, 3600)) ||
+      !(await checkRateLimit(limiter, "ask-question-global", "all", 300, 86400))
+    ) {
+      return new Response(
+        JSON.stringify({ error: "Too many questions right now. Please try again later or email team@alpacaplayhouse.com." }),
+        { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
 
     const { question } = await req.json();
-    console.log("Question received:", question);
 
-    if (!question?.trim()) {
+    if (typeof question !== "string" || !question.trim()) {
       return new Response(
         JSON.stringify({ error: "Please enter a question" }),
         { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
+    if (question.length > MAX_QUESTION_CHARS) {
+      return new Response(
+        JSON.stringify({ error: `Please keep questions under ${MAX_QUESTION_CHARS} characters` }),
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+    console.log("Question received:", question.slice(0, 200));
 
     // Load context
     let contextData: ContextData = { spaces: [], faq: [], external_content: [] };

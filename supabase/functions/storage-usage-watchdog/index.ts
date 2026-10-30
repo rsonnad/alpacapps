@@ -7,6 +7,8 @@
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { requireCronOrRoles } from "../_shared/require-auth.ts";
 
 const FREE_STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024;
 const ALERT_THRESHOLD = 0.8;
@@ -23,6 +25,9 @@ serve(async (request) => {
   if (!supabaseUrl || !serviceRoleKey || !resendKey) {
     return new Response(JSON.stringify({ ok: false, error: "Required storage-watchdog secrets are missing" }), { status: 500 });
   }
+
+  const auth = await requireCronOrRoles(request, createClient(supabaseUrl, serviceRoleKey), ["admin", "oracle"]);
+  if (auth.response) return auth.response;
 
   const byBucket: Record<string, number> = {};
   let totalBytes = 0;

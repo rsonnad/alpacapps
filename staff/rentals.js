@@ -1804,7 +1804,9 @@ function renderReadyPane(app, guidance, actions) {
 
   const agreementRow = leaseNotRequired
     ? '<div class="checklist-row done">&#10003; Lease not required (VIP/comp)</div>'
-    : '<div class="checklist-row done">&#10003; Agreement signed</div>';
+    : agSigned
+      ? '<div class="checklist-row done">&#10003; Agreement signed</div>'
+      : '<div class="checklist-row">&#9675; Agreement not signed yet</div>';
 
   guidance.innerHTML = `
     <div class="action-pane-instruction">
@@ -2139,7 +2141,7 @@ window.createDraftLeaseAction = async function() {
   const restore = setActionPaneLoading('Sending…');
   try {
     const [template, agreementData] = await Promise.all([
-      leaseTemplateService.getActiveTemplate(),
+      leaseTemplateService.getLeaseTemplateForApplication(currentApplicationId),
       rentalService.getAgreementData(currentApplicationId),
     ]);
     if (!template || !agreementData) {
@@ -3081,6 +3083,18 @@ function getPreMoveInCharges(app) {
   const rateTerm = app.approved_rate_term || 'monthly';
   const storedMoveIn = Number(app.move_in_deposit_amount || app.approved_rate) || 0;
 
+  // A move-in amount set by hand (anything other than one month's rent, which
+  // saveTerms writes by default) is the agreed first payment; don't prorate it.
+  const customMoveIn = app.move_in_deposit_amount != null && Number(app.move_in_deposit_amount) !== rate;
+  if (rateTerm === 'monthly' && customMoveIn) {
+    return {
+      moveInDue: Number(app.move_in_deposit_amount),
+      moveInLabel: 'First rent payment',
+      moveInNote: 'As set in the agreed terms.',
+      securityDeposit,
+    };
+  }
+
   if (rateTerm === 'monthly' && app.approved_move_in && rate > 0) {
     const proration = rentalService.calculateProration(app.approved_move_in, rate);
     const monthLabel = parseAustinDate(app.approved_move_in).toLocaleDateString('en-US', { month: 'long' });
@@ -3347,7 +3361,7 @@ async function updateDocumentsTabState(app) {
 
   // Load template and agreement data
   try {
-    currentLeaseTemplate = await leaseTemplateService.getActiveTemplate();
+    currentLeaseTemplate = await leaseTemplateService.getLeaseTemplateForApplication(app.id);
     currentAgreementData = await rentalService.getAgreementData(app.id);
 
     if (!currentLeaseTemplate) {
@@ -3644,7 +3658,7 @@ async function previewLease() {
 
   try {
     // Always refresh template and data to get latest terms
-    currentLeaseTemplate = await leaseTemplateService.getActiveTemplate();
+    currentLeaseTemplate = await leaseTemplateService.getLeaseTemplateForApplication(currentApplicationId);
     currentAgreementData = await rentalService.getAgreementData(currentApplicationId);
 
     if (!currentLeaseTemplate || !currentAgreementData) {
@@ -3691,7 +3705,7 @@ async function generateLeasePdf() {
 
   try {
     // Always refresh template and data to get latest terms
-    currentLeaseTemplate = await leaseTemplateService.getActiveTemplate();
+    currentLeaseTemplate = await leaseTemplateService.getLeaseTemplateForApplication(currentApplicationId);
     currentAgreementData = await rentalService.getAgreementData(currentApplicationId);
 
     if (!currentLeaseTemplate || !currentAgreementData) {

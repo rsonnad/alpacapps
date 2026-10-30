@@ -41,7 +41,7 @@ def ssh_pull_udm(ssh_pass: str, web_pass: str) -> dict:
 WP="{web_pass}"
 curl -sk -c /tmp/uc.txt -X POST 'https://localhost/api/auth/login' \
   -H 'Content-Type: application/json' \
-  -d "{{\\"username\\":\\"alpacaauto\\",\\"password\\":\\"$WP\\",\\"remember\\":true}}" > /dev/null
+  -d "{{\\"username\\":\\"codingagent\\",\\"password\\":\\"$WP\\",\\"remember\\":true}}" > /dev/null
 echo "===DEVICES==="
 curl -sk -b /tmp/uc.txt 'https://localhost/proxy/network/api/s/default/stat/device'
 echo ""

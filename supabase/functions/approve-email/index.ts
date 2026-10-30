@@ -156,7 +156,7 @@ serve(async (req) => {
     // ─── POST-APPROVAL HOOK: Weekly Payroll → trigger payout ───
     if (approval.email_type === "weekly_payroll_summary") {
       try {
-        await processPayrollApproval(approval.html, supabaseUrl, supabaseKey);
+        await processPayrollApproval(approval, sb, supabaseUrl, supabaseKey);
       } catch (hookErr) {
         console.error("Payroll post-approval hook failed (non-blocking):", hookErr);
         // Don't block the approval redirect — email was sent, payout can be retried manually
@@ -191,21 +191,33 @@ serve(async (req) => {
 
 /**
  * Post-approval hook for weekly_payroll_summary emails.
- * Parses PAYROLL_META from the approved email HTML and triggers:
+ * Reads payroll_meta from the approval row (never the email HTML, which carries
+ * associate-editable text) and triggers:
  *   - Stripe payout (if associate has Connect account)
  *   - Stripe Connect onboarding link (if no Connect account)
  * The stripe-payout function already sends the associate_payout_sent notification.
  */
-async function processPayrollApproval(html: string, supabaseUrl: string, supabaseKey: string): Promise<void> {
-  // Extract PAYROLL_META from HTML
-  const metaMatch = html.match(/<!--\[PAYROLL_META:(.*?):PAYROLL_META\]-->/);
-  if (!metaMatch) {
-    console.warn("No PAYROLL_META found in approved payroll email — skipping payout");
+async function processPayrollApproval(approval: any, sb: any, supabaseUrl: string, supabaseKey: string): Promise<void> {
+  const meta = approval.payroll_meta;
+  if (!meta?.associate_id) {
+    console.warn(`No payroll_meta on approval ${approval.id} — skipping payout`);
     return;
   }
 
-  const meta = JSON.parse(metaMatch[1]);
-  const { associate_id, amount, time_entry_ids, has_stripe, associate_email, associate_first_name, period } = meta;
+  const { associate_id, amount, time_entry_ids, has_stripe, period } = meta;
+
+  // The onboarding link goes only to the email on the associate's own record.
+  const { data: profile } = await sb
+    .from("associate_profiles")
+    .select("id, app_user:app_user_id(email, first_name, display_name)")
+    .eq("id", associate_id)
+    .maybeSingle();
+  const associate_email = profile?.app_user?.email;
+  const associate_first_name = escapeHtml(profile?.app_user?.first_name || profile?.app_user?.display_name || "there");
+  if (!associate_email) {
+    console.error(`Associate ${associate_id} has no email on record — skipping payroll processing`);
+    return;
+  }
 
   console.log(`Processing payroll approval: ${meta.associate_name}, $${amount}, ${time_entry_ids.length} entries, stripe=${has_stripe}`);
 
@@ -238,8 +250,8 @@ async function processPayrollApproval(html: string, supabaseUrl: string, supabas
           subject: `Payroll Payout FAILED — ${meta.associate_name}`,
           data: {
             _raw_html: `<h2 style="color:#c62828;">Payout Failed</h2>
-              <p>The payroll approval for <strong>${meta.associate_name}</strong> ($${amount.toFixed(2)}) was approved, but the Stripe payout failed:</p>
-              <p style="background:#ffebee;padding:12px;border-radius:8px;font-family:monospace;">${payoutResult.error}</p>
+              <p>The payroll approval for <strong>${escapeHtml(meta.associate_name)}</strong> ($${amount.toFixed(2)}) was approved, but the Stripe payout failed:</p>
+              <p style="background:#ffebee;padding:12px;border-radius:8px;font-family:monospace;">${escapeHtml(String(payoutResult.error))}</p>
               <p>You can retry the payout manually from the <a href="${absoluteUrl(ROUTES.staff.worktracking)}">Work Tracking</a> page.</p>`,
           },
         }),
@@ -295,6 +307,15 @@ async function processPayrollApproval(html: string, supabaseUrl: string, supabas
       console.error("Stripe Connect setup email failed:", setupErr);
     }
   }
+}
+
+function escapeHtml(s: string | null | undefined): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function redirectToResult(status: string, title: string, message: string, autoType?: string, typeApproval?: { token: string; email_type: string }): Response {

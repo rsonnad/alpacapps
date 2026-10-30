@@ -1,0 +1,793 @@
+{
+  "checked": "2026-10-22",
+  "items": [
+    {
+      "id": "c01",
+      "group": "customer",
+      "name": "Voicelab.ai Sp. z o.o.",
+      "city": "Gdańsk",
+      "contact_url": "mailto:jacek@voicelab.ai",
+      "contact_label": "jacek@voicelab.ai",
+      "sources": [
+        {
+          "url": "https://voicelab.ai/",
+          "title": "VoiceLab technology / Technologie VoiceLab"
+        },
+        {
+          "url": "https://voicelab.ai/contact",
+          "title": "Official contacts / Oficjalne kontakty"
+        },
+        {
+          "url": "https://european-digital-innovation-hubs.ec.europa.eu/edih-catalogue/dih4ai",
+          "title": "European Commission DIH4AI profile / Profil DIH4AI"
+        }
+      ],
+      "en": {
+        "category": "Speech / LLM company",
+        "role": "Jacek Kawalec: published commercial/partnership routing contact; request infrastructure owner, not assumed CTO.",
+        "fit": "Speech technology, conversational analytics and TRURL models with on-premise implementation.",
+        "hypothesis": "External ASR evaluation, model adaptation or dedicated customer inference; possible on-premise deployment channel.",
+        "unknown": "Own capacity and computing-power services may already cover needs; no shortage or purchasing intent verified.",
+        "ask": "20 minutes on one unmet ASR/TRURL workload: GPU, latency, data boundary, existing supply and paid evaluation budget.",
+        "subject": "VoiceLab / TRURL: Polish dedicated capacity discovery",
+        "message": "Hello, VoiceLab’s speech technology and on-premise TRURL offering caught my attention. I am researching a Polish-operated dedicated GPU capacity business and want to understand real requirements before buying hardware. Could we arrange a 20-minute conversation with your infrastructure or partnerships lead about ASR evaluation, model adaptation or customer-specific inference capacity? I would like to learn what you already provide internally and whether an external capacity partner would add value. I have no installed capacity or guaranteed certifications to promise at this stage.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Technologie mowy / LLM",
+        "role": "Jacek Kawalec: opublikowany kontakt handlowy/partnerski; poproś o osobę odpowiedzialną za infrastrukturę, bez założenia funkcji CTO.",
+        "fit": "Technologie mowy, analityka rozmów i modele TRURL z wdrożeniami on-premise.",
+        "hypothesis": "Zewnętrzna ewaluacja ASR, adaptacja modeli lub dedykowana inferencja klienta; możliwy kanał wdrożeń lokalnych.",
+        "unknown": "Własne zasoby i usługi mocy obliczeniowej mogą wystarczać; nie potwierdzono niedoboru ani zamiaru zakupu.",
+        "ask": "20 minut o jednym niespełnionym wymaganiu ASR/TRURL: GPU, opóźnienia, granice danych, obecny dostawca i budżet płatnej oceny.",
+        "subject": "VoiceLab / TRURL: rozmowa o dedykowanej mocy GPU w Polsce",
+        "message": "Dzień dobry, zainteresowały mnie technologie mowy VoiceLab i możliwość wdrożenia TRURL on-premise. Badam model usługi dedykowanych GPU z polskim operatorem i chcę poznać rzeczywiste wymagania przed zakupem sprzętu. Czy możemy umówić 20 minut z osobą odpowiedzialną za infrastrukturę lub partnerstwa, aby porozmawiać o ewaluacji ASR, dostrajaniu modeli i inferencji dla konkretnych klientów? Chciałbym zrozumieć, co zapewniacie już samodzielnie i czy zewnętrzny partner mógłby coś uzupełnić. Na tym etapie nie obiecuję dostępnego sprzętu ani certyfikacji.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c02",
+      "group": "customer",
+      "name": "SentiOne SA",
+      "city": "Gdańsk",
+      "contact_url": "https://sentione.com/pl/umow-demo",
+      "contact_label": "Official sales form / Oficjalny formularz sprzedaży",
+      "sources": [
+        {
+          "url": "https://sentione.com/pl/kontakt",
+          "title": "Official contact / Oficjalny kontakt"
+        },
+        {
+          "url": "https://sentione.com/pl/umow-demo",
+          "title": "Sales/demo route / Formularz sprzedaży"
+        },
+        {
+          "url": "https://pfr.pl/artykul/start-z-polskim-ai-od-pomyslu-do-wdrozenia-sentione",
+          "title": "PFR CTO interview, February 2026 / Wywiad PFR"
+        }
+      ],
+      "en": {
+        "category": "Conversational AI",
+        "role": "Request CTO / ML infrastructure owner. Michał Brzezicki was identified as CTO in the February 2026 PFR interview; reconfirm current role.",
+        "fit": "LLM applications in media analysis and conversational bots; PFR interview describes substantial voicebot traffic.",
+        "hypothesis": "Isolated Polish inference for a customer whose requirements exceed the current deployment.",
+        "unknown": "The CTO describes already economical, vendor-independent infrastructure; GPU use and incremental need are unverified.",
+        "ask": "20 minutes to establish whether any customer needs Polish isolation or reserved latency beyond the current setup, and at what viable cost.",
+        "subject": "20-minute discussion: Polish-operated capacity for SentiOne workloads",
+        "message": "Hello SentiOne team, I read Michał Brzezicki’s PFR interview about voicebot scale and keeping infrastructure economical and vendor-independent. I am researching a Polish-operated dedicated GPU capacity business, starting with customer requirements before hardware investment. Could your ML infrastructure owner spare 20 minutes to discuss which inference workloads, if any, need isolated Polish capacity, acceptable latency and a viable commitment size? I am not offering installed hardware or guaranteed certifications. A clear “our existing setup meets this need” would also be valuable.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Konwersacyjna AI",
+        "role": "Poproś o CTO / właściciela infrastruktury ML. PFR wskazał Michała Brzezickiego jako CTO w lutym 2026; aktualną funkcję trzeba potwierdzić.",
+        "fit": "Zastosowania LLM w analizie mediów i botach; wywiad PFR opisuje dużą skalę rozmów voicebotów.",
+        "hypothesis": "Izolowana inferencja w Polsce dla klienta, którego wymagania wykraczają poza obecne wdrożenie.",
+        "unknown": "CTO opisuje już ekonomiczną infrastrukturę niezależną od dostawcy; wykorzystanie GPU i dodatkowa potrzeba są niepotwierdzone.",
+        "ask": "20 minut na ustalenie, czy klient potrzebuje polskiej izolacji lub gwarancji opóźnień ponad obecne środowisko i za jaką opłacalną cenę.",
+        "subject": "20 minut o polskiej infrastrukturze dla obciążeń SentiOne",
+        "message": "Dzień dobry, przeczytałem rozmowę PFR z Michałem Brzezickim o skali voicebotów oraz ekonomicznej infrastrukturze niezależnej od jednego dostawcy. Badam możliwość stworzenia usługi dedykowanych GPU z polskim operatorem; przed zakupem sprzętu zbieram wymagania klientów. Czy osoba odpowiedzialna za infrastrukturę ML znalazłaby 20 minut na rozmowę o ewentualnych potrzebach izolowanej mocy w Polsce, opóźnieniach i sensownym okresie rezerwacji? Nie oferuję jeszcze zainstalowanego sprzętu ani gwarantowanych certyfikacji. Informacja, że obecna infrastruktura w pełni wystarcza, również będzie cenna.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c03",
+      "group": "customer",
+      "name": "Billennium S.A.",
+      "city": "Warszawa",
+      "contact_url": "mailto:info@billennium.com",
+      "contact_label": "info@billennium.com",
+      "sources": [
+        {
+          "url": "https://billennium.com/contact/",
+          "title": "Official contact and services / Kontakt i usługi"
+        },
+        {
+          "url": "https://baszta.billennium.com/",
+          "title": "Baszta-1 model / Model Baszta-1"
+        }
+      ],
+      "en": {
+        "category": "AI integrator / deployment channel",
+        "role": "Role-based target: AI Governance Lab/Baszta deployment owner, Data & AI lead and cloud/FinOps architect.",
+        "fit": "Publishes Polish Baszta-1 safety classifier and lists AI Governance, AI Procurement and Data & AI services.",
+        "hypothesis": "Infrastructure sourcing for broader customer-controlled Polish LLM deployments; Baszta could be a safety component.",
+        "unknown": "Baszta alone is a small 124M model and may run economically on CPU; existing cloud arrangements or internal delivery may suffice.",
+        "ask": "One anonymized funded deployment where location, operator access or timing changed supplier choice; exact workload and paid benchmark owner.",
+        "subject": "Billennium: testing a Polish inference deployment gap",
+        "message": "Hello Billennium team, your Baszta-1 release gives a useful starting point for a discussion about deploying Polish AI safely. I am validating whether a capacity-sourcing and deployment partnership could help integrators with specific Poland-based workloads. Could we arrange 20 minutes with your AI Governance or Data & AI lead? I would like to understand one anonymized project where hosting location, access controls or delivery timing affected procurement. This is discovery, not an offer of available GPUs. What evidence would justify a paid benchmark?\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Integrator AI / kanał wdrożeń",
+        "role": "Cel według roli: właściciel wdrożeń AI Governance Lab/Baszta, lider Data & AI i architekt cloud/FinOps.",
+        "fit": "Publikuje polski klasyfikator bezpieczeństwa Baszta-1 i oferuje AI Governance, AI Procurement oraz Data & AI.",
+        "hypothesis": "Dobór infrastruktury dla szerszych wdrożeń LLM kontrolowanych przez klienta w Polsce; Baszta jako element bezpieczeństwa.",
+        "unknown": "Sama Baszta ma 124 mln parametrów i może działać tanio na CPU; obecna chmura lub własny zespół mogą wystarczać.",
+        "ask": "Anonimowy finansowany projekt, w którym lokalizacja, dostęp operatora lub termin zmieniły wybór dostawcy; obciążenie i decydent płatnego testu.",
+        "subject": "Billennium: weryfikacja potrzeb wdrożeń AI w Polsce",
+        "message": "Dzień dobry, publikacja Baszty-1 jest dobrym punktem wyjścia do rozmowy o bezpiecznym wdrażaniu polskiej AI. Sprawdzam, czy partner zajmujący się doborem mocy obliczeniowej i organizacją wdrożeń mógłby pomóc integratorom przy konkretnych projektach realizowanych w Polsce. Czy możemy umówić 20 minut z osobą odpowiedzialną za AI Governance lub Data & AI? Interesuje mnie anonimowy przykład projektu, w którym lokalizacja, kontrola dostępu lub termin wpłynęły na wybór dostawcy. To badanie potrzeb, a nie oferta dostępnych GPU. Co uzasadniałoby płatny benchmark?\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c04",
+      "group": "customer",
+      "name": "Transition Technologies MS S.A. (TTMS)",
+      "city": "Warszawa",
+      "contact_url": "https://ttms.com/contact/",
+      "contact_label": "Official contact form / Oficjalny formularz",
+      "sources": [
+        {
+          "url": "https://ttms.com/contact/",
+          "title": "Official contact / Oficjalny kontakt"
+        },
+        {
+          "url": "https://ttms.com/ai4legal/",
+          "title": "AI4Legal architecture / Architektura AI4Legal"
+        },
+        {
+          "url": "https://ttms.com/wp-content/uploads/TTMS-Company-information-presskit-.pdf",
+          "title": "Legal entity / Podmiot prawny"
+        }
+      ],
+      "en": {
+        "category": "Legal AI / integrator",
+        "role": "Role-based target: AI4Legal product/delivery owner, Azure/cloud architect and business-development lead.",
+        "fit": "AI4Legal describes contract/document analysis and transcripts using Azure OpenAI and Llama.",
+        "hypothesis": "A paid comparison of controlled Polish open-weight inference for a customer with a specific unmet requirement.",
+        "unknown": "Azure may fully satisfy the requirements; legal documents do not automatically require local GPU ownership. No buying need verified.",
+        "ask": "Which signed customer requirement rules out existing options? Request model, context, concurrency, access boundary, failed quote and budget.",
+        "subject": "AI4Legal: a 20-minute infrastructure qualification discussion",
+        "message": "Hello TTMS team, AI4Legal's use of Azure OpenAI and Llama suggests an interesting deployment choice to investigate. I am testing a business that sources and coordinates customer-specific AI infrastructure in Poland and the EU. Could your AI4Legal owner and cloud architect spare 20 minutes? I would like to discuss an anonymized case where a customer's residency, operator-access or performance requirements were not met by existing options. I am not proposing a migration in advance; the goal is to establish whether a paid comparison would solve a real problem.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "AI dla prawa / integrator",
+        "role": "Cel według roli: właściciel produktu/wdrożeń AI4Legal, architekt Azure/chmury i rozwój biznesu.",
+        "fit": "AI4Legal opisuje analizę umów, dokumentów i transkrypcji z Azure OpenAI oraz Llama.",
+        "hypothesis": "Płatne porównanie kontrolowanej inferencji otwartych modeli w Polsce dla klienta z konkretnym niespełnionym wymaganiem.",
+        "unknown": "Azure może spełniać wszystkie warunki; dokumenty prawne nie wymagają automatycznie własności lokalnych GPU. Potrzeba zakupu niepotwierdzona.",
+        "ask": "Który podpisany wymóg klienta wyklucza obecne opcje? Model, kontekst, współbieżność, dostęp, odrzucona oferta i budżet.",
+        "subject": "AI4Legal: 20 minut o wymaganiach infrastruktury",
+        "message": "Dzień dobry, wykorzystanie Azure OpenAI i Llama w AI4Legal wskazuje na interesujący wybór sposobu wdrożenia. Sprawdzam pomysł na firmę dobierającą i koordynującą infrastrukturę AI w Polsce oraz UE pod konkretne wymagania klientów. Czy osoba odpowiedzialna za AI4Legal i architekt chmury mogliby poświęcić 20 minut? Chciałbym omówić anonimowy przypadek, w którym dostępne rozwiązania nie spełniły wymagań dotyczących lokalizacji danych, dostępu operatora lub wydajności. Nie zakładam potrzeby migracji. Celem jest sprawdzenie, czy płatne porównanie rozwiązałoby rzeczywisty problem klienta.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c05",
+      "group": "customer",
+      "name": "Future Processing S.A.",
+      "city": "Gliwice",
+      "contact_url": "mailto:sales@future-processing.com",
+      "contact_label": "sales@future-processing.com",
+      "sources": [
+        {
+          "url": "https://www.future-processing.com/pl/",
+          "title": "Services and business contact / Usługi i kontakt biznesowy"
+        },
+        {
+          "url": "https://www.future-processing.com/privacy-policy/",
+          "title": "Legal entity / Podmiot prawny"
+        }
+      ],
+      "en": {
+        "category": "AI/cloud advisory channel",
+        "role": "Dawid Przespolewski, Head of Business Development, published on the official site; request AI/cloud or FinDataOps lead too.",
+        "fit": "AI Readiness Assessment and FinDataOps Discovery provide a concrete client-assessment channel.",
+        "hypothesis": "Joint paid infrastructure comparison where a client has a genuine cost or operating-control constraint; infrastructure role remains distinct.",
+        "unknown": "May already source infrastructure effectively or require established hyperscalers; overlap with its advisory offering must add value.",
+        "ask": "One funded discovery where infrastructure cost/control blocked implementation, plus buyer budget, current stack and subcontracting route.",
+        "subject": "Future Processing: validating a joint AI infrastructure assessment",
+        "message": "Hello Dawid, Future Processing's AI Readiness and FinDataOps work looks relevant to a question I am researching: when does a client genuinely need an alternative Polish or EU inference deployment? I am exploring a sourcing and delivery-partner model, not selling an existing GPU fleet. Could we spend 20 minutes with an AI or cloud lead reviewing one anonymized case where cost, operational control or procurement delayed implementation? I would like to establish whether a joint, paid infrastructure comparison could complement your existing advisory work.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Kanał doradztwa AI/chmury",
+        "role": "Dawid Przespolewski, Head of Business Development, wymieniony na oficjalnej stronie; dołącz lidera AI/chmury lub FinDataOps.",
+        "fit": "AI Readiness Assessment i FinDataOps Discovery tworzą konkretny kanał oceny projektów klientów.",
+        "hypothesis": "Wspólne płatne porównanie infrastruktury przy realnym ograniczeniu kosztów lub kontroli; rola infrastrukturalna pozostaje odrębna.",
+        "unknown": "Firma może już skutecznie dobierać zasoby lub wymagać hyperscalerów; współpraca musi wnosić wartość ponad obecne doradztwo.",
+        "ask": "Finansowany projekt discovery zablokowany kosztem/kontrolą infrastruktury; budżet, obecne środowisko i ścieżka podwykonawstwa.",
+        "subject": "Future Processing: wspólna ocena infrastruktury AI",
+        "message": "Dzień dobry Panie Dawidzie, działania Future Processing w obszarach AI Readiness i FinDataOps są bliskie pytaniu, które badam: kiedy klient rzeczywiście potrzebuje alternatywnego wdrożenia inferencji w Polsce lub UE? Sprawdzam model doboru dostawców i partnerów wdrożeniowych, a nie sprzedaję istniejącej floty GPU. Czy możemy poświęcić 20 minut, razem z liderem AI lub chmury, na anonimowy przykład projektu opóźnionego przez koszty, kontrolę operacyjną albo zakupy? Chciałbym ustalić, czy wspólne, płatne porównanie infrastruktury mogłoby uzupełnić Państwa dotychczasowe doradztwo.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c06",
+      "group": "customer",
+      "name": "Surveily sp. z o.o.",
+      "city": "Wrocław",
+      "contact_url": "https://surveily.com/contact",
+      "contact_label": "Official contact form / Oficjalny formularz",
+      "sources": [
+        {
+          "url": "https://surveily.com/about",
+          "title": "Product, on-premise approach and leadership / Produkt i kierownictwo"
+        },
+        {
+          "url": "https://surveily.com/contact",
+          "title": "Official contact / Oficjalny kontakt"
+        }
+      ],
+      "en": {
+        "category": "Industrial computer vision / hybrid channel",
+        "role": "Wojciech Turowicz, CTO, or Wojciech Tubek, CEO/partnerships, identified on the official leadership page.",
+        "fit": "Industrial-safety computer vision with a stated 100% on-premise deployment approach.",
+        "hypothesis": "Training/validation capacity or supply and support of customer-site GPU nodes, rather than default centralized production-video hosting.",
+        "unknown": "On-premise policy may eliminate the datacenter use case; OEM relationships, GPU use, data permissions and procurement volumes unknown.",
+        "ask": "20 minutes on external training needs or node supply/support, exact hardware, permissible data movement and current OEM coverage.",
+        "subject": "Surveily: GPU training or on-premise node partnership discovery",
+        "message": "Hello Surveily team, your industrial computer-vision product and fully on-premise deployment approach suggest a specific infrastructure question. I am researching a Polish-operated dedicated GPU capacity business and would value 20 minutes with Wojciech Turowicz or your partnerships lead. Could external training/validation capacity or a managed on-premise node partner address any unmet need? I am not assuming production video should move off-site. Before investing, I want to understand specifications, service responsibilities and procurement requirements. No installed capacity or certifications are promised at this stage.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Wizja przemysłowa / kanał hybrydowy",
+        "role": "Wojciech Turowicz, CTO, lub Wojciech Tubek, CEO/partnerstwa, wskazani na oficjalnej stronie kierownictwa.",
+        "fit": "Wizja komputerowa dla bezpieczeństwa przemysłowego z deklarowanym modelem 100% on-premise.",
+        "hypothesis": "Moc treningowa/walidacyjna lub dostawa i obsługa węzłów GPU u klienta, zamiast domyślnego centralnego hostingu obrazu produkcyjnego.",
+        "unknown": "On-premise może wykluczyć centrum danych; nieznane relacje OEM, GPU, zgody na dane i wolumen zakupów.",
+        "ask": "20 minut o treningu zewnętrznym albo dostawie/wsparciu węzłów, sprzęcie, dozwolonym przepływie danych i obecnej obsłudze OEM.",
+        "subject": "Surveily: rozmowa o treningu GPU i partnerstwie on-premise",
+        "message": "Dzień dobry, Wasze rozwiązanie wizyjne dla przemysłu i model w pełni on-premise skłoniły mnie do konkretnego pytania o infrastrukturę. Badam usługę dedykowanych GPU z polskim operatorem. Czy Wojciech Turowicz lub osoba odpowiedzialna za partnerstwa znalazłaby 20 minut na rozmowę o ewentualnych potrzebach treningu, walidacji lub obsługi węzłów u klientów? Nie zakładam przenoszenia nagrań produkcyjnych poza zakład. Przed inwestycją chcę poznać specyfikacje, odpowiedzialność serwisową i wymagania zakupowe. Nie obiecuję jeszcze gotowej mocy ani certyfikacji.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c07",
+      "group": "customer",
+      "name": "Synerise S.A.",
+      "city": "Kraków",
+      "contact_url": "https://synerise.com/contact",
+      "contact_label": "Official contact page / Oficjalna strona kontaktowa",
+      "sources": [
+        {
+          "url": "https://synerise.com/",
+          "title": "BaseModel and Cleora information / BaseModel i Cleora"
+        },
+        {
+          "url": "https://synerise.com/contact",
+          "title": "Official contact / Oficjalny kontakt"
+        }
+      ],
+      "en": {
+        "category": "Behavioral AI / self-hosted platform",
+        "role": "Role-based target: partnerships lead with CTO / ML infrastructure owner; no current named owner verified.",
+        "fit": "BaseModel materials describe GPU training/scoring and self-hosted deployments; Cleora itself does not require a GPU.",
+        "hypothesis": "Isolated evaluation or customer-specific Polish deployment of GPU-dependent BaseModel workloads.",
+        "unknown": "Existing clouds, customer-owned environments or optimized architecture may remove the gap; no tender or shortage verified.",
+        "ask": "One customer segment where an outside Polish operator helps; exact node, control boundary, model and minimum viable commitment.",
+        "subject": "Exploring a Polish-operated capacity partner for self-hosted BaseModel",
+        "message": "Hello Synerise team, your BaseModel material describes GPU-based training and scoring alongside self-hosted deployment. I am researching a Polish-operated dedicated capacity business and would value a 20-minute discussion with your infrastructure or partnerships lead. Could an isolated Polish deployment partner help any customer segment, or do existing cloud and customer-owned environments already cover it? I would like to understand node specifications, operating-control boundaries and minimum viable commitments before investing. This is discovery: I am not promising installed hardware, immediate availability or certifications.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "AI behawioralna / platforma self-hosted",
+        "role": "Cel według roli: partnerstwa wraz z CTO / właścicielem infrastruktury ML; brak zweryfikowanej osoby.",
+        "fit": "Materiały BaseModel opisują trening/scoring GPU i wdrożenia self-hosted; sama Cleora nie wymaga GPU.",
+        "hypothesis": "Izolowana ewaluacja lub polskie wdrożenie klienta dla obciążeń BaseModel rzeczywiście wymagających GPU.",
+        "unknown": "Obecne chmury, środowiska klientów lub zoptymalizowana architektura mogą usuwać lukę; brak potwierdzonego przetargu/niedoboru.",
+        "ask": "Segment klientów, któremu pomaga polski operator zewnętrzny; węzeł, granice kontroli, model i minimalna rezerwacja.",
+        "subject": "Polski partner infrastrukturalny dla wdrożeń BaseModel — rozmowa",
+        "message": "Dzień dobry, materiały BaseModel opisują trening i scoring na GPU oraz wdrożenia we własnym środowisku klienta. Badam możliwość uruchomienia dedykowanej infrastruktury z polskim operatorem. Chętnie porozmawiam przez 20 minut z osobą odpowiedzialną za infrastrukturę lub partnerstwa: czy taki partner pomógłby określonej grupie klientów, czy obecne rozwiązania w pełni wystarczają? Przed inwestycją chcę poznać specyfikacje węzłów, granice odpowiedzialności operacyjnej i sensowny okres rezerwacji. To rozmowa rozpoznawcza; nie obiecuję zainstalowanego sprzętu, natychmiastowej dostępności ani certyfikacji.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c08",
+      "group": "customer",
+      "name": "Asseco Poland S.A.",
+      "city": "Rzeszów / Szczecin office",
+      "contact_url": "https://pl.asseco.com/en/contact",
+      "contact_label": "Official business contact / Oficjalny kontakt biznesowy",
+      "sources": [
+        {
+          "url": "https://pl.asseco.com/en/contact",
+          "title": "Entity, offices and sales routes / Podmiot, biura i sprzedaż"
+        },
+        {
+          "url": "https://inwestor.asseco.com/files/investor/uploads/Asseco_Group_Investor_presentation_May_2025.pdf",
+          "title": "Asseco AI Assistant / Prezentacja AI Assistant"
+        }
+      ],
+      "en": {
+        "category": "Enterprise/public-sector integrator",
+        "role": "Role-based target: Asseco Poland AI platform owner, sector delivery architect and public-sector subcontracting/bid lead.",
+        "fit": "Official investor material attributes AI Assistant and DORA.ai to Asseco Poland; relevant enterprise and public-sector delivery channel.",
+        "hypothesis": "Narrow subcontracted infrastructure sourcing/benchmarking for an unusual Polish operational boundary or delivery window.",
+        "unknown": "Approved-vendor process, internal group supply and reference requirements may exclude a startup. Szczecin office is not evidence of local GPU demand.",
+        "ask": "One funded project with an unmet supplier condition; qualification, security, current lead time and permitted subcontracting arrangement.",
+        "subject": "Asseco Poland: qualifying a narrow AI infrastructure partnership",
+        "message": "Hello Asseco Poland team, your published AI Assistant work prompted this enquiry. I am researching whether a specialist sourcing partner could help with a narrowly defined Polish or EU AI deployment where existing suppliers do not meet a customer's requirements. Could you route me to the AI platform owner or relevant delivery architect for a 20-minute discussion? I would like to understand one anonymized procurement constraint and your subcontractor qualification process. I am not claiming ready capacity; any proposal would follow verified requirements and written supplier offers.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Integrator korporacyjny/publiczny",
+        "role": "Cel według roli: właściciel platformy AI Asseco Poland, architekt sektorowy i lider przetargów/podwykonawstwa publicznego.",
+        "fit": "Materiały inwestorskie przypisują AI Assistant i DORA.ai Asseco Poland; istotny kanał wdrożeń korporacyjnych i publicznych.",
+        "hypothesis": "Wąski zakres doboru/testów infrastruktury przy nietypowej polskiej granicy operacyjnej lub terminie.",
+        "unknown": "Lista dostawców, zasoby grupy i referencje mogą wykluczyć startup. Biuro w Szczecinie nie dowodzi lokalnego popytu GPU.",
+        "ask": "Finansowany projekt z niespełnionym warunkiem dostawcy; kwalifikacja, bezpieczeństwo, termin i dopuszczalne podwykonawstwo.",
+        "subject": "Asseco Poland: kwalifikacja partnerstwa przy infrastrukturze AI",
+        "message": "Dzień dobry, Państwa publikacje dotyczące Asseco AI Assistant skłoniły mnie do kontaktu. Badam, czy wyspecjalizowany partner dobierający dostawców mógłby pomóc przy konkretnym wdrożeniu AI w Polsce lub UE, gdy obecni dostawcy nie spełniają wymagań klienta. Proszę o przekazanie zapytania osobie odpowiedzialnej za platformę AI lub architektowi wdrożeń. Czy możliwa jest 20-minutowa rozmowa o anonimowym ograniczeniu zakupowym i zasadach kwalifikacji podwykonawców? Nie deklaruję gotowej mocy obliczeniowej. Ewentualna propozycja powstałaby dopiero po potwierdzeniu wymagań i uzyskaniu pisemnych ofert dostawców.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c09",
+      "group": "customer",
+      "name": "Comarch S.A.",
+      "city": "Kraków",
+      "contact_url": "https://www.comarch.pl/kontakt/kontakt-z-konsultantem/",
+      "contact_label": "Official business enquiry / Oficjalne zapytanie biznesowe",
+      "sources": [
+        {
+          "url": "https://www.comarch.pl/kontakt/kontakt-z-konsultantem/",
+          "title": "Contact / Kontakt"
+        },
+        {
+          "url": "https://www.comarch.ai/",
+          "title": "AI portfolio / Portfolio AI"
+        },
+        {
+          "url": "https://www.comarch.pl/handel-i-uslugi/ict/data-center/osrodki-data-center/",
+          "title": "Own data centers / Własne centra danych"
+        }
+      ],
+      "en": {
+        "category": "Hybrid: competitor, channel or conditional buyer",
+        "role": "Role-based target: ICT/datacenter business development or capacity planning with AI infrastructure architect.",
+        "fit": "Operates Polish datacenters and offers AI-enabled ERP, OCR and business automation.",
+        "hypothesis": "Only a qualified overflow, specialist-GPU or referral arrangement; Comarch could instead supply infrastructure to the startup.",
+        "unknown": "Its own facilities and purchasing may eliminate external need; no shortage, outsourcing intent or resale programme confirmed.",
+        "ask": "Any documented customer configuration/timing gap, external-supplier rules, volume and price; otherwise qualify referral/supply cooperation.",
+        "subject": "Comarch ICT: qualifying overflow or referral opportunities",
+        "message": "Hello Comarch team, your existing Polish data centers and AI-enabled ERP products make this a partnership question rather than a standard hosting pitch. I am researching whether specific customer projects ever require external GPU sourcing, a specialized configuration or a referral partner. Could your ICT capacity or AI infrastructure lead spare 20 minutes to discuss an anonymized example and the relevant qualification process? I am not assuming a capacity gap or offering owned infrastructure. If your internal supply already covers these needs, that is valuable information for this validation.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Hybryda: konkurent, kanał lub warunkowy klient",
+        "role": "Cel według roli: rozwój biznesu/planowanie mocy ICT i centrów danych wraz z architektem infrastruktury AI.",
+        "fit": "Prowadzi polskie centra danych i oferuje ERP z AI, OCR oraz automatyzację biznesową.",
+        "hypothesis": "Wyłącznie zakwalifikowana współpraca przy nadmiarowym popycie, specjalistycznym GPU lub poleceniach; może raczej dostarczać zasoby startupowi.",
+        "unknown": "Własne obiekty i zakupy mogą eliminować potrzebę zewnętrzną; brak potwierdzonego niedoboru, outsourcingu czy programu odsprzedaży.",
+        "ask": "Udokumentowana luka konfiguracji/terminu, zasady dostawców, wolumen i cena; w przeciwnym razie partnerstwo poleceń/dostaw.",
+        "subject": "Comarch ICT: weryfikacja możliwości współpracy przy GPU",
+        "message": "Dzień dobry, ze względu na Państwa polskie centra danych i produkty ERP wykorzystujące AI kieruję zapytanie o współpracę, a nie standardową ofertę hostingu. Sprawdzam, czy konkretne projekty klientów wymagają czasem zewnętrznego doboru GPU, specjalnej konfiguracji lub partnera polecającego. Czy osoba odpowiedzialna za moce ICT lub infrastrukturę AI mogłaby poświęcić 20 minut na anonimowy przykład i zasady kwalifikacji partnerów? Nie zakładam niedoboru mocy ani nie oferuję własnej infrastruktury. Jeżeli zasoby wewnętrzne pokrywają wszystkie potrzeby, będzie to cenna informacja dla prowadzonej weryfikacji.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "c10",
+      "group": "customer",
+      "name": "Infermedica",
+      "city": "Wrocław",
+      "contact_url": "mailto:sales@infermedica.com",
+      "contact_label": "sales@infermedica.com",
+      "sources": [
+        {
+          "url": "https://infermedica.com/contact",
+          "title": "Official contact / Oficjalny kontakt"
+        },
+        {
+          "url": "https://infermedica.com/technology",
+          "title": "Technology / Technologia"
+        },
+        {
+          "url": "https://infermedica.com/platform",
+          "title": "Existing platform hosting / Obecny hosting platformy"
+        }
+      ],
+      "en": {
+        "category": "Clinical AI / tightly qualified non-production",
+        "role": "Role-based target: infrastructure lead / CTO; no current named owner verified.",
+        "fit": "Combines language models with clinical Bayesian reasoning and describes existing Google Cloud hosting.",
+        "hypothesis": "Only unmet non-production language-model evaluation on approved synthetic/non-sensitive data, through formal qualification.",
+        "unknown": "Bayesian reasoning is not automatically GPU-based; cloud commitments, clinical regulation and supplier qualification make production migration unsuitable initially.",
+        "ask": "Is there a funded isolated non-production need beyond Google Cloud? Identify actual GPU workload and supplier requirements without patient-data migration.",
+        "subject": "Research interview: non-production AI capacity requirements",
+        "message": "Hello Infermedica team, your technology combines language models with clinical reasoning. I am researching a Polish-operated dedicated GPU capacity business and would appreciate a 20-minute requirements interview with your infrastructure lead. Is there any unmet need for isolated, non-production language-model evaluation, using approved synthetic or non-sensitive data, or does your current setup fully cover it? I am trying to understand supplier qualification and capacity economics before investing. I have no installed capacity or guaranteed certifications and am not proposing migration of clinical production systems.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "AI kliniczna / ściśle kwalifikowana poza produkcją",
+        "role": "Cel według roli: lider infrastruktury / CTO; brak zweryfikowanej aktualnej osoby.",
+        "fit": "Łączy modele językowe z klinicznym wnioskowaniem bayesowskim i opisuje hosting Google Cloud.",
+        "hypothesis": "Tylko niespełniona potrzeba ewaluacji modeli poza produkcją na zatwierdzonych danych syntetycznych/niewrażliwych, po kwalifikacji dostawcy.",
+        "unknown": "Wnioskowanie bayesowskie nie oznacza GPU; umowy chmurowe, regulacje kliniczne i kwalifikacja utrudniają początkową migrację produkcji.",
+        "ask": "Czy istnieje finansowana izolowana potrzeba poza produkcją i Google Cloud? Faktyczne GPU i warunki dostawcy bez migracji danych pacjentów.",
+        "subject": "Rozmowa badawcza o wymaganiach infrastruktury AI poza produkcją",
+        "message": "Dzień dobry, Wasza technologia łączy modele językowe z wnioskowaniem klinicznym. Badam możliwość stworzenia usługi dedykowanych GPU z polskim operatorem i proszę o 20-minutową rozmowę z osobą odpowiedzialną za infrastrukturę. Czy istnieją niezaspokojone potrzeby izolowanej ewaluacji modeli językowych poza produkcją, na zatwierdzonych danych syntetycznych lub niewrażliwych, czy obecne środowisko wystarcza? Przed inwestycją chcę zrozumieć kwalifikację dostawców i ekonomikę takiej usługi. Nie mam jeszcze gotowej infrastruktury ani gwarantowanych certyfikacji i nie proponuję migracji systemów klinicznych.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p01",
+      "group": "partner",
+      "name": "Technopark Pomerania / Pomerania Cloud (SPNT Sp. z o.o.)",
+      "city": "Szczecin",
+      "contact_url": "mailto:zkrupa@spnt.pl",
+      "contact_label": "zkrupa@spnt.pl",
+      "sources": [
+        {
+          "url": "https://technopark-pomerania.pl/kontakt/nasz-zespol",
+          "title": "Official team/contact / Zespół i kontakt"
+        },
+        {
+          "url": "https://technopark-pomerania.pl/kontakt/nasz-adres",
+          "title": "Legal entity / Podmiot"
+        },
+        {
+          "url": "https://pomeraniacloud.pl/cart/kolokacja/",
+          "title": "Colocation offer / Kolokacja"
+        }
+      ],
+      "en": {
+        "category": "NW Poland colocation / feasibility",
+        "role": "Zbigniew Krupa, Menedżer Działu Infrastruktury IT, published on the official team page.",
+        "fit": "Szczecin colocation offers 10U/47U with separate PDU × 1.8 electricity billing under de minimis aid.",
+        "hypothesis": "First-site feasibility and operating support for a small anchor-backed GPU node.",
+        "unknown": "Published rack rent proves neither GPU cooling/power acceptance nor eligibility, allocation or all-in energy price.",
+        "ask": "Assess a two-/four-GPU server before purchase: peak/reserved kW, cooling, energy formula, remote hands and startup aid eligibility.",
+        "subject": "Szczecin GPU pilot — power and colocation feasibility",
+        "message": "Hello Mr Krupa, I am exploring a private-AI startup based in northwest Poland and would like to assess Technopark Pomerania as an initial operating partner. Could your team confirm whether a small two- or four-GPU server can be colocated, with its peak power and cooling requirements assessed before purchase? Please outline electricity billing, reserved-power limits, remote hands and de minimis eligibility. I would welcome a short feasibility call; this is not a capacity reservation.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Kolokacja w regionie / wykonalność",
+        "role": "Zbigniew Krupa, Menedżer Działu Infrastruktury IT, wskazany na oficjalnej stronie zespołu.",
+        "fit": "Kolokacja w Szczecinie 10U/47U z osobną energią PDU × 1,8 w ramach pomocy de minimis.",
+        "hypothesis": "Ocena pierwszej lokalizacji i obsługa małego węzła GPU pod zakontraktowanego klienta.",
+        "unknown": "Cena szafy nie potwierdza przyjęcia GPU, chłodzenia/mocy, kwalifikacji, przydziału ani pełnej ceny energii.",
+        "ask": "Przed zakupem oceń serwer 2/4 GPU: moc szczytową/rezerwowaną, chłodzenie, energię, Remote Hands i pomoc dla startupu.",
+        "subject": "Pilotaż GPU w Szczecinie — warunki kolokacji i zasilania",
+        "message": "Dzień dobry Panie Zbigniewie, analizuję uruchomienie startupu prywatnych usług AI w północno-zachodniej Polsce i możliwość współpracy z Technoparkiem Pomerania. Czy Państwa zespół może ocenić kolokację małego serwera z dwoma lub czterema GPU, uwzględniając moc szczytową i chłodzenie jeszcze przed zakupem? Proszę o zasady rozliczania energii, limity mocy, zakres zdalnej obsługi oraz warunki pomocy de minimis. Chętnie umówię krótką rozmowę techniczną; zapytanie nie jest rezerwacją zasobów.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p02",
+      "group": "partner",
+      "name": "Servodata Elektronik Sp. z o.o.",
+      "city": "Lublin",
+      "contact_url": "mailto:servodata@servodata.com.pl",
+      "contact_label": "servodata@servodata.com.pl",
+      "sources": [
+        {
+          "url": "https://www.servodata.com.pl/kontakt/",
+          "title": "Official contact / Oficjalny kontakt"
+        },
+        {
+          "url": "https://www.servodata.com.pl/",
+          "title": "GPU/server portfolio / Oferta GPU i serwerów"
+        }
+      ],
+      "en": {
+        "category": "Complete GPU systems supplier",
+        "role": "Role-based target: GPU/server solutions sales plus systems engineer.",
+        "fit": "Official catalogue lists professional NVIDIA GPUs, DGX and specialist AI servers; describes Solution Provider status.",
+        "hypothesis": "Two competing complete rack-ready configurations, selected by customer workload rather than bare-card price.",
+        "unknown": "No stock, installed-system price, allocation or exact certification confirmed; complete quote and benchmark needed.",
+        "ask": "20-minute sizing discussion followed by two-/four-GPU BOM, PCIe/cooling, burn-in, delivery, warranty and replacement lead time.",
+        "subject": "Complete two-/four-GPU AI server — sizing and quote",
+        "message": "Hello Servodata team, I am evaluating equipment for a private-AI startup in Poland. Your professional NVIDIA and AI-server portfolio makes you a relevant supplier to consult. Could you propose two complete rack-ready configurations, with two and four GPUs, for a benchmarked inference workload? Please include CPU, RAM, storage, networking, redundant power, cooling requirements, burn-in, delivery and warranty, rather than GPU-only prices. I would welcome a sizing call before specifying models; this enquiry is not an order.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Dostawca kompletnych systemów GPU",
+        "role": "Cel według roli: sprzedaż rozwiązań GPU/serwerowych i inżynier systemowy.",
+        "fit": "Katalog obejmuje profesjonalne GPU NVIDIA, DGX i serwery AI; opisuje status Solution Provider.",
+        "hypothesis": "Dwie kompletne konfiguracje rack dobrane do obciążenia klienta, zamiast ceny samej karty.",
+        "unknown": "Nie potwierdzono stanu, ceny instalacji, przydziału ani konkretnej certyfikacji; potrzebna oferta i test.",
+        "ask": "20 minut doboru, następnie BOM 2/4 GPU, PCIe/chłodzenie, testy, dostawa, gwarancja i termin wymiany.",
+        "subject": "Kompletny serwer AI z dwoma lub czterema GPU — dobór i wycena",
+        "message": "Dzień dobry, analizuję zakup sprzętu dla startupu prywatnych usług AI w Polsce. Państwa oferta profesjonalnych rozwiązań NVIDIA i serwerów AI jest dla mnie interesująca. Proszę o propozycję dwóch kompletnych konfiguracji do szafy rack, z dwoma i czterema GPU, dla obciążenia inferencyjnego poddanego testom. Wycena powinna obejmować CPU, RAM, dyski, sieć, redundantne zasilanie, wymagania chłodzenia, testy, dostawę i gwarancję. Chętnie omówię dobór przed wyborem modeli; zapytanie nie stanowi zamówienia.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p03",
+      "group": "partner",
+      "name": "COMSET S.A. / SuperStorage",
+      "city": "Kraków",
+      "contact_url": "mailto:sales@superstorage.pl",
+      "contact_label": "sales@superstorage.pl",
+      "sources": [
+        {
+          "url": "https://www.superstorage.pl/nas-i-5.html?language=en",
+          "title": "Official company and sales contact / Firma i kontakt"
+        }
+      ],
+      "en": {
+        "category": "Server integration / competing quote",
+        "role": "Role-based target: server-solutions or channel sales with hardware integration engineer.",
+        "fit": "Supplies complete server/storage systems to integrators and businesses, with vendor partnerships.",
+        "hypothesis": "Independent comparison for integrated GPU hardware and service at a Polish third-party facility.",
+        "unknown": "Actual GPU platform, thermal/PCIe suitability, spare stock and service coverage must be confirmed.",
+        "ask": "Quote complete two-/four-GPU system, topology and thermal validation, burn-in, installed cost, spares and facility service terms.",
+        "subject": "GPU-server integration and Polish service coverage",
+        "message": "Hello SuperStorage/COMSET team, I am investigating a small Polish AI infrastructure venture and comparing complete server suppliers. Your experience supplying integrated server and storage systems appears relevant. Could you propose a two-/four-GPU platform with documented PCIe topology, thermal validation and an itemized installed-system price? Please explain burn-in, spare-part availability and support at a third-party Polish data center. I am particularly interested in reliable integration rather than component discounts; this is an exploratory quotation request without purchasing commitment.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Integracja serwerów / oferta porównawcza",
+        "role": "Cel według roli: sprzedaż rozwiązań serwerowych/kanału i inżynier integracji sprzętu.",
+        "fit": "Dostarcza kompletne systemy serwerowe i pamięci masowe integratorom i przedsiębiorstwom, współpracując z producentami.",
+        "hypothesis": "Niezależne porównanie kompletnego sprzętu GPU i serwisu w polskim obiekcie zewnętrznym.",
+        "unknown": "Platforma GPU, chłodzenie/PCIe, części i zakres serwisu wymagają potwierdzenia.",
+        "ask": "Pełna oferta 2/4 GPU: topologia, testy termiczne/obciążeniowe, instalacja, części i warunki obsługi w obiekcie.",
+        "subject": "Integracja serwera GPU i obsługa serwisowa w Polsce",
+        "message": "Dzień dobry, analizuję małe przedsięwzięcie infrastruktury AI w Polsce i porównuję dostawców kompletnych serwerów. Państwa doświadczenie w dostarczaniu systemów serwerowych i pamięci masowych jest istotne dla tego projektu. Proszę o platformę z dwoma lub czterema GPU, dokumentacją topologii PCIe, weryfikacją chłodzenia i szczegółową wyceną całości. Interesują mnie testy obciążeniowe, dostępność części oraz serwis w zewnętrznym polskim centrum danych. To orientacyjne zapytanie ofertowe, bez zobowiązania zakupowego.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p04",
+      "group": "partner",
+      "name": "Beyond.pl Sp. z o.o.",
+      "city": "Poznań",
+      "contact_url": "mailto:biuro@beyond.pl",
+      "contact_label": "biuro@beyond.pl",
+      "sources": [
+        {
+          "url": "https://www.beyond.pl/kontakt/",
+          "title": "Official contact / Oficjalny kontakt"
+        },
+        {
+          "url": "https://www.beyond.pl/newsy/informacje-prasowe/beyond-pl-uruchamia-suwerenna-fabryke-ai/",
+          "title": "AI Factory and GPUaaS / Fabryka AI i GPUaaS"
+        }
+      ],
+      "en": {
+        "category": "Reserved capacity / operating partner",
+        "role": "Role-based target: GPUaaS/channel sales and solutions architect.",
+        "fit": "Poznań AI Factory offers GPUaaS and managed infrastructure.",
+        "hypothesis": "Rented Polish capacity for initial paid acceptance tests or a matched customer reservation.",
+        "unknown": "No allocation, smallest block, price, resale rights or startup eligibility confirmed.",
+        "ask": "Smallest reserved block, exact GPU, start date, full price/term, managed-service resale and residency/access/subprocessor evidence.",
+        "subject": "Exploring a small Polish AI capacity partnership",
+        "message": "Hello Beyond.pl team, I am evaluating a startup providing private AI services to Polish businesses. Your Poznań AI Factory looks relevant to an initial rented-capacity model. Could your GPUaaS or channel team outline the smallest reserved allocation, indicative pricing, minimum term and permission to resell managed services? I would also value residency, privileged-access and subprocessor documentation. This is an exploratory partnership discussion; no customer volume or purchasing commitment is being represented.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Rezerwacja mocy / operator",
+        "role": "Cel według roli: sprzedaż GPUaaS/kanału i architekt rozwiązań.",
+        "fit": "Fabryka AI w Poznaniu oferuje GPUaaS i infrastrukturę zarządzaną.",
+        "hypothesis": "Wynajęta moc w Polsce na pierwsze płatne odbiory lub dopasowaną rezerwację klienta.",
+        "unknown": "Niepotwierdzony przydział, minimalny blok, cena, odsprzedaż i dostępność dla startupu.",
+        "ask": "Najmniejsza rezerwacja, GPU, data, pełna cena/okres, odsprzedaż usług i dowody lokalizacji/dostępu/podwykonawców.",
+        "subject": "Wstępna rozmowa o partnerstwie przy usługach AI w Polsce",
+        "message": "Dzień dobry, analizuję uruchomienie startupu oferującego prywatne usługi AI polskim firmom. Państwa Fabryka AI w Poznaniu wydaje się odpowiednia do modelu opartego początkowo na wynajmie zasobów. Proszę o kontakt z zespołem GPUaaS lub partnerskim: jaka jest najmniejsza rezerwacja, orientacyjna cena, minimalny okres oraz możliwość odsprzedaży usług zarządzanych? Interesuje mnie także dokumentacja lokalizacji danych, dostępu administratorów i podwykonawców. To rozmowa rozpoznawcza, bez deklaracji zamówienia ani wolumenu klientów.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p05",
+      "group": "partner",
+      "name": "Atman Sp. z o.o.",
+      "city": "Warszawa",
+      "contact_url": "mailto:info@atman.pl",
+      "contact_label": "info@atman.pl",
+      "sources": [
+        {
+          "url": "https://atman.pl/kontakt/",
+          "title": "Official contact and support / Kontakt i wsparcie"
+        },
+        {
+          "url": "https://atman.pl/wp-content/uploads/2026/01/20260116_Dedicated-servers-price-list.pdf",
+          "title": "GPU tariff and published email / Taryfa GPU i email"
+        }
+      ],
+      "en": {
+        "category": "Dedicated rental / colocation comparison",
+        "role": "Role-based target: GPU/dedicated-server sales plus colocation architect.",
+        "fit": "Published Power L40S NN tariff specifies two L40S GPUs; official contact describes 24/7 support and Remote Hands.",
+        "hypothesis": "Compare committed two-GPU rental with ownership in colocation under identical service requirements.",
+        "unknown": "Stock, total inclusions, resale rights and SLA remain unconfirmed. Web form is limited to 250 characters; use published email for this draft.",
+        "ask": "Itemized rental versus owned-node colocation, actual allocation, 12/24/36-month exposure, power/network/support and reseller permission.",
+        "subject": "Two-GPU rental versus colocation — exploratory quote",
+        "message": "Hello Atman sales team, I am assessing a small private-AI business in Poland. Your published Power L40S configuration provides a useful starting point. Could you quote a two-GPU rental and an alternative customer-owned GPU node in colocation, including support, networking, electricity and minimum commitments? Please clarify managed-service resale permission, actual availability and SLA exclusions. I am comparing operating models before investing, so this request is exploratory and does not reserve capacity or commit to a contract.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Wynajem dedykowany / porównanie kolokacji",
+        "role": "Cel według roli: sprzedaż GPU/serwerów dedykowanych i architekt kolokacji.",
+        "fit": "Taryfa Power L40S NN wskazuje dwa L40S; oficjalny kontakt opisuje wsparcie 24/7 i Remote Hands.",
+        "hypothesis": "Porównaj rezerwowany wynajem 2 GPU z własnym sprzętem w kolokacji przy tych samych wymaganiach.",
+        "unknown": "Stan, pełny zakres, odsprzedaż i SLA niepotwierdzone. Formularz ma limit 250 znaków; pełny szkic wyślij na opublikowany email.",
+        "ask": "Szczegółowy wynajem i kolokacja, przydział, zobowiązania 12/24/36 miesięcy, energia/sieć/wsparcie i odsprzedaż.",
+        "subject": "Wynajem dwóch GPU czy kolokacja — zapytanie orientacyjne",
+        "message": "Dzień dobry, analizuję model małej firmy świadczącej prywatne usługi AI w Polsce. Państwa konfiguracja Power L40S jest dobrym punktem odniesienia. Proszę o wycenę wynajmu serwera z dwoma GPU oraz alternatywy z własnym serwerem w kolokacji, z uwzględnieniem wsparcia, sieci, energii i minimalnego okresu. Proszę także o warunki odsprzedaży usług, dostępność i wyłączenia SLA. Porównuję modele przed inwestycją; zapytanie nie stanowi rezerwacji ani zobowiązania do zawarcia umowy.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p06",
+      "group": "partner",
+      "name": "Polcom S.A.",
+      "city": "Skawina",
+      "contact_url": "mailto:office@polcom.com.pl",
+      "contact_label": "office@polcom.com.pl",
+      "sources": [
+        {
+          "url": "https://polcom.com.pl/kontakt/",
+          "title": "Official contact / Oficjalny kontakt"
+        },
+        {
+          "url": "https://polcom.com.pl/wiedza/kolokacja/kolokacja-gpu-oraz-gpuaas-jako-rozwiazanie-dla-wymagajacych-obliczen/",
+          "title": "GPU colocation and AI Cloud / Kolokacja GPU i AI Cloud"
+        }
+      ],
+      "en": {
+        "category": "GPUaaS / GPU colocation",
+        "role": "Role-based target: AI Cloud or partner sales with infrastructure architect.",
+        "fit": "Explicitly offers GPU colocation and Polcom AI Cloud, enabling comparison of ownership models.",
+        "hypothesis": "Alternative rented allocation or hosted owned-node partner for a bounded sovereign deployment.",
+        "unknown": "Exact GPU models, availability, minimum term, operator-access terms and resale eligibility unknown.",
+        "ask": "Compare small GPUaaS and two-/four-GPU colocation with itemized costs, minimums, operating boundary and partner rights.",
+        "subject": "Comparing Polcom AI Cloud with owned GPU colocation",
+        "message": "Hello Polcom team, I am evaluating a Polish startup delivering confidential AI workloads for businesses. Your GPU colocation and AI Cloud offerings make you a useful potential infrastructure partner. Could you compare a small rented GPU allocation with hosting a customer-owned two- or four-GPU server? Please include available models, minimum commitments, support scope and partner/resale conditions, plus data-location and administrator-access evidence. I am testing feasibility and economics, without claiming existing contracted demand or making a purchase commitment.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "GPUaaS / kolokacja GPU",
+        "role": "Cel według roli: sprzedaż AI Cloud/partnerstw i architekt infrastruktury.",
+        "fit": "Wprost oferuje kolokację GPU i Polcom AI Cloud, umożliwiając porównanie modeli własności.",
+        "hypothesis": "Alternatywny wynajem albo kolokacja własnego węzła dla określonego wdrożenia suwerennego.",
+        "unknown": "Nieznane GPU, dostępność, okres minimalny, dostęp operatora i kwalifikacja do odsprzedaży.",
+        "ask": "Porównaj małe GPUaaS i kolokację 2/4 GPU: pełne koszty, minima, granice operacyjne i prawa partnerskie.",
+        "subject": "Polcom AI Cloud a kolokacja własnego serwera GPU",
+        "message": "Dzień dobry, analizuję startup obsługujący poufne zadania AI dla polskich firm. Państwa oferta kolokacji GPU i AI Cloud jest interesująca jako potencjalna podstawa infrastruktury. Czy mogą Państwo porównać mały przydział wynajętych GPU z kolokacją własnego serwera z dwoma lub czterema kartami? Proszę uwzględnić modele, minimalne zobowiązania, wsparcie i warunki partnerskie oraz dokumentację lokalizacji danych i dostępu administratorów. Badam wykonalność i ekonomię; nie deklaruję podpisanych kontraktów ani zakupu.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p07",
+      "group": "partner",
+      "name": "EXEA Sp. z o.o.",
+      "city": "Toruń",
+      "contact_url": "mailto:biznes@exea.pl",
+      "contact_label": "biznes@exea.pl",
+      "sources": [
+        {
+          "url": "https://exea.pl/kontakt",
+          "title": "Official contact and service links / Kontakt i usługi"
+        },
+        {
+          "url": "https://exea.pl/kolokacja-exea",
+          "title": "Colocation / Kolokacja"
+        }
+      ],
+      "en": {
+        "category": "Continuity / managed operations",
+        "role": "Role-based target: partner sales and managed-services lead.",
+        "fit": "Offers colocation, backup, cybersecurity and managed-service routes; contact page links a partner programme.",
+        "hypothesis": "Secondary location with encrypted backups, tested restores and scoped operational support.",
+        "unknown": "Backup restoration is not guaranteed GPU failover; GPU stock, RTO/RPO, cost and partner terms require confirmation.",
+        "ask": "Separate backup/recovery proposal from compute failover; quote response hours, restore tests, operating access and smallest engagement.",
+        "subject": "Secondary-site and operational support for a Polish AI pilot",
+        "message": "Hello EXEA business team, I am exploring a small Polish private-AI service and seeking a potential continuity partner. Your colocation, backup and managed-service portfolio looks relevant. Could you propose a modest secondary-site arrangement with encrypted backups, tested restores and clearly scoped remote operational support? Please distinguish backup recovery from guaranteed GPU failover and provide indicative costs, RTO/RPO assumptions and partner terms. This is an early feasibility enquiry, with no reserved infrastructure or committed customer workload.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Ciągłość / operacje zarządzane",
+        "role": "Cel według roli: sprzedaż partnerska i lider usług zarządzanych.",
+        "fit": "Oferuje kolokację, backup, cyberbezpieczeństwo i usługi zarządzane; kontakt odsyła do programu partnerskiego.",
+        "hypothesis": "Druga lokalizacja z szyfrowanymi kopiami, testami odtwarzania i określonym wsparciem operacyjnym.",
+        "unknown": "Odtworzenie kopii nie gwarantuje przełączenia GPU; stan, RTO/RPO, koszt i warunki wymagają potwierdzenia.",
+        "ask": "Oddziel ofertę kopii/odtworzenia od przełączenia mocy; wyceń reakcję, testy, dostęp operacyjny i najmniejszy zakres.",
+        "subject": "Lokalizacja zapasowa i wsparcie dla pilotażu AI w Polsce",
+        "message": "Dzień dobry, analizuję małą usługę prywatnej AI w Polsce i szukam potencjalnego partnera zapewniającego ciągłość działania. Państwa kolokacja, backup i usługi zarządzane odpowiadają temu kierunkowi. Proszę o propozycję niewielkiego środowiska zapasowego z szyfrowanymi kopiami, testami odtwarzania i określonym wsparciem operacyjnym. Proszę oddzielić odtwarzanie danych od gwarantowanego przełączenia na GPU oraz wskazać koszty, założenia RTO/RPO i warunki partnerskie. To wstępne rozpoznanie bez rezerwacji infrastruktury i zakontraktowanych obciążeń.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p08",
+      "group": "partner",
+      "name": "Netia S.A.",
+      "city": "Warszawa / Poland",
+      "contact_url": "mailto:biznes@netia.pl",
+      "contact_label": "biznes@netia.pl",
+      "sources": [
+        {
+          "url": "https://www.netia.pl/pl/srednie-i-duze-firmy/produkty/data-center-cloud/netia-kolokacja",
+          "title": "Colocation and business contact / Kolokacja i kontakt"
+        },
+        {
+          "url": "https://www.netia.pl/Netia/media/img/internetia/konsolidacja.pdf",
+          "title": "Legal entity / Podmiot prawny"
+        }
+      ],
+      "en": {
+        "category": "Colocation / connectivity / Remote Hands",
+        "role": "Role-based target: Data Center enterprise sales and facilities/network engineer.",
+        "fit": "Official service offers colocation from 1U, power reservation, fiber and 24/7 Remote Hands.",
+        "hypothesis": "Independent power/network quote or geographically separated continuity site.",
+        "unknown": "No Szczecin site, GPU density acceptance, power allocation or restoration SLA assumed.",
+        "ask": "Two-/four-GPU power/cooling acceptance, all-in energy/network charges, two separated sites and exact Remote Hands response scope.",
+        "subject": "GPU colocation, connectivity and remote-hands comparison",
+        "message": "Hello Netia business team, I am exploring a private-AI service based in Poland and comparing infrastructure partners. Your colocation and round-the-clock remote-hands offering could support a small initial deployment. Could you quote space for a two-/four-GPU server, with explicit reserved power, cooling limits, energy billing and network costs? Please also outline a geographically separate backup option and operational response scope. The server specification is still being assessed; this is a feasibility enquiry, not a reservation or service order.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Kolokacja / łączność / Remote Hands",
+        "role": "Cel według roli: sprzedaż korporacyjna Data Center i inżynier obiektu/sieci.",
+        "fit": "Oferta obejmuje kolokację od 1U, rezerwację mocy, światłowód i Remote Hands 24/7.",
+        "hypothesis": "Niezależna wycena mocy/sieci albo geograficznie oddzielna lokalizacja ciągłości.",
+        "unknown": "Nie zakładaj obiektu w Szczecinie, przyjęcia gęstych GPU, przydziału mocy ani SLA odtworzenia.",
+        "ask": "Przyjęcie 2/4 GPU pod kątem zasilania/chłodzenia, pełne opłaty, dwie lokalizacje i dokładny zakres reakcji Remote Hands.",
+        "subject": "Kolokacja GPU, łączność i zdalna obsługa — porównanie ofert",
+        "message": "Dzień dobry, analizuję prywatną usługę AI w Polsce i porównuję partnerów infrastrukturalnych. Państwa kolokacja i całodobowa obsługa Remote Hands mogą odpowiadać potrzebom małego wdrożenia. Proszę o wycenę miejsca dla serwera z dwoma lub czterema GPU, z określeniem mocy, limitów chłodzenia, rozliczenia energii i kosztów sieci. Proszę także o wariant zapasowy w osobnej lokalizacji i zakres reakcji operacyjnej. Specyfikacja jest w przygotowaniu; zapytanie nie stanowi rezerwacji ani zamówienia.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p09",
+      "group": "partner",
+      "name": "OVH sp. z o.o. / OVHcloud",
+      "city": "Wrocław / Warsaw cloud region",
+      "contact_url": "https://www.ovhcloud.com/pl/contact/",
+      "contact_label": "Official contact route / Oficjalna ścieżka kontaktu",
+      "sources": [
+        {
+          "url": "https://www.ovhcloud.com/pl/contact/",
+          "title": "Official contact / Oficjalny kontakt"
+        },
+        {
+          "url": "https://www.ovhcloud.com/pl/terms-and-conditions/",
+          "title": "Polish entity / Polski podmiot"
+        },
+        {
+          "url": "https://www.ovhcloud.com/pl/public-cloud/regions-availability/",
+          "title": "Regional matrix / Macierz regionów"
+        },
+        {
+          "url": "https://docs.ovhcloud.com/en/guides/public-cloud/compute/deploy-a-gpu-instance",
+          "title": "GPU deployment documentation / Dokumentacja GPU"
+        }
+      ],
+      "en": {
+        "category": "Cloud capacity / exact-region validation",
+        "role": "Role-based target: Public Cloud enterprise/partner sales and capacity-reservation specialist.",
+        "fit": "Warsaw regional matrix lists GPU services, but deployment documentation limits newer models to GRA11.",
+        "hypothesis": "Validate exact Poland-resident GPU SKU before comparing separate EU alternatives and reseller arrangements.",
+        "unknown": "Do not infer Warsaw H100, current stock or Polish hosting of all AI APIs; product-level region discrepancy needs resolution.",
+        "ask": "Written exact Warsaw SKU, quantity, start date, quota, term and resale rights; list other EU regions separately with operating-control evidence.",
+        "subject": "Polish-region GPU availability and partner terms",
+        "message": "Hello OVHcloud Poland team, I am evaluating a private-AI startup and potential capacity partners. Your regional matrix lists GPU services in Warsaw, while deployment documentation appears to limit newer models to other regions. Could you confirm the exact GPU SKUs currently orderable in Poland, allocation limits and indicative pricing? Please separate Polish-resident options from other EU capacity and outline managed-service resale terms. This is exploratory research; I am not reserving capacity or representing contracted demand.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Moc chmurowa / weryfikacja regionu",
+        "role": "Cel według roli: sprzedaż korporacyjna/partnerska Public Cloud i specjalista rezerwacji mocy.",
+        "fit": "Macierz Warszawy wskazuje GPU, lecz dokumentacja ogranicza nowsze modele do GRA11.",
+        "hypothesis": "Zweryfikuj konkretny GPU w Polsce przed osobnym porównaniem alternatyw UE i odsprzedaży.",
+        "unknown": "Nie wnioskuj o H100 w Warszawie, bieżącym stanie ani polskim hostingu wszystkich API AI; rozbieżność wymaga wyjaśnienia.",
+        "ask": "Pisemne GPU Warszawa, ilość, termin, limity, okres i odsprzedaż; inne regiony UE osobno z dowodami kontroli operacyjnej.",
+        "subject": "Dostępność GPU w Polsce i warunki współpracy partnerskiej",
+        "message": "Dzień dobry, analizuję startup prywatnych usług AI i potencjalnych dostawców zasobów. Państwa tabela regionów wskazuje GPU w Warszawie, natomiast dokumentacja wdrożeń sugeruje ograniczenie nowszych modeli do innych regionów. Proszę o potwierdzenie konkretnych modeli dostępnych obecnie w Polsce, limitów przydziału i orientacyjnych cen. Proszę oddzielić ofertę z przetwarzaniem w Polsce od pozostałych lokalizacji UE oraz opisać warunki odsprzedaży usług zarządzanych. To rozpoznanie, bez rezerwacji zasobów i deklaracji zakontraktowanego popytu.\n\n[Imię i nazwisko]"
+      }
+    },
+    {
+      "id": "p10",
+      "group": "partner",
+      "name": "Kyndryl Poland Sp. z o.o.",
+      "city": "Warszawa",
+      "contact_url": "mailto:kontakt_pl@kyndryl.com",
+      "contact_label": "kontakt_pl@kyndryl.com",
+      "sources": [
+        {
+          "url": "https://www.kyndryl.com/pl/pl/contact",
+          "title": "Official Polish contact / Polski kontakt"
+        },
+        {
+          "url": "https://www.kyndryl.com/pl/pl/services",
+          "title": "Technology services / Usługi technologiczne"
+        }
+      ],
+      "en": {
+        "category": "Enterprise operating-model / stretch partner",
+        "role": "Role-based target: Polish managed-infrastructure/security partnership lead.",
+        "fit": "Polish presence and enterprise technology services provide an operational-support and consortium route.",
+        "hypothesis": "Small paid architecture/operating-model review, followed only if scale and commercial terms fit.",
+        "unknown": "Minimum engagement may exceed startup budget; global ownership means Polish entity alone does not establish sovereignty.",
+        "ask": "Price bounded assessment: monitoring, incidents, privileged access, subcontractors, responsibility matrix and minimum fees.",
+        "subject": "Exploratory operating-model assessment for Polish private AI",
+        "message": "Hello Kyndryl Poland team, I am assessing a startup delivering private AI services from Polish infrastructure and exploring potential consortium partners. Could a local infrastructure/security lead advise whether a small paid architecture and operating-model assessment fits your engagement model? I need clear responsibilities for monitoring, incident response, privileged access and subcontractors, with realistic minimum fees. I am not claiming a formed consortium or contracted customers; an initial discussion would establish whether there is a practical partnership fit.\n\n[Your name]"
+      },
+      "pl": {
+        "category": "Model operacyjny enterprise / trudniejszy partner",
+        "role": "Cel według roli: polski lider partnerstw infrastruktury zarządzanej/bezpieczeństwa.",
+        "fit": "Obecność w Polsce i usługi enterprise tworzą drogę wsparcia operacyjnego oraz konsorcjum.",
+        "hypothesis": "Mały płatny przegląd architektury/modelu operacyjnego, dalsza współpraca tylko przy zgodnej skali i warunkach.",
+        "unknown": "Minimalne zlecenie może przekraczać budżet; globalna własność oznacza, że polski podmiot sam nie dowodzi suwerenności.",
+        "ask": "Wyceń ograniczoną ocenę: monitoring, incydenty, dostęp uprzywilejowany, podwykonawcy, odpowiedzialności i opłaty minimalne.",
+        "subject": "Wstępna ocena modelu operacyjnego prywatnej AI w Polsce",
+        "message": "Dzień dobry, analizuję startup prywatnych usług AI działających na polskiej infrastrukturze i potencjalnych partnerów konsorcjum. Czy lokalny zespół infrastruktury i bezpieczeństwa mógłby ocenić możliwość niewielkiego, płatnego przeglądu architektury i modelu operacyjnego? Potrzebuję określenia odpowiedzialności za monitoring, incydenty, dostęp uprzywilejowany i podwykonawców oraz minimalnego kosztu współpracy. Nie deklaruję istniejącego konsorcjum ani zakontraktowanych klientów. Krótka rozmowa pozwoliłaby ustalić, czy zakres i skala są dla Państwa odpowiednie.\n\n[Imię i nazwisko]"
+      }
+    }
+  ]
+}
