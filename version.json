@@ -1,12 +1,12 @@
 {
-  "version": "v261028.01 5:25a",
-  "release": 1979,
-  "sha": "423d3b362a",
-  "fullSha": "423d3b362a8c6e7fe4efd364b647cc2a0af7d352",
+  "version": "v261030.01 4:26a",
+  "release": 1980,
+  "sha": "1c07996126",
+  "fullSha": "1c0799612618ce0e3cbf21e7688a6f3ca842967e",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-10-28T10:25:08+00:00",
-  "commits": [{"sha":"423d3b362a","message":"chore(rahulio): move Tesla vs BMW page to Muse (muse-rahulio/tesla-bmw-austin)","author":"Blotto"}]
+  "pushedAt": "2026-10-30T09:26:14+00:00",
+  "commits": [{"sha":"c1f2cd8cb6","message":"feat(cameras): prioritize Shower Tower feed","author":"Blotto"},{"sha":"23edd39b64","message":"docs: record Claude HTML plan plugin installation recipe","author":"Blotto"},{"sha":"44717e6cf9","message":"docs: record verified Stripe live key rotation access","author":"Blotto"},{"sha":"6475df5921","message":"Merge origin/main into lights-red-recurrence","author":"Blotto"},{"sha":"1c07996126","message":"docs(lights): record 10-28/10-30 red-light recurrence and why the 10-24 fix didn't stop it","author":"Blotto"}]
 }
