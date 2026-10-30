@@ -883,3 +883,9 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 
 **Why:** A deploy key on alpacapps could write the whole repo: workflows, other people's pages, every branch. Any branch workflow could also read the Supabase service role key. GitHub cannot limit a deploy key to a folder or a branch on a public repo, and cannot tell two deploy keys apart, so per-Muse branches would not have kept the two Muses apart. Separate repos make "only its own content" a hard limit and take Muse out of alpacapps' Actions and secrets entirely.
 
+
+### 2026-10-30: Voice Controls One Room at a Time
+
+**Decision:** An Alexa or Google command may change lights in only one room. The `alexa-room-guard` service on Alpuca undoes any single voice command (or Alexa routine) that touches lights in more than one room, a few seconds after it lands, and posts an HA notification. Govee segment entities are no longer exposed to Alexa or Google, and new HA entities are no longer exposed automatically.
+
+**Why:** Alexa repeatedly sent one command to ~170–190 lights in 15 rooms: red at 1:34 AM on Oct 28 and Oct 30, white, and all-on/all-off several times a day. Nobody could tell from HA who said it. The Oct 24 fix only added logging, so it came back. Undoing multi-room commands stops whole-house changes regardless of who is speaking. The cost: "Alexa, turn off all the lights" no longer works. The lights change for a second or two and then come back. Room commands and the existing per-room routines are unaffected.
