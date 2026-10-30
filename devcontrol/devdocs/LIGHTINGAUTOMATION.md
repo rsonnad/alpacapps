@@ -134,6 +134,17 @@ The Alexa `SetBrightness` on 10 lights at 23:01 every night appears to be the
 dim-at-night routine. HA Cloud has `expose_new: true` for Alexa and Google, so new light entities,
 including Govee segment entities, are exposed by default.
 
+**2026-10-30 recurrence:** the 10-24 session only added this log. It changed nothing that would
+stop Alexa, so the red came back. Two more events, both from HA user `Home Assistant Cloud`
+(Google is not linked, `google_registered: false`, so it is Alexa): Oct 28 01:36 and Oct 30
+01:34 CDT, `rgb_color [255, 0, 0]` on 167 lights. On both nights Alexa first set ~170 lights to
+white / 4000K about 22 minutes earlier (01:13 and 01:06 CDT). The times drift, so it is not a
+fixed-time routine. It looks like voice commands to an Echo, but HA cannot show which Echo or what
+was said. Only the Alexa voice history (https://www.amazon.com/alexa-privacy/apd/rvh) can.
+301 `light.*` entities are exposed to Alexa, 138 of them Govee `*segment*` entities, and
+`expose_new` is still `true` for both assistants. Unexposing the segments and turning
+`expose_new` off needs the user's go-ahead (it changes the shared HAOS config).
+
 **DB query for current inventory:**
 ```sql
 SELECT room, device_name, ha_entity_id, device_brand, protocol
