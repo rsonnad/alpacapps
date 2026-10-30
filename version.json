@@ -1,12 +1,12 @@
 {
-  "version": "v261030.04 6:39a",
-  "release": 1983,
-  "sha": "f278602f85",
-  "fullSha": "f278602f856cfd68a61d15c509718dd316ebb69c",
+  "version": "v261030.05 9:43a",
+  "release": 1984,
+  "sha": "491c5fcb71",
+  "fullSha": "491c5fcb71bba866430a61b02a695c3f38e949a5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-10-30T11:39:28+00:00",
-  "commits": [{"sha":"f278602f85","message":"docs(productdesign): voice controls one room at a time","author":"Blotto"}]
+  "pushedAt": "2026-10-30T14:43:51+00:00",
+  "commits": [{"sha":"491c5fcb71","message":"docs(infra): prefer Cursor and replace Zed with OpenCode","author":"Blotto"}]
 }
