@@ -152,6 +152,16 @@ lights stay exposed to Alexa. The unexposed list is saved on Alpuca at
 asks it to. Check `light_change_log` after the next late-night event to confirm the fan-out is
 smaller.
 
+**Voice is one room at a time (2026-10-30):** the `alexa-room-guard` service on Alpuca
+(`scripts/alexa-room-guard/`, launchd `com.alpacapps.alexa-room-guard`, log
+`~/logs/alexa-room-guard.log`) watches every light change made by the HA Cloud user. If one
+Alexa/Google command touches more than one room, it puts those lights back within a few seconds
+and posts an HA notification, "Voice command undone". Replayed against Oct 24–30 it would have
+undone the 16 whole-house commands (all on/off, white, red) and let every routine through
+(17:30 and 23:45 Dining Room, 23:01 Kitchen dim, Spartan Trailer commands). Rooms come from HA
+areas, then `lighting_devices.room`, with sub-room aliases in the script. Lights with no room
+don't count, so give new lights an HA area.
+
 **DB query for current inventory:**
 ```sql
 SELECT room, device_name, ha_entity_id, device_brand, protocol
