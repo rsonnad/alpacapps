@@ -1,12 +1,12 @@
 {
-  "version": "v261030.05 9:43a",
-  "release": 1984,
-  "sha": "491c5fcb71",
-  "fullSha": "491c5fcb71bba866430a61b02a695c3f38e949a5",
+  "version": "v261030.06 10:39a",
+  "release": 1985,
+  "sha": "421dda9ebc",
+  "fullSha": "421dda9ebce1750a4d79f6a5ce3c4ef06652266a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-10-30T14:43:51+00:00",
-  "commits": [{"sha":"491c5fcb71","message":"docs(infra): prefer Cursor and replace Zed with OpenCode","author":"Blotto"}]
+  "pushedAt": "2026-10-30T15:39:18+00:00",
+  "commits": [{"sha":"421dda9ebc","message":"rahulio: redirect /rahulio/pages/grokbassador to the YouTube video","author":"Blotto"}]
 }
