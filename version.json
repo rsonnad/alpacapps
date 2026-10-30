@@ -1,12 +1,12 @@
 {
-  "version": "v261030.03 6:32a",
-  "release": 1982,
-  "sha": "0253a419a7",
-  "fullSha": "0253a419a79b426b6dc8e90b7bc9c74c8c57aa13",
+  "version": "v261030.04 6:39a",
+  "release": 1983,
+  "sha": "f278602f85",
+  "fullSha": "f278602f856cfd68a61d15c509718dd316ebb69c",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-10-30T11:32:47+00:00",
-  "commits": [{"sha":"0253a419a7","message":"feat(lights): alexa-room-guard undoes voice commands that span more than one room","author":"Blotto"}]
+  "pushedAt": "2026-10-30T11:39:28+00:00",
+  "commits": [{"sha":"f278602f85","message":"docs(productdesign): voice controls one room at a time","author":"Blotto"}]
 }
