@@ -61,3 +61,9 @@ test('the bots area applies the same name and ownership rules', () => {
   assert.deepEqual(choose({ [R]: ['hello'] }, bots, 'bots'), {});
   assert.deepEqual(choose({ [G]: ['..', 'Upper'] }, bots, 'bots'), {});
 });
+
+test('a project committed to alpacapps itself is never replaced by an agent repo', () => {
+  const G = 'rsonnad/grokbot-pages';
+  const reserved = new Set(['feedback']);
+  assert.deepEqual(choose({ [G]: ['feedback', 'hello'] }, new Map([['feedback', G]]), 'bots', reserved), { hello: G });
+});

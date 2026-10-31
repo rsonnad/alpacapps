@@ -30,6 +30,7 @@ Grokbot pages work the same way, in two folders: `https://alpacaplayhouse.com/bo
 
 - Grokbot pushes to `main` of `rsonnad/grokbot-pages` with its own deploy key (write on that repo only; private key in 1Password vault GrokBotsy, owner record in Bitwarden "Grokbot — AlpacApps /bots/ + /botsy/ Publishing Guide"). `main` blocks force-push and deletion.
 - The same sync check, `compose-muse.mjs` rules, `_deployment.json` keys (`bots`, `botsy`) and final verification apply.
+- A folder committed to this repo under `bots/`, `botsy/` or `muse/` stays as committed and no agent repo can replace it. `bots/feedback/` (the bot feedback form and its admin page, see `API.md` → "Bot feedback") is kept this way.
 
 - Supabase secrets used by the release job are in the `release` environment, which only `main` can use, so workflows on other branches cannot read them.
 

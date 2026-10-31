@@ -50,10 +50,12 @@ function resolve(sources) {
 
 // Pure decision step, kept separate so it can be tested without git.
 // found: { repo: [projects present in that repo] } -> { project: repo }
-export function choose(found, claimed, area = 'muse') {
+// reserved: projects this repo (alpacapps) commits itself, e.g. bots/feedback.
+export function choose(found, claimed, area = 'muse', reserved = new Set()) {
   const holders = new Map();
   for (const [repo, projects] of Object.entries(found)) {
     for (const p of projects) {
+      if (reserved.has(p)) { warn(`${repo}: skipped ${area}/${p} (kept by rsonnad/alpacapps)`); continue; }
       if (!SLUG.test(p)) { warn(`${repo}: skipped ${area}/${p} (names must be lowercase letters, digits and dashes)`); continue; }
       const owner = claimed.get(p);
       if (owner && owner !== repo) { warn(`${repo}: skipped ${area}/${p} (owned by ${owner})`); continue; }
@@ -113,9 +115,11 @@ function composeArea(area, siteDir, lock, meta) {
       ? readdirSync(dirs[repo]).filter(p => lstatSync(path.join(dirs[repo], p)).isDirectory())
       : [];
   }
-  const chosen = choose(found, claimed, area);
+  // Whatever the site archive already has under <area>/ was committed to
+  // alpacapps itself; keep it and never let an agent repo replace it.
   const target = path.join(siteDir, area);
-  rmSync(target, { recursive: true, force: true });
+  const reserved = new Set(existsSync(target) ? readdirSync(target) : []);
+  const chosen = choose(found, claimed, area, reserved);
   mkdirSync(target, { recursive: true });
   for (const [p, repo] of Object.entries(chosen).sort()) {
     cpSync(path.join(dirs[repo], p), path.join(target, p), { recursive: true });

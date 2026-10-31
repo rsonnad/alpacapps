@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bot feedback</title>
+<meta name="description" content="Send feedback, ideas or bug reports about our bots.">
+<meta name="robots" content="noindex">
+<style>
+  :root {
+    --bg: #faf8f5; --card: #ffffff; --text: #2b2724; --muted: #6b625c;
+    --line: #ddd5cc; --accent: #2f6b4f; --accent-text: #ffffff; --error: #a3341f; --ok-bg: #e9f3ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1b1917; --card: #24211f; --text: #ece7e2; --muted: #a8a09a;
+      --line: #3a3532; --accent: #6fbf95; --accent-text: #10241a; --error: #f08a74; --ok-bg: #1f3328;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 36rem; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 .5rem; }
+  .lead { color: var(--muted); margin: 0 0 1.75rem; }
+  form, .thanks { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  label { display: block; font-weight: 600; margin: 0 0 .35rem; }
+  .field { margin: 0 0 1.1rem; }
+  textarea, select, input[type=email] {
+    width: 100%; font: inherit; color: inherit; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: .6rem .7rem;
+  }
+  textarea { min-height: 9rem; resize: vertical; }
+  textarea:focus, select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .hint { color: var(--muted); font-size: .875rem; margin: .3rem 0 0; }
+  .count { float: right; font-weight: 400; color: var(--muted); font-size: .875rem; }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  button {
+    font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-text);
+    border: 0; border-radius: 8px; padding: .7rem 1.4rem; cursor: pointer; width: 100%;
+  }
+  button[disabled] { opacity: .6; cursor: progress; }
+  .error { color: var(--error); margin: .75rem 0 0; min-height: 1.2em; }
+  .privacy { color: var(--muted); font-size: .875rem; margin: 1.25rem 0 0; }
+  .thanks { background: var(--ok-bg); }
+  .thanks h2 { margin: 0 0 .4rem; font-size: 1.2rem; }
+  .thanks p { margin: 0 0 1rem; }
+  .link-button { background: none; color: var(--accent); padding: 0; width: auto; text-decoration: underline; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Feedback for our bots</h1>
+  <p class="lead">Tell us what works, what doesn't, or what you'd like the bot to do next.</p>
+
+  <form id="feedbackForm" novalidate>
+    <div class="field">
+      <label for="message">Your message <span class="count" id="count">0 / 5000</span></label>
+      <textarea id="message" name="message" maxlength="5000" required></textarea>
+    </div>
+    <div class="field">
+      <label for="type">What kind of message is this?</label>
+      <select id="type" name="type">
+        <option value="feedback">Feedback</option>
+        <option value="feature_request">Idea or feature request</option>
+        <option value="bug">Something is broken</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="bot_pick">Which bot?</label>
+      <select id="bot_pick">
+        <option value="Avatar Profile Designer">Avatar Profile Designer</option>
+        <option value="">Another bot / not sure</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="email">Your email <span class="count">optional</span></label>
+      <input type="email" id="email" name="email" maxlength="254" autocomplete="email">
+      <p class="hint">Optional. Only used if we need to reply.</p>
+    </div>
+    <div class="hp" aria-hidden="true">
+      <label for="website">Leave this empty</label>
+      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+    <button type="submit" id="send">Send</button>
+    <p class="error" id="error" role="alert"></p>
+    <p class="privacy">We store your message and, if given, your email to follow up.</p>
+  </form>
+
+  <div class="thanks" id="thanks" hidden>
+    <h2>Thank you!</h2>
+    <p>Your message reached us. We read every one.</p>
+    <button type="button" class="link-button" id="again">Send another message</button>
+  </div>
+</main>
+<script>
+  const ENDPOINT = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/bot-feedback';
+  const form = document.getElementById('feedbackForm');
+  const message = document.getElementById('message');
+  const count = document.getElementById('count');
+  const error = document.getElementById('error');
+  const send = document.getElementById('send');
+  const thanks = document.getElementById('thanks');
+
+  const params = new URLSearchParams(location.search);
+  const botPick = document.getElementById('bot_pick');
+  if (params.get('bot')) {
+    const preset = params.get('bot');
+    if (![...botPick.options].some(o => o.value === preset)) botPick.add(new Option(preset, preset), 0);
+    botPick.value = preset;
+  }
+
+  message.addEventListener('input', () => { count.textContent = `${message.value.length} / 5000`; });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    error.textContent = '';
+    if (!message.value.trim()) { error.textContent = 'Please write a message first.'; message.focus(); return; }
+    const email = document.getElementById('email');
+    if (email.value.trim() && !email.checkValidity()) { error.textContent = 'That email address does not look right.'; email.focus(); return; }
+
+    const body = new URLSearchParams({
+      message: message.value,
+      type: document.getElementById('type').value,
+      email: email.value.trim(),
+      bot_name: botPick.value,
+      bot_version: params.get('version') || '',
+      website: document.getElementById('website').value,
+    });
+    send.disabled = true; send.textContent = 'Sending…';
+    try {
+      const res = await fetch(ENDPOINT, { method: 'POST', body });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+      form.hidden = true; thanks.hidden = false; form.reset(); count.textContent = '0 / 5000';
+    } catch (err) {
+      error.textContent = err.message === 'Failed to fetch' ? 'Could not reach us. Check your connection and try again.' : err.message;
+    } finally {
+      send.disabled = false; send.textContent = 'Send';
+    }
+  });
+
+  document.getElementById('again').addEventListener('click', () => { thanks.hidden = true; form.hidden = false; message.focus(); });
+</script>
+</body>
+</html>

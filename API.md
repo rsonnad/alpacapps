@@ -1066,3 +1066,34 @@ Active agent keys:
 | Meta Muse Agent | 2 | rentals, rental_notes, vehicles | list, get, create, update | `AlpacApps API — Meta Muse Agent` |
 | Meta Muse Vehicle Registration Agent (legacy) | 2 | vehicles | list, get, update | — (plaintext not stored) |
 | alpaclaw-readonly | 2 | spaces, assignments, vehicles, faq, documents | list, get | — |
+
+## Bot feedback (public, outside the gateway)
+
+Separate edge function `bot-feedback` (deployed with `verify_jwt: false`). Bots and the
+form at `https://alpacaplayhouse.com/bots/feedback/` send feedback and feature
+requests here. No sign-in, cookies or API key.
+
+```bash
+curl -X POST https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/bot-feedback \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Let me pick a style per bot","type":"feature_request","bot_name":"Avatar Profile Designer","bot_version":"1.0"}'
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| `message` | yes | 1–5000 characters; HTML is stripped |
+| `type` | no | `feedback` (default), `feature_request`, `bug` |
+| `email` | no | checked if present; only used to reply |
+| `bot_name`, `bot_version` | no | e.g. `Avatar Profile Designer`, `1.0` |
+
+Also accepts `application/x-www-form-urlencoded` (the form; `source` becomes `web`, and a
+filled hidden `website` field is treated as spam and not stored).
+
+Responses: `201 {"ok":true,"id":"…"}`, `400 {"ok":false,"error":"message is required"}`,
+`429` after 10 posts from one IP in an hour.
+
+Stored in `public.bot_feedback` (migration `20261101_bot_feedback.sql`; IPs are stored
+only as a salted hash, secret `BOT_FEEDBACK_IP_SALT`). Read it at
+`https://alpacaplayhouse.com/bots/feedback/admin/`: only rahulioson@gmail.com,
+sonia245g@gmail.com and hrsonnad@gmail.com signed in with Google can see or change rows
+(enforced by RLS; test `supabase/tests/bot-feedback-access.sql`).
