@@ -1,12 +1,12 @@
 {
-  "version": "v261031.02 10:21a",
-  "release": 1987,
-  "sha": "f1ceb51262",
-  "fullSha": "f1ceb512627e690643c993690a9f34c15bde45b9",
+  "version": "v261031.03 6:35p",
+  "release": 1988,
+  "sha": "329f3a0153",
+  "fullSha": "329f3a01535ad382052ab0d722ab8ed750494f7f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-10-31T15:21:04+00:00",
-  "commits": [{"sha":"f1ceb51262","message":"fix: restore requested Rachel rental page and evidence images","author":"Blotto"}]
+  "pushedAt": "2026-10-31T23:35:09+00:00",
+  "commits": [{"sha":"329f3a0153","message":"Publish Grokbot pages at /bots/ and /botsy/","author":"rsonnad"}]
 }
