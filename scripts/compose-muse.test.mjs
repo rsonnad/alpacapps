@@ -39,5 +39,25 @@ test('a project listed for two repos is rejected', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'muse-src-'));
   const file = path.join(dir, 'muse-sources.json');
   writeFileSync(file, JSON.stringify({ sources: [{ repo: R, projects: ['x'] }, { repo: S, projects: ['x'] }] }));
-  assert.throws(() => loadSources(file), /two repos/);
+  assert.throws(() => loadSources('muse', file), /two repos/);
+});
+
+test('bots-sources.json is valid and gives Grokbot its own projects', () => {
+  const { sources, claimed: c } = loadSources('bots');
+  assert.ok(sources.some(s => s.repo === 'rsonnad/grokbot-pages'));
+  assert.equal(c.get('hello'), 'rsonnad/grokbot-pages');
+});
+
+test('botsy-sources.json is valid and gives Grokbot its own projects', () => {
+  const { sources, claimed: c } = loadSources('botsy');
+  assert.ok(sources.some(s => s.repo === 'rsonnad/grokbot-pages'));
+  assert.equal(c.get('hello'), 'rsonnad/grokbot-pages');
+});
+
+test('the bots area applies the same name and ownership rules', () => {
+  const G = 'rsonnad/grokbot-pages';
+  const bots = new Map([['hello', G]]);
+  assert.deepEqual(choose({ [G]: ['hello', 'newbot'] }, bots, 'bots'), { hello: G, newbot: G });
+  assert.deepEqual(choose({ [R]: ['hello'] }, bots, 'bots'), {});
+  assert.deepEqual(choose({ [G]: ['..', 'Upper'] }, bots, 'bots'), {});
 });

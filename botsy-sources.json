@@ -1,0 +1,10 @@
+{
+  "_comment": "Which repo each Botsy page comes from. CI copies botsy/<project>/ from these repos into the site at alpacaplayhouse.com/botsy/<project>/. Same rules as muse-sources.json. See devcontrol/devdocs/DEPLOY.md.",
+  "sources": [
+    {
+      "repo": "rsonnad/grokbot-pages",
+      "owner": "Grokbot (Botsy)",
+      "projects": ["hello"]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "_comment": "Which repo each Grokbot page comes from. CI copies bots/<project>/ from these repos into the site at alpacaplayhouse.com/bots/<project>/. Same rules as muse-sources.json. See devcontrol/devdocs/DEPLOY.md.",
+  "sources": [
+    {
+      "repo": "rsonnad/grokbot-pages",
+      "owner": "Grokbot",
+      "projects": ["hello"]
+    }
+  ]
+}

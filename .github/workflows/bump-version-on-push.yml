@@ -125,9 +125,10 @@ jobs:
             git restore --worktree .
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      # Muse pages come from their own repos (muse-sources.json), pinned here so
+      # Muse and Grokbot pages come from their own repos (muse-sources.json,
+      # bots-sources.json, botsy-sources.json), pinned here so
       # deploy verification checks the exact same bytes.
-      - name: Pin Muse source repos
+      - name: Pin Muse and Grokbot source repos
         id: muse
         run: echo "lock=$(node scripts/compose-muse.mjs resolve)" >> "$GITHUB_OUTPUT"
       - name: Prepare committed static site
@@ -173,7 +174,7 @@ jobs:
           git archive HEAD -- . ':!mistiq' | tar -x -C "$RUNNER_TEMP/pages-site"
           python3 -c 'import json,os,subprocess; p=os.environ["RUNNER_TEMP"]+"/pages-site/_deployment.json"; open(p,"w").write(json.dumps({"sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()}))'
           node scripts/compose-muse.mjs compose "$RUNNER_TEMP/pages-site" "$MUSE_LOCK"
-      - name: Verify public deployment and Muse pages
+      - name: Verify public deployment, Muse and Grokbot pages
         env:
           PAGES_SITE_DIR: ${{ runner.temp }}/pages-site
         run: node scripts/verify-pages-deployment.mjs

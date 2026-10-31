@@ -21,6 +21,16 @@ Muse pages are published at `https://alpacaplayhouse.com/muse/<project>/` but ar
 - `scripts/compose-muse.mjs` pins each Muse repo's commit, copies only regular files under `muse/<project>/`, and never publishes a project that `muse-sources.json` gives to another repo. An unlisted project is published only if exactly one repo has it. Nothing from a Muse repo is executed.
 - `_deployment.json` records the alpacapps commit and each Muse repo's commit. The final verification step compares every Muse HTML file with those bytes.
 - To move or claim a project, edit `muse-sources.json` on main. To add a Muse, create its repo, add a writable deploy key from that Muse (public key only), protect its `main` (block force-push and deletion) and add it to `muse-sources.json`.
+
+Grokbot pages work the same way, in two folders: `https://alpacaplayhouse.com/bots/<project>/` (`bots-sources.json`) and `https://alpacaplayhouse.com/botsy/<project>/` (`botsy-sources.json`).
+
+| Repo | Agent | Folders |
+|---|---|---|
+| `rsonnad/grokbot-pages` | Grokbot | `bots/<project>/`, `botsy/<project>/` |
+
+- Grokbot pushes to `main` of `rsonnad/grokbot-pages` with its own deploy key (write on that repo only; private key in 1Password vault GrokBotsy, owner record in Bitwarden "Grokbot — AlpacApps /bots/ + /botsy/ Publishing Guide"). `main` blocks force-push and deletion.
+- The same sync check, `compose-muse.mjs` rules, `_deployment.json` keys (`bots`, `botsy`) and final verification apply.
+
 - Supabase secrets used by the release job are in the `release` environment, which only `main` can use, so workflows on other branches cannot read them.
 
 ### Push Workflow

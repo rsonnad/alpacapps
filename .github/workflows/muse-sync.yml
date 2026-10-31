@@ -1,4 +1,5 @@
-# Muse pages live in their own repos (see muse-sources.json). Every 10 minutes,
+# Muse and Grokbot pages live in their own repos (muse-sources.json,
+# bots-sources.json, botsy-sources.json). Every 10 minutes,
 # compare their main branches with what the live site was built from, and start
 # a publish run if they moved. Nothing from the Muse repos is executed here.
 name: Muse sync

@@ -18,10 +18,12 @@ async function findPages(directory, prefix) {
     else if (entry.name.endsWith('.html')) files.push(relative);
   }
 }
-try {
-  await findPages(path.join(site, 'muse'), 'muse');
-} catch (error) {
-  if (error.code !== 'ENOENT') throw error;
+for (const area of ['muse', 'bots', 'botsy']) {
+  try {
+    await findPages(path.join(site, area), area);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
 }
 
 const pending = new Map(await Promise.all(files.map(async file =>

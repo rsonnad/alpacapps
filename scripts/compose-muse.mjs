@@ -1,10 +1,12 @@
-// Builds the site's muse/ folder from the Muse repos listed in muse-sources.json.
-// Muse repos are untrusted content: nothing from them is executed, only regular
-// files under muse/<project>/ are copied, and a repo can never publish a project
-// that muse-sources.json gives to another repo.
+// Builds the site's agent folders from the repos listed in <area>-sources.json:
+// muse/ (Meta Muse, muse-sources.json), bots/ and botsy/ (Grokbot, bots-sources.json
+// and botsy-sources.json).
+// These repos are untrusted content: nothing from them is executed, only regular
+// files under <area>/<project>/ are copied, and a repo can never publish a project
+// that the sources file gives to another repo.
 //
-//   node scripts/compose-muse.mjs resolve                 -> prints {"repo": "sha", ...}
-//   node scripts/compose-muse.mjs compose <siteDir> <lock> -> fills <siteDir>/muse
+//   node scripts/compose-muse.mjs resolve                 -> prints {"muse": {"repo": "sha"}, "bots": {...}, "botsy": {...}}
+//   node scripts/compose-muse.mjs compose <siteDir> <lock> -> fills <siteDir>/muse, /bots and /botsy
 //   node scripts/compose-muse.mjs check                   -> changed=true|false (vs live site)
 import { execFileSync, execSync } from 'node:child_process';
 import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -16,8 +18,9 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const SLUG = /^[a-z0-9][a-z0-9-]{0,62}$/;
 const REPO = /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/;
 const MAX_BYTES = 300 * 1024 * 1024;
+export const AREAS = ['muse', 'bots', 'botsy'];
 
-export function loadSources(file = process.env.MUSE_SOURCES_FILE || path.join(root, 'muse-sources.json')) {
+export function loadSources(area = 'muse', file = path.join(root, `${area}-sources.json`)) {
   const { sources } = JSON.parse(readFileSync(file, 'utf8'));
   const claimed = new Map();
   for (const s of sources) {
@@ -47,20 +50,20 @@ function resolve(sources) {
 
 // Pure decision step, kept separate so it can be tested without git.
 // found: { repo: [projects present in that repo] } -> { project: repo }
-export function choose(found, claimed) {
+export function choose(found, claimed, area = 'muse') {
   const holders = new Map();
   for (const [repo, projects] of Object.entries(found)) {
     for (const p of projects) {
-      if (!SLUG.test(p)) { warn(`${repo}: skipped muse/${p} (names must be lowercase letters, digits and dashes)`); continue; }
+      if (!SLUG.test(p)) { warn(`${repo}: skipped ${area}/${p} (names must be lowercase letters, digits and dashes)`); continue; }
       const owner = claimed.get(p);
-      if (owner && owner !== repo) { warn(`${repo}: skipped muse/${p} (owned by ${owner})`); continue; }
+      if (owner && owner !== repo) { warn(`${repo}: skipped ${area}/${p} (owned by ${owner})`); continue; }
       if (!holders.has(p)) holders.set(p, []);
       holders.get(p).push(repo);
     }
   }
   const result = {};
   for (const [p, repos] of holders) {
-    if (repos.length > 1) { warn(`muse/${p} is in ${repos.join(' and ')} and not listed in muse-sources.json; not published`); continue; }
+    if (repos.length > 1) { warn(`${area}/${p} is in ${repos.join(' and ')} and not listed in ${area}-sources.json; not published`); continue; }
     result[p] = repos[0];
   }
   return result;
@@ -79,70 +82,75 @@ function sanitize(dir, label) {
   return bytes;
 }
 
-function fetchMuse(repo, sha, work) {
-  const dir = path.join(work, repo.replace('/', '__'));
+function fetchArea(area, repo, sha, work) {
+  const dir = path.join(work, `${area}__${repo.replace('/', '__')}`);
   mkdirSync(dir, { recursive: true });
   const git = args => execFileSync('git', ['-C', dir, ...args], { stdio: ['ignore', 'pipe', 'inherit'] });
   git(['init', '-q']);
   git(['fetch', '-q', '--depth', '1', `https://github.com/${repo}.git`, sha]);
   const out = path.join(dir, 'out');
   mkdirSync(out);
-  const hasMuse = execFileSync('git', ['-C', dir, 'ls-tree', '--name-only', sha, 'muse'], { encoding: 'utf8' }).trim();
-  if (!hasMuse) return path.join(out, 'muse');
-  execSync(`git -C "${dir}" archive --format=tar ${sha} muse | tar -x -C "${out}"`, { shell: '/bin/bash', stdio: 'inherit' });
-  const museDir = path.join(out, 'muse');
-  if (!lstatSync(museDir).isDirectory()) return path.join(out, 'missing');
-  const bytes = sanitize(museDir, `${repo}:muse`);
-  if (bytes > MAX_BYTES) throw new Error(`${repo} muse/ is ${bytes} bytes, over the ${MAX_BYTES} limit`);
-  return museDir;
+  const hasArea = execFileSync('git', ['-C', dir, 'ls-tree', '--name-only', sha, area], { encoding: 'utf8' }).trim();
+  if (!hasArea) return path.join(out, area);
+  execSync(`git -C "${dir}" archive --format=tar ${sha} ${area} | tar -x -C "${out}"`, { shell: '/bin/bash', stdio: 'inherit' });
+  const areaDir = path.join(out, area);
+  if (!lstatSync(areaDir).isDirectory()) return path.join(out, 'missing');
+  const bytes = sanitize(areaDir, `${repo}:${area}`);
+  if (bytes > MAX_BYTES) throw new Error(`${repo} ${area}/ is ${bytes} bytes, over the ${MAX_BYTES} limit`);
+  return areaDir;
 }
 
-function compose(siteDir, lock) {
-  const { sources, claimed } = loadSources();
-  const work = mkdtempSync(path.join(tmpdir(), 'muse-'));
+function composeArea(area, siteDir, lock, meta) {
+  const { sources, claimed } = loadSources(area);
+  const work = mkdtempSync(path.join(tmpdir(), `${area}-`));
   const dirs = {};
   const found = {};
   for (const { repo } of sources) {
     const sha = lock[repo];
     if (!/^[0-9a-f]{40}$/.test(sha || '')) throw new Error(`No pinned sha for ${repo}`);
-    dirs[repo] = fetchMuse(repo, sha, work);
+    dirs[repo] = fetchArea(area, repo, sha, work);
     found[repo] = existsSync(dirs[repo])
       ? readdirSync(dirs[repo]).filter(p => lstatSync(path.join(dirs[repo], p)).isDirectory())
       : [];
   }
-  const chosen = choose(found, claimed);
-  const target = path.join(siteDir, 'muse');
+  const chosen = choose(found, claimed, area);
+  const target = path.join(siteDir, area);
   rmSync(target, { recursive: true, force: true });
   mkdirSync(target, { recursive: true });
   for (const [p, repo] of Object.entries(chosen).sort()) {
     cpSync(path.join(dirs[repo], p), path.join(target, p), { recursive: true });
-    console.log(`muse/${p} <- ${repo}@${lock[repo].slice(0, 10)}`);
+    console.log(`${area}/${p} <- ${repo}@${lock[repo].slice(0, 10)}`);
   }
-  const deployment = path.join(siteDir, '_deployment.json');
-  const meta = existsSync(deployment) ? JSON.parse(readFileSync(deployment, 'utf8')) : {};
-  meta.muse = lock;
-  writeFileSync(deployment, JSON.stringify(meta));
+  meta[area] = lock;
   rmSync(work, { recursive: true, force: true });
 }
 
+const resolveAll = () => Object.fromEntries(AREAS.map(area => [area, resolve(loadSources(area).sources)]));
+
+function compose(siteDir, locks) {
+  const deployment = path.join(siteDir, '_deployment.json');
+  const meta = existsSync(deployment) ? JSON.parse(readFileSync(deployment, 'utf8')) : {};
+  for (const area of AREAS) composeArea(area, siteDir, locks[area] || {}, meta);
+  writeFileSync(deployment, JSON.stringify(meta));
+}
+
 async function check() {
-  const { sources } = loadSources();
-  const lock = resolve(sources);
+  const locks = resolveAll();
   let live = {};
   try {
     const res = await fetch(`https://alpacaplayhouse.com/_deployment.json?muse-check=${Date.now()}`, { cache: 'no-store' });
-    if (res.ok) live = (await res.json()).muse || {};
+    if (res.ok) live = await res.json();
   } catch (error) {
     console.log(`Could not read live _deployment.json: ${error.message}`);
   }
-  const changed = sources.some(({ repo }) => live[repo] !== lock[repo]);
-  console.log(`Muse sources ${changed ? 'changed' : 'unchanged'}: ${JSON.stringify(lock)}`);
+  const changed = AREAS.some(area => Object.entries(locks[area]).some(([repo, sha]) => (live[area] || {})[repo] !== sha));
+  console.log(`Agent page sources ${changed ? 'changed' : 'unchanged'}: ${JSON.stringify(locks)}`);
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `changed=${changed}\n`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [cmd, a, b] = process.argv.slice(2);
-  if (cmd === 'resolve') process.stdout.write(JSON.stringify(resolve(loadSources().sources)));
+  if (cmd === 'resolve') process.stdout.write(JSON.stringify(resolveAll()));
   else if (cmd === 'compose') compose(a, JSON.parse(b));
   else if (cmd === 'check') await check();
   else { console.error('usage: compose-muse.mjs resolve | compose <siteDir> <lockJson> | check'); process.exit(64); }
