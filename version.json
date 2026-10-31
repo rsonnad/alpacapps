@@ -1,12 +1,12 @@
 {
-  "version": "v261030.06 10:39a",
-  "release": 1985,
-  "sha": "421dda9ebc",
-  "fullSha": "421dda9ebce1750a4d79f6a5ce3c4ef06652266a",
+  "version": "v261031.01 10:19a",
+  "release": 1986,
+  "sha": "629e9cf93f",
+  "fullSha": "629e9cf93f18ba5a3c1971769687a4e96fd6d9f0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-10-30T15:39:18+00:00",
-  "commits": [{"sha":"421dda9ebc","message":"rahulio: redirect /rahulio/pages/grokbassador to the YouTube video","author":"Blotto"}]
+  "pushedAt": "2026-10-31T15:19:00+00:00",
+  "commits": [{"sha":"629e9cf93f","message":"fix: restore requested Chelsae jacket page without missing screenshot","author":"Blotto"}]
 }
