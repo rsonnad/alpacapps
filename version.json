@@ -1,12 +1,12 @@
 {
-  "version": "v261031.16 8:00p",
-  "release": 2001,
-  "sha": "a106f63948",
-  "fullSha": "a106f63948a94d9512810cf06bc5a254ee665111",
+  "version": "v261031.17 8:10p",
+  "release": 2002,
+  "sha": "5e16a05bef",
+  "fullSha": "5e16a05bef73201a4aa30ef9c9004f69fb76c1a3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-11-01T01:00:20+00:00",
-  "commits": [{"sha":"a106f63948","message":"style(bots): halve the profile picture on the sample avatars page","author":"Blotto"}]
+  "pushedAt": "2026-11-01T01:10:03+00:00",
+  "commits": [{"sha":"5e16a05bef","message":"feat(bots): Copy Grokbot button on the sample avatars page","author":"Blotto"}]
 }
