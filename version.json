@@ -1,12 +1,12 @@
 {
-  "version": "v261031.20 9:29p",
-  "release": 2005,
-  "sha": "7d55284e9f",
-  "fullSha": "7d55284e9f8faf0a2747e84d752e858b480a5fa4",
+  "version": "v261031.22 9:32p",
+  "release": 2007,
+  "sha": "4c4ec1f2bd",
+  "fullSha": "4c4ec1f2bd5c0616640e1c4b62221bb72dec829a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-11-01T02:29:14+00:00",
-  "commits": [{"sha":"7d55284e9f","message":"bots/sampleavatars: Copy Grok Bot button in orange","author":"Blotto"}]
+  "pushedAt": "2026-11-01T02:32:44+00:00",
+  "commits": [{"sha":"4c4ec1f2bd","message":"bots: add avatardesigner.html, a copy of sampleavatars.html (both stay up)","author":"Blotto"}]
 }
