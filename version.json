@@ -1,12 +1,12 @@
 {
-  "version": "v261031.03 6:35p",
-  "release": 1988,
-  "sha": "329f3a0153",
-  "fullSha": "329f3a01535ad382052ab0d722ab8ed750494f7f",
+  "version": "v261031.04 6:59p",
+  "release": 1989,
+  "sha": "3d0d92bf5d",
+  "fullSha": "3d0d92bf5d41067d6dc2c8da42a088eee79a102f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-10-31T23:35:09+00:00",
-  "commits": [{"sha":"329f3a0153","message":"Publish Grokbot pages at /bots/ and /botsy/","author":"rsonnad"}]
+  "pushedAt": "2026-10-31T23:59:11+00:00",
+  "commits": [{"sha":"3d0d92bf5d","message":"Bot feedback: form, endpoint, table and owners-only inbox","author":"rsonnad"}]
 }
