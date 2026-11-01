@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tesla Model 3 Rentals in Austin: Every Option Compared</title>
+  <meta name="description" content="What it really costs to drive a Tesla Model 3 in Austin month to month: private-party rental vs. Tesla used and new leases, buying, Tesla CPO financing, Hertz rideshare rentals and monthly rentals, with all-in monthly costs, commitments, mileage and repair risk.">
+  <meta name="author" content="Rahul Sonnad">
+  <link rel="canonical" href="https://alpacaplayhouse.com/rahulio/pages/teslarentalsaustin/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Tesla Model 3 Rentals in Austin: Every Option Compared">
+  <meta property="og:description" content="All-in monthly cost, upfront cash, lock-in, miles and who pays when something breaks, for every way to drive a Model 3 in Austin.">
+  <meta property="og:url" content="https://alpacaplayhouse.com/rahulio/pages/teslarentalsaustin/">
+  <meta property="og:site_name" content="rahulio">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f6f3;
+      --surface: #ffffff;
+      --surface2: #f1efea;
+      --border: #e4e0d8;
+      --text: #17171a;
+      --text-soft: #3a3a40;
+      --text-dim: #6b6b73;
+      --red: #e31937;
+      --red-soft: rgba(227, 25, 55, 0.07);
+      --green: #15803d;
+      --green-soft: rgba(21, 128, 61, 0.08);
+      --green-border: rgba(21, 128, 61, 0.25);
+      --amber: #b45309;
+      --amber-soft: rgba(180, 83, 9, 0.08);
+      --blue: #1d4ed8;
+      --blue-soft: rgba(29, 78, 216, 0.07);
+      --bar-track: #ecebe6;
+      --hero-from: #121214;
+      --hero-to: #2a2a30;
+      --radius: 14px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 6px 24px rgba(0,0,0,0.05);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #111113;
+        --surface: #1a1a1d;
+        --surface2: #222226;
+        --border: #2e2e33;
+        --text: #f2f2f3;
+        --text-soft: #d0d0d5;
+        --text-dim: #9a9aa3;
+        --red-soft: rgba(227, 25, 55, 0.16);
+        --green: #4ade80;
+        --green-soft: rgba(74, 222, 128, 0.10);
+        --green-border: rgba(74, 222, 128, 0.30);
+        --amber: #fbbf24;
+        --amber-soft: rgba(251, 191, 36, 0.10);
+        --blue: #93b4ff;
+        --blue-soft: rgba(147, 180, 255, 0.10);
+        --bar-track: #26262b;
+        --hero-from: #0b0b0d;
+        --hero-to: #1f1f24;
+        --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #111113; --surface: #1a1a1d; --surface2: #222226; --border: #2e2e33;
+      --text: #f2f2f3; --text-soft: #d0d0d5; --text-dim: #9a9aa3;
+      --red-soft: rgba(227, 25, 55, 0.16);
+      --green: #4ade80; --green-soft: rgba(74, 222, 128, 0.10); --green-border: rgba(74, 222, 128, 0.30);
+      --amber: #fbbf24; --amber-soft: rgba(251, 191, 36, 0.10);
+      --blue: #93b4ff; --blue-soft: rgba(147, 180, 255, 0.10);
+      --bar-track: #26262b; --hero-from: #0b0b0d; --hero-to: #1f1f24;
+      --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+      color: #f5f5f7;
+      padding: 56px 0 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute; right: -120px; top: -120px;
+      width: 420px; height: 420px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(227,25,55,0.35), transparent 65%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #ff8a9b;
+    }
+    .eyebrow::before { content: ""; width: 18px; height: 2px; background: var(--red); }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.08; letter-spacing: -0.03em; font-weight: 800;
+      margin: 14px 0 14px; max-width: 760px;
+    }
+    .hero p.lede { font-size: 1.08rem; color: #c9c9d0; max-width: 680px; margin: 0; }
+    .hero-stats {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
+      margin-top: 34px; max-width: 820px; position: relative; z-index: 1;
+    }
+    .stat {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px; padding: 16px 18px;
+    }
+    .stat .num { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; }
+    .stat .lbl { font-size: 0.82rem; color: #b4b4bc; }
+    .stat.hl .num { color: #6ee7a0; }
+
+    section { padding: 44px 0 0; }
+    h2 { font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 6px; }
+    .sub { color: var(--text-dim); margin: 0 0 22px; max-width: 760px; }
+
+    /* Bar chart */
+    .chart {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 24px 22px 14px;
+    }
+    .bar-row {
+      display: grid; grid-template-columns: 230px minmax(0, 1fr) 120px;
+      align-items: center; gap: 14px; padding: 8px 0;
+    }
+    .bar-name { font-weight: 600; font-size: 0.92rem; }
+    .bar-name small { display: block; font-weight: 400; color: var(--text-dim); font-size: 0.78rem; }
+    .track { position: relative; height: 14px; background: var(--bar-track); border-radius: 99px; }
+    .fill {
+      position: absolute; top: 0; height: 100%; border-radius: 99px;
+      background: var(--text-dim); opacity: 0.85;
+    }
+    .fill.private { background: var(--green); opacity: 1; }
+    .fill.tesla { background: var(--red); }
+    .fill.own { background: var(--blue); }
+    .fill.rent { background: var(--amber); }
+    .bar-val { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-align: right; color: var(--text-soft); }
+    .axis {
+      display: grid; grid-template-columns: 230px minmax(0, 1fr) 120px; gap: 14px;
+      font-size: 0.72rem; color: var(--text-dim); padding-top: 6px; border-top: 1px dashed var(--border); margin-top: 6px;
+    }
+    .axis .ticks { display: flex; justify-content: space-between; }
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.8rem; color: var(--text-dim); margin-top: 14px; }
+    .legend span::before {
+      content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px;
+      background: var(--c);
+    }
+
+    /* Comparison table */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 1040px; }
+    thead th {
+      background: var(--surface2); text-align: left; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600; padding: 12px 14px; border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    tbody td { padding: 14px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text-soft); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr.best { background: var(--green-soft); }
+    tbody tr.best td:first-child { box-shadow: inset 4px 0 0 var(--green); }
+    td.opt { color: var(--text); font-weight: 700; min-width: 190px; }
+    td.opt .n {
+      display: inline-flex; width: 22px; height: 22px; border-radius: 6px; align-items: center; justify-content: center;
+      background: var(--surface2); color: var(--text-dim); font-size: 0.72rem; margin-right: 8px;
+    }
+    td.opt small { display: block; font-weight: 400; color: var(--text-dim); margin: 4px 0 0 30px; }
+    td.allin { font-family: 'JetBrains Mono', monospace; font-weight: 500; color: var(--text); white-space: nowrap; font-size: 0.95rem; }
+    td.allin small { display: block; font-family: 'Inter', sans-serif; font-size: 0.74rem; color: var(--text-dim); white-space: normal; }
+    .pill {
+      display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 0.74rem; font-weight: 600; white-space: nowrap;
+    }
+    .pill.good { background: var(--green-soft); color: var(--green); }
+    .pill.bad { background: var(--red-soft); color: var(--red); }
+    .pill.mid { background: var(--amber-soft); color: var(--amber); }
+    .pill.info { background: var(--blue-soft); color: var(--blue); }
+
+    /* Mobile cards replace the table */
+    .cards { display: none; }
+    .ocard {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 18px; margin-bottom: 14px;
+    }
+    .ocard.best { border-color: var(--green-border); background: linear-gradient(var(--green-soft), var(--green-soft)), var(--surface); }
+    .ocard h3 { margin: 0; font-size: 1.05rem; }
+    .ocard .price { font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 500; margin: 6px 0 12px; }
+    .ocard .price small { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: var(--text-dim); }
+    .ocard dl { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 7px 12px; margin: 0; font-size: 0.86rem; }
+    .ocard dt { color: var(--text-dim); }
+    .ocard dd { margin: 0; color: var(--text-soft); }
+
+    /* Notes */
+    .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .note {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
+    }
+    .note h3 { margin: 0 0 8px; font-size: 1rem; }
+    .note p, .note ul { margin: 0; color: var(--text-soft); font-size: 0.9rem; }
+    .note ul { padding-left: 18px; }
+    .note li { margin-bottom: 4px; }
+
+    /* Suggested rate */
+    .rate {
+      margin-top: 8px;
+      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+      color: #f5f5f7; border-radius: 18px; padding: 34px 30px;
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 30px; align-items: center;
+    }
+    .rate .big { font-size: clamp(2.6rem, 7vw, 4rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+    .rate .big span { font-size: 1.1rem; font-weight: 600; color: #b4b4bc; letter-spacing: 0; }
+    .rate .range { margin-top: 8px; color: #6ee7a0; font-weight: 600; }
+    .rate .k { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #ff8a9b; font-weight: 600; margin-bottom: 10px; }
+    .rate ul { margin: 0; padding-left: 18px; color: #d4d4da; font-size: 0.93rem; }
+    .rate li { margin-bottom: 7px; }
+    .rate strong { color: #fff; }
+
+    .sources { font-size: 0.8rem; color: var(--text-dim); padding: 34px 0 50px; }
+    .sources a { color: var(--text-dim); }
+    .sources ul { padding-left: 18px; columns: 2; column-gap: 32px; }
+
+    @media (max-width: 820px) {
+      .table-card { display: none; }
+      .cards { display: block; }
+      .notes { grid-template-columns: minmax(0, 1fr); }
+      .rate { grid-template-columns: minmax(0, 1fr); padding: 26px 20px; }
+      .bar-row, .axis { grid-template-columns: minmax(0, 1fr) 92px; }
+      .bar-row .bar-name { grid-column: 1 / -1; }
+      .axis > span:first-child { display: none; }
+      .sources ul { columns: 1; }
+    }
+    @media (max-width: 560px) {
+      .hero { padding: 40px 0 46px; }
+      .hero-stats { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style>
+  <script src="/rahulio/page-header.js" defer></script>
+</head>
+<body>
+  <div id="siteHeader"></div>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Austin, TX &middot; November 2026</div>
+      <h1>Driving a Tesla Model 3 in Austin: every option, all-in</h1>
+      <p class="lede">A month-to-month private rental compared with Tesla&rsquo;s used and new leases, buying, Tesla certified pre-owned financing, Hertz rideshare rentals and monthly rentals. Each option is costed the same way, so the numbers line up.</p>
+      <div class="hero-stats">
+        <div class="stat hl"><div class="num">$295</div><div class="lbl">Private rental, all-in per month</div></div>
+        <div class="stat"><div class="num">&asymp; $615</div><div class="lbl">Cheapest Tesla lease, all-in per month</div></div>
+        <div class="stat"><div class="num">$0</div><div class="lbl">Repair risk to the renter, private rental</div></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <h2>All-in monthly cost</h2>
+      <p class="sub">Upfront costs spread over the term, plus tires and upkeep the driver pays, plus extra-mile charges at about 12,000 miles a year. Insurance and electricity are left out because the driver pays them in every option except the two rentals, which include insurance.</p>
+      <div class="chart" id="chart"></div>
+    </section>
+
+    <section>
+      <h2>Side-by-side comparison</h2>
+      <p class="sub">The driver&rsquo;s view. The highlighted row is the private-party rental.</p>
+
+      <div class="table-card">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Advertised</th>
+                <th>Upfront</th>
+                <th>All-in / mo</th>
+                <th>Term &amp; exit</th>
+                <th>Miles</th>
+                <th>Repairs &amp; big failures</th>
+                <th>Tires &amp; upkeep</th>
+                <th>Credit check</th>
+                <th>Car</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <section>
+      <h2>What the numbers include</h2>
+      <p class="sub">How the all-in figures were built.</p>
+      <div class="notes">
+        <div class="note">
+          <h3>Driver-side add-ons</h3>
+          <ul>
+            <li>Tires: about $40/mo wherever the driver buys them.</li>
+            <li>Extra miles on 10k-mile leases: about $42/mo (2,000 miles a year at $0.25).</li>
+            <li>Upkeep and repairs when the driver owns the car: about $100&ndash;165/mo.</li>
+            <li>Tesla lease return fee: $395 at the end of the term.</li>
+          </ul>
+        </div>
+        <div class="note">
+          <h3>Texas tax on leases</h3>
+          <p>Texas charges its 6.25% motor vehicle tax once, on the car&rsquo;s full price, and Tesla collects it at delivery. On a $27,500 used Model 3 that&rsquo;s <strong>$1,718.75</strong>, plus $434 in registration, inspection and plate fees. The monthly payment itself isn&rsquo;t taxed again. Tax on a new-car lease is an estimate (6.25% of about $42k).</p>
+        </div>
+        <div class="note">
+          <h3>The private rental&rsquo;s hidden extra</h3>
+          <p>In a private rental the owner pays for breakdowns, tires and wear, so the renter effectively gets a warranty <em>and</em> a maintenance plan. A Tesla lease includes the warranty but not tires or wear charges. Buying includes neither. The trade-off for the owner: on a 112k-mile car, a single drive-unit failure ($3&ndash;7k) costs more than a year of rent.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="rate">
+        <div>
+          <div class="k">Suggested Austin market rate</div>
+          <div class="big">$400<span> / month</span></div>
+          <div class="range">Clearing range: $375&ndash;425</div>
+        </div>
+        <ul>
+          <li><strong>For a private-party rental</strong> of a 2022 Model 3 with about 112k miles: month to month on 30 days&rsquo; notice, about 1,000 miles a month, the renter carrying insurance and paying for charging, and the owner paying for repairs, tires and wear.</li>
+          <li><strong>Covers the owner&rsquo;s full cost</strong> of about $320&ndash;460 a month: depreciation $210&ndash;290, tires $35&ndash;45, upkeep $15&ndash;20, a repair fund of $50&ndash;100 and registration about $7.</li>
+          <li><strong>Still about $200 a month below</strong> the cheapest comparable option (a Tesla used lease at about $615 all-in), with no credit check, no upfront cash and no lock-in, so the renter is still clearly better off.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="sources">
+      <p>Prices checked October 31 to November 1, 2026. Tesla used-lease figures come from Tesla&rsquo;s live inventory quote for ZIP 78612; that specific car wasn&rsquo;t available for registration in that ZIP code, so treat it as a price benchmark. Other figures are published listings and estimates, not quotes.</p>
+      <ul>
+        <li><a href="https://www.tesla.com/inventory/used/m3?zip=78612">Tesla certified pre-owned Model 3 inventory (lease &amp; finance)</a></li>
+        <li><a href="https://www.autoblog.com/carbuying/tesla-drops-enticing-model-3-lease-offers-for-october">Autoblog: Tesla Model 3 lease offers, October 2026</a></li>
+        <li><a href="https://www.carsdirect.com/tesla/model-3/prices-deals">CarsDirect: Model 3 lease deals</a></li>
+        <li><a href="https://bonjour.uber.com/marketplace/offer/ayz8tq7z7ncah42am2jv2dzghg">Uber marketplace: Hertz Tesla rentals, Austin</a></li>
+        <li><a href="https://ridesharerenter.com/blog/article/rent-tesla-uber-rideshare-worth-it-2026-b182">RideshareRenter: renting a Tesla for Uber in 2026</a></li>
+        <li><a href="https://enginelity.com/cars/tesla-model-3-rental/">Enginelity: Austin Model 3 monthly rental</a></li>
+        <li><a href="https://www.kayak.com/Austin-Tesla-Car-Rentals.22863.1139.cb.ksp">Kayak: Austin Tesla rentals</a></li>
+        <li><a href="https://www.kbb.com/cars-for-sale/used/2022/tesla/model-3">KBB: used 2022 Model 3 listings</a></li>
+        <li><a href="https://www.monitorbankrates.com/news/auto-loan-rates/average-auto-loan-rates-october-28-2026">MonitorBankRates: auto loan rates, Oct 28 2026</a></li>
+        <li><a href="https://www.experian.com/blogs/ask-experian/auto-loan-rates-financing/">Experian: auto loan rates</a></li>
+        <li><a href="https://cleantechnica.com/2023/03/06/90000-miles-on-my-tesla-model-3-maintenance-costs-higher-than-expected/">CleanTechnica: Model 3 costs at 90k miles</a></li>
+        <li><a href="https://recharged.com/articles/tesla-model-3-after-warranty-costs">Recharged: Model 3 out-of-warranty costs</a></li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    // lo/hi = all-in monthly range; kind drives the bar colour.
+    var OPTIONS = [
+      { name: 'Private-party rental', note: 'Owner covers repairs, tires and wear', kind: 'private', best: true,
+        advertised: '$295 / mo', upfront: '$500 deposit (refundable)', lo: 295, hi: 295, allinNote: '',
+        term: ['good', 'Month to month'], termNote: '30 days&rsquo; notice',
+        miles: '12k / yr, then $0.15 / mi', repairs: ['good', 'Owner pays'], tires: ['good', 'Owner pays'],
+        credit: ['good', 'No'], car: '2022, ~112k mi' },
+      { name: 'Tesla used lease, $2k down', note: 'Tesla certified pre-owned', kind: 'tesla',
+        advertised: '$388 / mo', upfront: '$5,236 (incl. $1,719 TX tax)', lo: 615, hi: 615, allinNote: '',
+        term: ['bad', '36 months'], termNote: 'Locked in',
+        miles: '10k / yr, then $0.25 / mi', repairs: ['good', 'Tesla warranty for the lease'], tires: ['mid', 'Driver pays'], tiresNote: '+ wear charges at return',
+        credit: ['bad', 'Yes'], car: '2022, 33k mi, certified' },
+      { name: 'Tesla used lease, $0 down', note: 'Same car, no down payment', kind: 'tesla',
+        advertised: '$450 / mo', upfront: '&asymp; $3,300 (fees + tax)', lo: 620, hi: 620, allinNote: '',
+        term: ['bad', '36 months'], termNote: 'Locked in',
+        miles: '10k / yr, then $0.25 / mi', repairs: ['good', 'Tesla warranty for the lease'], tires: ['mid', 'Driver pays'], tiresNote: '+ wear charges at return',
+        credit: ['bad', 'Yes'], car: '2022, 33k mi, certified' },
+      { name: 'Tesla new lease, Standard RWD', note: 'Current Tesla offer', kind: 'tesla',
+        advertised: '$419 / mo', upfront: '$4,115 + &asymp; $3k tax &amp; registration', lo: 700, hi: 700, allinNote: '',
+        term: ['bad', '36 months'], termNote: 'Locked in',
+        miles: '10k / yr, then $0.25 / mi', repairs: ['good', 'Full new-car warranty'], tires: ['mid', 'Driver pays'], tiresNote: '+ wear charges at return',
+        credit: ['bad', 'Yes'], car: 'New' },
+      { name: 'Buy a similar used Model 3', note: 'Private sale, about $16k, 60-month loan', kind: 'own',
+        advertised: '$283&ndash;313 loan', upfront: '&asymp; $3,000 (10% down, tax, registration)', lo: 400, hi: 480, allinNote: '&asymp; $250&ndash;330 after resale value',
+        term: ['mid', 'Sell anytime'], termNote: 'Takes effort and money',
+        miles: 'Unlimited', repairs: ['bad', 'Driver pays, no warranty'], tires: ['mid', 'Driver pays'],
+        credit: ['bad', 'Yes (6.7&ndash;11% interest)'], car: 'Similar' },
+      { name: 'Tesla certified pre-owned, financed', note: 'Cheapest listings near Austin', kind: 'own',
+        advertised: 'From $372 / mo', upfront: 'Down payment + &asymp; $1.5k tax', lo: 500, hi: 550, allinNote: '',
+        term: ['mid', 'Loan, sell anytime'], termNote: '',
+        miles: 'Unlimited', repairs: ['mid', '1 yr / 10k mi warranty'], repairsNote: 'Then the driver pays', tires: ['mid', 'Driver pays'],
+        credit: ['bad', 'Yes'], car: '2018&ndash;21, 40&ndash;90k mi, $24.5k+' },
+      { name: 'Hertz Tesla for Uber drivers', note: 'Rideshare-only rental', kind: 'rent',
+        advertised: '$280&ndash;376 / week', upfront: 'Small deposit', lo: 1000, hi: 1400, allinNote: '&asymp; $1,200&ndash;1,600 with insurance',
+        term: ['good', 'Weekly'], termNote: '',
+        miles: 'Unlimited for rideshare', repairs: ['good', 'Hertz pays'], tires: ['good', 'Hertz pays'],
+        credit: ['mid', 'Must be an active Uber driver'], car: 'Newer, fleet car' },
+      { name: 'Monthly rental', note: 'Turo, Enginelity, Eon', kind: 'rent',
+        advertised: '$900&ndash;1,350 / mo', upfront: 'Deposit', lo: 700, hi: 1150, allinNote: '&asymp; $900&ndash;1,350 with insurance',
+        term: ['good', 'Monthly'], termNote: 'Eon has a 6-month minimum',
+        miles: 'Usually capped', repairs: ['good', 'Rental company pays'], tires: ['good', 'Rental company pays'],
+        credit: ['mid', 'Light'], car: 'Varies' }
+    ];
+
+    var MAX = 1400;
+    function money(n) { return '$' + n.toLocaleString('en-US'); }
+    function allin(o) { return o.lo === o.hi ? (o.best ? '' : '&asymp; ') + money(o.lo) : money(o.lo) + '&ndash;' + money(o.hi).slice(1); }
+    function pill(p) { return '<span class="pill ' + p[0] + '">' + p[1] + '</span>'; }
+    function sub(t) { return t ? '<br><small style="color:var(--text-dim)">' + t + '</small>' : ''; }
+
+    // Chart
+    var chart = '';
+    OPTIONS.forEach(function (o) {
+      var left = o.lo === o.hi ? 0 : (o.lo / MAX) * 100;
+      var width = o.lo === o.hi ? (o.lo / MAX) * 100 : ((o.hi - o.lo) / MAX) * 100;
+      var label = o.kind === 'private' ? money(o.lo) : allin(o);
+      chart += '<div class="bar-row"><div class="bar-name">' + o.name + '<small>' + o.note + '</small></div>' +
+        '<div class="track">' + (o.lo === o.hi ? '' : '<div class="fill ' + o.kind + '" style="left:0;width:' + left + '%;opacity:.18"></div>') +
+        '<div class="fill ' + o.kind + '" style="left:' + left + '%;width:' + Math.max(width, 1.5) + '%"></div></div>' +
+        '<div class="bar-val">' + label + '</div></div>';
+    });
+    chart += '<div class="axis"><span></span><div class="ticks"><span>$0</span><span>$350</span><span>$700</span><span>$1,050</span><span>$1,400</span></div><span></span></div>' +
+      '<div class="legend"><span style="--c:var(--green)">Private rental</span><span style="--c:var(--red)">Tesla lease</span>' +
+      '<span style="--c:var(--blue)">Buy / finance</span><span style="--c:var(--amber)">Rental company</span></div>';
+    document.getElementById('chart').innerHTML = chart;
+
+    // Table + mobile cards
+    var rows = '', cards = '';
+    OPTIONS.forEach(function (o, i) {
+      rows += '<tr' + (o.best ? ' class="best"' : '') + '>' +
+        '<td class="opt"><span class="n">' + (i + 1) + '</span>' + o.name + '<small>' + o.note + '</small></td>' +
+        '<td>' + o.advertised + '</td>' +
+        '<td>' + o.upfront + '</td>' +
+        '<td class="allin">' + allin(o) + (o.allinNote ? '<small>' + o.allinNote + '</small>' : '') + '</td>' +
+        '<td>' + pill(o.term) + sub(o.termNote) + '</td>' +
+        '<td>' + o.miles + '</td>' +
+        '<td>' + pill(o.repairs) + sub(o.repairsNote) + '</td>' +
+        '<td>' + pill(o.tires) + sub(o.tiresNote) + '</td>' +
+        '<td>' + pill(o.credit) + '</td>' +
+        '<td>' + o.car + '</td></tr>';
+      cards += '<div class="ocard' + (o.best ? ' best' : '') + '"><h3>' + (i + 1) + '. ' + o.name + '</h3>' +
+        '<div class="price">' + allin(o) + ' <small>all-in / mo' + (o.allinNote ? ' &middot; ' + o.allinNote : '') + '</small></div><dl>' +
+        '<dt>Advertised</dt><dd>' + o.advertised + '</dd>' +
+        '<dt>Upfront</dt><dd>' + o.upfront + '</dd>' +
+        '<dt>Term</dt><dd>' + pill(o.term) + sub(o.termNote) + '</dd>' +
+        '<dt>Miles</dt><dd>' + o.miles + '</dd>' +
+        '<dt>Repairs</dt><dd>' + pill(o.repairs) + sub(o.repairsNote) + '</dd>' +
+        '<dt>Tires &amp; upkeep</dt><dd>' + pill(o.tires) + sub(o.tiresNote) + '</dd>' +
+        '<dt>Credit check</dt><dd>' + pill(o.credit) + '</dd>' +
+        '<dt>Car</dt><dd>' + o.car + '</dd></dl></div>';
+    });
+    document.getElementById('rows').innerHTML = rows;
+    document.getElementById('cards').innerHTML = cards;
+  </script>
+</body>
+</html>
