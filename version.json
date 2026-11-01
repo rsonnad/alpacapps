@@ -1,12 +1,12 @@
 {
-  "version": "v261031.06 7:13p",
-  "release": 1991,
-  "sha": "044d32bf78",
-  "fullSha": "044d32bf78618a5415bde79b6ba749c0da2fcbca",
+  "version": "v261031.07 7:20p",
+  "release": 1992,
+  "sha": "e16e460397",
+  "fullSha": "e16e46039714dcb84e33c38ef027eae3aed64880",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-11-01T00:13:24+00:00",
-  "commits": [{"sha":"044d32bf78","message":"feat(bots): sample avatars page for the 91 Grok Bot marketplace bots","author":"Blotto"}]
+  "pushedAt": "2026-11-01T00:20:38+00:00",
+  "commits": [{"sha":"e16e460397","message":"Bot feedback on the site's own address; redesigned inbox with reply-to line","author":"rsonnad"}]
 }
