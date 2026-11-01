@@ -134,7 +134,7 @@
   import { supabase } from '/shared/supabase.js';
   import { initPublicPage } from '/shared/public-shell.js';
 
-  initPublicPage({ light: true });
+  initPublicPage({ transparent: false, light: false });
 
   const TYPE_LABEL = { feedback: 'Feedback', feature_request: 'Idea', bug: 'Bug' };
   const STATUS_LABEL = { new: 'New', read: 'Read', done: 'Done' };
