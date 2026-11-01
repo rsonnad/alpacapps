@@ -27,12 +27,12 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink); font: 400 15px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
-  main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+  main { max-width: 46rem; margin: 0 auto; padding: calc(44px + 2rem) 1rem 4rem; }
   main p, main ul, main ol { margin: 0 0 .9rem; }
   main li { margin-bottom: .35rem; }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
   .eyebrow { font: 500 .75rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--soft); margin: 0 0 .5rem; }
-  main h1 { font: 800 clamp(2rem, 6vw, 2.75rem)/1.05 var(--display); letter-spacing: -.02em; margin: 0 0 .75rem; color: var(--ink); }
+  main h1 { font: 800 clamp(2rem, 6vw, 2.75rem)/1.05 var(--display); letter-spacing: -.02em; margin: 0 0 .75rem; color: var(--ink); -webkit-text-fill-color: currentColor; }
   main h2 { font: 600 1.35rem/1.25 var(--display); margin: 0 0 .75rem; color: var(--ink); }
   .lead { font-size: 1.0625rem; color: var(--soft); margin-bottom: 1.75rem; }
   section { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; }
