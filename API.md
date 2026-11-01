@@ -1087,7 +1087,7 @@ curl -X POST https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/bot-feedback 
 | `bot_name`, `bot_version` | no | e.g. `Avatar Profile Designer`, `1.0` |
 
 Also accepts `application/x-www-form-urlencoded` (the form; `source` becomes `web`, and a
-filled hidden `website` field is treated as spam and not stored).
+filled hidden `zq_hp` field is treated as spam and not stored).
 
 Responses: `201 {"ok":true,"id":"…"}`, `400 {"ok":false,"error":"message is required"}`,
 `429` after 10 posts from one IP in an hour.

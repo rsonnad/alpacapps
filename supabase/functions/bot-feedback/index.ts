@@ -60,7 +60,7 @@ serve(async (req: Request) => {
   }
 
   // Honeypot (form only): a bot filled the hidden field. Pretend it worked.
-  if (isForm && plain(body.website)) return reply(201, { ok: true, id: null });
+  if (isForm && plain(body.zq_hp)) return reply(201, { ok: true, id: null });
 
   const message = plain(body.message);
   if (!message) return reply(400, { ok: false, error: "message is required" });

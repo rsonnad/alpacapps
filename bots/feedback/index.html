@@ -79,8 +79,8 @@
       <p class="hint">Optional. Only used if we need to reply.</p>
     </div>
     <div class="hp" aria-hidden="true">
-      <label for="website">Leave this empty</label>
-      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+      <label for="zq_hp">Leave this empty</label>
+      <input type="text" id="zq_hp" name="zq_hp" tabindex="-1" autocomplete="off">
     </div>
     <button type="submit" id="send">Send</button>
     <p class="error" id="error" role="alert"></p>
@@ -125,7 +125,7 @@
       email: email.value.trim(),
       bot_name: botPick.value,
       bot_version: params.get('version') || '',
-      website: document.getElementById('website').value,
+      zq_hp: document.getElementById('zq_hp').value,
     });
     send.disabled = true; send.textContent = 'Sending…';
     try {
