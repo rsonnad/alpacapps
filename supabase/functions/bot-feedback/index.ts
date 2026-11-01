@@ -40,6 +40,15 @@ async function hashIp(ip: string): Promise<string> {
   return Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function forwardedByWorker(req: Request): boolean {
+  const expected = Deno.env.get("BOT_FEEDBACK_FORWARD_SECRET") || "";
+  const given = req.headers.get("x-forward-secret") || "";
+  if (!expected || given.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ given.charCodeAt(i);
+  return diff === 0;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeadersOpen });
   if (req.method !== "POST") return reply(405, { ok: false, error: "Please send feedback with POST." });
@@ -82,7 +91,11 @@ serve(async (req: Request) => {
   const botVersion = plain(body.bot_version).slice(0, 50) || null;
   const source = plain(body.source) === "web" || isForm ? "web" : "bot";
 
-  const ip = req.headers.get("cf-connecting-ip")
+  // Calls through alpacaplayhouse.com/bots/feedback arrive from the Cloudflare
+  // Worker (cloudflare/bot-feedback), which passes the caller's IP in
+  // X-Client-IP. Trust it only with the shared secret.
+  const ip = (forwardedByWorker(req) && req.headers.get("x-client-ip"))
+    || req.headers.get("cf-connecting-ip")
     || (req.headers.get("x-forwarded-for") || "").split(",")[0].trim()
     || "unknown";
   const ipHash = await hashIp(ip);

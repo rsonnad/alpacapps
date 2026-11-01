@@ -1069,12 +1069,12 @@ Active agent keys:
 
 ## Bot feedback (public, outside the gateway)
 
-Separate edge function `bot-feedback` (deployed with `verify_jwt: false`). Bots and the
-form at `https://alpacaplayhouse.com/bots/feedback/` send feedback and feature
-requests here. No sign-in, cookies or API key.
+`POST https://alpacaplayhouse.com/bots/feedback` — bots and the form at
+`https://alpacaplayhouse.com/bots/feedback/` send feedback and feature requests here. No sign-in,
+cookies or API key.
 
 ```bash
-curl -X POST https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/bot-feedback \
+curl -X POST https://alpacaplayhouse.com/bots/feedback \
   -H "Content-Type: application/json" \
   -d '{"message":"Let me pick a style per bot","type":"feature_request","bot_name":"Avatar Profile Designer","bot_version":"1.0"}'
 ```
@@ -1092,8 +1092,19 @@ filled hidden `zq_hp` field is treated as spam and not stored).
 Responses: `201 {"ok":true,"id":"…"}`, `400 {"ok":false,"error":"message is required"}`,
 `429` after 10 posts from one IP in an hour.
 
+How it is wired: alpacaplayhouse.com is proxied by Cloudflare (zone settings set to leave GitHub
+Pages output untouched: browser cache TTL respects headers, no email obfuscation, no HTTPS
+rewrites, no browser check, AI-bot blocking off). The Worker `cloudflare/bot-feedback`
+(route `alpacaplayhouse.com/bots/feedback*`) passes POSTs to the edge function `bot-feedback`
+(`verify_jwt: false`) with the caller's IP and a shared secret (`FORWARD_SECRET` on the Worker =
+`BOT_FEEDBACK_FORWARD_SECRET` on Supabase); every other request goes to GitHub Pages unchanged.
+The function URL `https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/bot-feedback` also still
+works. Rollback of the proxy: set the four apex A records back to DNS only. Cloudflare token:
+Bitwarden "Cloudflare — alpacaplayhouse.com Worker + proxy (agent-minted)".
+
 Stored in `public.bot_feedback` (migration `20261101_bot_feedback.sql`; IPs are stored
 only as a salted hash, secret `BOT_FEEDBACK_IP_SALT`). Read it at
 `https://alpacaplayhouse.com/bots/feedback/admin/`: only rahulioson@gmail.com,
 sonia245g@gmail.com and hrsonnad@gmail.com signed in with Google can see or change rows
-(enforced by RLS; test `supabase/tests/bot-feedback-access.sql`).
+(enforced by RLS; test `supabase/tests/bot-feedback-access.sql`). `?preview=1` on that page shows
+sample rows (no data) for checking the layout.

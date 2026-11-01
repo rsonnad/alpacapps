@@ -5,94 +5,148 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bot feedback inbox</title>
 <meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #faf8f5; --card: #ffffff; --text: #2b2724; --muted: #6b625c; --line: #ddd5cc;
-    --accent: #2f6b4f; --accent-text: #ffffff; --error: #a3341f;
-    --new: #2f5f9e; --read: #8a6d1f; --done: #2f6b4f; --chip: #efe9e2;
+    --paper: #e9ecf3; --sheet: #ffffff; --ink: #1d2133; --soft: #5a6078; --rule: #d3d8e4;
+    --focus: #4b4fd9; --field: #f4f6fa;
+    --stamp-feedback: #2f6f8f; --stamp-feature_request: #5a3fc0; --stamp-bug: #c2412b;
+    --st-new: #4b4fd9; --st-read: #9a6a00; --st-done: #2e7d5b;
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body: "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1b1917; --card: #24211f; --text: #ece7e2; --muted: #a8a09a; --line: #3a3532;
-      --accent: #6fbf95; --accent-text: #10241a; --error: #f08a74;
-      --new: #8db4ec; --read: #e0c26e; --done: #6fbf95; --chip: #2f2b28;
+      --paper: #12141d; --sheet: #1b1e2a; --ink: #e8eaf2; --soft: #9aa0b8; --rule: #2f3446;
+      --focus: #9da0ff; --field: #232736;
+      --stamp-feedback: #7cc0e0; --stamp-feature_request: #b5a3ff; --stamp-bug: #ff9a85;
+      --st-new: #9da0ff; --st-read: #e7b84a; --st-done: #6fcf9f;
     }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 60rem; margin: 0 auto; padding: 2rem 1rem 3rem; }
-  header { display: flex; flex-wrap: wrap; gap: .75rem; align-items: baseline; justify-content: space-between; margin-bottom: 1.25rem; }
-  h1 { font-size: 1.5rem; margin: 0; }
-  .who { color: var(--muted); font-size: .875rem; }
-  .who button { font: inherit; background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; padding: 0; }
-  .bar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-bottom: 1rem; }
-  select, .btn { font: inherit; color: inherit; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .45rem .7rem; }
-  .btn { cursor: pointer; }
-  .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
-  .summary { color: var(--muted); margin-left: auto; font-size: .875rem; }
-  .list { display: grid; gap: .75rem; }
-  .item { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; }
-  .meta { display: flex; flex-wrap: wrap; gap: .4rem .6rem; align-items: center; font-size: .8125rem; color: var(--muted); margin-bottom: .5rem; }
-  .chip { background: var(--chip); border-radius: 999px; padding: .1rem .55rem; color: var(--text); }
-  .status { font-weight: 600; }
-  .status.new { color: var(--new); } .status.read { color: var(--read); } .status.done { color: var(--done); }
-  .msg { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 .75rem; }
-  .actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
-  .actions .btn { padding: .3rem .7rem; font-size: .875rem; }
-  .email { font-size: .875rem; overflow-wrap: anywhere; }
-  .notice { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; text-align: center; }
-  .notice p { margin: 0 0 1rem; } .notice p:last-child { margin: 0; }
-  .error { color: var(--error); }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 15px/1.55 var(--body); -webkit-font-smoothing: antialiased; }
+  main { max-width: 52rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+
+  .top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: .5rem 1rem; margin-bottom: 1.75rem; }
+  .eyebrow { font: 500 .75rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--soft); margin: 0 0 .5rem; }
+  h1 { font: 800 clamp(2rem, 6vw, 2.75rem)/1 var(--display); letter-spacing: -.02em; margin: 0; }
+  .who { font-size: .8125rem; color: var(--soft); }
+  .who button { font: inherit; color: var(--ink); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; align-items: center; margin-bottom: 1.25rem; }
+  .tabs { display: inline-flex; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 3px; }
+  .tabs button { font: 500 .875rem/1 var(--body); color: var(--soft); background: none; border: 0; border-radius: 999px; padding: .55rem .9rem; cursor: pointer; white-space: nowrap; }
+  .tabs button .n { font: 500 .75rem/1 var(--mono); margin-left: .35rem; opacity: .8; }
+  .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--sheet); }
+  .types { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .types button { font: 500 .8125rem/1 var(--body); color: var(--soft); background: transparent; border: 1px dashed var(--rule); border-radius: 6px; padding: .45rem .65rem; cursor: pointer; }
+  .types button[aria-pressed="true"] { color: var(--ink); border-style: solid; border-color: var(--ink); }
+  .tools { margin-left: auto; display: flex; gap: .5rem; }
+  .btn { font: 500 .8125rem/1 var(--body); color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: .55rem .8rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: .35rem; }
+  .btn:hover { border-color: var(--soft); }
+  .btn.ink { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+
+  .list { display: grid; gap: 1rem; }
+  .letter { position: relative; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 1.25rem 1.25rem 1rem; }
+  .letter.is-done { opacity: .72; }
+  .head { display: flex; gap: 1rem; justify-content: space-between; align-items: flex-start; margin-bottom: .75rem; }
+  .meta { font: 400 .8125rem/1.5 var(--mono); color: var(--soft); }
+  .meta strong { font-family: var(--body); font-weight: 600; color: var(--ink); }
+  .stamp {
+    flex: none; font: 600 .6875rem/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--c); padding: .5rem .55rem; border: 2px dotted var(--c); border-radius: 4px;
+    outline: 1px solid var(--c); outline-offset: 2px; transform: rotate(2deg); white-space: nowrap;
+  }
+  .msg { font-size: 1.0625rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 1rem; }
+
+  .reply { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; padding: .7rem .8rem; background: var(--field); border-radius: 10px; margin-bottom: .9rem; }
+  .reply .label { font: 500 .6875rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--soft); }
+  .reply .addr { font: 500 .9375rem/1.3 var(--mono); overflow-wrap: anywhere; flex: 1 1 12rem; }
+  .reply .none { color: var(--soft); font-style: italic; flex: 1; }
+  .reply .acts { display: flex; gap: .4rem; }
+
+  .foot { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; justify-content: space-between; }
+  .status { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+  .status button { font: 500 .8125rem/1 var(--body); color: var(--soft); background: var(--sheet); border: 0; padding: .5rem .8rem; cursor: pointer; }
+  .status button + button { border-left: 1px solid var(--rule); }
+  .status button[aria-pressed="true"] { color: var(--sheet); background: var(--c); }
+  .src { font: 400 .75rem/1 var(--mono); color: var(--soft); }
+
+  .notice { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 2rem 1.5rem; text-align: center; }
+  .notice p { margin: 0 0 .75rem; } .notice p:last-child { margin: 0; }
+  .notice .big { font: 600 1.25rem/1.3 var(--display); }
+  .error { color: var(--stamp-bug); }
+  .toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); background: var(--ink); color: var(--sheet); font-size: .875rem; padding: .6rem 1rem; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .toast.on { opacity: 1; }
   [hidden] { display: none !important; }
+  @media (max-width: 560px) {
+    .tools { margin-left: 0; }
+    .tabs { width: 100%; } .tabs button { flex: 1; padding: .55rem .4rem; }
+    .stamp { transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
 </style>
 </head>
 <body>
 <main>
-  <header>
-    <h1>Bot feedback</h1>
+  <div class="top">
+    <div>
+      <p class="eyebrow">alpacaplayhouse.com · bots</p>
+      <h1>Feedback inbox</h1>
+    </div>
     <span class="who" id="who" hidden></span>
-  </header>
+  </div>
 
   <div class="notice" id="state"><p>Loading…</p></div>
 
   <section id="app" hidden>
-    <div class="bar">
-      <select id="filterType" aria-label="Filter by type">
-        <option value="">All types</option>
-        <option value="feedback">Feedback</option>
-        <option value="feature_request">Feature requests</option>
-        <option value="bug">Bugs</option>
-      </select>
-      <select id="filterStatus" aria-label="Filter by status">
-        <option value="">All statuses</option>
-        <option value="new">New</option>
-        <option value="read">Read</option>
-        <option value="done">Done</option>
-      </select>
-      <button class="btn" id="refresh" type="button">Refresh</button>
-      <button class="btn primary" id="csv" type="button">Download CSV</button>
-      <span class="summary" id="summary"></span>
+    <div class="controls">
+      <div class="tabs" role="group" aria-label="Show by status" id="tabs">
+        <button type="button" data-status="new" aria-pressed="true">New<span class="n" data-count="new"></span></button>
+        <button type="button" data-status="read" aria-pressed="false">Read<span class="n" data-count="read"></span></button>
+        <button type="button" data-status="done" aria-pressed="false">Done<span class="n" data-count="done"></span></button>
+        <button type="button" data-status="" aria-pressed="false">All<span class="n" data-count="all"></span></button>
+      </div>
+      <div class="types" role="group" aria-label="Show by type" id="types">
+        <button type="button" data-type="" aria-pressed="true">All types</button>
+        <button type="button" data-type="feedback" aria-pressed="false">Feedback</button>
+        <button type="button" data-type="feature_request" aria-pressed="false">Ideas</button>
+        <button type="button" data-type="bug" aria-pressed="false">Bugs</button>
+      </div>
+      <div class="tools">
+        <button class="btn" id="refresh" type="button">Refresh</button>
+        <button class="btn ink" id="csv" type="button">Download CSV</button>
+      </div>
     </div>
     <div class="list" id="list"></div>
   </section>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </main>
 
 <script src="/vendor/supabase-js-2.39.3.min.js"></script>
 <script type="module">
   import { supabase } from '/shared/supabase.js';
 
-  const TYPE_LABEL = { feedback: 'Feedback', feature_request: 'Feature request', bug: 'Bug' };
+  const TYPE_LABEL = { feedback: 'Feedback', feature_request: 'Idea', bug: 'Bug' };
+  const STATUS_LABEL = { new: 'New', read: 'Read', done: 'Done' };
   const state = document.getElementById('state');
   const app = document.getElementById('app');
   const list = document.getElementById('list');
-  const summary = document.getElementById('summary');
-  const filterType = document.getElementById('filterType');
-  const filterStatus = document.getElementById('filterStatus');
+  const toast = document.getElementById('toast');
   let rows = [];
+  let filter = { status: 'new', type: '' };
 
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const when = (iso) => new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const when = (iso) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+  function say(text) {
+    toast.textContent = text; toast.classList.add('on');
+    clearTimeout(say.t); say.t = setTimeout(() => toast.classList.remove('on'), 1800);
+  }
   function showNotice(html) { app.hidden = true; state.hidden = false; state.innerHTML = html; }
 
   async function start() {
@@ -103,13 +157,13 @@
     }
     const who = document.getElementById('who');
     who.hidden = false;
-    who.innerHTML = `Signed in as ${esc(session.user.email)} · <button type="button" id="signout">Sign out</button>`;
+    who.innerHTML = `${esc(session.user.email)} · <button type="button" id="signout">Sign out</button>`;
     document.getElementById('signout').addEventListener('click', async () => { await supabase.auth.signOut(); location.reload(); });
 
     const { data: allowed, error } = await supabase.rpc('bot_feedback_is_viewer');
     if (error) { showNotice(`<p class="error">Could not check access: ${esc(error.message)}</p>`); return; }
     if (!allowed) {
-      showNotice('<p>This page is only for Rahul, Sonia and Haydn.</p><p>Signed in with a different account? Sign out above and sign in with Google using your own address.</p>');
+      showNotice('<p class="big">This inbox is only for Rahul, Sonia and Haydn.</p><p>Signed in with another account? Sign out above, then sign in with Google using your own address.</p>');
       return;
     }
     await load();
@@ -127,48 +181,78 @@
     render();
   }
 
-  function filtered() {
-    return rows.filter(r => (!filterType.value || r.type === filterType.value) && (!filterStatus.value || r.status === filterStatus.value));
-  }
+  const shown = () => rows.filter(r => (!filter.status || r.status === filter.status) && (!filter.type || r.type === filter.type));
 
   function render() {
-    const shown = filtered();
-    const fresh = rows.filter(r => r.status === 'new').length;
-    summary.textContent = `${shown.length} shown · ${rows.length} total · ${fresh} new`;
-    if (!shown.length) { list.innerHTML = '<div class="notice"><p>Nothing here yet.</p></div>'; return; }
-    list.innerHTML = shown.map(r => `
-      <article class="item" data-id="${esc(r.id)}">
-        <div class="meta">
-          <span class="status ${esc(r.status)}">${esc(r.status[0].toUpperCase() + r.status.slice(1))}</span>
-          <span class="chip">${esc(TYPE_LABEL[r.type] || r.type)}</span>
-          ${r.bot_name ? `<span class="chip">${esc(r.bot_name)}${r.bot_version ? ' ' + esc(r.bot_version) : ''}</span>` : ''}
-          <span>${r.source === 'web' ? 'Web form' : 'From a bot'}</span>
-          <span>${esc(when(r.created_at))}</span>
+    for (const el of document.querySelectorAll('[data-count]')) {
+      const k = el.dataset.count;
+      el.textContent = k === 'all' ? rows.length : rows.filter(r => r.status === k).length;
+    }
+    for (const b of document.querySelectorAll('#tabs button')) b.setAttribute('aria-pressed', String(b.dataset.status === filter.status));
+    for (const b of document.querySelectorAll('#types button')) b.setAttribute('aria-pressed', String(b.dataset.type === filter.type));
+
+    const items = shown();
+    if (!items.length) {
+      const empty = filter.status === 'new' && !filter.type
+        ? '<p class="big">All caught up.</p><p>New messages from the form and from bots appear here.</p>'
+        : '<p class="big">Nothing matches.</p><p>Try another status or type.</p>';
+      list.innerHTML = `<div class="notice">${empty}</div>`;
+      return;
+    }
+    list.innerHTML = items.map(r => {
+      const bot = r.bot_name ? `<strong>${esc(r.bot_name)}</strong>${r.bot_version ? ' v' + esc(r.bot_version) : ''} · ` : '';
+      const subject = encodeURIComponent(`Re: your ${TYPE_LABEL[r.type].toLowerCase()}${r.bot_name ? ' about ' + r.bot_name : ''}`);
+      const reply = r.email
+        ? `<span class="addr">${esc(r.email)}</span>
+           <span class="acts">
+             <button class="btn" type="button" data-copy="${esc(r.email)}">Copy</button>
+             <a class="btn ink" href="mailto:${esc(r.email)}?subject=${subject}">Reply</a>
+           </span>`
+        : '<span class="none">No email given</span>';
+      return `
+      <article class="letter${r.status === 'done' ? ' is-done' : ''}" data-id="${esc(r.id)}">
+        <div class="head">
+          <div class="meta">${bot}${esc(when(r.created_at))}</div>
+          <span class="stamp" style="--c: var(--stamp-${esc(r.type)})">${esc(TYPE_LABEL[r.type] || r.type)}</span>
         </div>
         <p class="msg">${esc(r.message)}</p>
-        <div class="actions">
-          ${r.status !== 'read' ? '<button class="btn" data-status="read" type="button">Mark read</button>' : ''}
-          ${r.status !== 'done' ? '<button class="btn" data-status="done" type="button">Mark done</button>' : ''}
-          ${r.status !== 'new' ? '<button class="btn" data-status="new" type="button">Mark new</button>' : ''}
-          ${r.email ? `<a class="email" href="mailto:${esc(r.email)}">${esc(r.email)}</a>` : ''}
+        <div class="reply"><span class="label">Reply to</span>${reply}</div>
+        <div class="foot">
+          <div class="status" role="group" aria-label="Status">
+            ${['new', 'read', 'done'].map(s => `<button type="button" data-set="${s}" style="--c: var(--st-${s})" aria-pressed="${r.status === s}">${STATUS_LABEL[s]}</button>`).join('')}
+          </div>
+          <span class="src">${r.source === 'web' ? 'Sent from the web form' : 'Sent by a bot'}</span>
         </div>
-      </article>`).join('');
+      </article>`;
+    }).join('');
   }
 
   list.addEventListener('click', async (event) => {
-    const button = event.target.closest('button[data-status]');
-    if (!button) return;
-    const id = button.closest('.item').dataset.id;
-    const status = button.dataset.status;
-    button.disabled = true;
-    const { data, error } = await supabase.from('bot_feedback').update({ status }).eq('id', id).select('id, status');
-    if (error || !data?.length) {
-      button.disabled = false;
-      alert(error ? `Could not update: ${error.message}` : 'Could not update this item.');
+    const copy = event.target.closest('button[data-copy]');
+    if (copy) {
+      try { await navigator.clipboard.writeText(copy.dataset.copy); say('Email copied'); } catch { say('Could not copy'); }
       return;
     }
+    const button = event.target.closest('button[data-set]');
+    if (!button || button.getAttribute('aria-pressed') === 'true') return;
+    const id = button.closest('.letter').dataset.id;
+    const status = button.dataset.set;
+    button.disabled = true;
+    const { data, error } = await supabase.from('bot_feedback').update({ status }).eq('id', id).select('id, status');
+    button.disabled = false;
+    if (error || !data?.length) { say(error ? `Could not update: ${error.message}` : 'Could not update this message'); return; }
     rows.find(r => r.id === id).status = status;
+    say(`Marked ${STATUS_LABEL[status].toLowerCase()}`);
     render();
+  });
+
+  document.getElementById('tabs').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    filter.status = b.dataset.status; render();
+  });
+  document.getElementById('types').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    filter.type = b.dataset.type; render();
   });
 
   function csvCell(value) {
@@ -176,10 +260,9 @@
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // keep spreadsheets from running it as a formula
     return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }
-
   document.getElementById('csv').addEventListener('click', () => {
     const cols = ['created_at', 'type', 'status', 'message', 'email', 'bot_name', 'bot_version', 'source', 'id'];
-    const lines = [cols.join(','), ...filtered().map(r => cols.map(c => csvCell(r[c])).join(','))];
+    const lines = [cols.join(','), ...shown().map(r => cols.map(c => csvCell(r[c])).join(','))];
     const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -187,12 +270,20 @@
     a.click();
     URL.revokeObjectURL(a.href);
   });
+  document.getElementById('refresh').addEventListener('click', async () => { await load(); say('Up to date'); });
 
-  filterType.addEventListener('change', render);
-  filterStatus.addEventListener('change', render);
-  document.getElementById('refresh').addEventListener('click', load);
-
-  start().catch(err => showNotice(`<p class="error">Something went wrong: ${esc(err.message)}</p>`));
+  // ?preview=1 renders sample rows without signing in, so the layout can be checked.
+  if (new URLSearchParams(location.search).has('preview')) {
+    const ago = (h) => new Date(Date.now() - h * 3600e3).toISOString();
+    rows = [
+      { id: 'a', created_at: ago(1), type: 'feature_request', status: 'new', source: 'bot', bot_name: 'Avatar Profile Designer', bot_version: '1.0', email: 'maria.kowalska.long.address@example.com', message: 'Let me pick a style per bot.\nI run three bots and want each to look different.' },
+      { id: 'b', created_at: ago(5), type: 'bug', status: 'new', source: 'web', bot_name: null, bot_version: null, email: null, message: 'The preview image did not load on my phone.' },
+      { id: 'c', created_at: ago(30), type: 'feedback', status: 'read', source: 'bot', bot_name: 'Avatar Profile Designer', bot_version: '1.0', email: 'sam@example.com', message: 'Works great, thanks!' },
+    ];
+    state.hidden = true; app.hidden = false; render();
+  } else {
+    start().catch(err => showNotice(`<p class="error">Something went wrong: ${esc(err.message)}</p>`));
+  }
 </script>
 </body>
 </html>

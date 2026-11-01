@@ -1,0 +1,11 @@
+name = "bot-feedback-alpacaplayhouse"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+account_id = "9cd3a280a54ce2a5b382602f0247b577"
+
+# Only this path. The rest of alpacaplayhouse.com is GitHub Pages (proxied, not
+# changed). Secret FORWARD_SECRET must equal BOT_FEEDBACK_FORWARD_SECRET on the
+# Supabase project. Token: Bitwarden "Cloudflare — alpacaplayhouse.com Worker + proxy (agent-minted)".
+routes = [
+  { pattern = "alpacaplayhouse.com/bots/feedback*", zone_name = "alpacaplayhouse.com" }
+]
