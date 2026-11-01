@@ -1,12 +1,12 @@
 {
-  "version": "v261031.08 7:27p",
-  "release": 1993,
-  "sha": "ebe4b0c674",
-  "fullSha": "ebe4b0c674ceb42c5d9b662f59683c394c8236cb",
+  "version": "v261031.09 7:31p",
+  "release": 1994,
+  "sha": "04e36bf8fd",
+  "fullSha": "04e36bf8fd1990bb86dfe9fef2a2a00dc7632f1d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-11-01T00:27:50+00:00",
-  "commits": [{"sha":"ebe4b0c674","message":"feat(bots): brand sample avatars page and number each bot","author":"Blotto"}]
+  "pushedAt": "2026-11-01T00:31:16+00:00",
+  "commits": [{"sha":"04e36bf8fd","message":"Bot feedback: site header on the inbox; posting spec page for bots","author":"rsonnad"}]
 }
