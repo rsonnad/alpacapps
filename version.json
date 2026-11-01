@@ -1,12 +1,12 @@
 {
-  "version": "v261031.09 7:31p",
-  "release": 1994,
-  "sha": "04e36bf8fd",
-  "fullSha": "04e36bf8fd1990bb86dfe9fef2a2a00dc7632f1d",
+  "version": "v261031.10 7:34p",
+  "release": 1995,
+  "sha": "3badd990e1",
+  "fullSha": "3badd990e11296cccff20ec37c5ad76e780222dd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm48cm3",
-  "pushedAt": "2026-11-01T00:31:16+00:00",
-  "commits": [{"sha":"04e36bf8fd","message":"Bot feedback: site header on the inbox; posting spec page for bots","author":"rsonnad"}]
+  "pushedAt": "2026-11-01T00:34:47+00:00",
+  "commits": [{"sha":"3badd990e1","message":"Bot feedback pages: make room for the fixed site header; keep title colour","author":"rsonnad"}]
 }
