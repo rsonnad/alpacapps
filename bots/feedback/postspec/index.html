@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feedback posting spec for bots</title>
+<meta name="description" content="How a bot offers to pass on feedback and posts it to alpacaplayhouse.com/bots/feedback.">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/styles/site.css">
+<link rel="stylesheet" href="/styles/tailwind.out.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #e9ecf3; --sheet: #ffffff; --ink: #1d2133; --soft: #5a6078; --rule: #d3d8e4;
+    --focus: #4b4fd9; --field: #f4f6fa; --accent: #5a3fc0; --warn: #c2412b; --ok: #2e7d5b;
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body: "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #12141d; --sheet: #1b1e2a; --ink: #e8eaf2; --soft: #9aa0b8; --rule: #2f3446;
+      --focus: #9da0ff; --field: #232736; --accent: #b5a3ff; --warn: #ff9a85; --ok: #6fcf9f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 15px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+  main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+  main p, main ul, main ol { margin: 0 0 .9rem; }
+  main li { margin-bottom: .35rem; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+  .eyebrow { font: 500 .75rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--soft); margin: 0 0 .5rem; }
+  main h1 { font: 800 clamp(2rem, 6vw, 2.75rem)/1.05 var(--display); letter-spacing: -.02em; margin: 0 0 .75rem; color: var(--ink); }
+  main h2 { font: 600 1.35rem/1.25 var(--display); margin: 0 0 .75rem; color: var(--ink); }
+  .lead { font-size: 1.0625rem; color: var(--soft); margin-bottom: 1.75rem; }
+  section { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; }
+  code { font: 500 .875em/1.4 var(--mono); background: var(--field); border-radius: 4px; padding: .1em .3em; overflow-wrap: anywhere; }
+  pre { position: relative; font: 400 .8125rem/1.55 var(--mono); background: var(--field); border-radius: 10px; padding: .9rem 1rem; overflow-x: auto; margin: 0 0 .9rem; }
+  pre code { background: none; padding: 0; font: inherit; }
+  .copy { position: absolute; top: .5rem; right: .5rem; font: 500 .75rem/1 var(--body); color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: .35rem .55rem; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: .875rem; margin-bottom: .9rem; }
+  th, td { text-align: left; vertical-align: top; padding: .5rem .5rem .5rem 0; border-bottom: 1px solid var(--rule); }
+  th { font: 500 .6875rem/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--soft); }
+  .say { font-size: 1.0625rem; padding: .8rem 1rem; border: 2px dotted var(--accent); border-radius: 8px; margin: 0 0 .9rem; }
+  .rule-no { color: var(--warn); font-weight: 600; }
+  .rule-yes { color: var(--ok); font-weight: 600; }
+  .endpoint { font: 500 1rem/1.4 var(--mono); padding: .7rem .9rem; background: var(--field); border-radius: 10px; margin-bottom: .9rem; overflow-wrap: anywhere; }
+  .endpoint b { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main>
+  <p class="eyebrow">alpacaplayhouse.com · bots</p>
+  <h1>Feedback posting spec</h1>
+  <p class="lead">For any bot (Avatar Profile Designer first) that passes its user's feedback to its creator. Read this once, follow it every run.</p>
+
+  <section>
+    <h2>What the bot does</h2>
+    <ol>
+      <li>Once per run, after the main work is delivered, it offers to pass on feedback.</li>
+      <li>If the user gives some, the bot writes it as a short note and shows it back.</li>
+      <li>It asks whether to include the user's email so the creator can reply.</li>
+      <li>It sends the note <strong>only after the user says yes</strong>, then says whether it worked.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>1. The offer</h2>
+    <p>Say this once per run, at the end, in the user's language:</p>
+    <p class="say">And if you have any feedback or ideas for improving my work, I can pass them to my creator.</p>
+    <ul>
+      <li>Never ask twice in one run, and never interrupt the main task to ask.</li>
+      <li>If the user ignores it or says no, drop it.</li>
+      <li>If the user brings up a problem or idea on their own at any time, you may offer to pass it on then instead.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>2. Write the note and show it</h2>
+    <p>Turn what the user said into a plain note, in their words where possible. Pick one type:</p>
+    <div class="table-wrap"><table>
+      <tr><th>type</th><th>Use when the user…</th></tr>
+      <tr><td><code>feedback</code></td><td>says what they liked or didn't (default)</td></tr>
+      <tr><td><code>feature_request</code></td><td>asks for something new or different</td></tr>
+      <tr><td><code>bug</code></td><td>reports something broken or wrong</td></tr>
+    </table></div>
+    <p>Show it before sending, for example:</p>
+    <p class="say">Here's what I'll send: "Let me pick a different style for each of my bots." (idea) Should I include your email so they can reply? It's optional.</p>
+    <ul>
+      <li><span class="rule-no">Leave out</span> passwords, keys, payment details, addresses, phone numbers and anything about other people.</li>
+      <li><span class="rule-no">Don't</span> add your own opinions or summarise the whole chat. One note, at most 5000 characters.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. Ask about email, then confirm</h2>
+    <ul>
+      <li>Include an email <strong>only</strong> if the user says yes and gives it, or confirms one they already gave you in this run.</li>
+      <li>Never guess an email or take one from an account, profile or earlier run.</li>
+      <li>Send only after a clear yes to the note (with or without email). A change request means show the new note and ask again.</li>
+    </ul>
+    <p>Tell the user: <em>"We store your message and, if given, your email to follow up."</em></p>
+  </section>
+
+  <section>
+    <h2>4. Send it</h2>
+    <p class="endpoint"><b>POST</b> https://alpacaplayhouse.com/bots/feedback</p>
+    <pre><code id="curl">curl -X POST https://alpacaplayhouse.com/bots/feedback \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Let me pick a different style for each of my bots.","type":"feature_request","email":"optional@example.com","bot_name":"Avatar Profile Designer","bot_version":"1.0"}'</code><button class="copy" type="button" data-copy="curl">Copy</button></pre>
+    <div class="table-wrap"><table>
+      <tr><th>Field</th><th>Required</th><th>Value</th></tr>
+      <tr><td><code>message</code></td><td>yes</td><td>The note the user approved. Plain text, 1–5000 characters.</td></tr>
+      <tr><td><code>type</code></td><td>no</td><td><code>feedback</code> (default), <code>feature_request</code> or <code>bug</code></td></tr>
+      <tr><td><code>email</code></td><td>no</td><td>Only with the user's yes. Leave the field out otherwise.</td></tr>
+      <tr><td><code>bot_name</code></td><td>yes for bots</td><td>Your public name, e.g. <code>Avatar Profile Designer</code></td></tr>
+      <tr><td><code>bot_version</code></td><td>yes for bots</td><td>Your template version, e.g. <code>1.0</code></td></tr>
+    </table></div>
+    <p>No sign-in, key or cookie. Send JSON with <code>Content-Type: application/json</code>.</p>
+  </section>
+
+  <section>
+    <h2>5. Read the answer and tell the user</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Answer</th><th>Means</th><th>Tell the user</th></tr>
+      <tr><td><code>201</code> <code>{"ok":true,"id":"…"}</code></td><td>Stored</td><td>"Sent. Thank you!"</td></tr>
+      <tr><td><code>400</code> <code>{"ok":false,"error":"…"}</code></td><td>Something in the note is wrong; <code>error</code> says what</td><td>Fix it (e.g. shorten), show the note again, ask again</td></tr>
+      <tr><td><code>429</code></td><td>Too many notes from this address this hour</td><td>"I couldn't send it right now. You can also use alpacaplayhouse.com/bots/feedback/ later."</td></tr>
+      <tr><td><code>5xx</code> or no answer</td><td>Server problem</td><td>Retry once after a few seconds; if it fails again, say so and give the link above</td></tr>
+    </table></div>
+    <ul>
+      <li><span class="rule-yes">Do</span> say "sent" only after a <code>201</code>.</li>
+      <li><span class="rule-no">Don't</span> retry a <code>400</code> or <code>429</code> unchanged, and never send the same note twice.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Check your bot before release</h2>
+    <ol>
+      <li>Offer appears once, at the end of a run, and not again.</li>
+      <li>Saying no or ignoring it sends nothing.</li>
+      <li>A note without email sends after a yes and you get <code>201</code>.</li>
+      <li>A note with email sends only after the user agreed to include it.</li>
+      <li>A changed note is shown again before sending.</li>
+      <li>A 6000-character note is shortened or refused before sending, never sent and ignored.</li>
+    </ol>
+    <p>People without a bot can use the form: <a href="/bots/feedback/">alpacaplayhouse.com/bots/feedback/</a></p>
+  </section>
+</main>
+<script src="/vendor/supabase-js-2.39.3.min.js"></script>
+<script type="module">
+  import { initPublicPage } from '/shared/public-shell.js';
+  initPublicPage({ light: true });
+</script>
+<script>
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest('button[data-copy]'); if (!b) return;
+    try { await navigator.clipboard.writeText(document.getElementById(b.dataset.copy).textContent); b.textContent = 'Copied'; }
+    catch { b.textContent = 'Select and copy'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 1500);
+  });
+</script>
+</body>
+</html>

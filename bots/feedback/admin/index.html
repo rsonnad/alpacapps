@@ -7,6 +7,9 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/styles/site.css">
+<link rel="stylesheet" href="/styles/tailwind.out.css">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -28,14 +31,13 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink); font: 400 15px/1.55 var(--body); -webkit-font-smoothing: antialiased; }
+  main p { margin-top: 0; }
   main { max-width: 52rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
 
   .top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: .5rem 1rem; margin-bottom: 1.75rem; }
   .eyebrow { font: 500 .75rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--soft); margin: 0 0 .5rem; }
-  h1 { font: 800 clamp(2rem, 6vw, 2.75rem)/1 var(--display); letter-spacing: -.02em; margin: 0; }
-  .who { font-size: .8125rem; color: var(--soft); }
-  .who button { font: inherit; color: var(--ink); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+  main h1 { font: 800 clamp(2rem, 6vw, 2.75rem)/1 var(--display); letter-spacing: -.02em; margin: 0; }
 
   .controls { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; align-items: center; margin-bottom: 1.25rem; }
   .tabs { display: inline-flex; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 3px; }
@@ -92,13 +94,13 @@
 </style>
 </head>
 <body>
+<div id="siteHeader"></div>
 <main>
   <div class="top">
     <div>
       <p class="eyebrow">alpacaplayhouse.com · bots</p>
       <h1>Feedback inbox</h1>
     </div>
-    <span class="who" id="who" hidden></span>
   </div>
 
   <div class="notice" id="state"><p>Loading…</p></div>
@@ -130,6 +132,9 @@
 <script src="/vendor/supabase-js-2.39.3.min.js"></script>
 <script type="module">
   import { supabase } from '/shared/supabase.js';
+  import { initPublicPage } from '/shared/public-shell.js';
+
+  initPublicPage({ light: true });
 
   const TYPE_LABEL = { feedback: 'Feedback', feature_request: 'Idea', bug: 'Bug' };
   const STATUS_LABEL = { new: 'New', read: 'Read', done: 'Done' };
@@ -155,15 +160,11 @@
       location.href = '/login/?redirect=' + encodeURIComponent(location.pathname);
       return;
     }
-    const who = document.getElementById('who');
-    who.hidden = false;
-    who.innerHTML = `${esc(session.user.email)} · <button type="button" id="signout">Sign out</button>`;
-    document.getElementById('signout').addEventListener('click', async () => { await supabase.auth.signOut(); location.reload(); });
 
     const { data: allowed, error } = await supabase.rpc('bot_feedback_is_viewer');
     if (error) { showNotice(`<p class="error">Could not check access: ${esc(error.message)}</p>`); return; }
     if (!allowed) {
-      showNotice('<p class="big">This inbox is only for Rahul, Sonia and Haydn.</p><p>Signed in with another account? Sign out above, then sign in with Google using your own address.</p>');
+      showNotice('<p class="big">This inbox is only for Rahul, Sonia and Haydn.</p><p>Signed in with another account? Sign out from your profile menu (top right), then sign in with Google using your own address.</p>');
       return;
     }
     await load();
