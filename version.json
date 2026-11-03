@@ -1,12 +1,12 @@
 {
-  "version": "v261031.22 9:32p",
-  "release": 2007,
-  "sha": "4c4ec1f2bd",
-  "fullSha": "4c4ec1f2bd5c0616640e1c4b62221bb72dec829a",
+  "version": "v261103.01 5:04p",
+  "release": 2008,
+  "sha": "8e09fad4f8",
+  "fullSha": "8e09fad4f8fb1d998b238dd933f930e4bb860008",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm48cm3",
-  "pushedAt": "2026-11-01T02:32:44+00:00",
-  "commits": [{"sha":"4c4ec1f2bd","message":"bots: add avatardesigner.html, a copy of sampleavatars.html (both stay up)","author":"Blotto"}]
+  "machine": "runnervmnwato",
+  "pushedAt": "2026-11-03T23:04:20+00:00",
+  "commits": [{"sha":"8e09fad4f8","message":"Include all recipients and pending payouts in Stripe balance emails","author":"Blotto"}]
 }
