@@ -322,14 +322,30 @@ BEGIN
   SELECT * INTO r FROM event_hosting_requests WHERE id = p_request_id;
   IF NOT FOUND THEN RETURN; END IF;
   IF NOT (public.is_staff_or_admin_user()
-          OR r.associate_profile_id IN (SELECT public.my_associate_profile_ids())
+          OR coalesce(r.associate_profile_id IN (SELECT public.my_associate_profile_ids()), false)
           OR auth.uid() IS NULL) THEN  -- no user: only service_role can reach here (anon has no EXECUTE)
     RAISE EXCEPTION 'not allowed';
   END IF;
   v_status := coalesce(p_status, r.inspection_status);
   v_minutes := coalesce(p_minutes, r.inspection_minutes, 0);
-  has_before := EXISTS (SELECT 1 FROM work_photos WHERE event_request_id = p_request_id AND photo_type = 'before');
-  has_after  := EXISTS (SELECT 1 FROM work_photos WHERE event_request_id = p_request_id AND photo_type = 'after');
+  -- Every area on the checklist that needs photos must have a before AND an after photo.
+  -- (No checklist: any before/after photo counts.)
+  IF jsonb_typeof(r.cleaning_checklist) = 'array' AND EXISTS (
+       SELECT 1 FROM jsonb_array_elements(r.cleaning_checklist) a WHERE coalesce((a->>'needs_photos')::boolean, true)) THEN
+    has_before := NOT EXISTS (
+      SELECT 1 FROM jsonb_array_elements(r.cleaning_checklist) a
+      WHERE coalesce((a->>'needs_photos')::boolean, true)
+        AND NOT EXISTS (SELECT 1 FROM work_photos w WHERE w.event_request_id = p_request_id
+                        AND w.photo_type = 'before' AND w.cleaning_area_key = a->>'area_key'));
+    has_after := NOT EXISTS (
+      SELECT 1 FROM jsonb_array_elements(r.cleaning_checklist) a
+      WHERE coalesce((a->>'needs_photos')::boolean, true)
+        AND NOT EXISTS (SELECT 1 FROM work_photos w WHERE w.event_request_id = p_request_id
+                        AND w.photo_type = 'after' AND w.cleaning_area_key = a->>'area_key'));
+  ELSE
+    has_before := EXISTS (SELECT 1 FROM work_photos WHERE event_request_id = p_request_id AND photo_type = 'before');
+    has_after  := EXISTS (SELECT 1 FROM work_photos WHERE event_request_id = p_request_id AND photo_type = 'after');
+  END IF;
   photo_penalty := CASE WHEN has_before AND has_after THEN 0 ELSE r.photo_penalty_amount END;
   cleaning_charge := CASE WHEN v_status = 'failed'
     THEN round(greatest(r.cleaning_min_charge, r.cleaning_base_fee + r.cleaning_rate_per_hour * v_minutes / 60.0), 2)
