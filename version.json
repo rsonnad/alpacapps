@@ -1,12 +1,12 @@
 {
-  "version": "v261103.03 6:50p",
-  "release": 2010,
-  "sha": "1df6ea53b5",
-  "fullSha": "1df6ea53b5f6c51a14bc3c87699a1af1ef0099ee",
+  "version": "v261103.04 6:55p",
+  "release": 2011,
+  "sha": "05c70cb264",
+  "fullSha": "05c70cb26443e35187f6fbf46cb8e6bc62a784c1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-04T00:50:22+00:00",
-  "commits": [{"sha":"1ffd2f2e45","message":"Event cleaning: AI checklist + exposure, host photo page, AI photo review, inspection, deposit refund","author":"Blotto"},{"sha":"1df6ea53b5","message":"Event deposit refund: refuse unless the cleaning deposit was paid","author":"Blotto"}]
+  "machine": "runnervmnwato",
+  "pushedAt": "2026-11-04T00:55:24+00:00",
+  "commits": [{"sha":"05c70cb264","message":"Event cleaning charges: per-area photo check, block other hosts' charge lookups","author":"Blotto"}]
 }
