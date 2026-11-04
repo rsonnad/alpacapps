@@ -1524,6 +1524,7 @@
     }
 
     /* ===== Voice fill-in panel (event-intake-voice) ===== */
+    .voice-fill[hidden] { display: none; }
     .voice-fill {
       margin: 0 0 1.25rem;
       padding: 1rem 1.25rem;
@@ -1738,7 +1739,7 @@
     <!-- Application Form -->
     <div class="form-container" id="formContainer">
       <!-- Voice fill-in panel (event-intake-voice). Self-contained: own CSS block and module script. -->
-      <div class="voice-fill" id="voiceFill">
+      <div class="voice-fill" id="voiceFill" hidden>
         <div class="voice-fill-head">
           <div class="voice-fill-title">
             <h3>Prefer to talk?</h3>
@@ -3360,6 +3361,11 @@
     const history = [];
 
     if (!canRecord) startLabel.textContent = 'Fill this in by chatting';
+
+    // Show the panel only once the function is deployed and answering (GET returns 405, not 404)
+    fetch(ENDPOINT, { method: 'GET' })
+      .then((r) => { if (r.status !== 404) $('voiceFill').hidden = false; })
+      .catch(() => { /* not reachable: keep the panel hidden */ });
 
     function setStatus(t) { statusEl.textContent = t || ''; }
     function addLog(role, text) {
