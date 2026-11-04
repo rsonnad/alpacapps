@@ -58,11 +58,14 @@ Deno.serve(async (req) => {
     if (!/^[0-9a-f-]{36}$/i.test(String(requestId || ""))) return json({ error: "event_request_id required" }, 400);
 
     const { data: r }: { data: any } = await sb.from("event_hosting_requests")
-      .select("id, event_name, inspection_status, refund_payout_id, associate_profile_id, is_test, person:person_id(first_name, last_name, email)")
+      .select("id, event_name, inspection_status, refund_payout_id, cleaning_deposit_paid, associate_profile_id, is_test, person:person_id(first_name, last_name, email)")
       .eq("id", requestId).single();
     if (!r) return json({ error: "Event request not found" }, 404);
     if (r.inspection_status === "pending") return json({ error: "Inspect the cleaning first" }, 409);
     if (r.refund_payout_id) return json({ error: "This deposit was already refunded" }, 409);
+    if (!r.cleaning_deposit_paid) {
+      return json({ error: "The cleaning deposit hasn't been recorded as paid, so there's nothing to refund. Record it on the Deposits tab first." }, 409);
+    }
 
     const { data: chargeRows, error: chErr } = await sb.rpc("event_cleaning_charges", { p_request_id: requestId });
     if (chErr || !chargeRows?.[0]) throw new Error(`Could not compute charges: ${chErr?.message}`);

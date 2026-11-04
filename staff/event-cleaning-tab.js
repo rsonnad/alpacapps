@@ -69,6 +69,7 @@ export async function renderCleaningTab(requestId, el) {
     <div style="display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.75rem">
       ${pill(ev.is_resident_host, 'Resident host', 'Non-resident')}
       ${pill(!!ev.associate_profile_id, 'Host account linked', 'Host hasn\'t signed in yet')}
+      ${pill(!!ev.cleaning_deposit_paid, 'Cleaning deposit paid', 'Cleaning deposit not paid')}
       ${pill(!!profile?.stripe_connect_account_id, 'Payout set up', 'No payout set up')}
       ${pill(!!ev.cleaning_portal_sent_at, 'Checklist emailed ' + (ev.cleaning_portal_sent_at ? new Date(ev.cleaning_portal_sent_at).toLocaleDateString() : ''), 'Checklist not emailed')}
     </div>
@@ -141,7 +142,7 @@ export async function renderCleaningTab(requestId, el) {
       <button type="button" class="btn-small btn-primary" data-act="save-inspection">Save inspection</button>
       ${ev.refund_payout_id || ev.deposit_refunded_at
         ? `<span class="status-badge approved">Refunded ${money(ev.deposit_refund_amount)}</span>`
-        : `<button type="button" class="btn-small" data-act="refund" ${ev.inspection_status === 'pending' ? 'disabled title="Save the inspection first"' : ''}>Send deposit refund</button>`}
+        : `<button type="button" class="btn-small" data-act="refund" ${ev.inspection_status === 'pending' ? 'disabled title="Save the inspection first"' : !ev.cleaning_deposit_paid ? 'disabled title="Cleaning deposit not recorded as paid"' : ''}>Send deposit refund</button>`}
     </div>
     <p class="text-muted" style="font-size:.78rem;margin-top:.5rem">Charges: ${money(ev.photo_penalty_amount)} if before or after photos are missing. If not clean: ${money(ev.cleaning_base_fee)} + ${money(ev.cleaning_rate_per_hour)}/hour, minimum ${money(ev.cleaning_min_charge)}${ev.is_resident_host ? ' (resident rate)' : ''}.</p>
   `;
