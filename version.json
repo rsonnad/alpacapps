@@ -1,12 +1,12 @@
 {
-  "version": "v261103.01 5:04p",
-  "release": 2008,
-  "sha": "8e09fad4f8",
-  "fullSha": "8e09fad4f8fb1d998b238dd933f930e4bb860008",
+  "version": "v261103.02 6:22p",
+  "release": 2009,
+  "sha": "758e0751b0",
+  "fullSha": "758e0751b00c44d52dc8b4fda9bcca5e7e7dbc66",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnwato",
-  "pushedAt": "2026-11-03T23:04:20+00:00",
-  "commits": [{"sha":"8e09fad4f8","message":"Include all recipients and pending payouts in Stripe balance emails","author":"Blotto"}]
+  "pushedAt": "2026-11-04T00:22:22+00:00",
+  "commits": [{"sha":"758e0751b0","message":"Host event form: space rows link to the date field until a date is picked","author":"Blotto"}]
 }
