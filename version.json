@@ -1,12 +1,12 @@
 {
-  "version": "v261103.04 6:55p",
-  "release": 2011,
-  "sha": "05c70cb264",
-  "fullSha": "05c70cb26443e35187f6fbf46cb8e6bc62a784c1",
+  "version": "v261104.01 11:15a",
+  "release": 2012,
+  "sha": "e463069ace",
+  "fullSha": "e463069ace9b7495815a99ea2307176ee52e1dd7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnwato",
-  "pushedAt": "2026-11-04T00:55:24+00:00",
-  "commits": [{"sha":"05c70cb264","message":"Event cleaning charges: per-area photo check, block other hosts' charge lookups","author":"Blotto"}]
+  "pushedAt": "2026-11-04T17:15:29+00:00",
+  "commits": [{"sha":"e463069ace","message":"Event request page: design pass, resident price column","author":"Blotto"}]
 }
