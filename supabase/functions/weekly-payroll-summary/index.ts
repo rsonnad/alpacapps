@@ -35,7 +35,8 @@ serve(async (req) => {
         id, hourly_rate, stripe_connect_account_id, daily_extra,
         app_user:app_user_id(id, email, first_name, last_name, display_name, person_id)
       `)
-      .eq("is_active", true);
+      .eq("is_active", true)
+      .neq("profile_kind", "event_host");
 
     if (assocErr) throw new Error(`Failed to load associates: ${assocErr.message}`);
     if (!associates || associates.length === 0) {

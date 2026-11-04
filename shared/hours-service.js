@@ -115,6 +115,7 @@ class HoursService {
     const { data, error } = await supabase
       .from('associate_profiles')
       .select('*, app_user:app_user_id(id, email, display_name, first_name, last_name, person_id, role)')
+      .neq('profile_kind', 'event_host') // event hosts are payable for deposit refunds only, not workers
       .order('created_at', { ascending: true });
 
     if (error) throw error;

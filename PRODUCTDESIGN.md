@@ -237,6 +237,16 @@ polling avoids repeated model inference while the worker is idle.
 
 **Why:** Payment links are often sent to past residents, guests, applicants, and event clients who may not have an active resident portal session. A public success state confirms completion without trapping them behind auth loading.
 
+### 4.4 Event Cleaning: Photos, AI Review, Inspection, Refund (2026-11-04)
+
+**Decision:** On approval, every event host gets an AI-tailored cleaning checklist (built from the restoration sheet, the booked spaces and the kind of event) and a link to `/associates/eventcleaning.html`. They upload before and after photos per area. AI reviews the before photos, compares the after photos and asks for retakes when an area can't be judged. A staff cleaning inspector makes the pass/fail call. Charges: $35 if before or after photos are missing; a failed clean costs base fee + $30/hour (non-residents $30 base, $35 minimum; residents $15 base, $20 minimum). Residents' cleaning deposit is $35–$75, set from the AI's estimate of our maximum cleanup exposure. Refunds go out as Stripe Connect payouts to an `associate_profiles` row with `profile_kind = 'event_host'`.
+
+**Why:** Photos plus a checklist make expectations concrete and protect hosts from being blamed for pre-existing mess. AI catches missing or unusable photos while the host is still at the house, but money decisions stay with a person. Hosts are associates only so they can be paid. `profile_kind` keeps them out of payroll, scheduling and 1099s, because a deposit refund is the host's own money, not income. That's also why the refund skips the ID and W-9 gates that wage payouts have. Rates and minimums are per-request columns, so staff can override them.
+
+**Decision:** Voice input on the event request form is left to the device's own dictation. The form gets a "describe your event" box that AI turns into filled fields, not an in-page microphone.
+
+**Why:** Phones and laptops already dictate into any text box. An in-page recorder adds mic permissions, audio formats and audio uploads for little gain.
+
 ---
 
 ## 5. PAI (Property AI) Design

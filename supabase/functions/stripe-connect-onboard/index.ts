@@ -18,7 +18,11 @@ import { requireFunctionRoles } from "../_shared/require-auth.ts";
 interface OnboardRequest {
   action: 'create_account' | 'create_account_link';
   associate_id: string;
+  // Where Stripe sends the user back; only paths in RETURN_PATHS are honored
+  return_path?: string;
 }
+
+const RETURN_PATHS = ['/associates/worktracking.html', '/associates/eventcleaning.html'];
 
 function formEncode(obj: Record<string, string | number | boolean>): string {
   return Object.entries(obj)
@@ -54,7 +58,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const auth = await requireFunctionRoles(req, supabase, ['admin', 'oracle', 'staff', 'associate']);
+    const auth = await requireFunctionRoles(req, supabase, ['admin', 'oracle', 'staff', 'associate', 'resident']);
     if (auth.response) return auth.response;
 
     const body: OnboardRequest = await req.json();
@@ -205,9 +209,14 @@ Deno.serve(async (req) => {
         );
       }
 
-      const baseUrl = 'https://alpacaplayhouse.com/associates/worktracking.html';
-      const returnUrl = `${baseUrl}?stripe_onboarding=complete`;
-      const refreshUrl = `${baseUrl}?stripe_onboarding=refresh`;
+      // Event hosts come back to their cleaning page; everyone else to work tracking.
+      const requested = typeof body.return_path === 'string' ? body.return_path.split('?')[0] : '';
+      const path = RETURN_PATHS.includes(requested) ? requested : RETURN_PATHS[0];
+      const eventParam = typeof body.return_path === 'string' ? (body.return_path.match(/[?&]event=([0-9a-f-]{36})/i)?.[1] || '') : '';
+      const baseUrl = `https://alpacaplayhouse.com${path}`;
+      const sep = eventParam ? `?event=${eventParam}&` : '?';
+      const returnUrl = `${baseUrl}${sep}stripe_onboarding=complete`;
+      const refreshUrl = `${baseUrl}${sep}stripe_onboarding=refresh`;
 
       const accountLink = await stripePost(secretKey, '/account_links', {
         account: connectAccountId,
