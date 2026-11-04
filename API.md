@@ -616,6 +616,8 @@ Returned shape: `{ id, rental_id, body, tag, author, created_at }`.
 | `status` | string | Pipeline status |
 | `search` | string | Search event_name and host_name |
 
+**Guest assistant API (separate function):** `functions/v1/event-request-agent` lets a guest's own AI assistant fill the `/rentals/hostevent/` form. Key from the page's "Let my AI assistant fill this out" link (`aph_ev_…`, 3 days), sent as `X-API-Key` or `key=`. Verbs via `do=`: `questions`, `update`, `availability`, `status`; `GET` returns the manifest. MCP (streamable HTTP, JSON) at `…/event-request-agent/mcp` with tools `questions`, `update`, `availability`. Writes only to `event_request_drafts`; the guest submits and pays on the page.
+
 ---
 
 ### `documents` — Document Library
