@@ -1,12 +1,12 @@
 {
-  "version": "v261104.02 11:51a",
-  "release": 2013,
-  "sha": "74dbb34665",
-  "fullSha": "74dbb346652c88946c78d6da49587058e5e946d0",
+  "version": "v261104.03 12:04p",
+  "release": 2014,
+  "sha": "9a52e3152b",
+  "fullSha": "9a52e3152b9025f4cb7f0a6f71d08e9d11002eab",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnwato",
-  "pushedAt": "2026-11-04T17:51:52+00:00",
-  "commits": [{"sha":"36831229b4","message":"Host event form: voice and chat fill-in panel (event-intake-voice)","author":"Blotto"},{"sha":"6f2ffe298a","message":"Voice fill-in panel stays hidden until event-intake-voice is deployed","author":"Blotto"},{"sha":"9d3dbb924b","message":"Event form chat fill-in: typed only, drop in-page voice recording","author":"Blotto"},{"sha":"1acf549309","message":"Merge remote-tracking branch 'origin/main' into pr156-merge","author":"Blotto"},{"sha":"5e7621f35e","message":"Merge main (event page design pass) into PR 156","author":"Blotto"},{"sha":"74dbb34665","message":"Merge pull request #156 from rsonnad/claude/clever-moore-1e9342","author":"Rahul"}]
+  "pushedAt": "2026-11-04T18:04:19+00:00",
+  "commits": [{"sha":"0a56a7d2f5","message":"Events: $0 rental fee and reservation deposit for house residents; rules wording","author":"Blotto"},{"sha":"9a52e3152b","message":"Merge main","author":"Blotto"}]
 }
