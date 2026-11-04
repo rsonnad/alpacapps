@@ -1,12 +1,12 @@
 {
-  "version": "v261104.04 12:15p",
-  "release": 2015,
-  "sha": "46d8190458",
-  "fullSha": "46d81904582db1b546b7dc3df4d561266d412063",
+  "version": "v261104.05 12:19p",
+  "release": 2016,
+  "sha": "27fd87d91b",
+  "fullSha": "27fd87d91b8b5089e97aac0d816dfec916e525b7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnwato",
-  "pushedAt": "2026-11-04T18:15:02+00:00",
-  "commits": [{"sha":"5a089a8d55","message":"event-intake-voice: field/value list output, drop placeholders, don't guess names","author":"Blotto"},{"sha":"46d8190458","message":"Merge main","author":"Blotto"}]
+  "pushedAt": "2026-11-04T18:19:46+00:00",
+  "commits": [{"sha":"31403a51ad","message":"WIP: event-request-agent API, drafts table, shared intake field rules","author":"Blotto"},{"sha":"2d7443502d","message":"Merge remote-tracking branch 'origin/main' into claude/agent-form-fill-link-a5ae7e","author":"Blotto"},{"sha":"98d8b0f127","message":"Host-event form: let the guest's own AI assistant fill it out","author":"Blotto"},{"sha":"c0201dec09","message":"event_request_drafts: nightly sweep of expired drafts","author":"Blotto"},{"sha":"f2fe3375bf","message":"Merge remote-tracking branch 'origin/main' into claude/agent-form-fill-link-a5ae7e","author":"Blotto"},{"sha":"27fd87d91b","message":"Merge pull request #157 from rsonnad/claude/agent-form-fill-link-a5ae7e","author":"Rahul"}]
 }
