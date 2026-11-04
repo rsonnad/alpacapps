@@ -1526,6 +1526,40 @@
       }
     }
 
+    /* ===== Describe-your-event chat panel (event-intake-voice) ===== */
+    .voice-fill[hidden] { display: none; }
+    .voice-fill {
+      margin: 0 0 1.25rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      background: var(--accent-light);
+    }
+    .voice-fill h3 { margin: 0; font-size: 1rem; color: var(--text); }
+    .voice-fill-intro { margin: 0.25rem 0 0.75rem; font-size: 0.85rem; color: var(--text-muted); }
+    .voice-log {
+      max-height: 220px; overflow-y: auto; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem 0.75rem;
+      font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem;
+    }
+    .voice-log:empty { display: none; }
+    .voice-msg { line-height: 1.4; }
+    .voice-msg b { color: var(--accent); font-weight: 600; }
+    .voice-msg.guest b { color: var(--text-muted); }
+    .voice-status { font-size: 0.85rem; color: var(--text-muted); min-height: 1.2em; margin-top: 0.4rem; }
+    .voice-missing { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .voice-controls { display: flex; gap: 0.5rem; align-items: flex-end; }
+    .voice-controls textarea {
+      flex: 1 1 auto; min-width: 0; min-height: 3.2rem; resize: vertical; padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border); border-radius: var(--radius); font: inherit; font-size: 0.95rem;
+    }
+    .voice-btn {
+      padding: 0.6rem 1.1rem; border-radius: 999px; border: none; cursor: pointer;
+      background: var(--accent); color: #fff; font-weight: 600; font-size: 0.95rem;
+    }
+    .voice-btn:disabled { opacity: 0.6; cursor: default; }
+    .ai-filled { box-shadow: 0 0 0 3px rgba(61,139,122,0.45) !important; background-color: #f0faf7 !important; transition: box-shadow 0.3s; }
+    tr.ai-filled td { background-color: #f0faf7 !important; }
     /* ===== Design pass 2026-11: hero, cards, pricing, rules, numbered form ===== */
     :root {
       --he-ink: #23261c;
@@ -1694,6 +1728,13 @@
       .he-amt { font-size: 1.15rem; padding: .4rem .7rem; }
       .he-res { justify-content: flex-start; }
     }
+    /* Describe-your-event panel, matched to the design pass */
+    .voice-fill { border: 1px solid rgba(61,139,122,.35); border-radius: 16px; background: linear-gradient(135deg, #e7f3ee 0%, #f7f3ea 100%); padding: 1.15rem 1.3rem; }
+    .voice-fill h3 { font-family: var(--he-serif); font-weight: 500; font-size: 1.2rem; color: var(--he-ink); }
+    .voice-controls textarea { border: 1.5px solid #e4dfd2; border-radius: 12px; background: #fff; }
+    .voice-btn { background: var(--he-olive); color: #f3dfb4; }
+    .voice-log { border-radius: 12px; }
+    .form-container > .voice-fill { margin: clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 4vw, 2.25rem) 0; }
   </style>
 </head>
 <body>
@@ -1915,6 +1956,19 @@
 
     <!-- Application Form -->
     <div class="form-container" id="formContainer">
+      <!-- Describe-your-event chat panel (event-intake-voice). Self-contained: own CSS block and module script. -->
+      <div class="voice-fill" id="voiceFill" hidden>
+        <h3>Describe your event</h3>
+        <p class="voice-fill-intro">Type, or use your keyboard's dictation mic, and we'll fill in the form for you. You can review and change anything before submitting.</p>
+        <div class="voice-log" id="voiceLog" aria-live="polite"></div>
+        <div class="voice-controls">
+          <textarea id="voiceTextInput" rows="2" placeholder="e.g. Maya's 30th birthday, about 40 people, next Saturday 6 to 10pm in the back yard"></textarea>
+          <button type="button" class="voice-btn" id="voiceTextBtn">Send</button>
+        </div>
+        <div class="voice-status" id="voiceStatus" aria-live="polite"></div>
+        <div class="voice-missing" id="voiceMissing"></div>
+      </div>
+
       <form id="eventRequestForm">
         <div id="errorBanner" class="error-banner hidden"></div>
 
@@ -3489,6 +3543,169 @@
         submitBtn.disabled = false;
         alert('Sorry, there was an error sending your message. Please try texting us instead.');
       }
+    });
+  </script>
+  <!-- Describe-your-event chat logic (event-intake-voice). Never touches acknowledgments, deposit, partner code or card. -->
+  <script type="module">
+    import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
+    import { getAustinTodayISO } from '../../shared/timezone.js';
+
+    const ENDPOINT = `${SUPABASE_URL}/functions/v1/event-intake-voice`;
+    const TEXT_FIELDS = [
+      'first_name', 'last_name', 'email', 'phone', 'organization_name',
+      'event_name', 'event_type', 'expected_guests', 'event_date', 'event_start_time', 'event_end_time',
+      'event_description', 'ticket_price_range',
+      'setup_staff_name', 'setup_staff_phone', 'cleanup_staff_name', 'cleanup_staff_phone',
+      'parking_manager_name', 'parking_manager_phone', 'marketing_materials_link', 'special_requests',
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const panel = $('voiceFill'), logEl = $('voiceLog'), statusEl = $('voiceStatus'), missingEl = $('voiceMissing');
+    const textInput = $('voiceTextInput'), sendBtn = $('voiceTextBtn');
+    const history = [];
+    let busy = false;
+
+    // Show the panel only once the function is deployed and answering (GET returns 405, not 404)
+    fetch(ENDPOINT, { method: 'GET' })
+      .then((r) => { if (r.status !== 404) panel.hidden = false; })
+      .catch(() => { /* not reachable: keep the panel hidden */ });
+
+    function addLog(role, text) {
+      if (!text) return;
+      const div = document.createElement('div');
+      div.className = `voice-msg ${role}`;
+      const who = document.createElement('b');
+      who.textContent = role === 'guest' ? 'You: ' : 'Assistant: ';
+      div.append(who, document.createTextNode(text));
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+      history.push({ role, text });
+    }
+
+    function readForm() {
+      const form = {};
+      for (const id of TEXT_FIELDS) {
+        const el = $(id);
+        if (el) form[id] = el.value || '';
+      }
+      form.is_ticketed = !!$('is_ticketed')?.checked;
+      return form;
+    }
+    function readSpaces() {
+      return [...document.querySelectorAll('#spacesTableBody tr[data-space-id]')].map((row) => ({
+        id: row.dataset.spaceId,
+        name: row.querySelector('.space-name')?.textContent.trim() || '',
+        available: !!row.querySelector('.availability-badge.available'),
+        selected: !!row.querySelector('input[type="checkbox"]')?.checked,
+      }));
+    }
+    function eventTypes() {
+      return [...($('event_type')?.options || [])].filter((o) => o.value).map((o) => ({ value: o.value, label: o.textContent.trim() }));
+    }
+
+    function flash(el) {
+      if (!el) return;
+      el.classList.add('ai-filled');
+      setTimeout(() => el.classList.remove('ai-filled'), 2500);
+    }
+    function setValue(id, value) {
+      const el = $(id);
+      if (!el || value === null || value === undefined) return false;
+      if (String(el.value) === String(value)) return false;
+      el.value = value;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      flash(el);
+      return true;
+    }
+
+    // After a date change the page reloads availability; wait for the table to show it
+    async function waitForAvailability(timeoutMs = 6000) {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        if (!document.querySelector('#spacesTableBody .pick-date-link')
+            && document.querySelector('#spacesTableBody .availability-badge.available, #spacesTableBody .availability-badge.unavailable')) return true;
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      return false;
+    }
+
+    async function applyResult(res) {
+      const fields = res.fields || {};
+      const dateChanged = fields.event_date && setValue('event_date', fields.event_date);
+      for (const [name, value] of Object.entries(fields)) {
+        if (name === 'event_date') continue;
+        if (name === 'is_ticketed') {
+          const box = $('is_ticketed');
+          if (box && box.checked !== !!value) {
+            box.checked = !!value;
+            box.dispatchEvent(new Event('change', { bubbles: true }));
+            flash(box.parentElement);
+          }
+          continue;
+        }
+        setValue(name, value);
+      }
+      if (dateChanged) await waitForAvailability();
+      if (Array.isArray(res.space_ids)) {
+        const want = new Set(res.space_ids);
+        document.querySelectorAll('#spacesTableBody tr[data-space-id]').forEach((row) => {
+          const box = row.querySelector('input[type="checkbox"]');
+          if (!box || box.disabled) return;
+          const on = want.has(row.dataset.spaceId);
+          if (box.checked !== on) {
+            box.checked = on;
+            box.dispatchEvent(new Event('change', { bubbles: true }));
+            flash(row);
+          }
+        });
+      }
+      missingEl.textContent = res.missing?.length
+        ? `Still needed: ${res.missing.join(', ')}.`
+        : 'All required details are in. Review the form, tick the acknowledgments and pay the deposit at the bottom.';
+    }
+
+    async function send() {
+      const text = textInput.value.trim();
+      if (!text || busy) return;
+      busy = true;
+      sendBtn.disabled = true;
+      textInput.value = '';
+      addLog('guest', text);
+      statusEl.textContent = 'Filling in the form...';
+      const spaces = readSpaces();
+      try {
+        const resp = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+          body: JSON.stringify({
+            text,
+            history: history.slice(-9, -1),
+            form: readForm(),
+            selectedSpaceIds: spaces.filter((s) => s.selected).map((s) => s.id),
+            spaces: spaces.map(({ id, name, available }) => ({ id, name, available })),
+            eventTypes: eventTypes(),
+            today: getAustinTodayISO(),
+          }),
+        });
+        const res = await resp.json().catch(() => ({}));
+        if (!resp.ok || res.error) throw new Error(res.error || 'The assistant could not answer.');
+        await applyResult(res);
+        addLog('assistant', res.reply);
+        statusEl.textContent = '';
+      } catch (err) {
+        console.error('[event-chat-fill]', err);
+        statusEl.textContent = err.message || 'Something went wrong. You can still fill in the form by hand.';
+      } finally {
+        busy = false;
+        sendBtn.disabled = false;
+        textInput.focus();
+      }
+    }
+
+    sendBtn.addEventListener('click', send);
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
   </script>
 </body>
