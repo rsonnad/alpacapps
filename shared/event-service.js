@@ -717,8 +717,8 @@ async function recordReservationFee(requestId, details = {}) {
   const { data: epData } = await supabase.from('event_payments').insert({
     event_request_id: requestId,
     payment_type: PAYMENT_TYPE.RESERVATION_DEPOSIT,
-    amount_due: request.reservation_fee || DEFAULT_FEES.RESERVATION_DEPOSIT,
-    amount_paid: request.reservation_fee || DEFAULT_FEES.RESERVATION_DEPOSIT,
+    amount_due: (request.reservation_fee ?? DEFAULT_FEES.RESERVATION_DEPOSIT),
+    amount_paid: (request.reservation_fee ?? DEFAULT_FEES.RESERVATION_DEPOSIT),
     paid_date: new Date().toISOString().split('T')[0],
     payment_method: method,
     transaction_id,
@@ -726,7 +726,7 @@ async function recordReservationFee(requestId, details = {}) {
   }).select().single();
 
   // Dual-write to ledger
-  const resAmt = request.reservation_fee || DEFAULT_FEES.RESERVATION_DEPOSIT;
+  const resAmt = (request.reservation_fee ?? DEFAULT_FEES.RESERVATION_DEPOSIT);
   const personName = request.person ? `${request.person.first_name} ${request.person.last_name}` : null;
   await supabase.from('ledger').insert({
     direction: 'income',
@@ -776,8 +776,8 @@ async function recordCleaningDeposit(requestId, details = {}) {
   const { data: epData2 } = await supabase.from('event_payments').insert({
     event_request_id: requestId,
     payment_type: PAYMENT_TYPE.CLEANING_DEPOSIT,
-    amount_due: request.cleaning_deposit || DEFAULT_FEES.CLEANING_DEPOSIT,
-    amount_paid: request.cleaning_deposit || DEFAULT_FEES.CLEANING_DEPOSIT,
+    amount_due: (request.cleaning_deposit ?? DEFAULT_FEES.CLEANING_DEPOSIT),
+    amount_paid: (request.cleaning_deposit ?? DEFAULT_FEES.CLEANING_DEPOSIT),
     paid_date: new Date().toISOString().split('T')[0],
     payment_method: method,
     transaction_id,
@@ -785,7 +785,7 @@ async function recordCleaningDeposit(requestId, details = {}) {
   }).select().single();
 
   // Dual-write to ledger
-  const cleanAmt = request.cleaning_deposit || DEFAULT_FEES.CLEANING_DEPOSIT;
+  const cleanAmt = (request.cleaning_deposit ?? DEFAULT_FEES.CLEANING_DEPOSIT);
   const cleanPersonName = request.person ? `${request.person.first_name} ${request.person.last_name}` : null;
   await supabase.from('ledger').insert({
     direction: 'income',
@@ -834,8 +834,8 @@ async function recordRentalFee(requestId, details = {}) {
   const { data: epData3 } = await supabase.from('event_payments').insert({
     event_request_id: requestId,
     payment_type: PAYMENT_TYPE.RENTAL_FEE,
-    amount_due: request.rental_fee || DEFAULT_FEES.RENTAL_FEE,
-    amount_paid: request.rental_fee || DEFAULT_FEES.RENTAL_FEE,
+    amount_due: (request.rental_fee ?? DEFAULT_FEES.RENTAL_FEE),
+    amount_paid: (request.rental_fee ?? DEFAULT_FEES.RENTAL_FEE),
     paid_date: new Date().toISOString().split('T')[0],
     payment_method: method,
     transaction_id,
@@ -843,7 +843,7 @@ async function recordRentalFee(requestId, details = {}) {
   }).select().single();
 
   // Dual-write to ledger
-  const rentalAmt = request.rental_fee || DEFAULT_FEES.RENTAL_FEE;
+  const rentalAmt = (request.rental_fee ?? DEFAULT_FEES.RENTAL_FEE);
   const rentalPersonName = request.person ? `${request.person.first_name} ${request.person.last_name}` : null;
   await supabase.from('ledger').insert({
     direction: 'income',

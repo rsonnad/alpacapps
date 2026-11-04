@@ -1713,6 +1713,8 @@
     .btn-submit:hover:not(:disabled) { background: var(--he-ink); transform: translateY(-1px); }
 
     .success-message h2 { font-family: var(--he-serif); font-weight: 500; }
+    .he-res-note { background: #e2f2ec; border: 1px solid rgba(61,139,122,.4); color: var(--he-accent-deep); border-radius: 12px; padding: .8rem 1rem; margin: 0 0 1rem; font-size: .92rem; }
+    .he-res-signin { color: var(--he-accent-deep); font-weight: 600; }
 
     @media (max-width: 720px) {
       .he-intro, .he-rules { grid-template-columns: 1fr; }
@@ -1834,12 +1836,12 @@
         <div class="he-price-row" role="row">
           <span role="rowheader"><strong>Rental fee</strong><small>Starting rate*</small></span>
           <span role="cell" class="he-amt" id="feeRentalDisplay">...</span>
-          <span role="cell" class="he-amt he-res" data-label="Residents">Same</span>
+          <span role="cell" class="he-amt he-res" data-label="Residents">$0</span>
         </div>
         <div class="he-price-row" role="row">
           <span role="rowheader"><strong>Reservation deposit</strong><small>Due when you apply</small></span>
           <span role="cell" class="he-amt" id="feeReservationDisplay">...</span>
-          <span role="cell" class="he-amt he-res" data-label="Residents">Same</span>
+          <span role="cell" class="he-amt he-res" data-label="Residents">$0</span>
         </div>
         <div class="he-price-row" role="row">
           <span role="rowheader"><strong>Cleaning deposit</strong><small>Refundable, due 7 days before</small></span>
@@ -1858,6 +1860,7 @@
         </div>
       </div>
       <p class="he-fine">
+        <strong>House residents:</strong> <a href="/login/?redirect=%2Frentals%2Fhostevent%2F" class="he-res-signin">sign in</a> before you apply and the rental fee and reservation deposit are waived.<br>
         *For certain unpaid events benefiting the community, the rental fee may be waived.
         The cleaning deposit is refunded after your event, less any charges above, provided there is no damage.
       </p>
@@ -1876,7 +1879,7 @@
           <ul>
             <li><strong>Setup staff</strong>: arrive 90 minutes before the event starts</li>
             <li><strong>Cleanup crew</strong>: cleaning done by 1:01pm the next day</li>
-            <li><strong>Parking coordinator</strong>: keeps cars off neighbors' property all event long</li>
+            <li><strong>Parking coordinator</strong>: keeps cars off neighbors' property and off the wet grass all event long. You are responsible for any parking problems that happen.</li>
           </ul>
         </div>
 
@@ -1929,9 +1932,9 @@
         <div class="he-rule">
           <h3><span class="he-ico" aria-hidden="true">&#127968;</span>House rules</h3>
           <ul>
-            <li><strong>No alcohol inside the house</strong> (weddings excepted)</li>
+            <li><strong>No alcohol at the house or at events</strong></li>
             <li><strong>No cooking meat inside</strong> or storing it in the kitchen fridge; use the back patio grill area</li>
-            <li><strong>No animals in the house or back yard</strong>; dogs tied in the front yard only (<span class="he-fee">$100</span>)</li>
+            <li><strong>No animals in the house or back yard</strong>; owners must keep their dogs in sight, or tie them in the front yard only (<span class="he-fee">$100</span> for violations)</li>
             <li><strong>No RVs on the property</strong>; park on the frontage road (<span class="he-fee">$100</span>)</li>
             <li>Wash and replace any linens and towels you use</li>
             <li>Put furniture back where it was (photograph it before moving)</li>
@@ -2150,7 +2153,7 @@
               </div>
               <div class="ack-item">
                 <input type="checkbox" id="ack_no_alcohol_inside" name="ack_no_alcohol_inside" required>
-                <label for="ack_no_alcohol_inside">No alcohol will be brought inside the house</label>
+                <label for="ack_no_alcohol_inside">No alcohol at the house or at the event</label>
               </div>
               <div class="ack-item">
                 <input type="checkbox" id="ack_no_meat_inside" name="ack_no_meat_inside" required>
@@ -2162,7 +2165,7 @@
               </div>
               <div class="ack-item">
                 <input type="checkbox" id="ack_no_animals_inside" name="ack_no_animals_inside" required>
-                <label for="ack_no_animals_inside">No animals will be brought inside the house or backyard</label>
+                <label for="ack_no_animals_inside">No animals in the house or back yard; dogs stay in their owner's sight or are tied in the front yard</label>
               </div>
               <div class="ack-item">
                 <input type="checkbox" id="ack_cleaning_responsibility" name="ack_cleaning_responsibility" required>
@@ -2190,6 +2193,8 @@
             Note: The cleaning deposit (<span id="feeCleaningInline">...</span>) and rental fee (<span id="feeRentalInline">...</span>) are due 7 days before your event. We'll send payment instructions and a reminder.
           </p>
 
+          <p class="he-res-note hidden" id="residentDepositNote">You're signed in as a house resident, so there's no rental fee and no reservation deposit. Your cleaning deposit ($35&ndash;$75) is set when we approve the event.</p>
+          <p class="hint he-res-signin-line" style="margin-bottom: 1rem;">House resident? <a href="/login/?redirect=%2Frentals%2Fhostevent%2F%23formContainer">Sign in</a> and the rental fee and reservation deposit are waived.</p>
           <div class="deposit-grid" style="grid-template-columns: 1fr;">
             <!-- Reservation Deposit -->
             <div class="deposit-card" id="reservationDepositCard">
@@ -2431,6 +2436,7 @@
       try {
         await initAuth();
         staffAuthState = getAuthState();
+        if (staffAuthState.isCurrentResident) enableResidentMode();
         if (staffAuthState.isStaff) {
           document.getElementById('staffSandboxBar')?.classList.add('visible');
           const urlParams = new URLSearchParams(window.location.search);
@@ -2448,6 +2454,19 @@
         // Auth failure is fine — regular user, no toggle shown
       }
     })();
+
+    // House residents who are signed in pay no rental fee and no reservation deposit.
+    // The database checks the same thing from the sign-in, so this only changes what's shown and charged here.
+    function enableResidentMode() {
+      residentMode = true;
+      reservationAmount = 0;
+      reservationCode = null;
+      document.querySelector('#reservationDepositCard .code-row')?.classList.add('hidden');
+      document.getElementById('residentDepositNote')?.classList.remove('hidden');
+      document.querySelectorAll('.he-res-signin-line').forEach(el => el.classList.add('hidden'));
+      updateFeeDisplays();
+      updateDepositDisplay();
+    }
 
     function updateSandboxUI(active) {
       const badge = document.getElementById('staffTestBadge');
@@ -2486,6 +2505,7 @@
     let reservationAmount = 0;
     let reservationOriginal = 0;
     let reservationCode = null;
+    let residentMode = false; // signed-in house resident: no rental fee, no reservation deposit
     let squareCard = null;
     let squarePayments = null;
 
@@ -2546,6 +2566,7 @@
           }
         });
 
+        if (residentMode) reservationAmount = 0;
         updateFeeDisplays();
         updateDepositDisplay();
       } catch (error) {
@@ -2569,7 +2590,7 @@
         el.textContent = fmt(cleaningDepositAmount);
       });
       document.querySelectorAll('#feeRentalInline, #feeRentalNext').forEach(el => {
-        el.textContent = fmt(rentalFeeAmount);
+        el.textContent = residentMode ? '$0 (house resident)' : fmt(rentalFeeAmount);
       });
     }
 
@@ -2648,6 +2669,7 @@
 
     // Apply reservation code
     applyReservationCodeBtn.addEventListener('click', async () => {
+      if (residentMode) return;
       const code = reservationCodeInput.value.trim();
       if (!code) {
         reservationCodeResult.classList.add('hidden');
@@ -3116,11 +3138,17 @@
           deposit_status: totalDeposit > 0 ? 'pending' : 'waived'
         };
 
+        // Send the sign-in token when there is one, so the database can confirm a house resident.
+        let submitBearer = SUPABASE_KEY;
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) submitBearer = session.access_token;
+        } catch (e) { /* not signed in */ }
         const eventResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/hostevent_submit_request`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Authorization': `Bearer ${submitBearer}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
