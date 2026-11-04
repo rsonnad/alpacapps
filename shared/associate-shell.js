@@ -234,7 +234,7 @@ function renderAccessDenied(state, activeTab) {
  * @param {Function} options.onReady - Called with authState when authorized
  * @returns {Promise<Object>} authState
  */
-export async function initAssociatePage({ activeTab, onReady }) {
+export async function initAssociatePage({ activeTab, onReady, extraRoles = [] }) {
   // Set up global error handlers
   errorLogger.setupGlobalHandlers();
 
@@ -331,7 +331,7 @@ export async function initAssociatePage({ activeTab, onReady }) {
 
     // Associates, staff, admin, and oracle can access associate pages
     const userRole = state.appUser?.role;
-    const allowedRoles = ['associate', 'staff', 'admin', 'oracle', 'demo'];
+    const allowedRoles = ['associate', 'staff', 'admin', 'oracle', 'demo', ...extraRoles];
     const meetsRequirement = allowedRoles.includes(userRole);
 
     if (state.appUser && meetsRequirement) {
@@ -399,7 +399,7 @@ export async function initAssociatePage({ activeTab, onReady }) {
           console.warn('[associate-shell] Token refresh failed — redirecting to login');
           try { localStorage.removeItem('genalpaca-cached-auth'); } catch (e) { /* ignore */ }
           transitionBootState('redirecting');
-          window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+          window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
           return;
         }
         onReady(state);
@@ -416,7 +416,7 @@ export async function initAssociatePage({ activeTab, onReady }) {
     } else if (!state.isAuthenticated) {
       appContentEl?.replaceChildren();
       transitionBootState('redirecting');
-      window.location.replace('/login/?redirect=' + encodeURIComponent(window.location.pathname));
+      window.location.replace('/login/?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
     }
   }
 

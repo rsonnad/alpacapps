@@ -39,7 +39,7 @@ After the event, the Client agrees to clean the house according to the following
 
 https://docs.google.com/spreadsheets/d/1YP3fq703lP91rBZ54ba2TSLXrzqgVzxPRCW3w8lzG9M/edit#gid=989989662
 
-If the house is not cleaned, the company will hire a cleaner and deduct from the damage deposit, estimated around $150 but billed at the actual cost @ $30/hour + $30.
+Client will receive a cleaning checklist tailored to the event and must upload BEFORE photos of each area before the event and AFTER photos once cleaning is done. Missing before or after photos: $35 charge. A cleaning inspector verifies the clean. If it is not clean, Company will finish the cleaning and deduct $30 + $30/hour (house residents: $15 + $30/hour), with a minimum charge of $35 (house residents: $20), up to the full cost of cleaning.
 
 ## GUEST LIMIT
 
@@ -172,7 +172,7 @@ This Agreement may be executed in one or more counterparts, each of which shall 
 
 6. **Noise Levels:** Client agrees to keep noise & music levels outside to a minimum after 9:30pm. $100 fee if neighbors complain about noise after this time. Doors must be kept closed when loud music is playing inside. No PA speakers at high volume after 9:30pm unless entirely inside with doors secured closed.
 
-7. **Cleaning Timeline:** Cleaners arrive at least 90 minutes before event start. All cleaning must be complete by 1:01pm the day after the event. Cleaning not completed by this time will be charged at $30 + $30/hour. Deposits returned within 24 hours after cleaning photos submitted.
+7. **Cleaning Timeline:** Cleaners arrive at least 90 minutes before event start. All cleaning must be complete by 1:01pm the day after the event. Cleaning not completed by this time is finished by our cleaner at $30 + $30/hour (house residents $15 + $30/hour), minimum $35 (residents $20). Before and after photos of every area are required ($35 if missing). Deposits are refunded after the cleaning inspection.
 
 8. **Propane Usage:** Any propane used during the event for heating, display propane or hot tubs will be reimbursed from the damage deposit.
 

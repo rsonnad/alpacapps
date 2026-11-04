@@ -18,6 +18,7 @@ import {
 } from '../shared/admin-shell.js';
 import { isDemoUser, redactString } from '../shared/demo-redact.js';
 import { initTabList } from '../shared/tab-utils.js';
+import { renderCleaningTab, onboardEventHost } from './event-cleaning-tab.js';
 
 // =============================================
 // STATE
@@ -670,6 +671,9 @@ function switchToEventTab(tabName) {
   });
   document.querySelectorAll('.event-detail-tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById(`${tabName}Tab`)?.classList.add('active');
+  if (tabName === 'eventCleaning' && currentEventRequestId) {
+    renderCleaningTab(currentEventRequestId, document.getElementById('eventCleaningPanel'));
+  }
 }
 
 // =============================================
@@ -691,10 +695,16 @@ window.approveEventRequest = async function() {
       additional_terms: document.getElementById('eventTermAdditionalTerms').value
     });
 
+    const approvedId = currentEventRequestId;
     allEventRequests = await eventService.getRequests();
     renderEventPipeline();
     closeEventDetail();
     showToast('Event request approved', 'success');
+
+    // Give the host their AI-tailored cleaning checklist, photo upload link and payout account
+    onboardEventHost(approvedId)
+      .then((r) => showToast(`Cleaning checklist emailed to host${r.is_resident ? ' (resident deposit $' + r.cleaning_deposit + ')' : ''}`, 'success'))
+      .catch((e) => showToast('Approved, but the cleaning email failed: ' + e.message + '. Use Cleaning → Send checklist.', 'error'));
   } catch (e) {
     showToast('Error: ' + e.message, 'error');
   }

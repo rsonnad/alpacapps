@@ -109,6 +109,7 @@ Deno.serve(async (req) => {
       .select('associate_id, amount, person_name, created_at')
       .eq('status', 'completed')
       .eq('is_test', false)
+      .is('event_request_id', null) // event deposit refunds are the host's own money, not income
       .gte('created_at', `${dateFrom}T00:00:00Z`)
       .lte('created_at', `${dateTo}T23:59:59Z`);
 

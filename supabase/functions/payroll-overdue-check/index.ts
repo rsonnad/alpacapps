@@ -216,7 +216,8 @@ Deno.serve(async (req) => {
     const { data: associates, error: aerr } = await supabase
       .from('associate_profiles')
       .select('id, hourly_rate, payment_method, stripe_connect_account_id, app_user:app_user_id(id, email, first_name, last_name, display_name, person_id)')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .neq('profile_kind', 'event_host');
     if (aerr) throw new Error(`associates query failed: ${aerr.message}`);
 
     const overdue: OverdueAssociate[] = [];
