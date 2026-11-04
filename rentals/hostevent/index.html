@@ -1784,7 +1784,7 @@
         <div class="form-section" id="spacesSection">
           <h2>Spaces Needed</h2>
           <p class="hint" style="margin-bottom: 0.5rem;">Select all the spaces you would like to use for your event. Unavailable spaces on your selected date are greyed out.</p>
-          <p class="hint" style="margin-bottom: 1rem; font-style: italic;" id="spacesDateHint">Please select an event date above to see availability.</p>
+          <p class="hint" style="margin-bottom: 1rem; font-style: italic;" id="spacesDateHint"><a href="#event_date" class="pick-date-link">Pick your event date</a> to see which spaces are free and select them.</p>
           <div class="spaces-table-container">
             <table class="spaces-table" id="spacesTable">
               <thead>
@@ -2594,6 +2594,19 @@
     }
 
     // Render spaces table
+    // Scroll to the event date, focus it and open the picker where the browser allows
+    function goToEventDate() {
+      eventDateInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      eventDateInput.focus({ preventScroll: true });
+      try { eventDateInput.showPicker?.(); } catch (_) { /* needs a user gesture in some browsers */ }
+    }
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest?.('.pick-date-link');
+      if (!link) return;
+      e.preventDefault();
+      goToEventDate();
+    });
+
     function renderSpaces() {
       if (allEventSpaces.length === 0) {
         spacesTableBody.innerHTML = '<tr><td colspan="4" class="spaces-loading">No event spaces configured.</td></tr>';
@@ -2617,7 +2630,7 @@
 
         let availabilityHtml;
         if (!selectedDate) {
-          availabilityHtml = '<span class="availability-badge" style="background: var(--bg); color: var(--text-muted);">Select date</span>';
+          availabilityHtml = '<a href="#event_date" class="availability-badge pick-date-link" style="background: var(--bg); color: var(--primary, #2d6a4f); text-decoration: underline;">Pick a date first</a>';
         } else if (isAvailable) {
           availabilityHtml = '<span class="availability-badge available">Available</span>';
         } else {
@@ -2639,6 +2652,18 @@
           </tr>
         `;
       }).join('');
+
+      // With no date yet, clicking a row (or a "Pick a date" link) jumps to the date field
+      if (!selectedDate) {
+        spacesTableBody.querySelectorAll('tr').forEach(row => {
+          row.style.cursor = 'pointer';
+          row.addEventListener('click', (e) => {
+            if (e.target.classList.contains('space-thumbnail')) return;
+            e.preventDefault();
+            goToEventDate();
+          });
+        });
+      }
 
       // Add click handler to rows for easier selection (but not on thumbnails)
       spacesTableBody.querySelectorAll('tr:not(.unavailable)').forEach(row => {
