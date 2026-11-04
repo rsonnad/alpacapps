@@ -11,6 +11,9 @@
   <meta property="og:description" content="Host your event at the Austin Alpaca Playhouse — a unique Cedar Creek venue with alpacas, sauna, and gathering spaces.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&display=swap">
   <style>
     /* Site-wide Navigation Bar */
     .site-nav {
@@ -1522,6 +1525,175 @@
         padding: 1.25rem;
       }
     }
+
+    /* ===== Design pass 2026-11: hero, cards, pricing, rules, numbered form ===== */
+    :root {
+      --he-ink: #23261c;
+      --he-olive: #2d3024;
+      --he-cream: #f7f3ea;
+      --he-sand: #efe7d6;
+      --he-accent: #3d8b7a;
+      --he-accent-deep: #2c6b5d;
+      --he-clay: #b5653f;
+      --he-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+      --he-radius: 18px;
+      --he-shadow: 0 1px 2px rgba(35,38,28,.05), 0 8px 28px -12px rgba(35,38,28,.18);
+    }
+    body { background: var(--he-cream); color: var(--he-ink); }
+
+    .he-hero {
+      position: relative; text-align: left; border: 0; padding: 0;
+      background: var(--he-olive) url('https://pub-5a7344c4dab2467eb917ff4b897e066d.r2.dev/housephotos/site/hero-alpacas.jpeg') center 40% / cover no-repeat;
+      color: #fff; isolation: isolate;
+    }
+    .he-hero::before {
+      content: ''; position: absolute; inset: 0; z-index: -1;
+      background: linear-gradient(100deg, rgba(25,28,18,.88) 0%, rgba(25,28,18,.62) 48%, rgba(25,28,18,.18) 100%);
+    }
+    .he-hero__inner { max-width: 1040px; margin: 0 auto; padding: clamp(3rem, 8vw, 6rem) 1.5rem clamp(2.5rem, 6vw, 4.5rem); }
+    .he-eyebrow { font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: #d9e8c4; margin: 0 0 1rem; font-weight: 600; }
+    .he-hero h1 {
+      font-family: var(--he-serif); font-weight: 500; font-size: clamp(2.3rem, 6vw, 4rem);
+      line-height: 1.04; letter-spacing: -.02em; margin: 0 0 1.1rem; color: #fff;
+    }
+    .he-hero h1 em { font-style: italic; color: #f3dfb4; }
+    .he-hero .he-hero__lede { color: rgba(255,255,255,.86); font-size: clamp(1rem, 2vw, 1.15rem); max-width: 34rem; margin: 0; }
+    .he-hero .header-buttons { justify-content: flex-start; margin-top: 1.75rem; }
+    .see-spaces-btn.he-btn-primary, .see-spaces-btn.he-btn-ghost {
+      border-radius: 999px; padding: .85rem 1.6rem; font-weight: 600; transition: transform .15s ease, background .15s ease;
+    }
+    .see-spaces-btn.he-btn-primary { background: #f3dfb4; color: var(--he-ink); }
+    .see-spaces-btn.he-btn-primary:hover { background: #fff; transform: translateY(-1px); }
+    .see-spaces-btn.he-btn-ghost { background: rgba(255,255,255,.08); color: #fff; border: 1.5px solid rgba(255,255,255,.55); backdrop-filter: blur(4px); }
+    .see-spaces-btn.he-btn-ghost:hover { background: rgba(255,255,255,.18); }
+    .he-facts { list-style: none; display: flex; flex-wrap: wrap; gap: .6rem 2rem; margin: 2.25rem 0 0; padding: 1.25rem 0 0; border-top: 1px solid rgba(255,255,255,.2); }
+    .he-facts li { display: flex; flex-direction: column; line-height: 1.2; }
+    .he-facts strong { font-family: var(--he-serif); font-size: 1.35rem; font-weight: 500; }
+    .he-facts span { font-size: .8rem; color: rgba(255,255,255,.7); }
+
+    main { max-width: 880px; padding: 2.5rem 1.25rem 4rem; }
+    .he-card, .form-container {
+      background: #fff; border-radius: var(--he-radius); box-shadow: var(--he-shadow);
+      border: 1px solid rgba(35,38,28,.06); margin-bottom: 1.75rem;
+    }
+    .intro-section.he-card, .he-pricing { padding: clamp(1.4rem, 4vw, 2.25rem); }
+    .he-kicker { display: block; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--he-clay); font-weight: 700; margin: 0 0 .5rem; }
+    .he-card h2, .intro-section.he-card h2 {
+      font-family: var(--he-serif); font-weight: 500; font-size: clamp(1.45rem, 3.4vw, 1.9rem);
+      line-height: 1.15; letter-spacing: -.01em; color: var(--he-ink); margin: 0 0 1rem;
+    }
+    .he-intro { display: grid; grid-template-columns: 1.35fr 1fr; gap: 2rem; }
+    .he-intro p { color: #4a4d42; }
+    .he-note { font-size: .9rem; background: var(--he-cream); border-radius: 12px; padding: .8rem 1rem; }
+    .intro-section ul.he-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+    .he-chips li { margin: 0; background: var(--accent-light); color: var(--he-accent-deep); border-radius: 999px; padding: .45rem .9rem; font-size: .88rem; font-weight: 500; }
+
+    .he-price-table { border: 1px solid var(--he-sand); border-radius: 14px; overflow: hidden; }
+    .he-price-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; align-items: center; gap: 1rem; padding: .95rem 1.2rem; border-top: 1px solid var(--he-sand); }
+    .he-price-row:first-child { border-top: 0; }
+    @media (min-width: 721px) { .he-price-row { padding-right: 0; } .he-res { padding-right: 1.2rem; } }
+    .he-price-head { background: var(--he-cream); padding-top: .7rem; padding-bottom: .7rem; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: #6d705f; }
+    .he-price-row [role=rowheader] strong { display: block; font-weight: 600; }
+    .he-price-row small { display: block; font-size: .78rem; color: var(--text-muted); font-weight: 400; }
+    .he-amt { font-family: var(--he-serif); font-size: 1.3rem; font-weight: 500; color: var(--he-ink); font-variant-numeric: tabular-nums; }
+    .he-amt small { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .he-res { background: rgba(61,139,122,.06); margin: -.95rem 0; padding: .95rem .9rem; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+    .he-price-head .he-res { margin: -.7rem 0; padding: .7rem .9rem; color: var(--he-accent-deep); }
+    .he-fine { font-size: .85rem; color: var(--text-muted); margin: 1rem 0 0; }
+
+    .policy-section.he-card { overflow: hidden; }
+    .policy-section .policy-header {
+      background: #fff; border: 0; padding: clamp(1.2rem, 3.5vw, 1.75rem) clamp(1.4rem, 4vw, 2.25rem);
+      font-family: var(--he-serif); font-weight: 500; font-size: clamp(1.3rem, 3vw, 1.6rem); color: var(--he-ink); list-style: none;
+    }
+    .policy-section .policy-header::-webkit-details-marker { display: none; }
+    .policy-section .policy-header:hover { background: var(--he-cream); }
+    .policy-section .policy-header .he-kicker { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .policy-section .toggle-icon { font-size: .8rem; color: var(--he-clay); }
+    .he-rules { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 0 clamp(1rem, 3vw, 1.75rem) clamp(1.2rem, 3.5vw, 1.75rem); }
+    .he-rule { background: var(--he-cream); border-radius: 14px; padding: 1.1rem 1.2rem; }
+    .he-rule--warn { background: #fdf3e4; box-shadow: inset 3px 0 0 #e0a24a; }
+    .he-rule h3 { display: flex; align-items: center; gap: .55rem; font-size: 1rem; font-weight: 650; margin: 0 0 .5rem; color: var(--he-ink); }
+    .he-ico { width: 2rem; height: 2rem; border-radius: 10px; background: #fff; display: inline-grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+    .he-rule p, .he-rule li { font-size: .9rem; color: #45483d; }
+    .he-rule p { margin: 0 0 .5rem; }
+    .he-rule p:last-child { margin-bottom: 0; }
+    .policy-content.he-rules ul { margin: .25rem 0 .5rem 1.1rem; }
+    .he-rule a { color: var(--he-accent-deep); }
+    .he-fee { display: inline-block; background: #fff; border: 1px solid #ecd9bd; color: #8a4a26; font-weight: 700; font-size: .8rem; padding: 0 .45rem; border-radius: 999px; }
+
+    /* Form: numbered steps */
+    .form-container { overflow: hidden; }
+    #eventRequestForm { counter-reset: hestep; }
+    .form-section { padding: clamp(1.4rem, 4vw, 2.1rem) clamp(1.25rem, 4vw, 2.25rem); border-bottom: 1px solid var(--he-sand); }
+    .form-section > h2 {
+      counter-increment: hestep; display: flex; align-items: center; gap: .75rem;
+      font-family: var(--he-serif); font-weight: 500; font-size: 1.4rem; color: var(--he-ink); margin: 0 0 .35rem;
+    }
+    .form-section > h2::before {
+      content: counter(hestep); flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%;
+      display: inline-grid; place-items: center; background: var(--he-olive); color: #f3dfb4;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: .85rem; font-weight: 700;
+    }
+    .form-section > h2 + * { margin-top: .25rem; }
+    .he-sec-sub { color: var(--text-muted); font-size: .9rem; margin: 0 0 1.25rem 2.75rem; }
+    .form-section > .form-grid, .form-section > .hint, .form-section > .spaces-table-container, .form-section > .acknowledgments-section { margin-left: 2.75rem; }
+    .form-section > h2 + .form-grid, .form-section > h2 + .acknowledgments-section { margin-top: 1rem; }
+    .form-group { min-width: 0; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; max-width: 100%; min-width: 0; }
+    .time-inputs input { min-width: 0; }
+    .form-group label { font-weight: 600; font-size: .85rem; color: #3a3d33; }
+    .form-group input, .form-group select, .form-group textarea {
+      border: 1.5px solid #e4dfd2; border-radius: 12px; padding: .75rem .9rem; background: #fcfbf8; font-size: 1rem;
+      transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .form-group input:hover, .form-group select:hover, .form-group textarea:hover { border-color: #cfc8b6; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--he-accent); background: #fff; box-shadow: 0 0 0 4px rgba(61,139,122,.14);
+    }
+    .spaces-table-container { border: 1.5px solid #e4dfd2; border-radius: 14px; max-height: 420px; }
+    .pick-date-link { color: var(--he-accent-deep); font-weight: 600; }
+
+    .acknowledgments-section { background: transparent; border: 0; padding: 0; }
+    .acknowledgments-section h3 { font-size: .9rem; font-weight: 500; color: var(--text-muted); margin-bottom: .75rem; }
+    .ack-list { display: grid; gap: .5rem; }
+    .ack-item {
+      display: flex; gap: .75rem; align-items: flex-start; margin: 0; padding: .8rem 1rem;
+      border: 1.5px solid #ebe6da; border-radius: 12px; background: #fcfbf8; transition: border-color .15s, background .15s;
+    }
+    .ack-item:has(input:checked) { border-color: var(--he-accent); background: #e2f2ec; }
+    .form-section.deposit-section { background: var(--he-cream); border-left: 0; }
+    .deposit-section .deposit-card, .deposit-section .deposit-total { border: 1px solid var(--he-sand); box-shadow: none; }
+    .deposit-section .payment-card-section { background: #fff; border-radius: 14px; }
+    .ack-item input[type=checkbox] { accent-color: var(--he-accent); width: 1.15rem; height: 1.15rem; margin-top: .15rem; }
+    .ack-item label { cursor: pointer; font-size: .92rem; }
+
+    .deposit-card { border-radius: 14px; }
+    .deposit-total { border-radius: 14px; }
+    .form-actions { padding: 1.5rem clamp(1.25rem, 4vw, 2.25rem) 2rem; background: var(--he-cream); }
+    .btn-submit {
+      width: 100%; border-radius: 999px; padding: 1.05rem 1.5rem; font-size: 1.05rem; font-weight: 700;
+      background: var(--he-olive); color: #f3dfb4; box-shadow: 0 10px 24px -12px rgba(35,38,28,.6);
+      transition: transform .15s ease, background .15s ease;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--he-ink); transform: translateY(-1px); }
+
+    .success-message h2 { font-family: var(--he-serif); font-weight: 500; }
+
+    @media (max-width: 720px) {
+      .he-intro, .he-rules { grid-template-columns: 1fr; }
+      .he-hero::before { background: linear-gradient(180deg, rgba(25,28,18,.55) 0%, rgba(25,28,18,.88) 100%); }
+      .he-sec-sub, .form-section > .form-grid, .form-section > .hint, .form-section > .spaces-table-container, .form-section > .acknowledgments-section { margin-left: 0; }
+      .he-price-head { display: none; }
+      .he-price-row { grid-template-columns: 1fr 1fr; gap: .35rem 1rem; }
+      .he-price-row [role=rowheader] { grid-column: 1 / -1; }
+      .he-res { margin: 0; padding: .4rem .7rem; border-radius: 10px; }
+      .he-price-row .he-amt::before { content: 'Standard'; display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+      .he-price-row .he-amt.he-res::before { content: 'Residents'; color: var(--he-accent-deep); }
+      .he-price-row { align-items: stretch; }
+      .he-amt { font-size: 1.15rem; padding: .4rem .7rem; }
+      .he-res { justify-content: flex-start; }
+    }
   </style>
 </head>
 <body>
@@ -1560,141 +1732,184 @@
     </ul>
   </div>
 
-  <header>
-    <h1>Host an Event at Alpaca Playhouse</h1>
-    <p>A unique venue in Cedar Creek, TX for gatherings, workshops, retreats, and celebrations</p>
-    <div class="header-buttons">
-      <a href="https://alpacaplayhouse.com/rentals/?view=events" class="see-spaces-btn">See the Event Spaces</a>
-      <a href="#formContainer" class="see-spaces-btn apply-btn">Apply to Host</a>
+  <header class="he-hero">
+    <div class="he-hero__inner">
+      <p class="he-eyebrow">Cedar Creek, Texas &middot; 13 minutes from Austin Airport</p>
+      <h1>Host an event at<br><em>Alpaca Playhouse</em></h1>
+      <p class="he-hero__lede">Friendly alpacas, a wood-fired sauna and cold plunge, and indoor and outdoor spaces for parties, workshops, retreats and celebrations.</p>
+      <div class="header-buttons">
+        <a href="#formContainer" class="see-spaces-btn he-btn-primary">Apply to host</a>
+        <a href="https://alpacaplayhouse.com/rentals/?view=events" class="see-spaces-btn he-btn-ghost">See the event spaces</a>
+      </div>
+      <ul class="he-facts">
+        <li><strong>Up to 100</strong><span>guests</span></li>
+        <li><strong>Sauna</strong><span>&amp; cold plunge</span></li>
+        <li><strong>Indoor</strong><span>&amp; outdoor spaces</span></li>
+      </ul>
     </div>
   </header>
 
   <main>
     <!-- Introduction -->
-    <div class="intro-section">
-      <h2>About Event Hosting</h2>
-      <p>
-        The Austin Alpaca Playhouse is a unique community venue in Cedar Creek, Texas &mdash; just 13 minutes
-        east of Austin Airport. Our property features friendly alpacas, a wood-fired sauna, cold plunge,
-        indoor and outdoor gathering spaces, and a welcoming atmosphere for events of all kinds.
-      </p>
-      <p>
-        We welcome a variety of events including:
-      </p>
-      <ul>
-        <li>Private parties and celebrations</li>
-        <li>Music performances and gatherings</li>
-        <li>Workshops and classes</li>
-        <li>Retreats and team gatherings</li>
-        <li>Ceremonies (including weddings)</li>
-        <li>Photoshoots and creative projects</li>
-      </ul>
-      <p>
-        <strong>Note:</strong> This is a community-minded venue. No cooking meat inside the house or storing meat in the kitchen refrigerator.
-        Meat can be cooked on the back patio grill area (grill, oven, air fryer) and stored in other refrigerators.
-      </p>
-
-      <h2>Standard Fees</h2>
-      <div class="fees-grid">
-        <div class="fee-card">
-          <div class="fee-label">Rental Fee</div>
-          <div class="fee-amount" id="feeRentalDisplay">...</div>
-          <div class="fee-note">Starting rate*</div>
+    <section class="intro-section he-card">
+      <div class="he-intro">
+        <div>
+          <p class="he-kicker">About event hosting</p>
+          <h2>A community venue with a lot of personality</h2>
+          <p>
+            The Austin Alpaca Playhouse is a community venue in Cedar Creek, Texas, 13 minutes
+            east of Austin Airport. Guests can meet the alpacas, warm up in the wood-fired sauna, take a cold plunge,
+            and gather inside or out.
+          </p>
+          <p class="he-note">
+            <strong>Note:</strong> no cooking meat inside the house or storing meat in the kitchen refrigerator.
+            Meat can be cooked on the back patio grill area (grill, oven, air fryer) and stored in other refrigerators.
+          </p>
         </div>
-        <div class="fee-card">
-          <div class="fee-label">Reservation Deposit</div>
-          <div class="fee-amount" id="feeReservationDisplay">...</div>
-          <div class="fee-note">Refundable</div>
-        </div>
-        <div class="fee-card">
-          <div class="fee-label">Cleaning Deposit</div>
-          <div class="fee-amount" id="feeCleaningDisplay">...</div>
-          <div class="fee-note">Refundable</div>
+        <div>
+          <p class="he-kicker">We welcome</p>
+          <ul class="he-chips">
+            <li>Private parties &amp; celebrations</li>
+            <li>Music performances</li>
+            <li>Workshops &amp; classes</li>
+            <li>Retreats &amp; team gatherings</li>
+            <li>Ceremonies &amp; weddings</li>
+            <li>Photoshoots &amp; creative projects</li>
+          </ul>
         </div>
       </div>
-      <p style="font-size: 0.9rem; color: var(--text-muted);">
+    </section>
+
+    <!-- Pricing -->
+    <section class="he-card he-pricing" id="pricing">
+      <p class="he-kicker">Pricing</p>
+      <h2>Standard fees</h2>
+      <div class="he-price-table" role="table" aria-label="Event fees for guests and house residents">
+        <div class="he-price-row he-price-head" role="row">
+          <span role="columnheader"></span>
+          <span role="columnheader">Standard</span>
+          <span role="columnheader" class="he-res">House residents</span>
+        </div>
+        <div class="he-price-row" role="row">
+          <span role="rowheader"><strong>Rental fee</strong><small>Starting rate*</small></span>
+          <span role="cell" class="he-amt" id="feeRentalDisplay">...</span>
+          <span role="cell" class="he-amt he-res" data-label="Residents">Same</span>
+        </div>
+        <div class="he-price-row" role="row">
+          <span role="rowheader"><strong>Reservation deposit</strong><small>Due when you apply</small></span>
+          <span role="cell" class="he-amt" id="feeReservationDisplay">...</span>
+          <span role="cell" class="he-amt he-res" data-label="Residents">Same</span>
+        </div>
+        <div class="he-price-row" role="row">
+          <span role="rowheader"><strong>Cleaning deposit</strong><small>Refundable, due 7 days before</small></span>
+          <span role="cell" class="he-amt" id="feeCleaningDisplay">...</span>
+          <span role="cell" class="he-amt he-res" data-label="Residents">$35&ndash;$75<small>set by the event</small></span>
+        </div>
+        <div class="he-price-row" role="row">
+          <span role="rowheader"><strong>Cleanup if not clean</strong><small>Taken from the cleaning deposit</small></span>
+          <span role="cell" class="he-amt">$30 + $30/hr<small>minimum $35</small></span>
+          <span role="cell" class="he-amt he-res" data-label="Residents">$15 + $30/hr<small>minimum $20</small></span>
+        </div>
+        <div class="he-price-row" role="row">
+          <span role="rowheader"><strong>Missing before/after photos</strong><small>Per event</small></span>
+          <span role="cell" class="he-amt">$35</span>
+          <span role="cell" class="he-amt he-res" data-label="Residents">$35</span>
+        </div>
+      </div>
+      <p class="he-fine">
         *For certain unpaid events benefiting the community, the rental fee may be waived.
-        The reservation deposit and cleaning deposit are fully refundable after your event, provided there is
-        no damage and cleaning is completed per the agreement.
+        The cleaning deposit is refunded after your event, less any charges above, provided there is no damage.
       </p>
-    </div>
+    </section>
 
     <!-- Policies -->
-    <details class="policy-section" open>
+    <details class="policy-section he-card" open>
       <summary class="policy-header">
-        <span>Venue Policies & Requirements</span>
-        <span class="toggle-icon">&#9660;</span>
+        <span><span class="he-kicker">Before you apply</span>Venue rules &amp; requirements</span>
+        <span class="toggle-icon" aria-hidden="true">&#9660;</span>
       </summary>
-      <div class="policy-content">
-        <h3>Staffing Requirements</h3>
-        <p>As the event host, you are responsible for providing:</p>
-        <ul>
-          <li><strong>Setup staff</strong> - Must arrive 90 minutes before event start</li>
-          <li><strong>Cleanup crew</strong> - Post-event cleaning must be complete by 1:01pm the next day</li>
-          <li><strong>Parking coordinator</strong> - Must manage parking throughout the event to prevent parking on neighbors' property</li>
-        </ul>
-
-        <h3>Guest Limits</h3>
-        <p>
-          Your approved guest count will be specified in the agreement. A $15 fee applies per additional
-          person beyond your approved limit. You agree to candidly report actual attendance.
-        </p>
-
-        <h3>Address Privacy</h3>
-        <div class="warning-box">
-          <strong>Important:</strong> Do NOT post our address in any marketing materials, texts, emails,
-          or social media. Instead, direct attendees to <a href="https://alpacaplayhouse.com/visiting" target="_blank" style="color: #92400e;">alpacaplayhouse.com/visiting</a> for directions.
-          This page contains important information about parking, alpaca safety, food policies, and venue rules
-          that all guests should read before arriving.
-          <strong>$100 fee if the address is posted publicly.</strong>
+      <div class="policy-content he-rules">
+        <div class="he-rule">
+          <h3><span class="he-ico" aria-hidden="true">&#128101;</span>Staffing</h3>
+          <p>As the host, you provide:</p>
+          <ul>
+            <li><strong>Setup staff</strong>: arrive 90 minutes before the event starts</li>
+            <li><strong>Cleanup crew</strong>: cleaning done by 1:01pm the next day</li>
+            <li><strong>Parking coordinator</strong>: keeps cars off neighbors' property all event long</li>
+          </ul>
         </div>
 
-        <h3>Noise & Quiet Hours</h3>
-        <p>
-          Keep outdoor noise and music to a minimum after 9:30pm. Keep doors closed when loud music is
-          playing inside. No PA speakers at high volume outdoors after 9:30pm.
-          <strong>$100 fee if neighbors complain about noise.</strong>
-        </p>
-
-        <h3>Parking</h3>
-        <ul>
-          <li>Use the gravel lot inside the gate &mdash; park near other vehicles, facing the street or container</li>
-          <li><strong>Never park on grass</strong> (risks damage to sprinklers and getting stuck in mud)</li>
-          <li>Do not obstruct the circle, garage, sauna area, or delivery access</li>
-          <li>Overflow parking is available across the street or on the frontage road (5-minute walk)</li>
-          <li><strong>$150 penalty for each neighbor complaint about parking</strong> &mdash; Manage parking to ensure no vehicles are parked in front of neighbors' houses</li>
-        </ul>
-
-        <h3>Alpaca & Gate Safety</h3>
-        <div class="warning-box">
-          <strong>Critical:</strong> <strong>Always keep the back fence gates closed</strong> to prevent alpacas
-          from escaping. Please refer to them as "alpacas," not "llamas." Keep all dogs and pets out of
-          the alpaca area in the back yard; pets may only be tied in the front yard.
+        <div class="he-rule">
+          <h3><span class="he-ico" aria-hidden="true">&#127881;</span>Guest limits</h3>
+          <p>
+            Your approved guest count goes in the agreement. Each extra person beyond it is <span class="he-fee">$15</span>.
+            You agree to report actual attendance honestly.
+          </p>
         </div>
 
-        <h3>House Rules</h3>
-        <ul>
-          <li><strong>No alcohol inside the house</strong> (exceptions only for wedding events)</li>
-          <li><strong>No cooking meat inside the house</strong> &mdash; No storing meat in the kitchen refrigerator. Meat can be cooked on the back patio grill area and stored in other refrigerators</li>
-          <li><strong>No animals inside the house or backyard</strong> &mdash; Dogs may be tied in the front yard only ($100 fee if violated)</li>
-          <li><strong>No RVs parked on property</strong> &mdash; Can park on frontage road ($100 fee if violated)</li>
-          <li>Wash and replace any used linens and towels</li>
-          <li>Return all furniture to original positions (take photos before moving anything)</li>
-          <li>Propane usage will be deducted from the deposit</li>
-        </ul>
+        <div class="he-rule he-rule--warn">
+          <h3><span class="he-ico" aria-hidden="true">&#128274;</span>Address privacy</h3>
+          <p>
+            Do <strong>not</strong> post our address in marketing, texts, emails or social media. Send guests to
+            <a href="https://alpacaplayhouse.com/visiting" target="_blank">alpacaplayhouse.com/visiting</a> for directions,
+            parking, alpaca safety, food and venue rules.
+          </p>
+          <p><span class="he-fee">$100</span> if the address is posted publicly.</p>
+        </div>
 
-        <h3>Cleaning</h3>
-        <p>
-          You're responsible for cleaning up after your event. Once approved, you'll get a checklist tailored to
-          your event (for example, sauna use means washing, drying and folding every towel) and a link to upload
-          <strong>before and after photos</strong> of each area. Missing before or after photos: $35.
-          A cleaning inspector checks the house; if it isn't clean we finish it at $30 + $30/hour (minimum $35),
-          deducted from your deposit.
-        </p>
-        <p>
-          <strong>House residents:</strong> cleaning deposit of $35–$75 depending on the event, and cleanup charges
-          of $15 + $30/hour (minimum $20).
-        </p>
+        <div class="he-rule">
+          <h3><span class="he-ico" aria-hidden="true">&#127925;</span>Noise &amp; quiet hours</h3>
+          <p>
+            Keep outdoor noise and music low after 9:30pm. Keep doors closed when loud music plays inside.
+            No loud PA speakers outdoors after 9:30pm.
+          </p>
+          <p><span class="he-fee">$100</span> if neighbors complain about noise.</p>
+        </div>
+
+        <div class="he-rule">
+          <h3><span class="he-ico" aria-hidden="true">&#128663;</span>Parking</h3>
+          <ul>
+            <li>Use the gravel lot inside the gate; park near other cars, facing the street or container</li>
+            <li><strong>Never park on grass</strong> (sprinklers, mud)</li>
+            <li>Keep the circle, garage, sauna area and delivery access clear</li>
+            <li>Overflow: across the street or on the frontage road (5-minute walk)</li>
+          </ul>
+          <p><span class="he-fee">$150</span> per neighbor complaint about parking.</p>
+        </div>
+
+        <div class="he-rule he-rule--warn">
+          <h3><span class="he-ico" aria-hidden="true">&#129433;</span>Alpaca &amp; gate safety</h3>
+          <p>
+            <strong>Always keep the back fence gates closed</strong> so the alpacas can't escape. Please call them
+            "alpacas," not "llamas." Keep dogs and pets out of the back yard; pets may only be tied in the front yard.
+          </p>
+        </div>
+
+        <div class="he-rule">
+          <h3><span class="he-ico" aria-hidden="true">&#127968;</span>House rules</h3>
+          <ul>
+            <li><strong>No alcohol inside the house</strong> (weddings excepted)</li>
+            <li><strong>No cooking meat inside</strong> or storing it in the kitchen fridge; use the back patio grill area</li>
+            <li><strong>No animals in the house or back yard</strong>; dogs tied in the front yard only (<span class="he-fee">$100</span>)</li>
+            <li><strong>No RVs on the property</strong>; park on the frontage road (<span class="he-fee">$100</span>)</li>
+            <li>Wash and replace any linens and towels you use</li>
+            <li>Put furniture back where it was (photograph it before moving)</li>
+            <li>Propane use is deducted from the deposit</li>
+          </ul>
+        </div>
+
+        <div class="he-rule">
+          <h3><span class="he-ico" aria-hidden="true">&#129529;</span>Cleaning</h3>
+          <p>
+            You clean up after your event. Once approved, you get a checklist made for your event (sauna use means
+            washing, drying and folding every towel) and a link to upload <strong>before and after photos</strong> of
+            each area.
+          </p>
+          <p>
+            A cleaning inspector checks the house. If it isn't clean, we finish it and take the cost from your deposit
+            (see <a href="#pricing">pricing</a>).
+          </p>
+        </div>
       </div>
     </details>
 
@@ -1705,7 +1920,8 @@
 
         <!-- Section 1: Your Information -->
         <div class="form-section">
-          <h2>Your Information</h2>
+          <h2>Your information</h2>
+          <p class="he-sec-sub">Who we'll be in touch with about this event.</p>
           <div class="form-grid">
             <div class="form-group">
               <label for="first_name">First Name <span class="required">*</span></label>
@@ -1736,7 +1952,8 @@
 
         <!-- Section 2: Event Details -->
         <div class="form-section">
-          <h2>Event Details</h2>
+          <h2>Event details</h2>
+          <p class="he-sec-sub">What you're planning, when, and for how many people.</p>
           <div class="form-grid">
             <div class="form-group full-width">
               <label for="event_name">Event Name <span class="required">*</span></label>
@@ -1789,7 +2006,7 @@
 
         <!-- Section 3: Spaces Needed -->
         <div class="form-section" id="spacesSection">
-          <h2>Spaces Needed</h2>
+          <h2>Spaces</h2>
           <p class="hint" style="margin-bottom: 0.5rem;">Select all the spaces you would like to use for your event. Unavailable spaces on your selected date are greyed out.</p>
           <p class="hint" style="margin-bottom: 1rem; font-style: italic;" id="spacesDateHint"><a href="#event_date" class="pick-date-link">Pick your event date</a> to see which spaces are free and select them.</p>
           <div class="spaces-table-container">
@@ -1814,7 +2031,7 @@
 
         <!-- Section 4: Staffing -->
         <div class="form-section">
-          <h2>Staffing Contacts</h2>
+          <h2>Staffing contacts</h2>
           <p class="hint" style="margin-bottom: 1rem;">Provide contact info for your event staff (can be yourself):</p>
           <div class="form-grid">
             <div class="form-group">
@@ -1846,7 +2063,7 @@
 
         <!-- Section 5: Additional Info -->
         <div class="form-section">
-          <h2>Additional Information</h2>
+          <h2>Anything else</h2>
           <div class="form-grid">
             <div class="form-group full-width">
               <label for="marketing_materials_link">Marketing Materials Link</label>
@@ -1861,7 +2078,7 @@
 
         <!-- Section 6: Acknowledgments -->
         <div class="form-section">
-          <h2>Acknowledgments</h2>
+          <h2>House rules</h2>
           <div class="acknowledgments-section">
             <h3>Please confirm you understand and agree to the following:</h3>
             <div class="ack-list">
@@ -1911,7 +2128,7 @@
 
         <!-- Deposits Section -->
         <div class="form-section deposit-section">
-          <h2>Reservation Deposit</h2>
+          <h2>Reservation deposit</h2>
           <p class="hint" style="margin-bottom: 1rem;">
             A reservation deposit is required to secure your event booking. This deposit will be fully applied towards the rental fee or deposit. If you cancel your event the reservation fee will not be refunded.
           </p>
