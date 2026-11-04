@@ -29,3 +29,10 @@ revoke all on public.event_request_drafts from anon, authenticated;
 
 comment on table public.event_request_drafts is
   'Host-event form drafts filled by a guest''s AI assistant via event-request-agent. Service role only; expires after 3 days.';
+
+-- Drafts hold guest and staff names and phone numbers: delete them a day after they expire.
+select cron.schedule(
+  'event-request-drafts-sweep',
+  '17 9 * * *',
+  $$delete from public.event_request_drafts where expires_at < now() - interval '1 day'$$
+);
