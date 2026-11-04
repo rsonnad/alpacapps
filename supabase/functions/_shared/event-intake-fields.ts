@@ -1,7 +1,7 @@
 /**
- * Event request form fields, shared by event-intake-voice (the chat panel)
- * and event-request-agent (the "let my AI assistant fill this out" API), so
- * both use one whitelist and one set of validation rules.
+ * Event request form fields for event-request-agent (the "let my AI assistant
+ * fill this out" API). The rules mirror event-intake-voice (the chat panel),
+ * which keeps its own copy; change both together.
  *
  * Neither path may set acknowledgments, the deposit, a partner code or card
  * data: those stay a manual step for the guest on the page.
@@ -49,6 +49,9 @@ export const EVENT_TYPES: Array<{ value: string; label: string }> = [
   { value: "other", label: "Other" },
 ];
 
+// Values that mean "nothing real to say"
+const PLACEHOLDER = /^\(?\s*(unknown|unavailable|n\/?a|none|null|not (provided|given|specified|mentioned)|tbd|to be determined|-+)\s*\)?\.?$/i;
+
 export function clean(v: unknown, max = 300): string | null {
   if (v === null || v === undefined) return null;
   const s = String(v).replace(/\s+/g, " ").trim();
@@ -58,13 +61,15 @@ export function clean(v: unknown, max = 300): string | null {
 /** Validate one proposed field value. Returns null to drop it. */
 export function validateField(name: string, raw: unknown, eventTypes: string[], today: string): unknown {
   if (raw === null || raw === undefined) return null;
+  if (typeof raw === "string" && (PLACEHOLDER.test(raw.trim()) || !raw.trim())) return null;
   switch (name) {
     case "expected_guests": {
       const n = Math.round(Number(raw));
       return Number.isFinite(n) && n >= 1 && n <= 100 ? n : null;
     }
     case "is_ticketed":
-      return typeof raw === "boolean" ? raw : null;
+      if (typeof raw === "boolean") return raw;
+      return /^(true|yes)$/i.test(String(raw).trim()) ? true : /^(false|no)$/i.test(String(raw).trim()) ? false : null;
     case "email": {
       const s = clean(raw, 200)?.toLowerCase().replace(/\s/g, "") ?? null;
       return s && /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(s) ? s : null;
