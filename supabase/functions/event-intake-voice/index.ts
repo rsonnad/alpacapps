@@ -1,10 +1,10 @@
 /**
- * Event Intake Voice Edge Function
+ * Event Intake Edge Function (event-intake-voice: name kept; it is text-only)
  *
- * Powers the "Talk to fill this in" panel on /rentals/hostevent/.
- * Takes one conversation turn (recorded audio or typed text) plus the current
- * form values, asks Gemini which form fields the guest just gave us, and
- * returns validated field values, a short reply to speak back, and the list of
+ * Powers the "Describe your event" chat panel on /rentals/hostevent/.
+ * Takes one typed conversation turn (guests can use their keyboard's own
+ * dictation mic) plus the current form values, asks Gemini which form fields the guest just gave us, and
+ * returns validated field values, a short reply, and the list of
  * required fields still missing.
  *
  * The AI only ever proposes values. This function whitelists and validates
@@ -19,9 +19,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { checkIpRateLimit, checkRateLimit } from "../_shared/function-wrapper.ts";
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
 
-const MAX_AUDIO_BYTES = 6 * 1024 * 1024; // ~ several minutes of opus; base64 is checked below
 const MAX_TEXT_CHARS = 2000;
-const AUDIO_TYPES = ["audio/webm", "audio/mp4", "audio/ogg", "audio/mpeg", "audio/wav", "audio/aac"];
 
 // Fields the AI may fill. Anything else it returns is dropped.
 const STRING_FIELDS = [
@@ -67,7 +65,6 @@ function corsHeaders(req: Request): Record<string, string> {
 
 interface SpaceInfo { id: string; name: string; available: boolean }
 interface TurnBody {
-  audio?: { data: string; mimeType: string };
   text?: string;
   history?: Array<{ role: "guest" | "assistant"; text: string }>;
   form?: Record<string, unknown>;
@@ -80,7 +77,6 @@ interface TurnBody {
 const RESPONSE_SCHEMA = {
   type: "OBJECT",
   properties: {
-    heard: { type: "STRING", description: "What the guest said this turn, transcribed (or the typed text)." },
     fields: {
       type: "OBJECT",
       description: "Only fields the guest gave or corrected in THIS turn. Omit everything else.",
@@ -96,10 +92,10 @@ const RESPONSE_SCHEMA = {
       description: "Full list of space ids the guest wants, only when they talked about spaces this turn.",
       items: { type: "STRING" },
     },
-    reply: { type: "STRING", description: "One or two short, friendly spoken sentences." },
+    reply: { type: "STRING", description: "One or two short, friendly sentences." },
     done: { type: "BOOLEAN", description: "True when the guest says they are finished." },
   },
-  required: ["heard", "fields", "reply", "done"],
+  required: ["fields", "reply", "done"],
 };
 
 function json(req: Request, body: unknown, status = 200) {
@@ -175,7 +171,7 @@ function buildPrompt(b: TurnBody, eventTypes: Array<{ value: string; label: stri
     .map((h) => `${h.role === "guest" ? "Guest" : "You"}: ${String(h.text).slice(0, 500)}`)
     .join("\n") || "(this is the first turn)";
 
-  return `You help a guest fill in an event-hosting request form for Alpaca Playhouse, a home venue near Austin, Texas, by voice.
+  return `You help a guest fill in an event-hosting request form for Alpaca Playhouse, a home venue near Austin, Texas, through a short chat. Their messages may come from phone dictation, so allow for misheard words, spelled-out emails ("maya at gmail dot com") and spoken numbers.
 Today is ${today} (America/Chicago). Resolve relative dates ("next Saturday", "the 14th") to YYYY-MM-DD on or after today. Times are 24-hour HH:MM ("7pm" = 19:00).
 
 Fields you may fill: first_name, last_name, email, phone, organization_name, event_name, event_type, expected_guests (1-100, include hosts and staff), event_date, event_start_time, event_end_time, event_description, is_ticketed, ticket_price_range, setup_staff_name, setup_staff_phone, cleanup_staff_name, cleanup_staff_phone, parking_manager_name, parking_manager_phone, marketing_materials_link, special_requests.
@@ -196,7 +192,7 @@ ${filled}
 Conversation so far:
 ${history}
 
-For this turn: return in "fields" only what the guest just gave or corrected. In "reply", briefly confirm what you filled, then ask for the next one or two missing things (most important first: name and contact, event type, date and times, guests, description, spaces, then coordinators). Speak naturally, no lists, no markdown, under 40 words. If everything required is filled, tell them to review the form, tick the acknowledgments and pay the deposit. Set done=true only if they say they are finished.`;
+For this turn: return in "fields" only what the guest just gave or corrected. In "reply", briefly confirm what you filled, then ask for the next one or two missing things (most important first: name and contact, event type, date and times, guests, description, spaces, then coordinators). Write naturally, no lists, no markdown, under 40 words. If everything required is filled, tell them to review the form, tick the acknowledgments and pay the deposit. Set done=true only if they say they are finished.`;
 }
 
 serve(async (req) => {
@@ -217,17 +213,7 @@ serve(async (req) => {
 
     const b: TurnBody = await req.json().catch(() => ({}));
     const text = clean(b.text, MAX_TEXT_CHARS);
-    let audioPart: { inline_data: { mime_type: string; data: string } } | null = null;
-    if (b.audio?.data) {
-      const mime = String(b.audio.mimeType || "").split(";")[0].trim().toLowerCase();
-      if (!AUDIO_TYPES.includes(mime)) return json(req, { error: "Unsupported audio format" }, 415);
-      const data = String(b.audio.data);
-      if (data.length * 0.75 > MAX_AUDIO_BYTES || !/^[A-Za-z0-9+/=]+$/.test(data)) {
-        return json(req, { error: "Recording too long. Try a shorter answer." }, 413);
-      }
-      audioPart = { inline_data: { mime_type: mime, data } };
-    }
-    if (!audioPart && !text) return json(req, { error: "Say or type something first" }, 400);
+    if (!text) return json(req, { error: "Type something about your event first" }, 400);
 
     const today = /^\d{4}-\d{2}-\d{2}$/.test(String(b.today || ""))
       ? String(b.today)
@@ -240,9 +226,7 @@ serve(async (req) => {
       .slice(0, 60)
       .map((s) => ({ id: String(s.id).slice(0, 64), name: String(s.name).slice(0, 80), available: !!s.available }));
 
-    const parts: unknown[] = [{ text: buildPrompt(b, eventTypes, spaces, today) }];
-    if (audioPart) parts.push({ text: "The guest's spoken answer for this turn:" }, audioPart);
-    if (text) parts.push({ text: `The guest typed: ${text}` });
+    const parts = [{ text: buildPrompt(b, eventTypes, spaces, today) }, { text: `The guest wrote: ${text}` }];
 
     const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     const geminiBody = JSON.stringify({
@@ -271,12 +255,12 @@ serve(async (req) => {
 
     const data = await res.json();
     const raw = data.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("") || "{}";
-    let ai: { heard?: string; fields?: Record<string, unknown>; space_ids?: string[] | null; reply?: string; done?: boolean };
+    let ai: { fields?: Record<string, unknown>; space_ids?: string[] | null; reply?: string; done?: boolean };
     try {
       ai = JSON.parse(raw);
     } catch {
       console.error("Unparseable Gemini output:", raw.slice(0, 300));
-      return json(req, { error: "Sorry, I didn't catch that. Could you say it again?" }, 502);
+      return json(req, { error: "Sorry, I didn't get that. Could you rephrase it?" }, 502);
     }
 
     // Validate every proposed value against the whitelist
@@ -302,7 +286,6 @@ serve(async (req) => {
       .map(([, label]) => label);
 
     return json(req, {
-      heard: clean(ai.heard, 1000) || text || "",
       fields,
       space_ids: spaceIds,
       reply: clean(ai.reply, 400) || "Got it. What else can you tell me about your event?",
