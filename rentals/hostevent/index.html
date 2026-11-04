@@ -1522,6 +1522,50 @@
         padding: 1.25rem;
       }
     }
+
+    /* ===== Voice fill-in panel (event-intake-voice) ===== */
+    .voice-fill {
+      margin: 0 0 1.25rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      background: var(--accent-light);
+    }
+    .voice-fill-head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .voice-fill-title { flex: 1 1 14rem; }
+    .voice-fill-head h3 { margin: 0; font-size: 1rem; color: var(--text); }
+    .voice-fill-head p { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 400; }
+    .voice-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1rem; border-radius: 999px; border: none; cursor: pointer;
+      background: var(--accent); color: #fff; font-weight: 600; font-size: 0.95rem;
+    }
+    .voice-btn:disabled { opacity: 0.6; cursor: default; }
+    .voice-btn.secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); font-weight: 500; }
+    .voice-btn .dot { width: 10px; height: 10px; border-radius: 50%; background: #fff; }
+    .voice-btn.listening .dot { background: var(--error); animation: voicePulse 1s infinite; }
+    @keyframes voicePulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+    .voice-body { margin-top: 0.75rem; }
+    .voice-body.hidden { display: none; }
+    .voice-status { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; min-height: 1.2em; }
+    .voice-log {
+      max-height: 220px; overflow-y: auto; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem 0.75rem;
+      font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    .voice-log:empty { display: none; }
+    .voice-msg { line-height: 1.4; }
+    .voice-msg b { color: var(--accent); font-weight: 600; }
+    .voice-msg.guest b { color: var(--text-muted); }
+    .voice-missing { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; }
+    .voice-controls { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
+    .voice-controls input[type="text"] {
+      flex: 1 1 12rem; min-width: 0; padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem;
+    }
+    .voice-mute { font-size: 0.8rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.3rem; }
+    .ai-filled { box-shadow: 0 0 0 3px rgba(61,139,122,0.45) !important; background-color: #f0faf7 !important; transition: box-shadow 0.3s; }
+    tr.ai-filled td { background-color: #f0faf7 !important; }
   </style>
 </head>
 <body>
@@ -1693,6 +1737,28 @@
 
     <!-- Application Form -->
     <div class="form-container" id="formContainer">
+      <!-- Voice fill-in panel (event-intake-voice). Self-contained: own CSS block and module script. -->
+      <div class="voice-fill" id="voiceFill">
+        <div class="voice-fill-head">
+          <div class="voice-fill-title">
+            <h3>Prefer to talk?</h3>
+            <p>Tell us about your event out loud and we'll fill in the form for you. You can review and change anything before submitting.</p>
+          </div>
+          <button type="button" class="voice-btn" id="voiceStartBtn"><span class="dot"></span><span id="voiceStartLabel">Talk to fill this in</span></button>
+        </div>
+        <div class="voice-body hidden" id="voiceBody">
+          <div class="voice-status" id="voiceStatus" aria-live="polite"></div>
+          <div class="voice-log" id="voiceLog" aria-live="polite"></div>
+          <div class="voice-missing" id="voiceMissing"></div>
+          <div class="voice-controls">
+            <button type="button" class="voice-btn secondary" id="voiceSendBtn" style="display:none;">Done talking</button>
+            <input type="text" id="voiceTextInput" placeholder="Or type here, e.g. Birthday for 40 people next Saturday 6-10pm" autocomplete="off">
+            <button type="button" class="voice-btn secondary" id="voiceTextBtn">Send</button>
+            <label class="voice-mute"><input type="checkbox" id="voiceMute"> Mute replies</label>
+          </div>
+        </div>
+      </div>
+
       <form id="eventRequestForm">
         <div id="errorBanner" class="error-banner hidden"></div>
 
@@ -3266,6 +3332,297 @@
         alert('Sorry, there was an error sending your message. Please try texting us instead.');
       }
     });
+  </script>
+  <!-- Voice fill-in panel logic (event-intake-voice). Never touches acknowledgments, deposit, partner code or card. -->
+  <script type="module">
+    import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../shared/supabase.js';
+    import { getAustinTodayISO } from '../../shared/timezone.js';
+
+    const ENDPOINT = `${SUPABASE_URL}/functions/v1/event-intake-voice`;
+    const TEXT_FIELDS = [
+      'first_name', 'last_name', 'email', 'phone', 'organization_name',
+      'event_name', 'event_type', 'expected_guests', 'event_date', 'event_start_time', 'event_end_time',
+      'event_description', 'ticket_price_range',
+      'setup_staff_name', 'setup_staff_phone', 'cleanup_staff_name', 'cleanup_staff_phone',
+      'parking_manager_name', 'parking_manager_phone', 'marketing_materials_link', 'special_requests',
+    ];
+    const MAX_RECORD_MS = 45000;
+    const SILENCE_MS = 1600;
+
+    const $ = (id) => document.getElementById(id);
+    const startBtn = $('voiceStartBtn'), startLabel = $('voiceStartLabel'), body = $('voiceBody');
+    const statusEl = $('voiceStatus'), logEl = $('voiceLog'), missingEl = $('voiceMissing');
+    const sendBtn = $('voiceSendBtn'), textInput = $('voiceTextInput'), textBtn = $('voiceTextBtn'), muteBox = $('voiceMute');
+
+    const canRecord = !!(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+    const canSpeak = 'speechSynthesis' in window;
+    let active = false, busy = false, recorder = null, stream = null, audioCtx = null, stopTimer = null, vadRaf = null;
+    const history = [];
+
+    if (!canRecord) startLabel.textContent = 'Fill this in by chatting';
+
+    function setStatus(t) { statusEl.textContent = t || ''; }
+    function addLog(role, text) {
+      if (!text) return;
+      const div = document.createElement('div');
+      div.className = `voice-msg ${role}`;
+      const who = document.createElement('b');
+      who.textContent = role === 'guest' ? 'You: ' : 'Assistant: ';
+      div.append(who, document.createTextNode(text));
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+      history.push({ role, text });
+    }
+
+    function readForm() {
+      const form = {};
+      for (const id of TEXT_FIELDS) {
+        const el = $(id);
+        if (el) form[id] = el.value || '';
+      }
+      form.is_ticketed = !!$('is_ticketed')?.checked;
+      return form;
+    }
+    function readSpaces() {
+      return [...document.querySelectorAll('#spacesTableBody tr[data-space-id]')].map((row) => ({
+        id: row.dataset.spaceId,
+        name: row.querySelector('.space-name')?.textContent.trim() || '',
+        available: !!row.querySelector('.availability-badge.available'),
+        selected: !!row.querySelector('input[type="checkbox"]')?.checked,
+      }));
+    }
+    function eventTypes() {
+      return [...($('event_type')?.options || [])].filter((o) => o.value).map((o) => ({ value: o.value, label: o.textContent.trim() }));
+    }
+
+    function flash(el) {
+      if (!el) return;
+      el.classList.add('ai-filled');
+      setTimeout(() => el.classList.remove('ai-filled'), 2500);
+    }
+    function setValue(id, value) {
+      const el = $(id);
+      if (!el || value === null || value === undefined) return false;
+      if (String(el.value) === String(value)) return false;
+      el.value = value;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      flash(el);
+      return true;
+    }
+
+    // After a date change the page reloads availability; wait for the table to show it
+    async function waitForAvailability(timeoutMs = 6000) {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        const rows = document.querySelectorAll('#spacesTableBody tr[data-space-id]');
+        if (rows.length && !document.querySelector('#spacesTableBody .pick-date-link')
+            && document.querySelector('#spacesTableBody .availability-badge.available, #spacesTableBody .availability-badge.unavailable')) return true;
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      return false;
+    }
+
+    async function applyResult(res) {
+      const fields = res.fields || {};
+      const dateChanged = fields.event_date && setValue('event_date', fields.event_date);
+      for (const [name, value] of Object.entries(fields)) {
+        if (name === 'event_date') continue;
+        if (name === 'is_ticketed') {
+          const box = $('is_ticketed');
+          if (box && box.checked !== !!value) {
+            box.checked = !!value;
+            box.dispatchEvent(new Event('change', { bubbles: true }));
+            flash(box.parentElement);
+          }
+          continue;
+        }
+        setValue(name, value);
+      }
+      if (dateChanged) await waitForAvailability();
+      if (Array.isArray(res.space_ids)) {
+        const want = new Set(res.space_ids);
+        document.querySelectorAll('#spacesTableBody tr[data-space-id]').forEach((row) => {
+          const box = row.querySelector('input[type="checkbox"]');
+          if (!box || box.disabled) return;
+          const on = want.has(row.dataset.spaceId);
+          if (box.checked !== on) {
+            box.checked = on;
+            box.dispatchEvent(new Event('change', { bubbles: true }));
+            flash(row);
+          }
+        });
+      }
+      missingEl.textContent = res.missing?.length ? `Still needed: ${res.missing.join(', ')}.` : 'All required details are in. Review the form, tick the acknowledgments and pay the deposit at the bottom.';
+    }
+
+    function speak(text) {
+      return new Promise((resolve) => {
+        if (!canSpeak || muteBox.checked || !text) return resolve();
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 1.05;
+        u.onend = u.onerror = () => resolve();
+        speechSynthesis.speak(u);
+      });
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result).split(',')[1] || '');
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+    }
+
+    async function sendTurn({ audio, text }) {
+      busy = true;
+      textBtn.disabled = true;
+      setStatus('Thinking...');
+      const spaces = readSpaces();
+      try {
+        const resp = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+          body: JSON.stringify({
+            audio, text,
+            history: history.slice(-8),
+            form: readForm(),
+            selectedSpaceIds: spaces.filter((s) => s.selected).map((s) => s.id),
+            spaces: spaces.map(({ id, name, available }) => ({ id, name, available })),
+            eventTypes: eventTypes(),
+            today: getAustinTodayISO(),
+          }),
+        });
+        const res = await resp.json().catch(() => ({}));
+        if (!resp.ok || res.error) throw new Error(res.error || 'The assistant could not answer.');
+        if (audio && res.heard) addLog('guest', res.heard);
+        await applyResult(res);
+        addLog('assistant', res.reply);
+        setStatus('');
+        await speak(res.reply);
+        if (res.done) stopConversation('Done. Check the form below, then submit when ready.');
+      } catch (err) {
+        console.error('[voice-fill]', err);
+        setStatus(err.message || 'Something went wrong. You can keep typing or fill in the form by hand.');
+      } finally {
+        busy = false;
+        textBtn.disabled = false;
+      }
+      if (active && canRecord) listen();
+    }
+
+    async function listen() {
+      if (!active || busy || recorder) return;
+      try {
+        if (!stream) stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+      } catch (err) {
+        setStatus('Microphone not available. You can type your answers instead.');
+        return;
+      }
+      const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'].find((t) => MediaRecorder.isTypeSupported?.(t)) || '';
+      const chunks = [];
+      recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      recorder.onstop = async () => {
+        const rec = recorder;
+        recorder = null;
+        clearTimeout(stopTimer);
+        cancelAnimationFrame(vadRaf);
+        startBtn.classList.remove('listening');
+        sendBtn.style.display = 'none';
+        if (!active || rec._discard) return;
+        const blob = new Blob(chunks, { type: (rec.mimeType || mime || 'audio/webm') });
+        if (blob.size < 2000 || !rec._heardSpeech) { setStatus('I did not hear anything. Tap "Talk" to try again, or type below.'); pauseListening(); return; }
+        const data = await blobToBase64(blob);
+        sendTurn({ audio: { data, mimeType: blob.type.split(';')[0] } });
+      };
+      recorder.start();
+      startBtn.classList.add('listening');
+      sendBtn.style.display = '';
+      setStatus('Listening... pause when you are done.');
+      stopTimer = setTimeout(() => recorder?.state === 'recording' && recorder.stop(), MAX_RECORD_MS);
+      watchSilence(recorder);
+    }
+
+    // Stop the recording after a pause that follows some speech
+    function watchSilence(rec) {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const src = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 1024;
+        src.connect(analyser);
+        const buf = new Uint8Array(analyser.fftSize);
+        let lastLoud = Date.now(), noiseFloor = null;
+        const startedAt = Date.now();
+        const tick = () => {
+          if (rec.state !== 'recording') return;
+          analyser.getByteTimeDomainData(buf);
+          let sum = 0;
+          for (const v of buf) sum += (v - 128) * (v - 128);
+          const rms = Math.sqrt(sum / buf.length);
+          if (Date.now() - startedAt < 300) noiseFloor = Math.max(noiseFloor ?? 0, rms);
+          const threshold = Math.max(4, (noiseFloor ?? 2) * 1.8);
+          if (rms > threshold) { lastLoud = Date.now(); rec._heardSpeech = true; }
+          if (rec._heardSpeech && Date.now() - lastLoud > SILENCE_MS) { rec.stop(); return; }
+          // Nobody spoke for 12 seconds: stop listening and wait for a tap
+          if (!rec._heardSpeech && Date.now() - startedAt > 12000) { rec._discard = true; rec.stop(); pauseListening('Still there? Tap "Talk" when you are ready, or type below.'); return; }
+          vadRaf = requestAnimationFrame(tick);
+        };
+        tick();
+      } catch (e) {
+        rec._heardSpeech = true; // No analyser: rely on the "Done talking" button and the time limit
+      }
+    }
+
+    function pauseListening(msg) {
+      active = false;
+      startLabel.textContent = 'Talk';
+      if (msg) setStatus(msg);
+      releaseMic();
+    }
+    function releaseMic() {
+      stream?.getTracks().forEach((t) => t.stop());
+      stream = null;
+    }
+    function stopConversation(msg) {
+      active = false;
+      if (recorder?.state === 'recording') { recorder._discard = true; recorder.stop(); }
+      if (canSpeak) speechSynthesis.cancel();
+      releaseMic();
+      startLabel.textContent = canRecord ? 'Talk again' : 'Fill this in by chatting';
+      setStatus(msg || '');
+    }
+
+    startBtn.addEventListener('click', async () => {
+      body.classList.remove('hidden');
+      if (!canRecord) { textInput.focus(); return; }
+      if (active) { stopConversation('Paused. Tap "Talk again" to keep going, or type below.'); return; }
+      active = true;
+      startLabel.textContent = 'Stop';
+      if (!history.length) {
+        const hello = "Hi! Tell me about your event: what it is, the date and times, about how many people, and your name and email.";
+        addLog('assistant', hello);
+        await speak(hello);
+      }
+      listen();
+    });
+    sendBtn.addEventListener('click', () => { if (recorder?.state === 'recording') { recorder._heardSpeech = true; recorder.stop(); } });
+
+    function sendTyped() {
+      const text = textInput.value.trim();
+      if (!text || busy) return;
+      body.classList.remove('hidden');
+      if (recorder?.state === 'recording') { recorder._discard = true; recorder.stop(); }
+      textInput.value = '';
+      addLog('guest', text);
+      sendTurn({ text });
+    }
+    textBtn.addEventListener('click', sendTyped);
+    textInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendTyped(); } });
+    muteBox.addEventListener('change', () => { if (muteBox.checked && canSpeak) speechSynthesis.cancel(); });
   </script>
 </body>
 </html>
