@@ -121,6 +121,11 @@ Deno.serve(async (req) => {
       cleaning_rate_per_hour: 30,
       updated_at: new Date().toISOString(),
     };
+    // House residents pay no rental fee and no reservation deposit (anything already paid is refunded by staff).
+    if (isResident) {
+      if (!r.rental_fee_paid) updates.rental_fee = 0;
+      if (!r.reservation_fee_paid) updates.reservation_fee = 0;
+    }
 
     // ── AI checklist + exposure ──
     let checklist: ChecklistArea[] = r.cleaning_checklist || [];

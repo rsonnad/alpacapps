@@ -20,6 +20,9 @@ import { isDemoUser, redactString } from '../shared/demo-redact.js';
 import { initTabList } from '../shared/tab-utils.js';
 import { renderCleaningTab, onboardEventHost } from './event-cleaning-tab.js';
 
+// A stored fee of 0 (e.g. a house resident) is real; only fall back when it's missing.
+const feeOr = (v, d) => (v === null || v === undefined || v === '' || isNaN(parseFloat(v))) ? d : parseFloat(v);
+
 // =============================================
 // STATE
 // =============================================
@@ -162,7 +165,7 @@ function renderEventCard(req, isCompact = false) {
 
   const timeDisplay = req.event_start_time ? formatTime(req.event_start_time) : '';
 
-  const rentalFee = parseFloat(req.rental_fee) || eventService.DEFAULT_FEES.RENTAL_FEE;
+  const rentalFee = feeOr(req.rental_fee, eventService.DEFAULT_FEES.RENTAL_FEE);
   const rawFeeDisplay = rentalFee === 0 ? 'Complementary' : `$${rentalFee}`;
   const feeDisplay = demo && rentalFee !== 0 ? redactString(rawFeeDisplay, 'amount') : rawFeeDisplay;
 
@@ -341,7 +344,7 @@ function renderEventCalendar() {
         return `${hour12}:${minutes}${ampm}`;
       };
       const timeDisplay = event.event_start_time ? formatTime(event.event_start_time) : '';
-      const rentalFee = parseFloat(event.rental_fee) || eventService.DEFAULT_FEES?.RENTAL_FEE || 0;
+      const rentalFee = feeOr(event.rental_fee, eventService.DEFAULT_FEES?.RENTAL_FEE || 0);
       const rawCalFee = rentalFee === 0 ? 'Complementary' : `$${rentalFee}`;
       const calFee = isDemoUser() && rentalFee !== 0 ? redactString(rawCalFee, 'amount') : rawCalFee;
 
@@ -466,7 +469,7 @@ window.openEventDetail = async function(requestId) {
   // Terms tab
   document.getElementById('eventTermMaxGuests').value = req.approved_max_guests || req.expected_guests || 25;
   document.getElementById('eventTermRentalFee').value = req.rental_fee ?? eventService.DEFAULT_FEES.RENTAL_FEE;
-  document.getElementById('eventTermReservationFee').value = req.reservation_fee ?? eventService.DEFAULT_FEES.RESERVATION_FEE;
+  document.getElementById('eventTermReservationFee').value = req.reservation_fee ?? eventService.DEFAULT_FEES.RESERVATION_DEPOSIT;
   document.getElementById('eventTermCleaningDeposit').value = req.cleaning_deposit ?? eventService.DEFAULT_FEES.CLEANING_DEPOSIT;
   document.getElementById('eventTermAdditionalTerms').value = req.additional_terms || '';
 
@@ -567,9 +570,9 @@ async function updateEventDocumentsTabState(req) {
 }
 
 function updateEventDepositsTab(req) {
-  const rentalFee = parseFloat(req.rental_fee) || eventService.DEFAULT_FEES.RENTAL_FEE;
-  const reservationFee = parseFloat(req.reservation_fee) || eventService.DEFAULT_FEES.RESERVATION_FEE;
-  const cleaningDeposit = parseFloat(req.cleaning_deposit) || eventService.DEFAULT_FEES.CLEANING_DEPOSIT;
+  const rentalFee = feeOr(req.rental_fee, eventService.DEFAULT_FEES.RENTAL_FEE);
+  const reservationFee = feeOr(req.reservation_fee, eventService.DEFAULT_FEES.RESERVATION_DEPOSIT);
+  const cleaningDeposit = feeOr(req.cleaning_deposit, eventService.DEFAULT_FEES.CLEANING_DEPOSIT);
   const demo = isDemoUser();
 
   // Update amounts (redact for demo)
@@ -939,9 +942,9 @@ function openEventRecordDepositModal(type) {
     event_rental_fee: 'Record Rental Fee',
   };
   const amounts = {
-    event_reservation: parseFloat(req.reservation_fee) || eventService.DEFAULT_FEES.RESERVATION_FEE,
-    event_cleaning: parseFloat(req.cleaning_deposit) || eventService.DEFAULT_FEES.CLEANING_DEPOSIT,
-    event_rental_fee: parseFloat(req.rental_fee) || eventService.DEFAULT_FEES.RENTAL_FEE,
+    event_reservation: feeOr(req.reservation_fee, eventService.DEFAULT_FEES.RESERVATION_DEPOSIT),
+    event_cleaning: feeOr(req.cleaning_deposit, eventService.DEFAULT_FEES.CLEANING_DEPOSIT),
+    event_rental_fee: feeOr(req.rental_fee, eventService.DEFAULT_FEES.RENTAL_FEE),
   };
 
   document.getElementById('depositType').value = type;

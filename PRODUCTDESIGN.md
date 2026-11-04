@@ -247,6 +247,10 @@ polling avoids repeated model inference while the worker is idle.
 
 **Why:** Phones and laptops already dictate into any text box. An in-page recorder adds mic permissions, audio formats and audio uploads for little gain.
 
+**Decision:** House residents pay $0 rental fee and $0 reservation deposit for events (cleaning deposit $35–$75, cleanup $15 + $30/hour). The form waives them only when the resident is signed in. `hostevent_submit_request` checks `auth.uid()` against `app_users.is_current_resident` and stores 0/0 itself. Approval (`event-host-onboard`) also zeroes unpaid fees for residents who applied signed out.
+
+**Why:** Residents are already known and live on site, so the booking deposit protects nothing. Tying the waiver to the sign-in, not to a typed email, stops anyone from claiming a resident's email to skip the deposit.
+
 ---
 
 ## 5. PAI (Property AI) Design

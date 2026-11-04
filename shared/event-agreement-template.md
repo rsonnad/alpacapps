@@ -168,7 +168,7 @@ This Agreement may be executed in one or more counterparts, each of which shall 
 
 4. **Marketing Materials:** Client will send links to all marketing materials to +14242341750 on WhatsApp or to specified WhatsApp group or team@alpacaplayhouse.com
 
-5. **Parking Management:** Client agrees to manage parking to ensure no vehicles are parked in front of neighbors houses. $150 penalty for each complaint from neighbors regarding parking on their property.
+5. **Parking Management:** Client agrees to manage parking to ensure no vehicles are parked in front of neighbors houses or on the wet grass. Client is responsible for any parking problems that happen. $150 penalty for each complaint from neighbors regarding parking on their property.
 
 6. **Noise Levels:** Client agrees to keep noise & music levels outside to a minimum after 9:30pm. $100 fee if neighbors complain about noise after this time. Doors must be kept closed when loud music is playing inside. No PA speakers at high volume after 9:30pm unless entirely inside with doors secured closed.
 
@@ -176,13 +176,13 @@ This Agreement may be executed in one or more counterparts, each of which shall 
 
 8. **Propane Usage:** Any propane used during the event for heating, display propane or hot tubs will be reimbursed from the damage deposit.
 
-9. **No Alcohol or Cooking Meat Inside:** No alcohol may be brought into the house or consumed inside. No cooking meat inside the house, and no storing meat in the kitchen refrigerator. Meat can be cooked on the back patio grill area (grill, oven, air fryer) and stored in other refrigerators.
+9. **No Alcohol; No Cooking Meat Inside:** No alcohol at the house or at events. No cooking meat inside the house, and no storing meat in the kitchen refrigerator. Meat can be cooked on the back patio grill area (grill, oven, air fryer) and stored in other refrigerators.
 
 10. **No RVs:** No RVs will be parked onsite at any time. $100 fee if this happens. RVs can be parked on frontage road (5 minute walk away).
 
 11. **Linens & Furniture:** Any used linens and towels must be washed and replaced into their closets. Furniture moved must be replaced to original location based on photographs taken before the event (renter's responsibility).
 
-12. **No Animals:** No animals may be brought into the house or the backyard. $100 fee if this happens. Dogs can be tied in front yard but should not run free (neighbor dogs are aggressive).
+12. **No Animals:** No animals may be brought into the house or the backyard. Owners must keep their dogs in sight, or tie them in the front yard; dogs should not run free (neighbor dogs are aggressive). $100 fee for violations.
 
 ---
 
