@@ -45,8 +45,7 @@ This is a fixed-term rental. It does not renew. Any extension must be agreed in 
 
 ## 3. Rental Price & Payment
 
-- **Rental, {{rental_days}} days:** {{base_total}}
-{{fsd_line}}
+- **Rental, {{rental_days}} days:** {{base_total}}{{fsd_line}}
 - **Total rental price:** **{{total_due}}**
 
 The total rental price covers the full rental period and includes the use of the Owner's insurance described in Section 5. It is due in full before pickup. Owner is not obligated to release the Vehicle until it has been paid.
@@ -102,7 +101,7 @@ Renter will return the Vehicle with the interior in a clean state similar to tha
 
 ## 13. Documents Provided
 
-Renter has provided a photo of Renter's valid driver's license before signing this Agreement. Renter's license details are recorded below the signature block. Renter shall show the physical license at pickup on request.
+Renter has provided a photo of Renter's valid driver's license, the license number and Renter's date of birth before signing this Agreement. Owner keeps these on file privately. Renter confirms the license is valid and will remain valid for the rental period, and shall show the physical license at pickup on request.
 
 ## 14. Owner Warranty
 
@@ -162,8 +161,6 @@ Email: {{renter_email}}
 Phone: {{renter_phone}}
 
 Driver's license: {{renter_dl}}
-
-Date of birth: {{renter_dob}}
 
 Signature: _________________________
 

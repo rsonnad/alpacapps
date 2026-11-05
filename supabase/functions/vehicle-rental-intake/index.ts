@@ -201,8 +201,9 @@ Deno.serve(async (req) => {
 
     return json({ success: true, signing_url: signingUrl });
   } catch (e) {
+    // Details go to the function log; the renter gets a plain message.
     console.error('vehicle-rental-intake error:', e);
-    return json({ error: e instanceof Error ? e.message : 'Internal error' }, 500);
+    return json({ error: 'Something went wrong on our side. Please try again in a minute, or text Rahul.' }, 500);
   }
 });
 

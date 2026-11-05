@@ -280,18 +280,16 @@ async function renderShortTermAgreement(
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
     hour: 'numeric', minute: '2-digit', timeZone: tz,
   }) + ' (Central Time)';
-  const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-US', {
-    month: 'long', day: 'numeric', year: 'numeric', timeZone: tz,
-  });
   const money2 = (n: number) => `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const days = Math.ceil((ret.getTime() - pickup.getTime()) / 86_400_000);
   const base = Number(terms.base_price);
   const fsdPrice = Number(terms.fsd_price || 0);
+  // Appended to the rental line, so it adds its own list item or nothing.
   const fsdLine = terms.fsd_selected && fsdPrice > 0
-    ? `- **Full Self-Driving (FSD) add-on:** ${money2(fsdPrice)}`
+    ? `\n- **Full Self-Driving (FSD) add-on:** ${money2(fsdPrice)}`
     : fsdPrice > 0
-      ? `- **Full Self-Driving (FSD):** not included (available for ${money2(fsdPrice)})`
+      ? `\n- **Full Self-Driving (FSD):** not included (available for ${money2(fsdPrice)})`
       : '';
 
   const damageGroups = Object.entries(terms.damage || {}).filter(([, items]) => items?.length);
@@ -303,7 +301,10 @@ async function renderShortTermAgreement(
   const signingDate = new Date().toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric', timeZone: tz,
   });
-  const dl = [rental.renter_dl_number, rental.renter_dl_state].filter(Boolean).join(', ');
+  // The executed copy lands in a public bucket: show only the last 4 of the
+  // license number and leave DOB out. Full values stay on vehicle_rentals.
+  const dlNum = String(rental.renter_dl_number);
+  const dl = `ending ${dlNum.slice(-4)}` + (rental.renter_dl_state ? `, issued by ${rental.renter_dl_state}` : '');
 
   const data: Record<string, string> = {
     signing_date: signingDate,
@@ -312,7 +313,6 @@ async function renderShortTermAgreement(
     renter_email: e(signerEmail),
     renter_phone: e(rental.renter_phone),
     renter_dl: e(dl),
-    renter_dob: e(fmtDate(terms.renter_dob!)),
     vehicle_make: e(rental.vehicle_make || ''),
     vehicle_model: e(rental.vehicle_model || ''),
     vehicle_year: e(String(rental.vehicle_year || '')),
