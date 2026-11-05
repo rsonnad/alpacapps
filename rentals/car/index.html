@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="../../favicon.png">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <title>Car Rental Details - Alpaca Playhouse</title>
+  <meta name="description" content="Enter your details and driver's license, then sign your car rental agreement.">
+  <meta name="robots" content="noindex">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: #f5f5f0; color: #333; min-height: 100vh; line-height: 1.5;
+    }
+    .site-nav {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem; background: #2d3024; color: #fff;
+    }
+    .site-nav img { height: 30px; }
+    .site-nav span { font-weight: 500; }
+    .container { max-width: 640px; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
+    .card {
+      background: #fff; border-radius: 12px; padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1.25rem;
+    }
+    h1 { font-size: 1.35rem; color: #2d3024; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.05rem; color: #2d3024; margin-bottom: 0.75rem; }
+    .muted { color: #777; font-size: 0.92rem; }
+    .terms { width: 100%; border-collapse: collapse; font-size: 0.95rem; margin-top: 0.75rem; }
+    .terms td { padding: 0.45rem 0; border-bottom: 1px solid #eee; vertical-align: top; }
+    .terms td:first-child { color: #666; padding-right: 0.75rem; width: 34%; }
+    .terms td:last-child { text-align: right; font-weight: 600; }
+    .total-row td { border-bottom: none; font-size: 1.05rem; padding-top: 0.7rem; }
+    label { display: block; font-weight: 600; font-size: 0.92rem; margin: 0.9rem 0 0.3rem; }
+    label .hint { font-weight: 400; color: #888; }
+    input[type=text], input[type=email], input[type=tel], input[type=date], textarea {
+      width: 100%; padding: 0.7rem 0.8rem; font-size: 1rem; font-family: inherit;
+      border: 1px solid #ccc; border-radius: 8px; background: #fff;
+    }
+    input:focus, textarea:focus { outline: 2px solid #3d8b7a; border-color: #3d8b7a; }
+    textarea { min-height: 70px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.75rem; }
+    @media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
+    .photo-box {
+      border: 2px dashed #c9c3b3; border-radius: 10px; padding: 1rem; text-align: center;
+      background: #faf8f3; cursor: pointer; position: relative;
+    }
+    .photo-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .photo-box img { max-width: 100%; max-height: 200px; border-radius: 6px; display: none; margin: 0 auto 0.5rem; }
+    .photo-box.has-file img { display: block; }
+    .photo-box .cta { color: #3d8b7a; font-weight: 600; }
+    .check {
+      display: flex; gap: 0.6rem; align-items: flex-start; font-weight: 400;
+      background: #f1f8f4; border-radius: 8px; padding: 0.75rem; margin-top: 1rem; cursor: pointer;
+    }
+    .check input { margin-top: 0.25rem; width: 18px; height: 18px; flex-shrink: 0; }
+    .btn {
+      display: block; width: 100%; margin-top: 1.25rem; padding: 0.95rem;
+      background: #3d8b7a; color: #fff; border: none; border-radius: 8px;
+      font-size: 1.05rem; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    .btn.secondary { background: #fff; color: #3d8b7a; border: 1px solid #3d8b7a; }
+    .error { background: #fdecea; color: #a12a1f; border-radius: 8px; padding: 0.75rem; margin-top: 1rem; display: none; }
+    .notice { background: #f1f8f4; border-left: 4px solid #3d8b7a; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+    .center { text-align: center; padding: 3rem 1rem; }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <img src="../../assets/branding/alpaca-head-white-transparent.png" alt="">
+    <span>Alpaca Playhouse</span>
+  </nav>
+
+  <main class="container">
+    <div id="loading" class="card center muted">Loading your rental…</div>
+    <div id="fatal" class="card center" style="display:none;"></div>
+
+    <div id="app" style="display:none;">
+      <div class="card">
+        <h1 id="carTitle">Car Rental</h1>
+        <p class="muted">Step 1 of 2: your details and driver's license. Step 2: review and sign the agreement.</p>
+        <table class="terms" id="termsTable"></table>
+      </div>
+
+      <div id="resumeBox" class="notice" style="display:none;">
+        You've already sent your details. <a id="resumeLink" href="#">Continue to sign the agreement →</a><br>
+        <span class="muted">Need to fix something? Edit below and send again.</span>
+      </div>
+
+      <form id="form" class="card" novalidate>
+        <h2>Your details</h2>
+
+        <label for="legal_name">Full legal name <span class="hint">(as on your license)</span></label>
+        <input type="text" id="legal_name" name="legal_name" autocomplete="name" required>
+
+        <div class="row">
+          <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required>
+          </div>
+          <div>
+            <label for="phone">Mobile phone</label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel" required>
+          </div>
+        </div>
+
+        <label for="address">Home address</label>
+        <textarea id="address" name="address" autocomplete="street-address" placeholder="Street, city, state, ZIP" required></textarea>
+
+        <label for="dob">Date of birth</label>
+        <input type="date" id="dob" name="dob" required>
+
+        <h2 style="margin-top:1.5rem;">Driver's license</h2>
+        <div class="row">
+          <div>
+            <label for="dl_number">License number</label>
+            <input type="text" id="dl_number" name="dl_number" autocomplete="off" required>
+          </div>
+          <div>
+            <label for="dl_state">Issuing state / country</label>
+            <input type="text" id="dl_state" name="dl_state" placeholder="e.g. TX" required>
+          </div>
+        </div>
+
+        <label>Photo of license — front</label>
+        <div class="photo-box" id="frontBox">
+          <img alt="License front preview">
+          <div class="cta">Tap to take or choose a photo</div>
+          <input type="file" id="license_front" accept="image/*">
+        </div>
+
+        <label>Photo of license — back <span class="hint">(optional)</span></label>
+        <div class="photo-box" id="backBox">
+          <img alt="License back preview">
+          <div class="cta">Tap to take or choose a photo</div>
+          <input type="file" id="license_back" accept="image/*">
+        </div>
+
+        <label class="check" id="fsdRow">
+          <input type="checkbox" id="fsd">
+          <span id="fsdText">Add Full Self-Driving (FSD)</span>
+        </label>
+
+        <div class="error" id="error"></div>
+        <button type="submit" class="btn" id="submitBtn">Continue to review &amp; sign</button>
+        <p class="muted" style="margin-top:0.75rem;text-align:center;">Your license photo is stored privately and only seen by the owner.</p>
+      </form>
+    </div>
+  </main>
+
+<script>
+const FN_URL = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/vehicle-rental-intake';
+const token = new URLSearchParams(location.search).get('t') || '';
+let info = null;
+
+const $ = (id) => document.getElementById(id);
+const money = (n) => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtWhen = (iso) => new Date(iso).toLocaleString('en-US', {
+  weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago',
+});
+
+function fatal(msg) {
+  $('loading').style.display = 'none';
+  $('app').style.display = 'none';
+  const el = $('fatal');
+  el.textContent = msg;
+  el.style.display = '';
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+
+function renderTerms() {
+  const fsd = $('fsd').checked;
+  const total = info.base_price + (fsd ? info.fsd_price : 0);
+  const days = Math.ceil((new Date(info.return_at) - new Date(info.pickup_at)) / 86400000);
+  const rows = [
+    ['Pickup', fmtWhen(info.pickup_at)],
+    ['Return', fmtWhen(info.return_at)],
+    ['Where', info.pickup_location + (info.return_location && info.return_location !== info.pickup_location ? ' → ' + info.return_location : '')],
+    [`Rental (${days} days)`, money(info.base_price)],
+  ];
+  if (info.fsd_price > 0) rows.push(['Full Self-Driving', fsd ? money(info.fsd_price) : 'not added']);
+  rows.push(['Mileage', `${info.mileage_included.toLocaleString('en-US')} mi included, then ${money(info.overage_rate)}/mi`]);
+  rows.push(['Insurance', `Included · you pay up to ${money(info.deductible)} if the car is damaged`]);
+  rows.push(['Deposit', 'None']);
+  $('termsTable').innerHTML = rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')
+    + `<tr class="total-row"><td><strong>Total, due before pickup</strong></td><td>${money(total)}</td></tr>`;
+}
+
+async function load() {
+  if (!/^[0-9a-f-]{36}$/i.test(token)) return fatal('This link is missing its code. Please use the exact link you were sent.');
+  try {
+    const res = await fetch(FN_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get', token }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return fatal(data.error || 'Could not load this rental.');
+    info = data;
+  } catch (e) {
+    return fatal('Could not reach the server. Check your connection and reload.');
+  }
+
+  if (info.signed) return fatal('This rental agreement is already signed. Check your email for the signed copy.');
+
+  $('carTitle').textContent = `Rent ${info.vehicle.label}${info.vehicle.name ? ' "' + info.vehicle.name + '"' : ''}`;
+  if (info.fsd_price > 0) {
+    $('fsdText').innerHTML = `Add Full Self-Driving (FSD) for <strong>${money(info.fsd_price)}</strong>`;
+  } else {
+    $('fsdRow').style.display = 'none';
+  }
+  $('legal_name').value = info.prefill.legal_name || '';
+  $('email').value = info.prefill.email || '';
+  $('fsd').checked = !!info.prefill.fsd;
+  if (info.open_signing_url) {
+    $('resumeLink').href = info.open_signing_url;
+    $('resumeBox').style.display = '';
+  }
+  renderTerms();
+  $('loading').style.display = 'none';
+  $('app').style.display = '';
+}
+
+// Downscale/compress a photo so uploads stay fast (same as rentals/signing).
+function compressImage(file, maxWidth = 1800, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/') || file.type === 'image/heic' || file.type === 'image/heif') {
+      resolve(file); return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width, height = img.height;
+      if (width > maxWidth) { height = Math.round(height * (maxWidth / width)); width = maxWidth; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        if (!blob) { resolve(file); return; }
+        resolve(new File([blob], (file.name || 'license').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function wirePhoto(inputId, boxId) {
+  $(inputId).addEventListener('change', () => {
+    const f = $(inputId).files[0];
+    const box = $(boxId);
+    if (!f) { box.classList.remove('has-file'); return; }
+    box.querySelector('img').src = URL.createObjectURL(f);
+    box.querySelector('.cta').textContent = 'Tap to change photo';
+    box.classList.add('has-file');
+  });
+}
+wirePhoto('license_front', 'frontBox');
+wirePhoto('license_back', 'backBox');
+$('fsd').addEventListener('change', () => info && renderTerms());
+
+function showError(msg) {
+  const el = $('error');
+  el.textContent = msg;
+  el.style.display = msg ? '' : 'none';
+  if (msg) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+$('form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  showError('');
+  const v = (id) => $(id).value.trim();
+  const missing = [];
+  if (v('legal_name').split(/\s+/).length < 2) missing.push('full legal name');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) missing.push('email');
+  if (v('phone').replace(/\D/g, '').length < 7) missing.push('phone');
+  if (v('address').length < 8) missing.push('address');
+  if (!v('dob')) missing.push('date of birth');
+  if (v('dl_number').length < 4) missing.push('license number');
+  if (!v('dl_state')) missing.push('issuing state');
+  if (!$('license_front').files[0]) missing.push('photo of license front');
+  if (missing.length) return showError('Please fill in: ' + missing.join(', ') + '.');
+
+  const btn = $('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Uploading…';
+  try {
+    const fd = new FormData();
+    fd.append('token', token);
+    for (const k of ['legal_name', 'email', 'phone', 'address', 'dob', 'dl_number', 'dl_state']) fd.append(k, v(k));
+    fd.append('fsd', $('fsd').checked ? '1' : '0');
+    fd.append('license_front', await compressImage($('license_front').files[0]));
+    if ($('license_back').files[0]) fd.append('license_back', await compressImage($('license_back').files[0]));
+
+    const res = await fetch(FN_URL, { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.signing_url) throw new Error(data.error || `Something went wrong (${res.status}).`);
+    btn.textContent = 'Opening agreement…';
+    location.href = data.signing_url;
+  } catch (e) {
+    showError(e.message);
+    btn.disabled = false;
+    btn.textContent = 'Continue to review & sign';
+  }
+});
+
+load();
+</script>
+</body>
+</html>

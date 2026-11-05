@@ -22,6 +22,7 @@ import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { buildArchivalLeaseHtml, auditBlockHtml, formatDateTime } from "../_shared/archival-lease.ts";
 import { computePaymentDueAtSigning, formatChicagoDeadline, formatMoney } from "../_shared/payment-due.ts";
+import { SHORT_TERM_TEMPLATE_TYPE, shortTermTotal } from "../_shared/vehicle-rental-agreement.ts";
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -779,7 +780,7 @@ async function handleVehicleRentalSignature(supabase: any, s: {
   if (RESEND_API_KEY) {
     const { data: rental } = await supabase
       .from('vehicle_rentals')
-      .select('vehicle_year, vehicle_make, vehicle_model, current_monthly_rate, security_deposit_amount')
+      .select('vehicle_year, vehicle_make, vehicle_model, current_monthly_rate, security_deposit_amount, contract_terms')
       .eq('id', rentalId)
       .single();
     await sendVehicleRentalSignedEmail(RESEND_API_KEY, {
@@ -787,7 +788,10 @@ async function handleVehicleRentalSignature(supabase: any, s: {
       cc: (signing.cc_emails || []).filter((c: string) => c.toLowerCase() !== signing.signer_email.toLowerCase()),
       firstName: String(signing.signer_name || '').split(' ')[0],
       vehicleLabel: [rental?.vehicle_year, rental?.vehicle_make, rental?.vehicle_model].filter(Boolean).join(' '),
-      dueOnExecution: Number(rental?.security_deposit_amount || 0) + Number(rental?.current_monthly_rate || 0),
+      dueOnExecution: rental?.contract_terms?.template_type === SHORT_TERM_TEMPLATE_TYPE
+        ? shortTermTotal(rental.contract_terms)
+        : Number(rental?.security_deposit_amount || 0) + Number(rental?.current_monthly_rate || 0),
+      shortTerm: rental?.contract_terms?.template_type === SHORT_TERM_TEMPLATE_TYPE,
       archivalUrl: viewerUrl,
       signedAt,
       ipAddress: s.ipAddress,
@@ -807,7 +811,7 @@ async function handleVehicleRentalSignature(supabase: any, s: {
 
 async function sendVehicleRentalSignedEmail(apiKey: string, o: {
   to: string; cc: string[]; firstName: string; vehicleLabel: string; dueOnExecution: number;
-  archivalUrl: string | null; signedAt: string; ipAddress: string; userAgent: string;
+  shortTerm?: boolean; archivalUrl: string | null; signedAt: string; ipAddress: string; userAgent: string;
   documentHash: string; signatureImageUrl: string;
 }) {
   try {
@@ -829,6 +833,14 @@ async function sendVehicleRentalSignedEmail(apiKey: string, o: {
 
           ${auditBlockHtml({ ...o, documentType: 'vehicle_rental' })}
 
+          ${o.shortTerm ? `
+          <div style="background: #fdf6ee; border-left: 4px solid #d4883a; padding: 15px; margin: 20px 0;">
+            <strong>Due before pickup, per Section 3:</strong>
+            <ul style="margin: 8px 0 0; padding-left: 20px;">
+              <li>Total rental price: <strong>$${o.dueOnExecution.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> — <a href="https://alpacaplayhouse.com/pay">alpacaplayhouse.com/pay</a></li>
+              <li>Bring your physical driver's license to pickup.</li>
+            </ul>
+          </div>` : `
           <div style="background: #fdf6ee; border-left: 4px solid #d4883a; padding: 15px; margin: 20px 0;">
             <strong>Due now, per Section 14:</strong>
             <ul style="margin: 8px 0 0; padding-left: 20px;">
@@ -837,7 +849,7 @@ async function sendVehicleRentalSignedEmail(apiKey: string, o: {
               <li>Your insurance declarations page, with Rahul Sonnad listed as owner/beneficiary</li>
             </ul>
             <p style="margin: 8px 0 0;">Reply to this email with the documents.</p>
-          </div>
+          </div>`}
 
           <p>Questions? Reply to this email.</p>
           <p>Best regards,<br>Alpaca Playhouse</p>
