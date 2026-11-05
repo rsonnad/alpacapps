@@ -30,6 +30,24 @@ interface ContractTerms {
   odometer_recorded_on?: string;   // YYYY-MM-DD
   damage_photos_url?: string;
   damage?: Record<string, string[]>;
+  // Short-term rentals (template_type 'vehicle_rental_short') — see renderShortTermAgreement.
+  template_type?: string;
+  pickup_at?: string;              // ISO datetime with offset
+  return_at?: string;
+  pickup_location?: string;
+  return_location?: string;
+  base_price?: number;             // whole-rental price, before add-ons
+  fsd_price?: number;              // optional Full Self-Driving add-on
+  fsd_selected?: boolean;
+  mileage_included?: number;       // for the whole rental
+  renter_dob?: string;             // YYYY-MM-DD
+}
+
+export const SHORT_TERM_TEMPLATE_TYPE = 'vehicle_rental_short';
+
+/** Base price plus any add-ons the renter chose. */
+export function shortTermTotal(terms: ContractTerms): number {
+  return Number(terms.base_price || 0) + (terms.fsd_selected ? Number(terms.fsd_price || 0) : 0);
 }
 
 const NUMBER_WORDS: Record<number, string> = {
@@ -44,6 +62,7 @@ export async function renderVehicleRentalAgreement(
     .from('vehicle_rentals')
     .select(`
       id, renter_name, renter_email, renter_address,
+      renter_phone, renter_dl_number, renter_dl_state,
       vehicle_id, vehicle_make, vehicle_model, vehicle_year, vehicle_color, vehicle_vin,
       starting_mileage, start_date, current_monthly_rate, security_deposit_amount,
       cancel_notice_days, monthly_mileage_limit, mileage_overage_rate,
@@ -54,15 +73,18 @@ export async function renderVehicleRentalAgreement(
     .single();
   if (error || !rental) throw new Error('Vehicle rental not found');
 
+  const templateType = rental.contract_terms?.template_type === SHORT_TERM_TEMPLATE_TYPE
+    ? SHORT_TERM_TEMPLATE_TYPE : 'vehicle_rental';
+
   const { data: template } = await supabase
     .from('lease_templates')
     .select('id, version, content')
     .eq('is_active', true)
-    .eq('type', 'vehicle_rental')
+    .eq('type', templateType)
     .order('version', { ascending: false })
     .limit(1)
     .single();
-  if (!template) throw new Error('No active vehicle_rental template found');
+  if (!template) throw new Error(`No active ${templateType} template found`);
 
   let vehicleName = '';
   if (rental.vehicle_id) {
@@ -77,6 +99,10 @@ export async function renderVehicleRentalAgreement(
   const signerEmail = (rental.renter_email || person?.email || '').trim();
 
   const terms: ContractTerms = rental.contract_terms || {};
+
+  if (templateType === SHORT_TERM_TEMPLATE_TYPE) {
+    return renderShortTermAgreement(supabase, rental, template, terms, signerName, signerEmail, vehicleName);
+  }
 
   // ── Validate: refuse to render a contract with holes in it ──────────
   const missing: string[] = [];
@@ -199,6 +225,115 @@ export async function renderVehicleRentalAgreement(
     due_on_execution: money(deposit + rate),
     landlord_signature_img: await ownerSignatureHtml(supabase, signingDate),
     signing_date: signingDate,
+  };
+
+  const vehicleLabel = [rental.vehicle_year, rental.vehicle_make, rental.vehicle_model]
+    .filter(Boolean).join(' ') + (vehicleName ? ` "${vehicleName}"` : '');
+
+  return {
+    html: parseMarkdownTemplate(template.content, data),
+    templateId: template.id,
+    templateVersion: template.version,
+    signerName,
+    signerEmail,
+    vehicleLabel,
+  };
+}
+
+/**
+ * Fixed-term rental priced for the whole period (e.g. 10 days for $495).
+ * No deposit, no monthly rent, the Owner's insurance with a renter deductible.
+ */
+async function renderShortTermAgreement(
+  supabase: any,
+  rental: any,
+  template: { id: string; version: number; content: string },
+  terms: ContractTerms,
+  signerName: string,
+  signerEmail: string,
+  vehicleName: string,
+): Promise<RenderedVehicleAgreement> {
+  const missing: string[] = [];
+  if (!signerName) missing.push('renter name');
+  if (!signerEmail) missing.push('renter email');
+  if (!rental.renter_address) missing.push('renter address');
+  if (!rental.renter_phone) missing.push('renter phone');
+  if (!rental.renter_dl_number) missing.push('driver license number');
+  if (!terms.renter_dob) missing.push('renter date of birth');
+  if (!terms.pickup_at) missing.push('contract_terms.pickup_at');
+  if (!terms.return_at) missing.push('contract_terms.return_at');
+  if (!terms.pickup_location) missing.push('contract_terms.pickup_location');
+  if (!(Number(terms.base_price) > 0)) missing.push('contract_terms.base_price');
+  if (rental.starting_mileage == null) missing.push('starting mileage');
+  if (!rental.vehicle_vin) missing.push('vehicle VIN');
+  if (missing.length) throw new Error(`Cannot render agreement — missing: ${missing.join(', ')}`);
+
+  const pickup = new Date(terms.pickup_at!);
+  const ret = new Date(terms.return_at!);
+  if (isNaN(pickup.getTime()) || isNaN(ret.getTime()) || ret <= pickup) {
+    throw new Error('contract_terms pickup_at/return_at are invalid');
+  }
+
+  const e = escapeHtml;
+  const tz = 'America/Chicago';
+  const fmtDateTime = (d: Date) => d.toLocaleString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', timeZone: tz,
+  }) + ' (Central Time)';
+  const fmtDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', timeZone: tz,
+  });
+  const money2 = (n: number) => `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const days = Math.ceil((ret.getTime() - pickup.getTime()) / 86_400_000);
+  const base = Number(terms.base_price);
+  const fsdPrice = Number(terms.fsd_price || 0);
+  const fsdLine = terms.fsd_selected && fsdPrice > 0
+    ? `- **Full Self-Driving (FSD) add-on:** ${money2(fsdPrice)}`
+    : fsdPrice > 0
+      ? `- **Full Self-Driving (FSD):** not included (available for ${money2(fsdPrice)})`
+      : '';
+
+  const damageGroups = Object.entries(terms.damage || {}).filter(([, items]) => items?.length);
+  const damageBlock = damageGroups.length
+    ? damageGroups.map(([area, items]) =>
+        [`**${e(area)}**`, ...items.map((it) => `- ${e(it)}`)].join('\n')).join('\n')
+    : '- None noted.';
+
+  const signingDate = new Date().toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', timeZone: tz,
+  });
+  const dl = [rental.renter_dl_number, rental.renter_dl_state].filter(Boolean).join(', ');
+
+  const data: Record<string, string> = {
+    signing_date: signingDate,
+    renter_name: e(signerName),
+    renter_address: e(rental.renter_address),
+    renter_email: e(signerEmail),
+    renter_phone: e(rental.renter_phone),
+    renter_dl: e(dl),
+    renter_dob: e(fmtDate(terms.renter_dob!)),
+    vehicle_make: e(rental.vehicle_make || ''),
+    vehicle_model: e(rental.vehicle_model || ''),
+    vehicle_year: e(String(rental.vehicle_year || '')),
+    vehicle_color: e(rental.vehicle_color || ''),
+    vehicle_name: e(vehicleName),
+    vehicle_vin: e(rental.vehicle_vin),
+    odometer_display: `${Number(rental.starting_mileage).toLocaleString('en-US')} miles`,
+    pickup_at: fmtDateTime(pickup),
+    return_at: fmtDateTime(ret),
+    pickup_location: e(terms.pickup_location!),
+    return_location: e(terms.return_location || terms.pickup_location!),
+    rental_days: String(days),
+    base_total: money2(base),
+    fsd_line: fsdLine,
+    total_due: money2(shortTermTotal(terms)),
+    deductible: money2(Number(rental.accident_deductible_max ?? 1000)),
+    mileage_included: Number(terms.mileage_included ?? 1000).toLocaleString('en-US'),
+    overage_rate: money2(Number(rental.mileage_overage_rate ?? 0.15)),
+    late_fee: money2(Number(rental.late_return_hourly_rate ?? 20)),
+    damage_block: damageBlock,
+    landlord_signature_img: await ownerSignatureHtml(supabase, signingDate),
   };
 
   const vehicleLabel = [rental.vehicle_year, rental.vehicle_make, rental.vehicle_model]
