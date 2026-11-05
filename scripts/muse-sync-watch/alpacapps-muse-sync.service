@@ -1,0 +1,12 @@
+[Unit]
+Description=Start alpacapps Muse sync when a Muse/Grokbot repo moved
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+# Optional (-): without the token the script logs and exits 0.
+EnvironmentFile=-/etc/alpacapps-muse-sync.env
+ExecStart=/usr/local/bin/alpacapps-muse-sync-watch
+TimeoutStartSec=120
