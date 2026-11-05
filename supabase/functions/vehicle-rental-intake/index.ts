@@ -77,9 +77,15 @@ Deno.serve(async (req) => {
     const dob = field('dob', 10);
     const dlNumber = field('dl_number', 40);
     const dlState = field('dl_state', 40);
+    // Renter picks the time of day; the owner set the dates.
+    const pickupTime = field('pickup_time', 5);
+    const returnTime = field('return_time', 5);
+    const insurer = field('insurer', 120);
+    const policyNumber = field('policy_number', 60);
     const fsd = form.get('fsd') === '1';
     const front = form.get('license_front');
     const back = form.get('license_back');
+    const insuranceCard = form.get('insurance_card');   // optional screenshot of the insurance card
 
     const errors: string[] = [];
     if (legalName.split(/\s+/).length < 2) errors.push('full legal name (first and last)');
@@ -91,11 +97,16 @@ Deno.serve(async (req) => {
     }
     if (dlNumber.length < 4) errors.push('your driver\'s license number');
     if (!dlState) errors.push('the state or country that issued your license');
+    const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (!TIME_RE.test(pickupTime)) errors.push('a pickup time');
+    if (!TIME_RE.test(returnTime)) errors.push('a return time');
+    if (insurer.length < 2) errors.push('your auto insurance company');
+    if (policyNumber.length < 4) errors.push('your auto insurance policy number');
     if (!(front instanceof File) || front.size === 0) errors.push('a photo of the front of your license');
-    for (const f of [front, back]) {
+    for (const f of [front, back, insuranceCard]) {
       if (f instanceof File && f.size > 0) {
-        if (!f.type.startsWith('image/')) errors.push('license photos must be images');
-        if (f.size > MAX_PHOTO_BYTES) errors.push('license photos must be under 12 MB');
+        if (!f.type.startsWith('image/')) errors.push('photos must be images');
+        if (f.size > MAX_PHOTO_BYTES) errors.push('photos must be under 12 MB');
       }
     }
     if (errors.length) return json({ error: `Please provide ${[...new Set(errors)].join(', ')}.` }, 400);
@@ -103,10 +114,10 @@ Deno.serve(async (req) => {
     // ── Store license photos (private bucket) ──
     const stamp = Date.now();
     const photoPaths: string[] = [];
-    for (const [label, f] of [['front', front], ['back', back]] as const) {
+    for (const [label, f] of [['license-front', front], ['license-back', back], ['insurance-card', insuranceCard]] as const) {
       if (!(f instanceof File) || f.size === 0) continue;
       const ext = (f.type.split('/')[1] || 'jpg').replace(/[^a-z0-9]/gi, '').slice(0, 5) || 'jpg';
-      const path = `vehicle-rental-${rental.id}/license-${label}-${stamp}.${ext}`;
+      const path = `vehicle-rental-${rental.id}/${label}-${stamp}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from('identity-documents')
         .upload(path, await f.arrayBuffer(), { contentType: f.type, upsert: false });
@@ -129,9 +140,19 @@ Deno.serve(async (req) => {
     }
 
     // ── Write the renter's details ──
+    // Keep the owner's dates and UTC offset (e.g. "2026-11-06T12:00:00-06:00"),
+    // swap in the renter's chosen time.
+    const withTime = (iso: string, hhmm: string) => iso.replace(/T\d{2}:\d{2}(:\d{2})?/, `T${hhmm}:00`);
+    const baseTerms = rental.contract_terms || {};
+    const pickupAt = withTime(baseTerms.original_pickup_at || baseTerms.pickup_at, pickupTime);
+    const returnAt = withTime(baseTerms.original_return_at || baseTerms.return_at, returnTime);
     const now = new Date().toISOString();
     const terms = {
-      ...(rental.contract_terms || {}),
+      ...baseTerms,
+      original_pickup_at: baseTerms.original_pickup_at || baseTerms.pickup_at,
+      original_return_at: baseTerms.original_return_at || baseTerms.return_at,
+      pickup_at: pickupAt,
+      return_at: returnAt,
       renter_dob: dob,
       fsd_selected: fsd,
       license_photo_paths: photoPaths,
@@ -148,6 +169,8 @@ Deno.serve(async (req) => {
         renter_address: address,
         renter_dl_number: dlNumber,
         renter_dl_state: dlState,
+        insurance_provider: insurer,
+        insurance_policy_number: policyNumber,
         contract_terms: terms,
         updated_at: now,
       })
@@ -207,7 +230,8 @@ Deno.serve(async (req) => {
 
     const signingUrl = `${SIGNING_PAGE_BASE}?token=${signingToken}`;
     await notifyOwner(supabase, {
-      rentalId: rental.id, legalName, email, phone, address, dob, dlNumber, dlState, fsd,
+      rentalId: rental.id, legalName, email, phone, address, dob, dlNumber, dlState, fsd, insurer, policyNumber,
+      pickupAt: fmtCentral(pickupAt), returnAt: fmtCentral(returnAt),
       total: shortTermTotal(terms), vehicleLabel: rendered.vehicleLabel, photoPaths, signingUrl, check,
     });
 
@@ -262,8 +286,11 @@ async function publicView(supabase: any, rental: any) {
       name: vehicleName,
       color: rental.vehicle_color || '',
     },
-    pickup_at: t.pickup_at,
-    return_at: t.return_at,
+    // Owner's dates (the time part is the default the renter can change).
+    pickup_at: t.original_pickup_at || t.pickup_at,
+    return_at: t.original_return_at || t.return_at,
+    chosen_pickup_at: submitted ? t.pickup_at : null,
+    chosen_return_at: submitted ? t.return_at : null,
     pickup_location: t.pickup_location,
     return_location: t.return_location || t.pickup_location,
     base_price: Number(t.base_price || 0),
@@ -286,7 +313,9 @@ async function publicView(supabase: any, rental: any) {
 
 async function notifyOwner(supabase: any, o: {
   rentalId: string; legalName: string; email: string; phone: string; address: string; dob: string;
-  dlNumber: string; dlState: string; fsd: boolean; total: number; vehicleLabel: string;
+  dlNumber: string; dlState: string; fsd: boolean; insurer: string; policyNumber: string;
+  pickupAt: string; returnAt: string;
+  total: number; vehicleLabel: string;
   photoPaths: string[]; signingUrl: string; check: LicenseCheck;
 }) {
   const key = Deno.env.get('RESEND_API_KEY');
@@ -317,6 +346,9 @@ async function notifyOwner(supabase: any, o: {
             ${row('Address', e(o.address))}
             ${row('Date of birth', e(o.dob))}
             ${row('License', e(`${o.dlNumber} (${o.dlState})`))}
+            ${row('Pickup', e(o.pickupAt))}
+            ${row('Return', e(o.returnAt))}
+            ${row('Insurance (primary)', e(`${o.insurer} — policy ${o.policyNumber}`))}
             ${row('FSD add-on', o.fsd ? 'Yes' : 'No')}
             ${row('Total due', `$${o.total.toFixed(2)}`)}
           </table>
@@ -324,7 +356,7 @@ async function notifyOwner(supabase: any, o: {
             <strong>License check: ${o.check.status === 'match' ? '✅ matches what they typed' : o.check.status === 'unreadable' ? '⚠️ could not read the photo — check it yourself' : '⚠️ mismatch — check before handing over the car'}</strong><br>
             ${o.check.notes.map((n) => e(n)).join('<br>')}
           </p>
-          <p>License photos (links valid 30 days): ${links.join(' · ') || 'none'}</p>
+          <p>License and insurance photos (links valid 30 days): ${links.join(' · ') || 'none'}</p>
           <p style="color:#888;font-size:0.85em;">Rental id ${e(o.rentalId)}</p>
         `,
       }),
@@ -406,6 +438,12 @@ If the image is not a driver's license or government ID, return {"error": "not_a
     console.error('License check failed:', err);
     return { status: 'unreadable', notes: ['Could not read the license photo automatically'] };
   }
+}
+
+function fmtCentral(iso: string): string {
+  return new Date(iso).toLocaleString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago',
+  });
 }
 
 function ageOn(dob: string, at: Date): number {
