@@ -1,12 +1,12 @@
 {
-  "version": "v261104.05 12:19p",
-  "release": 2016,
-  "sha": "27fd87d91b",
-  "fullSha": "27fd87d91b8b5089e97aac0d816dfec916e525b7",
+  "version": "v261104.06 10:01p",
+  "release": 2017,
+  "sha": "3b41b496f2",
+  "fullSha": "3b41b496f23ba6a669c273087913a21d474aa209",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnwato",
-  "pushedAt": "2026-11-04T18:19:46+00:00",
-  "commits": [{"sha":"31403a51ad","message":"WIP: event-request-agent API, drafts table, shared intake field rules","author":"Blotto"},{"sha":"2d7443502d","message":"Merge remote-tracking branch 'origin/main' into claude/agent-form-fill-link-a5ae7e","author":"Blotto"},{"sha":"98d8b0f127","message":"Host-event form: let the guest's own AI assistant fill it out","author":"Blotto"},{"sha":"c0201dec09","message":"event_request_drafts: nightly sweep of expired drafts","author":"Blotto"},{"sha":"f2fe3375bf","message":"Merge remote-tracking branch 'origin/main' into claude/agent-form-fill-link-a5ae7e","author":"Blotto"},{"sha":"27fd87d91b","message":"Merge pull request #157 from rsonnad/claude/agent-form-fill-link-a5ae7e","author":"Rahul"}]
+  "pushedAt": "2026-11-05T04:01:53+00:00",
+  "commits": [{"sha":"3b41b496f2","message":"Muse sync: Phoenix timer trigger; claim muse-rahulio projects","author":"Blotto"}]
 }
