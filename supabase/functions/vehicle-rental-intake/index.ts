@@ -117,6 +117,17 @@ Deno.serve(async (req) => {
       photoPaths.push(path);
     }
 
+    // ── Read the license and compare it with what the renter typed ──
+    const check = await checkLicense(await (front as File).arrayBuffer(), (front as File).type, {
+      legalName, dob, dlNumber,
+    });
+    if (check.status === 'not_an_id') {
+      return json({ error: 'That photo doesn\'t look like a driver\'s license. Please retake it: the whole card, in focus, without glare.' }, 400);
+    }
+    if (check.status === 'expired') {
+      return json({ error: `The license in the photo shows as expired (${check.extracted?.expiration_date}). A valid license is required.` }, 400);
+    }
+
     // ── Write the renter's details ──
     const now = new Date().toISOString();
     const terms = {
@@ -124,6 +135,7 @@ Deno.serve(async (req) => {
       renter_dob: dob,
       fsd_selected: fsd,
       license_photo_paths: photoPaths,
+      license_check: check,
       intake_submitted_at: now,
       intake_ip: ip,
     };
@@ -196,7 +208,7 @@ Deno.serve(async (req) => {
     const signingUrl = `${SIGNING_PAGE_BASE}?token=${signingToken}`;
     await notifyOwner(supabase, {
       rentalId: rental.id, legalName, email, phone, address, dob, dlNumber, dlState, fsd,
-      total: shortTermTotal(terms), vehicleLabel: rendered.vehicleLabel, photoPaths, signingUrl,
+      total: shortTermTotal(terms), vehicleLabel: rendered.vehicleLabel, photoPaths, signingUrl, check,
     });
 
     return json({ success: true, signing_url: signingUrl });
@@ -275,7 +287,7 @@ async function publicView(supabase: any, rental: any) {
 async function notifyOwner(supabase: any, o: {
   rentalId: string; legalName: string; email: string; phone: string; address: string; dob: string;
   dlNumber: string; dlState: string; fsd: boolean; total: number; vehicleLabel: string;
-  photoPaths: string[]; signingUrl: string;
+  photoPaths: string[]; signingUrl: string; check: LicenseCheck;
 }) {
   const key = Deno.env.get('RESEND_API_KEY');
   if (!key) return;
@@ -308,6 +320,10 @@ async function notifyOwner(supabase: any, o: {
             ${row('FSD add-on', o.fsd ? 'Yes' : 'No')}
             ${row('Total due', `$${o.total.toFixed(2)}`)}
           </table>
+          <p style="padding:10px 12px;border-radius:8px;background:${o.check.status === 'match' ? '#f1f8f4' : '#fdf6ee'};">
+            <strong>License check: ${o.check.status === 'match' ? '✅ matches what they typed' : o.check.status === 'unreadable' ? '⚠️ could not read the photo — check it yourself' : '⚠️ mismatch — check before handing over the car'}</strong><br>
+            ${o.check.notes.map((n) => e(n)).join('<br>')}
+          </p>
           <p>License photos (links valid 30 days): ${links.join(' · ') || 'none'}</p>
           <p style="color:#888;font-size:0.85em;">Rental id ${e(o.rentalId)}</p>
         `,
@@ -316,6 +332,79 @@ async function notifyOwner(supabase: any, o: {
     if (!res.ok) console.error('Owner intake email failed:', res.status, await res.text().catch(() => ''));
   } catch (err) {
     console.error('Owner intake email error:', err);
+  }
+}
+
+interface LicenseCheck {
+  status: 'match' | 'mismatch' | 'unreadable' | 'not_an_id' | 'expired';
+  notes: string[];
+  extracted?: Record<string, any>;
+}
+
+/**
+ * Read the license front with Gemini (same model and prompt shape as
+ * verify-identity) and compare it with the typed name, DOB and number.
+ * Only "not an ID" and "expired" stop the renter; mismatches and unreadable
+ * photos go through and are flagged to the owner.
+ */
+async function checkLicense(
+  buf: ArrayBuffer, mime: string, typed: { legalName: string; dob: string; dlNumber: string },
+): Promise<LicenseCheck> {
+  const key = Deno.env.get('GEMINI_API_KEY');
+  if (!key) return { status: 'unreadable', notes: ['GEMINI_API_KEY not configured'] };
+  try {
+    const bytes = new Uint8Array(buf);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [
+            { inlineData: { mimeType: mime === 'image/jpg' ? 'image/jpeg' : mime, data: btoa(bin) } },
+            { text: `This is an authorized identity check for a car rental; the renter consented. Read the driver's license in the image and return ONLY JSON:
+{"full_name": "...", "first_name": "...", "last_name": "...", "date_of_birth": "YYYY-MM-DD or null", "dl_number": "... or null", "expiration_date": "YYYY-MM-DD or null", "state": "... or null"}
+If the image is not a driver's license or government ID, return {"error": "not_a_valid_id"}.` },
+          ] }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 1024, responseMimeType: 'application/json' },
+        }),
+      },
+    );
+    if (!res.ok) return { status: 'unreadable', notes: [`Gemini error ${res.status}`] };
+    const out = await res.json();
+    const text = out.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const x = JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, ''));
+    if (x.error === 'not_a_valid_id') return { status: 'not_an_id', notes: ['Photo is not an ID'], extracted: x };
+
+    const notes: string[] = [];
+    let ok = true;
+    const words = (s: string) => String(s || '').toLowerCase().replace(/[^a-z\s'-]/g, ' ').split(/\s+/).filter((w) => w.length > 1);
+    const onCard = new Set(words(`${x.full_name} ${x.first_name} ${x.last_name}`));
+    const typedWords = words(typed.legalName);
+    const first = typedWords[0], last = typedWords[typedWords.length - 1];
+    if (onCard.has(first) && onCard.has(last)) notes.push(`Name matches (card: ${x.full_name})`);
+    else { ok = false; notes.push(`Name differs — typed "${typed.legalName}", card says "${x.full_name}"`); }
+
+    if (x.date_of_birth && x.date_of_birth === typed.dob) notes.push('Date of birth matches');
+    else { ok = false; notes.push(`Date of birth differs — typed ${typed.dob}, card says ${x.date_of_birth ?? 'unreadable'}`); }
+
+    const norm = (s: string) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (x.dl_number && norm(x.dl_number) === norm(typed.dlNumber)) notes.push('License number matches');
+    else { ok = false; notes.push(`License number differs — typed ${typed.dlNumber}, card says ${x.dl_number ?? 'unreadable'}`); }
+
+    if (x.expiration_date) {
+      if (new Date(`${x.expiration_date}T23:59:59`) < new Date()) {
+        return { status: 'expired', notes: [...notes, `Expired ${x.expiration_date}`], extracted: x };
+      }
+      notes.push(`Valid until ${x.expiration_date}${x.state ? ` (${x.state})` : ''}`);
+    } else { ok = false; notes.push('Expiry date unreadable'); }
+
+    return { status: ok ? 'match' : 'mismatch', notes, extracted: x };
+  } catch (err) {
+    console.error('License check failed:', err);
+    return { status: 'unreadable', notes: ['Could not read the license photo automatically'] };
   }
 }
 
