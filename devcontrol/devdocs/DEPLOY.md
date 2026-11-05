@@ -26,7 +26,7 @@ Grokbot pages work the same way, in two folders: `https://alpacaplayhouse.com/bo
 
 ### Muse sync trigger
 
-`muse-sync.yml` has a `*/10` cron, but GitHub drops most scheduled runs: in Oct–Nov 2026 it ran only 4–6 times a day, so Muse pushes waited hours. The real trigger is a 5-minute systemd timer on Phoenix (`alpacapps-workers`, 144.24.51.48):
+`muse-sync.yml` has a `*/10` cron, but GitHub drops most scheduled runs: in Oct–Nov 2026 it ran only 4–6 times a day, so Muse pushes waited hours. The real trigger is a 7-minute systemd timer on Phoenix (`alpacapps-workers`, 144.24.51.48):
 
 - Files: `scripts/muse-sync-watch/` (script, `alpacapps-muse-sync.service`, `alpacapps-muse-sync.timer`, `install.sh`). Installed script: `/usr/local/bin/alpacapps-muse-sync-watch`.
 - Each tick reads `muse-sources.json`, `bots-sources.json` and `botsy-sources.json` from main, runs `git ls-remote` on every listed repo, and compares with `https://alpacaplayhouse.com/_deployment.json`. Only when something moved does it start `muse-sync.yml` (once per set of commits per 15 minutes). All reads are public.

@@ -1,9 +1,9 @@
 [Unit]
-Description=Check Muse/Grokbot repos for alpacaplayhouse.com every 5 minutes
+Description=Check Muse/Grokbot repos for alpacaplayhouse.com every 7 minutes
 
 [Timer]
 OnBootSec=2min
-OnUnitInactiveSec=5min
+OnUnitInactiveSec=7min
 AccuracySec=30s
 Unit=alpacapps-muse-sync.service
 

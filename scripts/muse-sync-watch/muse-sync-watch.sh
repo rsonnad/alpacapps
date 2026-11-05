@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs on Phoenix (alpacapps-workers) every 5 minutes from a systemd timer.
+# Runs on Phoenix (alpacapps-workers) every 7 minutes from a systemd timer.
 # GitHub runs muse-sync.yml's own */10 cron only a few times a day, so this
 # starts that workflow whenever a Muse or Grokbot repo's main has moved past
 # what the live site was built from. Everything it reads is public; the only
