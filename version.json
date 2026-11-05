@@ -1,12 +1,12 @@
 {
-  "version": "v261104.08 10:21p",
-  "release": 2019,
-  "sha": "f142e873a0",
-  "fullSha": "f142e873a062099525745001085317ad7779f42f",
+  "version": "v261105.01 1:01p",
+  "release": 2020,
+  "sha": "0292eeab7b",
+  "fullSha": "0292eeab7b092959cf6ff2bf5664ef202f99bdc1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmnwato",
-  "pushedAt": "2026-11-05T04:21:22+00:00",
-  "commits": [{"sha":"845a123d5a","message":"Car rental: renter's insurance primary, renter picks times, insurance card upload","author":"Blotto"},{"sha":"f142e873a0","message":"Merge pull request #159 from rsonnad/claude/sloop-tesla-rental-contract-8c8232","author":"Rahul"}]
+  "pushedAt": "2026-11-05T19:01:04+00:00",
+  "commits": [{"sha":"0292eeab7b","message":"Muse sync watcher: check every 7 minutes","author":"Blotto"}]
 }
