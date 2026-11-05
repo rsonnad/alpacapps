@@ -91,7 +91,20 @@
       </div>
 
       <form id="form" class="card" novalidate>
-        <h2>Your details</h2>
+        <h2>Pickup &amp; return times</h2>
+        <p class="muted">At the house: 160 Still Forest Drive, Cedar Creek. Choose when you'll come.</p>
+        <div class="row">
+          <div>
+            <label for="pickup_time">Pickup — <span id="pickupDay"></span></label>
+            <input type="time" id="pickup_time" name="pickup_time" step="900" required>
+          </div>
+          <div>
+            <label for="return_time">Return — <span id="returnDay"></span></label>
+            <input type="time" id="return_time" name="return_time" step="900" required>
+          </div>
+        </div>
+
+        <h2 style="margin-top:1.5rem;">Your details</h2>
 
         <label for="legal_name">Full legal name <span class="hint">(as on your license)</span></label>
         <input type="text" id="legal_name" name="legal_name" autocomplete="name" required>
@@ -139,6 +152,26 @@
           <input type="file" id="license_back" accept="image/*">
         </div>
 
+        <h2 style="margin-top:1.5rem;">Your auto insurance</h2>
+        <p class="muted">Your own insurance is primary for this rental. The owner's insurance is only used if yours doesn't cover the damage.</p>
+        <div class="row">
+          <div>
+            <label for="insurer">Insurance company</label>
+            <input type="text" id="insurer" name="insurer" placeholder="e.g. Progressive" required>
+          </div>
+          <div>
+            <label for="policy_number">Policy number</label>
+            <input type="text" id="policy_number" name="policy_number" autocomplete="off" required>
+          </div>
+        </div>
+
+        <label>Screenshot of insurance card <span class="hint">(optional)</span></label>
+        <div class="photo-box" id="insBox">
+          <img alt="Insurance card preview">
+          <div class="cta">Tap to add a screenshot or photo</div>
+          <input type="file" id="insurance_card" accept="image/*">
+        </div>
+
         <label class="check" id="fsdRow">
           <input type="checkbox" id="fsd">
           <span id="fsdText">Add Full Self-Driving (FSD)</span>
@@ -180,15 +213,16 @@ function renderTerms() {
   const fsd = $('fsd').checked;
   const total = info.base_price + (fsd ? info.fsd_price : 0);
   const days = Math.ceil((new Date(info.return_at) - new Date(info.pickup_at)) / 86400000);
+  const at = (iso, hhmm) => hhmm ? iso.replace(/T\d{2}:\d{2}(:\d{2})?/, `T${hhmm}:00`) : iso;
   const rows = [
-    ['Pickup', fmtWhen(info.pickup_at)],
-    ['Return', fmtWhen(info.return_at)],
+    ['Pickup', fmtWhen(at(info.pickup_at, $('pickup_time').value))],
+    ['Return', fmtWhen(at(info.return_at, $('return_time').value))],
     ['Where', info.pickup_location + (info.return_location && info.return_location !== info.pickup_location ? ' → ' + info.return_location : '')],
     [`Rental (${days} days)`, money(info.base_price)],
   ];
   if (info.fsd_price > 0) rows.push(['Full Self-Driving', fsd ? money(info.fsd_price) : 'not added']);
   rows.push(['Mileage', `${info.mileage_included.toLocaleString('en-US')} mi included, then ${money(info.overage_rate)}/mi`]);
-  rows.push(['Insurance', `Included · you pay up to ${money(info.deductible)} if the car is damaged`]);
+  rows.push(['Insurance', `Your own insurance is primary. You pay up to ${money(info.deductible)} only if it doesn't cover damage and the owner's insurance is used`]);
   rows.push(['Deposit', 'None']);
   $('termsTable').innerHTML = rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')
     + `<tr class="total-row"><td><strong>Total, due before pickup</strong></td><td>${money(total)}</td></tr>`;
@@ -216,6 +250,12 @@ async function load() {
   } else {
     $('fsdRow').style.display = 'none';
   }
+  const dayOf = (iso) => new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Chicago' });
+  const hhmmOf = (iso) => (iso.match(/T(\d{2}:\d{2})/) || [])[1] || '';
+  $('pickupDay').textContent = dayOf(info.pickup_at);
+  $('returnDay').textContent = dayOf(info.return_at);
+  $('pickup_time').value = hhmmOf(info.chosen_pickup_at || info.pickup_at);
+  $('return_time').value = hhmmOf(info.chosen_return_at || info.return_at);
   $('legal_name').value = info.prefill.legal_name || '';
   $('email').value = info.prefill.email || '';
   $('fsd').checked = !!info.prefill.fsd;
@@ -263,7 +303,8 @@ function wirePhoto(inputId, boxId) {
 }
 wirePhoto('license_front', 'frontBox');
 wirePhoto('license_back', 'backBox');
-$('fsd').addEventListener('change', () => info && renderTerms());
+wirePhoto('insurance_card', 'insBox');
+for (const id of ['fsd', 'pickup_time', 'return_time']) $(id).addEventListener('change', () => info && renderTerms());
 
 function showError(msg) {
   const el = $('error');
@@ -277,6 +318,8 @@ $('form').addEventListener('submit', async (ev) => {
   showError('');
   const v = (id) => $(id).value.trim();
   const missing = [];
+  if (!v('pickup_time')) missing.push('pickup time');
+  if (!v('return_time')) missing.push('return time');
   if (v('legal_name').split(/\s+/).length < 2) missing.push('full legal name');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) missing.push('email');
   if (v('phone').replace(/\D/g, '').length < 7) missing.push('phone');
@@ -285,6 +328,8 @@ $('form').addEventListener('submit', async (ev) => {
   if (v('dl_number').length < 4) missing.push('license number');
   if (!v('dl_state')) missing.push('issuing state');
   if (!$('license_front').files[0]) missing.push('photo of license front');
+  if (v('insurer').length < 2) missing.push('insurance company');
+  if (v('policy_number').length < 4) missing.push('policy number');
   if (missing.length) return showError('Please fill in: ' + missing.join(', ') + '.');
 
   const btn = $('submitBtn');
@@ -293,10 +338,11 @@ $('form').addEventListener('submit', async (ev) => {
   try {
     const fd = new FormData();
     fd.append('token', token);
-    for (const k of ['legal_name', 'email', 'phone', 'address', 'dob', 'dl_number', 'dl_state']) fd.append(k, v(k));
+    for (const k of ['legal_name', 'email', 'phone', 'address', 'dob', 'dl_number', 'dl_state', 'insurer', 'policy_number', 'pickup_time', 'return_time']) fd.append(k, v(k));
     fd.append('fsd', $('fsd').checked ? '1' : '0');
     fd.append('license_front', await compressImage($('license_front').files[0]));
     if ($('license_back').files[0]) fd.append('license_back', await compressImage($('license_back').files[0]));
+    if ($('insurance_card').files[0]) fd.append('insurance_card', await compressImage($('insurance_card').files[0]));
 
     const res = await fetch(FN_URL, { method: 'POST', body: fd });
     const data = await res.json().catch(() => ({}));

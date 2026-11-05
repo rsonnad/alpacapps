@@ -63,6 +63,7 @@ export async function renderVehicleRentalAgreement(
     .select(`
       id, renter_name, renter_email, renter_address,
       renter_phone, renter_dl_number, renter_dl_state,
+      insurance_provider, insurance_policy_number,
       vehicle_id, vehicle_make, vehicle_model, vehicle_year, vehicle_color, vehicle_vin,
       starting_mileage, start_date, current_monthly_rate, security_deposit_amount,
       cancel_notice_days, monthly_mileage_limit, mileage_overage_rate,
@@ -260,6 +261,10 @@ async function renderShortTermAgreement(
   if (!rental.renter_phone) missing.push('renter phone');
   if (!rental.renter_dl_number) missing.push('driver license number');
   if (!terms.renter_dob) missing.push('renter date of birth');
+  if (template.content.includes('{{renter_insurer}}')) {
+    if (!rental.insurance_provider) missing.push('renter insurance company');
+    if (!rental.insurance_policy_number) missing.push('renter insurance policy number');
+  }
   if (!terms.pickup_at) missing.push('contract_terms.pickup_at');
   if (!terms.return_at) missing.push('contract_terms.return_at');
   if (!terms.pickup_location) missing.push('contract_terms.pickup_location');
@@ -313,6 +318,10 @@ async function renderShortTermAgreement(
     renter_email: e(signerEmail),
     renter_phone: e(rental.renter_phone),
     renter_dl: e(dl),
+    // Template v2+ names the renter's (primary) insurer; v1 ignores these.
+    renter_insurer: e(rental.insurance_provider || ''),
+    renter_policy: e(rental.insurance_policy_number
+      ? `ending ${String(rental.insurance_policy_number).slice(-4)}` : ''),
     vehicle_make: e(rental.vehicle_make || ''),
     vehicle_model: e(rental.vehicle_model || ''),
     vehicle_year: e(String(rental.vehicle_year || '')),
