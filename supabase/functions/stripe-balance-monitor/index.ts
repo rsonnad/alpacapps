@@ -27,7 +27,13 @@ function delta(prev: number | null, next: number) {
   return `${sign}${fmt(Math.abs(d))}`;
 }
 export async function handler(_req: Request) {
-  const preview = new URL(_req.url).searchParams.get("preview") === "true";
+  const params = new URL(_req.url).searchParams;
+  const preview = params.get("preview") === "true";
+  // Admin preview only: report a chosen window, and optionally email it to the
+  // admin inbox (no snapshot is written, so the daily schedule is unaffected).
+  const sinceParam = preview ? params.get("since") : null;
+  const untilParam = preview ? params.get("until") : null;
+  const sendPreview = preview && params.get("send") === "true";
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, supabaseKey);
@@ -88,9 +94,9 @@ export async function handler(_req: Request) {
     if (deliveredErr) {
       throw new Error(`delivered snapshot load: ${deliveredErr.message}`);
     }
-    const since = delivered?.[0]?.checked_at || prev?.checked_at ||
+    const since = sinceParam || delivered?.[0]?.checked_at || prev?.checked_at ||
       new Date(Date.now() - 86400000).toISOString();
-    const until = new Date().toISOString();
+    const until = untilParam || new Date().toISOString();
     const report = await collectOutgoing(
       sb,
       stripeKey,
@@ -99,9 +105,6 @@ export async function handler(_req: Request) {
       Boolean(cfg.test_mode),
     );
     const details = renderOutgoing(report, since, until);
-    const title = changed
-      ? "Stripe balance changed"
-      : "Stripe outgoing payment update";
     let notified = false;
     let emailStatus: string | null = null;
     // Notify on balance changes or outgoing/pending activity, including unchanged net balance.
@@ -109,70 +112,34 @@ export async function handler(_req: Request) {
       changed || report.outgoing.length > 0 || report.pending.length > 0 ||
       preview
     ) {
+      const changeLine = (label: string, prevV: number | null, v: number) =>
+        prevV === null || prevV === v
+          ? ""
+          : `<span style="color:${v < prevV ? "#b5340c" : "#1f7a3a"};">${
+            delta(prevV, v)
+          }</span> ${label}`;
+      const availChange = changeLine("since last report", prevAvail, available);
+      const paidOutCents = report.outgoing.reduce((t, r) => t + r.cents, 0);
       const html = `
         <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1c1618;max-width:560px;">
-          <h2 style="margin:0 0 16px;font-size:20px;">${title}</h2>
-          <p style="margin:0 0 16px;color:#555;">Daily Stripe balance and outgoing payment check (5:00 PM Central).</p>
-          <table style="border-collapse:collapse;width:100%;margin:0 0 20px;">
-            <thead>
-              <tr style="background:#f5f1ec;color:#555;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">
-                <th style="text-align:left;padding:10px 12px;">Bucket</th>
-                <th style="text-align:right;padding:10px 12px;">Old</th>
-                <th style="text-align:right;padding:10px 12px;">New</th>
-                <th style="text-align:right;padding:10px 12px;">Δ</th>
-              </tr>
-            </thead>
-            <tbody style="font-size:14px;">
-              <tr>
-                <td style="padding:10px 12px;border-bottom:1px solid #eee;font-weight:600;">Available</td>
-                <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;">${
-        prevAvail === null ? "—" : fmt(prevAvail)
-      }</td>
-                <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;">${
+          <p style="margin:0 0 4px;color:#7a7072;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Stripe balance</p>
+          <p style="margin:0;font-size:32px;font-weight:700;line-height:1.2;">${
         fmt(available)
-      }</td>
-                <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;color:${
-        prevAvail !== null && available - prevAvail < 0 ? "#b5340c" : "#1f7a3a"
-      };">${delta(prevAvail, available)}</td>
-              </tr>
-              <tr>
-                <td style="padding:10px 12px;border-bottom:1px solid #eee;font-weight:600;">Pending</td>
-                <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;">${
-        prevPending === null ? "—" : fmt(prevPending)
-      }</td>
-                <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;">${
-        fmt(pending)
-      }</td>
-                <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;color:${
-        prevPending !== null && pending - prevPending < 0
-          ? "#b5340c"
-          : "#1f7a3a"
-      };">${delta(prevPending, pending)}</td>
-              </tr>
-              <tr>
-                <td style="padding:10px 12px;font-weight:600;">Instant available</td>
-                <td style="padding:10px 12px;text-align:right;">${
-        prevInstant === null ? "—" : fmt(prevInstant)
-      }</td>
-                <td style="padding:10px 12px;text-align:right;">${
-        fmt(instant)
-      }</td>
-                <td style="padding:10px 12px;text-align:right;color:${
-        prevInstant !== null && instant - prevInstant < 0
-          ? "#b5340c"
-          : "#1f7a3a"
-      };">${delta(prevInstant, instant)}</td>
-              </tr>
-            </tbody>
-          </table>
+      } <span style="font-size:15px;font-weight:400;color:#7a7072;">available</span></p>
+          <p style="margin:6px 0 0;font-size:14px;color:#7a7072;">${
+        [
+          availChange,
+          pending ? `${fmt(pending)} incoming, not settled yet` : "",
+        ].filter(Boolean).join(" · ")
+      }</p>
           ${details.html}
-          <p style="margin:0 0 4px;color:#777;font-size:12px;">
-            <a href="https://dashboard.stripe.com/balance" style="color:#1c1618;">Open Stripe Dashboard → Balance</a>
+          <p style="margin:28px 0 4px;color:#777;font-size:12px;">
+            <a href="https://dashboard.stripe.com/balance" style="color:#1c1618;">Open Stripe balance</a>
           </p>
-          <p style="margin:0;color:#aaa;font-size:11px;">Source: stripe-balance-monitor edge function</p>
+          <p style="margin:0;color:#aaa;font-size:11px;">Daily check, 5:00 PM Central · stripe-balance-monitor</p>
         </div>
       `;
-      if (preview) {
+      if (preview && !sendPreview) {
         return new Response(
           JSON.stringify({ html, text: details.text, report }),
           { headers: { "Content-Type": "application/json" } },
@@ -184,16 +151,12 @@ export async function handler(_req: Request) {
         console.error(emailStatus);
       } else {
         const sender = SENDER_MAP.pai;
-        const text = `${title}.\n` +
-          `Available: ${prevAvail === null ? "—" : fmt(prevAvail)} → ${
-            fmt(available)
-          } (${delta(prevAvail, available)})\n` +
-          `Pending:   ${prevPending === null ? "—" : fmt(prevPending)} → ${
-            fmt(pending)
-          } (${delta(prevPending, pending)})\n` +
-          `Instant:   ${prevInstant === null ? "—" : fmt(prevInstant)} → ${
-            fmt(instant)
-          } (${delta(prevInstant, instant)})\n\n` + details.text +
+        const text = `Stripe balance: ${fmt(available)} available` +
+          (prevAvail !== null && prevAvail !== available
+            ? ` (${delta(prevAvail, available)} since last report)`
+            : "") +
+          (pending ? `\n${fmt(pending)} incoming, not settled yet` : "") +
+          `\n\n` + details.text +
           `\nhttps://dashboard.stripe.com/balance`;
         const sendRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -205,7 +168,9 @@ export async function handler(_req: Request) {
             from: sender.from,
             reply_to: sender.reply_to,
             to: ADMIN_EMAIL,
-            subject: `${title} — available now ${fmt(available)}`,
+            subject: `Stripe: ${fmt(available)} available${
+              paidOutCents ? ` · ${fmt(paidOutCents)} paid out` : ""
+            }`,
             html,
             text,
           }),
@@ -221,6 +186,11 @@ export async function handler(_req: Request) {
       }
     }
     if (emailStatus?.startsWith("error")) throw new Error(emailStatus);
+    if (preview) {
+      return new Response(JSON.stringify({ success: true, emailStatus }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     // 5. Always insert a snapshot row for the audit trail
     const { error: insErr } = await sb.from("stripe_balance_snapshots").insert({
       checked_at: until,

@@ -9,6 +9,10 @@ export type Row = {
   status: string;
   date: string;
   kind: string;
+  /** Plain display fields for the email (no Stripe IDs). */
+  name: string;
+  note: string;
+  label: string;
 };
 export type Report = { outgoing: Row[]; pending: Row[] };
 export async function listStripe(
@@ -100,6 +104,9 @@ export async function collectOutgoing(
     if (!cache.has(id)) cache.set(id, await get(path));
     return cache.get(id)!;
   };
+  const clean = (s: string) =>
+    s.replace(/\s*\((?:acct|ba|card|ch|re|po|tr)_[^)]*\)/g, "")
+      .replace(/\s*\((?:payout|no source)[^)]*\)/g, "").trim();
   const recipient = async (source: Obj): Promise<string> => {
     const destination = source.destination;
     const id = objectId(destination);
@@ -166,22 +173,45 @@ export async function collectOutgoing(
       const isFee = ["stripe_fee", "stripe_fx_fee", "tax_fee"].includes(
         tx.type,
       );
+      const who = isFee ? "Stripe" : await recipient(source);
+      const status = source.object === "transfer"
+        ? (source.reversed
+          ? "Reversed"
+          : source.amount_reversed
+          ? "Sent to Stripe account; partially reversed"
+          : "Sent to Stripe account")
+        : source.status || tx.status;
       outgoing.push({
         id: tx.id,
-        recipient: isFee ? "Stripe" : await recipient(source),
+        recipient: who,
         cents: -tx.amount,
         currency: tx.currency,
-        status: source.object === "transfer"
-          ? (source.reversed
-            ? "Reversed"
-            : source.amount_reversed
-            ? "Sent to Stripe account; partially reversed"
-            : "Sent to Stripe account")
-          : source.status || tx.status,
+        status,
         date: new Date(tx.created * 1000).toISOString(),
         kind: `${tx.type} · ${source.id || tx.id}${
           tx.description ? ` · ${tx.description}` : ""
         }`,
+        name: clean(who),
+        note: isFee
+          ? "Stripe fee"
+          : source.object === "refund"
+          ? "Refund"
+          : source.object === "payout"
+          ? "Transfer to bank"
+          : workNote(tx.description),
+        label: source.object === "transfer"
+          ? (source.reversed
+            ? "Reversed"
+            : source.amount_reversed
+            ? "Partly reversed"
+            : "Paid")
+          : source.object === "refund"
+          ? "Refunded"
+          : isFee
+          ? "Fee"
+          : source.object === "payout"
+          ? payoutLabel(source.status, source.arrival_date)
+          : "Paid",
       });
     }
     if (tx.fee > 0) {
@@ -193,6 +223,9 @@ export async function collectOutgoing(
         status: "Fee charged",
         date: new Date(tx.created * 1000).toISOString(),
         kind: `Processing fee · ${tx.id}`,
+        name: "Stripe",
+        note: "Processing fee",
+        label: "Fee",
       });
     }
   }
@@ -207,14 +240,18 @@ export async function collectOutgoing(
       ["pending", "in_transit"].includes(p.status)
     )
   ) {
+    const who = await recipient(p);
     pending.push({
       id: p.id,
-      recipient: await recipient(p),
+      recipient: who,
       cents: p.amount,
       currency: p.currency,
       status: p.status,
       date: new Date((p.arrival_date || p.created) * 1000).toISOString(),
       kind: `Bank payout · ${p.id}`,
+      name: clean(who),
+      note: "Transfer to bank",
+      label: payoutLabel(p.status, p.arrival_date),
     });
   }
   // Connect bank delivery is separate from the platform's transfer. Include
@@ -237,14 +274,18 @@ export async function collectOutgoing(
         ["pending", "in_transit"].includes(p.status)
       )
     ) {
+      const bank = await recipient(p);
       pending.push({
         id: p.id,
-        recipient: `${accountName} (${account.id}) — ${await recipient(p)}`,
+        recipient: `${accountName} (${account.id}) — ${bank}`,
         cents: p.amount,
         currency: p.currency,
         status: p.status,
         date: new Date((p.arrival_date || p.created) * 1000).toISOString(),
         kind: `Connected-account bank payout · ${p.id}`,
+        name: clean(accountName),
+        note: "Stripe → their bank",
+        label: payoutLabel(p.status, p.arrival_date),
       });
     }
   }
@@ -252,10 +293,11 @@ export async function collectOutgoing(
     if (pending.some((row) => row.id === p.external_payout_id)) continue;
     // A processing Connect transfer already debited the platform balance.
     // Keep its pending bank delivery visible, but do not imply another debit.
+    const who = p.person_name || byProfile.get(p.associate_id) ||
+      `Recipient name unavailable (payout ${p.id})`;
     pending.push({
       id: p.id,
-      recipient: p.person_name || byProfile.get(p.associate_id) ||
-        `Recipient name unavailable (payout ${p.id})`,
+      recipient: who,
       cents: Math.round(Number(p.amount) * 100),
       currency: "usd",
       status: p.external_payout_id
@@ -263,9 +305,46 @@ export async function collectOutgoing(
         : `${p.status}; not yet sent`,
       date: p.created_at,
       kind: `Associate payout · ${p.external_payout_id || p.id}`,
+      name: clean(who) || "Name unavailable",
+      note: "Associate pay",
+      label: p.external_payout_id ? "Sent, unconfirmed" : "Not sent yet",
     });
   }
   return { outgoing, pending };
+}
+const shortDay = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
+    timeZone: "UTC",
+    month: "short",
+    day: "numeric",
+  });
+/** "Auto payout: X — 3.42 hrs 2026-11-05 to 2026-11-05" → "3.42 hrs · Nov 5". */
+export function workNote(description?: string | null): string {
+  const m = String(description || "").match(
+    /([\d.]+)\s*hrs?\b(?:\s+(\d{4}-\d{2}-\d{2})(?:\s+to\s+(\d{4}-\d{2}-\d{2}))?)?/i,
+  );
+  if (!m) return "";
+  const [, hrs, from, to] = m;
+  if (!from) return `${hrs} hrs`;
+  const range = to && to !== from
+    ? `${shortDay(from)} – ${shortDay(to)}`
+    : shortDay(from);
+  return `${hrs} hrs · ${range}`;
+}
+function payoutLabel(status: string, arrival?: number): string {
+  if (status === "paid") return "Arrived";
+  if (status === "failed" || status === "canceled") {
+    return status === "failed" ? "Failed" : "Canceled";
+  }
+  return arrival
+    ? `Arrives ${
+      new Date(arrival * 1000).toLocaleDateString("en-US", {
+        timeZone: "America/Chicago",
+        month: "short",
+        day: "numeric",
+      })
+    }`
+    : "On the way";
 }
 export const escapeHtml = (s: unknown) =>
   String(s ?? "").replace(
@@ -278,63 +357,131 @@ export const escapeHtml = (s: unknown) =>
       "'": "&#39;",
     }[c]!),
   );
-const money = (r: Row) =>
+const usd = (cents: number, currency = "usd") =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: r.currency.toUpperCase(),
-  }).format(r.cents / 100);
-const date = (s: string) =>
+    currency: currency.toUpperCase(),
+  }).format(cents / 100);
+const money = (r: Row) => usd(r.cents, r.currency);
+/** "Nov 5, 8:30 PM" in Central time. */
+const when = (s: string) =>
   new Date(s).toLocaleString("en-US", {
     timeZone: "America/Chicago",
-    dateStyle: "medium",
-    timeStyle: "short",
-  }) + " Central";
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+const byDate = (a: Row, b: Row) => Date.parse(a.date) - Date.parse(b.date);
+const isUnconfirmed = (r: Row) => r.status.includes("app record unconfirmed");
+const C = {
+  ink: "#1c1618",
+  muted: "#7a7072",
+  line: "#ece7e2",
+  head: "#f5f1ec",
+  bad: "#b5340c",
+};
+type Section = { title: string; blurb: string; rows: Row[]; empty: string };
+export function sections(report: Report): Section[] {
+  // Fees are folded into one line so people stay the focus.
+  const fees = report.outgoing.filter((r) => r.name === "Stripe");
+  const paid = report.outgoing.filter((r) => r.name !== "Stripe").sort(byDate);
+  if (fees.length) {
+    const cents = fees.reduce((s, r) => s + r.cents, 0);
+    const last = fees.map((r) => r.date).sort().at(-1)!;
+    paid.push({
+      ...fees[0],
+      id: "fees",
+      cents,
+      date: last,
+      name: "Stripe fees",
+      note: fees.length > 1 ? `${fees.length} charges` : fees[0].note,
+      label: "Fee",
+      recipient: "Stripe",
+    });
+  }
+  return [
+    {
+      title: "Paid out",
+      blurb: "",
+      rows: paid,
+      empty: "No money went out.",
+    },
+    {
+      title: "Waiting to go out",
+      blurb: "",
+      rows: report.pending.filter((r) => !isUnconfirmed(r)).sort(byDate),
+      empty: "Nothing waiting.",
+    },
+    {
+      title: "Sent earlier, awaiting confirmation",
+      blurb:
+        "Already paid. Listed so nobody gets paid twice; not money still owed.",
+      rows: report.pending.filter(isUnconfirmed).sort(byDate),
+      empty: "",
+    },
+  ];
+}
 export function renderOutgoing(
   report: Report,
   since: string,
   until: string,
 ): { html: string; text: string } {
-  let html = `<p>Activity: ${escapeHtml(date(since))} – ${
-    escapeHtml(date(until))
-  }.</p><p>Pending balance above is incoming money awaiting settlement. Pending money out below includes all outstanding Stripe payout records, even those created before this activity period. App records awaiting confirmation are listed separately: these funds were already transferred and may already have arrived at the bank. They are not additional unpaid obligations; do not add them to money out.</p>`;
-  let text = `Activity: ${date(since)} – ${
-    date(until)
-  }.\nPending balance is incoming settlement, not pending money out. App confirmations are listed separately; these funds were already transferred and may already have arrived. Do not add them to money out.\n`;
-  for (
-    const [title, rows] of [["Money out", report.outgoing], [
-      "Pending money out",
-      report.pending.filter((r) =>
-        !r.status.includes("app record unconfirmed")
-      ),
-    ], [
-      "Transferred — app confirmation outstanding",
-      report.pending.filter((r) => r.status.includes("app record unconfirmed")),
-    ]] as const
-  ) {
-    html += `<h3>${title}</h3>`;
-    text += `\n${title}\n`;
-    if (!rows.length) {
-      html += "<p>None.</p>";
-      text += "None.\n";
+  const td = `padding:10px 8px;border-bottom:1px solid ${C.line};vertical-align:top;`;
+  const th =
+    `padding:8px;font-size:11px;font-weight:600;color:${C.muted};text-transform:uppercase;letter-spacing:0.5px;background:${C.head};`;
+  let html = `<p style="margin:0 0 20px;color:${C.muted};font-size:13px;">${
+    escapeHtml(when(since))
+  } – ${escapeHtml(when(until))} (Central time)</p>`;
+  let text = `${when(since)} – ${when(until)} (Central time)\n`;
+  for (const s of sections(report)) {
+    if (!s.rows.length && !s.empty) continue;
+    const total = s.rows.reduce((t, r) => t + r.cents, 0);
+    html += `<h3 style="margin:24px 0 6px;font-size:16px;color:${C.ink};">${
+      escapeHtml(s.title)
+    }${
+      s.rows.length
+        ? ` <span style="font-weight:400;color:${C.muted};">· ${
+          escapeHtml(usd(total))
+        }</span>`
+        : ""
+    }</h3>`;
+    text += `\n${s.title}${s.rows.length ? ` — ${usd(total)}` : ""}\n`;
+    if (s.blurb) {
+      html += `<p style="margin:0 0 8px;color:${C.muted};font-size:12px;">${
+        escapeHtml(s.blurb)
+      }</p>`;
+      text += `${s.blurb}\n`;
+    }
+    if (!s.rows.length) {
+      html += `<p style="margin:0;color:${C.muted};font-size:14px;">${
+        escapeHtml(s.empty)
+      }</p>`;
+      text += `${s.empty}\n`;
       continue;
     }
     html +=
-      '<table style="border-collapse:collapse;width:100%;font-size:13px"><thead><tr><th align="left">Recipient / payment</th><th align="right">Amount</th><th align="left">Status / date</th></tr></thead><tbody>';
-    for (const r of rows) {
-      html += `<tr><td style="padding:10px 4px;border-bottom:1px solid #eee">${
-        escapeHtml(r.recipient)
-      }<br><small>${
-        escapeHtml(r.kind)
-      }</small></td><td style="padding:10px 4px;border-bottom:1px solid #eee;text-align:right">${
+      `<table role="presentation" style="border-collapse:collapse;width:100%;font-size:14px;color:${C.ink};"><tr><th align="left" style="${th}width:96px;">When</th><th align="left" style="${th}">Who</th><th align="right" style="${th}">Amount</th></tr>`;
+    for (const r of s.rows) {
+      const flag = /reversed|failed|canceled/i.test(r.label);
+      html += `<tr><td style="${td}white-space:nowrap;color:${C.muted};font-size:13px;">${
+        escapeHtml(when(r.date)).replace(", ", ",<br>")
+      }</td><td style="${td}"><strong>${escapeHtml(r.name)}</strong>${
+        r.note
+          ? `<br><span style="color:${C.muted};font-size:12px;">${
+            escapeHtml(r.note)
+          }</span>`
+          : ""
+      }</td><td style="${td}text-align:right;white-space:nowrap;"><strong>${
         escapeHtml(money(r))
-      }</td><td style="padding:10px 4px;border-bottom:1px solid #eee">${
-        escapeHtml(r.status)
-      }<br><small>${escapeHtml(date(r.date))}</small></td></tr>`;
-      text += `${r.recipient} | ${money(r)} | ${r.status} | ${
-        date(r.date)
-      } | ${r.kind}\n`;
+      }</strong><br><span style="font-size:12px;color:${
+        flag ? C.bad : C.muted
+      };">${escapeHtml(r.label)}</span></td></tr>`;
+      text += `  ${when(r.date).padEnd(18)} ${r.name}${
+        r.note ? ` (${r.note})` : ""
+      } — ${money(r)} · ${r.label}\n`;
     }
-    html += "</tbody></table>";
+    html += "</table>";
   }
   return { html, text };
 }

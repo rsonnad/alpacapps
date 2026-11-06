@@ -1,4 +1,9 @@
-import { collectOutgoing, listStripe, renderOutgoing } from "./outgoing.ts";
+import {
+  collectOutgoing,
+  listStripe,
+  renderOutgoing,
+  workNote,
+} from "./outgoing.ts";
 const assert = (value: unknown, msg = "Assertion failed") => {
   if (!value) throw new Error(msg);
 };
@@ -175,6 +180,11 @@ Deno.test("report resolves multiple recipients, fees, refund, and old pending; e
   assert(rendered.html.includes("Bob &lt;LLC&gt;"));
   assert(rendered.text.includes("$71.94"));
   assert(rendered.text.includes("Refund Customer"));
+  // Email shows people, not Stripe IDs.
+  assert(report.outgoing[0].name === "Alice & Co");
+  assert(!rendered.html.includes("acct_"), "no account IDs in email");
+  assert(!rendered.html.includes("tr_1"), "no transfer IDs in email");
+  assert(rendered.html.includes("Stripe fees"));
 });
 Deno.test("partial API failure fails the report rather than silently omitting recipients", async () => {
   let failed = false;
@@ -191,4 +201,16 @@ Deno.test("partial API failure fails the report rather than silently omitting re
     failed = true;
   }
   assert(failed);
+});
+
+Deno.test("work note keeps hours and dates, drops the rest", () => {
+  assert(
+    workNote("Auto payout: Ike Tosh — 3.42 hrs 2026-11-05 to 2026-11-05") ===
+      "3.42 hrs · Nov 5",
+  );
+  assert(
+    workNote("Auto payout: X — 10 hrs 2026-11-01 to 2026-11-05") ===
+      "10 hrs · Nov 1 – Nov 5",
+  );
+  assert(workNote("something else") === "");
 });
