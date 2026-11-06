@@ -2,6 +2,7 @@ import {
   collectOutgoing,
   listStripe,
   renderOutgoing,
+  unconfirmedByPerson,
   workNote,
 } from "./outgoing.ts";
 const assert = (value: unknown, msg = "Assertion failed") => {
@@ -213,4 +214,24 @@ Deno.test("work note keeps hours and dates, drops the rest", () => {
       "10 hrs · Nov 1 – Nov 5",
   );
   assert(workNote("something else") === "");
+});
+
+Deno.test("unconfirmed payments group per person and skip ones already in Paid out", () => {
+  const row = (name: string, cents: number, date: string, kind: string) => ({
+    id: kind, recipient: name, cents, currency: "usd", date, kind, name,
+    note: "", label: "", status: "processing; app record unconfirmed",
+  });
+  const rows = unconfirmedByPerson({
+    outgoing: [{ ...row("Ike", 7522, "2026-11-06", "transfer · tr_new"), status: "Paid" }],
+    pending: [
+      row("Ike", 7522, "2026-11-06", "Associate payout · tr_new"),
+      row("Ike", 1000, "2026-10-01", "Associate payout · tr_a"),
+      row("Ike", 2000, "2026-10-20", "Associate payout · tr_b"),
+      row("Jo", 500, "2026-09-01", "Associate payout · tr_c"),
+    ],
+  });
+  assert(rows.length === 2);
+  assert(rows[0].name === "Ike" && rows[0].cents === 3000, "Ike total excludes tr_new");
+  assert(rows[0].note.startsWith("2 payments"));
+  assert(rows[1].name === "Jo" && rows[1].note === "1 payment");
 });

@@ -381,6 +381,40 @@ const C = {
   head: "#f5f1ec",
   bad: "#b5340c",
 };
+const transferRef = (kind: string) => kind.match(/\btr_[A-Za-z0-9]+/)?.[0];
+const shortDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-US", {
+    timeZone: "America/Chicago",
+    month: "short",
+    day: "numeric",
+  });
+/** One line per person, newest first; skips transfers already in "Paid out". */
+export function unconfirmedByPerson(report: Report): Row[] {
+  const shown = new Set(
+    report.outgoing.map((r) => transferRef(r.kind)).filter(Boolean),
+  );
+  const groups = new Map<string, Row[]>();
+  for (const r of report.pending.filter(isUnconfirmed)) {
+    const ref = transferRef(r.kind);
+    if (ref && shown.has(ref)) continue;
+    groups.set(r.name, [...(groups.get(r.name) || []), r]);
+  }
+  return [...groups.entries()].map(([name, rows]) => {
+    rows.sort(byDate);
+    const first = rows[0].date, last = rows.at(-1)!.date;
+    const span = shortDate(first) === shortDate(last)
+      ? shortDate(last)
+      : `${shortDate(first)} – ${shortDate(last)}`;
+    return {
+      ...rows.at(-1)!,
+      id: `unconfirmed:${name}`,
+      cents: rows.reduce((t, r) => t + r.cents, 0),
+      name,
+      note: rows.length === 1 ? "1 payment" : `${rows.length} payments · ${span}`,
+      label: "Sent",
+    };
+  }).sort((a, b) => byDate(b, a));
+}
 type Section = { title: string; blurb: string; rows: Row[]; empty: string };
 export function sections(report: Report): Section[] {
   // Fees are folded into one line so people stay the focus.
@@ -417,7 +451,7 @@ export function sections(report: Report): Section[] {
       title: "Sent earlier, awaiting confirmation",
       blurb:
         "Already paid. Listed so nobody gets paid twice; not money still owed.",
-      rows: report.pending.filter(isUnconfirmed).sort(byDate),
+      rows: unconfirmedByPerson(report),
       empty: "",
     },
   ];
