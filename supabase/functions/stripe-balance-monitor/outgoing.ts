@@ -14,7 +14,11 @@ export type Row = {
   note: string;
   label: string;
 };
-export type Report = { outgoing: Row[]; pending: Row[] };
+export type Report = { outgoing: Row[]; pending: Row[]; unpaid?: Row[] };
+import { rollupEntries } from "../_shared/payout-breakdown.ts";
+export const PAYMENTS_URL = "https://alpacaplayhouse.com/staff/payments.html";
+/** Unconfirmed payouts older than this stay off the email (see PAYMENTS_URL). */
+export const HISTORY_DAYS = 14;
 export async function listStripe(
   get: (path: string) => Promise<Obj>,
   path: string,
@@ -74,7 +78,7 @@ export async function collectOutgoing(
   const get = (path: string) => getForAccount(path);
   const profiles = await allDb(() =>
     sb.from("associate_profiles").select(
-      "id,app_user_id,stripe_connect_account_id",
+      "id,app_user_id,stripe_connect_account_id,hourly_rate,daily_extra",
     ).order("id")
   );
   const users = await allDb(() =>
@@ -310,7 +314,64 @@ export async function collectOutgoing(
       label: p.external_payout_id ? "Sent, unconfirmed" : "Not sent yet",
     });
   }
-  return { outgoing, pending };
+  const unpaid = await collectUnpaid(sb, profiles, names);
+  return { outgoing, pending, unpaid };
+}
+/** Finished shifts not yet paid or claimed by a payout, one row per person. */
+export async function collectUnpaid(
+  sb: any,
+  profiles: Obj[],
+  names: Map<string, string>,
+): Promise<Row[]> {
+  const entries = await allDb(() =>
+    sb.from("time_entries")
+      .select("id,associate_id,clock_in,clock_out,hourly_rate")
+      .eq("is_paid", false).not("clock_out", "is", null).order("id")
+  );
+  const claimed = new Set<string>();
+  const ids = entries.map((e) => e.id);
+  for (let i = 0; i < ids.length; i += 100) {
+    const rows = await allDb(() =>
+      sb.from("payout_time_entries").select("time_entry_id")
+        .in("time_entry_id", ids.slice(i, i + 100)).order("time_entry_id")
+    );
+    rows.forEach((r) => claimed.add(r.time_entry_id));
+  }
+  const byPerson = new Map<string, Obj[]>();
+  for (const e of entries.filter((e) => !claimed.has(e.id))) {
+    byPerson.set(e.associate_id, [...(byPerson.get(e.associate_id) || []), e]);
+  }
+  const profileById = new Map(profiles.map((p) => [p.id, p]));
+  const rows: Row[] = [];
+  for (const [associateId, list] of byPerson) {
+    const profile = profileById.get(associateId) || {};
+    const money = rollupEntries(
+      list as any,
+      parseFloat(profile.hourly_rate) || 0,
+      undefined,
+      parseFloat(profile.daily_extra) || 0,
+    );
+    if (money.totalHours <= 0) continue;
+    list.sort((a, b) => Date.parse(a.clock_in) - Date.parse(b.clock_in));
+    const first = list[0].clock_in, last = list.at(-1)!.clock_out;
+    const span = shortDate(first) === shortDate(last)
+      ? shortDate(last)
+      : `${shortDate(first)} – ${shortDate(last)}`;
+    const name = names.get(profile.app_user_id) || "Name unavailable";
+    rows.push({
+      id: `unpaid:${associateId}`,
+      recipient: name,
+      cents: Math.round(money.totalAmount * 100),
+      currency: "usd",
+      status: "unpaid",
+      date: last,
+      kind: `Unpaid hours · ${list.length} shifts`,
+      name,
+      note: `${money.totalHours.toFixed(2)} hrs · ${span}`,
+      label: "Not paid yet",
+    });
+  }
+  return rows.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 }
 const shortDay = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
@@ -389,12 +450,17 @@ const shortDate = (iso: string) =>
     day: "numeric",
   });
 /** One line per person, newest first; skips transfers already in "Paid out". */
-export function unconfirmedByPerson(report: Report): Row[] {
+export function unconfirmedByPerson(
+  report: Report,
+  asOf = new Date().toISOString(),
+): Row[] {
   const shown = new Set(
     report.outgoing.map((r) => transferRef(r.kind)).filter(Boolean),
   );
   const groups = new Map<string, Row[]>();
+  const cutoff = Date.parse(asOf) - HISTORY_DAYS * 86400000;
   for (const r of report.pending.filter(isUnconfirmed)) {
+    if (Date.parse(r.date) < cutoff) continue;
     const ref = transferRef(r.kind);
     if (ref && shown.has(ref)) continue;
     groups.set(r.name, [...(groups.get(r.name) || []), r]);
@@ -415,8 +481,17 @@ export function unconfirmedByPerson(report: Report): Row[] {
     };
   }).sort((a, b) => byDate(b, a));
 }
-type Section = { title: string; blurb: string; rows: Row[]; empty: string };
-export function sections(report: Report): Section[] {
+type Section = {
+  title: string;
+  blurb: string;
+  rows: Row[];
+  empty: string;
+  more?: boolean;
+};
+export function sections(
+  report: Report,
+  asOf = new Date().toISOString(),
+): Section[] {
   // Fees are folded into one line so people stay the focus.
   const fees = report.outgoing.filter((r) => r.name === "Stripe");
   const paid = report.outgoing.filter((r) => r.name !== "Stripe").sort(byDate);
@@ -448,11 +523,18 @@ export function sections(report: Report): Section[] {
       empty: "Nothing waiting.",
     },
     {
-      title: "Sent earlier, awaiting confirmation",
+      title: "Hours worked, not paid yet",
+      blurb: "Finished shifts with no payout yet. Amounts are estimates.",
+      rows: report.unpaid || [],
+      empty: "None.",
+    },
+    {
+      title: `Sent in the last ${HISTORY_DAYS} days, awaiting confirmation`,
       blurb:
         "Already paid. Listed so nobody gets paid twice; not money still owed.",
-      rows: unconfirmedByPerson(report),
+      rows: unconfirmedByPerson(report, asOf),
       empty: "",
+      more: true,
     },
   ];
 }
@@ -468,7 +550,7 @@ export function renderOutgoing(
     escapeHtml(when(since))
   } – ${escapeHtml(when(until))} (Central time)</p>`;
   let text = `${when(since)} – ${when(until)} (Central time)\n`;
-  for (const s of sections(report)) {
+  for (const s of sections(report, until)) {
     if (!s.rows.length && !s.empty) continue;
     const total = s.rows.reduce((t, r) => t + r.cents, 0);
     html += `<h3 style="margin:24px 0 6px;font-size:16px;color:${C.ink};">${
@@ -516,6 +598,10 @@ export function renderOutgoing(
       } — ${money(r)} · ${r.label}\n`;
     }
     html += "</table>";
+    if (s.more) {
+      html += `<p style="margin:8px 0 0;font-size:13px;"><a href="${PAYMENTS_URL}" style="color:${C.ink};">See older payouts on the Payments page →</a></p>`;
+      text += `Older payouts: ${PAYMENTS_URL}\n`;
+    }
   }
   return { html, text };
 }

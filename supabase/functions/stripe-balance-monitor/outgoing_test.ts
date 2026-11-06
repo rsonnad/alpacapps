@@ -29,6 +29,10 @@ function database(tables: Record<string, any[]>) {
       const q: any = {
         select: () => q,
         order: () => q,
+        not: (k: string, _op: string, _v: any) => {
+          rows = rows.filter((r) => r[k] != null);
+          return q;
+        },
         eq: (k: string, v: any) => {
           rows = rows.filter((r) => r[k] === v);
           return q;
@@ -225,13 +229,37 @@ Deno.test("unconfirmed payments group per person and skip ones already in Paid o
     outgoing: [{ ...row("Ike", 7522, "2026-11-06", "transfer · tr_new"), status: "Paid" }],
     pending: [
       row("Ike", 7522, "2026-11-06", "Associate payout · tr_new"),
-      row("Ike", 1000, "2026-10-01", "Associate payout · tr_a"),
-      row("Ike", 2000, "2026-10-20", "Associate payout · tr_b"),
-      row("Jo", 500, "2026-09-01", "Associate payout · tr_c"),
+      row("Ike", 1000, "2026-11-01", "Associate payout · tr_a"),
+      row("Ike", 2000, "2026-11-03", "Associate payout · tr_b"),
+      row("Jo", 500, "2026-10-30", "Associate payout · tr_c"),
+      row("Old", 900, "2026-06-01", "Associate payout · tr_old"),
     ],
-  });
+  }, "2026-11-07T00:00:00Z");
   assert(rows.length === 2);
   assert(rows[0].name === "Ike" && rows[0].cents === 3000, "Ike total excludes tr_new");
   assert(rows[0].note.startsWith("2 payments"));
   assert(rows[1].name === "Jo" && rows[1].note === "1 payment");
+});
+
+Deno.test("unpaid hours: finished, unclaimed shifts per person with pay estimate", async () => {
+  const { collectUnpaid } = await import("./outgoing.ts");
+  const db = database({
+    time_entries: [
+      { id: "e1", associate_id: "ap_a", is_paid: false, clock_in: "2026-11-04T15:00:00Z", clock_out: "2026-11-04T17:00:00Z", hourly_rate: null },
+      { id: "e2", associate_id: "ap_a", is_paid: false, clock_in: "2026-11-05T15:00:00Z", clock_out: "2026-11-05T16:30:00Z", hourly_rate: null },
+      { id: "e3", associate_id: "ap_a", is_paid: false, clock_in: "2026-11-06T15:00:00Z", clock_out: null },
+      { id: "e4", associate_id: "ap_a", is_paid: false, clock_in: "2026-11-03T15:00:00Z", clock_out: "2026-11-03T16:00:00Z" },
+      { id: "e5", associate_id: "ap_a", is_paid: true, clock_in: "2026-11-02T15:00:00Z", clock_out: "2026-11-02T16:00:00Z" },
+    ],
+    payout_time_entries: [{ time_entry_id: "e4" }],
+  });
+  const rows = await collectUnpaid(
+    db,
+    [{ id: "ap_a", app_user_id: "u", hourly_rate: "20", daily_extra: "0" }],
+    new Map([["u", "Ike"]]),
+  );
+  assert(rows.length === 1);
+  assert(rows[0].name === "Ike");
+  assert(rows[0].note.startsWith("3.50 hrs"), rows[0].note);
+  assert(rows[0].cents === 7000, String(rows[0].cents));
 });
