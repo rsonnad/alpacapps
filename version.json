@@ -1,12 +1,12 @@
 {
-  "version": "v261106.01 4:11p",
-  "release": 2021,
-  "sha": "5db6bb67fb",
-  "fullSha": "5db6bb67fb7a5cde8c739849ba5e615b3d391abf",
+  "version": "v261106.02 4:19p",
+  "release": 2022,
+  "sha": "6f0cdc0c0d",
+  "fullSha": "6f0cdc0c0d79919fa8c566fe01e0a7c1815346e5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-06T22:11:55+00:00",
-  "commits": [{"sha":"5db6bb67fb","message":"Stripe balance email: clear who/how much/when layout","author":"Blotto"}]
+  "pushedAt": "2026-11-06T22:19:49+00:00",
+  "commits": [{"sha":"6f0cdc0c0d","message":"Stripe balance email: one line per person for unconfirmed payouts","author":"Blotto"}]
 }
