@@ -1,12 +1,12 @@
 {
-  "version": "v261106.02 4:19p",
-  "release": 2022,
-  "sha": "6f0cdc0c0d",
-  "fullSha": "6f0cdc0c0d79919fa8c566fe01e0a7c1815346e5",
+  "version": "v261106.03 4:40p",
+  "release": 2023,
+  "sha": "d3d8e44d9a",
+  "fullSha": "d3d8e44d9a046603f87838a0927eba4e440c4c72",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-06T22:19:49+00:00",
-  "commits": [{"sha":"6f0cdc0c0d","message":"Stripe balance email: one line per person for unconfirmed payouts","author":"Blotto"}]
+  "pushedAt": "2026-11-06T22:40:09+00:00",
+  "commits": [{"sha":"d3d8e44d9a","message":"Stripe balance email: 2-week history, unpaid hours section","author":"Blotto"}]
 }
