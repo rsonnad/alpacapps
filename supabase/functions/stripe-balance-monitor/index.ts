@@ -2,11 +2,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { requireFunctionRoles } from "../_shared/require-auth.ts";
 import { collectOutgoing, renderOutgoing } from "./outgoing.ts";
-import {
-  applyConfirmations,
-  checkProcessingStripePayouts,
-  type Confirmation,
-} from "../_shared/stripe-payout-confirm.ts";
 const SENDER_MAP = {
   pai: {
     from: "PAI at the Alpaca Playhouse <pai@alpacaplayhouse.com>",
@@ -102,22 +97,6 @@ export async function handler(_req: Request) {
     const since = sinceParam || delivered?.[0]?.checked_at || prev?.checked_at ||
       new Date(Date.now() - 86400000).toISOString();
     const until = untilParam || new Date().toISOString();
-    // Mark payouts paid once Stripe shows the bank payout arrived. The scheduled
-    // run writes; a preview only reports what it would change.
-    let confirmations: Confirmation[] = [];
-    let confirmResult: { completed: number; returned: number } | null = null;
-    let confirmError: string | null = null;
-    try {
-      confirmations = await checkProcessingStripePayouts(
-        sb,
-        stripeKey,
-        Boolean(cfg.test_mode),
-      );
-      if (!preview) confirmResult = await applyConfirmations(sb, confirmations);
-    } catch (e) {
-      confirmError = e instanceof Error ? e.message : String(e);
-      console.error("payout confirmation failed:", confirmError);
-    }
     const report = await collectOutgoing(
       sb,
       stripeKey,
@@ -162,13 +141,7 @@ export async function handler(_req: Request) {
       `;
       if (preview && !sendPreview) {
         return new Response(
-          JSON.stringify({
-            html,
-            text: details.text,
-            report,
-            confirmations,
-            confirmError,
-          }),
+          JSON.stringify({ html, text: details.text, report }),
           { headers: { "Content-Type": "application/json" } },
         );
       }
@@ -237,8 +210,6 @@ export async function handler(_req: Request) {
         changed,
         notified,
         email_status: emailStatus,
-        confirmed: confirmResult,
-        confirm_error: confirmError,
         available_cents: available,
         pending_cents: pending,
         instant_available_cents: instant,

@@ -18,19 +18,11 @@ preserves the existing cron and gateway configuration. Only the existing admin
 email destination receives the report; payment recipient names do not become
 email addressees.
 
-Payout confirmation: before building the report, the scheduled run checks every
-`payouts` row still `processing` with a Stripe `tr_` transfer
-(`_shared/stripe-payout-confirm.ts`). It marks the row (and its ledger entry)
-`completed` once the connected account's bank payout carrying it is `paid`, and
-`returned` if the transfer was fully reversed. Anything else stays `processing`.
-`?preview=true` returns these decisions as `confirmations` without writing.
-Stripe never sends the `transfer.paid` event the webhook used to wait for.
-
 Checks:
 
 ```sh
 deno check supabase/functions/stripe-balance-monitor/index.ts
-deno test supabase/functions/stripe-balance-monitor/outgoing_test.ts supabase/functions/_shared/stripe-payout-confirm_test.ts
+deno test supabase/functions/stripe-balance-monitor/outgoing_test.ts
 ```
 
 Deploy with Supabase CLI 3 (the project recipe's older CLI used `--project-ref`):

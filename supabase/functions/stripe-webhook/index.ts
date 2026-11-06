@@ -564,9 +564,9 @@ Deno.serve(async (req) => {
 
     switch (event.type) {
       // Legacy: Stripe stopped sending transfer.paid/transfer.failed in API
-      // 2017-04-06. Connect transfers have no status. stripe-balance-monitor
-      // confirms "processing" payouts daily from the bank payout instead
-      // (_shared/stripe-payout-confirm.ts). transfer.reversed still fires.
+      // 2017-04-06. Connect transfers have no status. The scheduled
+      // stripe-payout-confirm function marks "processing" payouts paid from
+      // the bank payout instead. transfer.reversed still fires.
       case 'transfer.paid': {
         const transfer = event.data.object as { id: string };
         const newStatus = 'completed';
