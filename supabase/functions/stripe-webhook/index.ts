@@ -11,8 +11,7 @@
  * Webhook URL: https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/stripe-webhook
  *
  * Events handled:
- * - transfer.paid → payout completed
- * - transfer.failed → payout failed
+ * - transfer.paid / transfer.failed → legacy, never sent by Stripe now (see below)
  * - transfer.reversed → payout returned
  * - payment_intent.processing → inbound payment in flight (ACH submitted); upserts pending row
  * - payment_intent.succeeded → inbound payment completed + confirmation email; upserts row if external
@@ -564,6 +563,10 @@ Deno.serve(async (req) => {
     console.log('Stripe webhook:', event.type, event.id);
 
     switch (event.type) {
+      // Legacy: Stripe stopped sending transfer.paid/transfer.failed in API
+      // 2017-04-06. Connect transfers have no status. stripe-balance-monitor
+      // confirms "processing" payouts daily from the bank payout instead
+      // (_shared/stripe-payout-confirm.ts). transfer.reversed still fires.
       case 'transfer.paid': {
         const transfer = event.data.object as { id: string };
         const newStatus = 'completed';
