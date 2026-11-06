@@ -1,12 +1,12 @@
 {
-  "version": "v261105.01 1:01p",
-  "release": 2020,
-  "sha": "0292eeab7b",
-  "fullSha": "0292eeab7b092959cf6ff2bf5664ef202f99bdc1",
+  "version": "v261106.01 4:11p",
+  "release": 2021,
+  "sha": "5db6bb67fb",
+  "fullSha": "5db6bb67fb7a5cde8c739849ba5e615b3d391abf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmnwato",
-  "pushedAt": "2026-11-05T19:01:04+00:00",
-  "commits": [{"sha":"0292eeab7b","message":"Muse sync watcher: check every 7 minutes","author":"Blotto"}]
+  "machine": "runnervmwuk1x",
+  "pushedAt": "2026-11-06T22:11:55+00:00",
+  "commits": [{"sha":"5db6bb67fb","message":"Stripe balance email: clear who/how much/when layout","author":"Blotto"}]
 }
