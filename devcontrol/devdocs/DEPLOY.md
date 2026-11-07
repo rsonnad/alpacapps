@@ -34,6 +34,7 @@ Grokbot pages work the same way, in two folders: `https://alpacaplayhouse.com/bo
 - Without the env file the script logs "No ALPACAPPS_DISPATCH_TOKEN" and exits 0, so the cron fallback still works.
 - Install or update: copy the folder to Phoenix and run `sudo ./install.sh`. Check: `systemctl list-timers alpacapps-muse-sync.timer` and `journalctl -u alpacapps-muse-sync.service -n 20`. A started run shows in `gh run list --workflow muse-sync.yml` as `workflow_dispatch` by `rsonnad`.
 - Manual kick from any signed-in machine: `gh workflow run muse-sync.yml --repo rsonnad/alpacapps --ref main`.
+- Muse can start it too: `POST /functions/v1/api` with its "AlpacApps API — Meta Muse Agent" key and body `{"resource":"muse_publish","action":"create"}` (returns 202). Dispatch-only, no inputs. The `api` function uses Supabase secret `ALPACAPPS_DISPATCH_TOKEN` (same token as Phoenix), else `GITHUB_TOKEN`. Muse's steps are in Bitwarden "Muse — AlpacApps Publishing Guide".
 
 | Repo | Agent | Folders |
 |---|---|---|

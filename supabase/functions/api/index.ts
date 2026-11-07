@@ -157,6 +157,7 @@ const RESOURCE_HANDLERS: Record<string, ResourceHandler> = {
   feature_requests: handleFeatureRequests,
   pai_config: handlePaiConfig,
   tesla_accounts: handleTeslaAccounts,
+  muse_publish: handleMusePublish,
 };
 
 // =====================================================================
@@ -2146,4 +2147,44 @@ async function handleTeslaAccounts(supabase: any, req: ApiRequest, auth: any, _p
     }
   }
   return error("Unknown action", 400);
+}
+
+// ─── muse_publish ───────────────────────────────────────────────────
+// Dispatch-only: runs .github/workflows/muse-sync.yml on main. Nothing from
+// the request is passed to GitHub, so a caller can only ask for a redeploy
+// of what is already in the Muse repos. muse-sync skips the publish when
+// nothing changed or a publish run is already queued.
+
+async function handleMusePublish(_supabase: any, req: ApiRequest, _auth: any, _perm: any): Promise<Response> {
+  if (req.action !== "create") return error(`Unknown action: ${req.action}`, 400);
+  // Prefer the narrow token (alpacapps only, Actions read/write) also used by
+  // the Phoenix watcher; fall back to the older broad GITHUB_TOKEN.
+  const token = Deno.env.get("ALPACAPPS_DISPATCH_TOKEN") || Deno.env.get("GITHUB_TOKEN");
+  if (!token) return error("No GitHub dispatch token configured", 500);
+
+  const res = await fetch(
+    "https://api.github.com/repos/rsonnad/alpacapps/actions/workflows/muse-sync.yml/dispatches",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "alpacapps-api",
+      },
+      body: JSON.stringify({ ref: "main" }),
+    },
+  );
+  if (!res.ok && res.status !== 204) {
+    const detail = (await res.text()).slice(0, 300);
+    return error(`GitHub refused the Muse sync dispatch (${res.status}): ${detail}`, 502);
+  }
+  return jsonResponse({
+    data: {
+      started: true,
+      workflow: "muse-sync.yml",
+      runs: "https://github.com/rsonnad/alpacapps/actions/workflows/muse-sync.yml",
+      note: "Live in about 3-5 minutes. Check https://alpacaplayhouse.com/_deployment.json for your repo's commit.",
+    },
+  }, 202);
 }

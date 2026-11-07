@@ -266,6 +266,13 @@ export const PERMISSIONS: Record<string, Record<string, PermissionEntry>> = {
     get:    { minLevel: 3 },
     update: { minLevel: 3 },
   },
+
+  // ── muse_publish ────────────────────────────────────────────────
+  // Starts the Muse sync workflow so a Muse page pushed to its own repo
+  // goes live now instead of waiting for GitHub's (slow) schedule.
+  muse_publish: {
+    create: { minLevel: 2 },
+  },
 };
 
 // ─── Self-editable profile fields ───────────────────────────────────
