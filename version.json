@@ -1,12 +1,12 @@
 {
-  "version": "v261106.03 4:40p",
-  "release": 2023,
-  "sha": "d3d8e44d9a",
-  "fullSha": "d3d8e44d9a046603f87838a0927eba4e440c4c72",
+  "version": "v261107.01 1:23a",
+  "release": 2024,
+  "sha": "f01db3d537",
+  "fullSha": "f01db3d5377f11d17d6c6b5db8b6ceb69c08badf",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-06T22:40:09+00:00",
-  "commits": [{"sha":"d3d8e44d9a","message":"Stripe balance email: 2-week history, unpaid hours section","author":"Blotto"}]
+  "pushedAt": "2026-11-07T07:23:52+00:00",
+  "commits": [{"sha":"f01db3d537","message":"API: muse_publish lets Muse start the Muse sync after a push","author":"Blotto"}]
 }
