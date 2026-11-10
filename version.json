@@ -1,12 +1,12 @@
 {
-  "version": "v261110.01 4:26p",
-  "release": 2025,
-  "sha": "f847dcd9bf",
-  "fullSha": "f847dcd9bfc08bc18a17930f3306cf22a851bbd5",
+  "version": "v261110.02 4:40p",
+  "release": 2026,
+  "sha": "5295402299",
+  "fullSha": "52954022995b38ec940d16a3cc7c49230dd198fc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-10T22:26:54+00:00",
-  "commits": [{"sha":"2500a3fe84","message":"Publish mistiq/ with the site again","author":"Blotto"},{"sha":"f847dcd9bf","message":"Merge pull request #160 from rsonnad/claude/alpaca-playhouse-error-1a53bd","author":"Rahul"}]
+  "pushedAt": "2026-11-10T22:40:09+00:00",
+  "commits": [{"sha":"5295402299","message":"Mistiq booking: ask for availability in text instead of Google Calendar embed","author":"Blotto"}]
 }
