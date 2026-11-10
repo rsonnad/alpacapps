@@ -1,12 +1,12 @@
 {
-  "version": "v261110.02 4:40p",
-  "release": 2026,
-  "sha": "5295402299",
-  "fullSha": "52954022995b38ec940d16a3cc7c49230dd198fc",
+  "version": "v261110.03 4:55p",
+  "release": 2027,
+  "sha": "281662bc63",
+  "fullSha": "281662bc63c44876ad54d90a013833131587357f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-10T22:40:09+00:00",
-  "commits": [{"sha":"5295402299","message":"Mistiq booking: ask for availability in text instead of Google Calendar embed","author":"Blotto"}]
+  "pushedAt": "2026-11-10T22:55:39+00:00",
+  "commits": [{"sha":"281662bc63","message":"Mistiq booking: reword availability label","author":"Blotto"}]
 }
