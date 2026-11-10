@@ -136,7 +136,7 @@ jobs:
           MUSE_LOCK: ${{ steps.muse.outputs.lock }}
         run: |
           mkdir -p "$RUNNER_TEMP/pages-site"
-          git archive HEAD -- . ':!mistiq' | tar -x -C "$RUNNER_TEMP/pages-site"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/pages-site"
           python3 -c 'import json,os,subprocess; p=os.environ["RUNNER_TEMP"]+"/pages-site/_deployment.json"; open(p,"w").write(json.dumps({"sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()}))'
           node scripts/compose-muse.mjs compose "$RUNNER_TEMP/pages-site" "$MUSE_LOCK"
       - name: Upload committed site
@@ -171,7 +171,7 @@ jobs:
           MUSE_LOCK: ${{ needs.release.outputs.muse_lock }}
         run: |
           mkdir -p "$RUNNER_TEMP/pages-site"
-          git archive HEAD -- . ':!mistiq' | tar -x -C "$RUNNER_TEMP/pages-site"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/pages-site"
           python3 -c 'import json,os,subprocess; p=os.environ["RUNNER_TEMP"]+"/pages-site/_deployment.json"; open(p,"w").write(json.dumps({"sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()}))'
           node scripts/compose-muse.mjs compose "$RUNNER_TEMP/pages-site" "$MUSE_LOCK"
       - name: Verify public deployment, Muse and Grokbot pages
