@@ -1,12 +1,12 @@
 {
-  "version": "v261112.02 11:46p",
-  "release": 2029,
-  "sha": "33a2966a4b",
-  "fullSha": "33a2966a4b9dabaa7b70546ac4fe3a8f0729e387",
+  "version": "v261112.03 11:48p",
+  "release": 2030,
+  "sha": "b0d44d5671",
+  "fullSha": "b0d44d5671f83ba1a492227047d87d21f2217fa4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-13T05:46:16+00:00",
-  "commits": [{"sha":"33a2966a4b","message":"unifi-mcp: block encoded/dot paths in unifi_get, drop Protect reads, trim /health","author":"Blotto"}]
+  "pushedAt": "2026-11-13T05:48:08+00:00",
+  "commits": [{"sha":"b0d44d5671","message":"unifi-mcp: accept Claude's published OAuth identity (CIMD), document connector steps","author":"Blotto"}]
 }
