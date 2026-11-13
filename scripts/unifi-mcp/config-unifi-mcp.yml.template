@@ -1,0 +1,7 @@
+# ~/.cloudflared/config-unifi-mcp.yml on ALPUCA (own tunnel, like gmailbrain; not the shared alpaca-cam config)
+tunnel: TUNNEL_ID
+credentials-file: /Users/alpuca/.cloudflared/TUNNEL_ID.json
+ingress:
+  - hostname: unifi-mcp.alpacaplayhouse.com
+    service: http://127.0.0.1:8941
+  - service: http_status:404

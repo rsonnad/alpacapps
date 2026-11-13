@@ -264,6 +264,10 @@ ssh paca@100.74.59.97 "sshpass -p '\$(bw-read \"UniFi Dream Machine Pro — Netw
 
 **UDM SSH requires `-o PubkeyAuthentication=no`** — without it, SSH tries pubkey, fails, then keyboard-interactive skips the password prompt. The `Host udm` block in **Method 0** sets this; if invoking ssh by hand, add the flag.
 
+**AI clients (Claude Duet, claude.ai):** use the UniFi MCP bridge at `https://unifi-mcp.alpacaplayhouse.com/mcp` (ALPUCA, logs in as `codingagent`). Setup, tools and key rotation: `scripts/unifi-mcp/README.md`.
+
+**Public UDM login page:** the alpaca-cam tunnel also maps `unifi.alpacaplayhouse.com` straight to `https://192.168.1.1`, so the UniFi OS login page is reachable from the internet (checked 2026-11-13).
+
 **Cloud remote access (`unifi.ui.com`) is DISABLED.** The admin account is local-only (no Ubiquiti SSO linked). To enable: UDM web UI → Settings → System → Administration → Remote Access.
 
 ---

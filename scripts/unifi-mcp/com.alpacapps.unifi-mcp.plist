@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- LaunchDaemon (not a LaunchAgent) with UserName=alpuca, like ptz-proxy: it must reach 192.168.1.1. -->
+<plist version="1.0">
+<dict>
+	<key>Label</key><string>com.alpacapps.unifi-mcp</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/opt/homebrew/bin/node</string>
+		<string>/Users/alpuca/unifi-mcp/server.mjs</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>HOME</key><string>/Users/alpuca</string>
+		<key>UNIFI_MCP_PORT</key><string>8941</string>
+		<key>UNIFI_MCP_PUBLIC_URL</key><string>https://unifi-mcp.alpacaplayhouse.com</string>
+	</dict>
+	<key>UserName</key><string>alpuca</string>
+	<key>WorkingDirectory</key><string>/Users/alpuca/unifi-mcp</string>
+	<key>RunAtLoad</key><true/>
+	<key>KeepAlive</key><true/>
+	<key>ThrottleInterval</key><integer>10</integer>
+	<key>StandardOutPath</key><string>/Users/alpuca/Library/Logs/unifi-mcp.log</string>
+	<key>StandardErrorPath</key><string>/Users/alpuca/Library/Logs/unifi-mcp.log</string>
+</dict>
+</plist>

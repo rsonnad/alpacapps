@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.alpacapps.cloudflared-unifi-mcp</string>
+  <key>ProgramArguments</key><array>
+    <string>/opt/homebrew/bin/cloudflared</string><string>tunnel</string><string>--no-autoupdate</string>
+    <string>--config</string><string>/Users/alpuca/.cloudflared/config-unifi-mcp.yml</string><string>run</string><string>unifi-mcp</string>
+  </array>
+  <key>RunAtLoad</key><true/><key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/alpuca/Library/Logs/cloudflared-unifi-mcp.log</string>
+  <key>StandardErrorPath</key><string>/Users/alpuca/Library/Logs/cloudflared-unifi-mcp.log</string>
+</dict></plist>
