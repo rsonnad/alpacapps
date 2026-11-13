@@ -1,12 +1,12 @@
 {
-  "version": "v261112.01 11:41p",
-  "release": 2028,
-  "sha": "63876b94a7",
-  "fullSha": "63876b94a7c7f0ebd66afc67890fb3d91f771a81",
+  "version": "v261112.02 11:46p",
+  "release": 2029,
+  "sha": "33a2966a4b",
+  "fullSha": "33a2966a4b9dabaa7b70546ac4fe3a8f0729e387",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-13T05:41:29+00:00",
-  "commits": [{"sha":"63876b94a7","message":"Add UniFi MCP bridge so Claude Duet can read and change the UDM Pro","author":"Blotto"}]
+  "pushedAt": "2026-11-13T05:46:16+00:00",
+  "commits": [{"sha":"33a2966a4b","message":"unifi-mcp: block encoded/dot paths in unifi_get, drop Protect reads, trim /health","author":"Blotto"}]
 }
