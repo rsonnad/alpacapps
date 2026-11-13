@@ -166,8 +166,8 @@ const normMac = (m) => {
   if (s.length !== 12) throw new Error(`Not a MAC address: ${m}`);
   return s.match(/../g).join(':');
 };
-const READ_PREFIXES = [`${NET}/stat/`, `${NET}/rest/`, `${NET}/list/`, `${NET2}/`, '/proxy/protect/api/'];
-const READ_DENY = [/\/rest\/(admin|setting)/, /\/stat\/(admin|sysinfo\/.*key)/, /\/cmd\//, /backup/i, /\/list\/admin/];
+const READ_PREFIXES = [`${NET}/stat/`, `${NET}/rest/`, `${NET}/list/`, `${NET2}/`];
+const READ_DENY = [/\/rest\/(admin|setting)/i, /\/stat\/(admin|sysinfo|ccode)/i, /\/cmd\//i, /backup/i, /\/list\/admin/i, /\/(admins?|users?\/self|api-?keys?|settings?)(\/|$|\?)/i];
 
 const PF_FIELDS = ['name', 'enabled', 'proto', 'dst_port', 'fwd', 'fwd_port', 'src', 'log', 'pfwd_interface', 'destination_ip', 'src_limiting_enabled', 'src_limiting_type', 'src_firewall_group_id'];
 const pickPf = (o) => Object.fromEntries(Object.entries(o || {}).filter(([k]) => PF_FIELDS.includes(k)));
@@ -230,11 +230,13 @@ const TOOLS = [
   { name: 'unifi_list_networks', description: 'List networks/VLANs and Wi-Fi networks (passphrases redacted).', write: false,
     inputSchema: { type: 'object', properties: {} },
     run: async () => redact({ networks: await udm('GET', `${NET}/rest/networkconf`), wifi: await udm('GET', `${NET}/rest/wlanconf`) }) },
-  { name: 'unifi_get', description: `Read-only GET of any UniFi Network or Protect API path, for things the other tools do not cover (e.g. ${NET}/stat/event, ${NET}/rest/routing, ${NET2}/trafficrules). Path must start with ${READ_PREFIXES.join(', ')}. Secrets are redacted.`, write: false,
+  { name: 'unifi_get', description: `Read-only GET of any UniFi Network or Protect API path, for things the other tools do not cover (e.g. ${NET}/rest/routing, ${NET}/rest/dynamicdns, ${NET2}/trafficrules). Path must start with ${READ_PREFIXES.join(', ')}. Secrets are redacted.`, write: false,
     inputSchema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] },
     run: async ({ path: p }) => {
       p = String(p || '');
-      if (!READ_PREFIXES.some((x) => p.startsWith(x)) || READ_DENY.some((r) => r.test(p)) || p.includes('..')) throw new Error(`Path not allowed. Allowed prefixes: ${READ_PREFIXES.join(', ')}`);
+      // Plain paths only: encoded characters, backslashes, empty or dot segments could slip past the checks below.
+      const plain = /^\/[A-Za-z0-9/_.\-?=&]*$/.test(p) && !p.includes('//') && !/(^|\/)\.\.?(\/|$|\?)/.test(p);
+      if (!plain || !READ_PREFIXES.some((x) => p.startsWith(x)) || READ_DENY.some((r) => r.test(p))) throw new Error(`Path not allowed. Use a plain path (no %, //, ..) under: ${READ_PREFIXES.join(', ')}`);
       return redact(await udm('GET', p));
     } },
 
@@ -423,7 +425,7 @@ const server = http.createServer(async (req, res) => {
   const p = url.pathname;
   try {
     if (req.method === 'OPTIONS') return send(res, 204, '', CORS);
-    if (p === '/health') return send(res, 200, { ok: true, udm_session: !!udmCookie && Date.now() < udmUntil, udm_login_error: lastLoginError });
+    if (p === '/health') return send(res, 200, { ok: true, udm_session: !!udmCookie && Date.now() < udmUntil, udm_login_failing: !!lastLoginError });
 
     if (p === '/.well-known/oauth-protected-resource' || p === '/.well-known/oauth-protected-resource/mcp')
       return send(res, 200, { resource: PUBLIC_URL + '/mcp', authorization_servers: [PUBLIC_URL], scopes_supported: ['unifi'], bearer_methods_supported: ['header'], resource_name: 'Alpaca UniFi' }, CORS);

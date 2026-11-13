@@ -32,7 +32,7 @@ Headless MCP clients can skip OAuth and send `Authorization: Bearer <that key>`.
 | `unifi_list_port_forwards` | `unifi_device_restart` (switches/APs; refuses the gateway) |
 | `unifi_list_firewall` | `unifi_firewall_upsert` / `unifi_firewall_delete` |
 | `unifi_list_networks` (passphrases redacted) | |
-| `unifi_get` (read-only GET under the Network/Protect API) | |
+| `unifi_get` (read-only GET under the Network API; plain paths only) | |
 
 Not exposed on purpose: UniFi OS users/admins, firmware, backup/restore, reset, controller settings
 (SSH, remote access, management), Wi-Fi passphrases. Every read redacts `x_*` fields.
