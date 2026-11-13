@@ -1,12 +1,12 @@
 {
-  "version": "v261110.03 4:55p",
-  "release": 2027,
-  "sha": "281662bc63",
-  "fullSha": "281662bc63c44876ad54d90a013833131587357f",
+  "version": "v261112.01 11:41p",
+  "release": 2028,
+  "sha": "63876b94a7",
+  "fullSha": "63876b94a7c7f0ebd66afc67890fb3d91f771a81",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-10T22:55:39+00:00",
-  "commits": [{"sha":"281662bc63","message":"Mistiq booking: reword availability label","author":"Blotto"}]
+  "pushedAt": "2026-11-13T05:41:29+00:00",
+  "commits": [{"sha":"63876b94a7","message":"Add UniFi MCP bridge so Claude Duet can read and change the UDM Pro","author":"Blotto"}]
 }
