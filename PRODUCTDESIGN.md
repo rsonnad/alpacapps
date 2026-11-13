@@ -934,3 +934,9 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision:** The Pages deploy packages the whole committed tree, including `mistiq/`. The `':!mistiq'` exclusion in `.github/workflows/bump-version-on-push.yml` is removed from both the upload step and the verification step.
 
 **Why:** The 2026-10-19 move to workflow-based Pages deploys left `mistiq/` out of the artifact, so every `https://alpacaplayhouse.com/mistiq/` URL (home, jobs, apply, all languages) returned 404. Nothing recorded that as intended, and the Mistiq pages name those URLs as canonical. "Exclude `/mistiq/` from AlpacApps work" means don't restyle or refactor it with the rest of the app, not don't host it.
+
+### 2026-11-13 Claude Code in GitHub
+
+**Decision** — Enable Claude Code on explicit `@claude` mentions in issues and pull requests. Authenticate through the Claude GitHub App and a Claude subscription token.
+
+**Why** — Maintainers can ask Claude to investigate an issue or propose a change from the GitHub discussion. The action checks that the person invoking it has repository write access. GitHub gives the workflow token read access to repository contents. The Claude app supplies its own repository-scoped token for writing.
