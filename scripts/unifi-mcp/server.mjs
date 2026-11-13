@@ -355,8 +355,7 @@ async function mcpHandle(msg, who) {
 const codes = new Map(); // hash(code) -> {client, redirect, challenge, resource, until}
 let authFailures = [];
 
-function authorizePage(q, error) {
-  const client = clientFromId(q.get('client_id'));
+function authorizePage(q, client, error) {
   const name = esc(client?.n || new URL(q.get('redirect_uri')).host);
   const hidden = ['client_id', 'redirect_uri', 'state', 'code_challenge', 'code_challenge_method', 'resource', 'scope', 'response_type']
     .map((k) => q.get(k) != null ? `<input type="hidden" name="${k}" value="${esc(q.get(k))}">` : '').join('');
@@ -374,8 +373,35 @@ function clientFromId(id) {
   } catch { return null; }
 }
 
-function checkAuthRequest(q) {
-  const client = clientFromId(q.get('client_id'));
+// Client ID Metadata Documents (CIMD): the client_id is an https URL serving the client's own metadata,
+// which is what claude.ai's default "Use Claude's published identity" option sends.
+const cimdCache = new Map();
+async function getClient(id) {
+  const reg = clientFromId(id);
+  if (reg) return reg;
+  let u;
+  try { u = new URL(id); } catch { return null; }
+  // Only Claude's own hosts: redirects are limited to Claude callbacks anyway, and this keeps ALPUCA
+  // from fetching arbitrary (possibly internal) URLs on a stranger's behalf.
+  const hostOk = /(^|\.)(claude\.ai|claude\.com|anthropic\.com)$/.test(u.hostname);
+  if (u.protocol !== 'https:' || !hostOk || u.port || u.username || u.password || u.hash || u.pathname === '/') return null;
+  const hit = cimdCache.get(id);
+  if (hit && hit.until > Date.now()) return hit.c;
+  try {
+    const r = await fetch(id, { headers: { Accept: 'application/json' }, redirect: 'error', signal: AbortSignal.timeout(5000) });
+    const text = await r.text();
+    if (!r.ok || text.length > 16384) return null;
+    const d = JSON.parse(text);
+    const uris = d.redirect_uris;
+    if (d.client_id !== id || !Array.isArray(uris) || !uris.length || !uris.every((x) => typeof x === 'string' && redirectAllowed(x))) return null;
+    const c = { u: uris, n: typeof d.client_name === 'string' ? d.client_name.slice(0, 60) : u.host };
+    cimdCache.set(id, { c, until: Date.now() + 3600e3 });
+    return c;
+  } catch (e) { log('cimd fetch failed', u.host, e.message); return null; }
+}
+
+async function checkAuthRequest(q) {
+  const client = await getClient(q.get('client_id'));
   if (!client) throw Object.assign(new Error('invalid_client'), { status: 400 });
   if (q.get('response_type') !== 'code' || !client.u.includes(q.get('redirect_uri')) || q.get('code_challenge_method') !== 'S256' || !/^[A-Za-z0-9_-]{43}$/.test(q.get('code_challenge') || ''))
     throw Object.assign(new Error('invalid_request'), { status: 400 });
@@ -432,7 +458,7 @@ const server = http.createServer(async (req, res) => {
     if (p === '/.well-known/oauth-authorization-server' || p === '/.well-known/openid-configuration')
       return send(res, 200, { issuer: PUBLIC_URL, authorization_endpoint: PUBLIC_URL + '/authorize', token_endpoint: PUBLIC_URL + '/token', registration_endpoint: PUBLIC_URL + '/register',
         response_types_supported: ['code'], grant_types_supported: ['authorization_code', 'refresh_token'], code_challenge_methods_supported: ['S256'],
-        token_endpoint_auth_methods_supported: ['none'], scopes_supported: ['unifi'], authorization_response_iss_parameter_supported: true }, CORS);
+        token_endpoint_auth_methods_supported: ['none'], scopes_supported: ['unifi'], authorization_response_iss_parameter_supported: true, client_id_metadata_document_supported: true }, CORS);
 
     if (p === '/register' && req.method === 'POST') {
       let b; try { b = JSON.parse(await readBody(req, 8192)); } catch { return send(res, 400, { error: 'invalid_client_metadata' }, CORS); }
@@ -449,12 +475,12 @@ const server = http.createServer(async (req, res) => {
     if (p === '/authorize' && (req.method === 'GET' || req.method === 'POST')) {
       const q = req.method === 'GET' ? url.searchParams : new URLSearchParams(await readBody(req, 16384));
       let client;
-      try { client = checkAuthRequest(q); } catch (e) { return send(res, 400, `<p>Invalid authorization request (${esc(e.message)}).</p>`); }
+      try { client = await checkAuthRequest(q); } catch (e) { return send(res, 400, `<p>Invalid authorization request (${esc(e.message)}).</p>`); }
       const csp = { 'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline'; form-action 'self' ${new URL(q.get('redirect_uri')).origin}; frame-ancestors 'none'; base-uri 'none'`, 'X-Frame-Options': 'DENY' };
-      if (req.method === 'GET') return send(res, 200, authorizePage(q), csp);
+      if (req.method === 'GET') return send(res, 200, authorizePage(q, client), csp);
       authFailures = authFailures.filter((t) => t > Date.now() - 900e3);
-      if (authFailures.length >= 10) return send(res, 429, authorizePage(q, 'Too many wrong keys. Try again in 15 minutes.'), csp);
-      if (!safeEq((q.get('key') || '').trim(), OWNER_KEY)) { authFailures.push(Date.now()); log('authorize: wrong key'); return send(res, 401, authorizePage(q, 'Wrong bridge key'), csp); }
+      if (authFailures.length >= 10) return send(res, 429, authorizePage(q, client, 'Too many wrong keys. Try again in 15 minutes.'), csp);
+      if (!safeEq((q.get('key') || '').trim(), OWNER_KEY)) { authFailures.push(Date.now()); log('authorize: wrong key'); return send(res, 401, authorizePage(q, client, 'Wrong bridge key'), csp); }
       const code = crypto.randomBytes(32).toString('base64url');
       for (const [k, v] of codes) if (v.until < Date.now()) codes.delete(k);
       codes.set(sha256(code).toString('hex'), { client: q.get('client_id'), redirect: q.get('redirect_uri'), challenge: q.get('code_challenge'), resource: q.get('resource') || PUBLIC_URL + '/mcp', until: Date.now() + CODE_TTL });
@@ -471,7 +497,7 @@ const server = http.createServer(async (req, res) => {
       const fail = (e = 'invalid_grant') => send(res, 400, { error: e }, CORS);
       if (b.get('grant_type') === 'refresh_token') {
         const o = verify((b.get('refresh_token') || '').replace(/^umr_/, ''), 'refresh');
-        if (!o || o.c !== b.get('client_id') || !clientFromId(o.c)) return fail();
+        if (!o || o.c !== b.get('client_id') || !(await getClient(o.c))) return fail();
         return send(res, 200, issueTokens(o.c, o.r), CORS);
       }
       if (b.get('grant_type') !== 'authorization_code') return fail('unsupported_grant_type');

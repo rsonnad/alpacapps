@@ -16,11 +16,14 @@ Claude Duet ──OAuth/MCP──► https://unifi-mcp.alpacaplayhouse.com/mcp
 ## Connect Claude Duet (or claude.ai)
 
 1. Open https://claude.ai/customize/connectors?modal=add-custom-connector
-2. Name `Alpaca UniFi`, URL `https://unifi-mcp.alpacaplayhouse.com/mcp`, then **Add**, then **Connect**.
+2. **Name** `Alpaca UniFi`, **MCP server URL** `https://unifi-mcp.alpacaplayhouse.com/mcp`.
+   Leave Authentication on **Sign in now** and OAuth client on **Use Claude's published identity**
+   (CIMD; "Register automatically" also works). Click **Continue**.
 3. On the "Connect … · Alpaca UniFi" page, paste the password of the Bitwarden item
-   **"Alpaca UniFi MCP bridge — Duet/claude.ai connector key"** (DevOps-alpacapps) and tap **Allow**.
+   **"Alpaca UniFi MCP bridge — Duet/claude.ai connector key"** (DevOps-alpacapps) and click **Allow**.
 
-Headless MCP clients can skip OAuth and send `Authorization: Bearer <that key>`.
+Alternative without OAuth: Authentication **No sign-in**, then **Add header**
+`Authorization` = `Bearer <that key>`. Headless MCP clients send the same header.
 
 ## Tools
 
