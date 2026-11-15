@@ -1,12 +1,12 @@
 {
-  "version": "v261115.01 5:12p",
-  "release": 2031,
-  "sha": "5a85d26044",
-  "fullSha": "5a85d26044cd21cc39b27016916fa6f6d110c766",
+  "version": "v261115.02 5:19p",
+  "release": 2032,
+  "sha": "6706dbbce0",
+  "fullSha": "6706dbbce0fb3b4b58200fd986f6a0ab1bf91d2d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-15T23:12:33+00:00",
-  "commits": [{"sha":"5a85d26044","message":"sharingwood: scaffold folder for Snohomish rentals (unit1b)","author":"Blotto"}]
+  "pushedAt": "2026-11-15T23:19:13+00:00",
+  "commits": [{"sha":"6706dbbce0","message":"sharingwood: all-listings sample page — rentals vs for sale, Unit 1B (Zillow), community links, portable single-file HTML","author":"Muse (Almusca)"}]
 }
