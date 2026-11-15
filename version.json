@@ -1,12 +1,12 @@
 {
-  "version": "v261115.04 5:40p",
-  "release": 2034,
-  "sha": "2ce3f273d8",
-  "fullSha": "2ce3f273d86efb6125909fce0491ed359fb0dd00",
+  "version": "v261115.05 5:42p",
+  "release": 2035,
+  "sha": "201340d5a3",
+  "fullSha": "201340d5a3ad004903eed0c4db67d113ed941da8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-15T23:40:55+00:00",
-  "commits": [{"sha":"2ce3f273d8","message":"sharingwood: all-listings v1.2 — visual-first cut, far less text (chip facts, photo-led Why section)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-15T23:42:58+00:00",
+  "commits": [{"sha":"201340d5a3","message":"sharingwood: unit1b listing page, landing + rentals index; photos in new R2 bucket","author":"Blotto"}]
 }
