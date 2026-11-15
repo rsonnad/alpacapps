@@ -1,12 +1,12 @@
 {
-  "version": "v261115.07 5:47p",
-  "release": 2037,
-  "sha": "98060da061",
-  "fullSha": "98060da061c6f2d15bab3809826c5fbd725bd8fa",
+  "version": "v261115.08 5:50p",
+  "release": 2038,
+  "sha": "0031db5d70",
+  "fullSha": "0031db5d70bd25bc6f84b3b188ebf52d76d34ea5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-15T23:47:29+00:00",
-  "commits": [{"sha":"98060da061","message":"sharingwood: version the stylesheet link so cached empty CSS can't stick","author":"Blotto"}]
+  "pushedAt": "2026-11-15T23:50:00+00:00",
+  "commits": [{"sha":"0031db5d70","message":"sharingwood unit1b: drop every photo with a person in it; new hero","author":"Blotto"}]
 }
