@@ -64,3 +64,5 @@ Source: https://www.zillow.com/homedetails/22003-E-Lost-Lake-Rd-1B-Snohomish-WA-
 - Community: one of WA's oldest co-housing communities; common house, play field, greenbelt
   with trails and creeks; non-religious, engagement-focused
 - Schools: Maltby Elem (3.1 mi), Hidden River Middle (3.3 mi), Monroe High (3.5 mi)
+
+When you change shared/sharingwood.css, bump the `?v=N` on its <link> in every page (browsers cache it for 10 min).
