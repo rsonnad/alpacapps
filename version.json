@@ -1,12 +1,12 @@
 {
-  "version": "v261115.03 5:37p",
-  "release": 2033,
-  "sha": "3ebd9ae3b0",
-  "fullSha": "3ebd9ae3b05fa4565a330c12420c1528df7422e9",
+  "version": "v261115.04 5:40p",
+  "release": 2034,
+  "sha": "2ce3f273d8",
+  "fullSha": "2ce3f273d86efb6125909fce0491ed359fb0dd00",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "ip-10-0-134-25",
-  "pushedAt": "2026-11-15T23:37:21+00:00",
-  "commits": [{"sha":"3ebd9ae3b0","message":"sharingwood: all-listings v1.1 — illustrations stylized from real photos, sauna highlight, Why Sharingwood, direct sharingwood.net links","author":"Muse (Almusca)"}]
+  "machine": "runnervmccnms",
+  "pushedAt": "2026-11-15T23:40:55+00:00",
+  "commits": [{"sha":"2ce3f273d8","message":"sharingwood: all-listings v1.2 — visual-first cut, far less text (chip facts, photo-led Why section)","author":"Muse (Almusca)"}]
 }
