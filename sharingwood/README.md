@@ -66,3 +66,6 @@ Source: https://www.zillow.com/homedetails/22003-E-Lost-Lake-Rd-1B-Snohomish-WA-
 - Schools: Maltby Elem (3.1 mi), Hidden River Middle (3.3 mi), Monroe High (3.5 mi)
 
 When you change shared/sharingwood.css, bump the `?v=N` on its <link> in every page (browsers cache it for 10 min).
+
+**No people in published photos.** These R2 files show a person and must not be used on any page:
+`large/img-6385`, `large/img-6386`, `large/img-6387`, `zillow/39` (and their copies in `originals/`).

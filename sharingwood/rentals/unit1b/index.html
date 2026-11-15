@@ -10,7 +10,7 @@
   <meta property="og:url" content="https://alpacaplayhouse.com/sharingwood/rentals/unit1b/">
   <meta property="og:title" content="Unit 1B at Sharingwood — Furnished, sauna, forest co-housing">
   <meta property="og:description" content="1,200 sq ft furnished lower unit in Snohomish, WA. Cedar sauna, patio, greenbelt trails. $1,595/mo.">
-  <meta property="og:image" content="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6385.jpg">
+  <meta property="og:image" content="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6397.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +35,7 @@
 
   <!-- Hero -->
   <div class="sw-hero">
-    <img src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6385.jpg" alt="Open living room with big windows looking out to the trees" fetchpriority="high">
+    <img src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6397.jpg" alt="Open living and dining room with warm wood floors and shoji screens" fetchpriority="high">
     <div class="sw-hero__body sw-wrap">
       <div class="sw-eyebrow">Unit 1B · Snohomish, WA · Available Nov 16</div>
       <h1>A furnished forest home with its own sauna</h1>
@@ -68,7 +68,7 @@
         <p>Step out to the patio for long summer evenings. In winter, the three-person cedar sauna is a few steps away.</p>
       </div>
       <div class="sw-intro__img">
-        <img src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6386.jpg" alt="Living area with rounded ottoman and windows onto greenery" loading="lazy">
+        <img src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6388.jpg" alt="Living area with shoji screens and a round rug" loading="lazy">
       </div>
     </div>
   </section>
@@ -175,8 +175,8 @@
   <script>
     // Photos live in the "sharingwood" R2 bucket. large/ = full-size originals, zillow/ = listing-size set.
     const R2 = 'https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/';
-    const large = ['img-6385','img-6397','img-6396','img-6388','img-6387','img-6386','img-6389','img-6382','img-6390','img-6384'].map(n => R2 + 'large/' + n + '.jpg');
-    // Zillow photos, minus the ones that have a large version above (20, 35, 36, 38, 39).
+    const large = ['img-6397','img-6396','img-6388','img-6389','img-6382','img-6390','img-6384'].map(n => R2 + 'large/' + n + '.jpg');
+    // Zillow photos, minus ones that have a large version above (20, 35, 36, 38) and any with people in them (39).
     const zillow = Array.from({ length: 46 }, (_, i) => String(i + 1).padStart(2, '0'))
       .filter(n => !['20','35','36','38','39'].includes(n))
       .map(n => R2 + 'zillow/' + n + '.jpg');
@@ -204,7 +204,7 @@
     const tile = (src, i, alt) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Open photo ' + (i + 1)); b.innerHTML = '<img loading="lazy" alt="' + alt + '" src="' + src + '">'; b.onclick = () => open(i); return b; };
 
     // Mosaic: living room, kitchen, sauna, sauna inside, backyard.
-    const mosaicPicks = [R2 + 'large/img-6397.jpg', R2 + 'large/img-6384.jpg', R2 + 'zillow/43.jpg', R2 + 'zillow/44.jpg', R2 + 'zillow/01.jpg'];
+    const mosaicPicks = [R2 + 'large/img-6382.jpg', R2 + 'large/img-6384.jpg', R2 + 'zillow/43.jpg', R2 + 'zillow/44.jpg', R2 + 'zillow/01.jpg'];
     const mosaicAlts = ['Living and dining area', 'Kitchen with cedar slat ceiling', 'Cedar sauna', 'Inside the sauna', 'Backyard and patio'];
     const mosaic = document.getElementById('mosaic');
     mosaicPicks.forEach((src, k) => mosaic.appendChild(tile(src, photos.indexOf(src), mosaicAlts[k])));
