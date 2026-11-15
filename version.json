@@ -1,12 +1,12 @@
 {
-  "version": "v261112.03 11:48p",
-  "release": 2030,
-  "sha": "b0d44d5671",
-  "fullSha": "b0d44d5671f83ba1a492227047d87d21f2217fa4",
+  "version": "v261115.01 5:12p",
+  "release": 2031,
+  "sha": "5a85d26044",
+  "fullSha": "5a85d26044cd21cc39b27016916fa6f6d110c766",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmwuk1x",
-  "pushedAt": "2026-11-13T05:48:08+00:00",
-  "commits": [{"sha":"b0d44d5671","message":"unifi-mcp: accept Claude's published OAuth identity (CIMD), document connector steps","author":"Blotto"}]
+  "machine": "runnervmccnms",
+  "pushedAt": "2026-11-15T23:12:33+00:00",
+  "commits": [{"sha":"5a85d26044","message":"sharingwood: scaffold folder for Snohomish rentals (unit1b)","author":"Blotto"}]
 }
