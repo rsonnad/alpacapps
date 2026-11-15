@@ -1,12 +1,12 @@
 {
-  "version": "v261115.02 5:19p",
-  "release": 2032,
-  "sha": "6706dbbce0",
-  "fullSha": "6706dbbce0fb3b4b58200fd986f6a0ab1bf91d2d",
+  "version": "v261115.03 5:37p",
+  "release": 2033,
+  "sha": "3ebd9ae3b0",
+  "fullSha": "3ebd9ae3b05fa4565a330c12420c1528df7422e9",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmccnms",
-  "pushedAt": "2026-11-15T23:19:13+00:00",
-  "commits": [{"sha":"6706dbbce0","message":"sharingwood: all-listings sample page — rentals vs for sale, Unit 1B (Zillow), community links, portable single-file HTML","author":"Muse (Almusca)"}]
+  "machine": "ip-10-0-134-25",
+  "pushedAt": "2026-11-15T23:37:21+00:00",
+  "commits": [{"sha":"3ebd9ae3b0","message":"sharingwood: all-listings v1.1 — illustrations stylized from real photos, sauna highlight, Why Sharingwood, direct sharingwood.net links","author":"Muse (Almusca)"}]
 }
