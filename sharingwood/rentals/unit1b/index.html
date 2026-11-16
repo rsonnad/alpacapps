@@ -30,6 +30,7 @@
       <a href="#community">Community</a>
       <a href="#photos">Photos</a>
       <a href="#apply">Apply</a>
+      <a href="/sharingwood/rentals/alllistingsample/">All listings</a>
     </nav>
   </header>
 
@@ -49,7 +50,7 @@
   <div class="sw-facts">
     <ul>
       <li><b>$1,595</b><span>per month</span></li>
-      <li><b>1 + den</b><span>large bedroom + small room</span></li>
+      <li><b>1 + den</b><span>large bedroom + small&nbsp;room</span></li>
       <li><b>1</b><span>full bath</span></li>
       <li><b>1,200</b><span>sq ft</span></li>
       <li><b>Furnished</b><span>dishes, linens, sound</span></li>
@@ -162,7 +163,9 @@
     </div>
   </section>
 
-  <footer class="sw-foot">22003 E Lost Lake Rd #1B · Snohomish, WA 98296 · <a href="/sharingwood/rentals/">More Sharingwood rentals</a></footer>
+  <footer class="sw-foot">22003 E Lost Lake Rd #1B · Snohomish, WA 98296 · <a href="/sharingwood/rentals/">More Sharingwood rentals</a> · <a href="/sharingwood/rentals/alllistingsample/">All Sharingwood listings</a>
+    <div style="margin-top:8px;font-size:.78rem;opacity:.65">Unit 1B page · v1.1 · Nov 15, 2026</div>
+  </footer>
 
   <div class="sw-lb" id="lb" role="dialog" aria-modal="true" aria-label="Photo viewer">
     <button class="x" aria-label="Close">×</button>
@@ -173,18 +176,19 @@
   </div>
 
   <script>
-    // Photos live in the "sharingwood" R2 bucket. large/ = full-size originals, zillow/ = listing-size set.
+    // Photos live in the "sharingwood" R2 bucket. large/ = the owner's full-size (2,400px) photos; zillow/ = the full listing set.
     const R2 = 'https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/';
-    const large = ['img-6397','img-6396','img-6388','img-6389','img-6382','img-6390','img-6384'].map(n => R2 + 'large/' + n + '.jpg');
-    // Zillow photos, minus ones that have a large version above (20, 35, 36, 38) and any with people in them (39).
+    const large = ['img-6397','img-6396','img-6388','img-6389','img-6382','img-6390','img-6384','img-6385','img-6386','img-6387'].map(n => R2 + 'large/' + n + '.jpg');
+    // The complete Zillow set, except #39, which shows a person.
     const zillow = Array.from({ length: 46 }, (_, i) => String(i + 1).padStart(2, '0'))
-      .filter(n => !['20','35','36','38','39'].includes(n))
+      .filter(n => n !== '39')
       .map(n => R2 + 'zillow/' + n + '.jpg');
     const photos = [...large, ...zillow];
 
     const lb = document.getElementById('lb'), lbImg = lb.querySelector('img'), lbCount = lb.querySelector('.count');
     let cur = 0;
-    const show = i => { cur = (i + photos.length) % photos.length; lbImg.src = photos[cur]; lbCount.textContent = (cur + 1) + ' / ' + photos.length; };
+    const show = i => { cur = (i + photos.length) % photos.length; lbImg.src = photos[cur]; lbCount.textContent = (cur + 1) + ' / ' + photos.length;
+      [cur - 1, cur + 1].forEach(j => { const pre = new Image(); pre.src = photos[(j + photos.length) % photos.length]; }); };
     const open = i => { show(i); lb.classList.add('open'); document.body.style.overflow = 'hidden'; };
     const close = () => { lb.classList.remove('open'); document.body.style.overflow = ''; };
     lb.querySelector('.x').onclick = close;
