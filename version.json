@@ -1,12 +1,12 @@
 {
-  "version": "v261115.14 10:06p",
-  "release": 2044,
-  "sha": "1d09a488bf",
-  "fullSha": "1d09a488bf3c1d48b8a442aed19ddca8535cfda0",
+  "version": "v261115.15 11:04p",
+  "release": 2045,
+  "sha": "1a5701d710",
+  "fullSha": "1a5701d71045e9cf1d8e77f7efd192f3054e2536",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "ip-10-0-137-241",
-  "pushedAt": "2026-11-16T04:06:33+00:00",
-  "commits": [{"sha":"1d09a488bf","message":"sharingwood: Unit 1B page v1.1 — link to all-listings page (nav + footer), visible version stamp, full photo set in gallery (10 large 2400px + 45 zillow = 55; #39 excluded, shows a person), lightbox neighbor preloading, facts-bar orphan fix","author":"Muse (Almusca)"}]
+  "machine": "runnervmccnms",
+  "pushedAt": "2026-11-16T05:04:51+00:00",
+  "commits": [{"sha":"1a5701d710","message":"Sharingwood fixes: listings v1.9 (lightbox, de-inlined lazy images, captions, orphans, stamps), Unit 1B v1.2 (photo amenity cards, gallery captions + largest-first, lazy-load dims fix, orphan fixes)","author":"Muse (Almusca)"}]
 }
