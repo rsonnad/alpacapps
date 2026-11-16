@@ -1,12 +1,12 @@
 {
-  "version": "v261115.09 5:57p",
-  "release": 2039,
-  "sha": "ee35cf2f2d",
-  "fullSha": "ee35cf2f2d2d3e6c913310b2cb64fd384e5881bd",
+  "version": "v261115.10 6:09p",
+  "release": 2040,
+  "sha": "26bd34c509",
+  "fullSha": "26bd34c50961fd3d3b2f45194f2223395451085d",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-15T23:57:56+00:00",
-  "commits": [{"sha":"ee35cf2f2d","message":"sharingwood: all-listings v1.4 — portal-criteria pass: compact masthead, no duplicate photos, no extraneous captions, balanced cards, tags fixed","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-16T00:09:32+00:00",
+  "commits": [{"sha":"26bd34c509","message":"sharingwood: all-listings v1.5 — For Sale first, house titles (Blue House / Sauna House / Lost Lake Lodge), high-quality illustrations throughout, photo flip on each listing clicking through to the full listing","author":"Muse (Almusca)"}]
 }
