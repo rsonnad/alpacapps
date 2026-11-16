@@ -17,6 +17,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../shared/sharingwood.css?v=2">
+  <style>
+    h1, h2 { text-wrap: balance; }
+    p, li, dd { text-wrap: pretty; }
+    .sw-card { padding: 0; overflow: hidden; }
+    .sw-card .cardimg { width: 100%; height: 132px; object-fit: cover; }
+    .sw-card h3 { margin: 14px 22px 6px; }
+    .sw-card p { margin: 0 22px 20px; }
+    .sw-lb .cap { position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(10,13,11,.78); padding: 6px 16px; border-radius: 999px; font-size: .92rem; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
+    .sw-lb .count { left: 50%; transform: translateX(-50%); }
+  </style>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Apartment","name":"Unit 1B at Sharingwood","description":"Fully furnished lower unit in the Sharingwood co-housing community.","numberOfRooms":2,"numberOfBedrooms":1,"numberOfBathroomsTotal":1,"floorSize":{"@type":"QuantitativeValue","value":1200,"unitCode":"FTK"},"address":{"@type":"PostalAddress","streetAddress":"22003 E Lost Lake Rd #1B","addressLocality":"Snohomish","addressRegion":"WA","postalCode":"98296","addressCountry":"US"}}
   </script>
@@ -38,7 +48,7 @@
   <div class="sw-hero">
     <img src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6397.jpg" alt="Open living and dining room with warm wood floors and shoji screens" fetchpriority="high">
     <div class="sw-hero__body sw-wrap">
-      <div class="sw-eyebrow">Unit 1B · Snohomish, WA · Available Nov 16</div>
+      <div class="sw-eyebrow">Unit 1B · Snohomish, WA · Available&nbsp;Nov&nbsp;16</div>
       <h1>A furnished forest home with its own sauna</h1>
       <p>1,200 bright square feet on the garden level of a craftsman-built house, inside one of Washington's oldest co-housing communities. Bring a suitcase; everything else is here.</p>
       <a class="sw-btn sw-btn--primary" href="#apply">$1,595 / month · Apply</a>
@@ -50,11 +60,11 @@
   <div class="sw-facts">
     <ul>
       <li><b>$1,595</b><span>per month</span></li>
-      <li><b>1 + den</b><span>large bedroom + small&nbsp;room</span></li>
+      <li><b>1 + den</b><span>bedroom + den</span></li>
       <li><b>1</b><span>full bath</span></li>
       <li><b>1,200</b><span>sq ft</span></li>
-      <li><b>Furnished</b><span>dishes, linens, sound</span></li>
-      <li><b>12 mo</b><span>standard WA lease</span></li>
+      <li><b>Furnished</b><span>dishes &amp; linens</span></li>
+      <li><b>12 mo</b><span>WA lease</span></li>
     </ul>
   </div>
 
@@ -85,14 +95,14 @@
       <div class="sw-eyebrow">What's included</div>
       <h2>Everything for a good, easy life</h2>
       <div class="sw-highlights">
-        <div class="sw-card"><div class="ico">🧖</div><h3>Cedar sauna</h3><p>A three-person sauna right outside, for cold, wet Northwest evenings.</p></div>
-        <div class="sw-card"><div class="ico">🛋️</div><h3>Fully furnished</h3><p>Furniture, dishware, cookware and linens. Move in with a suitcase.</p></div>
-        <div class="sw-card"><div class="ico">🧺</div><h3>In-unit laundry</h3><p>Bosch washer and electric dryer, plus dishwasher, oven and fridge.</p></div>
-        <div class="sw-card"><div class="ico">🎶</div><h3>Great sound</h3><p>A high-end sound system connected to Alexa, and very fast internet.</p></div>
-        <div class="sw-card"><div class="ico">🌿</div><h3>Private patio</h3><p>Indoor-outdoor living in summer, steps from the lawn and garden.</p></div>
-        <div class="sw-card"><div class="ico">📦</div><h3>Lots of storage</h3><p>Plenty of closets and cupboards, plus a large separate storage room.</p></div>
-        <div class="sw-card"><div class="ico">🚗</div><h3>Parking for two</h3><p>Off-street tandem parking: one car in front of the other.</p></div>
-        <div class="sw-card"><div class="ico">🔥</div><h3>Forced-air heat</h3><p>Warm, efficient and comfortable all year.</p></div>
+        <div class="sw-card"><img class="cardimg" loading="lazy" decoding="async" src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/zillow/43.jpg" alt="Cedar sauna"><h3>Cedar sauna</h3><p>A three-person sauna right outside, for cold, wet Northwest evenings.</p></div>
+        <div class="sw-card"><img class="cardimg" loading="lazy" decoding="async" src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6382.jpg" alt="Fully furnished living room"><h3>Fully furnished</h3><p>Furniture, dishware, cookware and linens. Move in with a suitcase.</p></div>
+        <div class="sw-card"><img class="cardimg" loading="lazy" decoding="async" src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/zillow/10.jpg" alt="In-unit laundry"><h3>In-unit laundry</h3><p>Bosch washer and electric dryer, plus dishwasher, oven and fridge.</p></div>
+        <div class="sw-card"><img class="cardimg" loading="lazy" decoding="async" src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/large/img-6385.jpg" alt="Living room with the sound system"><h3>Great sound</h3><p>A high-end sound system connected to Alexa, and very fast internet.</p></div>
+        <div class="sw-card"><img class="cardimg" loading="lazy" decoding="async" src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/zillow/01.jpg" alt="Private patio and backyard"><h3>Private patio</h3><p>Indoor-outdoor living in summer, steps from the lawn and garden.</p></div>
+        <div class="sw-card"><img class="cardimg" loading="lazy" decoding="async" src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/zillow/31.jpg" alt="Bedroom closets and storage"><h3>Lots of storage</h3><p>Plenty of closets and cupboards, plus a large separate storage room.</p></div>
+        <div class="sw-card"><img class="cardimg" loading="lazy" decoding="async" src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/zillow/46.jpg" alt="The house from the driveway"><h3>Parking for two</h3><p>Off-street tandem parking: one car in front of the other.</p></div>
+        <div class="sw-card"><img class="cardimg" loading="lazy" decoding="async" src="https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/zillow/20.jpg" alt="Living room, evening"><h3>Forced-air heat</h3><p>Warm, efficient and comfortable all year.</p></div>
       </div>
     </div>
   </section>
@@ -164,7 +174,7 @@
   </section>
 
   <footer class="sw-foot">22003 E Lost Lake Rd #1B · Snohomish, WA 98296 · <a href="/sharingwood/rentals/">More Sharingwood rentals</a> · <a href="/sharingwood/rentals/alllistingsample/">All Sharingwood listings</a>
-    <div style="margin-top:8px;font-size:.78rem;opacity:.65">Unit 1B page · v1.1 · Nov 15, 2026</div>
+    <div style="margin-top:8px;font-size:.78rem;opacity:.65">Unit 1B page · v1.2 · Nov 15, 2026</div>
   </footer>
 
   <div class="sw-lb" id="lb" role="dialog" aria-modal="true" aria-label="Photo viewer">
@@ -172,6 +182,7 @@
     <button class="prev" aria-label="Previous">‹</button>
     <img alt="">
     <button class="next" aria-label="Next">›</button>
+    <div class="cap"></div>
     <div class="count"></div>
   </div>
 
@@ -180,14 +191,71 @@
     const R2 = 'https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/rentals/unit1b/';
     const large = ['img-6397','img-6396','img-6388','img-6389','img-6382','img-6390','img-6384','img-6385','img-6386','img-6387'].map(n => R2 + 'large/' + n + '.jpg');
     // The complete Zillow set, except #39, which shows a person.
-    const zillow = Array.from({ length: 46 }, (_, i) => String(i + 1).padStart(2, '0'))
-      .filter(n => n !== '39')
-      .map(n => R2 + 'zillow/' + n + '.jpg');
+    // Largest first, so the sharpest photos lead the gallery (the listing set mixes 1536px and 512px frames).
+    const zillow = ['35', '36', '38', '42', '44', '45', '46', '40', '41', '43', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '14', '16', '17', '18', '19', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '33', '34', '37', '13', '15', '32', '20'].map(n => R2 + 'zillow/' + n + '.jpg');
     const photos = [...large, ...zillow];
+    const dims = [[2400,1800], [2400,1800], [2400,1800], [2400,1483], [2400,1800], [2375,2400], [2400,1800], [2400,1800], [2400,1908], [2400,1800], [1536,1152], [1536,1152], [1536,1152], [1536,1152], [1536,1152], [1536,1152], [1536,1152], [1397,1152], [1397,1152], [1397,1152], [512,384], [384,512], [384,512], [384,512], [384,512], [512,384], [384,512], [384,512], [512,384], [384,512], [384,512], [384,512], [384,512], [384,512], [512,384], [512,384], [384,512], [512,384], [512,384], [512,384], [512,384], [512,384], [384,512], [384,512], [384,512], [512,384], [384,512], [512,384], [384,512], [384,512], [384,512], [480,360], [480,360], [480,360], [386,290]];
+    const caps = [
+      "Living and dining room, from the entry",
+      "Living room, looking toward the bedroom",
+      "Living room and dining table",
+      "Dining area and shoji screens",
+      "Living room, reading corner",
+      "Kitchen, cedar-slat ceiling",
+      "Kitchen, full view",
+      "Living room, window side",
+      "Living room, ottoman and rug",
+      "The open living space, reverse angle",
+      "Kitchen, cedar ceiling and sink run",
+      "Living and dining room, wide",
+      "Kitchen, open shelves",
+      "Kitchen, morning light",
+      "Inside the sauna",
+      "Window wall, garden view",
+      "The house from the driveway",
+      "Fire pit at dusk",
+      "The house at night",
+      "Sauna, door open",
+      "Backyard and the house from the lawn",
+      "Bedroom, seen through the shoji doors",
+      "Bathroom, towels and window",
+      "Bathroom vanity",
+      "Bathroom corner, folded towels",
+      "Bathroom vanity, wide view",
+      "Entry hall, looking into the living room",
+      "Entry hall cabinet",
+      "Shoji screen wall",
+      "Laundry closet, Bosch washer",
+      "Entry cabinet and artwork",
+      "Bathroom, vanity and toilet",
+      "Second room, floor cushion and dresser",
+      "Kitchen welcome board",
+      "Second room, dresser and chair",
+      "Second room, floor bed",
+      "Kitchen, from the second-room doorway",
+      "Kitchen, stove and window",
+      "Second room, through the shoji doors",
+      "Living room, from the entry hall",
+      "Backyard seating",
+      "Backyard chairs, another angle",
+      "Entry table with flowers",
+      "Bathroom, shower",
+      "Bedroom doorway, rug and shoji",
+      "Kitchen, fridge and stove",
+      "Entry hall, cabinet and art",
+      "Bedroom closets",
+      "Kitchen, long view",
+      "Cedar sauna, outside",
+      "Desk nook, built-in shelves",
+      "Bedroom, striped bedding",
+      "Bedroom, wide view",
+      "Bedroom, from the doorway",
+      "Living room, evening light"
+    ];
 
-    const lb = document.getElementById('lb'), lbImg = lb.querySelector('img'), lbCount = lb.querySelector('.count');
+    const lb = document.getElementById('lb'), lbImg = lb.querySelector('img'), lbCount = lb.querySelector('.count'), lbCap = lb.querySelector('.cap');
     let cur = 0;
-    const show = i => { cur = (i + photos.length) % photos.length; lbImg.src = photos[cur]; lbCount.textContent = (cur + 1) + ' / ' + photos.length;
+    const show = i => { cur = (i + photos.length) % photos.length; lbImg.src = photos[cur]; lbImg.alt = caps[cur]; lbCap.textContent = caps[cur]; lbCount.textContent = (cur + 1) + ' / ' + photos.length;
       [cur - 1, cur + 1].forEach(j => { const pre = new Image(); pre.src = photos[(j + photos.length) % photos.length]; }); };
     const open = i => { show(i); lb.classList.add('open'); document.body.style.overflow = 'hidden'; };
     const close = () => { lb.classList.remove('open'); document.body.style.overflow = ''; };
@@ -205,16 +273,16 @@
     lb.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
     lb.addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1)); tx = null; });
 
-    const tile = (src, i, alt) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Open photo ' + (i + 1)); b.innerHTML = '<img loading="lazy" alt="' + alt + '" src="' + src + '">'; b.onclick = () => open(i); return b; };
+    const tile = (src, i, alt) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Open photo ' + (i + 1)); b.innerHTML = '<img loading="lazy" width="' + dims[i][0] + '" height="' + dims[i][1] + '" alt="' + alt + '" src="' + src + '">'; b.onclick = () => open(i); return b; };
 
     // Mosaic: living room, kitchen, sauna, sauna inside, backyard.
     const mosaicPicks = [R2 + 'large/img-6382.jpg', R2 + 'large/img-6384.jpg', R2 + 'zillow/43.jpg', R2 + 'zillow/44.jpg', R2 + 'zillow/01.jpg'];
-    const mosaicAlts = ['Living and dining area', 'Kitchen with cedar slat ceiling', 'Cedar sauna', 'Inside the sauna', 'Backyard and patio'];
+    const mosaicAlts = [caps[4], caps[6], caps[photos.indexOf(R2 + 'zillow/43.jpg')], caps[photos.indexOf(R2 + 'zillow/44.jpg')], caps[photos.indexOf(R2 + 'zillow/01.jpg')]];
     const mosaic = document.getElementById('mosaic');
     mosaicPicks.forEach((src, k) => mosaic.appendChild(tile(src, photos.indexOf(src), mosaicAlts[k])));
 
     const gallery = document.getElementById('gallery');
-    photos.forEach((src, i) => gallery.appendChild(tile(src, i, 'Unit 1B photo ' + (i + 1))));
+    photos.forEach((src, i) => gallery.appendChild(tile(src, i, caps[i])));
   </script>
 </body>
 </html>
