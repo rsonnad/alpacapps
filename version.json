@@ -1,12 +1,12 @@
 {
-  "version": "v261115.13 9:57p",
-  "release": 2043,
-  "sha": "551121d54c",
-  "fullSha": "551121d54c4a9cafe8dbf4be0802b316253632fd",
+  "version": "v261115.14 10:06p",
+  "release": 2044,
+  "sha": "1d09a488bf",
+  "fullSha": "1d09a488bf3c1d48b8a442aed19ddca8535cfda0",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T03:57:03+00:00",
-  "commits": [{"sha":"551121d54c","message":"sharingwood: all-listings v1.8 — Why Sharingwood rebuilt from a full sharingwood.net review: six photo reason cards (forest/campground, gardens, Common House dinners, Berry Festival, wild berries, wildlife) + grounded fact chips","author":"Muse (Almusca)"}]
+  "machine": "ip-10-0-137-241",
+  "pushedAt": "2026-11-16T04:06:33+00:00",
+  "commits": [{"sha":"1d09a488bf","message":"sharingwood: Unit 1B page v1.1 — link to all-listings page (nav + footer), visible version stamp, full photo set in gallery (10 large 2400px + 45 zillow = 55; #39 excluded, shows a person), lightbox neighbor preloading, facts-bar orphan fix","author":"Muse (Almusca)"}]
 }
