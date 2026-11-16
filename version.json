@@ -1,12 +1,12 @@
 {
-  "version": "v261116.07 10:53a",
-  "release": 2052,
-  "sha": "b5bb3a5934",
-  "fullSha": "b5bb3a59347d81ec1bce686f97e758d314080ff5",
+  "version": "v261116.08 11:05a",
+  "release": 2053,
+  "sha": "f57eccfd06",
+  "fullSha": "f57eccfd06b371c27f73865a037011a16a590554",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T16:53:33+00:00",
-  "commits": [{"sha":"b5bb3a5934","message":"Listings v2.6 + new detail pages: Blue House and Lost Lake Lodge get their own pages (gallery + lightbox, full descriptions from the Sharingwood openings page); every card button now links to its own home's page — no two listings share a link","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-16T17:05:58+00:00",
+  "commits": [{"sha":"f57eccfd06","message":"Sharingwood listings v2.7: \"See all photos\" thumbnail strip at the bottom of each card, opens the lightbox at that photo","author":"Muse (Almusca)"}]
 }
