@@ -1,12 +1,12 @@
 {
-  "version": "v261116.02 10:11a",
-  "release": 2047,
-  "sha": "371ed74dc6",
-  "fullSha": "371ed74dc64301df17522e9598634bf327d4ddba",
+  "version": "v261116.03 10:24a",
+  "release": 2048,
+  "sha": "4c0493ee22",
+  "fullSha": "4c0493ee22cd82b5fd88c9a75b494eb17b14ce95",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T16:11:27+00:00",
-  "commits": [{"sha":"371ed74dc6","message":"Listings v2.1: Zillow-style spec lines replace pills (4 bd · 2.75 ba · 2,675 sqft); mobile compression — one-line scrolling nav, tighter masthead/openings/sections","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-16T16:24:32+00:00",
+  "commits": [{"sha":"4c0493ee22","message":"Listings v2.2: price on the name line (deposit moved to terms line), address shrunk to small muted text","author":"Muse (Almusca)"}]
 }
