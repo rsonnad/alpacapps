@@ -1,12 +1,12 @@
 {
-  "version": "v261115.15 11:04p",
-  "release": 2045,
-  "sha": "1a5701d710",
-  "fullSha": "1a5701d71045e9cf1d8e77f7efd192f3054e2536",
+  "version": "v261116.01 10:02a",
+  "release": 2046,
+  "sha": "f1c12a02c8",
+  "fullSha": "f1c12a02c8f8953d427ab1699a05e0edbb011cb7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T05:04:51+00:00",
-  "commits": [{"sha":"1a5701d710","message":"Sharingwood fixes: listings v1.9 (lightbox, de-inlined lazy images, captions, orphans, stamps), Unit 1B v1.2 (photo amenity cards, gallery captions + largest-first, lazy-load dims fix, orphan fixes)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-16T16:02:53+00:00",
+  "commits": [{"sha":"f1c12a02c8","message":"Listings v2.0: Sauna House deck image restyled to watercolor + zoomed in; Sauna House card compressed — sauna callout and prose removed, plain facts list","author":"Muse (Almusca)"}]
 }
