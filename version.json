@@ -1,12 +1,12 @@
 {
-  "version": "v261116.06 10:46a",
-  "release": 2051,
-  "sha": "32b326c50a",
-  "fullSha": "32b326c50a7508e80494f3a691ae695bebfe7877",
+  "version": "v261116.07 10:53a",
+  "release": 2052,
+  "sha": "b5bb3a5934",
+  "fullSha": "b5bb3a59347d81ec1bce686f97e758d314080ff5",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "ip-10-0-128-196",
-  "pushedAt": "2026-11-16T16:46:22+00:00",
-  "commits": [{"sha":"32b326c50a","message":"Listings v2.5: Sauna House buttons reordered + relabeled — 'See full details' (Unit 1B page) first, 'Apply on Zillow' second","author":"Muse (Almusca)"}]
+  "machine": "runnervmccnms",
+  "pushedAt": "2026-11-16T16:53:33+00:00",
+  "commits": [{"sha":"b5bb3a5934","message":"Listings v2.6 + new detail pages: Blue House and Lost Lake Lodge get their own pages (gallery + lightbox, full descriptions from the Sharingwood openings page); every card button now links to its own home's page — no two listings share a link","author":"Muse (Almusca)"}]
 }
