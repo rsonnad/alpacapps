@@ -1,12 +1,12 @@
 {
-  "version": "v261116.08 11:05a",
-  "release": 2053,
-  "sha": "f57eccfd06",
-  "fullSha": "f57eccfd06b371c27f73865a037011a16a590554",
+  "version": "v261116.09 11:27a",
+  "release": 2054,
+  "sha": "587d3261b2",
+  "fullSha": "587d3261b200d3c1e979847f4d8d7f650e227967",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T17:05:58+00:00",
-  "commits": [{"sha":"f57eccfd06","message":"Sharingwood listings v2.7: \"See all photos\" thumbnail strip at the bottom of each card, opens the lightbox at that photo","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-16T17:27:06+00:00",
+  "commits": [{"sha":"587d3261b2","message":"Blue House + Lost Lake Lodge pages v1.1: all original photos at the bottom under \"See all photos\" (29 Blue House + 24 Lodge originals from the Sharingwood openings page, full size, lightbox over the full set); top mosaic now uses the originals too","author":"Muse (Almusca)"}]
 }
