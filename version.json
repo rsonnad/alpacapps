@@ -1,12 +1,12 @@
 {
-  "version": "v261116.01 10:02a",
-  "release": 2046,
-  "sha": "f1c12a02c8",
-  "fullSha": "f1c12a02c8f8953d427ab1699a05e0edbb011cb7",
+  "version": "v261116.02 10:11a",
+  "release": 2047,
+  "sha": "371ed74dc6",
+  "fullSha": "371ed74dc64301df17522e9598634bf327d4ddba",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T16:02:53+00:00",
-  "commits": [{"sha":"f1c12a02c8","message":"Listings v2.0: Sauna House deck image restyled to watercolor + zoomed in; Sauna House card compressed — sauna callout and prose removed, plain facts list","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-16T16:11:27+00:00",
+  "commits": [{"sha":"371ed74dc6","message":"Listings v2.1: Zillow-style spec lines replace pills (4 bd · 2.75 ba · 2,675 sqft); mobile compression — one-line scrolling nav, tighter masthead/openings/sections","author":"Muse (Almusca)"}]
 }
