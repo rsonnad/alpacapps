@@ -1,12 +1,12 @@
 {
-  "version": "v261116.05 10:43a",
-  "release": 2050,
-  "sha": "b7702e03ff",
-  "fullSha": "b7702e03ffa570dafcc1c3d268cd3fafe5be29c0",
+  "version": "v261116.06 10:46a",
+  "release": 2051,
+  "sha": "32b326c50a",
+  "fullSha": "32b326c50a7508e80494f3a691ae695bebfe7877",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T16:43:10+00:00",
-  "commits": [{"sha":"b7702e03ff","message":"Listings v2.4: compress vertical whitespace — section gaps 44->24px, card gaps 22->14px, tighter page padding","author":"Muse (Almusca)"}]
+  "machine": "ip-10-0-128-196",
+  "pushedAt": "2026-11-16T16:46:22+00:00",
+  "commits": [{"sha":"32b326c50a","message":"Listings v2.5: Sauna House buttons reordered + relabeled — 'See full details' (Unit 1B page) first, 'Apply on Zillow' second","author":"Muse (Almusca)"}]
 }
