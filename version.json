@@ -1,12 +1,12 @@
 {
-  "version": "v261116.10 11:59a",
-  "release": 2055,
-  "sha": "db82688c16",
-  "fullSha": "db82688c16f65b2535591523e17ba08fa0ed7efa",
+  "version": "v261116.11 12:22p",
+  "release": 2056,
+  "sha": "bd7c3da7a0",
+  "fullSha": "bd7c3da7a04a1856e359877c0bc8d73d4960d5a1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T17:59:10+00:00",
-  "commits": [{"sha":"db82688c16","message":"Listings v2.8: remove the thumbnail strips (they broke the card layout); each card now ends with a plain \"See all photos\" link to its detail page photo section","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-16T18:22:48+00:00",
+  "commits": [{"sha":"bd7c3da7a0","message":"Listings v2.9: remove the version stamp under the masthead and tighten section spacing","author":"Muse (Almusca)"}]
 }
