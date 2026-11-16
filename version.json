@@ -1,12 +1,12 @@
 {
-  "version": "v261116.03 10:24a",
-  "release": 2048,
-  "sha": "4c0493ee22",
-  "fullSha": "4c0493ee22cd82b5fd88c9a75b494eb17b14ce95",
+  "version": "v261116.04 10:35a",
+  "release": 2049,
+  "sha": "70a3923260",
+  "fullSha": "70a39232605902bcde0c6ac86348067e16ba71e7",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T16:24:32+00:00",
-  "commits": [{"sha":"4c0493ee22","message":"Listings v2.2: price on the name line (deposit moved to terms line), address shrunk to small muted text","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-16T16:35:27+00:00",
+  "commits": [{"sha":"70a3923260","message":"Listings v2.3: top nav matched to sharingwood.net (Ixion) — SHARINGWOOD wordmark, gold Archivo Narrow menu with real dropdowns (Openings under Living Here)","author":"Muse (Almusca)"}]
 }
