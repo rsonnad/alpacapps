@@ -1,12 +1,12 @@
 {
-  "version": "v261115.11 7:03p",
-  "release": 2041,
-  "sha": "df8e056ec1",
-  "fullSha": "df8e056ec1785eec75c6de383ddf9606c3574ef0",
+  "version": "v261115.12 7:08p",
+  "release": 2042,
+  "sha": "26b0fe9045",
+  "fullSha": "26b0fe904543cf2619e38474964a83cbcc02d5ad",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "ip-10-0-128-194",
-  "pushedAt": "2026-11-16T01:03:57+00:00",
-  "commits": [{"sha":"df8e056ec1","message":"sharingwood: all-listings v1.6 — openings as column list, redundant pills/text removed, benefit-focused card lines, all illustrations uniform 4:3, sauna interior closeup, 5 curated photos per listing","author":"Muse (Almusca)"}]
+  "machine": "runnervmccnms",
+  "pushedAt": "2026-11-16T01:08:24+00:00",
+  "commits": [{"sha":"26b0fe9045","message":"sharingwood: all-listings v1.7 — enforce identical 4:3 presentation size for every image (masthead, flips, Why strip, Explore cards)","author":"Muse (Almusca)"}]
 }
