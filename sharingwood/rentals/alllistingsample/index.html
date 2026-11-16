@@ -10,6 +10,7 @@
 <meta property="og:description" content="Live in the woods, in community. Current openings in Sharingwood cohousing, Snohomish WA: two rentals and one home for sale.">
 <meta property="og:image" content="https://alpacaplayhouse.com/sharingwood/rentals/alllistingsample/og.jpg">
 <meta property="og:url" content="https://alpacaplayhouse.com/sharingwood/rentals/alllistingsample/">
+<link href="https://fonts.googleapis.com/css?family=Archivo+Narrow:700&display=swap" rel="stylesheet">
 <style>
   :root{
     --green:#2e5d3a; --green-dark:#1f4028; --cream:#faf6ee; --ink:#26302a;
@@ -20,10 +21,19 @@
   a{color:var(--green);text-decoration:none}
   a:hover{text-decoration:underline}
   .wrap{max-width:1020px;margin:0 auto;padding:18px 18px 56px}
-  nav.top{position:sticky;top:0;z-index:10;background:rgba(250,246,238,.95);border-bottom:1px solid var(--line);backdrop-filter:blur(4px)}
-  nav.top .inner{max-width:1020px;margin:0 auto;padding:10px 18px;display:flex;gap:8px 18px;align-items:center;flex-wrap:wrap}
-  nav.top .brand{font-weight:bold;font-size:1.1rem;color:var(--green-dark)}
-  nav.top a.navlink{font-size:.95rem}
+  nav.top{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #eeece8}
+  nav.top .inner{max-width:1020px;margin:0 auto;padding:14px 18px;display:flex;gap:10px 26px;align-items:center;justify-content:space-between}
+  nav.top .brand{font-family:"Cooper Hewitt","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:bold;text-transform:uppercase;font-size:30px;line-height:1;color:#192930;letter-spacing:.5px;white-space:nowrap}
+  nav.top .brand:hover{text-decoration:none}
+  nav.top ul.menu{display:flex;gap:4px 22px;list-style:none;margin:0;padding:0;align-items:center}
+  nav.top ul.menu>li{position:relative}
+  nav.top ul.menu a{font-family:"Archivo Narrow",Verdana,sans-serif;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:#d7b221;font-size:16px;display:block;padding:6px 0}
+  nav.top ul.menu a:hover{color:#a5a29d;text-decoration:none}
+  nav.top ul.menu>li.has-sub>a::after{content:" \25BE";font-size:.7em;letter-spacing:0}
+  nav.top ul.sub{display:none;position:absolute;top:100%;left:-12px;background:#fff;border:1px solid #eeece8;box-shadow:0 8px 20px rgba(25,41,48,.12);list-style:none;margin:0;padding:8px 0;min-width:220px;z-index:40}
+  nav.top li.has-sub:hover ul.sub,nav.top li.has-sub:focus-within ul.sub{display:block}
+  nav.top ul.sub a{font-size:14px;padding:7px 16px;white-space:nowrap}
+  nav.top ul.sub a:hover{background:#eeece8}
   .ph{position:relative;line-height:0}
   .ph img{width:100%;height:auto;display:block}
   .mast .ph img,.why-photos .ph img,.reason .ph img,.link-card .ph img{aspect-ratio:4/3;object-fit:cover}
@@ -100,10 +110,12 @@
   .lbx .count{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);color:#cfd3c7;font-family:Verdana,sans-serif;font-size:.85rem}
   footer{margin-top:52px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:.85rem}
   @media(max-width:720px){
-    nav.top .inner{flex-wrap:nowrap;overflow-x:auto;padding:8px 14px;gap:6px 14px;scrollbar-width:none}
+    nav.top .inner{flex-wrap:nowrap;overflow-x:auto;padding:10px 14px;gap:8px 18px;scrollbar-width:none}
     nav.top .inner::-webkit-scrollbar{display:none}
-    nav.top .brand{font-size:1rem;white-space:nowrap}
-    nav.top a.navlink{font-size:.9rem;white-space:nowrap}
+    nav.top .brand{font-size:22px}
+    nav.top ul.menu{gap:4px 16px}
+    nav.top ul.menu a{font-size:14px;white-space:nowrap}
+    nav.top ul.sub{display:none !important}
     .wrap{padding:12px 12px 40px}
     .mast{flex-direction:column}
     .mast .ph{flex:none;width:100%}
@@ -130,14 +142,7 @@
 </head>
 <body id="top">
 
-<nav class="top"><div class="inner">
-  <span class="brand">Sharingwood · Snohomish, WA</span>
-  <a class="navlink" href="#for-sale">For Sale</a>
-  <a class="navlink" href="#rentals">Rentals</a>
-  <a class="navlink" href="#why">Why Sharingwood</a>
-  <a class="navlink" href="#community">Community</a>
-  <a class="navlink" href="#visit">Visit &amp; Contact</a>
-</div></nav>
+<nav class="top"><div class="inner"><a class="brand" href="https://www.sharingwood.net/">Sharingwood</a><ul class="menu"><li><a href="https://www.sharingwood.net/">Home</a></li><li class="has-sub"><a href="https://www.sharingwood.net/?page_id=38">General Info</a><ul class="sub"><li><a href="https://www.sharingwood.net/?page_id=161">Mission Statement</a></li><li><a href="https://www.sharingwood.net/?page_id=63">History</a></li><li><a href="https://www.sharingwood.net/?page_id=64">FAQ</a></li></ul></li><li class="has-sub"><a href="https://www.sharingwood.net/">Living Here</a><ul class="sub"><li><a href="https://www.sharingwood.net/?page_id=42">Activities</a></li><li><a href="https://www.sharingwood.net/?page_id=43">Events</a></li><li><a href="https://www.sharingwood.net/?page_id=44">Flora and Fauna</a></li><li><a href="https://www.sharingwood.net/?page_id=46">Openings</a></li></ul></li><li class="has-sub"><a href="https://www.sharingwood.net/?page_id=2">Gallery</a><ul class="sub"><li><a href="https://www.sharingwood.net/?page_id=717">Caringwood Day 2023</a></li><li><a href="https://www.sharingwood.net/?page_id=742">Winter in Sharingwood</a></li><li><a href="https://www.sharingwood.net/?page_id=265">Community Art Project 2018</a></li><li><a href="https://www.sharingwood.net/?page_id=209">Caringwood Day 2017</a></li><li><a href="https://www.sharingwood.net/?page_id=472">2017</a></li><li><a href="https://www.sharingwood.net/?page_id=384">2016</a></li><li><a href="https://www.sharingwood.net/?page_id=204">History Gallery</a></li><li><a href="https://www.sharingwood.net/?page_id=353">1988-1998</a></li><li><a href="https://www.sharingwood.net/?page_id=354">1999-2009</a></li><li><a href="https://www.sharingwood.net/?page_id=356">2010-2015</a></li></ul></li><li><a href="https://www.sharingwood.net/?page_id=48">Contacts</a></li></ul></div></nav>
 
 <div class="wrap">
 
@@ -157,7 +162,7 @@
       <p class="facts">29 homes · 40 units · 23-acre greenbelt &amp; trails · Common House &amp; gardens · Between Woodinville &amp; Monroe · <span class="nw">20&nbsp;min to I&#8209;405 / SR&#8209;522</span></p>
     </div>
   </div>
-  <p class="stamp">All Sharingwood listings · v2.2 · Nov 16, 2026</p>
+  <p class="stamp">All Sharingwood listings · v2.3 · Nov 16, 2026</p>
 
   <section id="for-sale">
     <div class="sec-head"><h2>Homes for sale</h2></div>
@@ -307,7 +312,7 @@
 
   <footer>
     <p>Sharingwood Cohousing · Snohomish, Washington · Illustrations are stylized renderings of real Sharingwood photos.</p>
-    <p>Sharingwood all-listings page · v2.2 · Nov 16, 2026</p>
+    <p>Sharingwood all-listings page · v2.3 · Nov 16, 2026</p>
   </footer>
 
 </div>
