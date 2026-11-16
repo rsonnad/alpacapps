@@ -64,10 +64,11 @@
   .fdots{position:absolute;right:12px;bottom:10px;z-index:4;display:flex;gap:6px}
   .fdot{width:9px;height:9px;border-radius:50%;border:1px solid rgba(255,255,255,.9);background:rgba(20,32,22,.35);cursor:pointer;padding:0}
   .fdot.on{background:#fff}
-  .price{font-size:1.45rem;font-weight:bold;color:var(--green-dark)}
+  .headrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px 16px;flex-wrap:wrap}
+  .price{font-size:1.3rem;font-weight:bold;color:var(--green-dark)}
   .price small{font-size:.9rem;color:var(--muted);font-weight:normal}
   .card h3{margin:0;font-size:1.5rem;color:var(--green-dark)}
-  .addr{margin:2px 0 8px;color:var(--muted);font-size:1rem}
+  .addr{margin:3px 0 6px;color:var(--muted);font-size:.8rem}
   .card .body p.one{margin:10px 0 0;font-size:1rem}
   .card .body p.terms{margin:8px 0 0;color:var(--muted);font-size:.9rem}
   .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
@@ -121,6 +122,9 @@
     .facts{margin-top:10px;font-size:.88rem}
     .card{margin-bottom:16px}
     .specs{font-size:.9rem;margin-top:8px}
+    .headrow{flex-wrap:nowrap}
+    .card h3{font-size:1.35rem}
+    .price{font-size:1.2rem;white-space:nowrap}
   }
 </style>
 </head>
@@ -153,7 +157,7 @@
       <p class="facts">29 homes · 40 units · 23-acre greenbelt &amp; trails · Common House &amp; gardens · Between Woodinville &amp; Monroe · <span class="nw">20&nbsp;min to I&#8209;405 / SR&#8209;522</span></p>
     </div>
   </div>
-  <p class="stamp">All Sharingwood listings · v2.1 · Nov 16, 2026</p>
+  <p class="stamp">All Sharingwood listings · v2.2 · Nov 16, 2026</p>
 
   <section id="for-sale">
     <div class="sec-head"><h2>Homes for sale</h2></div>
@@ -176,9 +180,8 @@
           </div>
         </div>
         <div class="body">
-          <h3>The Blue House</h3>
+          <div class="headrow"><h3>The Blue House</h3><div class="price">$830,000</div></div>
           <p class="addr">22209 E Lost Lake Rd</p>
-          <div class="price">$830,000</div>
           <p class="specs">4 bd · 2.75 ba · 2,675 sqft · 2-car garage</p>
           <p class="one">Sunny and quiet by the greenhouse and common garden — forest trails right from the backyard. Contact: Chris, 206-715-1023.</p>
           <div class="btns">
@@ -210,11 +213,10 @@
           </div>
         </div>
         <div class="body">
-          <h3>The Sauna House</h3>
+          <div class="headrow"><h3>The Sauna House</h3><div class="price">$1,595 <small>/mo</small></div></div>
           <p class="addr">Unit 1B · 22003 E Lost Lake Rd</p>
-          <div class="price">$1,595 <small>/mo · deposit $1,595</small></div>
           <p class="specs">1 bd + den · 1 ba · 1,200 sqft · Furnished · Available Nov 16</p>
-          <p class="terms">Cedar sauna under the back deck · in-unit Bosch laundry · parking for 2 · ~$175/mo utilities share · 12-month WA lease · dogs possible, no&nbsp;cats</p>
+          <p class="terms">Deposit $1,595 · cedar sauna under the back deck · in-unit Bosch laundry · parking for 2 · ~$175/mo utilities share · 12-month WA lease · dogs possible, no&nbsp;cats</p>
           <div class="btns">
             <a class="btn" href="https://www.zillow.com/homedetails/22003-E-Lost-Lake-Rd-1B-Snohomish-WA-98296/465086293_zpid/">View the full listing on Zillow</a>
             <a class="btn ghost" href="https://alpacaplayhouse.com/sharingwood/rentals/unit1b/">Unit 1B page &amp; photos</a>
@@ -241,9 +243,8 @@
           </div>
         </div>
         <div class="body">
-          <h3>The Lost Lake Lodge</h3>
+          <div class="headrow"><h3>The Lost Lake Lodge</h3><div class="price">$4,500 <small>/mo</small></div></div>
           <p class="addr">22307 E Lost Lake Rd</p>
-          <div class="price">$4,500 <small>/mo</small></div>
           <p class="specs">4 bd · 2.5 ba · 2,340 sqft · Available Dec 1</p>
           <p class="one">Three floors of room in the trees near Lost Lake — evenings by the river-rock fireplace, summers on the covered patio. Contact: Kristi&nbsp;Hendrickson.</p>
           <div class="btns">
@@ -306,7 +307,7 @@
 
   <footer>
     <p>Sharingwood Cohousing · Snohomish, Washington · Illustrations are stylized renderings of real Sharingwood photos.</p>
-    <p>Sharingwood all-listings page · v2.1 · Nov 16, 2026</p>
+    <p>Sharingwood all-listings page · v2.2 · Nov 16, 2026</p>
   </footer>
 
 </div>
