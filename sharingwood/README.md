@@ -27,6 +27,9 @@ Public base URL: `https://pub-9ea612c4da1f40caa438c0c5d6529205.r2.dev/`
 ```
 sharingwood (bucket)
   rentals/unit1b/
+    styled/      7 watercolor-and-ink illustrations (exterior, living, kitchen, sauna, bedroom,
+                 yard, dusk) made from people-free photos with Azure gpt-image-2.5-sunburst
+                 (Sponic key). Used at the TOP of the page; real photos go below.
     large/       11 full-size JPGs (2400px), converted from the owner's iPhone HEICs.
                  img-6382 … img-6397 + basement-7 (same shot as img-6384)
     zillow/      01.jpg … 46.jpg, the Zillow listing photos in Zillow's order (384–1536px)

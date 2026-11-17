@@ -59,7 +59,7 @@ h3 { font-size: 1.2rem; }
 section { padding: 84px 0; }
 .sw-intro { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
 .sw-intro p { color: #3c4236; font-size: 1.06rem; }
-.sw-intro__img { border-radius: var(--sw-radius); overflow: hidden; aspect-ratio: 4/5; box-shadow: 0 20px 50px -24px rgba(31,51,40,.5); }
+.sw-intro__img { border-radius: var(--sw-radius); overflow: hidden; aspect-ratio: 4/3; box-shadow: 0 20px 50px -24px rgba(31,51,40,.5); }
 .sw-intro__img img { width: 100%; height: 100%; object-fit: cover; }
 
 /* Mosaic */
@@ -68,6 +68,8 @@ section { padding: 84px 0; }
 .sw-mosaic button:first-child { grid-row: span 2; }
 .sw-mosaic img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
 .sw-mosaic button:hover img { transform: scale(1.04); }
+
+.sw-note { margin: 12px 0 0; font-size: .85rem; color: var(--sw-muted); font-style: italic; }
 
 /* Highlights */
 .sw-alt { background: var(--sw-paper); }
