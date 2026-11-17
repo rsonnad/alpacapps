@@ -19,16 +19,20 @@ No secrets in this file.
 | CI runner hosts (Phoenix, Hostinger, ALPUCA, Otto, Frankie, Hetzner `hetzner-ci-01..04`) | `infra/untrusted-runner-sites.json`, `infra/runbook/devtools.md` |
 | Hostinger VPS services and backups | `infra/hostinger/README.md` |
 
-## Fleet summary (from sponic, 2026-11-17)
+## Rollout tool
+
+`sponicgardens/sponic` → `infra/bin/install-ssh-hardening` (keys only, fail2ban, and `--tailscale-only`), with an automatic undo if the confirming login fails. Runbook: sponic `infra/runbook/networking.md` → "SSH hardening". Plan and status: sponic `docs/devtasks/edge-and-server-hardening-2026-11.md` §6.
+
+## Fleet summary (from sponic, 2026-11-17, before rollout)
 
 | Host | Public SSH? | Auth | Notes |
 |---|---|---|---|
 | Alpuca (Mac mini) | No (NAT). Cloudflare Access tunnel; UDM port 2222 forward only as a temporary last resort | keys | `REMOTE-ACCESS.md` here |
 | BlackBook Pro 16 | No (NAT) | keys | Infostealer incident 2026-10-18; its runner was deleted |
 | Otto MacBook Pro | No (NAT). Cloudflare `otto-cf` recovery route | keys | |
-| Oracle Phoenix `144.24.51.48` | **Yes, 22** — ~1,400 failed logins/day | key-only | fail2ban not running |
-| Hostinger `93.188.164.224` | **Yes, 22** (+80/443 Caddy) | root by key; root password **locked** since 2026-10-18, but `PasswordAuthentication yes` still set | not fully surveyed |
-| Oracle Frankie | TBD | key-only | PR runners `frankie-pr-01/02` |
+| Oracle Phoenix `144.24.51.48` (tailnet 100.121.109.91) | **Yes, 22** — ~1,400 failed logins/day | key-only | fail2ban not running |
+| Hostinger `93.188.164.224` (tailnet 100.64.206.71) | **Yes, 22** (+80/443 Caddy) | root by key; root password **locked** since 2026-10-18, but `PasswordAuthentication yes` still set | fail2ban running |
+| Oracle Frankie (tailnet 100.66.63.38) | No — tailnet only | key-only | PR runners `frankie-pr-01/02` |
 | Oracle Daniel | Yes, allowlisted to 2 IPs | key-only | |
 | Hetzner | TBD | TBD | CI runners `hetzner-ci-01..04` |
 | boat.ai | — | — | **Not found in either repo.** Needs documenting |
