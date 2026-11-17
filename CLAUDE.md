@@ -25,6 +25,7 @@
 > - `spaces/admin/devcontrol/devdocs/home-assistant-lighting-design.md` — **load for:** HAOS lighting architecture, entity naming, automation templates, migration status
 > - `spaces/admin/devcontrol/devdocs/REMOTE-ACCESS.md` — **load for:** SSH tunneling, remote access to Alpuca/UDM Pro, Tailscale, Cloudflare tunnel, port forwarding
 > - `devcontrol/devdocs/ALPUCA-MACHINE.md` — **load for:** Alpuca Mac hardware/OS, background services, moondream-indexer memory hazard + takedown, runaway-process diagnostics, tripwire setup. Canonical home — finleg and other repos link here.
+> - `devcontrol/devdocs/SSH-HARDENING.md` — **load for:** SSH security, server hardening, public ports, fail2ban, which repo documents which server (canonical: sponic `infra/ssh/sponic.sshconfig`)
 
 ## Person Lookup Routing
 

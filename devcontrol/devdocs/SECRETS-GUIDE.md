@@ -74,7 +74,7 @@ In shell commands:
 curl -H "Authorization: Bearer $(bw-read "Supabase — AlpacApps Project" "Management API Token")"
 
 # sshpass integration
-sshpass -p "$(bw-read "Hostinger VPS — OpenClaw Server")" ssh root@host
+sshpass -p "$(bw-read "Example Item" "Password")" ssh user@host   # avoid: prefer SSH keys. Hostinger logs in by key; see SSH-HARDENING.md
 ```
 
 ## Setting Up a New Project

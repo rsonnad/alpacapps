@@ -4,6 +4,8 @@ How to SSH into Alpuca (home server) and the UDM Pro (network gateway) when you'
 
 All credentials referenced via Bitwarden CLI (`bw-read`). No secrets in this file.
 
+Hardening policy (no public SSH, keys only, host-key checking on) and where the server docs live: `SSH-HARDENING.md`. Canonical host registry: sponic repo `infra/ssh/sponic.sshconfig`.
+
 ---
 
 ## Network Topology
@@ -93,18 +95,18 @@ Requires Tailscale running on your machine and the target device.
 /Applications/Tailscale.app/Contents/MacOS/Tailscale up
 
 # SSH to Alpuca
-ssh -o StrictHostKeyChecking=no paca@100.74.59.97
+ssh -o StrictHostKeyChecking=accept-new paca@100.74.59.97
 
 # SSH to Almaca
 ssh -o StrictHostKeyChecking=accept-new alpaca@100.115.27.43
 
 # SSH to UDM via Alpuca
-ssh -o StrictHostKeyChecking=no paca@100.74.59.97 \
+ssh -o StrictHostKeyChecking=accept-new paca@100.74.59.97 \
   "sshpass -p '\$(bw-read \"UniFi Dream Machine Pro — Network Gateway\" \"SSH Password\")' \
   ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@192.168.1.1"
 
 # Port-forward UDM web UI (local:8443 -> UDM:443)
-ssh -o StrictHostKeyChecking=no -f -N -L 8443:192.168.1.1:443 paca@100.74.59.97
+ssh -o StrictHostKeyChecking=accept-new -f -N -L 8443:192.168.1.1:443 paca@100.74.59.97
 # Then open: https://localhost:8443/  (accept self-signed cert)
 # Login: codingagent / (BW: "UniFi Dream Machine Pro — Network Gateway")
 
@@ -187,15 +189,15 @@ cloudflared access tcp \
   --service-token-secret "$(bw-read 'Cloudflare Access — Alpuca SSH Service Token' 'Client Secret')" &
 
 # 2. SSH to Alpuca
-ssh -o StrictHostKeyChecking=no -p 2225 paca@localhost
+ssh -o StrictHostKeyChecking=accept-new -p 2225 paca@localhost
 
 # 3. SSH to UDM via Alpuca
-ssh -o StrictHostKeyChecking=no -p 2225 paca@localhost \
+ssh -o StrictHostKeyChecking=accept-new -p 2225 paca@localhost \
   "sshpass -p '\$(bw-read \"UniFi Dream Machine Pro — Network Gateway\" \"SSH Password\")' \
   ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@192.168.1.1"
 
 # 4. Port-forward UDM web UI
-ssh -o StrictHostKeyChecking=no -f -N -p 2225 -L 8443:192.168.1.1:443 paca@localhost
+ssh -o StrictHostKeyChecking=accept-new -f -N -p 2225 -L 8443:192.168.1.1:443 paca@localhost
 # Then open: https://localhost:8443/
 
 # 5. Kill proxy when done
@@ -224,10 +226,10 @@ Uses an iptables NAT rule on the UDM to forward a public port to Alpuca's SSH. *
 
 ```bash
 # SSH to Alpuca via public IP
-ssh -o StrictHostKeyChecking=no -p 2222 paca@66.68.143.215
+ssh -o StrictHostKeyChecking=accept-new -p 2222 paca@66.68.143.215
 
 # Port-forward UDM web UI
-ssh -o StrictHostKeyChecking=no -f -N -p 2222 -L 8443:192.168.1.1:443 paca@66.68.143.215
+ssh -o StrictHostKeyChecking=accept-new -f -N -p 2222 -L 8443:192.168.1.1:443 paca@66.68.143.215
 # Then open: https://localhost:8443/
 ```
 
