@@ -232,8 +232,17 @@ class HoursService {
         p_description: description ?? null,
       });
       if (!rpcErr && rpcData) return Array.isArray(rpcData) ? rpcData[0] : rpcData;
+      // Photo gate must NOT fall through to the unguarded legacy path below.
+      if (rpcErr && /photos_required/.test(rpcErr.message || '')) {
+        const e = new Error(String(rpcErr.message).replace(/^photos_required:\s*/, 'Photos required: '));
+        e.code = 'photos_required';
+        throw e;
+      }
       // fall through on RPC missing
-    } catch (_e) { /* fall through */ }
+    } catch (_e) {
+      if (_e && _e.code === 'photos_required') throw _e;
+      /* fall through */
+    }
 
     const clockOut = new Date();
     const { data: entry, error: fetchErr } = await supabase

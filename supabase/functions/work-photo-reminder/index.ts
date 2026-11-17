@@ -52,6 +52,7 @@ Deno.serve(async (req) => {
         space_id,
         associate:associate_id (
           id,
+          photos_required,
           app_user:app_user_id (
             id,
             email,
@@ -118,8 +119,8 @@ Deno.serve(async (req) => {
               to: [appUser.email, 'alpacaautomatic@gmail.com'],
               reply_to: SENDER_MAP.pai.reply_to,
               subject: 'Reminder: Upload Before Photos for Your Work Session',
-              html: buildHtml(firstName, 'clock_in', spaceName),
-              text: buildText(firstName, 'clock_in', spaceName),
+              html: buildHtml(firstName, 'clock_in', spaceName, !!associate?.photos_required),
+              text: buildText(firstName, 'clock_in', spaceName, !!associate?.photos_required),
             }),
           });
 
@@ -151,6 +152,7 @@ Deno.serve(async (req) => {
         space_id,
         associate:associate_id (
           id,
+          photos_required,
           app_user:app_user_id (
             id,
             email,
@@ -218,8 +220,8 @@ Deno.serve(async (req) => {
               to: [appUser.email, 'alpacaautomatic@gmail.com'],
               reply_to: SENDER_MAP.pai.reply_to,
               subject: 'Reminder: Upload After Photos for Your Work Session',
-              html: buildHtml(firstName, 'clock_out', spaceName),
-              text: buildText(firstName, 'clock_out', spaceName),
+              html: buildHtml(firstName, 'clock_out', spaceName, !!associate?.photos_required),
+              text: buildText(firstName, 'clock_out', spaceName, !!associate?.photos_required),
             }),
           });
 
@@ -273,7 +275,7 @@ Deno.serve(async (req) => {
 
 const WORK_PAGE_URL = 'https://alpacaplayhouse.com/associates/worktracking.html';
 
-function buildHtml(firstName: string, phase: 'clock_in' | 'clock_out', spaceName: string): string {
+function buildHtml(firstName: string, phase: 'clock_in' | 'clock_out', spaceName: string, required = false): string {
   const isClockIn = phase === 'clock_in';
   const photoType = isClockIn ? '"Before"' : '"After"';
   const suggestion = isClockIn
@@ -286,16 +288,18 @@ function buildHtml(firstName: string, phase: 'clock_in' | 'clock_out', spaceName
     <h2>Work Photo Reminder</h2>
     <p>Hi ${firstName},</p>
     <p>You recently ${action}${atSpace} but we noticed you haven't uploaded any ${photoType} photos yet.</p>
-    <p>If relevant to your task, consider uploading ${suggestion}. Work photos help track progress and quality.</p>
+    ${required
+      ? `<p><strong>Before and after photos are required for every work session.</strong> Please upload ${suggestion}${isClockIn ? '' : ' (you won\'t be able to clock out of your next session without them)'}.</p>`
+      : `<p>If relevant to your task, consider uploading ${suggestion}. Work photos help track progress and quality.</p>`}
     <div style="text-align: center; margin: 24px 0;">
       <a href="${WORK_PAGE_URL}" style="display: inline-block; background: #3d8b7a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Upload Photos</a>
     </div>
-    <p style="color: #666; font-size: 0.9em;">This is just a friendly nudge — no photos are required if they aren't relevant to the task.</p>
+    ${required ? '' : '<p style="color: #666; font-size: 0.9em;">This is just a friendly nudge — no photos are required if they aren\'t relevant to the task.</p>'}
     <p>Thanks,<br>Alpaca Playhouse</p>
   `;
 }
 
-function buildText(firstName: string, phase: 'clock_in' | 'clock_out', spaceName: string): string {
+function buildText(firstName: string, phase: 'clock_in' | 'clock_out', spaceName: string, required = false): string {
   const isClockIn = phase === 'clock_in';
   const photoType = isClockIn ? '"Before"' : '"After"';
   const suggestion = isClockIn
@@ -310,11 +314,12 @@ Hi ${firstName},
 
 You recently ${action}${atSpace} but we noticed you haven't uploaded any ${photoType} photos yet.
 
-If relevant to your task, consider uploading ${suggestion}. Work photos help track progress and quality.
+${required
+    ? `Before and after photos are required for every work session. Please upload ${suggestion}.`
+    : `If relevant to your task, consider uploading ${suggestion}. Work photos help track progress and quality.`}
 
 Upload photos: ${WORK_PAGE_URL}
-
-This is just a friendly nudge — no photos are required if they aren't relevant to the task.
+${required ? '' : "\nThis is just a friendly nudge — no photos are required if they aren't relevant to the task."}
 
 Thanks,
 Alpaca Playhouse`;

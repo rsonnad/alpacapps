@@ -410,7 +410,15 @@ async function handleClockOut(description) {
       }
     } catch (_) { /* ignore — cron backup will catch it */ }
   } catch (err) {
-    showToast('Failed to clock out: ' + err.message, 'error');
+    if (err.code === 'photos_required') {
+      // Server refused: required before/after photos are missing. Send them to the photo section.
+      showToast(err.message, 'error', 6000);
+      setPhotoType('after');
+      showPhotoBanner('after');
+      document.getElementById('photoSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      showToast('Failed to clock out: ' + err.message, 'error');
+    }
   } finally {
     btn.disabled = false;
   }
