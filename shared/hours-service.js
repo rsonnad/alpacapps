@@ -222,7 +222,7 @@ class HoursService {
    * legacy browser-Date path remains as a fallback when the RPC isn't
    * deployed yet.
    */
-  async clockOut(entryId, { lat, lng, description } = {}) {
+  async clockOut(entryId, { lat, lng, description, photosNotRelevant = false } = {}) {
     // #15 Try the server-clock RPC first.
     try {
       const { data: rpcData, error: rpcErr } = await supabase.rpc('clock_out_server_time', {
@@ -230,6 +230,7 @@ class HoursService {
         p_lat: lat || null,
         p_lng: lng || null,
         p_description: description ?? null,
+        p_photos_not_relevant: !!photosNotRelevant,
       });
       if (!rpcErr && rpcData) return Array.isArray(rpcData) ? rpcData[0] : rpcData;
       // Photo gate must NOT fall through to the unguarded legacy path below.

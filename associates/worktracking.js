@@ -374,7 +374,7 @@ async function showClockoutPrompt() {
   }
 }
 
-async function handleClockOut(description) {
+async function handleClockOut(description, { photosNotRelevant = false } = {}) {
   const btn = document.getElementById('btnClockoutSubmit');
   btn.disabled = true;
   try {
@@ -387,7 +387,8 @@ async function handleClockOut(description) {
 
     const updatedEntry = await hoursService.clockOut(entryId, {
       ...(loc || {}),
-      description: description || null
+      description: description || null,
+      photosNotRelevant
     });
     activeEntry = null;
     showToast('Clocked out!', 'success');
@@ -398,7 +399,7 @@ async function handleClockOut(description) {
     sendCheckoutSummaryEmail(updatedEntry, entrySpaceId, entryTaskId, entryRate, description);
 
     // Check for after photos — if missing, send reminder email immediately
-    try {
+    if (!photosNotRelevant) try {
       const photos = await hoursService.getWorkPhotos(profile.id, { timeEntryId: entryId });
       const hasAfterPhotos = photos.some(p => p.photo_type === 'after');
       if (!hasAfterPhotos) {
@@ -413,6 +414,9 @@ async function handleClockOut(description) {
     if (err.code === 'photos_required') {
       // Server refused: required before/after photos are missing. Send them to the photo section.
       showToast(err.message, 'error', 6000);
+      // Surface the warning box so the "Photos Not Relevant" option is reachable.
+      const w = document.getElementById('afterPhotoWarning');
+      if (w) w.style.display = 'block';
       setPhotoType('after');
       showPhotoBanner('after');
       document.getElementById('photoSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1507,6 +1511,15 @@ function setupEventListeners() {
   });
   document.getElementById('btnClockoutSkip').addEventListener('click', () => {
     handleClockOut(null);
+  });
+  // "Photos Not Relevant": two-step — click, then confirm no image would help.
+  document.getElementById('btnPhotosNotRelevant')?.addEventListener('click', () => {
+    const ok = confirm(
+      'Please confirm: there are NO images (before or after) that would help someone understand the work you did this session?\n\n' +
+      'Press OK to clock out without photos, or Cancel to go back and take photos.'
+    );
+    if (!ok) return;
+    handleClockOut(document.getElementById('clockoutDesc').value.trim() || null, { photosNotRelevant: true });
   });
 
   // Photo work-date picker (allows retroactive uploads)

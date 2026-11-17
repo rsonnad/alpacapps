@@ -165,6 +165,7 @@ Deno.serve(async (req) => {
         )
       `)
       .is('photo_reminder_clockout_sent_at', null)
+      .eq('photos_not_relevant', false)
       .not('clock_out', 'is', null);
 
     if (targetEntryId) {
