@@ -1,12 +1,12 @@
 {
-  "version": "v261118.01 2:14a",
-  "release": 2057,
-  "sha": "8dbbb21036",
-  "fullSha": "8dbbb2103645ae3b765fd8367c15e0afb550dbf4",
+  "version": "v261118.02 12:42p",
+  "release": 2058,
+  "sha": "2884ab6d96",
+  "fullSha": "2884ab6d966a070da16d8ebe1e0befe47de20741",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-18T08:14:21+00:00",
-  "commits": [{"sha":"8dbbb21036","message":"Accept picomatch GHSA-fc5q-39xc-vjpf in dependency-audit baseline (owner decision, Rahul, 2026-11-18)","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-18T18:42:55+00:00",
+  "commits": [{"sha":"2884ab6d96","message":"Weekly reminder when an associate is short of their monthly minimum hours","author":"Blotto"}]
 }
