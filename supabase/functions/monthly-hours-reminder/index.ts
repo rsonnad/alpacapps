@@ -5,6 +5,7 @@
  * For each active associate with associate_profiles.monthly_min_hours set,
  * compares hours logged this calendar month (America/Chicago) plus the hours
  * still scheduled after today against the minimum. If that total falls short,
+ * OR logged hours are behind a steady pace (min x day-of-month / days-in-month),
  * emails the associate (cc the owner) how many hours they still need by the
  * end of the month.
  *
@@ -110,10 +111,16 @@ serve(async (req) => {
       const scheduled = (sched || []).reduce((s, r) => s + (r.scheduled_minutes || 0), 0) / 60;
 
       const needed = Math.max(0, minHours - worked);
-      const onTrack = worked + scheduled >= minHours;
+      // Pace: the share of the minimum he should have logged by end of today.
+      const dayOfMonth = Number(today.slice(8, 10));
+      const paceTarget = minHours * dayOfMonth / lastDay;
+      const scheduleShort = worked + scheduled < minHours;
+      const behindPace = worked < paceTarget;
+      const onTrack = !scheduleShort && !behindPace;
       const result: Record<string, unknown> = {
         associate: name, min_hours: minHours, worked: +worked.toFixed(2),
         scheduled_remaining: +scheduled.toFixed(2), still_needed: +needed.toFixed(2),
+        pace_target: +paceTarget.toFixed(2), behind_pace: behindPace, schedule_short: scheduleShort,
         on_track: onTrack, month_end: monthEnd,
       };
 
@@ -143,12 +150,19 @@ serve(async (req) => {
     <tr><td style="padding:6px 16px 6px 0;color:#7d6f74;">Scheduled for the rest of ${monthName}</td><td style="padding:6px 0;font-weight:600;">${fmtHours(scheduled)}h</td></tr>
   </table>
   ${schedLines ? `<p style="margin:8px 0 4px;">Your remaining scheduled days:</p><ul style="margin:0 0 12px;">${schedLines}</ul>` : ""}
-  <p>Please add at least <strong>${fmtHours(gap)} more hours</strong> to your schedule before the end of the month.</p>
+  ${behindPace ? `<p>By today you'd be at about <strong>${fmtHours(paceTarget)}h</strong> on a steady pace, so you're behind.</p>` : ""}
+  ${gap > 0
+    ? `<p>Please add at least <strong>${fmtHours(gap)} more hours</strong> to your schedule before the end of the month.</p>`
+    : `<p>Your scheduled days cover what you still need. Please make sure you work them, since a missed shift will leave you short.</p>`}
   <p style="color:#7d6f74;font-size:13px;margin-top:24px;">Automated weekly reminder from Alpaca Playhouse.</p>
 </div>`;
       const text = `Hi ${firstName},\n\n${monthName} minimum: ${fmtHours(minHours)}h. Logged so far: ${fmtHours(worked)}h. ` +
         `Still needed: ${fmtHours(needed)}h by ${fmtDate(monthEnd)}. Scheduled for the rest of the month: ${fmtHours(scheduled)}h.\n\n` +
-        `Please add at least ${fmtHours(gap)} more hours to your schedule before the end of the month.\n\n— Alpaca Playhouse`;
+        (behindPace ? `On a steady pace you'd be at about ${fmtHours(paceTarget)}h by today, so you're behind.\n\n` : "") +
+        (gap > 0
+          ? `Please add at least ${fmtHours(gap)} more hours to your schedule before the end of the month.`
+          : `Your scheduled days cover what you still need. Please make sure you work them, since a missed shift will leave you short.`) +
+        `\n\n— Alpaca Playhouse`;
 
       const resp = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
         method: "POST",
