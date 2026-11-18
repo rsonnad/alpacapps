@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "reviewed": "2026-10-22",
-  "expires": "2026-11-21T00:00:00Z",
-  "reason": "Existing dependency debt at the start of supply-chain hardening; no critical findings accepted. Audit all locked dependencies and fail on any new high/critical advisory, changed affected version or expired exception. Remediate remaining legacy Puppeteer/transitive findings in a separately validated dependency update.",
+  "reviewed": "2026-11-18",
+  "expires": "2026-12-18T00:00:00Z",
+  "reason": "Existing dependency debt at the start of supply-chain hardening; no critical findings accepted. Audit all locked dependencies and fail on any new high/critical advisory, changed affected version or expired exception. Remediate remaining legacy Puppeteer/transitive findings in a separately validated dependency update. Owner acceptance added 2026-11-18 by Rahul (repo owner): high picomatch GHSA-fc5q-39xc-vjpf accepted because no patched picomatch exists (the advisory covers <= 4.0.7, 4.0.7 is the latest published version, and first_patched_version is null). picomatch is a build-time-only transitive dependency (@tailwindcss/cli -> @parcel/watcher -> picomatch) that is never shipped to or executed by site visitors. Remove this acceptance as soon as a patched picomatch > 4.0.7 is available and locked.",
   "accepted": [
     "high basic-ftp node_modules/basic-ftp@5.3.0 https://github.com/advisories/GHSA-c475-qrg2-pj4r",
     "high basic-ftp node_modules/basic-ftp@5.3.0 https://github.com/advisories/GHSA-rpmf-866q-6p89",
@@ -12,6 +12,7 @@
     "high js-yaml node_modules/js-yaml@4.1.1 https://github.com/advisories/GHSA-2883-xcg3-v3hh",
     "high js-yaml node_modules/js-yaml@4.1.1 https://github.com/advisories/GHSA-52cp-r559-cp3m",
     "high js-yaml node_modules/js-yaml@4.1.1 https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+    "high picomatch node_modules/picomatch@4.0.4 https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
     "high source-map-js node_modules/source-map-js@1.2.1 https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
     "high ws node_modules/ws@8.19.0 https://github.com/advisories/GHSA-96hv-2xvq-fx4p"
   ]
