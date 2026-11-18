@@ -1,12 +1,12 @@
 {
-  "version": "v261118.02 12:42p",
-  "release": 2058,
-  "sha": "2884ab6d96",
-  "fullSha": "2884ab6d966a070da16d8ebe1e0befe47de20741",
+  "version": "v261118.03 12:45p",
+  "release": 2059,
+  "sha": "33affd2edc",
+  "fullSha": "33affd2edc994254c1667b4e92d23d1f45672f8f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-18T18:42:55+00:00",
-  "commits": [{"sha":"2884ab6d96","message":"Weekly reminder when an associate is short of their monthly minimum hours","author":"Blotto"}]
+  "pushedAt": "2026-11-18T18:45:57+00:00",
+  "commits": [{"sha":"33affd2edc","message":"PRODUCTDESIGN: neutral wording for monthly-hours reminder entry","author":"Blotto"}]
 }
