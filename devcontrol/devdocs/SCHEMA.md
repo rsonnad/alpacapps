@@ -284,6 +284,7 @@ vendors - Utility providers, contractors, and suppliers. ONE ROW PER COMPANY —
 associate_profiles   - Associate metadata
                       (app_user_id [FK→app_users], person_id [FK→people],
                        hourly_rate, payment_method, payment_handle,
+                       monthly_min_hours [NULL=none; drives monthly-hours-reminder],
                        identity_verification_status [pending/link_sent/verified/flagged/rejected],
                        setup_completed_at,
                        payout_frequency [daily(null)/weekly/...], payout_day_of_week [0-6, default 6],
