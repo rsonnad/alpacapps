@@ -12,8 +12,7 @@
 --   4. edited_by was set to NEW.associate_id (the shift owner), not the person
 --      who made the change.
 --   5. modification_count was bumped on every UPDATE, even no-op re-saves.
--- Found 2026-11-18 when nobody could tell who removed Justin Gilbertson's
--- Nov 10/17/18 shifts.
+-- Found 2026-11-18 when an associate's removed shifts could not be traced.
 
 -- 1. Keep history after the shift row is gone: drop the cascading FK.
 --    schedule_id keeps the (possibly deleted) shift's id.
