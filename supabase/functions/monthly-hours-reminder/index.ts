@@ -10,7 +10,7 @@
  * end of the month.
  *
  * Body (all optional):
- *   dry_run: true      → compute and return results, send nothing
+ *   dry_run: true      → compute and return results (with subject + text), send nothing
  *   test_to: "a@b.com" → send only to this address (no cc)
  *   force: true        → with test_to only: send even when on track (preview)
  *
@@ -124,22 +124,14 @@ serve(async (req) => {
         on_track: onTrack, month_end: monthEnd,
       };
 
-      // force (test only, requires test_to) sends even when on track.
-      const force = !!(body.force && body.test_to);
-      if ((onTrack && !force) || body.dry_run) {
-        result.status = onTrack ? "on_track_no_email" : "dry_run_would_send";
-        results.push(result);
-        continue;
-      }
-      if (!user?.email && !body.test_to) {
-        results.push({ ...result, status: "no_email_address" });
-        continue;
-      }
-
       const gap = Math.max(0, needed - scheduled);
       const schedLines = (sched || []).map((r) =>
         `<li>${fmtDate(r.schedule_date)}: ${fmtHours((r.scheduled_minutes || 0) / 60)}h</li>`).join("");
-      const subject = `Hours check: ${fmtHours(needed)} more hours needed by ${fmtDate(monthEnd)}`;
+      // gap > 0: the schedule doesn't reach the minimum, so ask for more shifts.
+      // gap == 0: the schedule is enough; ask them to work it (never "add 0 hours").
+      const subject = gap > 0
+        ? `Hours check: add ${fmtHours(gap)} more hours to your schedule by ${fmtDate(monthEnd)}`
+        : `Hours check: ${fmtHours(needed)}h still to work by ${fmtDate(monthEnd)}, keep your scheduled shifts`;
       const html = `
 <div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;color:#2a1f23;max-width:560px;">
   <p>Hi ${escapeHtml(firstName)},</p>
@@ -163,6 +155,19 @@ serve(async (req) => {
           ? `Please add at least ${fmtHours(gap)} more hours to your schedule before the end of the month.`
           : `Your scheduled days cover what you still need. Please make sure you work them, since a missed shift will leave you short.`) +
         `\n\n— Alpaca Playhouse`;
+
+      // force (test only, requires test_to) sends even when on track.
+      const force = !!(body.force && body.test_to);
+      if ((onTrack && !force) || body.dry_run) {
+        result.status = onTrack ? "on_track_no_email" : "dry_run_would_send";
+        if (body.dry_run) { result.subject = subject; result.text = text; }
+        results.push(result);
+        continue;
+      }
+      if (!user?.email && !body.test_to) {
+        results.push({ ...result, status: "no_email_address" });
+        continue;
+      }
 
       const resp = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
         method: "POST",
