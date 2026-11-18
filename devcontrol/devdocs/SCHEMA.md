@@ -502,7 +502,7 @@ When user asks about property data, query via Management API. Route by topic:
 | Any device control | `device_control_recipes` | `action`, `device_name` | 83 recipes across all device types |
 | All devices unified | `devices_unified` (VIEW) | `domain`, `is_active` | Unions lighting, climate, appliance, security, vehicle |
 | Laundry, washer, dryer | `lg_appliances` | `is_active=true` | — |
-| Schedule change history | `schedule_edits` | `associate_id`, `edited_at` | Auto-populated by trigger on `associate_schedules` UPDATE |
+| Schedule change history | `schedule_edits` | `associate_id`, `schedule_date`, `action`, `edited_at` | Append-only audit log. Since 2026-11-18, trigger `fn_audit_schedule_edit` logs every INSERT (`action='insert'`, `field_changed='shift'`), real field UPDATE (one row per field) and DELETE (`action='delete'`, old shift in `old_value`) of `associate_schedules`. `edited_by` = editor's `auth.uid()` (auth.users.id; NULL for service-role/SQL; older rows hold the shift owner's profile id), `edited_via` = JWT role. No FK on `schedule_id`, so history survives deleted shifts. No-op re-saves are not logged and don't bump `modification_count`. Before 2026-11-18 inserts/deletes were never logged. |
 | SMS messages, texts | `sms_messages` | — | — |
 | Emails, inbound mail | `inbound_emails` | — | — |
 | Property settings, address | `property_config` | `id=1` (singleton) | JSONB blob |
