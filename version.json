@@ -1,12 +1,12 @@
 {
-  "version": "v261118.06 12:51p",
-  "release": 2062,
-  "sha": "42f4cd64fd",
-  "fullSha": "42f4cd64fd74254381863cd367022441cdf6f03b",
+  "version": "v261118.07 1:29p",
+  "release": 2063,
+  "sha": "02540d2822",
+  "fullSha": "02540d28228abcfeb6341ec9f74b667e4ca185b2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-18T18:51:05+00:00",
-  "commits": [{"sha":"42f4cd64fd","message":"schedule_edits audit: PRODUCTDESIGN entry, neutral migration comment","author":"Blotto"}]
+  "pushedAt": "2026-11-18T19:29:32+00:00",
+  "commits": [{"sha":"02540d2822","message":"monthly-hours-reminder: no 'add 0 more hours'; subject matches the ask; dry_run shows text","author":"Blotto"}]
 }
