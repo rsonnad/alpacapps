@@ -1,12 +1,12 @@
 {
-  "version": "v261116.11 12:22p",
-  "release": 2056,
-  "sha": "bd7c3da7a0",
-  "fullSha": "bd7c3da7a04a1856e359877c0bc8d73d4960d5a1",
+  "version": "v261118.01 2:14a",
+  "release": 2057,
+  "sha": "8dbbb21036",
+  "fullSha": "8dbbb2103645ae3b765fd8367c15e0afb550dbf4",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervmccnms",
-  "pushedAt": "2026-11-16T18:22:48+00:00",
-  "commits": [{"sha":"bd7c3da7a0","message":"Listings v2.9: remove the version stamp under the masthead and tighten section spacing","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-18T08:14:21+00:00",
+  "commits": [{"sha":"8dbbb21036","message":"Accept picomatch GHSA-fc5q-39xc-vjpf in dependency-audit baseline (owner decision, Rahul, 2026-11-18)","author":"Muse (Almusca)"}]
 }
