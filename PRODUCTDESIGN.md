@@ -436,11 +436,20 @@ This hierarchy maps directly to the property's real-world roles. Permissions are
 
 ### 12.3 Access Codes in Database, Not in Code
 
-**Decision:** Space access codes (door keypads) are stored in the `spaces` table, not hardcoded anywhere.
+**Decision:** Space access codes (door keypads, closet locks, etc.) are stored as rows in the `password_vault` table — **not** in `spaces`, and not hardcoded anywhere. A per-space code is a row with `category = 'house'`, `is_active = TRUE`, and `space_id` pointing at the space it opens; `service` labels which door (e.g. "Closet"). House-wide codes (front door, garage) have `space_id IS NULL`. Residents read their codes only through the `SECURITY DEFINER` RPC `get_my_space_codes()` (current definition: `supabase/migrations/20260901_fix_get_my_space_codes_ambiguity.sql`), which `residents/my-access.js` calls.
+
+**Lookup (admin / service role):**
+```sql
+SELECT s.name, pv.service, pv.password, pv.notes
+FROM password_vault pv JOIN spaces s ON s.id = pv.space_id
+WHERE pv.category = 'house' AND pv.is_active AND s.name ILIKE '%<space>%';
+```
+If a door has no row here, its code was never recorded (or it uses a physical key) — add a `password_vault` row rather than searching elsewhere.
 
 **Why:**
-- **Dynamic updates.** When a code changes, update one database field. No code push required.
-- **Scoped access.** PAI only returns access codes for spaces the requesting user is assigned to. This scoping is a database query, not application logic.
+- **Dynamic updates.** When a code changes, update one `password_vault` row. No code push required.
+- **One secrets store.** Codes live alongside other credentials in `password_vault`, whose RLS denies direct reads; keeping them off `spaces` means the widely-read `spaces` table never carries secrets.
+- **Scoped access.** `get_my_space_codes()` returns only codes for spaces the caller is actively assigned to, plus non-root parent spaces (e.g. a Skyloft bed resident sees the Skyloft room code). Scoping is enforced in the database, not application logic. See "2026-09-01: Residents See Only Their Own Space's Door Code" below: house-wide (`space_id IS NULL`) codes are deliberately excluded.
 - **Rotation.** Codes can be changed when a tenant moves out without any deployment.
 
 ### 12.4 Backup Self-Healing, Email Only After Two Days
