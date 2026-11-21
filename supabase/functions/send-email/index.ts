@@ -2521,11 +2521,13 @@ This is an automated weekly schedule report from Alpaca Playhouse.`
         const desc = Array.isArray(d.descriptions) && d.descriptions.length
           ? `<div style="color:#7d6f74;font-size:12px;margin-top:2px;">${d.descriptions.map((s: string) => String(s).replace(/[<>]/g, '')).join(' • ')}</div>`
           : '';
+        const times = Array.isArray(d.sessions) ? d.sessions.map((x: string) => String(x).replace(/[<>&]/g, '')).join('<br>') : '';
         return `<tr>
           <td style="padding:6px 8px;border-top:1px solid #e6e2d9;vertical-align:top;">
             <div style="font-weight:600;color:#2a1f23;">${d.label}</div>
             ${desc}
           </td>
+          <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;color:#555;white-space:nowrap;">${times}</td>
           <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;color:#555;white-space:nowrap;">${Number(d.hours).toFixed(2)} hrs</td>
           <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;font-weight:600;color:#d4883a;white-space:nowrap;">$${Number(d.amount).toFixed(2)}</td>
         </tr>`;
@@ -2536,6 +2538,7 @@ This is an automated weekly schedule report from Alpaca Playhouse.`
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e6e2d9;border-radius:8px;border-collapse:separate;border-spacing:0;overflow:hidden;background:#fff;">
           <tr style="background:#f7f6f1;color:#7d6f74;font-size:12px;">
             <td style="padding:8px;text-align:left;">Date / Description</td>
+            <td style="padding:8px;text-align:right;">Start – End (Central)</td>
             <td style="padding:8px;text-align:right;">Hours</td>
             <td style="padding:8px;text-align:right;">Amount</td>
           </tr>
@@ -2546,7 +2549,8 @@ This is an automated weekly schedule report from Alpaca Playhouse.`
         ? '\nDays paid:\n' + breakdown.map((d: any) => {
             const desc = Array.isArray(d.descriptions) && d.descriptions.length
               ? `\n      ${d.descriptions.join(' • ')}` : '';
-            return `  ${d.label}: ${Number(d.hours).toFixed(2)} hrs — $${Number(d.amount).toFixed(2)}${desc}`;
+            const times = Array.isArray(d.sessions) && d.sessions.length ? ` (${d.sessions.join(', ')} CT)` : '';
+            return `  ${d.label}${times}: ${Number(d.hours).toFixed(2)} hrs — $${Number(d.amount).toFixed(2)}${desc}`;
           }).join('\n')
         : '';
 
@@ -2762,11 +2766,13 @@ async function getRenderedTemplate(
       const rowsHtml = rows.map((d) => {
         const descs = Array.isArray(d.descriptions) ? d.descriptions.filter(Boolean) : [];
         const descLine = descs.length ? `<div style="color:#7d6f74;font-size:12px;margin-top:2px;">${descs.map(escape).join(' • ')}</div>` : '';
+        const times = Array.isArray(d.sessions) ? d.sessions.map(escape).join('<br>') : '';
         return `<tr>
           <td style="padding:6px 8px;border-top:1px solid #e6e2d9;vertical-align:top;">
             <div style="font-weight:600;color:#2a1f23;">${escape(d.label)}</div>
             ${descLine}
           </td>
+          <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;color:#555;white-space:nowrap;">${times}</td>
           <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;color:#555;white-space:nowrap;">${Number(d.hours || 0).toFixed(2)} hrs</td>
           <td style="padding:6px 8px;border-top:1px solid #e6e2d9;text-align:right;vertical-align:top;font-weight:600;color:#d4883a;white-space:nowrap;">$${Number(d.amount || 0).toFixed(2)}</td>
         </tr>`;
@@ -2776,6 +2782,7 @@ async function getRenderedTemplate(
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e6e2d9;border-radius:8px;border-collapse:separate;border-spacing:0;overflow:hidden;background:#fff;">
           <tr style="background:#f7f6f1;color:#7d6f74;font-size:12px;">
             <td style="padding:8px;text-align:left;">Date / Description</td>
+            <td style="padding:8px;text-align:right;">Start – End (Central)</td>
             <td style="padding:8px;text-align:right;">Hours</td>
             <td style="padding:8px;text-align:right;">Amount</td>
           </tr>
@@ -2784,7 +2791,8 @@ async function getRenderedTemplate(
       data._breakdown_text = '\nDays paid:\n' + rows.map((d: any) => {
         const descs = Array.isArray(d.descriptions) ? d.descriptions.filter(Boolean) : [];
         const descLine = descs.length ? `\n      ${descs.join(' • ')}` : '';
-        return `  ${d.label}: ${Number(d.hours || 0).toFixed(2)} hrs — $${Number(d.amount || 0).toFixed(2)}${descLine}`;
+        const times = Array.isArray(d.sessions) && d.sessions.length ? ` (${d.sessions.join(', ')} CT)` : '';
+        return `  ${d.label}${times}: ${Number(d.hours || 0).toFixed(2)} hrs — $${Number(d.amount || 0).toFixed(2)}${descLine}`;
       }).join('\n');
     } else {
       data._breakdown_html = '';

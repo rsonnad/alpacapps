@@ -622,7 +622,16 @@ function initPhotoDatePicker() {
   if (!input) return;
   const today = todayInAustin();
   input.max = today;
-  if (!input.value) input.value = today;
+  // Always start on today. A browser-restored or left-over backdated value made
+  // Ike's 2026-11-19 photos save under 2026-11-14 with no shift attached.
+  input.autocomplete = 'off';
+  input.value = today;
+  window.addEventListener('pageshow', () => {
+    if (!isBackdatedPhotoDate()) return;
+    input.value = todayInAustin();
+    syncNote();
+    refreshTodayPhotos();
+  });
 
   const syncNote = () => {
     const backdated = isBackdatedPhotoDate();
