@@ -22,6 +22,7 @@ export interface DailyBreakdownRow {
   hours: number;
   amount: number;
   descriptions: string[]; // task descriptions for that day (deduped)
+  sessions: string[];     // "9:15 AM – 11:30 AM" per entry, Central time, oldest first
 }
 
 export interface PayoutBreakdown {
@@ -50,6 +51,13 @@ interface MinimalEntry {
 const workDay = (iso: string) =>
   new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
 
+const clockTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString("en-US", {
+    timeZone: "America/Chicago",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
 function entryRate(e: MinimalEntry, fallbackRate: number): number {
   const r = parseFloat(e.hourly_rate as string);
   return Number.isFinite(r) ? r : fallbackRate;
@@ -66,7 +74,7 @@ export function rollupEntries(
   taskNamesById?: Record<string, string>,
   dailyExtra = 0
 ): PayoutBreakdown {
-  const byDate = new Map<string, { hours: number; amount: number; descriptions: Set<string> }>();
+  const byDate = new Map<string, { hours: number; amount: number; descriptions: Set<string>; spans: { t: number; text: string }[] }>();
   let totalHours = 0;
   let hourlyAmountRaw = 0;
 
@@ -81,7 +89,11 @@ export function rollupEntries(
     const amt = hours * entryRate(e, hourlyRate);
     hourlyAmountRaw += amt;
 
-    const slot = byDate.get(date) || { hours: 0, amount: 0, descriptions: new Set<string>() };
+    const slot = byDate.get(date) || { hours: 0, amount: 0, descriptions: new Set<string>(), spans: [] };
+    slot.spans.push({
+      t: new Date(e.clock_in).getTime(),
+      text: `${clockTime(e.clock_in)} – ${clockTime(e.clock_out)}`,
+    });
     slot.hours += hours;
     slot.amount += amt;
 
@@ -110,6 +122,7 @@ export function rollupEntries(
         hours: Math.round(v.hours * 100) / 100,
         amount,
         descriptions: Array.from(v.descriptions),
+        sessions: v.spans.sort((a, b) => a.t - b.t).map((x) => x.text),
       };
     });
 
