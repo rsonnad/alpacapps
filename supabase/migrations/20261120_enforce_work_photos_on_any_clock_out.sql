@@ -4,7 +4,8 @@
 -- attached: the app's fallback path (used when the RPC call fails, e.g. a cached
 -- older page) updates time_entries directly with no photo check.
 --
--- Applies only when the associate closes their own shift (auth.uid() is their app user).
+-- Applies only when the associate closes their own shift (auth.uid() is the login of
+-- app_users.id = associate_profiles.app_user_id, i.e. app_users.auth_user_id).
 -- Admin edits and the auto-close job (service role / another user) are unaffected,
 -- as in 20261117_require_work_photos.sql.
 
@@ -27,9 +28,11 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  SELECT photos_required, app_user_id INTO v_required, v_user
-  FROM associate_profiles WHERE id = NEW.associate_id;
-  IF NOT COALESCE(v_required, false) OR v_user IS DISTINCT FROM auth.uid() THEN
+  SELECT ap.photos_required, u.auth_user_id INTO v_required, v_user
+  FROM associate_profiles ap
+  LEFT JOIN app_users u ON u.id = ap.app_user_id
+  WHERE ap.id = NEW.associate_id;
+  IF NOT COALESCE(v_required, false) OR v_user IS NULL OR v_user IS DISTINCT FROM auth.uid() THEN
     RETURN NEW;
   END IF;
 

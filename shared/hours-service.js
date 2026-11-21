@@ -232,7 +232,13 @@ class HoursService {
         p_description: description ?? null,
         p_photos_not_relevant: !!photosNotRelevant,
       });
-      if (!rpcErr && rpcData) return Array.isArray(rpcData) ? rpcData[0] : rpcData;
+      // Only trust the RPC when it hands back the closed row. An empty result (no row
+      // updated) used to count as success, so the app said "Clocked out!" while the
+      // entry stayed open and kept counting hours.
+      if (!rpcErr && rpcData) {
+        const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+        if (row && row.clock_out) return row;
+      }
       // Photo gate must NOT fall through to the unguarded legacy path below.
       if (rpcErr && /photos_required/.test(rpcErr.message || '')) {
         const e = new Error(String(rpcErr.message).replace(/^photos_required:\s*/, 'Photos required: '));
