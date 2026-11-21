@@ -1,12 +1,12 @@
 {
-  "version": "v261118.07 1:29p",
-  "release": 2063,
-  "sha": "02540d2822",
-  "fullSha": "02540d28228abcfeb6341ec9f74b667e4ca185b2",
+  "version": "v261121.01 1:25p",
+  "release": 2064,
+  "sha": "13b6b4445f",
+  "fullSha": "13b6b4445f043d7d6bb04e59f178ad0dc4799bc6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervmccnms",
-  "pushedAt": "2026-11-18T19:29:32+00:00",
-  "commits": [{"sha":"02540d2822","message":"monthly-hours-reminder: no 'add 0 more hours'; subject matches the ask; dry_run shows text","author":"Blotto"}]
+  "machine": "runnervm0hi8g",
+  "pushedAt": "2026-11-21T19:25:38+00:00",
+  "commits": [{"sha":"ebe8046e97","message":"feat(payout-email): show start/end times per day in Days paid table","author":"Blotto"},{"sha":"fa6357f8d6","message":"fix(work-photos): reset photo date to today; enforce before/after photos on any clock-out path","author":"Blotto"},{"sha":"994f7689c1","message":"fix(work-hours): photo gate matches RLS identity; clock-out only succeeds when the row is really closed","author":"Blotto"},{"sha":"13b6b4445f","message":"Merge pull request #167 from rsonnad/claude/payout-email-times","author":"Rahul"}]
 }
