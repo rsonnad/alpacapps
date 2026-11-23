@@ -174,8 +174,8 @@ form.addEventListener('submit', async (e) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch {
     showError(
-      'ส่งไม่สำเร็จ คำตอบยังถูกเก็บไว้ในโทรศัพท์ กรุณาลองใหม่อีกครั้ง หรืออีเมลหา team@alpacaplayhouse.com',
-      'Sending failed. Your answers are still saved on this phone. Please try again, or email team@alpacaplayhouse.com.',
+      'ส่งไม่สำเร็จ คำตอบยังถูกเก็บไว้ในโทรศัพท์ กรุณาลองใหม่อีกครั้งภายหลัง',
+      'Sending failed. Your answers are still saved on this phone. Please try again later.',
     );
     btn.disabled = false;
     btn.textContent = 'ส่งคำตอบ · Send answers';
