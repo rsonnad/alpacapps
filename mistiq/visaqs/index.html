@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>แบบสอบถามการเดินทางไปอเมริกา — Mistique Journey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/mistiq/styles.css">
+  <script type="module" src="/shared/version-info.js"></script>
+  <style>
+    body { font-family: 'Noto Sans Thai', 'Lato', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .vq-page { padding: 90px 0 60px; min-height: 100vh; background: var(--mistiq-bg); }
+    .vq-wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+    .vq-head { text-align: center; margin-bottom: 28px; }
+    .vq-head h1 { font-size: 2rem; color: var(--mistiq-text); margin: 0 0 4px; line-height: 1.3; }
+    .vq-head .vq-en-title { font-family: var(--mistiq-font-heading); font-size: 1.4rem; color: var(--mistiq-text-light); margin: 0 0 16px; }
+    .vq-intro { background: var(--mistiq-cream); border: 1px solid var(--mistiq-warm); border-radius: 10px; padding: 18px 20px; text-align: left; line-height: 1.65; }
+    .vq-intro p { margin: 0 0 10px; }
+    .vq-intro p:last-child { margin-bottom: 0; }
+    .vq-en { color: var(--mistiq-text-light); font-size: 0.9em; }
+    .vq-intro .vq-en, .vq-success .vq-en { display: block; margin-top: 4px; }
+    .vq-progress { position: sticky; top: 64px; z-index: 5; background: var(--mistiq-bg); padding: 8px 0; margin-bottom: 8px; }
+    .vq-progress-bar { height: 6px; background: var(--mistiq-warm); border-radius: 3px; overflow: hidden; }
+    .vq-progress-fill { height: 100%; width: 0; background: var(--mistiq-accent); transition: width .3s; }
+    .vq-progress-text { font-size: 0.8rem; color: var(--mistiq-text-light); margin-top: 4px; text-align: right; }
+    .vq-section { background: white; border: 1px solid var(--mistiq-warm); border-radius: 10px; padding: 24px 20px; margin-bottom: 20px; }
+    .vq-section h2 { margin: 0 0 4px; color: var(--mistiq-accent); font-size: 1.35rem; line-height: 1.35; }
+    .vq-section h2 .vq-en { display: block; font-family: var(--mistiq-font-heading); font-size: 1.05rem; font-weight: 400; }
+    .vq-section-intro { background: var(--mistiq-bg-alt); border-radius: 8px; padding: 12px 14px; margin: 12px 0 4px; font-size: 0.92rem; line-height: 1.6; }
+    .vq-q { margin-top: 22px; }
+    .vq-label { display: block; font-weight: 600; color: var(--mistiq-text); line-height: 1.5; margin-bottom: 2px; }
+    .vq-label .vq-en { display: block; font-weight: 400; }
+    .vq-req .vq-label > span:first-child::after { content: ' *'; color: #b5523b; }
+    .vq-hint { font-size: 0.85rem; color: var(--mistiq-text-light); margin: 2px 0 6px; line-height: 1.5; }
+    .vq-q input[type="text"], .vq-q input[type="date"], .vq-q textarea {
+      width: 100%; box-sizing: border-box; margin-top: 8px; padding: 10px 12px; font: inherit; font-size: 1rem;
+      border: 1px solid var(--mistiq-warm); border-radius: 8px; background: var(--mistiq-cream); color: var(--mistiq-text);
+    }
+    .vq-q textarea { min-height: 84px; resize: vertical; }
+    .vq-q input:focus, .vq-q textarea:focus { outline: none; border-color: var(--mistiq-accent); background: white; }
+    .vq-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .vq-opt { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border: 1px solid var(--mistiq-warm); border-radius: 8px; cursor: pointer; line-height: 1.4; background: var(--mistiq-cream); }
+    .vq-opt:hover { background: var(--mistiq-bg-alt); }
+    .vq-opt input { margin-top: 3px; accent-color: var(--mistiq-accent); flex: none; }
+    .vq-opt .vq-en { display: block; font-size: 0.8rem; }
+    .vq-opt:has(input:checked) { border-color: var(--mistiq-accent); background: #f6efe4; }
+    .vq-sub { font-size: 0.85rem; color: var(--mistiq-text-light); margin-top: 10px; }
+    .vq-sub input[type="text"] { margin-top: 4px; }
+    .vq-consent { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--mistiq-warm); border-radius: 8px; background: var(--mistiq-cream); cursor: pointer; line-height: 1.55; }
+    .vq-consent input { margin-top: 5px; width: 18px; height: 18px; accent-color: var(--mistiq-accent); flex: none; }
+    .vq-actions { text-align: center; margin-top: 8px; }
+    .vq-submit { background: var(--mistiq-accent); color: white; border: none; border-radius: 30px; padding: 14px 42px; font: inherit; font-size: 1.05rem; font-weight: 600; cursor: pointer; }
+    .vq-submit:hover { background: var(--mistiq-accent-dark); }
+    .vq-submit:disabled { background: #bbb; cursor: not-allowed; }
+    .vq-note { font-size: 0.85rem; color: var(--mistiq-text-light); margin-top: 12px; line-height: 1.55; }
+    .vq-error { display: none; background: #fbecea; color: #8a3324; border: 1px solid #efc9c2; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; line-height: 1.55; }
+    .vq-success { display: none; text-align: center; background: white; border: 1px solid var(--mistiq-warm); border-radius: 10px; padding: 40px 20px; line-height: 1.7; }
+    .vq-success h2 { color: var(--mistiq-accent); margin: 0 0 10px; }
+    @media (max-width: 560px) {
+      .vq-opts { grid-template-columns: 1fr; }
+      .vq-head h1 { font-size: 1.6rem; }
+      .vq-section { padding: 20px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="mistiq-header mistiq-header--scrolled" id="mistiq-header">
+    <div class="mistiq-header__inner">
+      <a href="/mistiq/" class="mistiq-header__logo">
+        <span class="mistiq-header__logo-text">Mistique Journey</span>
+        <span title="Site version" class="mistiq-header__version"></span>
+      </a>
+    </div>
+  </header>
+
+  <main class="vq-page">
+    <div class="vq-wrap">
+
+      <div class="vq-head">
+        <h1>แบบสอบถามการเดินทางไปอเมริกา</h1>
+        <p class="vq-en-title">US visit questionnaire</p>
+        <div class="vq-intro">
+          <p>ขอบคุณที่สนใจเดินทางมาเยี่ยมเราที่เมืองออสติน รัฐเท็กซัส คำตอบของคุณจะช่วยให้เราวางแผนการขอวีซ่าท่องเที่ยวอเมริกา (B-2) ช่วงเวลาเดินทาง และค่าใช้จ่ายได้ถูกต้อง
+            <span class="vq-en">Thank you for your interest in visiting us in Austin, Texas. Your answers help us plan the US visitor visa (B-2), the timing and the costs.</span></p>
+          <p><strong>ตอบเป็นภาษาไทยหรือภาษาอังกฤษก็ได้</strong> ข้อไหนไม่รู้ ข้ามไปได้ ไม่ต้องใส่เลขที่เอกสารใดๆ
+            <span class="vq-en"><strong>You may answer in Thai or English.</strong> Skip anything you don't know. Do not type any document numbers.</span></p>
+          <p>กรุณาตอบตามความจริง เจ้าหน้าที่สถานทูตจะตรวจสอบข้อมูล และคำตอบที่ไม่ตรงความจริงอาจทำให้ถูกปฏิเสธวีซ่าอย่างถาวร
+            <span class="vq-en">Please answer truthfully. The embassy checks the facts, and a wrong answer can lead to a permanent refusal.</span></p>
+          <p>คำตอบจะถูกบันทึกไว้ในโทรศัพท์เครื่องนี้ระหว่างกรอก สามารถกลับมากรอกต่อภายหลังได้
+            <span class="vq-en">Your answers are saved on this phone as you type, so you can come back and finish later.</span></p>
+        </div>
+      </div>
+
+      <div class="vq-progress" aria-hidden="true">
+        <div class="vq-progress-bar"><div class="vq-progress-fill" id="vq-progress-fill"></div></div>
+        <div class="vq-progress-text" id="vq-progress-text"></div>
+      </div>
+
+      <form id="vq-form" novalidate></form>
+
+      <div class="vq-success" id="vq-success">
+        <h2>ได้รับคำตอบแล้ว ขอบคุณค่ะ</h2>
+        <p>เราจะอ่านคำตอบและติดต่อกลับเร็วๆ นี้<br><span class="vq-en">Thank you — we received your answers and will be in touch soon.</span></p>
+        <p class="vq-note">มีคำถาม ติดต่อ / Questions: <a href="mailto:team@alpacaplayhouse.com">team@alpacaplayhouse.com</a></p>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="mistiq-footer">
+    <div class="mistiq-footer__content">
+      <p class="mistiq-footer__brand">Mistique Journey</p>
+      <p class="mistiq-footer__location">@ Austin, Texas USA — <a href="https://alpacaplayhouse.com" class="mistiq-footer__link">Alpaca Playhouse</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/mistiq/visaqs/visaqs.js"></script>
+</body>
+</html>

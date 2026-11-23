@@ -1,10 +1,14 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders } from "../_shared/api-helpers.ts";
+import { uploadToR2 } from "../_shared/r2-upload.ts";
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+// Private bucket (no public access) for /mistiq/visaqs/ answers, in the
+// AlpacApps Cloudflare account (secrets MISTIQ_R2_*; Bitwarden "Cloudflare R2 — Object Storage").
+const VISAQS_BUCKET = 'mistiq-private'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -102,6 +106,67 @@ serve(async (req) => {
         console.error('Resend error:', errText)
         throw new Error(`Email send failed: ${errText}`)
       }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      })
+    }
+
+    // --- VISA_SURVEY: US-visit questionnaire from /mistiq/visaqs/ ---
+    // The page sends one row per answered question with the English and Thai
+    // question text, so the email is built from the payload, not a field list.
+    if (action === 'visa_survey') {
+      const raw = Array.isArray(data.answers) ? data.answers : null
+      if (!raw || raw.length === 0 || raw.length > 200) {
+        return new Response(JSON.stringify({ error: 'answers must be a non-empty list' }), {
+          status: 400,
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+        })
+      }
+      const clip = (v: unknown, n: number) => String(v ?? '').slice(0, n)
+      const answers: SurveyAnswer[] = raw.map((a: Record<string, unknown>) => ({
+        section: clip(a?.section, 100),
+        id: clip(a?.id, 80),
+        q_en: clip(a?.q_en, 400),
+        q_th: clip(a?.q_th, 400),
+        answer: clip(a?.answer, 6000),
+      }))
+      const name = answers.find((a) => a.id === 'full_name')?.answer || 'Unknown'
+
+      // Answers go to a private R2 bucket (no public URL), never to the repo
+      // or the database. The event row only points at the file.
+      const submittedAt = new Date().toISOString()
+      const r2Key = `visaqs/${submittedAt.slice(0, 10)}-${crypto.randomUUID()}.json`
+      const record = {
+        submitted_at: submittedAt,
+        form: 'mistiq/visaqs',
+        language: data.language || 'th',
+        referrer: data.referrer || null,
+        user_agent: req.headers.get('user-agent') || null,
+        answers,
+      }
+      await uploadToR2(r2Key, new TextEncoder().encode(JSON.stringify(record, null, 2)), 'application/json', { bucket: VISAQS_BUCKET, envPrefix: 'MISTIQ_' })
+
+      const { error: dbError } = await supabase.from('mistiq_events').insert({
+        event_type: 'visa_survey',
+        page: 'visaqs',
+        lang: data.language || 'th',
+        metadata: { r2_bucket: VISAQS_BUCKET, r2_key: r2Key },
+      })
+      if (dbError) console.error('visa_survey event insert error:', dbError)
+
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'Mistique Journey <noreply@alpacaplayhouse.com>',
+          to: ['rahulioson@gmail.com'],
+          subject: `US visit questionnaire — ${name.slice(0, 80)}`,
+          html: buildVisaSurveyEmail(answers, r2Key),
+        }),
+      })
+      // The answers are already saved in R2; a failed email is logged, not fatal.
+      if (!emailRes.ok) console.error('visa_survey Resend error:', await emailRes.text())
 
       return new Response(JSON.stringify({ ok: true }), {
         headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
@@ -213,4 +278,43 @@ function buildEmailHtml(d: Record<string, string>): string {
   </div>
 </body>
 </html>`
+}
+
+function escHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string))
+}
+
+type SurveyAnswer = { section: string; id: string; q_en: string; q_th: string; answer: string }
+
+function buildVisaSurveyEmail(answers: SurveyAnswer[], r2Key: string): string {
+  const submitted = new Date().toLocaleString('en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' })
+  const sections: string[] = []
+  const bySection = new Map<string, SurveyAnswer[]>()
+  for (const a of answers) {
+    if (!bySection.has(a.section)) { bySection.set(a.section, []); sections.push(a.section) }
+    bySection.get(a.section)!.push(a)
+  }
+  const blocks = sections.map((s) => `
+    <div style="background:white;margin:16px;padding:20px 24px;border-radius:8px;">
+      <h3 style="margin:0 0 14px;color:#8b7355;font-size:16px;border-bottom:1px solid #e8ddd0;padding-bottom:8px;">${escHtml(s)}</h3>
+      ${bySection.get(s)!.map((a) => `
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#8b7355;">${escHtml(a.q_en)}</div>
+          <div style="font-size:11px;color:#9a8b78;margin-bottom:3px;">${escHtml(a.q_th)}</div>
+          <div style="color:#3d3d3d;font-size:15px;white-space:pre-wrap;">${escHtml(a.answer)}</div>
+        </div>`).join('')}
+    </div>`).join('')
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f0ebe3;font-family:Arial,sans-serif;">
+  <div style="max-width:680px;margin:24px auto;background:#f9f6f1;border-radius:12px;overflow:hidden;">
+    <div style="background:#8b7355;padding:24px 32px;text-align:center;">
+      <h1 style="margin:0;color:white;font-size:21px;">US visit questionnaire</h1>
+      <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">${answers.length} answers · Thai answers are shown as typed</p>
+    </div>
+    ${blocks}
+    <div style="padding:16px 32px;text-align:center;color:#6b6b6b;font-size:12px;">
+      Submitted ${escHtml(submitted)} (Austin time) · saved privately in R2: ${escHtml(VISAQS_BUCKET)}/${escHtml(r2Key)}
+    </div>
+  </div>
+</body></html>`
 }

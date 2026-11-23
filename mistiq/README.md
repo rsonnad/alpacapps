@@ -17,6 +17,23 @@ Mistiq is an international staffing/recruitment site with its own branding, font
 - `apply/` — Application form
 - `jobs/` — Job listings
 - `de/`, `es/`, `ja/`, `pl/`, `ru/`, `th/`, `zh/` — Localized versions
+- `visaqs/` — private US-visit questionnaire (Thai + English on one page, not linked from nav, `noindex`)
+
+## US-visit questionnaire (`/mistiq/visaqs/`)
+
+A long intake form for a candidate we may host in the US on a visitor (B-2) visa: family, work, money, documents, travel history, background, and the visit itself. Everything a consular officer weighs, so we can pick the purpose, dates and costs.
+
+- **Questions live in `visaqs/questions.js`** (English + Thai per question). `visaqs.js` renders the form from it and sends each answer with both question texts, so the email cannot drift from the form. Add or change a question there only.
+- **No document numbers.** Documents are "have it / expired / don't have / not sure" plus a month-and-year box.
+- **Draft** saves in `localStorage` on her phone (try/catch; the form works without it).
+- **Submit:** `mistiq-apply` edge function, `action: "visa_survey"`.
+  - Answers are written as JSON to the **private R2 bucket `mistiq-private`**, key `visaqs/<date>-<uuid>.json`. The bucket is in the AlpacApps Cloudflare account (Bitwarden "Cloudflare R2 — Object Storage"); the function reads it through Supabase secrets `MISTIQ_R2_ACCOUNT_ID`, `MISTIQ_R2_ACCESS_KEY_ID`, `MISTIQ_R2_SECRET_ACCESS_KEY`. The default `R2_*` secrets point at a different account and a public bucket, so don't use them here.
+  - `mistiq_events` gets a row with only `{r2_bucket, r2_key}` — no answers in the database or the repo.
+  - The full answers are also emailed to rahulioson@gmail.com (failure is logged, not fatal).
+- **Read a submission:** `curl --aws-sigv4 "aws:amz:auto:s3" --user "$KEY:$SECRET" "https://$ACCOUNT.r2.cloudflarestorage.com/mistiq-private/<key>"` with the values from that Bitwarden item.
+- Deploy the function with `--no-verify-jwt` (the pages send no auth header).
+
+**Decision (2026-11-23):** answers stored in private R2, not the database. **Why:** health, money and arrest answers should not sit in a table the shared admin tooling can browse; one JSON file per submission is easy to hand to an immigration lawyer.
 
 ## Language auto-selection (jobs pages)
 

@@ -52,15 +52,15 @@ interface R2Config {
   publicUrl: string;
 }
 
-function getR2Config(): R2Config {
-  const accountId = Deno.env.get("R2_ACCOUNT_ID");
-  const accessKeyId = Deno.env.get("R2_ACCESS_KEY_ID");
-  const secretAccessKey = Deno.env.get("R2_SECRET_ACCESS_KEY");
+function getR2Config(prefix = ""): R2Config {
+  const accountId = Deno.env.get(`${prefix}R2_ACCOUNT_ID`);
+  const accessKeyId = Deno.env.get(`${prefix}R2_ACCESS_KEY_ID`);
+  const secretAccessKey = Deno.env.get(`${prefix}R2_SECRET_ACCESS_KEY`);
   const bucketName = Deno.env.get("R2_BUCKET_NAME") || "alpacaplayhouse";
   const publicUrl = Deno.env.get("R2_PUBLIC_URL") || "";
 
   if (!accountId || !accessKeyId || !secretAccessKey) {
-    throw new Error("R2 credentials not configured (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY)");
+    throw new Error(`R2 credentials not configured (${prefix}R2_ACCOUNT_ID, ${prefix}R2_ACCESS_KEY_ID, ${prefix}R2_SECRET_ACCESS_KEY)`);
   }
 
   return { accountId, accessKeyId, secretAccessKey, bucketName, publicUrl };
@@ -73,14 +73,18 @@ function getR2Config(): R2Config {
  * @param key - Object key (path), e.g. "documents/manual.pdf"
  * @param body - File content as Uint8Array
  * @param contentType - MIME type
- * @returns Public URL of the uploaded object
+ * @param opts.bucket - Upload to this bucket instead of R2_BUCKET_NAME (e.g. a private bucket)
+ * @param opts.envPrefix - Read credentials from `${prefix}R2_ACCOUNT_ID` etc. (another Cloudflare account)
+ * @returns Public URL of the uploaded object (meaningless for a private bucket)
  */
 export async function uploadToR2(
   key: string,
   body: Uint8Array,
   contentType: string,
+  opts: { bucket?: string; envPrefix?: string } = {},
 ): Promise<string> {
-  const cfg = getR2Config();
+  const cfg = getR2Config(opts.envPrefix);
+  if (opts.bucket) cfg.bucketName = opts.bucket;
   const endpoint = `https://${cfg.accountId}.r2.cloudflarestorage.com`;
   const region = "auto";
   const service = "s3";
