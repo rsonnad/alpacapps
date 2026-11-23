@@ -1,12 +1,12 @@
 {
-  "version": "v261123.05 1:11p",
-  "release": 2069,
-  "sha": "d2e19e8268",
-  "fullSha": "d2e19e82687879d9adcd13312e1a4bf2e330359a",
+  "version": "v261123.06 1:15p",
+  "release": 2070,
+  "sha": "13d8414863",
+  "fullSha": "13d841486356c3f9b69df29cf0af19458a616f83",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-23T19:11:34+00:00",
-  "commits": [{"sha":"d2e19e8268","message":"Mistiq visaqs: version the script URLs so browsers fetch the new questions","author":"Blotto"}]
+  "pushedAt": "2026-11-23T19:15:36+00:00",
+  "commits": [{"sha":"13d8414863","message":"Mistiq visaqs: ask for her best travel window (earliest leave, latest return)","author":"Blotto"}]
 }
