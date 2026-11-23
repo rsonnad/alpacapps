@@ -256,9 +256,9 @@ export const SECTIONS = [
         en: 'Do you file a Thai personal income tax return (ภ.ง.ด.)?', th: 'ยื่นภาษีเงินได้บุคคลธรรมดา (ภ.ง.ด.) ไหม',
         opts: YES_NO_UNSURE },
       { id: 'self_fund', type: 'radio',
-        en: 'We plan to pay for the trip. Could you also pay part of it yourself if that helps your visa?',
-        th: 'เราจะออกค่าใช้จ่ายการเดินทางให้ ถ้าช่วยเรื่องวีซ่าได้ คุณสามารถออกค่าใช้จ่ายบางส่วนเองได้ไหม',
-        opts: [['Yes', 'ได้'], ['A small part', 'ได้บ้างเล็กน้อย'], ['No', 'ไม่ได้'], ['Not sure', 'ไม่แน่ใจ']] },
+        en: 'You would apply for the visa yourself and we pay you back if we go ahead. Could you pay the visa fees first (about US$185, possibly more) and be paid back later?',
+        th: 'คุณจะเป็นผู้ยื่นขอวีซ่าเอง และเราจะคืนเงินให้ถ้าเราตัดสินใจดำเนินการต่อ คุณสามารถสำรองจ่ายค่าธรรมเนียมวีซ่าไปก่อน (ประมาณ 185 ดอลลาร์สหรัฐ หรืออาจมากกว่านั้น) แล้วรับเงินคืนภายหลังได้ไหม',
+        opts: [['Yes', 'ได้'], ['Yes, if paid back quickly', 'ได้ ถ้าได้เงินคืนเร็ว'], ['No', 'ไม่ได้'], ['Not sure', 'ไม่แน่ใจ']] },
     ],
   },
   {
