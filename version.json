@@ -1,12 +1,12 @@
 {
-  "version": "v261123.01 12:20p",
-  "release": 2065,
-  "sha": "390dd3eed3",
-  "fullSha": "390dd3eed3a3cc7d8166446a7f740f2910f6d0ed",
+  "version": "v261123.02 12:41p",
+  "release": 2066,
+  "sha": "3de0f5f9bf",
+  "fullSha": "3de0f5f9bf1355ad32485a7f42c8de722a235a34",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-23T18:20:16+00:00",
-  "commits": [{"sha":"390dd3eed3","message":"Mistiq: bilingual US-visit questionnaire at /mistiq/visaqs/","author":"Blotto"}]
+  "pushedAt": "2026-11-23T18:41:49+00:00",
+  "commits": [{"sha":"3de0f5f9bf","message":"Mistiq visaqs: neutral Thai yes/no wording for have / ever / are questions","author":"Blotto"}]
 }
