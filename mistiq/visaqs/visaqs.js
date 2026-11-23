@@ -1,7 +1,7 @@
 // Renders the US-visit questionnaire from questions.js, autosaves a draft on
 // this device, and sends the answers to the mistiq-apply edge function
 // (action "visa_survey"), which stores them and emails the team.
-import { SECTIONS, DOC_OPTS } from './questions.js?v=5'; // bump ?v= with every change to either file (browsers cache them)
+import { SECTIONS, DOC_OPTS } from './questions.js?v=6'; // bump ?v= with every change to either file (browsers cache them)
 
 const EDGE_FN = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/mistiq-apply';
 const DRAFT_KEY = 'mistiq-visaqs-draft-v1';
@@ -23,7 +23,7 @@ function optionList(q, kind) {
 }
 
 function subText(name, label) {
-  return `<div class="vq-sub"><label for="${name}">${esc(label.th)} · ${esc(label.en)}</label>
+  return `<div class="vq-sub" data-sub="${name}"><label for="${name}">${esc(label.th)} · ${esc(label.en)}</label>
     <input type="text" id="${name}" name="${name}"></div>`;
 }
 
@@ -31,7 +31,7 @@ function renderQuestion(q) {
   const cls = `vq-q${q.req ? ' vq-req' : ''}`;
   const hint = q.hint ? `<p class="vq-hint">${esc(q.hint.th)}<br>${esc(q.hint.en)}</p>` : '';
   if (q.type === 'consent') {
-    return `<div class="${cls}"><label class="vq-consent"><input type="checkbox" name="${q.id}" value="Agreed">
+    return `<div class="${cls}" data-q="${q.id}"><label class="vq-consent"><input type="checkbox" name="${q.id}" value="Agreed">
       <span>${esc(q.th)}<br><span class="vq-en">${esc(q.en)}</span></span></label></div>`;
   }
   const label = `<label class="vq-label" ${['text', 'textarea', 'date'].includes(q.type) ? `for="${q.id}"` : ''}>${bi(q.th, q.en)}</label>`;
@@ -44,13 +44,17 @@ function renderQuestion(q) {
   else if (q.type === 'checks') field = optionList(q, 'checkbox');
   if (q.type === 'doc' && q.date) field += subText(`${q.id}__date`, q.date);
   if (q.other) field += subText(`${q.id}__detail`, OTHER_DETAIL);
-  return `<div class="${cls}" role="group">${label}${hint}${field}</div>`;
+  return `<div class="${cls}" role="group" data-q="${q.id}">${label}${hint}${field}</div>`;
 }
 
 form.innerHTML = SECTIONS.map((s, i) => `
   <section class="vq-section" id="sec-${s.id}">
     <h2>${i + 1}. ${esc(s.th)}<span class="vq-en">${esc(s.en)}</span></h2>
     ${s.intro ? `<div class="vq-section-intro">${esc(s.intro.th)}<br><span class="vq-en">${esc(s.intro.en)}</span></div>` : ''}
+    ${s.questions.some((q) => q.rare) ? `<div class="vq-noall-wrap">
+      <button type="button" class="vq-noall" data-sec="${s.id}">ไม่ / ไม่เคย ทุกข้อที่ยังไม่ได้ตอบ<span class="vq-en">No to all the yes/no questions I haven't answered</span></button>
+      <p class="vq-hint">คำถามแบบ "เคย/ไม่เคย" ในส่วนนี้ คนส่วนใหญ่ตอบว่า "ไม่" กดปุ่มนี้ได้เลย แล้วค่อยแก้ข้อที่ตอบว่า "ใช่"<br>Most people answer "No" to the yes/no questions here. Tap this, then change any that are "Yes".</p>
+    </div>` : ''}
     ${s.questions.map(renderQuestion).join('')}
   </section>`).join('') + `
   <div class="vq-error" id="vq-error" role="alert"></div>
@@ -94,19 +98,64 @@ function saveDraft() {
   try { localStorage.setItem(DRAFT_KEY, JSON.stringify(readForm())); } catch { /* storage blocked: no draft */ }
 }
 
-// ── Progress ────────────────────────────────────────────────────────────────
+// ── Show only what applies ──────────────────────────────────────────────────
 const ALL_Q = SECTIONS.flatMap((s) => s.questions.map((q) => ({ ...q, section: s })));
 
 function isAnswered(v) {
   return Array.isArray(v) ? v.length > 0 : Boolean(v && String(v).trim());
 }
 
+// Answers that need no follow-up details.
+const NEGATIVE = /^(No|Never|None|Not sure|Don't have|Does not apply|Thai only|Alone)/;
+
+function isVisible(q, vals) {
+  if (!q.showIf) return true;
+  const v = vals[q.showIf.q];
+  return !isAnswered(v) || !q.showIf.notIn.includes(v);
+}
+
+function detailVisible(q, vals) {
+  const v = vals[q.id];
+  if (!isAnswered(v)) return false;
+  if (Array.isArray(v)) return v.some((x) => !NEGATIVE.test(x));
+  return q.detailFor ? q.detailFor.includes(v) : !NEGATIVE.test(v);
+}
+
+function applyVisibility(vals) {
+  for (const q of ALL_Q) {
+    const box = form.querySelector(`[data-q="${q.id}"]`);
+    if (box) box.hidden = !isVisible(q, vals);
+    const detail = form.querySelector(`[data-sub="${q.id}__detail"]`);
+    if (detail) detail.hidden = !detailVisible(q, vals);
+    const date = form.querySelector(`[data-sub="${q.id}__date"]`);
+    if (date) date.hidden = !(typeof vals[q.id] === 'string' && vals[q.id].startsWith('Have it'));
+  }
+}
+
 function updateProgress() {
   const vals = readForm();
-  const done = ALL_Q.filter((q) => isAnswered(vals[q.id])).length;
-  fill.style.width = `${Math.round((done / ALL_Q.length) * 100)}%`;
-  progressText.textContent = `ตอบแล้ว ${done} จาก ${ALL_Q.length} ข้อ · ${done} of ${ALL_Q.length} answered`;
+  applyVisibility(vals);
+  const shown = ALL_Q.filter((q) => isVisible(q, vals));
+  const done = shown.filter((q) => isAnswered(vals[q.id])).length;
+  fill.style.width = `${Math.round((done / shown.length) * 100)}%`;
+  progressText.textContent = `ตอบแล้ว ${done} จาก ${shown.length} ข้อ · ${done} of ${shown.length} answered`;
 }
+
+// "No to all": answers every unanswered yes/no question in the section with
+// its first negative option. Answers already given are left alone.
+form.addEventListener('click', (e) => {
+  const btn = e.target.closest('.vq-noall');
+  if (!btn) return;
+  const sec = SECTIONS.find((s) => s.id === btn.dataset.sec);
+  for (const q of sec.questions.filter((x) => x.rare)) {
+    if (form.querySelector(`input[name="${q.id}"]:checked`)) continue;
+    const no = q.opts.find(([en]) => /^(No|Never)/.test(en));
+    const input = no && form.querySelector(`input[name="${q.id}"][value="${CSS.escape(no[0])}"]`);
+    if (input) input.checked = true;
+  }
+  saveDraft();
+  updateProgress();
+});
 
 restoreDraft();
 updateProgress();
@@ -117,13 +166,14 @@ form.addEventListener('change', () => { saveDraft(); updateProgress(); });
 function buildAnswers(vals) {
   const answers = [];
   for (const q of ALL_Q) {
+    if (!isVisible(q, vals)) continue; // e.g. partner questions after choosing "single"
     const main = vals[q.id];
     const parts = [];
     if (isAnswered(main)) parts.push(Array.isArray(main) ? main.join(', ') : main);
     const date = vals[`${q.id}__date`];
-    if (isAnswered(date)) parts.push(`Date: ${date}`);
+    if (isAnswered(date) && String(main).startsWith('Have it')) parts.push(`Date: ${date}`);
     const detail = vals[`${q.id}__detail`];
-    if (isAnswered(detail)) parts.push(`Details: ${detail}`);
+    if (isAnswered(detail) && detailVisible(q, vals)) parts.push(`Details: ${detail}`);
     if (!parts.length) continue;
     answers.push({ section: q.section.en, id: q.id, q_en: q.en, q_th: q.th, answer: parts.join(' — ') });
   }
