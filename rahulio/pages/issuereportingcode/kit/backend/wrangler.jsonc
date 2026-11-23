@@ -1,0 +1,15 @@
+// Issue reporting kit: Cloudflare Worker config.
+// 1. npx wrangler d1 create issues        -> paste the database_id below
+// 2. npx wrangler d1 execute issues --remote --file=schema.sql
+// 3. npx wrangler secret put ADMIN_TOKEN   (a long random string; the team's key)
+// 4. optional: npx wrangler secret put NOTIFY_WEBHOOK_URL   (Slack/Discord incoming webhook)
+// 5. npx wrangler deploy
+{
+  "name": "issue-reports",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "d1_databases": [
+    { "binding": "DB", "database_name": "issues", "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID" }
+  ],
+  "observability": { "enabled": true }
+}

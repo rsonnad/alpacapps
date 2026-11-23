@@ -1,0 +1,14 @@
+{
+  "name": "issue-reports",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:local": "wrangler d1 execute issues --local --file=schema.sql",
+    "dev": "wrangler dev",
+    "smoke": "node smoke-test.mjs http://localhost:8787",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

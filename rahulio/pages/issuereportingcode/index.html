@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Issue Reporting Kit — bug reports & feature requests for your app</title>
+  <meta name="description" content="Copy-and-use code and design for in-app 'Report a bug / Request a feature': Android (Compose), iOS/macOS (SwiftUI) and a Cloudflare Worker + D1 backend. MIT licence.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/rahulio/pages/favicon-r.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f8fb; --surface: #ffffff; --surface-2: #eef1f7; --border: #dfe4ee;
+      --text: #1b2130; --body: #3d4557; --muted: #6b758a;
+      --primary: #1f5bd6; --primary-soft: #e3ebfc; --amber: #ffdea6; --amber-ink: #5c4200;
+      --ok: #2e7d4f; --ok-soft: #e4f3ea; --err: #ba1a1a; --err-soft: #ffdad6;
+      --code-bg: #0f1420; --code-text: #dbe3f4; --code-dim: #7d8aa6;
+      --radius: 14px; --shadow: 0 2px 14px rgba(20,30,60,.07);
+      /* the phone mockup uses the app's own Material 3 tokens */
+      --m-surface: #f8f9ff; --m-container: #e6ebf5; --m-outline: #c4cad8; --m-on: #191c23; --m-on-var: #44495a;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0d1118; --surface: #151b26; --surface-2: #1b2331; --border: #283246;
+        --text: #e8ecf5; --body: #c3cbdb; --muted: #8b95ab;
+        --primary: #8fb0ff; --primary-soft: #1d2b4a; --amber: #5c4200; --amber-ink: #ffdea6;
+        --ok: #7fd3a0; --ok-soft: #173326; --err: #ffb4ab; --err-soft: #3d1512;
+        --code-bg: #0a0e16; --shadow: 0 2px 14px rgba(0,0,0,.35);
+        --m-surface: #0b0f17; --m-container: #1a2130; --m-outline: #3a4458; --m-on: #e1e5f0; --m-on-var: #b7bfd1;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0d1118; --surface: #151b26; --surface-2: #1b2331; --border: #283246;
+      --text: #e8ecf5; --body: #c3cbdb; --muted: #8b95ab;
+      --primary: #8fb0ff; --primary-soft: #1d2b4a; --amber: #5c4200; --amber-ink: #ffdea6;
+      --ok: #7fd3a0; --ok-soft: #173326; --err: #ffb4ab; --err-soft: #3d1512;
+      --code-bg: #0a0e16; --shadow: 0 2px 14px rgba(0,0,0,.35);
+      --m-surface: #0b0f17; --m-container: #1a2130; --m-outline: #3a4458; --m-on: #e1e5f0; --m-on-var: #b7bfd1;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--body); font: 16px/1.6 "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color: var(--primary); }
+    code, pre, .mono { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+    :not(pre) > code { background: var(--surface-2); border: 1px solid var(--border); border-radius: 5px; padding: .05em .35em; font-size: .88em; color: var(--text); overflow-wrap: anywhere; }
+    h1, h2, h3 { color: var(--text); line-height: 1.2; }
+    h2 { font-size: 1.55rem; margin: 0 0 .4rem; }
+    h3 { font-size: 1.08rem; margin: 1.4rem 0 .4rem; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+    header.hero { padding: 56px 0 32px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; font-weight: 700; color: var(--primary); }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3rem); margin: .3rem 0 .6rem; letter-spacing: -.01em; }
+    .lead { font-size: 1.15rem; max-width: 720px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font: inherit; font-weight: 600; }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #0b1530; } }
+    :root[data-theme="dark"] .btn.primary { color: #0b1530; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .chip { font-size: .8rem; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); color: var(--body); }
+    section { padding: 34px 0; border-top: 1px solid var(--border); }
+    .sub { color: var(--muted); margin: 0 0 1.2rem; max-width: 760px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+    .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    @media (max-width: 820px) { .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); } }
+    .card h3 { margin-top: 0; }
+    .card p { margin: .3rem 0; }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--text); font-weight: 600; background: var(--surface-2); }
+    .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+    .table-scroll table th:first-child, .table-scroll table td:first-child { padding-left: 14px; }
+    ol.steps { padding-left: 1.2rem; } ol.steps li { margin: .35rem 0; }
+
+    /* Flow diagram */
+    .flow svg { width: 100%; height: auto; display: block; }
+    .flow .node rect { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+    .flow .node.app rect { fill: var(--primary-soft); stroke: var(--primary); }
+    .flow .node.srv rect { fill: var(--amber); stroke: #c9a04d; }
+    .flow .node.team rect { fill: var(--ok-soft); stroke: var(--ok); }
+    .flow text { fill: var(--text); font: 600 13px "DM Sans", sans-serif; }
+    .flow text.small { font-weight: 400; font-size: 11px; fill: var(--muted); }
+    .flow .node.srv text { fill: var(--amber-ink); }
+    .flow path { stroke: var(--muted); stroke-width: 1.6; fill: none; marker-end: url(#arrow); }
+    .flow path.back { stroke-dasharray: 5 4; }
+    .flow defs path { marker-end: none; }
+    .flow .lbl { font: 500 11px "JetBrains Mono", monospace; fill: var(--muted); }
+    .flow svg.flow-mobile { display: none; max-width: 340px; margin: 0 auto; }
+    @media (max-width: 640px) { .flow svg.flow-desktop { display: none; } .flow svg.flow-mobile { display: block; } }
+
+    /* Phone mockups */
+    .phones { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+    .phone { width: 300px; max-width: 100%; border-radius: 34px; padding: 10px; background: #11151d; box-shadow: 0 10px 40px rgba(10,20,50,.25); }
+    .screen { border-radius: 26px; overflow: hidden; background: var(--m-surface); color: var(--m-on); font: 13px/1.4 Roboto, "DM Sans", sans-serif; min-height: 560px; position: relative; }
+    .statusbar { height: 26px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; font-size: 11px; color: var(--m-on-var); }
+    .appbar { display: flex; align-items: center; gap: 10px; padding: 6px 12px 10px; }
+    .appbar .x { font-size: 18px; width: 24px; text-align: center; color: var(--m-on-var); }
+    .appbar .t { flex: 1; font-size: 17px; font-weight: 500; }
+    .appbar .submit { background: #1f5bd6; color: #fff; border-radius: 999px; padding: 7px 14px; font-weight: 600; font-size: 12px; }
+    .m-body { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .m-intro { color: var(--m-on-var); font-size: 12.5px; }
+    .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--m-outline); border-radius: 999px; overflow: hidden; }
+    .seg span { text-align: center; padding: 7px 0; font-weight: 500; font-size: 12.5px; }
+    .seg span.on { background: #ffdea6; color: #2a1e00; }
+    .seg span + span { border-left: 1px solid var(--m-outline); }
+    .panel { background: var(--m-container); border: 1px solid var(--m-outline); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .panel .lbl { font-weight: 600; font-size: 12.5px; }
+    .field { border: 1.5px solid var(--m-outline); border-radius: 6px; min-height: 64px; padding: 8px; color: var(--m-on); background: var(--m-surface); font-size: 12.5px; }
+    .field.ph { color: var(--m-on-var); }
+    .row { display: flex; align-items: center; gap: 10px; }
+    .thumb { width: 26px; height: 40px; border-radius: 4px; background: linear-gradient(160deg, #c8d4f0, #8ea6dc); flex: none; }
+    .grow { flex: 1; min-width: 0; }
+    .tiny { font-size: 11px; color: var(--m-on-var); }
+    .switch { width: 34px; height: 20px; border-radius: 999px; background: #1f5bd6; position: relative; flex: none; }
+    .switch::after { content: ""; position: absolute; right: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+    .outbtn { align-self: flex-start; border: 1px solid var(--m-outline); border-radius: 999px; padding: 6px 12px; color: #1f5bd6; font-weight: 500; font-size: 12px; }
+    .check { width: 16px; height: 16px; border-radius: 3px; background: #1f5bd6; color: #fff; font-size: 11px; line-height: 16px; text-align: center; flex: none; }
+    .link { color: #1f5bd6; text-decoration: underline; }
+    .scrim { position: absolute; inset: 0; background: rgba(0,0,0,.38); display: flex; align-items: center; justify-content: center; padding: 22px; }
+    .dialog { background: var(--m-surface); border-radius: 24px; padding: 20px; box-shadow: 0 8px 30px rgba(0,0,0,.3); }
+    .dialog h4 { margin: 0 0 8px; font-size: 18px; font-weight: 500; color: var(--m-on); }
+    .dialog p { margin: 0 0 14px; color: var(--m-on-var); font-size: 12.5px; }
+    .dialog .done { text-align: right; color: #1f5bd6; font-weight: 600; }
+    .caption { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 8px; }
+    .anno { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+    .anno li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; }
+    .anno b.n { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; font-size: .75rem; display: inline-flex; align-items: center; justify-content: center; }
+
+    /* Code viewer */
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .tab { border: 1px solid var(--border); background: var(--surface); color: var(--body); border-radius: 999px; padding: 6px 12px; font: 500 .82rem "JetBrains Mono", monospace; cursor: pointer; }
+    .tab[aria-selected="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .viewer { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--code-bg); }
+    .viewer-bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #161d2b; color: var(--code-dim); font: 12px "JetBrains Mono", monospace; flex-wrap: wrap; }
+    .viewer-bar .path { flex: 1; color: var(--code-text); min-width: 0; overflow-wrap: anywhere; }
+    .viewer-bar button, .viewer-bar a { background: #24304a; color: #e3ebff; border: 0; border-radius: 6px; padding: 5px 10px; font: inherit; cursor: pointer; text-decoration: none; }
+    .viewer pre { margin: 0; padding: 14px 16px; max-height: 560px; overflow: auto; color: var(--code-text); font-size: 12.5px; line-height: 1.55; tab-size: 2; }
+    .viewer pre .c { color: var(--code-dim); }
+    pre.block { background: var(--code-bg); color: var(--code-text); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font-size: 12.5px; line-height: 1.55; margin: .6rem 0; }
+    .copy-wrap { position: relative; }
+    .copy-wrap .copy { position: absolute; top: 8px; right: 8px; background: #24304a; color: #e3ebff; border: 0; border-radius: 6px; padding: 4px 9px; font: 12px "JetBrains Mono", monospace; cursor: pointer; }
+    .note { border-left: 3px solid var(--primary); background: var(--primary-soft); padding: 10px 14px; border-radius: 0 10px 10px 0; margin: 1rem 0; color: var(--text); }
+    footer { padding: 30px 0 60px; color: var(--muted); font-size: .88rem; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <header class="hero wrap">
+    <div class="eyebrow">Open kit · MIT licence</div>
+    <h1>Issue Reporting Kit</h1>
+    <p class="lead">The in-app <strong>Report a bug / Request a feature</strong> flow from Bridgit, pulled out so anyone can drop it into their own app: the design, an Android form, an iOS/macOS form and the backend that receives the reports.</p>
+    <div class="actions">
+      <a class="btn primary" href="issue-reporting-kit.zip" download>Download the kit (.zip)</a>
+      <a class="btn" href="#code">Browse the code</a>
+      <a class="btn" href="#quickstart">Quick start</a>
+    </div>
+    <div class="chips">
+      <span class="chip">Android · Kotlin + Jetpack Compose</span>
+      <span class="chip">iOS 16+ / macOS 13+ · SwiftUI</span>
+      <span class="chip">Cloudflare Worker + D1</span>
+      <span class="chip">Offline-first, idempotent uploads</span>
+      <span class="chip">Screenshots + recent log</span>
+      <span class="chip">No third-party client libraries</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="flow">
+      <h2>How it works</h2>
+      <p class="sub">The report is saved on the device first, so nothing is lost on a bad connection. A background job uploads it. The server is idempotent, so a retry never files the same report twice. The team's status changes flow back to the reporter.</p>
+      <div class="card flow">
+        <svg class="flow-desktop" viewBox="0 0 980 300" role="img" aria-label="Flow: the form saves to a local store, an upload queue posts to the Worker, the Worker writes to D1, the team reads and updates issues, and the app pulls updates back.">
+          <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted); stroke: none"/></marker></defs>
+          <g class="node app"><rect x="10" y="40" width="160" height="70" rx="12"/><text x="90" y="70" text-anchor="middle">Report form</text><text class="small" x="90" y="90" text-anchor="middle">Bug / Feature, text,</text><text class="small" x="90" y="103" text-anchor="middle">screenshots, log</text></g>
+          <g class="node app"><rect x="220" y="40" width="160" height="70" rx="12"/><text x="300" y="70" text-anchor="middle">Local store</text><text class="small" x="300" y="90" text-anchor="middle">files on the device,</text><text class="small" x="300" y="103" text-anchor="middle">random 53-bit id</text></g>
+          <g class="node app"><rect x="430" y="40" width="160" height="70" rx="12"/><text x="510" y="70" text-anchor="middle">Upload queue</text><text class="small" x="510" y="90" text-anchor="middle">WorkManager / on launch,</text><text class="small" x="510" y="103" text-anchor="middle">backoff from 30 s</text></g>
+          <g class="node srv"><rect x="640" y="40" width="160" height="70" rx="12"/><text x="720" y="70" text-anchor="middle">Worker</text><text class="small" x="720" y="90" text-anchor="middle" style="fill: var(--amber-ink)">checks key, limits,</text><text class="small" x="720" y="103" text-anchor="middle" style="fill: var(--amber-ink)">one transaction</text></g>
+          <g class="node srv"><rect x="840" y="40" width="130" height="70" rx="12"/><text x="905" y="70" text-anchor="middle">D1</text><text class="small" x="905" y="90" text-anchor="middle" style="fill: var(--amber-ink)">installs, issues,</text><text class="small" x="905" y="103" text-anchor="middle" style="fill: var(--amber-ink)">images</text></g>
+          <g class="node team"><rect x="640" y="200" width="160" height="70" rx="12"/><text x="720" y="230" text-anchor="middle">Team</text><text class="small" x="720" y="250" text-anchor="middle">list, read, set status,</text><text class="small" x="720" y="263" text-anchor="middle">reply with a note</text></g>
+          <g class="node app"><rect x="220" y="200" width="160" height="70" rx="12"/><text x="300" y="230" text-anchor="middle">Reporter sees status</text><text class="small" x="300" y="250" text-anchor="middle">status + team note</text><text class="small" x="300" y="263" text-anchor="middle">on each report</text></g>
+          <path d="M170 75 H216"/><text class="lbl" x="193" y="66" text-anchor="middle">save</text>
+          <path d="M380 75 H426"/><text class="lbl" x="403" y="66" text-anchor="middle">enqueue</text>
+          <path d="M590 75 H636"/><text class="lbl" x="613" y="34" text-anchor="middle">POST /v1/issues</text>
+          <path d="M800 75 H836"/>
+          <path d="M905 110 V235 H804"/><text class="lbl" x="915" y="170">/v1/admin/*</text>
+          <path class="back" d="M640 235 H384"/><text class="lbl" x="512" y="226" text-anchor="middle">GET /v1/issues/updates</text>
+        </svg>
+        <svg class="flow-mobile" viewBox="0 0 320 560" role="img" aria-label="The same flow, top to bottom.">
+          <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted); stroke: none"/></marker></defs>
+          <g class="node app"><rect x="60" y="10" width="200" height="52" rx="12"/><text x="160" y="34" text-anchor="middle">Report form</text><text class="small" x="160" y="51" text-anchor="middle">text, screenshots, log</text></g>
+          <g class="node app"><rect x="60" y="90" width="200" height="52" rx="12"/><text x="160" y="114" text-anchor="middle">Local store</text><text class="small" x="160" y="131" text-anchor="middle">saved on the device first</text></g>
+          <g class="node app"><rect x="60" y="170" width="200" height="52" rx="12"/><text x="160" y="194" text-anchor="middle">Upload queue</text><text class="small" x="160" y="211" text-anchor="middle">retries with backoff</text></g>
+          <g class="node srv"><rect x="60" y="260" width="200" height="52" rx="12"/><text x="160" y="284" text-anchor="middle">Worker + D1</text><text class="small" x="160" y="301" text-anchor="middle" style="fill: var(--amber-ink)">POST /v1/issues</text></g>
+          <g class="node team"><rect x="60" y="350" width="200" height="52" rx="12"/><text x="160" y="374" text-anchor="middle">Team</text><text class="small" x="160" y="391" text-anchor="middle">status + note</text></g>
+          <g class="node app"><rect x="60" y="440" width="200" height="52" rx="12"/><text x="160" y="464" text-anchor="middle">My reports</text><text class="small" x="160" y="481" text-anchor="middle">GET /v1/issues/updates</text></g>
+          <path d="M160 62 V86" style="marker-end: url(#arrow2)"/><path d="M160 142 V166" style="marker-end: url(#arrow2)"/><path d="M160 222 V256" style="marker-end: url(#arrow2)"/><path d="M160 312 V346" style="marker-end: url(#arrow2)"/><path class="back" d="M160 402 V436" style="marker-end: url(#arrow2)"/>
+        </svg>
+      </div>
+    </section>
+
+    <section id="design">
+      <h2>The design</h2>
+      <p class="sub">One form with a Bug / Feature switch. Each kind keeps its own draft, so switching never loses text. Grouped panels, the Submit button in the top bar, and a clear note on what's sent automatically.</p>
+      <div class="grid2" style="align-items:start">
+        <div class="phones">
+          <div>
+            <div class="phone"><div class="screen">
+              <div class="statusbar"><span>9:41</span><span>● ● ▮</span></div>
+              <div class="appbar"><span class="x">✕</span><span class="t">Report a bug</span><span class="submit">Submit</span></div>
+              <div class="m-body">
+                <div class="m-intro">Describe what went wrong.</div>
+                <div class="seg"><span class="on">Bug</span><span>Feature</span></div>
+                <div class="panel">
+                  <div class="lbl">What happened?</div>
+                  <div class="field">The Save button does nothing on the Settings screen.</div>
+                </div>
+                <div class="panel">
+                  <div class="row"><div class="thumb"></div><div class="grow"><div>Include last screen</div><div class="tiny">Settings, as you left it</div></div><div class="switch"></div></div>
+                  <div class="outbtn">Add screenshot</div>
+                  <div class="row"><div class="check">✓</div><div class="grow"><div>Include recent log</div><div class="tiny">12 log entries · <span class="link">Preview</span></div></div></div>
+                </div>
+                <div class="tiny">App version, device info and the screen you were on are included automatically.</div>
+              </div>
+            </div></div>
+            <div class="caption">The form (Android shown; iOS/macOS is the same layout)</div>
+          </div>
+          <div>
+            <div class="phone"><div class="screen">
+              <div class="statusbar"><span>9:41</span><span>● ● ▮</span></div>
+              <div class="appbar"><span class="x">✕</span><span class="t">Report a bug</span><span class="submit">Submit</span></div>
+              <div class="m-body" style="opacity:.5">
+                <div class="seg"><span class="on">Bug</span><span>Feature</span></div>
+                <div class="panel"><div class="lbl">What happened?</div><div class="field">The Save button does nothing…</div></div>
+                <div class="panel"><div class="outbtn">Add screenshot</div></div>
+              </div>
+              <div class="scrim"><div class="dialog"><h4>Report saved</h4><p>Thanks. It’s report #42, and the team has it.</p><div class="done">Done</div></div></div>
+            </div></div>
+            <div class="caption">After Submit: saved at once, numbered when the upload lands</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>What's on the screen</h3>
+          <ol class="anno">
+            <li><b class="n">1</b><span><strong>Top bar:</strong> ✕ is Cancel; if there is text it asks <em>Keep this draft?</em> (Keep / Discard). <strong>Submit</strong> is disabled until there's a description, and shows a spinner and “Sending…” while it saves.</span></li>
+            <li><b class="n">2</b><span><strong>Bug / Feature</strong> segmented switch. Title, intro, label and placeholder all follow it.</span></li>
+            <li><b class="n">3</b><span><strong>Description</strong>, at least 3 lines, up to 10,000 characters, saved as a draft on every keystroke.</span></li>
+            <li><b class="n">4</b><span><strong>Include last screen</strong>: the screen the user was on, captured <em>before</em> the form opened (never the form itself; secure windows are skipped).</span></li>
+            <li><b class="n">5</b><span><strong>Add screenshot / Add another</strong>: the system photo picker, up to 5 pictures in total, shrunk on the device to ≤ 1600 px and ≤ 1 MB JPEG.</span></li>
+            <li><b class="n">6</b><span><strong>Include recent log</strong> with a count and a <em>Preview</em> of the last 50 entries. Redact anything private before you add it to <code>RecentLog</code>; the kit doesn't.</span></li>
+            <li><b class="n">7</b><span>Errors (empty description, 10 reports an hour, a picture that wouldn't load) show in a red banner at the top.</span></li>
+          </ol>
+          <h3>Where users find it</h3>
+          <p>A “Report a bug” and a “Request a feature” row on the More / Settings screen, the overflow menu (⋮) on main screens, and “Report a bug about this” on an item in an activity list. In Bridgit a “My reports” list shows each report's status chip (new, seen, in progress, fixed, won't fix, duplicate) and the team's note. The kit keeps that data on every stored report and pulls it with one call; the list screen itself is yours to draw.</p>
+        </div>
+      </div>
+
+      <h3>Copy text</h3>
+      <div class="table-scroll"><table>
+        <tr><th>Where</th><th>Bug</th><th>Feature</th></tr>
+        <tr><td>Title</td><td>Report a bug</td><td>Request a feature</td></tr>
+        <tr><td>Intro</td><td>Describe what went wrong.</td><td>Describe what you’d like.</td></tr>
+        <tr><td>Label</td><td>What happened?</td><td>What would you like to see?</td></tr>
+        <tr><td>Placeholder</td><td>What you expected, what you saw…</td><td>What would you like the app to do?</td></tr>
+        <tr><td>Empty submit</td><td colspan="2">Please describe the problem before sending.</td></tr>
+        <tr><td>Rate limit</td><td colspan="2">That’s 10 reports this hour. Try again later.</td></tr>
+        <tr><td>Saved, sent</td><td colspan="2">Thanks. It’s report #42, and the team has it.</td></tr>
+        <tr><td>Saved, offline</td><td colspan="2">Thanks. It’s saved on your device and will be sent to the team when you’re online.</td></tr>
+        <tr><td>Footer note</td><td colspan="2">App version, device info and the screen you were on are included automatically.</td></tr>
+      </table></div>
+      <h3>Colours</h3>
+      <p>Material 3 roles: panels use <code>surfaceContainer</code> with a 1 dp <code>outlineVariant</code> border and 16 dp corners; the selected segment uses <code>secondaryContainer</code>; the error banner uses <code>errorContainer</code> with 12 dp corners. Bridgit's values: primary <code>#1F5BD6</code>, surface <code>#F8F9FF</code>, surfaceContainer <code>#E6EBF5</code>, secondaryContainer <code>#FFDEA6</code>, errorContainer <code>#FFDAD6</code>. Wrap the form in your app's own Compose theme (it ships with a plain <code>MaterialTheme</code>); SwiftUI picks up your accent colour automatically.</p>
+    </section>
+
+    <section id="api">
+      <h2>The API</h2>
+      <p class="sub">Six routes. The app identifies itself with an install id and a key it makes once; the server trusts the first key it sees for that id (trust on first use) and stores only the key's SHA-256.</p>
+      <div class="table-scroll"><table>
+        <tr><th>Route</th><th>Who</th><th>What</th></tr>
+        <tr><td><code>POST /v1/issues</code></td><td>app</td><td>File a bug or feature request. Idempotent on install + <code>client_issue_id</code>: 201 the first time, 200 <code>{"duplicate":true}</code> on a retry.</td></tr>
+        <tr><td><code>GET /v1/issues/updates?since=&amp;since_id=</code></td><td>app</td><td>Status and notes the team changed on this install's issues, after a cursor.</td></tr>
+        <tr><td><code>GET /v1/admin/issues</code></td><td>team</td><td>Newest first; <code>?status=&amp;limit=&amp;before=</code>.</td></tr>
+        <tr><td><code>GET /v1/admin/issues/:id</code></td><td>team</td><td>One issue with its context, log and image links.</td></tr>
+        <tr><td><code>GET /v1/admin/issues/:id/images/:n</code></td><td>team</td><td>A screenshot (JPEG/PNG).</td></tr>
+        <tr><td><code>PATCH /v1/admin/issues/:id</code></td><td>team</td><td><code>{"status":"fixed","team_note":"Fixed in 1.2.4."}</code>. The reporter sees it on the next updates pull.</td></tr>
+      </table></div>
+
+      <div class="grid2" style="margin-top:18px">
+        <div>
+          <h3>Request</h3>
+          <div class="copy-wrap"><pre class="block" id="req">POST /v1/issues
+X-Install-Id: 3f1c…-…-…            (a UUID, made once)
+Authorization: Bearer 6p0X…        (32+ random chars, made once)
+Content-Type: application/json
+
+{
+  "client_issue_id": 4815162342,   // the app's own id
+  "kind": "bug",                   // bug | feature
+  "description": "The Save button does nothing.",
+  "created_at": 1763900000000,     // epoch ms, on the device
+  "context": {
+    "app_version": "1.2.3", "build_type": "release",
+    "device_model": "Google Pixel 9", "os_name": "android",
+    "os_version": "16", "screen": "Settings"
+  },
+  "log": [{ "at": 1763899990000, "level": "E",
+            "tag": "Settings", "msg": "save failed: timeout" }],
+  "images": [{ "mime": "image/jpeg", "data_base64": "/9j/4AAQ…" }]
+}</pre><button class="copy" data-copy="req">Copy</button></div>
+        </div>
+        <div>
+          <h3>Responses</h3>
+          <div class="table-scroll"><table>
+            <tr><th>Code</th><th>Meaning</th><th>App does</th></tr>
+            <tr><td>201</td><td><code>{"id":42,"duplicate":false}</code></td><td>mark sent</td></tr>
+            <tr><td>200</td><td><code>{"id":42,"duplicate":true}</code> (a retry)</td><td>mark sent</td></tr>
+            <tr><td>400</td><td>bad kind, empty text, &gt; 5 images</td><td>give up</td></tr>
+            <tr><td>401</td><td>wrong key for this install</td><td>give up</td></tr>
+            <tr><td>403</td><td>install blocked</td><td>give up</td></tr>
+            <tr><td>413</td><td>body &gt; 10 MB or image &gt; 1.5 MB</td><td>give up</td></tr>
+            <tr><td>429</td><td>&gt; 60 an hour from this install</td><td>retry later</td></tr>
+            <tr><td>5xx / offline</td><td></td><td>retry with backoff</td></tr>
+          </table></div>
+          <h3>Limits &amp; safety</h3>
+          <p>10,000-character text · 5 images · 1.5 MB per image · 10 MB per request · 60 issues an hour per install · 20 new installs a day per address (kept as a keyed daily hash, never the address) · the install, issue and screenshots land in one transaction · team routes need <code>ADMIN_TOKEN</code> · optional Slack/Discord webhook per new report.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="quickstart">
+      <h2>Quick start</h2>
+      <div class="grid3">
+        <div class="card">
+          <h3>1 · Backend</h3>
+          <div class="copy-wrap"><pre class="block" id="qs1">cd backend
+npm install
+npx wrangler d1 create issues
+# paste database_id into wrangler.jsonc
+npx wrangler d1 execute issues \
+  --remote --file=schema.sql
+npx wrangler secret put ADMIN_TOKEN
+npx wrangler deploy</pre><button class="copy" data-copy="qs1">Copy</button></div>
+          <p>Free Cloudflare plan is enough. Test locally with <code>wrangler dev</code> and <code>node smoke-test.mjs</code>.</p>
+        </div>
+        <div class="card">
+          <h3>2 · Android</h3>
+          <p>Copy the two <code>.kt</code> files, change the package, set <code>IssueConfig.BASE_URL</code>, add the dependencies in each file's header and the activity to your manifest.</p>
+          <div class="copy-wrap"><pre class="block" id="qs2">lifecycleScope.launch {
+  ReportIssue.open(this@MainActivity,
+    IssueKind.BUG, "Settings")
+}</pre><button class="copy" data-copy="qs2">Copy</button></div>
+        </div>
+        <div class="card">
+          <h3>3 · iOS / macOS</h3>
+          <p>Add the two <code>.swift</code> files and set <code>IssueConfig.baseURL</code>.</p>
+          <div class="copy-wrap"><pre class="block" id="qs3">@State var report: ReportRequest?
+
+Button("Report a bug") {
+  report = ReportRequest(kind: .bug,
+                         screen: "Settings")
+}
+.sheet(item: $report) {
+  ReportIssueView(request: $0)
+}</pre><button class="copy" data-copy="qs3">Copy</button></div>
+        </div>
+      </div>
+      <div class="note"><strong>Tested:</strong> the backend passes its smoke test under <code>wrangler dev</code> (filing, retry → duplicate, wrong key → 401, bad kind → 400, team list/image/status, updates cursor). The Kotlin compiles (AGP 8.7, Kotlin 2.0, compileSdk 35) and the Swift type-checks for iOS 16 and macOS 13. Neither form has been run on a device in this stripped-down form, so try it on yours before shipping.</div>
+    </section>
+
+    <section id="code">
+      <h2>The code</h2>
+      <p class="sub">Every file in the kit. Copy one, or <a href="issue-reporting-kit.zip" download>download them all</a>.</p>
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="viewer">
+        <div class="viewer-bar"><span class="path" id="vpath"></span><span id="vsize"></span><button id="vcopy">Copy</button><a id="vraw" target="_blank" rel="noopener">Raw</a></div>
+        <pre id="vcode">Loading…</pre>
+      </div>
+    </section>
+
+    <section id="extras">
+      <h2>What Bridgit adds on top</h2>
+      <p class="sub">The kit is the core. Bridgit's own service layers these on; each is a good next step if you need it.</p>
+      <div class="grid3">
+        <div class="card"><h3>Signed requests</h3><p>Instead of a bearer key, each install has a P-256 key in the Android Keystore / Secure Enclave and signs every request (method, path, time, nonce, body hash). The server checks the signature, the clock and a nonce table, so a stolen request can't be replayed.</p></div>
+        <div class="card"><h3>Device attestation</h3><p>Installs whose key is attested by the platform get higher limits; unverified ones share a daily storage allowance, so new identities can't fill the database.</p></div>
+        <div class="card"><h3>History both ways</h3><p>The reporter can confirm a fix or say “Still broken” (also from a notification); the team's agents add comments. Each side syncs with idempotent history ids.</p></div>
+        <div class="card"><h3>Agents can file too</h3><p>An AI agent working on the user's device can file a report through the same API, tagged with its name and model.</p></div>
+        <div class="card"><h3>Automatic repair</h3><p>Bugs can be handed to an automatic fixer that opens a pull request; the reporter can switch that off per report.</p></div>
+        <div class="card"><h3>Team triage</h3><p>Short public references (e.g. M0042), estimates, links between duplicates and a dashboard for the team.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    Issue Reporting Kit · extracted from Bridgit's in-app feedback · MIT licence (see <code>LICENSE</code> in the kit). Use it, change it, ship it.
+  </footer>
+
+  <script>
+    (function () {
+      var files = [
+        'README.md',
+        'backend/worker.mjs', 'backend/schema.sql', 'backend/wrangler.jsonc', 'backend/package.json', 'backend/smoke-test.mjs',
+        'android/IssueReporting.kt', 'android/ReportIssueActivity.kt',
+        'apple/IssueReporting.swift', 'apple/ReportIssueView.swift',
+        'LICENSE'
+      ];
+      var tabs = document.getElementById('tabs');
+      var code = document.getElementById('vcode');
+      var pathEl = document.getElementById('vpath');
+      var sizeEl = document.getElementById('vsize');
+      var raw = document.getElementById('vraw');
+      var cache = {};
+      var current = '';
+
+      function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      // Dim whole-line comments; everything else stays plain text.
+      function render(text) {
+        return text.split('\n').map(function (l) {
+          var t = l.trim();
+          return /^(\/\/|--|#(?!\w)|\/\*|\*)/.test(t) ? '<span class="c">' + esc(l) + '</span>' : esc(l);
+        }).join('\n');
+      }
+      function show(f) {
+        current = f;
+        [].forEach.call(tabs.children, function (b) { b.setAttribute('aria-selected', b.dataset.f === f ? 'true' : 'false'); });
+        pathEl.textContent = 'kit/' + f;
+        raw.href = 'kit/' + f;
+        if (cache[f] != null) { code.innerHTML = render(cache[f]); sizeEl.textContent = cache[f].split('\n').length + ' lines'; return; }
+        code.textContent = 'Loading…'; sizeEl.textContent = '';
+        fetch('kit/' + f).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (t) {
+          cache[f] = t;
+          if (current === f) show(f);
+        }).catch(function () { code.textContent = 'Could not load kit/' + f + '. Use the Raw link or the zip.'; });
+      }
+      files.forEach(function (f) {
+        var b = document.createElement('button');
+        b.className = 'tab'; b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.f = f; b.textContent = f;
+        b.addEventListener('click', function () { show(f); });
+        tabs.appendChild(b);
+      });
+      show('backend/worker.mjs');
+
+      function copyText(text, btn) {
+        var done = function () { var o = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = o; }, 1400); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+        function fallback() {
+          var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); done(); } catch (e) {}
+          document.body.removeChild(ta);
+        }
+      }
+      document.getElementById('vcopy').addEventListener('click', function (e) { if (cache[current] != null) copyText(cache[current], e.currentTarget); });
+      [].forEach.call(document.querySelectorAll('button.copy'), function (b) {
+        b.addEventListener('click', function () { copyText(document.getElementById(b.dataset.copy).textContent, b); });
+      });
+    })();
+  </script>
+  <script src="/rahulio/page-header.js" defer></script>
+</body>
+</html>
