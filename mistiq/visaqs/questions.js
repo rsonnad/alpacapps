@@ -22,9 +22,11 @@ const CAN_GET_OPTS = [
   ['Not sure', 'ไม่แน่ใจ'],
 ];
 
+// Shared by "do you have…", "have you ever…" and "are you…" questions, so the
+// Thai covers all three readings.
 const YES_NO_UNSURE = [
-  ['Yes', 'ใช่ / เคย'],
-  ['No', 'ไม่ใช่ / ไม่เคย'],
+  ['Yes', 'ใช่ (มี / เคย)'],
+  ['No', 'ไม่ (ไม่มี / ไม่เคย)'],
   ['Not sure', 'ไม่แน่ใจ'],
 ];
 
