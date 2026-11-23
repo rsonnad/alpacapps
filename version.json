@@ -1,12 +1,12 @@
 {
-  "version": "v261123.02 12:41p",
-  "release": 2066,
-  "sha": "3de0f5f9bf",
-  "fullSha": "3de0f5f9bf1355ad32485a7f42c8de722a235a34",
+  "version": "v261123.04 1:08p",
+  "release": 2068,
+  "sha": "b3b95a1a1b",
+  "fullSha": "b3b95a1a1ba5acd24ee88feacf12fcce506265d6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-23T18:41:49+00:00",
-  "commits": [{"sha":"3de0f5f9bf","message":"Mistiq visaqs: neutral Thai yes/no wording for have / ever / are questions","author":"Blotto"}]
+  "machine": "ip-10-0-132-120",
+  "pushedAt": "2026-11-23T19:08:09+00:00",
+  "commits": [{"sha":"b3b95a1a1b","message":"Mistiq visaqs: privacy and reimbursement notes at the top","author":"Blotto"}]
 }
