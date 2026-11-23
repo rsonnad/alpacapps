@@ -1,12 +1,12 @@
 {
-  "version": "v261123.04 1:08p",
-  "release": 2068,
-  "sha": "b3b95a1a1b",
-  "fullSha": "b3b95a1a1ba5acd24ee88feacf12fcce506265d6",
+  "version": "v261123.05 1:11p",
+  "release": 2069,
+  "sha": "d2e19e8268",
+  "fullSha": "d2e19e82687879d9adcd13312e1a4bf2e330359a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "ip-10-0-132-120",
-  "pushedAt": "2026-11-23T19:08:09+00:00",
-  "commits": [{"sha":"b3b95a1a1b","message":"Mistiq visaqs: privacy and reimbursement notes at the top","author":"Blotto"}]
+  "machine": "runnervm0hi8g",
+  "pushedAt": "2026-11-23T19:11:34+00:00",
+  "commits": [{"sha":"d2e19e8268","message":"Mistiq visaqs: version the script URLs so browsers fetch the new questions","author":"Blotto"}]
 }
