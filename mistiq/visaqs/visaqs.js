@@ -1,7 +1,7 @@
 // Renders the US-visit questionnaire from questions.js, autosaves a draft on
 // this device, and sends the answers to the mistiq-apply edge function
 // (action "visa_survey"), which stores them and emails the team.
-import { SECTIONS, DOC_OPTS } from './questions.js?v=4'; // bump ?v= with every change to either file (browsers cache them)
+import { SECTIONS, DOC_OPTS } from './questions.js?v=5'; // bump ?v= with every change to either file (browsers cache them)
 
 const EDGE_FN = 'https://aphrrfprbixmhissnjfn.supabase.co/functions/v1/mistiq-apply';
 const DRAFT_KEY = 'mistiq-visaqs-draft-v1';
