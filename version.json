@@ -1,12 +1,12 @@
 {
-  "version": "v261121.01 1:25p",
-  "release": 2064,
-  "sha": "13b6b4445f",
-  "fullSha": "13b6b4445f043d7d6bb04e59f178ad0dc4799bc6",
+  "version": "v261123.01 12:20p",
+  "release": 2065,
+  "sha": "390dd3eed3",
+  "fullSha": "390dd3eed3a3cc7d8166446a7f740f2910f6d0ed",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-21T19:25:38+00:00",
-  "commits": [{"sha":"ebe8046e97","message":"feat(payout-email): show start/end times per day in Days paid table","author":"Blotto"},{"sha":"fa6357f8d6","message":"fix(work-photos): reset photo date to today; enforce before/after photos on any clock-out path","author":"Blotto"},{"sha":"994f7689c1","message":"fix(work-hours): photo gate matches RLS identity; clock-out only succeeds when the row is really closed","author":"Blotto"},{"sha":"13b6b4445f","message":"Merge pull request #167 from rsonnad/claude/payout-email-times","author":"Rahul"}]
+  "pushedAt": "2026-11-23T18:20:16+00:00",
+  "commits": [{"sha":"390dd3eed3","message":"Mistiq: bilingual US-visit questionnaire at /mistiq/visaqs/","author":"Blotto"}]
 }
