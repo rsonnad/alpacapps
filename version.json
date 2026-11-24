@@ -1,12 +1,12 @@
 {
-  "version": "v261124.02 1:48a",
-  "release": 2075,
-  "sha": "e34077df72",
-  "fullSha": "e34077df728050aea8e788c381d488707fad28fc",
+  "version": "v261124.03 1:53a",
+  "release": 2076,
+  "sha": "f37bb996b1",
+  "fullSha": "f37bb996b11c99ca369753b41b6c3a5a1187ece1",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-24T07:48:10+00:00",
-  "commits": [{"sha":"e34077df72","message":"Add complete poster series and verified Steal Your Face QR proof","author":"Blotto"}]
+  "pushedAt": "2026-11-24T07:53:24+00:00",
+  "commits": [{"sha":"f37bb996b1","message":"Publish matched 18×24 concert poster and illustrated lyric legend","author":"Blotto"}]
 }

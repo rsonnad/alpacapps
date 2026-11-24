@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T07:49:24.354Z",
+  "generatedAt": "2026-11-24T07:54:52.882Z",
   "sections": [
     "E-2 Visa",
     "Projects"
@@ -9,7 +9,13 @@
       "path": "daveposters/index.html",
       "title": "Acoustic Reckoning · Woodstock poster gallery",
       "section": null,
-      "modifiedAt": "2026-11-24T07:48:09.000Z"
+      "modifiedAt": "2026-11-24T07:53:23.000Z"
+    },
+    {
+      "path": "daveposters/song-imagery.html",
+      "title": "Acoustic Reckoning · Song imagery review",
+      "section": null,
+      "modifiedAt": "2026-11-24T07:53:23.000Z"
     },
     {
       "path": "woodstockposter/index.html",
