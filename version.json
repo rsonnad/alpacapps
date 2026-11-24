@@ -1,12 +1,12 @@
 {
-  "version": "v261124.04 2:04a",
-  "release": 2077,
-  "sha": "31cbeec491",
-  "fullSha": "31cbeec4917ac764bb14e35a1454da3c5788a13d",
+  "version": "v261124.05 2:13a",
+  "release": 2078,
+  "sha": "b3e7c56f08",
+  "fullSha": "b3e7c56f0861c750c08b00c69bb3375077eef51a",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-24T08:04:32+00:00",
-  "commits": [{"sha":"31cbeec491","message":"Embed 29 painted song clues in the woodland scene and match the legend to their positions","author":"Blotto"}]
+  "pushedAt": "2026-11-24T08:13:32+00:00",
+  "commits": [{"sha":"b3e7c56f08","message":"Publish edge-to-edge woodland variations with the flying bird, ravine and bedside detail","author":"Blotto"}]
 }
