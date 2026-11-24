@@ -1,12 +1,12 @@
 {
-  "version": "v261123.07 1:26p",
-  "release": 2071,
-  "sha": "930db8bbc4",
-  "fullSha": "930db8bbc42166c722dc8b8dcc1cc6c8f299817b",
+  "version": "v261123.08 6:01p",
+  "release": 2072,
+  "sha": "8345fdc7bd",
+  "fullSha": "8345fdc7bd22f5a8f5260644f517f247cd1e85b3",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-23T19:26:54+00:00",
-  "commits": [{"sha":"930db8bbc4","message":"Mistiq visaqs: quicker to fill — No-to-all, show only what applies","author":"Blotto"}]
+  "pushedAt": "2026-11-24T00:01:59+00:00",
+  "commits": [{"sha":"8345fdc7bd","message":"rahulio/pages: Issue Reporting Kit (bug report / feature request design + code)","author":"Blotto"}]
 }
