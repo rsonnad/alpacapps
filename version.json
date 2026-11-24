@@ -1,12 +1,12 @@
 {
-  "version": "v261123.09 9:44p",
-  "release": 2073,
-  "sha": "96da38d497",
-  "fullSha": "96da38d49759578e3d9e17ff153a05872e999a71",
+  "version": "v261124.01 1:42a",
+  "release": 2074,
+  "sha": "63053aabaa",
+  "fullSha": "63053aabaaf99e4efc042431b55878a3de60a924",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-24T03:44:31+00:00",
-  "commits": [{"sha":"96da38d497","message":"Add woodstockposter placeholder page (rahulio/pages): poster, song hunt, extras, contact","author":"Muse (Almusca)"}]
+  "pushedAt": "2026-11-24T07:42:41+00:00",
+  "commits": [{"sha":"63053aabaa","message":"Publish individual Woodstock poster proofs with zoom and downloads","author":"Blotto"}]
 }
