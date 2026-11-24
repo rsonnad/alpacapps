@@ -1,12 +1,12 @@
 {
-  "version": "v261124.07 3:29a",
-  "release": 2080,
-  "sha": "be4ca9b9dd",
-  "fullSha": "be4ca9b9dd8c9ca9a4514c66184e4a2f6caeb158",
+  "version": "v261124.08 3:34a",
+  "release": 2081,
+  "sha": "aa22f4aaa1",
+  "fullSha": "aa22f4aaa105d9d600e8e98b2b9cc833ef5473a2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-24T09:29:38+00:00",
-  "commits": [{"sha":"be4ca9b9dd","message":"Add first Sunburst sky and portrait studies to the gallery","author":"Blotto"}]
+  "pushedAt": "2026-11-24T09:34:37+00:00",
+  "commits": [{"sha":"aa22f4aaa1","message":"Complete gallery with all twelve Sunburst sky variations","author":"Blotto"}]
 }
