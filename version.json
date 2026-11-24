@@ -1,12 +1,12 @@
 {
-  "version": "v261124.09 4:24p",
-  "release": 2082,
-  "sha": "4b3138abaf",
-  "fullSha": "4b3138abaf6f601e2ce203e68a577845eb237400",
+  "version": "v261124.10 4:27p",
+  "release": 2083,
+  "sha": "a1cc5b23aa",
+  "fullSha": "a1cc5b23aa0099af9b018fc2c1499027b6ee1a06",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-24T22:24:20+00:00",
-  "commits": [{"sha":"4b3138abaf","message":"Add associate purchase reimbursement workflow","author":"Blotto"}]
+  "pushedAt": "2026-11-24T22:27:25+00:00",
+  "commits": [{"sha":"a1cc5b23aa","message":"Qualify reimbursement admin lookup in restricted SQL context","author":"Blotto"}]
 }
