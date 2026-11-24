@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/rentals/styles.css?v=5">
   <link rel="stylesheet" href="/rentals/admin/styles.css?v=5">
   <link rel="stylesheet" href="/rentals/admin/manage-shared.css?v=5">
+  <link rel="stylesheet" href="../shared/reimbursements.css">
   <style>
     :root {
       --clock-green: #22c55e;
@@ -673,6 +674,34 @@
         </div>
 
         <button class="manual-entry-link" id="btnManualEntry">+ Add manual entry</button>
+
+        <details class="reimbursements reimbursement-clock" id="reimbursementPanel" hidden>
+          <summary>Reimbursements</summary>
+          <form id="reimbursementForm" class="reimbursement-form">
+            <div class="reimbursement-fields">
+              <label>Amount (USD)
+                <input name="amount" type="number" min="0.01" max="999999.99" step="0.01" inputmode="decimal" required>
+              </label>
+              <label>Purchase date
+                <input name="purchaseDate" type="date" required>
+              </label>
+            </div>
+            <label>Description
+              <textarea name="description" rows="2" maxlength="500" placeholder="What did you buy and what was it for?" required></textarea>
+            </label>
+            <label>Space (optional)
+              <select name="space"><option value="">No space</option></select>
+            </label>
+            <label>Receipts
+              <input name="receipts" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf,.heic,.heif" multiple required aria-describedby="reimbursementReceiptHelp">
+            </label>
+            <small id="reimbursementReceiptHelp">Attach 1–5 photos or PDFs, up to 10 MB each.</small>
+            <button type="submit" class="btn-primary">Submit reimbursement</button>
+          </form>
+          <h3>Your requests</h3>
+          <div id="reimbursementHistory" aria-live="polite"></div>
+          <button type="button" class="btn-secondary" id="reimbursementHistoryMore" hidden>Load more</button>
+        </details>
       </div>
 
       <!-- Scheduling -->

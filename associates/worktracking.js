@@ -12,6 +12,7 @@ import { AUSTIN_TIMEZONE, getAustinTodayISO } from '../shared/timezone.js';
 import { projectService } from '../shared/project-service.js';
 import { payoutService } from '../shared/payout-service.js';
 import { initTabList } from '../shared/tab-utils.js';
+import { initReimbursements } from './reimbursements.js';
 import { emailService } from '../shared/email-service.js';
 
 // =============================================
@@ -61,6 +62,9 @@ async function initApp() {
   setupEventListeners();
   requestLocation();
   await loadSpaces();
+  if (authState.appUser.role !== 'demo') {
+    initReimbursements(profile.id, spacesMap, showToast);
+  }
   initWorkplaceSelector();
   await loadTasksForSelector();
   await refreshAll();

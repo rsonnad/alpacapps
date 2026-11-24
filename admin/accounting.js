@@ -10,6 +10,7 @@ import {
   DIRECTION,
   STATUS
 } from '../shared/accounting-service.js';
+import { initReimbursementQueue } from './reimbursements.js';
 import { isDemoUser, redactString } from '../shared/demo-redact.js';
 
 // State
@@ -32,7 +33,7 @@ initAdminPage({
   activeTab: 'accounting',
   requiredRole: 'admin',
   section: 'admin',
-  onReady: async () => {
+  onReady: async (state) => {
     if (initialized) return;
     initialized = true;
 
@@ -50,6 +51,9 @@ initAdminPage({
     await loadPeople();
     setDefaultDateRange();
     setupEventListeners();
+    if (['admin', 'oracle'].includes(state.appUser?.role)) {
+      initReimbursementQueue(showToast, loadData);
+    }
     await Promise.all([loadData(), loadOccupancy(), loadComputeCosts(), loadApiUsage()]);
   }
 });

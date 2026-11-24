@@ -1,0 +1,77 @@
+.reimbursements[hidden],
+.reimbursements [hidden] {
+  display: none !important;
+}
+
+.reimbursement-clock {
+  border-top: 1px solid var(--border, #ddd);
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  text-align: left;
+}
+
+.reimbursement-clock summary {
+  cursor: pointer;
+  color: var(--accent, #69442d);
+  font-weight: 600;
+}
+
+.reimbursement-clock h3 {
+  font-size: 1rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.reimbursement-form,
+.reimbursement-fields,
+.reimbursement-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.reimbursement-form {
+  margin: 0.85rem 0;
+}
+
+.reimbursement-fields {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+}
+
+.reimbursements label {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.reimbursements :is(input, select, textarea) {
+  background: #fff;
+  border: 1px solid var(--border, #bdb8b0);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font: inherit;
+  min-width: 0;
+  padding: 0.55rem;
+  width: 100%;
+}
+
+.reimbursements textarea {
+  resize: vertical;
+}
+
+.reimbursement-card {
+  border: 1px solid var(--border, #ddd);
+  border-radius: 8px;
+  padding: 0.8rem;
+  margin-bottom: 0.65rem;
+  gap: 0.4rem;
+  overflow-wrap: anywhere;
+}
+
+.reimbursement-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reimbursements .section-header {
+  flex-wrap: wrap;
+}

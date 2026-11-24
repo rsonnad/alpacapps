@@ -953,3 +953,9 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 
 **Why:** The owner couldn't tell whether a removed shift had ever been scheduled, or who removed it: cleared shifts are hard-deleted, the old trigger only logged field-changing updates, and the cascading foreign key erased history with the shift. The weekly schedule email was the only evidence. Schedule changes affect pay and the monthly-minimum reminder, so they need to be traceable.
 
+
+### 2026-11-24: Associate Purchase Reimbursements
+
+**Decision.** Associates request reimbursements from the clock card in Work Planning. Each request requires an amount, purchase date, description, and one to five private photo or PDF receipts. The space is optional. Admins review requests in Accounting and either record a completed payment or decline with a reason. Recording a payment creates a linked ledger expense.
+
+**Why.** Associates can find the form where they already report work. Tracking purchase expenses separately from hours keeps them out of automatic wages and gives both the associate and the reviewer a record of the outcome.
