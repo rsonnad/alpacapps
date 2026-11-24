@@ -1,12 +1,12 @@
 {
-  "version": "v261124.01 1:42a",
-  "release": 2074,
-  "sha": "63053aabaa",
-  "fullSha": "63053aabaaf99e4efc042431b55878a3de60a924",
+  "version": "v261124.02 1:48a",
+  "release": 2075,
+  "sha": "e34077df72",
+  "fullSha": "e34077df728050aea8e788c381d488707fad28fc",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-24T07:42:41+00:00",
-  "commits": [{"sha":"63053aabaa","message":"Publish individual Woodstock poster proofs with zoom and downloads","author":"Blotto"}]
+  "pushedAt": "2026-11-24T07:48:10+00:00",
+  "commits": [{"sha":"e34077df72","message":"Add complete poster series and verified Steal Your Face QR proof","author":"Blotto"}]
 }
