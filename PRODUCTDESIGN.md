@@ -959,3 +959,9 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision.** Associates request reimbursements from the clock card in Work Planning. Each request requires an amount, purchase date, description, and one to five private photo or PDF receipts. The space is optional. Admins review requests in Accounting and either record a completed payment or decline with a reason. Recording a payment creates a linked ledger expense.
 
 **Why.** Associates can find the form where they already report work. Tracking purchase expenses separately from hours keeps them out of automatic wages and gives both the associate and the reviewer a record of the outcome.
+
+### 2026-11-24: Automatic Associate Reimbursements
+
+**Decision.** A new reimbursement immediately queues a review email to Rahul. Its link opens that request in signed-in Accounting, where an admin can delay automatic payment until an admin releases the hold. After the email service accepts the notice, the request waits at least 24 hours and then follows the associate's configured payroll cadence and Stripe eligibility. The transfer creates its own ledger expense. Earlier requests stay in the manual workflow. An admin can hold a newer request to record an off-platform payment.
+
+**Why.** The review window gives the admin time to inspect receipts or pause a questionable purchase. A durable transfer claim keeps automated payouts and manual recording from racing and leaves uncertain Stripe outcomes available for reconciliation.

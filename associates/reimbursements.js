@@ -41,7 +41,7 @@ export function initReimbursements(associateId, spaces, showToast) {
     container: document.getElementById('reimbursementHistory'),
     more: document.getElementById('reimbursementHistoryMore'),
     query: () => supabase.from('associate_reimbursements')
-      .select('id, amount_cents, purchase_date, description, space:spaces(name), status, paid_date, resolution_note, receipt_paths')
+      .select('id, amount_cents, purchase_date, description, space:spaces(name), status, paid_date, resolution_note, receipt_paths, payment_held')
       .eq('associate_id', associateId),
     render: request => reimbursementCard(request, 'Reimbursement', showToast),
     emptyText: () => 'No reimbursements submitted yet.'

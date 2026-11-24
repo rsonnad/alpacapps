@@ -24,7 +24,9 @@ let apiUsageData = null;
 let initialized = false;
 
 // Check if running in embed mode (inside iframe on manage.html)
-const isEmbed = new URLSearchParams(window.location.search).has('embed');
+const params = new URLSearchParams(window.location.search);
+const isEmbed = params.has('embed');
+const reimbursementId = params.get('reimbursement');
 
 // =============================================
 // INITIALIZATION
@@ -33,6 +35,9 @@ initAdminPage({
   activeTab: 'accounting',
   requiredRole: 'admin',
   section: 'admin',
+  loginRedirect: reimbursementId
+    ? window.location.pathname + '?reimbursement=' + encodeURIComponent(reimbursementId)
+    : undefined,
   onReady: async (state) => {
     if (initialized) return;
     initialized = true;
@@ -52,7 +57,7 @@ initAdminPage({
     setDefaultDateRange();
     setupEventListeners();
     if (['admin', 'oracle'].includes(state.appUser?.role)) {
-      initReimbursementQueue(showToast, loadData);
+      initReimbursementQueue(reimbursementId, showToast, loadData);
     }
     await Promise.all([loadData(), loadOccupancy(), loadComputeCosts(), loadApiUsage()]);
   }

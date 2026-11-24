@@ -6,7 +6,9 @@ import { reimbursementCard, reimbursementElement, reimbursementList } from '../s
 function resolutionForm(request, onResolved, showToast) {
   const form = reimbursementElement('form', null, 'reimbursement-form');
   const outcome = document.createElement('select');
-  outcome.add(new Option('Record completed payment', 'paid'));
+  if (!request.automatic_payment || request.payment_held) {
+    outcome.add(new Option('Record completed payment', 'paid'));
+  }
   outcome.add(new Option('Decline request', 'declined'));
 
   const paidDate = document.createElement('input');
@@ -77,9 +79,13 @@ function resolutionForm(request, onResolved, showToast) {
     try {
       const { error } = await supabase.rpc('resolve_associate_reimbursement', params);
       if (error) {
-        showToast(error.message === 'This reimbursement has already been resolved'
-          ? error.message : 'Could not save the reimbursement. Try again.', 'error');
-        if (error.message === 'This reimbursement has already been resolved') onResolved(false);
+        const changed = [
+          'This reimbursement has already been resolved',
+          'A Stripe transfer is in progress or needs reconciliation',
+          'Hold automatic payment before recording an external payment'
+        ].includes(error.message);
+        showToast(changed ? error.message : 'Could not save the reimbursement. Try again.', 'error');
+        if (changed) onResolved(false);
         return;
       }
 
@@ -96,33 +102,89 @@ function resolutionForm(request, onResolved, showToast) {
   return form;
 }
 
-export function initReimbursementQueue(showToast, refreshLedger) {
+function paymentHoldButton(request, reload, showToast) {
+  const shouldHold = !request.payment_held;
+  const button = reimbursementElement('button',
+    shouldHold ? 'Delay payment' : 'Release payment hold', 'btn-secondary btn-small');
+  button.type = 'button';
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    try {
+      const { error } = await supabase.rpc('set_reimbursement_payment_hold', {
+        p_id: request.id, p_held: shouldHold
+      });
+      if (error) {
+        showToast(error.message === 'This reimbursement is resolved or its transfer has already started'
+          ? error.message : 'Could not update the payment hold. Try again.', 'error');
+      } else {
+        showToast(shouldHold ? 'Automatic payment held until you release it.'
+          : 'Released. Payment can run at the next eligible payroll window.', 'success');
+      }
+      reload();
+    } catch {
+      showToast('Could not update the payment hold. Try again.', 'error');
+    } finally {
+      button.disabled = false;
+    }
+  });
+  return button;
+}
+
+export function initReimbursementQueue(linkedId, showToast, refreshLedger) {
   const panel = document.getElementById('reimbursements');
   const status = document.getElementById('reimbursementStatus');
+  const dateTime = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Chicago'
+  });
 
   const reload = reimbursementList({
     container: document.getElementById('reimbursementQueue'),
     more: document.getElementById('reimbursementQueueMore'),
-    query: () => supabase.from('associate_reimbursements')
-      .select('id, amount_cents, purchase_date, description, space:spaces(name), status, paid_date, resolution_note, receipt_paths, associate:associate_profiles(user:app_users(display_name))')
-      .eq('status', status.value),
+    query: () => {
+      const query = supabase.from('associate_reimbursements')
+        .select('id, amount_cents, purchase_date, description, space:spaces(name), status, paid_date, resolution_note, receipt_paths, automatic_payment, review_email_sent_at, payment_held, transfer_started_at, transfer_error, associate:associate_profiles(user:app_users(display_name))');
+      return linkedId ? query.eq('id', linkedId) : query.eq('status', status.value);
+    },
     render: request => {
       const card = reimbursementCard(request, request.associate?.user?.display_name || 'Associate', showToast);
-      if (request.status === 'pending') {
-        const review = document.createElement('details');
-        review.append(reimbursementElement('summary', 'Review request'));
-        review.append(resolutionForm(request, paid => {
-          reload();
-          if (paid) refreshLedger();
-        }, showToast));
-        card.append(review);
+      if (request.status !== 'pending') return card;
+      if (request.transfer_error) card.append(reimbursementElement('small', request.transfer_error));
+      if (request.transfer_started_at) {
+        card.append(reimbursementElement('small', 'Stripe transfer started. Review the transfer before taking further action.'));
+        return card;
       }
+
+      if (request.automatic_payment) {
+        let timing = 'Waiting for the review email to be sent.';
+        if (request.payment_held) {
+          timing = 'Automatic payment is on hold until released.';
+        } else if (request.review_email_sent_at) {
+          const after = new Date(Date.parse(request.review_email_sent_at) + 24 * 60 * 60 * 1000);
+          timing = 'Automatic payment can run on an eligible payroll run after ' + dateTime.format(after) + ' Central.';
+        }
+        const controls = reimbursementElement('div', null, 'reimbursement-actions');
+        controls.append(paymentHoldButton(request, reload, showToast), reimbursementElement('small', timing));
+        card.append(controls);
+      }
+
+      const review = document.createElement('details');
+      review.append(reimbursementElement('summary', 'Review request'));
+      review.append(resolutionForm(request, paid => {
+        reload();
+        if (paid) refreshLedger();
+      }, showToast));
+      card.append(review);
       return card;
     },
-    emptyText: () => 'No ' + status.value + ' reimbursements.'
+    emptyText: () => linkedId ? 'Reimbursement not found.' : 'No ' + status.value + ' reimbursements.'
   });
 
+  if (linkedId) {
+    status.closest('label').hidden = true;
+    document.getElementById('reimbursementQueueBack').hidden = false;
+  }
   status.addEventListener('change', reload);
   panel.hidden = false;
   reload();
+  if (linkedId || location.hash === '#reimbursements') panel.scrollIntoView();
 }

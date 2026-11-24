@@ -345,10 +345,11 @@ function renderAccessDenied(state, activeTab) {
  * @param {Object} options
  * @param {string} options.activeTab - Which tab to highlight in nav
  * @param {string} options.requiredRole - Minimum role required ('staff' or 'admin'). Default: 'staff'
+ * @param {string} options.loginRedirect - Internal return path for sign-in
  * @param {Function} options.onReady - Called with authState when authorized
  * @returns {Promise<Object>} authState
  */
-export async function initAdminPage({ activeTab, requiredRole = 'staff', requiredPermission, section = 'staff', onReady }) {
+export async function initAdminPage({ activeTab, requiredRole = 'staff', requiredPermission, section = 'staff', loginRedirect = window.location.pathname, onReady }) {
   // Set up global error handlers + health banner
   errorLogger.setupGlobalHandlers();
   supabaseHealth.injectBanner();
@@ -585,7 +586,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
           console.warn('[admin-shell] Token refresh failed — redirecting to login');
           try { localStorage.removeItem('genalpaca-cached-auth'); } catch (e) { /* ignore */ }
           transitionBootState('redirecting');
-          window.location.href = '/login/?redirect=' + encodeURIComponent(window.location.pathname);
+          window.location.href = '/login/?redirect=' + encodeURIComponent(loginRedirect);
           return;
         }
         onReady(state);
@@ -616,7 +617,7 @@ export async function initAdminPage({ activeTab, requiredRole = 'staff', require
       // session expiry, even when cached auth had already rendered the page.
       appContentEl?.replaceChildren();
       transitionBootState('redirecting');
-      window.location.replace('/login/?redirect=' + encodeURIComponent(window.location.pathname));
+      window.location.replace('/login/?redirect=' + encodeURIComponent(loginRedirect));
     }
   }
 

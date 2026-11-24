@@ -16,9 +16,10 @@ export function reimbursementElement(tag, text, className) {
 export function reimbursementCard(request, title, showToast) {
   const card = reimbursementElement('article', null, 'reimbursement-card');
   const date = dateFormat.format(new Date(request.purchase_date + 'T00:00:00Z'));
+  const status = request.status === 'pending' && request.payment_held ? 'Payment on hold' : statusLabels[request.status];
   card.append(
     reimbursementElement('strong', title + ' · ' + money.format(request.amount_cents / 100)),
-    reimbursementElement('div', [statusLabels[request.status], date, request.space?.name].filter(Boolean).join(' · ')),
+    reimbursementElement('div', [status, date, request.space?.name].filter(Boolean).join(' · ')),
     reimbursementElement('div', request.description)
   );
   if (request.paid_date) {
