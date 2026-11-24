@@ -1,12 +1,12 @@
 {
-  "version": "v261124.10 4:27p",
-  "release": 2083,
-  "sha": "a1cc5b23aa",
-  "fullSha": "a1cc5b23aa0099af9b018fc2c1499027b6ee1a06",
+  "version": "v261124.11 4:41p",
+  "release": 2084,
+  "sha": "04a843d926",
+  "fullSha": "04a843d9262d7bd0bcde9fe84d83183764c0f5f2",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-24T22:27:25+00:00",
-  "commits": [{"sha":"a1cc5b23aa","message":"Qualify reimbursement admin lookup in restricted SQL context","author":"Blotto"}]
+  "pushedAt": "2026-11-24T22:41:50+00:00",
+  "commits": [{"sha":"04a843d926","message":"Schedule reimbursements after an admin email review window","author":"Blotto"}]
 }
