@@ -1,12 +1,12 @@
 {
-  "version": "v261124.06 2:50a",
-  "release": 2079,
-  "sha": "fb16552868",
-  "fullSha": "fb165528687c8795bab0254c54bf9208431ba215",
+  "version": "v261124.07 3:29a",
+  "release": 2080,
+  "sha": "be4ca9b9dd",
+  "fullSha": "be4ca9b9dd8c9ca9a4514c66184e4a2f6caeb158",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "ip-10-0-136-106",
-  "pushedAt": "2026-11-24T08:50:53+00:00",
-  "commits": [{"sha":"fb16552868","message":"Publish all twelve artwork variations for review","author":"Blotto"}]
+  "machine": "runnervm0hi8g",
+  "pushedAt": "2026-11-24T09:29:38+00:00",
+  "commits": [{"sha":"be4ca9b9dd","message":"Add first Sunburst sky and portrait studies to the gallery","author":"Blotto"}]
 }
