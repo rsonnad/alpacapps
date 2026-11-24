@@ -152,10 +152,12 @@ DECLARE
   v_ledger_id uuid;
   v_note text := nullif(btrim(p_note), '');
 BEGIN
-  IF NOT coalesce(public.is_admin_user(), false) THEN
+  SELECT id INTO v_actor_id
+    FROM public.app_users
+    WHERE auth_user_id = auth.uid() AND role IN ('admin', 'oracle');
+  IF v_actor_id IS NULL THEN
     RAISE EXCEPTION 'Admin access required' USING ERRCODE = '42501';
   END IF;
-  SELECT id INTO STRICT v_actor_id FROM public.app_users WHERE auth_user_id = auth.uid();
   SELECT * INTO STRICT v_request FROM public.associate_reimbursements WHERE id = p_id FOR UPDATE;
 
   IF v_request.status <> 'pending' THEN
