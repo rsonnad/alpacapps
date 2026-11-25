@@ -1,12 +1,12 @@
 {
-  "version": "v261124.12 7:43p",
-  "release": 2085,
-  "sha": "5205024a61",
-  "fullSha": "5205024a61523f958e29f2b087deddbeeda88054",
+  "version": "v261124.13 7:47p",
+  "release": 2086,
+  "sha": "848af0692f",
+  "fullSha": "848af0692f2c7cdb0e0fc7a9dc3c5fadd98ae1a8",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-25T01:43:41+00:00",
-  "commits": [{"sha":"5205024a61","message":"Freeze new rental packets with property waivers and reconcile tenant receipts","author":"Blotto"}]
+  "machine": "ip-10-0-139-180",
+  "pushedAt": "2026-11-25T01:47:05+00:00",
+  "commits": [{"sha":"848af0692f","message":"Use the published lease baseline and show outstanding signing balances","author":"Blotto"}]
 }
