@@ -1,12 +1,12 @@
 {
-  "version": "v261124.11 4:41p",
-  "release": 2084,
-  "sha": "04a843d926",
-  "fullSha": "04a843d9262d7bd0bcde9fe84d83183764c0f5f2",
+  "version": "v261124.12 7:43p",
+  "release": 2085,
+  "sha": "5205024a61",
+  "fullSha": "5205024a61523f958e29f2b087deddbeeda88054",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-24T22:41:50+00:00",
-  "commits": [{"sha":"04a843d926","message":"Schedule reimbursements after an admin email review window","author":"Blotto"}]
+  "pushedAt": "2026-11-25T01:43:41+00:00",
+  "commits": [{"sha":"5205024a61","message":"Freeze new rental packets with property waivers and reconcile tenant receipts","author":"Blotto"}]
 }
