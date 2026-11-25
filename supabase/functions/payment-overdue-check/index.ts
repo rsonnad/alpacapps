@@ -16,6 +16,7 @@ import { getCorsHeaders } from "../_shared/api-helpers.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
 import { ROUTES, absoluteUrl } from "../_shared/routes.ts";
 import { requireCronOrRoles } from "../_shared/require-auth.ts";
+import { runRentWatchDigest } from "../_shared/rent-watch-digest.ts";
 const TEAM_EMAIL = 'team@alpacaplayhouse.com';
 const ESCALATION_DAYS = [1, 3, 5, 7]; // days after due date
 const PAY_BASE_URL = 'https://alpacaplayhouse.com/pay/';
@@ -318,6 +319,10 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const auth = await requireCronOrRoles(req, supabase, ['admin', 'oracle']);
     if (auth.response) return auth.response;
+
+    // Owner-only rent digest (separate cron job, 15:10 UTC). Never emails tenants.
+    const peek = await req.clone().json().catch(() => null);
+    if (peek && peek.mode === 'rent_watch') return await runRentWatchDigest(supabase, peek);
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
     if (!RESEND_API_KEY) {
