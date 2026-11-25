@@ -1,12 +1,12 @@
 {
-  "version": "v261124.13 7:47p",
-  "release": 2086,
-  "sha": "848af0692f",
-  "fullSha": "848af0692f2c7cdb0e0fc7a9dc3c5fadd98ae1a8",
+  "version": "v261125.01 12:21p",
+  "release": 2087,
+  "sha": "6ccbfc32d2",
+  "fullSha": "6ccbfc32d245d466b33272975510771cabdb6dfd",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
-  "machine": "ip-10-0-139-180",
-  "pushedAt": "2026-11-25T01:47:05+00:00",
-  "commits": [{"sha":"848af0692f","message":"Use the published lease baseline and show outstanding signing balances","author":"Blotto"}]
+  "machine": "runnervm0hi8g",
+  "pushedAt": "2026-11-25T18:21:32+00:00",
+  "commits": [{"sha":"6ccbfc32d2","message":"fix(payments): Cash App whole-dollar receipts + owner-only rent digest","author":"Blotto"}]
 }
