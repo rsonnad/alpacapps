@@ -99,7 +99,7 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
   // Fetch details we need for the email + the ID-upload token.
   const { data: appRow } = await supabase
     .from('rental_applications')
-    .select('reservation_deposit_amount, require_deposit, person_id, person:person_id(first_name, last_name)')
+    .select('reservation_deposit_amount,reservation_deposit_paid, require_deposit, person_id, person:person_id(first_name, last_name)')
     .eq('id', applicationId)
     .single();
 
@@ -141,7 +141,7 @@ async function sendForSignature(applicationId, recipientEmail, recipientName) {
   // Default the online-payment CTAs to the reservation deposit (what's due
   // now to hold the space). At move-in the tenant will be sent a separate
   // request for the remaining balance.
-  const ctaAmount = Number(appRow?.reservation_deposit_amount || 0);
+  const ctaAmount = appRow?.reservation_deposit_paid ? 0 : Number(appRow?.reservation_deposit_amount || 0);
   const ctaDesc = appRow?.person
     ? `${appRow.person.first_name} ${appRow.person.last_name} — Reservation Deposit`.trim()
     : 'Reservation Deposit';
@@ -251,7 +251,7 @@ async function buildRentalPaymentSummary(applicationId) {
   try {
     const { data: app, error } = await supabase
       .from('rental_applications')
-      .select('approved_rate, approved_rate_term, approved_move_in, approved_lease_end, security_deposit_amount, move_in_deposit_amount, reservation_deposit_amount, application_fee_paid, application_fee_amount')
+      .select('approved_rate, approved_rate_term, approved_move_in, approved_lease_end, security_deposit_amount, move_in_deposit_amount, reservation_deposit_amount, reservation_deposit_paid, move_in_deposit_paid, security_deposit_paid, rental_payments(payment_type,amount_paid), application_fee_paid, application_fee_amount')
       .eq('id', applicationId)
       .single();
     if (error || !app) return '';
@@ -282,23 +282,31 @@ async function buildRentalPaymentSummary(applicationId) {
       proratedRent = rate;
     }
 
-    const credits = reservationDeposit + appFeePaid;
-    const firstMonthBalance = Math.max(0, proratedRent - credits);
+    if (app.move_in_deposit_amount != null && Number(app.move_in_deposit_amount) !== rate) {
+      proratedRent = Number(app.move_in_deposit_amount);
+      prorationNote = 'First rent amount in your approved terms.';
+    }
+    const received = kind => (app.rental_payments || []).filter(row => row.payment_type === kind)
+      .reduce((total, row) => total + Number(row.amount_paid || 0), 0);
+    const reservationOutstanding = app.reservation_deposit_paid ? 0 : reservationDeposit;
+    const securityOutstanding = app.security_deposit_paid ? 0 : Math.max(0, securityDeposit - received('security_deposit'));
+    const credits = reservationDeposit + appFeePaid + received('move_in_deposit');
+    const firstMonthBalance = app.move_in_deposit_paid ? 0 : Math.max(0, proratedRent - credits);
 
     const moveInLabel = fmtDate(app.approved_move_in);
 
     const rows = [];
     if (reservationDeposit > 0) {
-      rows.push({ label: 'Reservation Deposit', amount: fmt(reservationDeposit), when: 'Due now — holds your space', note: 'Credited toward first month\'s rent.' });
+      rows.push({ label: 'Reservation Deposit', amount: fmt(reservationDeposit), when: app.reservation_deposit_paid ? 'Received' : 'Due at signing', note: 'Credited toward first month\'s rent.' });
     }
     if (securityDeposit > 0) {
-      rows.push({ label: 'Security Deposit', amount: fmt(securityDeposit), when: `Due by move-in (${moveInLabel})`, note: 'Refundable at end of lease, less any deductions.' });
+      rows.push({ label: 'Security Deposit', amount: fmt(securityOutstanding), when: `Due by move-in (${moveInLabel})`, note: 'Refundable at end of lease, less any deductions.' });
     }
     rows.push({
       label: isMonthly ? 'First Month\'s Rent' : 'Rent',
-      amount: fmt(proratedRent),
+      amount: fmt(firstMonthBalance),
       when: `Due by move-in (${moveInLabel})`,
-      note: [prorationNote, credits > 0 ? `Less ${fmt(credits)} credits already paid → balance owed at move-in: ${fmt(firstMonthBalance)}.` : null].filter(Boolean).join(' '),
+      note: [prorationNote, credits > 0 ? `Less ${fmt(credits)} in receipts and scheduled reservation credit; balance after that credit: ${fmt(firstMonthBalance)}.` : null].filter(Boolean).join(' '),
     });
     if (isMonthly) {
       rows.push({
@@ -320,7 +328,7 @@ async function buildRentalPaymentSummary(applicationId) {
     // Grand total: everything due before / at move-in (not the recurring monthly).
     // = reservation deposit (paid now) + security deposit (at move-in)
     //   + first-month rent balance after credits.
-    const totalDueBeforeMoveIn = reservationDeposit + securityDeposit + firstMonthBalance;
+    const totalDueBeforeMoveIn = reservationOutstanding + securityOutstanding + firstMonthBalance;
     const totalRow = `
       <tr style="background: #efe9d8;">
         <td style="padding: 12px; vertical-align: top;"><strong>Total Due Before Move-In</strong><br><span style="color:#5a4f33;font-size:0.85em;">Reservation deposit (now) + security deposit + first month's rent balance after credits.</span></td>
@@ -530,7 +538,7 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
 
     const paymentSection = paymentMethodsHtml ? `
       <h3 style="margin-top: 2rem; color: #1c1618;">How to Pay Your Deposits</h3>
-      <p>Once you sign, please send the reservation deposit using one of these methods. Include your name and "${docType === 'rental' ? 'rental deposit' : 'event deposit'}" in the note.</p>
+      <p>Use one of these methods for amounts shown as due in your payment schedule. Include your name and "${docType === 'rental' ? 'rental deposit' : 'event deposit'}" in the note.</p>
       ${paymentMethodsHtml}
       <p style="color: #666; font-size: 0.9em; margin-top: 12px;">A confirmation email will be sent automatically once your payment is received.</p>
     ` : '';

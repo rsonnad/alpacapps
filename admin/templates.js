@@ -82,7 +82,7 @@ async function loadTemplatesPanel() {
       document.getElementById('templateName').value = template.name;
       document.getElementById('templateContent').value = template.content;
     } else {
-      document.getElementById('templateContent').value = leaseTemplateService.getDefaultTemplate();
+      document.getElementById('templateContent').value = await getResidentialBaseline();
     }
   } catch (e) {
     console.error('Error loading lease template:', e);
@@ -645,10 +645,19 @@ async function saveTemplate() {
   }
 }
 
-function loadDefaultTemplate() {
-  document.getElementById('templateContent').value = leaseTemplateService.getDefaultTemplate();
-  document.getElementById('templateName').value = 'Standard Lease Agreement';
-  showToast('Default template loaded', 'info');
+async function getResidentialBaseline() {
+  const { data, error } = await supabase.from('lease_templates').select('content')
+    .eq('name', 'Alpaca Playhouse Residency Lease').eq('type', 'lease').eq('version', 6).single();
+  if (error || !data?.content) throw new Error('The published Cedar Creek baseline could not be loaded.');
+  return data.content;
+}
+
+async function loadDefaultTemplate() {
+  try {
+    document.getElementById('templateContent').value = await getResidentialBaseline();
+    document.getElementById('templateName').value = 'Alpaca Playhouse Residency Lease';
+    showToast('Cedar Creek lease baseline loaded', 'info');
+  } catch (error) { showToast(error.message, 'error'); }
 }
 
 // =============================================
