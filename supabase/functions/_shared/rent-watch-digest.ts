@@ -7,11 +7,13 @@
  * month's, if still unpaid). It emails the owner on the 1st and 2nd of every month, and after that
  * every day while any rent is still missing. It never emails tenants.
  *
+ * Two sources count: the ledger and the finleg bank feed (see rent-watch-bank-feed.ts).
  * Tenant names and amounts live in the rent_watch table, never in this repo.
  * Test without sending: POST {"mode":"rent_watch","dry_run":true,"today":"2026-12-02"}
  */
 
 import { SENDER_MAP } from "./template-engine.ts";
+import { dedupeAgainstLedger, fetchBankFeed } from "./rent-watch-bank-feed.ts";
 import { checkPeriod, shouldSendDigest, type LedgerRow, type PeriodResult, type RentWatch } from "./rent-watch.ts";
 
 const OWNER_EMAIL = Deno.env.get("RENT_WATCH_TO") || "alpacaplayhouse@gmail.com";
@@ -58,7 +60,7 @@ function json(body: unknown, status = 200): Response {
 
 const FOOTER =
   "This counts what is recorded in the accounting ledger. If you can see the money in your bank or app but it shows here as not received, record it in accounting and it will drop off this list. " +
-  "US Bank Zelle emails do not name the payer, so Zelle payments often need to be recorded by hand. " +
+  "It also reads the bank feed, which names Zelle payers, but that feed can lag a few days behind the bank. " +
   "This is an owner-only note; tenants are not emailed.";
 
 export async function runRentWatchDigest(supabase: any, body: any): Promise<Response> {
@@ -79,7 +81,10 @@ export async function runRentWatchDigest(supabase: any, body: any): Promise<Resp
       .eq("direction", "income")
       .gte("transaction_date", since);
     if (lErr) throw lErr;
-    const rows = (ledger || []) as LedgerRow[];
+    const ledgerRows = (ledger || []) as LedgerRow[];
+    // Second source: the bank feed (Zelle payers are named there, not in the emails).
+    const feed = await fetchBankFeed(since);
+    const rows = [...ledgerRows, ...dedupeAgainstLedger(feed.rows, ledgerRows)];
 
     const results: PeriodResult[] = [];
     for (const w of watches as RentWatch[]) {
@@ -94,6 +99,7 @@ export async function runRentWatchDigest(supabase: any, body: any): Promise<Resp
     const send = shouldSendDigest(today, unpaid.length > 0);
 
     const lines = active.map((r) => `${r.label} (${monthName(r.month)}): ${describe(r)}`);
+    if (feed.error) lines.push(`Note: the bank feed could not be read (${feed.error}), so Zelle payments may show as not received.`);
     const subject = unpaid.length
       ? `Rent check ${today}: ${unpaid.length} not received`
       : `Rent check ${today}: ${received} of ${thisMonth.length} received`;
