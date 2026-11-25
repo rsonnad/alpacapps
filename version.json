@@ -1,12 +1,12 @@
 {
-  "version": "v261125.01 12:21p",
-  "release": 2087,
-  "sha": "6ccbfc32d2",
-  "fullSha": "6ccbfc32d245d466b33272975510771cabdb6dfd",
+  "version": "v261125.02 3:05p",
+  "release": 2088,
+  "sha": "f8972981ef",
+  "fullSha": "f8972981ef7139309b5bfb2d2ab6083b0e72832f",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-25T18:21:32+00:00",
-  "commits": [{"sha":"6ccbfc32d2","message":"fix(payments): Cash App whole-dollar receipts + owner-only rent digest","author":"Blotto"}]
+  "pushedAt": "2026-11-25T21:05:08+00:00",
+  "commits": [{"sha":"f8972981ef","message":"feat(rent-watch): count the finleg bank feed (Zelle payers) as a second source","author":"Blotto"}]
 }
