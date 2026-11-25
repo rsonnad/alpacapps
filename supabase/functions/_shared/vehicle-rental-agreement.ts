@@ -392,7 +392,7 @@ export function escapeHtml(s: string | null | undefined): string {
  * parser. Values are substituted as-is: callers escape anything that came
  * from a database text field before passing it in.
  */
-function parseMarkdownTemplate(template: string, data: Record<string, string>): string {
+export function parseMarkdownTemplate(template: string, data: Record<string, string>): string {
   let content = template;
   for (const [key, value] of Object.entries(data)) {
     content = content.split(`{{${key}}}`).join(value ?? '');

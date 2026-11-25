@@ -21,6 +21,7 @@ export function formatDateTime(iso: string): string {
  * must match the contract it is attached to.
  */
 function partyLabels(documentType?: string) {
+  if (documentType === 'event') return { docTitle: 'Signed Event Agreement', bannerTitle: 'Signed Event Agreement', ownerLabel: '', ownerCaption: '', ownerAria: '', signerLabel: 'Client signature', signerAlt: 'Client signature' };
   if (documentType === 'vehicle_rental') {
     return {
       docTitle: 'Signed Vehicle Rental Agreement',
@@ -117,11 +118,11 @@ export function auditBlockHtml(opts: { signedAt: string; ipAddress: string; user
       </table>
       <table style="width: 100%; border-collapse: collapse; margin-top: 16px; border-top: 1px solid #eee; padding-top: 12px;">
         <tr>
-          <td style="vertical-align: top; padding: 12px 8px 0 0; width: 50%;">
+${opts.documentType === 'event' ? '' : `          <td style="vertical-align: top; padding: 12px 8px 0 0; width: 50%;">
             <p style="color: #888; font-size: 12px; margin: 0 0 6px 0;">${labels.ownerLabel}</p>
             <div style="border: 1px solid #eee; border-radius: 4px; padding: 6px 10px; background: #fff;">${landlordSig}</div>
             <p style="color: #555; font-size: 11px; margin: 6px 0 0 0;">${labels.ownerCaption}</p>
-          </td>
+          </td>`}
           <td style="vertical-align: top; padding: 12px 0 0 8px; width: 50%;">
             <p style="color: #888; font-size: 12px; margin: 0 0 6px 0;">${labels.signerLabel}</p>
             <img src="${opts.signatureImageUrl}" alt="${labels.signerAlt}" style="max-width: 260px; max-height: 64px; height: auto; border: 1px solid #eee; border-radius: 4px; padding: 6px 10px; background: #fff;">

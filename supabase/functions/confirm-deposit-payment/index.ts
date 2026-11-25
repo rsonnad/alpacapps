@@ -87,159 +87,11 @@ Deno.serve(async (req) => {
       return htmlPage("Error", "<h2>Application Not Found</h2><p>The linked rental application could not be found.</p>");
     }
 
-    // Atomically claim the confirmation before any payment, ledger, or
-    // application updates. A second click now stops before side effects.
-    const { data: claimed } = await supabase
-      .from("deposit_payment_confirmations")
-      .update({ status: "processing", resolved_by: "admin_email_link" })
-      .eq("id", conf.id)
-      .eq("status", "pending")
-      .select("id")
-      .maybeSingle();
-    if (!claimed) {
-      return htmlPage("Already Processing", "<h2>Already Processing</h2><p>This confirmation is already being processed. Please refresh shortly.</p>");
-    }
-
-    // Deduplicate: check if this confirmation number was already recorded
-    if (conf.confirmation_number) {
-      const { data: existing } = await supabase
-        .from("rental_payments")
-        .select("id")
-        .eq("transaction_id", conf.confirmation_number)
-        .limit(1);
-
-      if (existing && existing.length > 0) {
-        await supabase
-          .from("deposit_payment_confirmations")
-          .update({ status: "confirmed", resolved_at: new Date().toISOString(), resolved_by: "admin_email_link_duplicate" })
-          .eq("id", conf.id);
-        return htmlPage("Already Recorded", "<h2>Already Recorded</h2><p>This payment was already recorded (possibly auto-matched after the confirmation email was sent).</p>");
-      }
-    }
-
-    // Record deposit payments
-    const now = new Date().toISOString();
-    const today = now.split("T")[0];
-    let remaining = Number(conf.amount);
+    const { data: result, error: applyError } = await supabase.rpc('apply_deposit_confirmation', { p_token: token });
+    if (applyError) throw applyError;
+    if (result.status !== 'applied') return htmlPage('Already processed', '<p>This confirmation has already been processed.</p>');
+    const depositsRecorded: string[] = result.lines;
     const personName = `${application.person.first_name} ${application.person.last_name}`;
-    const depositsRecorded: string[] = [];
-
-    // Move-in deposit first
-    const moveInUnpaid = !application.move_in_deposit_paid && (application.move_in_deposit_amount || 0) > 0;
-    if (moveInUnpaid && remaining > 0) {
-      const moveInAmt = Number(application.move_in_deposit_amount);
-      const applyAmt = Math.min(remaining, moveInAmt);
-
-      const { data: rpData } = await supabase
-        .from("rental_payments")
-        .insert({
-          rental_application_id: application.id,
-          payment_type: "move_in_deposit",
-          amount_due: moveInAmt,
-          amount_paid: applyAmt,
-          paid_date: today,
-          payment_method: conf.payment_method || "zelle",
-          transaction_id: conf.confirmation_number,
-        })
-        .select()
-        .single();
-
-      await supabase
-        .from("rental_applications")
-        .update({
-          move_in_deposit_paid: true,
-          move_in_deposit_paid_at: now,
-          move_in_deposit_method: conf.payment_method || "zelle",
-          updated_at: now,
-        })
-        .eq("id", application.id);
-
-      await supabase.from("ledger").insert({
-        direction: "income",
-        category: "move_in_deposit",
-        amount: applyAmt,
-        payment_method: conf.payment_method || "zelle",
-        transaction_date: today,
-        person_id: application.person_id,
-        person_name: personName,
-        rental_application_id: application.id,
-        rental_payment_id: rpData?.id,
-        status: "completed",
-        description: `Move-in deposit via Zelle (confirmed by admin, conf#${conf.confirmation_number || "N/A"})`,
-        recorded_by: "system:zelle-confirm",
-      });
-
-      remaining -= applyAmt;
-      depositsRecorded.push(`Move-in deposit: $${applyAmt.toFixed(2)}`);
-    }
-
-    // Security deposit
-    const securityUnpaid = !application.security_deposit_paid && (application.security_deposit_amount || 0) > 0;
-    if (securityUnpaid && remaining > 0) {
-      const secAmt = Number(application.security_deposit_amount);
-      const applyAmt = Math.min(remaining, secAmt);
-
-      const { data: rpData } = await supabase
-        .from("rental_payments")
-        .insert({
-          rental_application_id: application.id,
-          payment_type: "security_deposit",
-          amount_due: secAmt,
-          amount_paid: applyAmt,
-          paid_date: today,
-          payment_method: conf.payment_method || "zelle",
-          transaction_id: conf.confirmation_number,
-        })
-        .select()
-        .single();
-
-      await supabase
-        .from("rental_applications")
-        .update({
-          security_deposit_paid: true,
-          security_deposit_paid_at: now,
-          security_deposit_method: conf.payment_method || "zelle",
-          updated_at: now,
-        })
-        .eq("id", application.id);
-
-      await supabase.from("ledger").insert({
-        direction: "income",
-        category: "security_deposit",
-        amount: applyAmt,
-        payment_method: conf.payment_method || "zelle",
-        transaction_date: today,
-        person_id: application.person_id,
-        person_name: personName,
-        rental_application_id: application.id,
-        rental_payment_id: rpData?.id,
-        status: "completed",
-        description: `Security deposit via Zelle (confirmed by admin, conf#${conf.confirmation_number || "N/A"})`,
-        recorded_by: "system:zelle-confirm",
-      });
-
-      remaining -= applyAmt;
-      depositsRecorded.push(`Security deposit: $${applyAmt.toFixed(2)}`);
-    }
-
-    // Update overall deposit status
-    const { data: updatedApp } = await supabase
-      .from("rental_applications")
-      .select("move_in_deposit_paid, security_deposit_paid, security_deposit_amount")
-      .eq("id", application.id)
-      .single();
-
-    if (updatedApp) {
-      const allPaid =
-        updatedApp.move_in_deposit_paid &&
-        (updatedApp.security_deposit_paid || (updatedApp.security_deposit_amount || 0) === 0);
-      const anyPaid = updatedApp.move_in_deposit_paid || updatedApp.security_deposit_paid;
-      const newStatus = allPaid ? "received" : anyPaid ? "partial" : "requested";
-      await supabase
-        .from("rental_applications")
-        .update({ deposit_status: newStatus, updated_at: now })
-        .eq("id", application.id);
-    }
 
     // Save name mapping for future payments
     const normalized = conf.sender_name.toLowerCase().trim().replace(/\s+/g, " ").replace(/[^a-z0-9\s]/g, "");
@@ -255,15 +107,8 @@ Deno.serve(async (req) => {
       { onConflict: "sender_name_normalized" }
     );
 
-    // Mark confirmation as resolved
-    await supabase
-      .from("deposit_payment_confirmations")
-      .update({ status: "confirmed", resolved_at: now, resolved_by: "admin_email_link" })
-      .eq("id", conf.id);
-
     // Send notification to admin
     const adminUrl = `${absoluteUrl(ROUTES.staff.rentals)}#applicant=${application.id}`;
-    const overpayStr = remaining > 0 ? `<p style="color:#e74c3c;"><strong>Overpayment:</strong> $${remaining.toFixed(2)} exceeds deposits owed.</p>` : "";
 
     try {
       await fetch(`${RESEND_API_URL}/emails`, {
@@ -282,7 +127,6 @@ Deno.serve(async (req) => {
               <h2 style="color:#2d7d46;">Payment Confirmed by Admin</h2>
               <p>$${Number(conf.amount).toFixed(2)} from ${conf.sender_name} has been recorded for ${personName}.</p>
               <ul>${depositsRecorded.map((d: string) => `<li>${d}</li>`).join("")}</ul>
-              ${overpayStr}
               <p><a href="${adminUrl}">View Application</a></p>
             </div>
           `,
@@ -304,7 +148,6 @@ Deno.serve(async (req) => {
         ${conf.confirmation_number ? `<tr><td>Confirmation #</td><td>${conf.confirmation_number}</td></tr>` : ""}
       </table>
       <ul>${depositsRecorded.map((d: string) => `<li>&#x2705; ${d}</li>`).join("")}</ul>
-      ${remaining > 0 ? `<p style="color:#e74c3c;"><strong>Note:</strong> $${remaining.toFixed(2)} overpayment detected.</p>` : ""}
       <a href="${adminUrl}" class="btn">View Application</a>
     `
     );

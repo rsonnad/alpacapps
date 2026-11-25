@@ -103,6 +103,7 @@ async function getApplications(filters = {}) {
     .from('rental_applications')
     .select(`
       *,
+      rental_payments(payment_type,amount_paid),
       person:person_id(*),
       desired_space:desired_space_id(id, name, monthly_rate),
       approved_space:approved_space_id(id, name, monthly_rate),
@@ -156,6 +157,7 @@ async function getApplication(applicationId) {
     .from('rental_applications')
     .select(`
       *,
+      rental_payments(payment_type,amount_paid),
       person:person_id(*),
       desired_space:desired_space_id(id, name, monthly_rate, location),
       approved_space:approved_space_id(id, name, monthly_rate, location),
@@ -708,6 +710,7 @@ async function getAgreementData(applicationId) {
   const rateTermDisplay = {
     'monthly': 'month',
     'weekly': 'week',
+    'biweekly': 'two weeks',
     'nightly': 'night',
   }[app.approved_rate_term] || 'month';
 
@@ -825,145 +828,25 @@ async function requestDeposit(applicationId) {
 /**
  * Record move-in deposit payment
  */
-async function recordMoveInDeposit(applicationId, details = {}) {
-  const { paidAt = new Date().toISOString(), method = null, transactionId = null, amount = null } = details;
-
-  // Get application to get the amount
+async function recordStaffDeposit(applicationId, kind, details) {
   const app = await getApplication(applicationId);
   if (!app) throw new Error('Application not found');
-
-  // Use provided amount or fall back to stored amount
-  const depositAmount = amount !== null ? amount : app.move_in_deposit_amount;
-
-  // Update application — method/transactionId live in rental_payments, not here
-  const updateData = {
-    move_in_deposit_paid: true,
-    updated_at: new Date().toISOString(),
-    ...activityStamp(),
-  };
-
-  // Update the stored amount if a new amount was provided
-  if (amount !== null) {
-    updateData.move_in_deposit_amount = amount;
-  }
-
-  const { data, error } = await supabase
-    .from('rental_applications')
-    .update(updateData)
-    .eq('id', applicationId)
-    .select()
-    .single();
-
-  if (error) throw error;
-
-  // Create payment record
-  const { data: rpData, error: rpError } = await supabase.from('rental_payments').insert({
-    rental_application_id: applicationId,
-    payment_type: PAYMENT_TYPE.MOVE_IN_DEPOSIT,
-    amount_due: depositAmount,
-    amount_paid: depositAmount,
-    paid_date: paidAt,
-    payment_method: method,
-    transaction_id: transactionId,
-  }).select().single();
-
-  if (rpError) throw rpError;
-
-  // Dual-write to ledger
-  const personName = app.person ? `${app.person.first_name} ${app.person.last_name}` : null;
-  const { error: ledgerError } = await supabase.from('ledger').insert({
-    direction: 'income',
-    category: 'move_in_deposit',
-    amount: depositAmount,
-    payment_method: method || 'other',
-    transaction_date: paidAt ? paidAt.split('T')[0] : new Date().toISOString().split('T')[0],
-    person_id: app.person_id,
-    person_name: personName,
-    rental_application_id: applicationId,
-    rental_payment_id: rpData?.id || null,
-    status: 'completed',
-    description: 'Move-in deposit',
-    recorded_by: 'system:rental-service',
+  const { error } = await supabase.rpc('record_staff_deposit', {
+    p_application: applicationId, p_kind: kind, p_amount: details.amount ?? app[kind + '_amount'],
+    p_method: details.method || 'other', p_reference: details.transactionId || null,
+    p_date: (details.paidAt || new Date().toISOString()).slice(0, 10),
+    p_request: details.requestId || crypto.randomUUID(),
   });
-  if (ledgerError) console.error('Ledger dual-write failed (move-in deposit):', ledgerError);
-
-  // Update overall deposit status
-  await updateOverallDepositStatus(applicationId);
-
-  return data;
+  if (error) throw error;
+  return getApplication(applicationId);
 }
 
-/**
- * Record security deposit payment
- */
-async function recordSecurityDeposit(applicationId, details = {}) {
-  const { paidAt = new Date().toISOString(), method = null, transactionId = null, amount = null } = details;
+function recordMoveInDeposit(applicationId, details = {}) {
+  return recordStaffDeposit(applicationId, 'move_in_deposit', details);
+}
 
-  // Get application to get the amount
-  const app = await getApplication(applicationId);
-  if (!app) throw new Error('Application not found');
-
-  // Use provided amount or fall back to stored amount
-  const depositAmount = amount !== null ? amount : app.security_deposit_amount;
-
-  // Update application — method/transactionId live in rental_payments, not here
-  const updateData = {
-    security_deposit_paid: true,
-    updated_at: new Date().toISOString(),
-    ...activityStamp(),
-  };
-
-  // Update the stored amount if a new amount was provided
-  if (amount !== null) {
-    updateData.security_deposit_amount = amount;
-  }
-
-  const { data, error } = await supabase
-    .from('rental_applications')
-    .update(updateData)
-    .eq('id', applicationId)
-    .select()
-    .single();
-
-  if (error) throw error;
-
-  // Create payment record (only if security deposit > 0)
-  if (depositAmount > 0) {
-    const { data: rpData, error: rpError } = await supabase.from('rental_payments').insert({
-      rental_application_id: applicationId,
-      payment_type: PAYMENT_TYPE.SECURITY_DEPOSIT,
-      amount_due: depositAmount,
-      amount_paid: depositAmount,
-      paid_date: paidAt,
-      payment_method: method,
-      transaction_id: transactionId,
-    }).select().single();
-
-    if (rpError) throw rpError;
-
-    // Dual-write to ledger
-    const personName = app.person ? `${app.person.first_name} ${app.person.last_name}` : null;
-    const { error: ledgerError } = await supabase.from('ledger').insert({
-      direction: 'income',
-      category: 'security_deposit',
-      amount: depositAmount,
-      payment_method: method || 'other',
-      transaction_date: paidAt ? paidAt.split('T')[0] : new Date().toISOString().split('T')[0],
-      person_id: app.person_id,
-      person_name: personName,
-      rental_application_id: applicationId,
-      rental_payment_id: rpData?.id || null,
-      status: 'completed',
-      description: 'Security deposit',
-      recorded_by: 'system:rental-service',
-    });
-    if (ledgerError) console.error('Ledger dual-write failed (security deposit):', ledgerError);
-  }
-
-  // Update overall deposit status
-  await updateOverallDepositStatus(applicationId);
-
-  return data;
+function recordSecurityDeposit(applicationId, details = {}) {
+  return recordStaffDeposit(applicationId, 'security_deposit', details);
 }
 
 /**
@@ -1192,65 +1075,13 @@ function calculateDepositApplication(moveInDate, monthlyRent, securityDeposit) {
  * Record a rent payment
  */
 async function recordRentPayment(assignmentId, details) {
-  const {
-    amount,
-    periodStart,
-    periodEnd,
-    method = null,
-    transactionId = null,
-    isProrated = false,
-    prorateDays = null,
-    notes = null,
-  } = details;
-
-  const { data, error } = await supabase
-    .from('rental_payments')
-    .insert({
-      assignment_id: assignmentId,
-      payment_type: isProrated ? PAYMENT_TYPE.PRORATED_RENT : PAYMENT_TYPE.RENT,
-      amount_due: amount,
-      amount_paid: amount,
-      paid_date: new Date().toISOString(),
-      payment_method: method,
-      transaction_id: transactionId,
-      period_start: periodStart,
-      period_end: periodEnd,
-      is_prorated: isProrated,
-      prorate_days: prorateDays,
-      notes,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-
-  // Dual-write to ledger
-  // Get person from assignment
-  const { data: assignment } = await supabase
-    .from('assignments')
-    .select('person_id, person:person_id(first_name, last_name)')
-    .eq('id', assignmentId)
-    .single();
-
-  const personName = assignment?.person ? `${assignment.person.first_name} ${assignment.person.last_name}` : null;
-  await supabase.from('ledger').insert({
-    direction: 'income',
-    category: isProrated ? 'prorated_rent' : 'rent',
-    amount: amount,
-    payment_method: method || 'other',
-    transaction_date: new Date().toISOString().split('T')[0],
-    period_start: periodStart || null,
-    period_end: periodEnd || null,
-    person_id: assignment?.person_id || null,
-    person_name: personName,
-    assignment_id: assignmentId,
-    rental_payment_id: data.id,
-    status: 'completed',
-    description: isProrated ? `Prorated rent (${prorateDays} days)` : `Rent ${periodStart || ''} - ${periodEnd || ''}`.trim(),
-    notes: notes || null,
-    recorded_by: 'system:rental-service',
+  const { data, error } = await supabase.rpc('record_staff_rent', {
+    p_request: details.requestId || crypto.randomUUID(), p_assignment: assignmentId,
+    p_amount: details.amount, p_start: details.periodStart, p_end: details.periodEnd,
+    p_method: details.method || null, p_reference: details.transactionId || null,
+    p_prorated: !!details.isProrated, p_days: details.prorateDays || null, p_notes: details.notes || null,
   });
-
+  if (error) throw error;
   return data;
 }
 

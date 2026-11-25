@@ -89,6 +89,8 @@ Deno.serve(async (req) => {
         signing_version,
         approved_rate,
         approved_rate_term,
+        rental_payments(payment_type,amount_paid),
+        move_in_deposit_paid, security_deposit_paid, reservation_deposit_paid,
         security_deposit_amount,
         reservation_deposit_amount,
         application_fee_paid,
@@ -195,42 +197,8 @@ Deno.serve(async (req) => {
       .getPublicUrl(sigPath);
     const signatureImageUrl = sigUrlData.publicUrl;
 
-    // ── Resolve template provenance (#17) ──────────────────────────
-    // Look up the active lease + waiver templates so we can stamp their
-    // id+version into the audit log row. Mirrors what get-signing-document
-    // rendered. The waiver_template_id may be explicitly set on the app.
-    let leaseTemplate: any = null;
-    let waiverTemplate: any = null;
-    if (docType === 'rental') {
-      const { data: lease } = await supabase
-        .from('lease_templates')
-        .select('id, version')
-        .eq('is_active', true).eq('type', 'lease')
-        .order('version', { ascending: false }).limit(1).single();
-      leaseTemplate = lease;
-      if ((rentalApp as any)?.waiver_template_id) {
-        const { data: w } = await supabase
-          .from('lease_templates')
-          .select('id, version')
-          .eq('id', (rentalApp as any).waiver_template_id)
-          .single();
-        waiverTemplate = w;
-      } else {
-        const { data: w } = await supabase
-          .from('lease_templates')
-          .select('id, version')
-          .eq('is_active', true).eq('type', 'renter_waiver')
-          .order('version', { ascending: false }).limit(1).maybeSingle();
-        waiverTemplate = w;
-      }
-    } else {
-      const { data: et } = await supabase
-        .from('lease_templates')
-        .select('id, version')
-        .eq('is_active', true).eq('type', 'event_waiver')
-        .order('version', { ascending: false }).limit(1).maybeSingle();
-      leaseTemplate = et;
-    }
+    const leaseTemplate = canonicalData.lease_template;
+    const waiverTemplate = canonicalData.waiver_template;
 
     // #8 signer_name / signer_email come from the server-side person
     // record, not the client body.
@@ -304,6 +272,7 @@ Deno.serve(async (req) => {
     let signedDocUrl: string | null = null;
     try {
       const fullSignedHtml = buildArchivalLeaseHtml({
+        documentType: docType,
         documentHtml: document_html || '',
         signerName: serverSignerName,
         signerEmail: serverSignerEmail,
@@ -440,14 +409,8 @@ Deno.serve(async (req) => {
       }
 
       // Record waiver signature if applicable
-      if (rentalApp?.waiver_template_id) {
+      if (waiverTemplate?.id) {
         try {
-          const { data: waiverTemplate } = await supabase
-            .from('lease_templates')
-            .select('id, version, type')
-            .eq('id', rentalApp.waiver_template_id)
-            .single();
-
           await supabase.from('waiver_signatures').insert({
             waiver_type: 'renter_waiver',
             template_version: waiverTemplate?.version || 1,
@@ -455,7 +418,7 @@ Deno.serve(async (req) => {
             signer_email: serverSignerEmail,
             person_id: person?.id || null,
             rental_application_id: app.id,
-            signed_pdf_url: signatureImageUrl, // Link to signature for now
+            signed_pdf_url: signedDocUrl,
             signed_at: signedAt,
           });
         } catch (waiverErr) {
@@ -466,6 +429,7 @@ Deno.serve(async (req) => {
       await supabase
         .from('event_hosting_requests')
         .update({
+          signed_pdf_url: signedDocUrl,
           agreement_status: 'signed',
           agreement_signed_at: signedAt,
           signing_token: null,
@@ -498,7 +462,7 @@ Deno.serve(async (req) => {
         // Prepaid / no-deposit stays (e.g. Airbnb-booked) get no payment ask.
         const paymentDue = rentalApp?.require_deposit === false || rentalApp?.deposit_status === 'confirmed'
           ? null
-          : computePaymentDueAtSigning(rentalApp);
+          : computePaymentDueAtSigning(rentalApp, { excludePaid: true });
         // An admin-set deadline wins over the default 24 hours after signing.
         const deadlineOverride = (rentalApp as any)?.payment_deadline_at;
         const paymentDeadline = formatChicagoDeadline(deadlineOverride
@@ -650,7 +614,7 @@ async function handleVehicleRentalSignature(supabase: any, s: {
 }): Promise<Response | null> {
   const { data: signing } = await supabase
     .from('vehicle_rental_signings')
-    .select('id, vehicle_rental_id, status, token_expires_at, signing_version, signer_name, signer_email, cc_emails, document_html, template_id, template_version, sent_at, sent_by')
+    .select('id, vehicle_rental_id, status, token_expires_at, signing_version, signer_name, signer_email, cc_emails, document_html, template_id, template_version, waiver_template_id, waiver_template_version, sent_at, sent_by')
     .eq('signing_token', s.token)
     .maybeSingle();
   if (!signing) return null;
@@ -728,6 +692,8 @@ async function handleVehicleRentalSignature(supabase: any, s: {
     signed_at: signedAt,
     template_id: signing.template_id,
     template_version: signing.template_version,
+    waiver_template_id: signing.waiver_template_id,
+    waiver_template_version: signing.waiver_template_version,
     signing_version: signing.signing_version,
   };
   const { error: auditErr } = await supabase.from('signature_audit_log').insert([
@@ -957,7 +923,7 @@ async function sendEventSignedEmail(apiKey: string, opts: any) {
 
           ${opts.archivalUrl ? `<p style="margin: 12px 0 18px 0;"><a href="${opts.archivalUrl}" style="display:inline-block;background:#3d8b7a;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:600;">View signed agreement (HTML)</a></p>` : ''}
 
-          ${auditBlockHtml(opts)}
+          ${auditBlockHtml({ ...opts, documentType: 'event' })}
 
           <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #3d8b7a;">Outstanding Fees Due 7 Days Before Event</h3>

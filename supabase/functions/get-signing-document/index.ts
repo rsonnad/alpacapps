@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
         additional_terms,
         waiver_template_id,
         signing_lease_template_id,
-        approved_space:approved_space_id (id, name, type),
-        person:person_id (id, first_name, last_name, email, phone, current_address, emergency_contact_name, emergency_contact_phone, emergency_contact_email, emergency_contact_relationship)
+        approved_space:approved_space_id (id, name, type, location),
+        person:person_id (residence_location, id, first_name, last_name, email, phone, current_address, emergency_contact_name, emergency_contact_phone, emergency_contact_email, emergency_contact_relationship)
       `)
       .eq('signing_token', token)
       .single();
@@ -62,6 +62,8 @@ Deno.serve(async (req) => {
         return jsonError('This document has already been signed.', 409);
       }
 
+      const frozen = await readPacket(supabase, token);
+      if (frozen) return jsonResponse(frozen);
       // Per-application override: a specific lease template can be pinned to
       // an application (e.g. a short-term guest agreement for a prepaid,
       // Airbnb-booked stay). Falls back to the active lease template when unset.
@@ -69,15 +71,16 @@ Deno.serve(async (req) => {
       if (rentalApp.signing_lease_template_id) {
         const { data: pinned } = await supabase
           .from('lease_templates')
-          .select('content')
+          .select('id,version,content')
           .eq('id', rentalApp.signing_lease_template_id)
           .single();
-        template = pinned || null;
+        if (!pinned?.content?.trim()) return jsonError('The selected lease template is unavailable.', 409);
+        template = pinned;
       }
       if (!template) {
         const { data: activeTemplate } = await supabase
           .from('lease_templates')
-          .select('content')
+          .select('id,version,content')
           .eq('is_active', true)
           .eq('type', 'lease')
           .order('version', { ascending: false })
@@ -92,32 +95,40 @@ Deno.serve(async (req) => {
 
       // Get waiver template if applicable
       let waiverContent = '';
+      let waiverTemplate: any;
       if (rentalApp.waiver_template_id) {
-        const { data: waiverTemplate } = await supabase
+        const { data: pinnedWaiver } = await supabase
           .from('lease_templates')
-          .select('content')
-          .eq('id', rentalApp.waiver_template_id)
+          .select('id,version,content')
+          .eq('id', rentalApp.waiver_template_id).eq('type','renter_waiver')
           .single();
-        if (waiverTemplate) {
+        if (pinnedWaiver) {
+          waiverTemplate = pinnedWaiver;
           waiverContent = waiverTemplate.content;
         }
       } else {
         // Check for active renter_waiver
         const { data: defaultWaiver } = await supabase
           .from('lease_templates')
-          .select('content')
+          .select('id,version,content')
           .eq('is_active', true)
           .eq('type', 'renter_waiver')
           .order('version', { ascending: false })
           .limit(1)
           .single();
         if (defaultWaiver) {
+          waiverTemplate = defaultWaiver;
           waiverContent = defaultWaiver.content;
         }
       }
 
       const person = rentalApp.person as any;
       const space = rentalApp.approved_space as any;
+
+      const isWashington = (space?.location || person?.residence_location) === 'sharingwood';
+      if (isWashington && !rentalApp.signing_lease_template_id) return jsonError('Select a Washington agreement for this property.', 409);
+      if (isWashington) { waiverContent = ''; waiverTemplate = null; }
+      else if (!waiverContent?.trim()) return jsonError('A property waiver is required. Staff must reissue this packet.', 409);
 
       // Build agreement data for template substitution
       const landlordSig = await fetchLandlordSignatureHtml(supabase);
@@ -139,7 +150,9 @@ Deno.serve(async (req) => {
 
       const signerName = `${person?.first_name || ''} ${person?.last_name || ''}`.trim();
 
-      return jsonResponse({
+      return freezePacket(supabase, token, {
+        lease_template: { id: template.id, version: template.version },
+        waiver_template: waiverHtml ? { id: waiverTemplate.id, version: waiverTemplate.version } : null,
         document_html: documentHtml,
         waiver_html: waiverHtml,
         signer_name: signerName,
@@ -165,6 +178,7 @@ Deno.serve(async (req) => {
         id,
         signing_token_expires_at,
         agreement_status,
+        signing_agreement_markdown,
         event_name,
         event_date,
         event_start_time,
@@ -185,17 +199,20 @@ Deno.serve(async (req) => {
         return jsonError('This document has already been signed.', 409);
       }
 
+      const frozen = await readPacket(supabase, token);
+      if (frozen) return jsonResponse(frozen);
+      if (!eventReq.signing_agreement_markdown?.trim()) return jsonError('Staff must reissue this event agreement with its venue terms.', 409);
       // Get event waiver template
       const { data: eventTemplate } = await supabase
         .from('lease_templates')
-        .select('content')
+        .select('id,version,content')
         .eq('is_active', true)
         .eq('type', 'event_waiver')
         .order('version', { ascending: false })
         .limit(1)
         .single();
 
-      if (!eventTemplate) {
+      if (!eventTemplate?.content?.trim()) {
         return jsonError('No active event waiver template found', 500);
       }
 
@@ -212,9 +229,10 @@ Deno.serve(async (req) => {
 
       const documentHtml = parseMarkdownTemplate(eventTemplate.content, eventData);
 
-      return jsonResponse({
-        document_html: documentHtml,
-        waiver_html: '',
+      return freezePacket(supabase, token, {
+        document_html: parseMarkdownTemplate(escapeHtml(eventReq.signing_agreement_markdown), {}),
+        waiver_template: { id: eventTemplate.id, version: eventTemplate.version },
+        waiver_html: documentHtml,
         signer_name: signerName,
         signer_email: person?.email || '',
         document_type: 'event',
@@ -267,14 +285,14 @@ Deno.serve(async (req) => {
 
 function jsonResponse(data: any): Response {
   return new Response(JSON.stringify(data), {
-    headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' },
+    headers: { ...corsHeadersOpen, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   });
 }
 
 function jsonError(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { ...corsHeadersOpen, 'Content-Type': 'application/json' },
+    headers: { ...corsHeadersOpen, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   });
 }
 
@@ -287,7 +305,7 @@ function formatSigningDate(): string {
 }
 
 function buildRentalAgreementData(app: any, person: any, space: any, landlordSignatureHtml?: string): Record<string, string> {
-  const rateTermDisplay: Record<string, string> = { monthly: 'month', weekly: 'week', nightly: 'night' };
+  const rateTermDisplay: Record<string, string> = { monthly: 'month', weekly: 'week', biweekly: 'two weeks', nightly: 'night' };
   const rateTerm = rateTermDisplay[app.approved_rate_term] || 'month';
 
   const noticePeriodDisplay: Record<string, string> = {
@@ -509,5 +527,19 @@ function parseMarkdownTemplate(template: string, data: Record<string, string>): 
 }
 
 function boldify(text: string): string {
-  return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replaceAll('https://msc.fema.gov/portal/search', '<a href="https://msc.fema.gov/portal/search">FEMA Flood Map Service Center</a>')
+    .replaceAll('https://alpacaplayhouse.com/waiver/', '<a href="https://alpacaplayhouse.com/waiver/">https://alpacaplayhouse.com/waiver/</a>');
+}
+
+async function readPacket(db: any, token: string) {
+  const { data, error } = await db.from('signing_packets').select('packet').eq('token', token).maybeSingle();
+  if (error) throw error;
+  return data?.packet;
+}
+
+async function freezePacket(db: any, token: string, packet: any) {
+  const { error } = await db.from('signing_packets').insert({ token, packet });
+  if (error && error.code !== '23505') throw error;
+  return jsonResponse(error ? await readPacket(db, token) : packet);
 }

@@ -4,6 +4,7 @@
 import { supabase } from '../shared/supabase.js';
 import { eventService } from '../shared/event-service.js';
 import { eventTemplateService } from '../shared/event-template-service.js';
+import { leaseTemplateService } from '../shared/lease-template-service.js';
 import { pdfService } from '../shared/pdf-service.js';
 import { nativeSigningService } from '../shared/native-signing-service.js';
 import {
@@ -794,6 +795,15 @@ async function saveEventTerms() {
 // DOCUMENT GENERATION
 // =============================================
 
+async function eventPacketMarkdown(template, data) {
+  const waiver = await leaseTemplateService.getActiveTemplate('event_waiver');
+  if (!waiver?.content?.trim()) throw new Error('An active property waiver is required.');
+  const waiverText = waiver.content.replace(/\{\{(client_name|client_email|client_phone|event_date|signing_date)\}\}/g,
+    (_, key) => ({ client_name: data.clientName, client_email: data.clientEmail, client_phone: data.clientPhone,
+      event_date: data.eventDate, signing_date: data.agreementDate })[key] || '');
+  return eventTemplateService.parseTemplate(template, data) + '\n\n---\n\n' + waiverText;
+}
+
 async function previewEventAgreement() {
   const req = allEventRequests.find(r => r.id === currentEventRequestId);
   if (!req) return;
@@ -807,13 +817,13 @@ async function previewEventAgreement() {
       return;
     }
 
-    const parsedContent = eventTemplateService.parseTemplate(
+    const parsedContent = await eventPacketMarkdown(
       currentEventTemplate.content,
       currentEventAgreementData
     );
 
     // Convert markdown to HTML (simple version)
-    const htmlContent = parsedContent
+    const htmlContent = parsedContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
       .replace(/^## (.*$)/gim, '<h2>$1</h2>')
       .replace(/^# (.*$)/gim, '<h1>$1</h1>')
@@ -845,7 +855,7 @@ async function generateEventPdf() {
       return;
     }
 
-    const parsedContent = eventTemplateService.parseTemplate(
+    const parsedContent = await eventPacketMarkdown(
       currentEventTemplate.content,
       currentEventAgreementData
     );

@@ -31,6 +31,7 @@ interface OverdueItem {
   amountDue: number;
   dueDate: string; // YYYY-MM-DD
   daysOverdue: number;
+  staffReview?: boolean;
   rateTerm?: string;
   spaceName?: string;
 }
@@ -64,46 +65,6 @@ function formatCurrency(amount: number): string {
   return `$${amount.toFixed(2).replace(/\.00$/, '')}`;
 }
 
-/** Infer which rent period a payment date falls into based on assignment schedule */
-function inferPeriodFromDate(
-  txDate: string,
-  assignment: { start_date: string; end_date: string | null; rate_term: string }
-): { start: string; end: string } | null {
-  const pd = new Date(txDate + 'T12:00:00');
-  const start = new Date(assignment.start_date + 'T12:00:00');
-  if (pd < start) return null;
-
-  if (assignment.rate_term === 'monthly') {
-    const year = pd.getFullYear();
-    const month = pd.getMonth();
-    const lastDay = new Date(year, month + 1, 0).getDate();
-    return {
-      start: `${year}-${String(month + 1).padStart(2, '0')}-01`,
-      end: `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
-    };
-  }
-
-  if (assignment.rate_term === 'weekly' || assignment.rate_term === 'biweekly') {
-    const intervalDays = assignment.rate_term === 'weekly' ? 7 : 14;
-    const cursor = new Date(start);
-    while (cursor <= pd) {
-      const next = new Date(cursor);
-      next.setDate(next.getDate() + intervalDays);
-      if (pd < next) {
-        const endD = new Date(next);
-        endD.setDate(endD.getDate() - 1);
-        return {
-          start: cursor.toISOString().split('T')[0],
-          end: endD.toISOString().split('T')[0],
-        };
-      }
-      cursor.setDate(cursor.getDate() + intervalDays);
-    }
-  }
-
-  return null;
-}
-
 /** Compute current rent due dates for an assignment */
 function computeRentDueDates(assignment: {
   start_date: string;
@@ -120,26 +81,23 @@ function computeRentDueDates(assignment: {
   if (assignment.rate_term === 'monthly') {
     let year = start.getFullYear();
     let month = start.getMonth();
-    if (start.getDate() > 1) {
-      month++;
-      if (month > 11) { month = 0; year++; }
-    }
     while (true) {
-      const dueDate = new Date(year, month, 1, 12, 0, 0);
+      const firstDay = year === start.getFullYear() && month === start.getMonth() ? start.getDate() : 1;
+      const dueDate = new Date(year, month, firstDay, 12, 0, 0);
       if (dueDate > today) break;
       if (endDate && dueDate > endDate) break;
       const lastDay = new Date(year, month + 1, 0).getDate();
-      const periodStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+      const periodStart = `${year}-${String(month + 1).padStart(2, '0')}-${String(firstDay).padStart(2, '0')}`;
       let effectiveLastDay = lastDay;
-      let amount = assignment.rate_amount;
       // Prorate final partial month if lease ends mid-month
       if (endDate) {
         const endD = new Date(endDate);
         if (endD.getFullYear() === year && endD.getMonth() === month && endD.getDate() < lastDay) {
           effectiveLastDay = endD.getDate();
-          amount = Math.round(assignment.rate_amount * effectiveLastDay / lastDay * 100) / 100;
+
         }
       }
+      const amount = Math.round(assignment.rate_amount * (effectiveLastDay - firstDay + 1) / lastDay * 100) / 100;
       const periodEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(effectiveLastDay).padStart(2, '0')}`;
       const label = dueDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       dues.push({ dueDate: periodStart, periodStart, periodEnd, amount, label });
@@ -440,54 +398,35 @@ Deno.serve(async (req) => {
         rate_amount: effectiveRate,
       });
 
+      // An unallocated receipt can belong to any period. Hold all reminders
+      // for that assignment until staff attribute the receipt.
+      const { data: receipts, count, error: receiptError } = await supabase.from('ledger')
+        .select('id, amount, assignment_id, period_start, period_end', { count: 'exact' })
+        .in('category', ['rent', 'prorated_rent']).eq('status', 'completed').eq('is_test', false)
+        .or(`assignment_id.eq.${assignment.id},and(assignment_id.is.null,person_id.eq.${person.id})`);
+      if (receiptError || !receipts || count !== receipts.length) throw receiptError || new Error('Incomplete rent ledger');
+      const totals = new Map<string, number>();
+      let needsReview = false;
+      for (const receipt of receipts) {
+        const periods = dueDates.filter(d => receipt.period_start && receipt.period_end
+          && receipt.period_start <= d.periodEnd && receipt.period_end >= d.periodStart);
+        if (!receipt.assignment_id || !receipt.period_start || !receipt.period_end || periods.length > 1
+          || (periods.length === 1 && (receipt.period_start < periods[0].periodStart || receipt.period_end > periods[0].periodEnd))) {
+          needsReview = true;
+          continue;
+        }
+        if (periods.length === 1) {
+          const key = periods[0].periodStart;
+          totals.set(key, (totals.get(key) || 0) + Number(receipt.amount));
+        }
+      }
       // For each due date, check if paid
       for (const due of dueDates) {
         const dueD = new Date(due.dueDate + 'T12:00:00');
         const diffMs = today.getTime() - dueD.getTime();
         const daysOverdue = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         if (daysOverdue < 1) continue;
-        if (daysOverdue > 30) continue;
-
-        // Check ledger for a matching completed payment
-        const { data: payments } = await supabase
-          .from('ledger')
-          .select('id, amount, period_start, period_end')
-          .in('category', ['rent', 'prorated_rent'])
-          .eq('status', 'completed')
-          .eq('is_test', false)
-          .or(`assignment_id.eq.${assignment.id},person_id.eq.${person.id}`)
-          .gte('period_end', due.periodStart)
-          .lte('period_start', due.periodEnd);
-
-        // Also check unlinked payments (no period_start). For these, infer which
-        // rent period they cover based on the assignment schedule, not just the
-        // transaction_date falling within the due period window.
-        const { data: unlinkedPayments } = await supabase
-          .from('ledger')
-          .select('id, amount, transaction_date')
-          .in('category', ['rent', 'prorated_rent'])
-          .eq('status', 'completed')
-          .eq('is_test', false)
-          .eq('person_id', person.id)
-          .is('period_start', null);
-
-        // Filter unlinked payments: infer their period from transaction_date + assignment schedule
-        const matchedUnlinked = (unlinkedPayments || []).filter((p: { transaction_date: string }) => {
-          const inferredPeriod = inferPeriodFromDate(p.transaction_date, assignment);
-          if (!inferredPeriod) return false;
-          // Check if inferred period overlaps the due period
-          return inferredPeriod.start <= due.periodEnd && inferredPeriod.end >= due.periodStart;
-        });
-
-        // Sum all payments found for this period (partial or full)
-        let totalPaid = 0;
-        if (payments && payments.length > 0) {
-          totalPaid += payments.reduce((sum: number, p: { amount: number }) => sum + (p.amount || 0), 0);
-        }
-        if (matchedUnlinked.length > 0) {
-          totalPaid += matchedUnlinked.reduce((sum: number, p: { amount: number }) => sum + (p.amount || 0), 0);
-        }
-
+        const totalPaid = totals.get(due.periodStart) || 0;
         const netRemaining = Math.round((due.amount - totalPaid) * 100) / 100;
 
         if (netRemaining > 0) {
@@ -498,6 +437,7 @@ Deno.serve(async (req) => {
             personEmail: person.email,
             personFirstName: person.first_name,
             personLastName: person.last_name,
+            staffReview: needsReview || daysOverdue > 30 || due.periodStart === assignment.start_date,
             periodLabel: due.label,
             amountDue: netRemaining,
             dueDate: due.dueDate,
@@ -636,11 +576,12 @@ Deno.serve(async (req) => {
     }
 
     // ========== D. Load existing reminders for deduplication ==========
-    const { data: existingReminders } = await supabase
+    const { data: existingReminders, error: reminderReadError } = await supabase
       .from('payment_reminders')
       .select('source_type, source_id, due_date, escalation_level, recipient_type')
       .in('status', ['sent']);
 
+    if (reminderReadError) throw reminderReadError;
     const reminderMap = new Map<string, number>();
     for (const r of (existingReminders || [])) {
       const key = `${r.source_type}:${r.source_id}:${r.due_date}:${r.recipient_type}`;
@@ -660,6 +601,7 @@ Deno.serve(async (req) => {
     const personContractGroups = new Map<string, OverdueItem[]>();
 
     for (const item of overdueItems) {
+      if (item.staffReview) continue;
       const level = getEscalationLevel(item.daysOverdue);
       if (!level) continue;
 
@@ -684,7 +626,7 @@ Deno.serve(async (req) => {
     let remindersSent = 0;
     let errors = 0;
     let adminDigestSent = false;
-    const adminPaymentDigest: OverdueItem[] = [];
+    const adminPaymentDigest: OverdueItem[] = overdueItems.filter(i => i.staffReview);
     const adminContractDigest: OverdueItem[] = [];
 
     // Pre-fetch ID verification status for persons with overdue payments
@@ -768,7 +710,7 @@ Deno.serve(async (req) => {
         headerBg = '#1c1618';
         headerSubtext = 'Urgent: Rent Payment Overdue';
         subject = `URGENT: Rent Payment Overdue - ${formatCurrency(totalDue)} - ${first.personFirstName} - Alpaca Playhouse`;
-        introText = `You have <strong>${periodsCount} ${periodsCount === 1 ? 'period' : 'periods'} of overdue rent</strong> totaling <strong>${formatCurrency(totalDue)}</strong> for the <strong>${spaceName}</strong>. Please submit payment immediately to avoid additional fees.`;
+        introText = `You have <strong>${periodsCount} ${periodsCount === 1 ? 'period' : 'periods'} of overdue rent</strong> totaling <strong>${formatCurrency(totalDue)}</strong> for the <strong>${spaceName}</strong>. Please review your payment records and contact us if a credit is missing.`;
       }
 
       const payUrl = buildPayUrl({
@@ -1089,7 +1031,7 @@ Alpaca Playhouse`;
         if (adminPaymentDigest.length > 0) {
           digestHtml += `
             <h3>Overdue Payments</h3>
-            <p>${adminPaymentDigest.length} overdue period${adminPaymentDigest.length > 1 ? 's' : ''} across ${paymentSummaries.size} tenant${paymentSummaries.size > 1 ? 's' : ''} totaling <strong>${formatCurrency(totalOverdue)}</strong>. Reminders have been sent.</p>
+            <p>${adminPaymentDigest.length} overdue period${adminPaymentDigest.length > 1 ? 's' : ''} across ${paymentSummaries.size} tenant${paymentSummaries.size > 1 ? 's' : ''} totaling <strong>${formatCurrency(totalOverdue)}</strong>. Review first-period credits, unallocated receipts and balances older than 30 days before contacting a tenant.</p>
             <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
               <thead>
                 <tr style="background: #f0f0f0;">
@@ -1108,7 +1050,7 @@ Alpaca Playhouse`;
         if (adminContractDigest.length > 0) {
           digestHtml += `
             <h3>Unsigned Contracts</h3>
-            <p>${adminContractDigest.length} lease agreement${adminContractDigest.length > 1 ? 's' : ''} awaiting signature. Reminders have been sent.</p>
+            <p>${adminContractDigest.length} lease agreement${adminContractDigest.length > 1 ? 's' : ''} awaiting signature. Review first-period credits, unallocated receipts and balances older than 30 days before contacting a tenant.</p>
             <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
               <thead>
                 <tr style="background: #f0f0f0;">
@@ -1142,7 +1084,7 @@ Alpaca Playhouse`;
           ).join('\n');
           digestText += '\n\n';
         }
-        digestText += 'Reminders have been sent.';
+        digestText += 'Review first-period credits, unallocated receipts and balances older than 30 days before contacting a tenant.';
 
         // Claim the daily digest before sending it. The matching partial unique
         // index makes an overlapping cron invocation lose the claim instead of

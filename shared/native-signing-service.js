@@ -166,9 +166,16 @@ async function sendEventForSignature(eventRequestId, recipientEmail, recipientNa
   const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const signingUrl = `${SIGNING_PAGE_BASE}?token=${token}`;
 
+  const { eventService } = await import('./event-service.js');
+  const { eventTemplateService } = await import('./event-template-service.js');
+  const template = await eventTemplateService.getActiveTemplate();
+  if (!template?.content) throw new Error('No active event agreement.');
+  const agreement = eventTemplateService.parseTemplate(template.content, await eventService.getAgreementData(eventRequestId));
+
   const { error } = await supabase
     .from('event_hosting_requests')
     .update({
+      signing_agreement_markdown: agreement,
       signing_token: token,
       signing_token_expires_at: expiresAt,
       agreement_status: 'sent',
@@ -223,25 +230,13 @@ async function sendVehicleRentalForSignature(vehicleRentalId, { cc = [], dryRun 
 // ── Helpers: fetch lease + payment context ─────────────────────────
 
 async function fetchSigningDocument(token) {
-  try {
-    const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/get-signing-document`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
-    if (!res.ok) {
-      console.warn('fetchSigningDocument: non-OK', res.status);
-      return { documentHtml: '', waiverHtml: '' };
-    }
-    const data = await res.json();
-    return {
-      documentHtml: data.document_html || '',
-      waiverHtml: data.waiver_html || '',
-    };
-  } catch (err) {
-    console.warn('fetchSigningDocument failed:', err);
-    return { documentHtml: '', waiverHtml: '' };
-  }
+  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/get-signing-document`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }),
+  });
+  if (!response.ok) throw new Error('Could not prepare the signing packet. No invitation was sent.');
+  const data = await response.json();
+  if (!data.document_html) throw new Error('The agreement is empty.');
+  return { documentHtml: data.document_html, waiverHtml: data.waiver_html || '' };
 }
 
 /**
@@ -562,7 +557,7 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
 
       ${paymentSummaryHtml}
 
-      ${cosignNote}
+      ${docType === 'rental' ? cosignNote : ''}
 
       ${signCta}
 
@@ -570,7 +565,7 @@ async function sendSigningEmail(toEmail, recipientName, signingUrl, docType, eve
         <p style="margin: 0 0 8px 0;"><strong>What to expect:</strong></p>
         <ul style="margin: 0; padding-left: 20px;">
           <li>Review the full ${docType === 'rental' ? 'lease agreement' : 'event agreement'} (included below)</li>
-          ${docType === 'rental' ? '<li>A liability waiver will follow the lease (if applicable)</li>' : ''}
+          ${waiverHtml ? '<li>Read the attached property waiver. Other adult participants can sign at <a href="https://alpacaplayhouse.com/waiver/">the public waiver page</a>.</li>' : ''}
           <li>Draw your signature at the bottom of the signing page</li>
           <li>You'll receive a confirmation email with your signature record once complete</li>
         </ul>

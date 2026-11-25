@@ -126,19 +126,21 @@ async function getActiveTemplate(type = 'lease') {
  * @param {string} applicationId
  */
 async function getLeaseTemplateForApplication(applicationId) {
-  const { data: app } = await supabase
+  const { data: app, error: appError } = await supabase
     .from('rental_applications')
     .select('signing_lease_template_id')
     .eq('id', applicationId)
     .maybeSingle();
 
+  if (appError) throw appError;
   if (app?.signing_lease_template_id) {
     const { data: pinned } = await supabase
       .from('lease_templates')
       .select('*')
       .eq('id', app.signing_lease_template_id)
       .maybeSingle();
-    if (pinned) return pinned;
+    if (!pinned) throw new Error('The selected lease template is unavailable.');
+    return pinned;
   }
 
   return getActiveTemplate('lease');

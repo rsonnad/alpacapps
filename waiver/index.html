@@ -372,8 +372,8 @@
         </div>
 
         <div class="form-group">
-          <label>Phone <span style="color:#999;font-weight:400;">(optional)</span></label>
-          <input type="tel" id="phoneInput" placeholder="(555) 555-5555" autocomplete="tel">
+          <label>Phone <span class="required">*</span></label>
+          <input type="tel" id="phoneInput" placeholder="(555) 555-5555" autocomplete="tel" required>
         </div>
 
         <div class="agreement-box">
@@ -414,7 +414,7 @@
           </div>
         </div>
 
-        <p style="color: #999; font-size: 0.8rem;">You may now close this page.</p>
+        <p style="color: #999; font-size: 0.8rem;"><a href="/waiver/">Sign a waiver for another person</a></p>
       </div>
     </div>
 
@@ -428,6 +428,7 @@
     // State
     let waiverTemplate = null;
     let isSubmitting = false;
+    const requestId = crypto.randomUUID();
 
     // UI elements
     const loadingState = document.getElementById('loadingState');
@@ -558,7 +559,7 @@
     function updateWaiverDisplay() {
       if (!waiverTemplate) return;
       const substituted = substitutePlaceholders(waiverTemplate.content);
-      waiverContent.innerHTML = renderMarkdown(substituted);
+      waiverContent.innerHTML = renderMarkdown(substituted.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
     }
 
     // =============================================
@@ -571,7 +572,7 @@
       const sig = signatureInput.value.trim();
       const nameMatch = sig.toLowerCase() === name.toLowerCase() && name.length > 0;
 
-      submitBtn.disabled = !(name && email && agreed && nameMatch && !isSubmitting);
+      submitBtn.disabled = !(name && emailInput.validity.valid && email && /^\d{7,15}$/.test(phoneInput.value.replace(/\D/g, '')) && agreed && nameMatch && !isSubmitting);
 
       // Signature match feedback
       if (sig.length > 0 && name.length > 0) {
@@ -613,6 +614,7 @@
       validateForm();
     });
 
+    phoneInput.addEventListener('input', validateForm);
     signatureInput.addEventListener('input', validateForm);
 
     // Hide scroll hint once user scrolls the waiver
@@ -651,10 +653,14 @@
             },
             body: JSON.stringify({ p_waiver: {
               waiver_type: 'event_waiver',
+              typed_signature: signatureInput.value.trim(),
+              event_date: params.get('event_date') || null,
+              request_id: requestId,
+              accepted: agreeCheckbox.checked,
               template_version: waiverTemplate.version,
               signer_name: name,
               signer_email: email,
-              signer_phone: phone || null,
+              signer_phone: phone,
               event_request_id: eventRequestId,
               signed_at: new Date().toISOString(),
               user_agent: navigator.userAgent,
@@ -670,13 +676,6 @@
         const recordId = await response.json();
 
         const ref = recordId?.slice(0, 8)?.toUpperCase() || 'CONFIRMED';
-
-        // Prevent duplicate on refresh
-        sessionStorage.setItem('waiver_signed', JSON.stringify({
-          name,
-          signedAt: new Date().toISOString(),
-          ref,
-        }));
 
         showSuccess(name, new Date(), recordId);
 
@@ -705,7 +704,7 @@
         errorMsg.textContent = 'Something went wrong. Please try again.';
         errorMsg.classList.add('visible');
         isSubmitting = false;
-        submitBtn.disabled = false;
+        validateForm();
         submitBtn.textContent = 'Sign Waiver';
       }
     });
@@ -726,22 +725,6 @@
     // Initialize
     // =============================================
     async function init() {
-      // Check for previous signing in this session
-      const previousSign = sessionStorage.getItem('waiver_signed');
-      if (previousSign) {
-        try {
-          const data = JSON.parse(previousSign);
-          document.getElementById('successName').textContent = data.name;
-          document.getElementById('successDate').textContent = new Date(data.signedAt).toLocaleString('en-US', {
-            month: 'long', day: 'numeric', year: 'numeric',
-            hour: 'numeric', minute: '2-digit',
-          });
-          document.getElementById('successRef').textContent = data.ref || 'CONFIRMED';
-          showState(successState);
-          return;
-        } catch (e) { /* ignore parse errors, proceed normally */ }
-      }
-
       // Pre-fill from URL params
       const params = new URLSearchParams(window.location.search);
       if (params.get('name')) nameInput.value = params.get('name');

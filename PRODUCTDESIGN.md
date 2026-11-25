@@ -1,5 +1,12 @@
 # Product Design Decisions
 
+## New Cedar Creek agreements and public waiver, November 24, 2026
+
+**Decision** — Retain the packet shown at issuance and collect a property waiver with each new Texas agreement. Visitors can also sign individually at /waiver/ with their name, email and phone. Record partial receipts, require allocation before pursuing rent and keep formal notice decisions with staff.
+
+**Why** — Landlord and tenant need the same executed terms, evidence of assent and an auditable balance. A complaint, payment reminder or historical flood map alone does not establish a breach, service of legal notice or current map status.
+
+
 This document captures the **why** behind how AlpacApps has been built. It covers financial reasoning, user experience philosophy, business model choices, and design tradeoffs that go beyond pure technical architecture. Read this alongside `ARCHITECTURE.md` (system components) and `CLAUDE.md` (conventions and schemas) to understand the full picture.
 
 ---

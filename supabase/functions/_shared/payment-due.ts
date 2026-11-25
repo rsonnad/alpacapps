@@ -29,9 +29,17 @@ export function computePaymentDueAtSigning(app: any, opts: { excludePaid?: boole
   const firstRent = num(app?.move_in_deposit_amount);
   const security = num(app?.security_deposit_amount);
   const appFee = app?.application_fee_paid ? num(app?.application_fee_amount) : 0;
-  if (firstRent > 0 && !skip(app?.move_in_deposit_paid)) items.push({ label: 'First Rent Payment', amount: firstRent });
-  if (security > 0 && !skip(app?.security_deposit_paid)) items.push({ label: 'Security Deposit', amount: security });
-  if (appFee > 0 && items.length > 0) items.push({ label: 'Application Fee Credit', amount: -appFee });
+  const received = (kind: string) => opts.excludePaid
+    ? (app.rental_payments || []).filter((p: any) => p.payment_type === kind)
+      .reduce((sum: number, p: any) => sum + num(p.amount_paid), 0)
+    : 0;
+  const rentBalance = Math.max(0, firstRent - received('move_in_deposit'));
+  const securityBalance = Math.max(0, security - received('security_deposit'));
+  if (rentBalance > 0 && !skip(app?.move_in_deposit_paid)) {
+    items.push({ label: 'First Rent Payment', amount: rentBalance });
+    if (appFee > 0) items.push({ label: 'Application Fee Credit', amount: -Math.min(appFee, rentBalance) });
+  }
+  if (securityBalance > 0 && !skip(app?.security_deposit_paid)) items.push({ label: 'Security Deposit', amount: securityBalance });
   const total = Math.max(0, Math.round(items.reduce((t, i) => t + i.amount, 0) * 100) / 100);
   return { items, total, creditedToRent: false };
 }

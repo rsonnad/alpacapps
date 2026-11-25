@@ -25,7 +25,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { corsHeadersOpen } from "../_shared/api-helpers.ts";
 import { requireFunctionRoles } from "../_shared/require-auth.ts";
 import { SENDER_MAP } from "../_shared/template-engine.ts";
-import { renderVehicleRentalAgreement, escapeHtml } from "../_shared/vehicle-rental-agreement.ts";
+import { renderVehicleRentalAgreement, parseMarkdownTemplate, escapeHtml } from "../_shared/vehicle-rental-agreement.ts";
 
 const SIGNING_PAGE_BASE = 'https://alpacaplayhouse.com/rentals/signing/';
 const OWNER_INBOX = 'alpacaplayhouse@gmail.com';
@@ -50,6 +50,15 @@ Deno.serve(async (req) => {
 
     const rendered = await renderVehicleRentalAgreement(supabase, vehicleRentalId);
 
+    const { data: waiver, error: waiverError } = await supabase.from('lease_templates')
+      .select('id,version,content').eq('type', 'event_waiver').eq('is_active', true).single();
+    if (waiverError || !waiver?.content?.trim()) throw new Error('The active property waiver is required.');
+    const signingDate = new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
+    rendered.html += '\n<!-- WAIVER -->\n' + parseMarkdownTemplate(waiver.content, {
+      client_name: escapeHtml(rendered.signerName), client_email: escapeHtml(rendered.signerEmail),
+      signing_date: signingDate, event_date: 'Property access in connection with vehicle rental',
+    });
+
     if (!EMAIL_RE.test(rendered.signerEmail)) {
       return json({ error: `Renter email looks invalid: ${rendered.signerEmail}` }, 422);
     }
@@ -62,6 +71,7 @@ Deno.serve(async (req) => {
         signer_email: rendered.signerEmail,
         template_id: rendered.templateId,
         template_version: rendered.templateVersion,
+        waiver_template_id: waiver.id, waiver_template_version: waiver.version,
       });
     }
 
@@ -115,6 +125,7 @@ Deno.serve(async (req) => {
         document_hash: await sha256Hex(rendered.html),
         template_id: rendered.templateId,
         template_version: rendered.templateVersion,
+        waiver_template_id: waiver.id, waiver_template_version: waiver.version,
         sent_at: sentAt.toISOString(),
         sent_by: sentBy,
       })

@@ -1218,6 +1218,9 @@ function hideApplicantDetailPage() {
 
 async function openRentalDetail(applicationId, activeTab = 'applicant') {
   currentApplicationId = applicationId;
+  document.getElementById('caseNote').value = '';
+  document.getElementById('caseNotes').textContent = '';
+  void loadCaseNotes(currentApplicationId);
   const app = allApplications.find(a => a.id === applicationId);
   if (!app) return;
 
@@ -1408,7 +1411,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   moveInAmtEl.textContent = isDemoUser() ? redactString(moveInAmtRaw, 'amount') : moveInAmtRaw;
   moveInAmtEl.classList.toggle('demo-redacted', isDemoUser());
   const moveInStatus = document.getElementById('moveInDepositStatus');
-  moveInStatus.textContent = paymentSummary.moveInStatusText;
+  moveInStatus.textContent = paymentSummary.moveInStatusText + (app.deposit_status === 'partial' && !isDemoUser() ? ' · Remaining ' + rentalService.formatCurrency(depositBalance(app, 'move_in_deposit')) : '');
   moveInStatus.className = `deposit-status ${paymentSummary.moveInStatusClass}`;
   const moveInRecordBtn = document.getElementById('recordMoveInDepositBtn');
   if (moveInRecordBtn) moveInRecordBtn.textContent = paymentSummary.moveInStatusClass === 'paid' ? 'Adjust Payment' : 'Record Payment';
@@ -1418,7 +1421,7 @@ async function openRentalDetail(applicationId, activeTab = 'applicant') {
   secDepAmtEl.textContent = isDemoUser() ? redactString(secDepAmtRaw, 'amount') : secDepAmtRaw;
   secDepAmtEl.classList.toggle('demo-redacted', isDemoUser());
   const securityStatus = document.getElementById('securityDepositStatus');
-  securityStatus.textContent = paymentSummary.securityStatusText;
+  securityStatus.textContent = paymentSummary.securityStatusText + (app.deposit_status === 'partial' && !isDemoUser() ? ' · Remaining ' + rentalService.formatCurrency(depositBalance(app, 'security_deposit')) : '');
   securityStatus.className = `deposit-status ${paymentSummary.securityStatusClass}`;
   const securityRecordBtn = document.getElementById('recordSecurityDepositBtn');
   if (securityRecordBtn) securityRecordBtn.textContent = paymentSummary.securityStatusClass === 'paid' ? 'Adjust Payment' : 'Record Payment';
@@ -2856,15 +2859,27 @@ function closePaymentMethodModal() {
 // DEPOSIT RECORDING
 // =============================================
 
+function depositBalance(app, kind) {
+  if (app[kind + '_paid']) return 0;
+  const credit = kind === 'move_in_deposit'
+    ? (app.application_fee_paid ? Number(app.application_fee_amount || 0) : 0)
+      + (app.reservation_deposit_paid ? Number(app.reservation_deposit_amount || 0) : 0)
+    : 0;
+  const paid = (app.rental_payments || []).filter(row => row.payment_type === kind)
+    .reduce((sum, row) => sum + Number(row.amount_paid || 0), 0);
+  return Math.max(0, Math.round((Number(app[kind + '_amount'] || 0) - credit - paid) * 100) / 100);
+}
+
 window.openRecordDepositModal = function(type) {
   const app = allApplications.find(a => a.id === currentApplicationId);
   if (!app) return;
 
-  const amount = type === 'move_in' ? app.move_in_deposit_amount : app.security_deposit_amount;
+  const amount = depositBalance(app, type === 'move_in' ? 'move_in_deposit' : 'security_deposit');
   const method = type === 'move_in' ? app.move_in_deposit_method : app.security_deposit_method;
   const transactionId = type === 'move_in' ? app.move_in_deposit_transaction_id : app.security_deposit_transaction_id;
 
   document.getElementById('depositType').value = type;
+  document.getElementById('depositType').dataset.requestId = crypto.randomUUID();
   document.getElementById('depositAmount').value = amount || 0;
   document.getElementById('depositMethod').value = method || '';
   document.getElementById('depositTransactionId').value = transactionId || '';
@@ -2910,9 +2925,9 @@ async function confirmRecordDeposit() {
 
   try {
     if (type === 'move_in') {
-      await rentalService.recordMoveInDeposit(currentApplicationId, { amount, method, transactionId });
+      await rentalService.recordMoveInDeposit(currentApplicationId, { amount, method, transactionId, requestId: document.getElementById('depositType').dataset.requestId });
     } else {
-      await rentalService.recordSecurityDeposit(currentApplicationId, { amount, method, transactionId });
+      await rentalService.recordSecurityDeposit(currentApplicationId, { amount, method, transactionId, requestId: document.getElementById('depositType').dataset.requestId });
     }
 
     // Refresh only the current application instead of reloading all applications
@@ -2955,6 +2970,7 @@ function openRecordRentModal() {
   }
 
   // Pre-fill amount with monthly rate
+  document.getElementById('rentPaymentAmount').dataset.requestId = crypto.randomUUID();
   document.getElementById('rentPaymentAmount').value = app.approved_rate || '';
 
   // Default period to current month
@@ -2998,6 +3014,7 @@ async function confirmRecordRent() {
 
   try {
     await rentalService.recordRentPayment(app.assignment_id, {
+      requestId: document.getElementById('rentPaymentAmount').dataset.requestId,
       amount,
       periodStart,
       periodEnd,
@@ -3725,10 +3742,10 @@ async function generateLeasePdf() {
     let hasWaiver = false;
     let waiverTemplateId = null;
 
-    // Auto-append active renter waiver (if one exists)
-    try {
+    if (currentAgreementData.dwellingLocation !== 'sharingwood') {
       const waiverTemplate = await leaseTemplateService.getActiveTemplate('renter_waiver');
-      if (waiverTemplate) {
+      if (!waiverTemplate?.content?.trim()) throw new Error('An active property waiver is required.');
+      {
         const parsedWaiver = leaseTemplateService.parseTemplate(
           waiverTemplate.content,
           currentAgreementData
@@ -3738,8 +3755,6 @@ async function generateLeasePdf() {
         hasWaiver = true;
         waiverTemplateId = waiverTemplate.id;
       }
-    } catch (e) {
-      console.warn('No active renter waiver template found, generating lease without waiver:', e.message);
     }
 
     // Generate and upload the combined PDF (lease + waiver)
@@ -4356,3 +4371,22 @@ function setupEventListeners() {
 
 // Make switchDetailTab available globally for onclick handlers
 window.switchDetailTab = switchDetailTab;
+
+async function loadCaseNotes(applicationId) {
+  const { data, error } = await supabase.from('rental_case_notes').select('created_at,note')
+    .eq('rental_application_id', applicationId).order('created_at', { ascending: false });
+  if (applicationId !== currentApplicationId) return;
+  document.getElementById('caseNotes').textContent = error ? 'Could not load case records.'
+    : data.map(row => new Date(row.created_at).toLocaleString() + ' — ' + row.note).join('\n');
+}
+document.getElementById('saveCaseNote').addEventListener('click', async event => {
+  const input = document.getElementById('caseNote');
+  const id = currentApplicationId;
+  const note = input.value.trim();
+  if (!note || !id) return;
+  event.currentTarget.disabled = true;
+  const { error } = await supabase.from('rental_case_notes').insert({ rental_application_id: id, note });
+  document.getElementById('saveCaseNote').disabled = false;
+  if (error) return showToast('Could not save case record.', 'error');
+  if (id === currentApplicationId) { input.value = ''; await loadCaseNotes(id); }
+});

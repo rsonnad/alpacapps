@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
         id, is_archived, require_deposit, deposit_requested_at, agreement_signed_at, payment_deadline_at,
         payment_reminder_sent_at, payment_overdue_alert_sent_at,
         reservation_deposit_amount, reservation_deposit_paid,
+        rental_payments(payment_type,amount_paid),
         move_in_deposit_amount, move_in_deposit_paid,
         security_deposit_amount, security_deposit_paid,
         application_fee_paid, application_fee_amount,
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
         approved_space:approved_space_id(name)
       `)
       .eq('agreement_status', 'signed')
-      .eq('deposit_status', 'requested')
+      .in('deposit_status', ['requested', 'partial'])
       .not('deposit_requested_at', 'is', null)
       // require_deposit is nullable; null means required (same as process-signature).
       .or('require_deposit.is.null,require_deposit.eq.true');
