@@ -1,12 +1,12 @@
 {
-  "version": "v261125.02 3:05p",
-  "release": 2088,
-  "sha": "f8972981ef",
-  "fullSha": "f8972981ef7139309b5bfb2d2ab6083b0e72832f",
+  "version": "v261125.03 9:15p",
+  "release": 2089,
+  "sha": "abe704f5a0",
+  "fullSha": "abe704f5a0e46d72c2ecaaa6148da27a8c71aee6",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-25T21:05:08+00:00",
-  "commits": [{"sha":"f8972981ef","message":"feat(rent-watch): count the finleg bank feed (Zelle payers) as a second source","author":"Blotto"}]
+  "pushedAt": "2026-11-26T03:15:15+00:00",
+  "commits": [{"sha":"abe704f5a0","message":"fix(reimbursements): show the automatic pay date instead of \"Pending review\"","author":"Blotto"}]
 }
