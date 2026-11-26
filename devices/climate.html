@@ -116,6 +116,59 @@
         </div>
       </section>
 
+      <!-- Scheduled Automations (Admin Only) -->
+      <section class="section admin-only" id="thermostatScheduleSection">
+        <div class="section-header">
+          <h2>Scheduled Automations</h2>
+          <div class="section-header-actions">
+            <button class="btn-small" id="addScheduleBtn">+ Add Schedule</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <p class="text-muted" style="font-size: 0.8rem; margin: 0 0 0.75rem;">Runs automatically every ~15 minutes (America/Chicago time). E.g. "Skyloft &rarr; COOL 88&deg;F daily at 9:00 PM."</p>
+          <div id="scheduleList" class="schedule-list">
+            <p class="text-muted" style="font-size: 0.85rem;">Loading schedules...</p>
+          </div>
+
+          <!-- Add/Edit form (hidden until "+ Add Schedule" or an edit is clicked) -->
+          <div id="scheduleForm" class="schedule-form hidden">
+            <input type="hidden" id="scheduleFormId">
+            <label>
+              Thermostat
+              <select id="scheduleFormDevice"></select>
+            </label>
+            <label>
+              Time
+              <input type="time" id="scheduleFormTime" value="21:00">
+            </label>
+            <label>
+              Repeats
+              <select id="scheduleFormRecurrence">
+                <option value="daily">Every day</option>
+                <option value="weekdays">Weekdays</option>
+                <option value="weekends">Weekends</option>
+              </select>
+            </label>
+            <label>
+              Mode
+              <select id="scheduleFormMode">
+                <option value="COOL">Cool</option>
+                <option value="HEAT">Heat</option>
+                <option value="OFF">Off</option>
+              </select>
+            </label>
+            <label id="scheduleFormTempWrap">
+              Set to (&deg;F)
+              <input type="number" id="scheduleFormTemp" min="50" max="90" value="88">
+            </label>
+            <div class="schedule-form-actions">
+              <button class="btn-small" id="scheduleFormSave">Save</button>
+              <button class="btn-small btn-secondary" id="scheduleFormCancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
