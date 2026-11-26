@@ -1,12 +1,12 @@
 {
-  "version": "v261125.03 9:15p",
-  "release": 2089,
-  "sha": "abe704f5a0",
-  "fullSha": "abe704f5a0e46d72c2ecaaa6148da27a8c71aee6",
+  "version": "v261126.01 10:08a",
+  "release": 2090,
+  "sha": "25cd06cf0a",
+  "fullSha": "25cd06cf0a365c4d38d02aeef2f76a21cb61f758",
   "actor": "rsonnad",
   "source": "github-main-push",
   "model": "ci",
   "machine": "runnervm0hi8g",
-  "pushedAt": "2026-11-26T03:15:15+00:00",
-  "commits": [{"sha":"abe704f5a0","message":"fix(reimbursements): show the automatic pay date instead of \"Pending review\"","author":"Blotto"}]
+  "pushedAt": "2026-11-26T16:08:43+00:00",
+  "commits": [{"sha":"25cd06cf0a","message":"Contact: Google Fi (310) 208-9643 first, labeled Entertainment inquiries","author":"Muse (Almusca)"}]
 }
