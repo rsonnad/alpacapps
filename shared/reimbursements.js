@@ -1,8 +1,8 @@
 import { supabase } from './supabase.js';
+import { reimbursementStatusLabel } from './reimbursement-timing.js';
 
 export const receiptBucket = supabase.storage.from('reimbursement-receipts');
 
-const statusLabels = { pending: 'Pending review', paid: 'Paid', declined: 'Declined' };
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 const dateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' });
 
@@ -13,10 +13,12 @@ export function reimbursementElement(tag, text, className) {
   return element;
 }
 
-export function reimbursementCard(request, title, showToast) {
+// `profile` is the associate's profile (payout cadence and Stripe readiness), used
+// to say when an automatic claim pays.
+export function reimbursementCard(request, title, showToast, profile) {
   const card = reimbursementElement('article', null, 'reimbursement-card');
   const date = dateFormat.format(new Date(request.purchase_date + 'T00:00:00Z'));
-  const status = request.status === 'pending' && request.payment_held ? 'Payment on hold' : statusLabels[request.status];
+  const status = reimbursementStatusLabel(request, profile);
   card.append(
     reimbursementElement('strong', title + ' · ' + money.format(request.amount_cents / 100)),
     reimbursementElement('div', [status, date, request.space?.name].filter(Boolean).join(' · ')),

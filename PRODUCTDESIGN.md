@@ -972,3 +972,9 @@ Rental invitation bearer tokens are also staff-only in the raw table. The public
 **Decision.** A new reimbursement immediately queues a review email to Rahul. Its link opens that request in signed-in Accounting, where an admin can delay automatic payment until an admin releases the hold. After the email service accepts the notice, the request waits at least 24 hours and then follows the associate's configured payroll cadence and Stripe eligibility. The transfer creates its own ledger expense. Earlier requests stay in the manual workflow. An admin can hold a newer request to record an off-platform payment.
 
 **Why.** The review window gives the admin time to inspect receipts or pause a questionable purchase. A durable transfer claim keeps automated payouts and manual recording from racing and leaves uncertain Stripe outcomes available for reconciliation.
+
+### 2026-11-25: Automatic Reimbursements Show Their Pay Date
+
+**Decision.** A pending automatic reimbursement no longer says "Pending review". The associate's Work Planning history and Accounting both show "Pays automatically on <date> unless an admin holds it", with the date of the first payroll run after the 24-hour review window that matches the associate's cadence (8pm Central for instant payout, the nightly run for daily, the payout weekday for weekly). Held claims say "Payment on hold", a started transfer says "Payment in progress", an associate without complete Stripe setup sees that setup is still needed, and only older manual claims keep "Pending review". The date logic lives in `shared/reimbursement-timing.js` and mirrors `claim_reimbursement_transfer`.
+
+**Why.** "Pending review" read as "someone must approve this", so a claim that was going to pay on its own looked stuck (Amber's $155.82 claim, 2026-11-25). Showing the date makes it clear no action is needed unless an admin wants to hold it. The native Android and iOS apps have no reimbursement screen, so they need no change.

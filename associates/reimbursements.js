@@ -32,7 +32,8 @@ async function uploadReceipt(folder, receipt) {
   return path;
 }
 
-export function initReimbursements(associateId, spaces, showToast) {
+export function initReimbursements(profile, spaces, showToast) {
+  const associateId = profile.id;
   const panel = document.getElementById('reimbursementPanel');
   const form = document.getElementById('reimbursementForm');
   const { amount, purchaseDate, description, space, receipts } = form.elements;
@@ -41,9 +42,9 @@ export function initReimbursements(associateId, spaces, showToast) {
     container: document.getElementById('reimbursementHistory'),
     more: document.getElementById('reimbursementHistoryMore'),
     query: () => supabase.from('associate_reimbursements')
-      .select('id, amount_cents, purchase_date, description, space:spaces(name), status, paid_date, resolution_note, receipt_paths, payment_held')
+      .select('id, amount_cents, purchase_date, description, space:spaces(name), status, paid_date, resolution_note, receipt_paths, payment_held, automatic_payment, created_at, review_email_sent_at, transfer_started_at, transfer_retry_after')
       .eq('associate_id', associateId),
-    render: request => reimbursementCard(request, 'Reimbursement', showToast),
+    render: request => reimbursementCard(request, 'Reimbursement', showToast, profile),
     emptyText: () => 'No reimbursements submitted yet.'
   });
 

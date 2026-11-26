@@ -142,11 +142,11 @@ export function initReimbursementQueue(linkedId, showToast, refreshLedger) {
     more: document.getElementById('reimbursementQueueMore'),
     query: () => {
       const query = supabase.from('associate_reimbursements')
-        .select('id, amount_cents, purchase_date, description, space:spaces(name), status, paid_date, resolution_note, receipt_paths, automatic_payment, review_email_sent_at, payment_held, transfer_started_at, transfer_error, associate:associate_profiles(user:app_users(display_name))');
+        .select('id, amount_cents, purchase_date, description, space:spaces(name), status, paid_date, resolution_note, receipt_paths, automatic_payment, created_at, review_email_sent_at, payment_held, transfer_started_at, transfer_retry_after, transfer_error, associate:associate_profiles(is_active, payment_method, stripe_connect_account_id, identity_verification_status, w9_status, instant_payout, payout_frequency, payout_day_of_week, user:app_users(display_name))');
       return linkedId ? query.eq('id', linkedId) : query.eq('status', status.value);
     },
     render: request => {
-      const card = reimbursementCard(request, request.associate?.user?.display_name || 'Associate', showToast);
+      const card = reimbursementCard(request, request.associate?.user?.display_name || 'Associate', showToast, request.associate);
       if (request.status !== 'pending') return card;
       if (request.transfer_error) card.append(reimbursementElement('small', request.transfer_error));
       if (request.transfer_started_at) {

@@ -63,7 +63,7 @@ async function initApp() {
   requestLocation();
   await loadSpaces();
   if (authState.appUser.role !== 'demo') {
-    initReimbursements(profile.id, spacesMap, showToast);
+    initReimbursements(profile, spacesMap, showToast);
   }
   initWorkplaceSelector();
   await loadTasksForSelector();
